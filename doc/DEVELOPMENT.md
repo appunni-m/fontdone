@@ -1,0 +1,339 @@
+# Development guide
+
+This is the contributor reference for building, testing, debugging, fixtures,
+CI, performance, and repository retention. Run commands from the repository
+root. Use `make help` as the command index.
+
+## 1. Environment
+
+### 1.1 Host evidence
+
+| Host or target | What CI proves |
+|---|---|
+| Ubuntu 24.04 x86-64 | Rust, oracle parity, native C, packaging, and supply chain |
+| macOS 15 Apple Silicon | fresh checkout, native C, layout, exports, and install tree |
+| Windows Server 2025 x86-64 MSVC | native C, LLP64 layout, DLL/import library, exports, and install tree |
+| Linux i686 | cross-built and QEMU-executed C consumer/layout contract |
+| Linux powerpc64 | cross-built and QEMU-executed big-endian C consumer/layout contract |
+| `wasm32-unknown-unknown` on Node 20 | maintained low-level WASM consumer |
+
+Only Ubuntu and macOS are normal pinned-oracle development hosts. Windows and
+the cross targets are claimed only to the extent recorded above.
+
+### 1.2 Required tools
+
+| Tool | Version | Used for |
+|---|---:|---|
+| Rust | MSRV 1.87; repository toolchain 1.96.1 | runtime and packages |
+| GNU Make | 3.81 or newer | maintained command interface |
+| Python | 3.9 or newer | audits, fixtures, consumers, releases |
+| CMake | 3.20 or newer | offline FreeType oracle |
+| Clang/GCC/MSVC | C11-capable | oracle and C consumers |
+| Git, curl, tar, XZ | maintained OS versions | source and archive handling |
+| Node.js | 20 or newer | claimed WASM host |
+
+Install optional supply-chain tools with `make setup-tools`. Font generators
+use one pinned Python environment:
+
+```bash
+python3 -m venv target/font-generation-venv
+target/font-generation-venv/bin/python -m pip install \
+  --requirement requirements-font-generation.txt
+```
+
+## 2. Build boundary and generated state
+
+Runtime packages are pure Rust. They do not build, link, or dynamically load
+FreeType C. `make setup` downloads checksum-pinned FreeType 2.14.3 into ignored
+`freetype/`, builds the offline oracle, and refreshes generated public
+constants.
+
+| Command | Purpose | Persistent output |
+|---|---|---|
+| `make build` | Build the root runtime | `target/` |
+| `cargo build --workspace --locked` | Build all three packages | `target/` |
+| `make setup` | Fetch/build the pinned oracle and constants | ignored `freetype/`, `target/`; generated constants |
+| `make generate-contracts` | Regenerate support, C header, WASM, and legal derivatives | tracked generated files |
+| `make check-generated` | Reject generated drift | no intended writes |
+| `make fresh-checkout-check` | Exercise non-parity checkout contracts | `target/` |
+
+The first oracle fetch and uncached Cargo dependency resolution need network
+access. The compact `Font` API performs no file, network, environment, or
+process I/O: callers supply font bytes. The FreeType-shaped safe facade and its
+native wrapper deliberately implement path-based `FT_New_Face`/`FT_Attach_File`
+and read `FREETYPE_PROPERTIES` for the corresponding compatibility routes.
+Runtime packages perform no network access or subprocess execution.
+
+## 3. Verification model
+
+Run the smallest useful gate first:
+
+| Scope | Command | Meaning |
+|---|---|---|
+| Rust workspace | `make test-fast` | Tests/checks excluding full parity and ignored trace diagnostics |
+| One operation | `make test-op OP=ftadvanc.get_advance` | Exact selected C/Rust/facade comparison |
+| One case | `make test-case CASE=freetype.FT_Load_Glyph.no_scale` | Exact selected case comparison |
+| Full parity | `make test-parity` | Every runnable exact case, route audit, facades, and purity guard |
+| Record parity evidence | `make record-parity-snapshot` | Promote the latest passing, source-matched report into committed evidence |
+| Integrations | `make test-integrations` | Downstream Rust, external C, exports, and Node/WASM |
+| C contract | `make c-abi-contract` | Report all 12 categories and remaining debt |
+| Complete C contract | `make c-abi-contract-complete` | Fail unless all categories and all five platform bundles complete |
+| Rust docs | `make doc` and `make doc-test` | Strict rustdoc and compiled examples |
+| Static quality | `make lint` | rustfmt and workspace Clippy policy |
+| Local CI | `make ci` | All platform-independent required gates |
+
+`make test-parity` prints these values separately:
+
+- runnable, passed, and failed exact-comparison cases;
+- explicitly pending cases;
+- covered manifest cases;
+- validated public input files;
+- function route evidence.
+
+Success requires `passed == runnable` and `failed == 0`. Pending cases are not
+passes. A function with a null-validation or narrow success route has runtime
+evidence, but not necessarily complete behavior. The root README and
+committed compatibility files contain the last recorded measurement.
+
+The wrapper also writes `target/parity-evidence/test-parity.log` and
+`target/parity-evidence/runtime_parity.json`. The JSON binds the measurement to
+the exact parity-relevant path set and contents, toolchain, oracle binary, log
+digest, and CI identity when available. To refresh the committed snapshot:
+
+```bash
+make test-parity
+make record-parity-snapshot
+make check-docs
+```
+
+The record command never reruns the expensive matrix. It refuses a missing,
+failed, or stale report. `doc/runtime_parity_evidence.json` and
+`doc/compatibility_snapshot.json` preserve the last committed passing
+denominators; reports under `target/` describe the current worktree.
+
+### 3.1 C-contract evidence
+
+The C scorecard measures functions, constants, types, layouts, callbacks,
+ownership, state transitions, errors, modules, headers, binary artifacts, and
+platform behavior. Its fixed denominators live in
+`tests/data/c_contract_inventory.json`.
+
+The functions category includes a blocking all-runtime-row measurement in
+addition to 218-name function routing. Consequently, a pending record, macro,
+or composite-operation route prevents contract completion even when every
+bare function has at least one traced call.
+
+```bash
+make api-abi-audit
+make c-abi-contract
+```
+
+The outputs are:
+
+```text
+target/api-abi-audit/api_abi_audit.{json,md}
+target/api-abi-audit/route_audit.{json,md}
+target/api-abi-audit/c_abi_contract_status.{json,md}
+```
+
+`make platform-contract` records native layout, shared/static consumers,
+installed-layout checks, exports, and artifact hashes for the active host.
+Linux i686 and powerpc64 use `make platform-contract-cross` with explicit
+compiler, symbol inspector, sysroot, and QEMU runner. Cross-compilation alone
+does not earn runtime credit.
+
+`make c-abi-contract-complete` expects exactly five fresh bundles assembled
+under `target/api-abi-audit/platform-contract/`. CI creates those bundles in
+three native and two cross jobs, downloads them into an aggregate job, and
+then runs the complete target. A single-host checkout normally runs
+`make c-abi-contract` instead.
+
+### 3.2 Coverage
+
+Coverage and parity answer different questions. Executing a line or branch
+does not prove that its result matches C.
+
+```bash
+make test-coverage
+make test-coverage-all
+```
+
+The focused command writes core Rust JSON. The all-lane command uses nightly
+branch coverage across the core, C ABI, and host-compiled WASM facade and
+writes `target/coverage/unified-runtime-all-lanes.json`. Test-harness source is
+excluded.
+
+The all-lane run is intentionally expensive: the last observed run took about
+52 minutes, so budget roughly 45–60 minutes on a warm development host. No
+coverage percentage is committed as a current claim; generate it for the exact
+worktree and toolchain being reviewed.
+
+## 4. Diagnose parity failures
+
+1. Select one font, glyph, size, load flag set, and endpoint.
+2. Capture C and Rust at the same pipeline stages.
+3. Identify the first divergent value.
+4. Read the exact pinned FreeType function responsible for that stage.
+5. Fix the Rust cause.
+6. Rerun the focused case and then `make test-parity`.
+
+Useful stages are raw load, pre-hint scaled outline, bytecode/autohint state,
+phantom points and advances, final outline, bbox/cbox, raster cells/spans,
+bitmap bytes, and public metadata.
+
+Do not delete a row, narrow a filter, weaken a threshold, bless Rust output as
+the oracle, or edit an expected hash to obtain a pass. Permanent diagnostics
+use guarded `log::trace!`. The large interactive pipe trace is opt-in:
+
+```bash
+PIPE_FONT_PATH=tests/fixtures/input/fonts/DejaVuSans.ttf \
+PIPE_SIZE=10 PIPE_CHAR=A RUST_LOG=autohint::pipeline=trace \
+make test-pipe-trace
+```
+
+## 5. Fixtures and generators
+
+The tracked input boundary is `tests/fixtures/input/`; maintained
+non-generated contracts live in `tests/data/`. Generated matrices and raw
+oracle outputs remain ignored under `tests/fixtures/*.json` and
+`tests/fixtures/outputs/`.
+
+The canonical input tree currently contains 464 tracked paths and no symlinks.
+The Makefile exposes 24 named font-generation targets plus the deterministic
+compressed-payload target, collected by `make font-fixtures`.
+
+Before changing a fixture:
+
+1. read the [font-generation policy](../scripts/font_generation/README.md);
+2. prefer a compact project-authored synthetic input;
+3. record generator, classification, source, license, transformation, and
+   hashes;
+4. regenerate only the affected `make font-fixture-*` family;
+5. inspect binary and provenance changes;
+6. run the focused parity lane and `make check-font-fixtures`.
+
+Third-party material must have redistribution permission and exact provenance.
+The three retained compact control fonts whose exact upstream transformation
+was not recoverable may remain unchanged, but must not be used as new generator
+bases until that gap is closed. See
+[`PROVENANCE.md`](../tests/fixtures/input/fonts/PROVENANCE.md) and
+[`THIRD_PARTY_NOTICES.md`](../tests/fixtures/THIRD_PARTY_NOTICES.md).
+
+`scripts/font_generation/` is the only location for code that creates or
+modifies font files. `scripts/build_compressed_fixtures.py` is separate because
+it wraps project-authored bytes rather than generating a font.
+
+## 6. CI
+
+`.github/workflows/ci.yml` is the public verification contract:
+
+| Job family | Evidence |
+|---|---|
+| Rust matrix | MSRV, format, Clippy, tests, strict docs, benchmark contract |
+| Contracts | generated files, fixture reproducibility, docs, synchronized versions |
+| Parity | full exact oracle comparison and diagnostics |
+| Native C | Linux x86-64, macOS aarch64, Windows x86-64 |
+| Cross C | Linux i686 and powerpc64 under QEMU |
+| Aggregate C contract | all five downloaded platform bundles |
+| WASM | `wasm32-unknown-unknown` consumed by Node 20 |
+| Packages | all three inspected crate archives |
+| Supply chain | advisories, dependency, source, and license policy |
+
+Parity logs, the source-bound parity report, and diagnostics are retained for
+14 days. Platform and package evidence is retained for 30 days. Release
+preflight evidence is retained for 90 days.
+Superseded CI runs on the same ref are cancelled; release runs are not.
+
+## 7. Performance
+
+The maintained workload is `tests/data/perf_operation_matrix.json`. The Rust
+runner is `examples/bench_ops.rs`; C measurement lives in
+`scripts/bench_freetype.py` and `scripts/bench_ft_ops.c` and is never runtime
+code.
+
+```bash
+make bench-self-test
+make bench-quick
+make bench
+```
+
+A publishable result uses release mode, retains raw samples and workload
+weights, states timing boundaries, records CPU/OS/toolchain/revision/dirty
+state, and labels whether the comparison is trustworthy. Performance never
+permits weaker parity.
+
+## 8. Repository retention
+
+`doc/FILE_RETENTION_INVENTORY.tsv` assigns every tracked or proposed untracked
+path a reason, byte count, and digest. Regenerate it after adding, moving,
+deleting, or modifying files:
+
+```bash
+make repository-inventory
+```
+
+`make check-generated` and `make check-font-fixtures` use the generator's
+no-write `--check` mode and fail if any path, byte count, digest, classification,
+or reason is stale.
+
+<!-- retention-counts:start -->
+| Reason | Paths | Retained context |
+|---|---:|---|
+| R01 | 57 | published pure-Rust runtime |
+| R02 | 86 | package, build, release, and facade contracts |
+| R03 | 1,637 | executable parity tests and public contracts |
+| R04 | 464 | licensed canonical fixture inputs |
+| R05 | 1 | required repository tooling alias |
+| R06 | 59 | maintained tooling, examples, and benchmarks |
+| R07 | 7 | durable project documentation |
+| R08 | 1 | active self-cleaning roadmap |
+| R09 | 5 | CI, community, and security policy |
+| R10 | 2 | generated source required for offline builds |
+| R11 | 1 | generated exhaustive inventory |
+| **Total** | **2,320** | **all retained paths** |
+<!-- retention-counts:end -->
+
+Reason codes are stable categories, not importance rankings:
+
+1. runtime source;
+2. package or root contract;
+3. test or public contract;
+4. fixture input, license, or provenance;
+5. required alias;
+6. tooling, example, or benchmark;
+7. durable documentation;
+8. active self-cleaning plan;
+9. CI, community, or security policy;
+10. generated source needed by offline builds;
+11. generated audit.
+
+Delete build output, duplicate narratives, obsolete work logs, unprovenanced
+fixtures, and completed plans after moving any durable contract into an
+authoritative guide.
+
+## 9. Documentation policy
+
+- Public downstream Rust APIs deny missing documentation.
+- Public `Result` functions describe their error conditions.
+- Internal-public parser, hinter, rasterizer, outline, scaler, and arithmetic
+  modules carry explicit exceptions because they are instrumentation surfaces,
+  not the promised integration API.
+- C and WASM pointer/layout contracts live in shipped headers, `abi.json`, and
+  package guides.
+- Generated support, header, WASM, constant, and legal files are changed only
+  through their generators.
+
+Run:
+
+```bash
+make check-docs
+make doc
+make doc-test
+```
+
+## 10. Source of compatibility truth
+
+The behavioral authority is checksum-pinned FreeType 2.14.3 source and public
+headers fetched by `make oracle-fetch`. External format specifications explain
+intent; exact tests record the source function or specification section when a
+non-obvious rule becomes durable.

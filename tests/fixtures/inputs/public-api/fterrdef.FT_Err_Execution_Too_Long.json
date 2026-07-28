@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "subject": "fterrdef.FT_Err_Execution_Too_Long",
+  "manifest_cases": [
+    "value_matches_header",
+    "opcode_counter_limit_returns_error",
+    "negative_jump_limit_returns_error"
+  ],
+  "cases": [
+    {
+      "case_id": "fterrdef.FT_Err_Execution_Too_Long.value_matches_header",
+      "subject": "fterrdef.FT_Err_Execution_Too_Long",
+      "case": "value_matches_header",
+      "operation": "constant",
+      "schema": "api_constant",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "symbol": "FT_Err_Execution_Too_Long",
+          "include": "<freetype/fterrors.h>",
+          "header": "freetype/fterrdef.h",
+          "public_import": "#include <freetype/freetype.h>",
+          "error_prefix": "FT_Err_",
+          "expected_value_from_pinned_header": 139,
+          "expected_value_hex": "0x8B",
+          "expected_error_string_from_pinned_header": "execution context too long",
+          "pinned_source": "freetype/include/freetype/fterrdef.h"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "area:constant"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "value_type": "FT_Error",
+          "symbol": "FT_Err_Execution_Too_Long",
+          "header": "freetype/fterrdef.h",
+          "public_import": "freetype/freetype.h or freetype/fterrors.h",
+          "value": "integer",
+          "error_string": "string_from_FT_ERRORDEF_when_requested"
+        },
+        "compare": {
+          "mode": "value",
+          "paths": [
+            "value",
+            "symbol",
+            "header_symbol",
+            "error_string"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Execution_Too_Long.opcode_counter_limit_returns_error",
+      "subject": "fterrdef.FT_Err_Execution_Too_Long",
+      "case": "opcode_counter_limit_returns_error",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "fixture": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/glyf/hinter-opcode-counter-limit.ttf",
+            "requirements": "Project-authored straight-line fpgm contains 1,000,001 operand-free CLEAR opcodes."
+          }
+        },
+        "params": {
+          "expected_error_symbol": "FT_Err_Execution_Too_Long",
+          "expected_error_value_source": "pinned fterrdef.h",
+          "pinned_sources": [
+            "freetype/include/freetype/config/ftoption.h:725-730",
+            "freetype/src/truetype/ttinterp.c:6732-6742"
+          ],
+          "face_index": 0,
+          "glyph_index": 1,
+          "size": 20,
+          "load_flags": [
+            "FT_LOAD_DEFAULT"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "error-trigger",
+        "requires:fixture",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "error",
+        "error": "FT_Err_Execution_Too_Long",
+        "fixture_requirements": "Project-authored straight-line fpgm executes one operand-free opcode beyond the pinned 1,000,000-opcode ceiling, avoiding earlier jump and loop guards.",
+        "output_shape": {
+          "error": "FT_Error",
+          "error_symbol": "FT_Err_*",
+          "output_face": "pointer_nullness_or_preservation",
+          "slot_state": "mutation_class_if_slot_is_involved",
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "error_symbol",
+            "output_face.nullness",
+            "output_face.identity_class",
+            "slot_state.mutation_class"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Execution_Too_Long.negative_jump_limit_returns_error",
+      "subject": "fterrdef.FT_Err_Execution_Too_Long",
+      "case": "negative_jump_limit_returns_error",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "fixture": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/glyf/hinter-execution-too-long-loop.ttf",
+            "requirements": "Project-authored glyph bytecode repeatedly executes a backward JMPR while keeping its operand stack bounded."
+          }
+        },
+        "params": {
+          "expected_error_symbol": "FT_Err_Execution_Too_Long",
+          "expected_error_value_source": "pinned fterrdef.h",
+          "pinned_source": "freetype/src/truetype/ttinterp.c:3217,3539",
+          "face_index": 0,
+          "glyph_index": 1,
+          "size": 20,
+          "load_flags": [
+            "FT_LOAD_PEDANTIC"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "error-trigger",
+        "requires:fixture",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "error",
+        "error": "FT_Err_Execution_Too_Long",
+        "fixture_requirements": "Project-authored glyph bytecode repeats a backward JMPR until pinned neg_jump_counter_max is exceeded; pedantic loading exposes the exact interpreter error.",
+        "output_shape": {
+          "error": "FT_Error",
+          "error_symbol": "FT_Err_*",
+          "output_face": "pointer_nullness_or_preservation",
+          "slot_state": "mutation_class_if_slot_is_involved",
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "error_symbol",
+            "output_face.nullness",
+            "output_face.identity_class",
+            "slot_state.mutation_class"
+          ]
+        }
+      }
+    }
+  ]
+}

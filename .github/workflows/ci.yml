@@ -1,0 +1,271 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: "1"
+  RUST_TOOLCHAIN: "1.96.1"
+
+jobs:
+  rust:
+    name: Rust / ${{ matrix.task }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        task: [msrv, fmt, clippy, workspace-tests, docs, benchmark-contract]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        shell: bash
+        run: |
+          if [[ "${{ matrix.task }}" == "msrv" ]]; then
+            rustup toolchain install 1.87 --profile minimal
+            rustup override set 1.87
+          else
+            rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component clippy,rustfmt
+            rustup override set "$RUST_TOOLCHAIN"
+          fi
+      - name: MSRV
+        if: matrix.task == 'msrv'
+        run: cargo test --workspace --all-features --locked
+      - name: Format
+        if: matrix.task == 'fmt'
+        run: make fmt
+      - name: Clippy
+        if: matrix.task == 'clippy'
+        run: make clippy
+      - name: Workspace tests
+        if: matrix.task == 'workspace-tests'
+        run: make test-fast
+      - name: Strict docs and downstream examples
+        if: matrix.task == 'docs'
+        run: |
+          make doc
+          make doc-test
+          make test-rust-consumer
+      - name: Benchmark contract
+        if: matrix.task == 'benchmark-contract'
+        run: make bench-self-test
+
+  contracts:
+    name: Generated, docs, versions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+      - name: Install pinned font-generation tools
+        run: |
+          python3 -m venv target/font-generation-venv
+          target/font-generation-venv/bin/python -m pip install \
+            --requirement requirements-font-generation.txt
+      - run: make check-generated
+      - run: make check-font-fixtures PYTHON=target/font-generation-venv/bin/python
+      - run: make check-docs
+      - run: make check-versions
+
+  parity:
+    name: Exact parity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes cmake clang make python3 xz-utils
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+      - run: make test-parity
+      - name: Retain parity diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-diagnostics
+          path: |
+            target/api-abi-audit/
+            target/parity-evidence/
+            tests/fixtures/outputs/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  native-consumer:
+    name: Native C / ${{ matrix.marker }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            marker: contract-linux-x86_64
+          - runner: macos-15
+            marker: contract-macos-aarch64
+          - runner: windows-2025
+            marker: contract-windows-x86_64
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        shell: bash
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+      - name: Verify Unix native consumer
+        if: runner.os != 'Windows'
+        run: |
+          make fresh-checkout-check
+          make platform-contract
+      - name: Verify Windows native consumer and import library
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do call "%%i\VC\Auxiliary\Build\vcvars64.bat"
+          make platform-contract PYTHON=python
+      - name: Retain native contract evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: platform-contract-${{ matrix.marker }}
+          path: target/api-abi-audit/platform-contract/*.json
+          if-no-files-found: error
+          retention-days: 30
+
+  cross-consumer:
+    name: Cross C / ${{ matrix.marker }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - marker: contract-linux-i686
+            target: i686-unknown-linux-gnu
+            packages: gcc-i686-linux-gnu libc6-dev-i386-cross qemu-user
+            cc: i686-linux-gnu-gcc
+            nm: i686-linux-gnu-nm
+            runner: qemu-i386 -L /usr/i686-linux-gnu
+            sysroot: /usr/i686-linux-gnu
+          - marker: contract-linux-powerpc64
+            target: powerpc64-unknown-linux-gnu
+            packages: gcc-powerpc64-linux-gnu libc6-dev-ppc64-cross qemu-user
+            cc: powerpc64-linux-gnu-gcc
+            nm: powerpc64-linux-gnu-nm
+            runner: qemu-ppc64 -L /usr/powerpc64-linux-gnu
+            sysroot: /usr/powerpc64-linux-gnu
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust target
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+          rustup target add "${{ matrix.target }}"
+      - name: Install cross C compiler and emulator
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ${{ matrix.packages }}
+      - name: Execute cross platform contract
+        run: |
+          make platform-contract-cross \
+            PLATFORM_TARGET="${{ matrix.target }}" \
+            PLATFORM_CC="${{ matrix.cc }}" \
+            PLATFORM_NM="${{ matrix.nm }}" \
+            PLATFORM_RUNNER="${{ matrix.runner }}" \
+            PLATFORM_SYSROOT="${{ matrix.sysroot }}"
+      - name: Retain cross contract evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: platform-contract-${{ matrix.marker }}
+          path: target/api-abi-audit/platform-contract/*.json
+          if-no-files-found: error
+          retention-days: 30
+
+  platform-contract:
+    name: Complete 12-category C contract
+    runs-on: ubuntu-24.04
+    needs: [native-consumer, cross-consumer]
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install contract prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes cmake clang make python3 xz-utils
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+      - name: Assemble platform bundles
+        uses: actions/download-artifact@v4
+        with:
+          pattern: platform-contract-*
+          path: target/api-abi-audit/platform-contract
+          merge-multiple: true
+      - name: Require the complete pinned C contract
+        run: make c-abi-contract-complete
+
+  wasm-consumer:
+    name: WebAssembly / Node 20
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust and wasm target
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+          rustup target add wasm32-unknown-unknown
+      - name: Verify host
+        run: node --version
+      - run: make test-wasm-consumer
+
+  packages:
+    name: Three package archives
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+      - run: make package-verify
+      - name: Retain inspected packages
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-archives
+          path: |
+            target/package/*.crate
+            target/release-evidence/*.json
+            target/release-evidence/*.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  supply-chain:
+    name: Supply chain
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust and audit tools
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+          cargo install cargo-deny cargo-audit --locked
+      - run: make supply-chain

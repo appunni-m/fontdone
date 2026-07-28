@@ -1,0 +1,314 @@
+{
+  "schema_version": 1,
+  "pinned_freetype_version": "2.14.3",
+  "completion_rule": "An item is complete only when every listed runtime route has exact C-oracle evidence. Missing, compile-only, pending, fallback, or stale evidence is debt.",
+  "ownership_rules": [
+    {
+      "id": "O01",
+      "subject": "custom library memory",
+      "rule": "FT_New_Library retains the caller memory object and every allocation and release uses its callbacks through final library destruction.",
+      "routes": ["ftsystem.FT_Memory.custom_allocator_runtime_events"]
+    },
+    {
+      "id": "O02",
+      "subject": "memory face source bytes",
+      "rule": "FT_New_Memory_Face borrows the caller byte range for the complete face lifetime and FT_Done_Face releases only face-owned state.",
+      "routes": ["freetype.FT_New_Memory_Face.valid_font_bytes", "ftsystem.FT_StreamRec.memory_stream_field_contract", "freetype.FT_Done_Face.success_releases_face"]
+    },
+    {
+      "id": "O03",
+      "subject": "external streams",
+      "rule": "FT_Open_Face retains caller-owned external stream identity and invokes the configured close callback without freeing caller storage.",
+      "routes": ["ftsystem.FT_StreamRec.external_base_close_fields_match_c"]
+    },
+    {
+      "id": "O04",
+      "subject": "face child records",
+      "rule": "A face owns its glyph slot, active size records, and charmaps; the child pointers remain borrowed and face-scoped.",
+      "routes": ["freetype.FT_Face.owns_slot_size_and_charmaps"]
+    },
+    {
+      "id": "O05",
+      "subject": "size records",
+      "rule": "FT_New_Size creates a face-owned size and FT_Done_Size removes and frees exactly that record.",
+      "routes": ["ftsizes.FT_New_Size.create_secondary_size_success", "ftsizes.FT_Done_Size.remove_secondary_size_success"]
+    },
+    {
+      "id": "O06",
+      "subject": "slot bitmap promotion",
+      "rule": "FT_GlyphSlot_Own_Bitmap copies borrowed bitmap bytes once, marks ownership, and preserves already-owned or non-bitmap slots.",
+      "routes": ["ftbitmap.FT_GlyphSlot_Own_Bitmap.success_borrowed_bitmap_copied_and_flagged", "ftbitmap.FT_GlyphSlot_Own_Bitmap.success_already_owned_noop", "ftbitmap.FT_GlyphSlot_Own_Bitmap.error_copy_allocation_failure"]
+    },
+    {
+      "id": "O07",
+      "subject": "bitmap records",
+      "rule": "Bitmap copy, conversion, emboldening, and done replace or release target buffers with the pinned allocator and leave exact public state.",
+      "routes": ["ftbitmap.FT_Bitmap_Copy.ownership_replaces_target_buffer", "ftbitmap.FT_Bitmap_Embolden.ownership_reallocates_bitmap_buffer", "ftbitmap.FT_Bitmap_Done.success_frees_and_zeroes_bitmap"]
+    },
+    {
+      "id": "O08",
+      "subject": "outline owner flag",
+      "rule": "FT_OUTLINE_OWNER controls whether outline destruction releases point, tag, and contour storage.",
+      "routes": ["ftimage.FT_OUTLINE_OWNER.destruction_ownership_behavior"]
+    },
+    {
+      "id": "O09",
+      "subject": "outline glyph",
+      "rule": "FT_Get_Glyph deep-copies slot outline arrays into a caller-owned FT_OutlineGlyph.",
+      "routes": ["ftglyph.FT_OutlineGlyphRec.owns_outline_arrays"]
+    },
+    {
+      "id": "O10",
+      "subject": "bitmap glyph",
+      "rule": "FT_Get_Glyph deep-copies bitmap storage into a caller-owned FT_BitmapGlyph.",
+      "routes": ["ftglyph.FT_BitmapGlyphRec.owns_bitmap_buffer_get_glyph_bitmap"]
+    },
+    {
+      "id": "O11",
+      "subject": "glyph destruction",
+      "rule": "FT_Done_Glyph releases each public glyph allocation exactly once without requiring the source face to remain active.",
+      "routes": ["ftglyph.FT_Done_Glyph.success_releases_owned_glyph", "ftglyph.FT_Done_Glyph.lifetime_before_library_done"]
+    },
+    {
+      "id": "O12",
+      "subject": "glyph bitmap conversion",
+      "rule": "FT_Glyph_To_Bitmap preserves or destroys the source according to destroy and transfers the replacement glyph only after successful rendering.",
+      "routes": ["ftglyph.FT_Glyph_To_Bitmap.success_outline_to_bitmap_destroy_false", "ftglyph.FT_Glyph_To_Bitmap.success_outline_to_bitmap_destroy_true", "ftglyph.FT_Glyph_To_Bitmap.error_render_failure_preserves_original"]
+    },
+    {
+      "id": "O13",
+      "subject": "custom glyph renderer",
+      "rule": "FT_New_Glyph allocates the renderer-selected public glyph class and transfers the resulting object to the caller.",
+      "routes": ["ftglyph.FT_New_Glyph.success_renderer_supported_custom_format"]
+    },
+    {
+      "id": "O14",
+      "subject": "stroker exports",
+      "rule": "Stroker export and glyph-stroke operations preserve the documented source and destination ownership choices.",
+      "routes": ["ftstroke.FT_Glyph_Stroke.destroy_original_option", "ftstroke.FT_Stroker_Done.after_export_cleanup"]
+    },
+    {
+      "id": "O15",
+      "subject": "variation descriptors",
+      "rule": "FT_Get_MM_Var returns one library-owned allocation graph that FT_Done_MM_Var releases with the same library.",
+      "routes": ["ftmm.FT_MM_Var.ownership_matches_c", "ftmm.FT_Done_MM_Var.frees_descriptor_success"]
+    },
+    {
+      "id": "O16",
+      "subject": "cache manager",
+      "rule": "FTC_Manager owns requested faces, sizes, caches, and evictable nodes until reset or done.",
+      "routes": ["ftcache.FTC_Manager.owns_faces_sizes_and_cache_nodes"]
+    },
+    {
+      "id": "O17",
+      "subject": "cache node references",
+      "rule": "Cache lookup transfers an optional node reference and FTC_Node_Unref releases exactly that reference.",
+      "routes": ["ftcache.FTC_ImageCache_Lookup.success_node_acquire_and_unref", "ftcache.FTC_Node_Unref.releases_lookup_reference"]
+    },
+    {
+      "id": "O18",
+      "subject": "incremental glyph data",
+      "rule": "Incremental get_glyph_data output is released through free_glyph_data after the consumer finishes and not before.",
+      "routes": ["ftincrem.FT_Incremental_FuncsRec.glyph_data_success_and_release"]
+    },
+    {
+      "id": "O19",
+      "subject": "OpenType validation tables",
+      "rule": "FT_OpenType_Validate transfers selected table buffers to the caller and FT_OpenType_Free releases them through face memory.",
+      "routes": ["ftotval.FT_OpenType_Validate.selected_tables_success", "ftotval.FT_OpenType_Free.frees_validated_table_with_face_memory"]
+    },
+    {
+      "id": "O20",
+      "subject": "GX validation tables",
+      "rule": "FT_TrueTypeGX_Validate transfers selected table buffers and FT_TrueTypeGX_Free releases each returned buffer.",
+      "routes": ["ftgxval.FT_TrueTypeGX_Validate.validates_selected_gx_tables", "ftgxval.FT_TrueTypeGX_Free.frees_gx_validation_buffer"]
+    },
+    {
+      "id": "O21",
+      "subject": "classic kern validation table",
+      "rule": "FT_ClassicKern_Validate transfers one validation buffer and FT_ClassicKern_Free releases it with face memory.",
+      "routes": ["ftgxval.FT_ClassicKern_Validate.validates_ms_classic_kern", "ftgxval.FT_ClassicKern_Free.frees_classic_kern_validation_buffer"]
+    },
+    {
+      "id": "O22",
+      "subject": "compressed stream wrappers",
+      "rule": "Compressed wrappers own their decompressor state but never close or free the caller-owned source stream.",
+      "routes": ["ftbzip2.FT_Stream_OpenBzip2.lifecycle_close_does_not_close_source", "ftgzip.FT_Stream_OpenGzip.opens_valid_gzip_stream", "ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream"]
+    },
+    {
+      "id": "O23",
+      "subject": "module classes",
+      "rule": "The library owns installed module records while callback function pointers and class data obey the add, remove, and final-destruction lifetime.",
+      "routes": ["ftmodapi.FT_Module_Class.fields_drive_module_lifecycle", "ftmodapi.FT_Done_Library.final_destroy_closes_faces_and_modules"]
+    }
+  ],
+  "state_transitions": [
+    {
+      "id": "S01",
+      "subject": "library reference lifecycle",
+      "rule": "initialize, reference, non-final done, final done",
+      "routes": ["ftmodapi.FT_Done_Library.final_destroy_closes_faces_and_modules"]
+    },
+    {
+      "id": "S02",
+      "subject": "face reference lifecycle",
+      "rule": "open, reference, decrement, final release",
+      "routes": ["freetype.FT_Reference_Face.success_multiple_references", "freetype.FT_Done_Face.reference_count_decrements", "freetype.FT_Done_Face.success_releases_face"]
+    },
+    {
+      "id": "S03",
+      "subject": "size lifecycle",
+      "rule": "create, activate, mutate metrics, switch, remove",
+      "routes": ["freetype.FT_SizeRec.active_size_record_runtime", "ftsizes.FT_New_Size.create_secondary_size_success", "ftsizes.FT_Activate_Size.switches_current_face_size", "ftsizes.FT_Done_Size.remove_secondary_size_success"]
+    },
+    {
+      "id": "S04",
+      "subject": "glyph slot lifecycle",
+      "rule": "empty, load, transform, render, replace",
+      "routes": ["ftimage.FT_GLYPH_FORMAT_NONE.reset_slot_uses_none", "freetype.FT_Render_Glyph.error_unloaded_or_unsupported_slot_format.unrouted_slot_states"]
+    },
+    {
+      "id": "S05",
+      "subject": "charmap state",
+      "rule": "enumerate, select or set, expose active charmap, reject foreign charmap",
+      "routes": ["freetype.FT_Select_Charmap.success_select_present_encoding", "freetype.FT_Set_Charmap.success_set_face_charmap"]
+    },
+    {
+      "id": "S06",
+      "subject": "variation coordinate state",
+      "rule": "set full, partial, excess, reset, named instance, then observe coordinates and glyph output",
+      "routes": ["ftmm.FT_Set_Var_Design_Coordinates.success_partial_extra_and_reset", "ftmm.FT_Set_Var_Blend_Coordinates.success_partial_extra_and_reset", "ftmm.FT_Set_Named_Instance.success_adobe_mm_resets_default"]
+    },
+    {
+      "id": "S07",
+      "subject": "Adobe MM coordinate state",
+      "rule": "set design, blend, weight vector, reset, then observe coordinates and glyph output",
+      "routes": ["ftmm.FT_Set_MM_Design_Coordinates.success_partial_extra_and_reset", "ftmm.FT_Set_MM_WeightVector.success_set_weight_vector", "ftmm.FT_Set_MM_Blend_Coordinates.output_changes_for_active_blend"]
+    },
+    {
+      "id": "S08",
+      "subject": "palette state",
+      "rule": "select palette, mutate foreground, reselect and reset",
+      "routes": ["ftcolor.FT_Palette_Select.success_reselect_resets_user_modifications", "ftcolor.FT_Palette_Set_Foreground_Color.success_sets_sfnt_foreground_color"]
+    },
+    {
+      "id": "S09",
+      "subject": "module registry",
+      "rule": "empty library, add defaults, add custom, lookup, replace, remove, final destroy",
+      "routes": ["ftmodapi.FT_Add_Default_Modules.installs_default_module_table", "ftmodapi.FT_Module_Class.fields_drive_module_lifecycle", "ftmodapi.FT_Remove_Module.removes_installed_module"]
+    },
+    {
+      "id": "S10",
+      "subject": "renderer state",
+      "rule": "discover renderer, select renderer, invoke raster callbacks, remove or destroy",
+      "routes": ["ftrender.FT_Renderer_Class.render_mode_acceptance_matches_callbacks", "ftimage.FT_Raster.lifecycle_callback_contract"]
+    },
+    {
+      "id": "S11",
+      "subject": "cache manager state",
+      "rule": "create, lookup, hit, reference, reset, evict, done",
+      "routes": ["ftcache.FTC_Manager_New.lifecycle_create_lookup_reset_done", "ftcache.FTC_Manager.reset_and_done_lifecycle", "ftcache.FTC_Manager_Done.node_reference_lifecycle_on_done"]
+    },
+    {
+      "id": "S12",
+      "subject": "stroker state",
+      "rule": "new, set, rewind, begin path, add segments, end path, export, done",
+      "routes": ["ftstroke.FT_Stroker.lifecycle_contract", "ftstroke.FT_Stroker_Rewind.attributes_preserved", "ftstroke.FT_Stroker_EndSubPath.no_segment_after_begin"]
+    },
+    {
+      "id": "S13",
+      "subject": "external stream state",
+      "rule": "open, read, seek, frame enter and exit, close",
+      "routes": ["ftsystem.FT_Stream.external_stream_runtime_contract", "fterrdef.FT_Err_Invalid_Frame_Operation.stream_frame_access_rejects_invalid_sequence"]
+    },
+    {
+      "id": "S14",
+      "subject": "gzip stream state",
+      "rule": "open, read forward, seek backward, close wrapper",
+      "routes": ["ftgzip.FT_Stream_OpenGzip.opens_valid_gzip_stream"]
+    },
+    {
+      "id": "S15",
+      "subject": "LZW stream state",
+      "rule": "open, read forward, seek backward, close wrapper",
+      "routes": ["ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream"]
+    },
+    {
+      "id": "S16",
+      "subject": "bzip2 stream state",
+      "rule": "open, read forward, close wrapper without closing source",
+      "routes": ["ftbzip2.FT_Stream_OpenBzip2.success_open_valid_bzip2_stream", "ftbzip2.FT_Stream_OpenBzip2.success_read_decompressed_bytes", "ftbzip2.FT_Stream_OpenBzip2.lifecycle_close_does_not_close_source"]
+    },
+    {
+      "id": "S17",
+      "subject": "validator state",
+      "rule": "initialize, validate selected tables, transfer buffers, free buffers, clean partial failure",
+      "routes": ["ftotval.FT_OpenType_Validate.selected_tables_success", "ftotval.FT_VALIDATE_OT.partial_failure_cleanup_contract"]
+    },
+    {
+      "id": "S18",
+      "subject": "incremental callback state",
+      "rule": "store interface, acquire glyph data, seed and override metrics, release glyph data",
+      "routes": ["ftparams.FT_PARAM_TAG_INCREMENTAL.incremental_interface_used_for_glyph_load", "ftincrem.FT_Incremental_FuncsRec.glyph_data_success_and_release"]
+    },
+    {
+      "id": "S19",
+      "subject": "property state",
+      "rule": "set, get, default reset, face-scoped override and observable glyph effect",
+      "routes": ["ftdriver.FT_Prop_GlyphToScriptMap.map_mutation_affects_autohint_script", "ftdriver.FT_Prop_IncreaseXHeight.limit_changes_autohint_x_height"]
+    },
+    {
+      "id": "S20",
+      "subject": "debug hook state",
+      "rule": "install, replace, ignore invalid index, preserve public hook table",
+      "routes": ["ftmodapi.FT_Set_Debug_Hook.stores_valid_hook"]
+    }
+  ],
+  "default_modules": [
+    {"class": "autofit_module_class", "kind": "module", "runtime_name": "autofitter"},
+    {"class": "tt_driver_class", "kind": "driver", "runtime_name": "truetype"},
+    {"class": "t1_driver_class", "kind": "driver", "runtime_name": "type1"},
+    {"class": "cff_driver_class", "kind": "driver", "runtime_name": "cff"},
+    {"class": "t1cid_driver_class", "kind": "driver", "runtime_name": "t1cid"},
+    {"class": "pfr_driver_class", "kind": "driver", "runtime_name": "pfr"},
+    {"class": "t42_driver_class", "kind": "driver", "runtime_name": "type42"},
+    {"class": "winfnt_driver_class", "kind": "driver", "runtime_name": "winfonts"},
+    {"class": "pcf_driver_class", "kind": "driver", "runtime_name": "pcf"},
+    {"class": "bdf_driver_class", "kind": "driver", "runtime_name": "bdf"},
+    {"class": "psaux_module_class", "kind": "module", "runtime_name": "psaux"},
+    {"class": "psnames_module_class", "kind": "module", "runtime_name": "psnames"},
+    {"class": "pshinter_module_class", "kind": "module", "runtime_name": "pshinter"},
+    {"class": "sfnt_module_class", "kind": "module", "runtime_name": "sfnt"},
+    {"class": "ft_smooth_renderer_class", "kind": "renderer", "runtime_name": "smooth"},
+    {"class": "ft_raster1_renderer_class", "kind": "renderer", "runtime_name": "raster1"},
+    {"class": "ft_sdf_renderer_class", "kind": "renderer", "runtime_name": "sdf"},
+    {"class": "ft_bitmap_sdf_renderer_class", "kind": "renderer", "runtime_name": "bsdf"},
+    {"class": "ft_svg_renderer_class", "kind": "renderer", "runtime_name": "ot-svg"}
+  ],
+  "optional_components": [
+    {"id": "M20", "subject": "cache services", "routes": ["ftcache.FTC_Manager_New.lifecycle_create_lookup_reset_done"]},
+    {"id": "M21", "subject": "gzip stream adapter", "routes": ["ftgzip.FT_Stream_OpenGzip.opens_valid_gzip_stream"]},
+    {"id": "M22", "subject": "LZW stream adapter", "routes": ["ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream", "ftlzw.FT_Stream_OpenLZW.invalid_header_error", "ftlzw.FT_Stream_OpenLZW.null_stream_or_source_error", "ftlzw.FT_Stream_OpenLZW.unsupported_build_error"]},
+    {"id": "M23", "subject": "bzip2 stream adapter", "routes": ["ftbzip2.FT_Stream_OpenBzip2.success_open_valid_bzip2_stream", "ftbzip2.FT_Stream_OpenBzip2.success_read_decompressed_bytes", "ftbzip2.FT_Stream_OpenBzip2.lifecycle_close_does_not_close_source", "ftbzip2.FT_Stream_OpenBzip2.error_null_stream_or_source", "ftbzip2.FT_Stream_OpenBzip2.error_invalid_or_truncated_bzip2_header", "ftbzip2.FT_Stream_OpenBzip2.disabled_build_precedes_null_validation", "ftbzip2.FT_Stream_OpenBzip2.disabled_build_precedes_header_validation", "ftbzip2.FT_Stream_OpenBzip2.out_of_scope_uncompiled_bzip2_policy"]},
+    {"id": "M24", "subject": "OpenType validator", "routes": ["ftotval.FT_OpenType_Validate.selected_tables_success"]},
+    {"id": "M25", "subject": "GX validator", "routes": ["ftgxval.FT_TrueTypeGX_Validate.validates_selected_gx_tables"]},
+    {"id": "M26", "subject": "classic kern validator", "routes": ["ftgxval.FT_ClassicKern_Validate.validates_ms_classic_kern"]}
+  ],
+  "binary_artifacts": [
+    {"id": "A01", "subject": "shared consumer", "probe": "consumer:shared"},
+    {"id": "A02", "subject": "static consumer", "probe": "consumer:static"},
+    {"id": "A03", "subject": "shared exported symbols", "probe": "exports:shared"},
+    {"id": "A04", "subject": "static exported symbols", "probe": "exports:static"},
+    {"id": "A05", "subject": "relocatable SONAME or install-name", "probe": "loader_identity"},
+    {"id": "A06", "subject": "pkg-config metadata", "probe": "pkg_config"},
+    {"id": "A07", "subject": "versioned include and library installation layout", "probe": "install_layout"},
+    {"id": "A08", "subject": "Windows import library", "probe": "windows_import_library"}
+  ],
+  "platform_behaviors": [
+    {"id": "P01", "target": "x86_64-unknown-linux-gnu", "os": "Linux", "data_model": "LP64", "endianness": "little", "ci_marker": "contract-linux-x86_64"},
+    {"id": "P02", "target": "aarch64-apple-darwin", "os": "macOS", "data_model": "LP64", "endianness": "little", "ci_marker": "contract-macos-aarch64"},
+    {"id": "P03", "target": "x86_64-pc-windows-msvc", "os": "Windows", "data_model": "LLP64", "endianness": "little", "ci_marker": "contract-windows-x86_64"},
+    {"id": "P04", "target": "i686-unknown-linux-gnu", "os": "Linux", "data_model": "ILP32", "endianness": "little", "ci_marker": "contract-linux-i686"},
+    {"id": "P05", "target": "powerpc64-unknown-linux-gnu", "os": "Linux", "data_model": "LP64", "endianness": "big", "ci_marker": "contract-linux-powerpc64"}
+  ]
+}

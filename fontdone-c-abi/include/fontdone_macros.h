@@ -1,0 +1,3043 @@
+#ifndef FONTDONE_FREETYPE_2_14_3_MACROS_H
+#define FONTDONE_FREETYPE_2_14_3_MACROS_H
+
+/* Generated from the pinned FreeType 2.14.3 public macro surface.
+ * Regenerate with scripts/generate_c_contract_macros.py.
+ * FreeType-compatible definitions are distributed under FTL.TXT.
+ */
+
+#ifndef FTC_IMAGE_TYPE_COMPARE
+#define FTC_IMAGE_TYPE_COMPARE(d1,d2) ( (d1)->face_id == (d2)->face_id && (d1)->width == (d2)->width && (d1)->flags == (d2)->flags )
+#endif
+#ifndef FT_ADVANCE_FLAG_FAST_ONLY
+#define FT_ADVANCE_FLAG_FAST_ONLY 0x20000000L
+#endif
+#ifndef FT_ANGLE_2PI
+#define FT_ANGLE_2PI ( FT_ANGLE_PI * 2 )
+#endif
+#ifndef FT_ANGLE_PI
+#define FT_ANGLE_PI ( 180L << 16 )
+#endif
+#ifndef FT_ANGLE_PI2
+#define FT_ANGLE_PI2 ( FT_ANGLE_PI / 2 )
+#endif
+#ifndef FT_ANGLE_PI4
+#define FT_ANGLE_PI4 ( FT_ANGLE_PI / 4 )
+#endif
+#ifndef FT_AUTOHINTER_SCRIPT_CJK
+#define FT_AUTOHINTER_SCRIPT_CJK 2
+#endif
+#ifndef FT_AUTOHINTER_SCRIPT_INDIC
+#define FT_AUTOHINTER_SCRIPT_INDIC 3
+#endif
+#ifndef FT_AUTOHINTER_SCRIPT_LATIN
+#define FT_AUTOHINTER_SCRIPT_LATIN 1
+#endif
+#ifndef FT_AUTOHINTER_SCRIPT_NONE
+#define FT_AUTOHINTER_SCRIPT_NONE 0
+#endif
+#ifndef FT_BOOL
+#define FT_BOOL(x) FT_STATIC_CAST( FT_Bool, (x) != 0 )
+#endif
+#ifndef FT_CFF_HINTING_ADOBE
+#define FT_CFF_HINTING_ADOBE FT_HINTING_ADOBE
+#endif
+#ifndef FT_CFF_HINTING_FREETYPE
+#define FT_CFF_HINTING_FREETYPE FT_HINTING_FREETYPE
+#endif
+#ifndef FT_CURVE_TAG
+#define FT_CURVE_TAG(flag) ( flag & 0x03 )
+#endif
+#ifndef FT_CURVE_TAG_CONIC
+#define FT_CURVE_TAG_CONIC 0x00
+#endif
+#ifndef FT_CURVE_TAG_CUBIC
+#define FT_CURVE_TAG_CUBIC 0x02
+#endif
+#ifndef FT_CURVE_TAG_HAS_SCANMODE
+#define FT_CURVE_TAG_HAS_SCANMODE 0x04
+#endif
+#ifndef FT_CURVE_TAG_ON
+#define FT_CURVE_TAG_ON 0x01
+#endif
+#ifndef FT_CURVE_TAG_TOUCH_BOTH
+#define FT_CURVE_TAG_TOUCH_BOTH ( FT_CURVE_TAG_TOUCH_X | FT_CURVE_TAG_TOUCH_Y )
+#endif
+#ifndef FT_CURVE_TAG_TOUCH_X
+#define FT_CURVE_TAG_TOUCH_X 0x08
+#endif
+#ifndef FT_CURVE_TAG_TOUCH_Y
+#define FT_CURVE_TAG_TOUCH_Y 0x10
+#endif
+#ifndef FT_Curve_Tag_Conic
+#define FT_Curve_Tag_Conic FT_CURVE_TAG_CONIC
+#endif
+#ifndef FT_Curve_Tag_Cubic
+#define FT_Curve_Tag_Cubic FT_CURVE_TAG_CUBIC
+#endif
+#ifndef FT_Curve_Tag_On
+#define FT_Curve_Tag_On FT_CURVE_TAG_ON
+#endif
+#ifndef FT_Curve_Tag_Touch_X
+#define FT_Curve_Tag_Touch_X FT_CURVE_TAG_TOUCH_X
+#endif
+#ifndef FT_Curve_Tag_Touch_Y
+#define FT_Curve_Tag_Touch_Y FT_CURVE_TAG_TOUCH_Y
+#endif
+#ifndef FT_DEBUG_HOOK_TRUETYPE
+#define FT_DEBUG_HOOK_TRUETYPE 0
+#endif
+#ifndef FT_DEPRECATED_ATTRIBUTE
+#define FT_DEPRECATED_ATTRIBUTE __attribute__((deprecated))
+#endif
+#ifndef FT_ENC_TAG
+#define FT_ENC_TAG(value,a,b,c,d) value = ( ( FT_STATIC_BYTE_CAST( FT_UInt32, a ) << 24 ) | ( FT_STATIC_BYTE_CAST( FT_UInt32, b ) << 16 ) | ( FT_STATIC_BYTE_CAST( FT_UInt32, c ) << 8 ) | FT_STATIC_BYTE_CAST( FT_UInt32, d ) )
+#endif
+#ifndef FT_ERR
+#define FT_ERR(e) FT_ERR_CAT( FT_ERR_PREFIX, e )
+#endif
+#ifndef FT_ERRORDEF
+#define FT_ERRORDEF(e,v,s) e = v,
+#endif
+#ifndef FT_ERRORDEF_
+#define FT_ERRORDEF_(e,v,s) FT_ERRORDEF(FT_ERR_CAT(FT_ERR_PREFIX, e), v + FT_ERR_BASE, s)
+#endif
+#ifndef FT_ERROR_BASE
+#define FT_ERROR_BASE(x) ( (x) & 0xFF )
+#endif
+#ifndef FT_ERROR_END_LIST
+#define FT_ERROR_END_LIST FT_ERR_CAT(FT_ERR_PREFIX, Max) };
+#endif
+#ifndef FT_ERROR_MODULE
+#define FT_ERROR_MODULE(x) ( (x) & 0xFF00U )
+#endif
+#ifndef FT_ERROR_START_LIST
+#define FT_ERROR_START_LIST enum {
+#endif
+#ifndef FT_ERR_BASE
+#define FT_ERR_BASE 0
+#endif
+#ifndef FT_ERR_CAT
+#define FT_ERR_CAT(x,y) FT_ERR_XCAT( x, y )
+#endif
+#ifndef FT_ERR_EQ
+#define FT_ERR_EQ(x,e) ( FT_ERROR_BASE( x ) == FT_ERROR_BASE( FT_ERR( e ) ) )
+#endif
+#ifndef FT_ERR_NEQ
+#define FT_ERR_NEQ(x,e) ( FT_ERROR_BASE( x ) != FT_ERROR_BASE( FT_ERR( e ) ) )
+#endif
+#ifndef FT_ERR_PREFIX
+#define FT_ERR_PREFIX FT_Err_
+#endif
+#ifndef FT_ERR_PROTOS_DEFINED
+#define FT_ERR_PROTOS_DEFINED 
+#endif
+#ifndef FT_ERR_XCAT
+#define FT_ERR_XCAT(x,y) x ## y
+#endif
+#ifndef FT_FACE_DRIVER_NAME
+#define FT_FACE_DRIVER_NAME(face) ( ( *FT_REINTERPRET_CAST( FT_Module_Class**, ( face )->driver ) )->module_name )
+#endif
+#ifndef FT_FACE_FLAG_CID_KEYED
+#define FT_FACE_FLAG_CID_KEYED ( 1L << 12 )
+#endif
+#ifndef FT_FACE_FLAG_COLOR
+#define FT_FACE_FLAG_COLOR ( 1L << 14 )
+#endif
+#ifndef FT_FACE_FLAG_EXTERNAL_STREAM
+#define FT_FACE_FLAG_EXTERNAL_STREAM ( 1L << 10 )
+#endif
+#ifndef FT_FACE_FLAG_FAST_GLYPHS
+#define FT_FACE_FLAG_FAST_GLYPHS ( 1L << 7 )
+#endif
+#ifndef FT_FACE_FLAG_FIXED_SIZES
+#define FT_FACE_FLAG_FIXED_SIZES ( 1L << 1 )
+#endif
+#ifndef FT_FACE_FLAG_FIXED_WIDTH
+#define FT_FACE_FLAG_FIXED_WIDTH ( 1L << 2 )
+#endif
+#ifndef FT_FACE_FLAG_GLYPH_NAMES
+#define FT_FACE_FLAG_GLYPH_NAMES ( 1L << 9 )
+#endif
+#ifndef FT_FACE_FLAG_HINTER
+#define FT_FACE_FLAG_HINTER ( 1L << 11 )
+#endif
+#ifndef FT_FACE_FLAG_HORIZONTAL
+#define FT_FACE_FLAG_HORIZONTAL ( 1L << 4 )
+#endif
+#ifndef FT_FACE_FLAG_KERNING
+#define FT_FACE_FLAG_KERNING ( 1L << 6 )
+#endif
+#ifndef FT_FACE_FLAG_MULTIPLE_MASTERS
+#define FT_FACE_FLAG_MULTIPLE_MASTERS ( 1L << 8 )
+#endif
+#ifndef FT_FACE_FLAG_SBIX
+#define FT_FACE_FLAG_SBIX ( 1L << 17 )
+#endif
+#ifndef FT_FACE_FLAG_SBIX_OVERLAY
+#define FT_FACE_FLAG_SBIX_OVERLAY ( 1L << 18 )
+#endif
+#ifndef FT_FACE_FLAG_SCALABLE
+#define FT_FACE_FLAG_SCALABLE ( 1L << 0 )
+#endif
+#ifndef FT_FACE_FLAG_SFNT
+#define FT_FACE_FLAG_SFNT ( 1L << 3 )
+#endif
+#ifndef FT_FACE_FLAG_SVG
+#define FT_FACE_FLAG_SVG ( 1L << 16 )
+#endif
+#ifndef FT_FACE_FLAG_TRICKY
+#define FT_FACE_FLAG_TRICKY ( 1L << 13 )
+#endif
+#ifndef FT_FACE_FLAG_VARIATION
+#define FT_FACE_FLAG_VARIATION ( 1L << 15 )
+#endif
+#ifndef FT_FACE_FLAG_VERTICAL
+#define FT_FACE_FLAG_VERTICAL ( 1L << 5 )
+#endif
+#ifndef FT_FSTYPE_BITMAP_EMBEDDING_ONLY
+#define FT_FSTYPE_BITMAP_EMBEDDING_ONLY 0x0200
+#endif
+#ifndef FT_FSTYPE_EDITABLE_EMBEDDING
+#define FT_FSTYPE_EDITABLE_EMBEDDING 0x0008
+#endif
+#ifndef FT_FSTYPE_INSTALLABLE_EMBEDDING
+#define FT_FSTYPE_INSTALLABLE_EMBEDDING 0x0000
+#endif
+#ifndef FT_FSTYPE_NO_SUBSETTING
+#define FT_FSTYPE_NO_SUBSETTING 0x0100
+#endif
+#ifndef FT_FSTYPE_PREVIEW_AND_PRINT_EMBEDDING
+#define FT_FSTYPE_PREVIEW_AND_PRINT_EMBEDDING 0x0004
+#endif
+#ifndef FT_FSTYPE_RESTRICTED_LICENSE_EMBEDDING
+#define FT_FSTYPE_RESTRICTED_LICENSE_EMBEDDING 0x0002
+#endif
+#ifndef FT_GASP_DO_GRAY
+#define FT_GASP_DO_GRAY 0x02
+#endif
+#ifndef FT_GASP_DO_GRIDFIT
+#define FT_GASP_DO_GRIDFIT 0x01
+#endif
+#ifndef FT_GASP_NO_TABLE
+#define FT_GASP_NO_TABLE -1
+#endif
+#ifndef FT_GASP_SYMMETRIC_GRIDFIT
+#define FT_GASP_SYMMETRIC_GRIDFIT 0x04
+#endif
+#ifndef FT_GASP_SYMMETRIC_SMOOTHING
+#define FT_GASP_SYMMETRIC_SMOOTHING 0x08
+#endif
+#ifndef FT_Glyph_BBox_Func
+#define FT_Glyph_BBox_Func FT_Glyph_GetBBoxFunc
+#endif
+#ifndef FT_Glyph_Copy_Func
+#define FT_Glyph_Copy_Func FT_Glyph_CopyFunc
+#endif
+#ifndef FT_Glyph_Done_Func
+#define FT_Glyph_Done_Func FT_Glyph_DoneFunc
+#endif
+#ifndef FT_Glyph_Init_Func
+#define FT_Glyph_Init_Func FT_Glyph_InitFunc
+#endif
+#ifndef FT_Glyph_Prepare_Func
+#define FT_Glyph_Prepare_Func FT_Glyph_PrepareFunc
+#endif
+#ifndef FT_Glyph_Transform_Func
+#define FT_Glyph_Transform_Func FT_Glyph_TransformFunc
+#endif
+#ifndef FT_HAS_COLOR
+#define FT_HAS_COLOR(face) ( !!( (face)->face_flags & FT_FACE_FLAG_COLOR ) )
+#endif
+#ifndef FT_HAS_FAST_GLYPHS
+#define FT_HAS_FAST_GLYPHS(face) 0
+#endif
+#ifndef FT_HAS_FIXED_SIZES
+#define FT_HAS_FIXED_SIZES(face) ( !!( (face)->face_flags & FT_FACE_FLAG_FIXED_SIZES ) )
+#endif
+#ifndef FT_HAS_GLYPH_NAMES
+#define FT_HAS_GLYPH_NAMES(face) ( !!( (face)->face_flags & FT_FACE_FLAG_GLYPH_NAMES ) )
+#endif
+#ifndef FT_HAS_HORIZONTAL
+#define FT_HAS_HORIZONTAL(face) ( !!( (face)->face_flags & FT_FACE_FLAG_HORIZONTAL ) )
+#endif
+#ifndef FT_HAS_KERNING
+#define FT_HAS_KERNING(face) ( !!( (face)->face_flags & FT_FACE_FLAG_KERNING ) )
+#endif
+#ifndef FT_HAS_MULTIPLE_MASTERS
+#define FT_HAS_MULTIPLE_MASTERS(face) ( !!( (face)->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS ) )
+#endif
+#ifndef FT_HAS_SBIX
+#define FT_HAS_SBIX(face) ( !!( (face)->face_flags & FT_FACE_FLAG_SBIX ) )
+#endif
+#ifndef FT_HAS_SBIX_OVERLAY
+#define FT_HAS_SBIX_OVERLAY(face) ( !!( (face)->face_flags & FT_FACE_FLAG_SBIX_OVERLAY ) )
+#endif
+#ifndef FT_HAS_SVG
+#define FT_HAS_SVG(face) ( !!( (face)->face_flags & FT_FACE_FLAG_SVG ) )
+#endif
+#ifndef FT_HAS_VERTICAL
+#define FT_HAS_VERTICAL(face) ( !!( (face)->face_flags & FT_FACE_FLAG_VERTICAL ) )
+#endif
+#ifndef FT_HINTING_ADOBE
+#define FT_HINTING_ADOBE 1
+#endif
+#ifndef FT_HINTING_FREETYPE
+#define FT_HINTING_FREETYPE 0
+#endif
+#ifndef FT_IMAGE_TAG
+#define FT_IMAGE_TAG(value,_x1,_x2,_x3,_x4) value = ( ( FT_STATIC_BYTE_CAST( unsigned long, _x1 ) << 24 ) | ( FT_STATIC_BYTE_CAST( unsigned long, _x2 ) << 16 ) | ( FT_STATIC_BYTE_CAST( unsigned long, _x3 ) << 8 ) | FT_STATIC_BYTE_CAST( unsigned long, _x4 ) )
+#endif
+#ifndef FT_INCLUDE_ERR_PROTOS
+#define FT_INCLUDE_ERR_PROTOS
+#endif
+#ifndef FT_IS_CID_KEYED
+#define FT_IS_CID_KEYED(face) ( !!( (face)->face_flags & FT_FACE_FLAG_CID_KEYED ) )
+#endif
+#ifndef FT_IS_EMPTY
+#define FT_IS_EMPTY(list) ( (list).head == 0 )
+#endif
+#ifndef FT_IS_FIXED_WIDTH
+#define FT_IS_FIXED_WIDTH(face) ( !!( (face)->face_flags & FT_FACE_FLAG_FIXED_WIDTH ) )
+#endif
+#ifndef FT_IS_NAMED_INSTANCE
+#define FT_IS_NAMED_INSTANCE(face) ( !!( (face)->face_index & 0x7FFF0000L ) )
+#endif
+#ifndef FT_IS_SCALABLE
+#define FT_IS_SCALABLE(face) ( !!( (face)->face_flags & FT_FACE_FLAG_SCALABLE ) )
+#endif
+#ifndef FT_IS_SFNT
+#define FT_IS_SFNT(face) ( !!( (face)->face_flags & FT_FACE_FLAG_SFNT ) )
+#endif
+#ifndef FT_IS_TRICKY
+#define FT_IS_TRICKY(face) ( !!( (face)->face_flags & FT_FACE_FLAG_TRICKY ) )
+#endif
+#ifndef FT_IS_VARIATION
+#define FT_IS_VARIATION(face) ( !!( (face)->face_flags & FT_FACE_FLAG_VARIATION ) )
+#endif
+#ifndef FT_LCD_FILTER_FIVE_TAPS
+#define FT_LCD_FILTER_FIVE_TAPS 5
+#endif
+#ifndef FT_LOAD_ADVANCE_ONLY
+#define FT_LOAD_ADVANCE_ONLY ( 1L << 8 )
+#endif
+#ifndef FT_LOAD_BITMAP_METRICS_ONLY
+#define FT_LOAD_BITMAP_METRICS_ONLY ( 1L << 22 )
+#endif
+#ifndef FT_LOAD_COLOR
+#define FT_LOAD_COLOR ( 1L << 20 )
+#endif
+#ifndef FT_LOAD_COMPUTE_METRICS
+#define FT_LOAD_COMPUTE_METRICS ( 1L << 21 )
+#endif
+#ifndef FT_LOAD_CROP_BITMAP
+#define FT_LOAD_CROP_BITMAP ( 1L << 6 )
+#endif
+#ifndef FT_LOAD_DEFAULT
+#define FT_LOAD_DEFAULT 0x0
+#endif
+#ifndef FT_LOAD_FORCE_AUTOHINT
+#define FT_LOAD_FORCE_AUTOHINT ( 1L << 5 )
+#endif
+#ifndef FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH
+#define FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH ( 1L << 9 )
+#endif
+#ifndef FT_LOAD_IGNORE_TRANSFORM
+#define FT_LOAD_IGNORE_TRANSFORM ( 1L << 11 )
+#endif
+#ifndef FT_LOAD_LINEAR_DESIGN
+#define FT_LOAD_LINEAR_DESIGN ( 1L << 13 )
+#endif
+#ifndef FT_LOAD_MONOCHROME
+#define FT_LOAD_MONOCHROME ( 1L << 12 )
+#endif
+#ifndef FT_LOAD_NO_AUTOHINT
+#define FT_LOAD_NO_AUTOHINT ( 1L << 15 )
+#endif
+#ifndef FT_LOAD_NO_BITMAP
+#define FT_LOAD_NO_BITMAP ( 1L << 3 )
+#endif
+#ifndef FT_LOAD_NO_HINTING
+#define FT_LOAD_NO_HINTING ( 1L << 1 )
+#endif
+#ifndef FT_LOAD_NO_RECURSE
+#define FT_LOAD_NO_RECURSE ( 1L << 10 )
+#endif
+#ifndef FT_LOAD_NO_SCALE
+#define FT_LOAD_NO_SCALE ( 1L << 0 )
+#endif
+#ifndef FT_LOAD_NO_SVG
+#define FT_LOAD_NO_SVG ( 1L << 24 )
+#endif
+#ifndef FT_LOAD_PEDANTIC
+#define FT_LOAD_PEDANTIC ( 1L << 7 )
+#endif
+#ifndef FT_LOAD_RENDER
+#define FT_LOAD_RENDER ( 1L << 2 )
+#endif
+#ifndef FT_LOAD_SBITS_ONLY
+#define FT_LOAD_SBITS_ONLY ( 1L << 14 )
+#endif
+#ifndef FT_LOAD_SVG_ONLY
+#define FT_LOAD_SVG_ONLY ( 1L << 23 )
+#endif
+#ifndef FT_LOAD_TARGET_
+#define FT_LOAD_TARGET_(x) ( FT_STATIC_CAST( FT_Int32, (x) & 15 ) << 16 )
+#endif
+#ifndef FT_LOAD_TARGET_LCD
+#define FT_LOAD_TARGET_LCD FT_LOAD_TARGET_( FT_RENDER_MODE_LCD )
+#endif
+#ifndef FT_LOAD_TARGET_LCD_V
+#define FT_LOAD_TARGET_LCD_V FT_LOAD_TARGET_( FT_RENDER_MODE_LCD_V )
+#endif
+#ifndef FT_LOAD_TARGET_LIGHT
+#define FT_LOAD_TARGET_LIGHT FT_LOAD_TARGET_( FT_RENDER_MODE_LIGHT )
+#endif
+#ifndef FT_LOAD_TARGET_MODE
+#define FT_LOAD_TARGET_MODE(x) FT_STATIC_CAST( FT_Render_Mode, ( (x) >> 16 ) & 15 )
+#endif
+#ifndef FT_LOAD_TARGET_MONO
+#define FT_LOAD_TARGET_MONO FT_LOAD_TARGET_( FT_RENDER_MODE_MONO )
+#endif
+#ifndef FT_LOAD_TARGET_NORMAL
+#define FT_LOAD_TARGET_NORMAL FT_LOAD_TARGET_( FT_RENDER_MODE_NORMAL )
+#endif
+#ifndef FT_LOAD_VERTICAL_LAYOUT
+#define FT_LOAD_VERTICAL_LAYOUT ( 1L << 4 )
+#endif
+#ifndef FT_MAKE_TAG
+#define FT_MAKE_TAG(_x1,_x2,_x3,_x4) ( ( FT_STATIC_BYTE_CAST( FT_Tag, _x1 ) << 24 ) | ( FT_STATIC_BYTE_CAST( FT_Tag, _x2 ) << 16 ) | ( FT_STATIC_BYTE_CAST( FT_Tag, _x3 ) << 8 ) | FT_STATIC_BYTE_CAST( FT_Tag, _x4 ) )
+#endif
+#ifndef FT_MODERRDEF
+#define FT_MODERRDEF(e,v,s) FT_Mod_Err_ ## e = 0,
+#endif
+#ifndef FT_MODERR_END_LIST
+#define FT_MODERR_END_LIST FT_Mod_Err_Max };
+#endif
+#ifndef FT_MODERR_START_LIST
+#define FT_MODERR_START_LIST enum {
+#endif
+#ifndef FT_MODULE_DRIVER_HAS_HINTER
+#define FT_MODULE_DRIVER_HAS_HINTER 0x400
+#endif
+#ifndef FT_MODULE_DRIVER_HINTS_LIGHTLY
+#define FT_MODULE_DRIVER_HINTS_LIGHTLY 0x800
+#endif
+#ifndef FT_MODULE_DRIVER_NO_OUTLINES
+#define FT_MODULE_DRIVER_NO_OUTLINES 0x200
+#endif
+#ifndef FT_MODULE_DRIVER_SCALABLE
+#define FT_MODULE_DRIVER_SCALABLE 0x100
+#endif
+#ifndef FT_MODULE_FONT_DRIVER
+#define FT_MODULE_FONT_DRIVER 1
+#endif
+#ifndef FT_MODULE_HINTER
+#define FT_MODULE_HINTER 4
+#endif
+#ifndef FT_MODULE_RENDERER
+#define FT_MODULE_RENDERER 2
+#endif
+#ifndef FT_MODULE_STYLER
+#define FT_MODULE_STYLER 8
+#endif
+#ifndef FT_NEED_EXTERN_C
+#define FT_NEED_EXTERN_C
+#endif
+#ifndef FT_NOERRORDEF_
+#define FT_NOERRORDEF_(e,v,s) FT_ERRORDEF(FT_ERR_CAT(FT_ERR_PREFIX, e), v, s)
+#endif
+#ifndef FT_OPEN_DRIVER
+#define FT_OPEN_DRIVER 0x8
+#endif
+#ifndef FT_OPEN_MEMORY
+#define FT_OPEN_MEMORY 0x1
+#endif
+#ifndef FT_OPEN_PARAMS
+#define FT_OPEN_PARAMS 0x10
+#endif
+#ifndef FT_OPEN_PATHNAME
+#define FT_OPEN_PATHNAME 0x4
+#endif
+#ifndef FT_OPEN_STREAM
+#define FT_OPEN_STREAM 0x2
+#endif
+#ifndef FT_OUTLINE_CONTOURS_MAX
+#define FT_OUTLINE_CONTOURS_MAX USHRT_MAX
+#endif
+#ifndef FT_OUTLINE_EVEN_ODD_FILL
+#define FT_OUTLINE_EVEN_ODD_FILL 0x2
+#endif
+#ifndef FT_OUTLINE_HIGH_PRECISION
+#define FT_OUTLINE_HIGH_PRECISION 0x100
+#endif
+#ifndef FT_OUTLINE_IGNORE_DROPOUTS
+#define FT_OUTLINE_IGNORE_DROPOUTS 0x8
+#endif
+#ifndef FT_OUTLINE_INCLUDE_STUBS
+#define FT_OUTLINE_INCLUDE_STUBS 0x20
+#endif
+#ifndef FT_OUTLINE_NONE
+#define FT_OUTLINE_NONE 0x0
+#endif
+#ifndef FT_OUTLINE_OVERLAP
+#define FT_OUTLINE_OVERLAP 0x40
+#endif
+#ifndef FT_OUTLINE_OWNER
+#define FT_OUTLINE_OWNER 0x1
+#endif
+#ifndef FT_OUTLINE_POINTS_MAX
+#define FT_OUTLINE_POINTS_MAX USHRT_MAX
+#endif
+#ifndef FT_OUTLINE_REVERSE_FILL
+#define FT_OUTLINE_REVERSE_FILL 0x4
+#endif
+#ifndef FT_OUTLINE_SINGLE_PASS
+#define FT_OUTLINE_SINGLE_PASS 0x200
+#endif
+#ifndef FT_OUTLINE_SMART_DROPOUTS
+#define FT_OUTLINE_SMART_DROPOUTS 0x10
+#endif
+#ifndef FT_Outline_ConicTo_Func
+#define FT_Outline_ConicTo_Func FT_Outline_ConicToFunc
+#endif
+#ifndef FT_Outline_CubicTo_Func
+#define FT_Outline_CubicTo_Func FT_Outline_CubicToFunc
+#endif
+#ifndef FT_Outline_LineTo_Func
+#define FT_Outline_LineTo_Func FT_Outline_LineToFunc
+#endif
+#ifndef FT_Outline_MoveTo_Func
+#define FT_Outline_MoveTo_Func FT_Outline_MoveToFunc
+#endif
+#ifndef FT_PALETTE_FOR_DARK_BACKGROUND
+#define FT_PALETTE_FOR_DARK_BACKGROUND 0x02
+#endif
+#ifndef FT_PALETTE_FOR_LIGHT_BACKGROUND
+#define FT_PALETTE_FOR_LIGHT_BACKGROUND 0x01
+#endif
+#ifndef FT_PARAM_TAG_IGNORE_PREFERRED_FAMILY
+#define FT_PARAM_TAG_IGNORE_PREFERRED_FAMILY FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_FAMILY
+#endif
+#ifndef FT_PARAM_TAG_IGNORE_PREFERRED_SUBFAMILY
+#define FT_PARAM_TAG_IGNORE_PREFERRED_SUBFAMILY FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_SUBFAMILY
+#endif
+#ifndef FT_PARAM_TAG_IGNORE_SBIX
+#define FT_PARAM_TAG_IGNORE_SBIX FT_MAKE_TAG( 'i', 's', 'b', 'x' )
+#endif
+#ifndef FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_FAMILY
+#define FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_FAMILY FT_MAKE_TAG( 'i', 'g', 'p', 'f' )
+#endif
+#ifndef FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_SUBFAMILY
+#define FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_SUBFAMILY FT_MAKE_TAG( 'i', 'g', 'p', 's' )
+#endif
+#ifndef FT_PARAM_TAG_INCREMENTAL
+#define FT_PARAM_TAG_INCREMENTAL FT_MAKE_TAG( 'i', 'n', 'c', 'r' )
+#endif
+#ifndef FT_PARAM_TAG_LCD_FILTER_WEIGHTS
+#define FT_PARAM_TAG_LCD_FILTER_WEIGHTS FT_MAKE_TAG( 'l', 'c', 'd', 'f' )
+#endif
+#ifndef FT_PARAM_TAG_RANDOM_SEED
+#define FT_PARAM_TAG_RANDOM_SEED FT_MAKE_TAG( 's', 'e', 'e', 'd' )
+#endif
+#ifndef FT_PARAM_TAG_STEM_DARKENING
+#define FT_PARAM_TAG_STEM_DARKENING FT_MAKE_TAG( 'd', 'a', 'r', 'k' )
+#endif
+#ifndef FT_PARAM_TAG_UNPATENTED_HINTING
+#define FT_PARAM_TAG_UNPATENTED_HINTING FT_MAKE_TAG( 'u', 'n', 'p', 'a' )
+#endif
+#ifndef FT_RASTER_FLAG_AA
+#define FT_RASTER_FLAG_AA 0x1
+#endif
+#ifndef FT_RASTER_FLAG_CLIP
+#define FT_RASTER_FLAG_CLIP 0x4
+#endif
+#ifndef FT_RASTER_FLAG_DEFAULT
+#define FT_RASTER_FLAG_DEFAULT 0x0
+#endif
+#ifndef FT_RASTER_FLAG_DIRECT
+#define FT_RASTER_FLAG_DIRECT 0x2
+#endif
+#ifndef FT_RASTER_FLAG_SDF
+#define FT_RASTER_FLAG_SDF 0x8
+#endif
+#ifndef FT_Raster_Done_Func
+#define FT_Raster_Done_Func FT_Raster_DoneFunc
+#endif
+#ifndef FT_Raster_New_Func
+#define FT_Raster_New_Func FT_Raster_NewFunc
+#endif
+#ifndef FT_Raster_Render_Func
+#define FT_Raster_Render_Func FT_Raster_RenderFunc
+#endif
+#ifndef FT_Raster_Reset_Func
+#define FT_Raster_Reset_Func FT_Raster_ResetFunc
+#endif
+#ifndef FT_Raster_Set_Mode_Func
+#define FT_Raster_Set_Mode_Func FT_Raster_SetModeFunc
+#endif
+#ifndef FT_Raster_Span_Func
+#define FT_Raster_Span_Func FT_SpanFunc
+#endif
+#ifndef FT_STYLE_FLAG_BOLD
+#define FT_STYLE_FLAG_BOLD ( 1 << 1 )
+#endif
+#ifndef FT_STYLE_FLAG_ITALIC
+#define FT_STYLE_FLAG_ITALIC ( 1 << 0 )
+#endif
+#ifndef FT_SUBGLYPH_FLAG_2X2
+#define FT_SUBGLYPH_FLAG_2X2 0x80
+#endif
+#ifndef FT_SUBGLYPH_FLAG_ARGS_ARE_WORDS
+#define FT_SUBGLYPH_FLAG_ARGS_ARE_WORDS 1
+#endif
+#ifndef FT_SUBGLYPH_FLAG_ARGS_ARE_XY_VALUES
+#define FT_SUBGLYPH_FLAG_ARGS_ARE_XY_VALUES 2
+#endif
+#ifndef FT_SUBGLYPH_FLAG_ROUND_XY_TO_GRID
+#define FT_SUBGLYPH_FLAG_ROUND_XY_TO_GRID 4
+#endif
+#ifndef FT_SUBGLYPH_FLAG_SCALE
+#define FT_SUBGLYPH_FLAG_SCALE 8
+#endif
+#ifndef FT_SUBGLYPH_FLAG_USE_MY_METRICS
+#define FT_SUBGLYPH_FLAG_USE_MY_METRICS 0x200
+#endif
+#ifndef FT_SUBGLYPH_FLAG_XY_SCALE
+#define FT_SUBGLYPH_FLAG_XY_SCALE 0x40
+#endif
+#ifndef FT_VALIDATE_APPLE
+#define FT_VALIDATE_APPLE ( FT_VALIDATE_GX_START << 1 )
+#endif
+#ifndef FT_VALIDATE_BASE
+#define FT_VALIDATE_BASE 0x0100
+#endif
+#ifndef FT_VALIDATE_CKERN
+#define FT_VALIDATE_CKERN ( FT_VALIDATE_MS | FT_VALIDATE_APPLE )
+#endif
+#ifndef FT_VALIDATE_GDEF
+#define FT_VALIDATE_GDEF 0x0200
+#endif
+#ifndef FT_VALIDATE_GPOS
+#define FT_VALIDATE_GPOS 0x0400
+#endif
+#ifndef FT_VALIDATE_GSUB
+#define FT_VALIDATE_GSUB 0x0800
+#endif
+#ifndef FT_VALIDATE_GX
+#define FT_VALIDATE_GX ( FT_VALIDATE_feat | FT_VALIDATE_mort | FT_VALIDATE_morx | FT_VALIDATE_bsln | FT_VALIDATE_just | FT_VALIDATE_kern | FT_VALIDATE_opbd | FT_VALIDATE_trak | FT_VALIDATE_prop | FT_VALIDATE_lcar )
+#endif
+#ifndef FT_VALIDATE_GX_BITFIELD
+#define FT_VALIDATE_GX_BITFIELD(tag) ( FT_VALIDATE_GX_START << FT_VALIDATE_##tag##_INDEX )
+#endif
+#ifndef FT_VALIDATE_GX_LAST_INDEX
+#define FT_VALIDATE_GX_LAST_INDEX FT_VALIDATE_lcar_INDEX
+#endif
+#ifndef FT_VALIDATE_GX_LENGTH
+#define FT_VALIDATE_GX_LENGTH ( FT_VALIDATE_GX_LAST_INDEX + 1 )
+#endif
+#ifndef FT_VALIDATE_GX_START
+#define FT_VALIDATE_GX_START 0x4000
+#endif
+#ifndef FT_VALIDATE_JSTF
+#define FT_VALIDATE_JSTF 0x1000
+#endif
+#ifndef FT_VALIDATE_MATH
+#define FT_VALIDATE_MATH 0x2000
+#endif
+#ifndef FT_VALIDATE_MS
+#define FT_VALIDATE_MS ( FT_VALIDATE_GX_START << 0 )
+#endif
+#ifndef FT_VALIDATE_OT
+#define FT_VALIDATE_OT ( FT_VALIDATE_BASE | FT_VALIDATE_GDEF | FT_VALIDATE_GPOS | FT_VALIDATE_GSUB | FT_VALIDATE_JSTF | FT_VALIDATE_MATH )
+#endif
+#ifndef FT_VALIDATE_bsln
+#define FT_VALIDATE_bsln FT_VALIDATE_GX_BITFIELD( bsln )
+#endif
+#ifndef FT_VALIDATE_bsln_INDEX
+#define FT_VALIDATE_bsln_INDEX 3
+#endif
+#ifndef FT_VALIDATE_feat
+#define FT_VALIDATE_feat FT_VALIDATE_GX_BITFIELD( feat )
+#endif
+#ifndef FT_VALIDATE_feat_INDEX
+#define FT_VALIDATE_feat_INDEX 0
+#endif
+#ifndef FT_VALIDATE_just
+#define FT_VALIDATE_just FT_VALIDATE_GX_BITFIELD( just )
+#endif
+#ifndef FT_VALIDATE_just_INDEX
+#define FT_VALIDATE_just_INDEX 4
+#endif
+#ifndef FT_VALIDATE_kern
+#define FT_VALIDATE_kern FT_VALIDATE_GX_BITFIELD( kern )
+#endif
+#ifndef FT_VALIDATE_kern_INDEX
+#define FT_VALIDATE_kern_INDEX 5
+#endif
+#ifndef FT_VALIDATE_lcar
+#define FT_VALIDATE_lcar FT_VALIDATE_GX_BITFIELD( lcar )
+#endif
+#ifndef FT_VALIDATE_lcar_INDEX
+#define FT_VALIDATE_lcar_INDEX 9
+#endif
+#ifndef FT_VALIDATE_mort
+#define FT_VALIDATE_mort FT_VALIDATE_GX_BITFIELD( mort )
+#endif
+#ifndef FT_VALIDATE_mort_INDEX
+#define FT_VALIDATE_mort_INDEX 1
+#endif
+#ifndef FT_VALIDATE_morx
+#define FT_VALIDATE_morx FT_VALIDATE_GX_BITFIELD( morx )
+#endif
+#ifndef FT_VALIDATE_morx_INDEX
+#define FT_VALIDATE_morx_INDEX 2
+#endif
+#ifndef FT_VALIDATE_opbd
+#define FT_VALIDATE_opbd FT_VALIDATE_GX_BITFIELD( opbd )
+#endif
+#ifndef FT_VALIDATE_opbd_INDEX
+#define FT_VALIDATE_opbd_INDEX 6
+#endif
+#ifndef FT_VALIDATE_prop
+#define FT_VALIDATE_prop FT_VALIDATE_GX_BITFIELD( prop )
+#endif
+#ifndef FT_VALIDATE_prop_INDEX
+#define FT_VALIDATE_prop_INDEX 8
+#endif
+#ifndef FT_VALIDATE_trak
+#define FT_VALIDATE_trak FT_VALIDATE_GX_BITFIELD( trak )
+#endif
+#ifndef FT_VALIDATE_trak_INDEX
+#define FT_VALIDATE_trak_INDEX 7
+#endif
+#ifndef FT_VAR_AXIS_FLAG_HIDDEN
+#define FT_VAR_AXIS_FLAG_HIDDEN 1
+#endif
+#ifndef FT_WinFNT_ID_CP1250
+#define FT_WinFNT_ID_CP1250 238
+#endif
+#ifndef FT_WinFNT_ID_CP1251
+#define FT_WinFNT_ID_CP1251 204
+#endif
+#ifndef FT_WinFNT_ID_CP1252
+#define FT_WinFNT_ID_CP1252 0
+#endif
+#ifndef FT_WinFNT_ID_CP1253
+#define FT_WinFNT_ID_CP1253 161
+#endif
+#ifndef FT_WinFNT_ID_CP1254
+#define FT_WinFNT_ID_CP1254 162
+#endif
+#ifndef FT_WinFNT_ID_CP1255
+#define FT_WinFNT_ID_CP1255 177
+#endif
+#ifndef FT_WinFNT_ID_CP1256
+#define FT_WinFNT_ID_CP1256 178
+#endif
+#ifndef FT_WinFNT_ID_CP1257
+#define FT_WinFNT_ID_CP1257 186
+#endif
+#ifndef FT_WinFNT_ID_CP1258
+#define FT_WinFNT_ID_CP1258 163
+#endif
+#ifndef FT_WinFNT_ID_CP1361
+#define FT_WinFNT_ID_CP1361 130
+#endif
+#ifndef FT_WinFNT_ID_CP874
+#define FT_WinFNT_ID_CP874 222
+#endif
+#ifndef FT_WinFNT_ID_CP932
+#define FT_WinFNT_ID_CP932 128
+#endif
+#ifndef FT_WinFNT_ID_CP936
+#define FT_WinFNT_ID_CP936 134
+#endif
+#ifndef FT_WinFNT_ID_CP949
+#define FT_WinFNT_ID_CP949 129
+#endif
+#ifndef FT_WinFNT_ID_CP950
+#define FT_WinFNT_ID_CP950 136
+#endif
+#ifndef FT_WinFNT_ID_DEFAULT
+#define FT_WinFNT_ID_DEFAULT 1
+#endif
+#ifndef FT_WinFNT_ID_MAC
+#define FT_WinFNT_ID_MAC 77
+#endif
+#ifndef FT_WinFNT_ID_OEM
+#define FT_WinFNT_ID_OEM 255
+#endif
+#ifndef FT_WinFNT_ID_SYMBOL
+#define FT_WinFNT_ID_SYMBOL 2
+#endif
+#ifndef T1_MAX_MM_AXIS
+#define T1_MAX_MM_AXIS 4
+#endif
+#ifndef T1_MAX_MM_DESIGNS
+#define T1_MAX_MM_DESIGNS 16
+#endif
+#ifndef T1_MAX_MM_MAP_POINTS
+#define T1_MAX_MM_MAP_POINTS 20
+#endif
+#ifndef TT_ADOBE_ID_CUSTOM
+#define TT_ADOBE_ID_CUSTOM 2
+#endif
+#ifndef TT_ADOBE_ID_EXPERT
+#define TT_ADOBE_ID_EXPERT 1
+#endif
+#ifndef TT_ADOBE_ID_LATIN_1
+#define TT_ADOBE_ID_LATIN_1 3
+#endif
+#ifndef TT_ADOBE_ID_STANDARD
+#define TT_ADOBE_ID_STANDARD 0
+#endif
+#ifndef TT_APPLE_ID_DEFAULT
+#define TT_APPLE_ID_DEFAULT 0
+#endif
+#ifndef TT_APPLE_ID_FULL_UNICODE
+#define TT_APPLE_ID_FULL_UNICODE 6
+#endif
+#ifndef TT_APPLE_ID_ISO_10646
+#define TT_APPLE_ID_ISO_10646 2
+#endif
+#ifndef TT_APPLE_ID_UNICODE_1_1
+#define TT_APPLE_ID_UNICODE_1_1 1
+#endif
+#ifndef TT_APPLE_ID_UNICODE_2_0
+#define TT_APPLE_ID_UNICODE_2_0 3
+#endif
+#ifndef TT_APPLE_ID_UNICODE_32
+#define TT_APPLE_ID_UNICODE_32 4
+#endif
+#ifndef TT_APPLE_ID_VARIANT_SELECTOR
+#define TT_APPLE_ID_VARIANT_SELECTOR 5
+#endif
+#ifndef TT_INTERPRETER_VERSION_35
+#define TT_INTERPRETER_VERSION_35 35
+#endif
+#ifndef TT_INTERPRETER_VERSION_38
+#define TT_INTERPRETER_VERSION_38 38
+#endif
+#ifndef TT_INTERPRETER_VERSION_40
+#define TT_INTERPRETER_VERSION_40 40
+#endif
+#ifndef TT_ISO_ID_10646
+#define TT_ISO_ID_10646 1
+#endif
+#ifndef TT_ISO_ID_7BIT_ASCII
+#define TT_ISO_ID_7BIT_ASCII 0
+#endif
+#ifndef TT_ISO_ID_8859_1
+#define TT_ISO_ID_8859_1 2
+#endif
+#ifndef TT_MAC_ID_ARABIC
+#define TT_MAC_ID_ARABIC 4
+#endif
+#ifndef TT_MAC_ID_ARMENIAN
+#define TT_MAC_ID_ARMENIAN 24
+#endif
+#ifndef TT_MAC_ID_BENGALI
+#define TT_MAC_ID_BENGALI 13
+#endif
+#ifndef TT_MAC_ID_BURMESE
+#define TT_MAC_ID_BURMESE 19
+#endif
+#ifndef TT_MAC_ID_DEVANAGARI
+#define TT_MAC_ID_DEVANAGARI 9
+#endif
+#ifndef TT_MAC_ID_GEEZ
+#define TT_MAC_ID_GEEZ 28
+#endif
+#ifndef TT_MAC_ID_GEORGIAN
+#define TT_MAC_ID_GEORGIAN 23
+#endif
+#ifndef TT_MAC_ID_GREEK
+#define TT_MAC_ID_GREEK 6
+#endif
+#ifndef TT_MAC_ID_GUJARATI
+#define TT_MAC_ID_GUJARATI 11
+#endif
+#ifndef TT_MAC_ID_GURMUKHI
+#define TT_MAC_ID_GURMUKHI 10
+#endif
+#ifndef TT_MAC_ID_HEBREW
+#define TT_MAC_ID_HEBREW 5
+#endif
+#ifndef TT_MAC_ID_JAPANESE
+#define TT_MAC_ID_JAPANESE 1
+#endif
+#ifndef TT_MAC_ID_KANNADA
+#define TT_MAC_ID_KANNADA 16
+#endif
+#ifndef TT_MAC_ID_KHMER
+#define TT_MAC_ID_KHMER 20
+#endif
+#ifndef TT_MAC_ID_KOREAN
+#define TT_MAC_ID_KOREAN 3
+#endif
+#ifndef TT_MAC_ID_LAOTIAN
+#define TT_MAC_ID_LAOTIAN 22
+#endif
+#ifndef TT_MAC_ID_MALAYALAM
+#define TT_MAC_ID_MALAYALAM 17
+#endif
+#ifndef TT_MAC_ID_MALDIVIAN
+#define TT_MAC_ID_MALDIVIAN 25
+#endif
+#ifndef TT_MAC_ID_MONGOLIAN
+#define TT_MAC_ID_MONGOLIAN 27
+#endif
+#ifndef TT_MAC_ID_ORIYA
+#define TT_MAC_ID_ORIYA 12
+#endif
+#ifndef TT_MAC_ID_ROMAN
+#define TT_MAC_ID_ROMAN 0
+#endif
+#ifndef TT_MAC_ID_RSYMBOL
+#define TT_MAC_ID_RSYMBOL 8
+#endif
+#ifndef TT_MAC_ID_RUSSIAN
+#define TT_MAC_ID_RUSSIAN 7
+#endif
+#ifndef TT_MAC_ID_SIMPLIFIED_CHINESE
+#define TT_MAC_ID_SIMPLIFIED_CHINESE 25
+#endif
+#ifndef TT_MAC_ID_SINDHI
+#define TT_MAC_ID_SINDHI 31
+#endif
+#ifndef TT_MAC_ID_SINHALESE
+#define TT_MAC_ID_SINHALESE 18
+#endif
+#ifndef TT_MAC_ID_SLAVIC
+#define TT_MAC_ID_SLAVIC 29
+#endif
+#ifndef TT_MAC_ID_TAMIL
+#define TT_MAC_ID_TAMIL 14
+#endif
+#ifndef TT_MAC_ID_TELUGU
+#define TT_MAC_ID_TELUGU 15
+#endif
+#ifndef TT_MAC_ID_THAI
+#define TT_MAC_ID_THAI 21
+#endif
+#ifndef TT_MAC_ID_TIBETAN
+#define TT_MAC_ID_TIBETAN 26
+#endif
+#ifndef TT_MAC_ID_TRADITIONAL_CHINESE
+#define TT_MAC_ID_TRADITIONAL_CHINESE 2
+#endif
+#ifndef TT_MAC_ID_UNINTERP
+#define TT_MAC_ID_UNINTERP 32
+#endif
+#ifndef TT_MAC_ID_VIETNAMESE
+#define TT_MAC_ID_VIETNAMESE 30
+#endif
+#ifndef TT_MAC_LANGID_AFRIKAANS
+#define TT_MAC_LANGID_AFRIKAANS 141
+#endif
+#ifndef TT_MAC_LANGID_ALBANIAN
+#define TT_MAC_LANGID_ALBANIAN 36
+#endif
+#ifndef TT_MAC_LANGID_AMHARIC
+#define TT_MAC_LANGID_AMHARIC 85
+#endif
+#ifndef TT_MAC_LANGID_ARABIC
+#define TT_MAC_LANGID_ARABIC 12
+#endif
+#ifndef TT_MAC_LANGID_ARMENIAN
+#define TT_MAC_LANGID_ARMENIAN 51
+#endif
+#ifndef TT_MAC_LANGID_ASSAMESE
+#define TT_MAC_LANGID_ASSAMESE 68
+#endif
+#ifndef TT_MAC_LANGID_AYMARA
+#define TT_MAC_LANGID_AYMARA 134
+#endif
+#ifndef TT_MAC_LANGID_AZERBAIJANI
+#define TT_MAC_LANGID_AZERBAIJANI 49
+#endif
+#ifndef TT_MAC_LANGID_AZERBAIJANI_ARABIC_SCRIPT
+#define TT_MAC_LANGID_AZERBAIJANI_ARABIC_SCRIPT 50
+#endif
+#ifndef TT_MAC_LANGID_AZERBAIJANI_CYRILLIC_SCRIPT
+#define TT_MAC_LANGID_AZERBAIJANI_CYRILLIC_SCRIPT 49
+#endif
+#ifndef TT_MAC_LANGID_AZERBAIJANI_ROMAN_SCRIPT
+#define TT_MAC_LANGID_AZERBAIJANI_ROMAN_SCRIPT 150
+#endif
+#ifndef TT_MAC_LANGID_BASQUE
+#define TT_MAC_LANGID_BASQUE 129
+#endif
+#ifndef TT_MAC_LANGID_BENGALI
+#define TT_MAC_LANGID_BENGALI 67
+#endif
+#ifndef TT_MAC_LANGID_BRETON
+#define TT_MAC_LANGID_BRETON 142
+#endif
+#ifndef TT_MAC_LANGID_BULGARIAN
+#define TT_MAC_LANGID_BULGARIAN 44
+#endif
+#ifndef TT_MAC_LANGID_BURMESE
+#define TT_MAC_LANGID_BURMESE 77
+#endif
+#ifndef TT_MAC_LANGID_BYELORUSSIAN
+#define TT_MAC_LANGID_BYELORUSSIAN 46
+#endif
+#ifndef TT_MAC_LANGID_CATALAN
+#define TT_MAC_LANGID_CATALAN 130
+#endif
+#ifndef TT_MAC_LANGID_CHEWA
+#define TT_MAC_LANGID_CHEWA 92
+#endif
+#ifndef TT_MAC_LANGID_CHINESE_SIMPLIFIED
+#define TT_MAC_LANGID_CHINESE_SIMPLIFIED 33
+#endif
+#ifndef TT_MAC_LANGID_CHINESE_TRADITIONAL
+#define TT_MAC_LANGID_CHINESE_TRADITIONAL 19
+#endif
+#ifndef TT_MAC_LANGID_CROATIAN
+#define TT_MAC_LANGID_CROATIAN 18
+#endif
+#ifndef TT_MAC_LANGID_CZECH
+#define TT_MAC_LANGID_CZECH 38
+#endif
+#ifndef TT_MAC_LANGID_DANISH
+#define TT_MAC_LANGID_DANISH 7
+#endif
+#ifndef TT_MAC_LANGID_DUTCH
+#define TT_MAC_LANGID_DUTCH 4
+#endif
+#ifndef TT_MAC_LANGID_DZONGKHA
+#define TT_MAC_LANGID_DZONGKHA 137
+#endif
+#ifndef TT_MAC_LANGID_ENGLISH
+#define TT_MAC_LANGID_ENGLISH 0
+#endif
+#ifndef TT_MAC_LANGID_ESPERANTO
+#define TT_MAC_LANGID_ESPERANTO 94
+#endif
+#ifndef TT_MAC_LANGID_ESTONIAN
+#define TT_MAC_LANGID_ESTONIAN 27
+#endif
+#ifndef TT_MAC_LANGID_FAEROESE
+#define TT_MAC_LANGID_FAEROESE 30
+#endif
+#ifndef TT_MAC_LANGID_FARSI
+#define TT_MAC_LANGID_FARSI 31
+#endif
+#ifndef TT_MAC_LANGID_FINNISH
+#define TT_MAC_LANGID_FINNISH 13
+#endif
+#ifndef TT_MAC_LANGID_FLEMISH
+#define TT_MAC_LANGID_FLEMISH 34
+#endif
+#ifndef TT_MAC_LANGID_FRENCH
+#define TT_MAC_LANGID_FRENCH 1
+#endif
+#ifndef TT_MAC_LANGID_GALICIAN
+#define TT_MAC_LANGID_GALICIAN 140
+#endif
+#ifndef TT_MAC_LANGID_GALLA
+#define TT_MAC_LANGID_GALLA 87
+#endif
+#ifndef TT_MAC_LANGID_GEORGIAN
+#define TT_MAC_LANGID_GEORGIAN 52
+#endif
+#ifndef TT_MAC_LANGID_GERMAN
+#define TT_MAC_LANGID_GERMAN 2
+#endif
+#ifndef TT_MAC_LANGID_GREEK
+#define TT_MAC_LANGID_GREEK 14
+#endif
+#ifndef TT_MAC_LANGID_GREEK_POLYTONIC
+#define TT_MAC_LANGID_GREEK_POLYTONIC 148
+#endif
+#ifndef TT_MAC_LANGID_GREELANDIC
+#define TT_MAC_LANGID_GREELANDIC 149
+#endif
+#ifndef TT_MAC_LANGID_GUARANI
+#define TT_MAC_LANGID_GUARANI 133
+#endif
+#ifndef TT_MAC_LANGID_GUJARATI
+#define TT_MAC_LANGID_GUJARATI 69
+#endif
+#ifndef TT_MAC_LANGID_HEBREW
+#define TT_MAC_LANGID_HEBREW 10
+#endif
+#ifndef TT_MAC_LANGID_HINDI
+#define TT_MAC_LANGID_HINDI 21
+#endif
+#ifndef TT_MAC_LANGID_HUNGARIAN
+#define TT_MAC_LANGID_HUNGARIAN 26
+#endif
+#ifndef TT_MAC_LANGID_ICELANDIC
+#define TT_MAC_LANGID_ICELANDIC 15
+#endif
+#ifndef TT_MAC_LANGID_INDONESIAN
+#define TT_MAC_LANGID_INDONESIAN 81
+#endif
+#ifndef TT_MAC_LANGID_INUKTITUT
+#define TT_MAC_LANGID_INUKTITUT 143
+#endif
+#ifndef TT_MAC_LANGID_IRISH
+#define TT_MAC_LANGID_IRISH 35
+#endif
+#ifndef TT_MAC_LANGID_IRISH_GAELIC
+#define TT_MAC_LANGID_IRISH_GAELIC 146
+#endif
+#ifndef TT_MAC_LANGID_ITALIAN
+#define TT_MAC_LANGID_ITALIAN 3
+#endif
+#ifndef TT_MAC_LANGID_JAPANESE
+#define TT_MAC_LANGID_JAPANESE 11
+#endif
+#ifndef TT_MAC_LANGID_JAVANESE
+#define TT_MAC_LANGID_JAVANESE 138
+#endif
+#ifndef TT_MAC_LANGID_KANNADA
+#define TT_MAC_LANGID_KANNADA 73
+#endif
+#ifndef TT_MAC_LANGID_KASHMIRI
+#define TT_MAC_LANGID_KASHMIRI 61
+#endif
+#ifndef TT_MAC_LANGID_KAZAKH
+#define TT_MAC_LANGID_KAZAKH 48
+#endif
+#ifndef TT_MAC_LANGID_KHMER
+#define TT_MAC_LANGID_KHMER 78
+#endif
+#ifndef TT_MAC_LANGID_KIRGHIZ
+#define TT_MAC_LANGID_KIRGHIZ 54
+#endif
+#ifndef TT_MAC_LANGID_KOREAN
+#define TT_MAC_LANGID_KOREAN 23
+#endif
+#ifndef TT_MAC_LANGID_KURDISH
+#define TT_MAC_LANGID_KURDISH 60
+#endif
+#ifndef TT_MAC_LANGID_LAO
+#define TT_MAC_LANGID_LAO 79
+#endif
+#ifndef TT_MAC_LANGID_LATIN
+#define TT_MAC_LANGID_LATIN 131
+#endif
+#ifndef TT_MAC_LANGID_LETTISH
+#define TT_MAC_LANGID_LETTISH 28
+#endif
+#ifndef TT_MAC_LANGID_LITHUANIAN
+#define TT_MAC_LANGID_LITHUANIAN 24
+#endif
+#ifndef TT_MAC_LANGID_MACEDONIAN
+#define TT_MAC_LANGID_MACEDONIAN 43
+#endif
+#ifndef TT_MAC_LANGID_MALAGASY
+#define TT_MAC_LANGID_MALAGASY 93
+#endif
+#ifndef TT_MAC_LANGID_MALAYALAM
+#define TT_MAC_LANGID_MALAYALAM 72
+#endif
+#ifndef TT_MAC_LANGID_MALAY_ARABIC_SCRIPT
+#define TT_MAC_LANGID_MALAY_ARABIC_SCRIPT 84
+#endif
+#ifndef TT_MAC_LANGID_MALAY_ROMAN_SCRIPT
+#define TT_MAC_LANGID_MALAY_ROMAN_SCRIPT 83
+#endif
+#ifndef TT_MAC_LANGID_MALTESE
+#define TT_MAC_LANGID_MALTESE 16
+#endif
+#ifndef TT_MAC_LANGID_MANX_GAELIC
+#define TT_MAC_LANGID_MANX_GAELIC 145
+#endif
+#ifndef TT_MAC_LANGID_MARATHI
+#define TT_MAC_LANGID_MARATHI 66
+#endif
+#ifndef TT_MAC_LANGID_MOLDAVIAN
+#define TT_MAC_LANGID_MOLDAVIAN 53
+#endif
+#ifndef TT_MAC_LANGID_MONGOLIAN
+#define TT_MAC_LANGID_MONGOLIAN 57
+#endif
+#ifndef TT_MAC_LANGID_MONGOLIAN_CYRILLIC_SCRIPT
+#define TT_MAC_LANGID_MONGOLIAN_CYRILLIC_SCRIPT 58
+#endif
+#ifndef TT_MAC_LANGID_MONGOLIAN_MONGOLIAN_SCRIPT
+#define TT_MAC_LANGID_MONGOLIAN_MONGOLIAN_SCRIPT 57
+#endif
+#ifndef TT_MAC_LANGID_NEPALI
+#define TT_MAC_LANGID_NEPALI 64
+#endif
+#ifndef TT_MAC_LANGID_NORWEGIAN
+#define TT_MAC_LANGID_NORWEGIAN 9
+#endif
+#ifndef TT_MAC_LANGID_ORIYA
+#define TT_MAC_LANGID_ORIYA 71
+#endif
+#ifndef TT_MAC_LANGID_PASHTO
+#define TT_MAC_LANGID_PASHTO 59
+#endif
+#ifndef TT_MAC_LANGID_POLISH
+#define TT_MAC_LANGID_POLISH 25
+#endif
+#ifndef TT_MAC_LANGID_PORTUGUESE
+#define TT_MAC_LANGID_PORTUGUESE 8
+#endif
+#ifndef TT_MAC_LANGID_PUNJABI
+#define TT_MAC_LANGID_PUNJABI 70
+#endif
+#ifndef TT_MAC_LANGID_QUECHUA
+#define TT_MAC_LANGID_QUECHUA 132
+#endif
+#ifndef TT_MAC_LANGID_ROMANIAN
+#define TT_MAC_LANGID_ROMANIAN 37
+#endif
+#ifndef TT_MAC_LANGID_RUANDA
+#define TT_MAC_LANGID_RUANDA 90
+#endif
+#ifndef TT_MAC_LANGID_RUNDI
+#define TT_MAC_LANGID_RUNDI 91
+#endif
+#ifndef TT_MAC_LANGID_RUSSIAN
+#define TT_MAC_LANGID_RUSSIAN 32
+#endif
+#ifndef TT_MAC_LANGID_SAAMISK
+#define TT_MAC_LANGID_SAAMISK 29
+#endif
+#ifndef TT_MAC_LANGID_SANSKRIT
+#define TT_MAC_LANGID_SANSKRIT 65
+#endif
+#ifndef TT_MAC_LANGID_SCOTTISH_GAELIC
+#define TT_MAC_LANGID_SCOTTISH_GAELIC 144
+#endif
+#ifndef TT_MAC_LANGID_SERBIAN
+#define TT_MAC_LANGID_SERBIAN 42
+#endif
+#ifndef TT_MAC_LANGID_SINDHI
+#define TT_MAC_LANGID_SINDHI 62
+#endif
+#ifndef TT_MAC_LANGID_SINHALESE
+#define TT_MAC_LANGID_SINHALESE 76
+#endif
+#ifndef TT_MAC_LANGID_SLOVAK
+#define TT_MAC_LANGID_SLOVAK 39
+#endif
+#ifndef TT_MAC_LANGID_SLOVENIAN
+#define TT_MAC_LANGID_SLOVENIAN 40
+#endif
+#ifndef TT_MAC_LANGID_SOMALI
+#define TT_MAC_LANGID_SOMALI 88
+#endif
+#ifndef TT_MAC_LANGID_SPANISH
+#define TT_MAC_LANGID_SPANISH 6
+#endif
+#ifndef TT_MAC_LANGID_SUNDANESE
+#define TT_MAC_LANGID_SUNDANESE 139
+#endif
+#ifndef TT_MAC_LANGID_SWAHILI
+#define TT_MAC_LANGID_SWAHILI 89
+#endif
+#ifndef TT_MAC_LANGID_SWEDISH
+#define TT_MAC_LANGID_SWEDISH 5
+#endif
+#ifndef TT_MAC_LANGID_TAGALOG
+#define TT_MAC_LANGID_TAGALOG 82
+#endif
+#ifndef TT_MAC_LANGID_TAJIKI
+#define TT_MAC_LANGID_TAJIKI 55
+#endif
+#ifndef TT_MAC_LANGID_TAMIL
+#define TT_MAC_LANGID_TAMIL 74
+#endif
+#ifndef TT_MAC_LANGID_TATAR
+#define TT_MAC_LANGID_TATAR 135
+#endif
+#ifndef TT_MAC_LANGID_TELUGU
+#define TT_MAC_LANGID_TELUGU 75
+#endif
+#ifndef TT_MAC_LANGID_THAI
+#define TT_MAC_LANGID_THAI 22
+#endif
+#ifndef TT_MAC_LANGID_TIBETAN
+#define TT_MAC_LANGID_TIBETAN 63
+#endif
+#ifndef TT_MAC_LANGID_TIGRINYA
+#define TT_MAC_LANGID_TIGRINYA 86
+#endif
+#ifndef TT_MAC_LANGID_TONGAN
+#define TT_MAC_LANGID_TONGAN 147
+#endif
+#ifndef TT_MAC_LANGID_TURKISH
+#define TT_MAC_LANGID_TURKISH 17
+#endif
+#ifndef TT_MAC_LANGID_TURKMEN
+#define TT_MAC_LANGID_TURKMEN 56
+#endif
+#ifndef TT_MAC_LANGID_UIGHUR
+#define TT_MAC_LANGID_UIGHUR 136
+#endif
+#ifndef TT_MAC_LANGID_UKRAINIAN
+#define TT_MAC_LANGID_UKRAINIAN 45
+#endif
+#ifndef TT_MAC_LANGID_URDU
+#define TT_MAC_LANGID_URDU 20
+#endif
+#ifndef TT_MAC_LANGID_UZBEK
+#define TT_MAC_LANGID_UZBEK 47
+#endif
+#ifndef TT_MAC_LANGID_VIETNAMESE
+#define TT_MAC_LANGID_VIETNAMESE 80
+#endif
+#ifndef TT_MAC_LANGID_WELSH
+#define TT_MAC_LANGID_WELSH 128
+#endif
+#ifndef TT_MAC_LANGID_YIDDISH
+#define TT_MAC_LANGID_YIDDISH 41
+#endif
+#ifndef TT_MS_ID_BIG_5
+#define TT_MS_ID_BIG_5 4
+#endif
+#ifndef TT_MS_ID_GB2312
+#define TT_MS_ID_GB2312 TT_MS_ID_PRC
+#endif
+#ifndef TT_MS_ID_JOHAB
+#define TT_MS_ID_JOHAB 6
+#endif
+#ifndef TT_MS_ID_PRC
+#define TT_MS_ID_PRC 3
+#endif
+#ifndef TT_MS_ID_SJIS
+#define TT_MS_ID_SJIS 2
+#endif
+#ifndef TT_MS_ID_SYMBOL_CS
+#define TT_MS_ID_SYMBOL_CS 0
+#endif
+#ifndef TT_MS_ID_UCS_4
+#define TT_MS_ID_UCS_4 10
+#endif
+#ifndef TT_MS_ID_UNICODE_CS
+#define TT_MS_ID_UNICODE_CS 1
+#endif
+#ifndef TT_MS_ID_WANSUNG
+#define TT_MS_ID_WANSUNG 5
+#endif
+#ifndef TT_MS_LANGID_AFRIKAANS_SOUTH_AFRICA
+#define TT_MS_LANGID_AFRIKAANS_SOUTH_AFRICA 0x0436
+#endif
+#ifndef TT_MS_LANGID_ALBANIAN_ALBANIA
+#define TT_MS_LANGID_ALBANIAN_ALBANIA 0x041C
+#endif
+#ifndef TT_MS_LANGID_ALSATIAN_FRANCE
+#define TT_MS_LANGID_ALSATIAN_FRANCE 0x0484
+#endif
+#ifndef TT_MS_LANGID_AMHARIC_ETHIOPIA
+#define TT_MS_LANGID_AMHARIC_ETHIOPIA 0x045E
+#endif
+#ifndef TT_MS_LANGID_ARABIC_ALGERIA
+#define TT_MS_LANGID_ARABIC_ALGERIA 0x1401
+#endif
+#ifndef TT_MS_LANGID_ARABIC_BAHRAIN
+#define TT_MS_LANGID_ARABIC_BAHRAIN 0x3C01
+#endif
+#ifndef TT_MS_LANGID_ARABIC_EGYPT
+#define TT_MS_LANGID_ARABIC_EGYPT 0x0C01
+#endif
+#ifndef TT_MS_LANGID_ARABIC_GENERAL
+#define TT_MS_LANGID_ARABIC_GENERAL 0x0001
+#endif
+#ifndef TT_MS_LANGID_ARABIC_IRAQ
+#define TT_MS_LANGID_ARABIC_IRAQ 0x0801
+#endif
+#ifndef TT_MS_LANGID_ARABIC_JORDAN
+#define TT_MS_LANGID_ARABIC_JORDAN 0x2C01
+#endif
+#ifndef TT_MS_LANGID_ARABIC_KUWAIT
+#define TT_MS_LANGID_ARABIC_KUWAIT 0x3401
+#endif
+#ifndef TT_MS_LANGID_ARABIC_LEBANON
+#define TT_MS_LANGID_ARABIC_LEBANON 0x3001
+#endif
+#ifndef TT_MS_LANGID_ARABIC_LIBYA
+#define TT_MS_LANGID_ARABIC_LIBYA 0x1001
+#endif
+#ifndef TT_MS_LANGID_ARABIC_MOROCCO
+#define TT_MS_LANGID_ARABIC_MOROCCO 0x1801
+#endif
+#ifndef TT_MS_LANGID_ARABIC_OMAN
+#define TT_MS_LANGID_ARABIC_OMAN 0x2001
+#endif
+#ifndef TT_MS_LANGID_ARABIC_QATAR
+#define TT_MS_LANGID_ARABIC_QATAR 0x4001
+#endif
+#ifndef TT_MS_LANGID_ARABIC_SAUDI_ARABIA
+#define TT_MS_LANGID_ARABIC_SAUDI_ARABIA 0x0401
+#endif
+#ifndef TT_MS_LANGID_ARABIC_SYRIA
+#define TT_MS_LANGID_ARABIC_SYRIA 0x2801
+#endif
+#ifndef TT_MS_LANGID_ARABIC_TUNISIA
+#define TT_MS_LANGID_ARABIC_TUNISIA 0x1C01
+#endif
+#ifndef TT_MS_LANGID_ARABIC_UAE
+#define TT_MS_LANGID_ARABIC_UAE 0x3801
+#endif
+#ifndef TT_MS_LANGID_ARABIC_YEMEN
+#define TT_MS_LANGID_ARABIC_YEMEN 0x2401
+#endif
+#ifndef TT_MS_LANGID_ARMENIAN_ARMENIA
+#define TT_MS_LANGID_ARMENIAN_ARMENIA 0x042B
+#endif
+#ifndef TT_MS_LANGID_ASSAMESE_INDIA
+#define TT_MS_LANGID_ASSAMESE_INDIA 0x044D
+#endif
+#ifndef TT_MS_LANGID_AZERI_AZERBAIJAN_CYRILLIC
+#define TT_MS_LANGID_AZERI_AZERBAIJAN_CYRILLIC 0x082C
+#endif
+#ifndef TT_MS_LANGID_AZERI_AZERBAIJAN_LATIN
+#define TT_MS_LANGID_AZERI_AZERBAIJAN_LATIN 0x042C
+#endif
+#ifndef TT_MS_LANGID_BASHKIR_RUSSIA
+#define TT_MS_LANGID_BASHKIR_RUSSIA 0x046D
+#endif
+#ifndef TT_MS_LANGID_BASQUE_BASQUE
+#define TT_MS_LANGID_BASQUE_BASQUE 0x042D
+#endif
+#ifndef TT_MS_LANGID_BASQUE_SPAIN
+#define TT_MS_LANGID_BASQUE_SPAIN TT_MS_LANGID_BASQUE_BASQUE
+#endif
+#ifndef TT_MS_LANGID_BELARUSIAN_BELARUS
+#define TT_MS_LANGID_BELARUSIAN_BELARUS 0x0423
+#endif
+#ifndef TT_MS_LANGID_BENGALI_BANGLADESH
+#define TT_MS_LANGID_BENGALI_BANGLADESH 0x0845
+#endif
+#ifndef TT_MS_LANGID_BENGALI_INDIA
+#define TT_MS_LANGID_BENGALI_INDIA 0x0445
+#endif
+#ifndef TT_MS_LANGID_BOSNIAN_BOSNIA_HERZEGOVINA
+#define TT_MS_LANGID_BOSNIAN_BOSNIA_HERZEGOVINA 0x141A
+#endif
+#ifndef TT_MS_LANGID_BOSNIAN_BOSNIA_HERZ_CYRILLIC
+#define TT_MS_LANGID_BOSNIAN_BOSNIA_HERZ_CYRILLIC 0x201A
+#endif
+#ifndef TT_MS_LANGID_BRETON_FRANCE
+#define TT_MS_LANGID_BRETON_FRANCE 0x047E
+#endif
+#ifndef TT_MS_LANGID_BULGARIAN_BULGARIA
+#define TT_MS_LANGID_BULGARIAN_BULGARIA 0x0402
+#endif
+#ifndef TT_MS_LANGID_BURMESE_MYANMAR
+#define TT_MS_LANGID_BURMESE_MYANMAR 0x0455
+#endif
+#ifndef TT_MS_LANGID_CATALAN_CATALAN
+#define TT_MS_LANGID_CATALAN_CATALAN 0x0403
+#endif
+#ifndef TT_MS_LANGID_CATALAN_SPAIN
+#define TT_MS_LANGID_CATALAN_SPAIN TT_MS_LANGID_CATALAN_CATALAN
+#endif
+#ifndef TT_MS_LANGID_CHEROKEE_UNITED_STATES
+#define TT_MS_LANGID_CHEROKEE_UNITED_STATES 0x045C
+#endif
+#ifndef TT_MS_LANGID_CHINESE_GENERAL
+#define TT_MS_LANGID_CHINESE_GENERAL 0x0004
+#endif
+#ifndef TT_MS_LANGID_CHINESE_HONG_KONG
+#define TT_MS_LANGID_CHINESE_HONG_KONG 0x0C04
+#endif
+#ifndef TT_MS_LANGID_CHINESE_MACAO
+#define TT_MS_LANGID_CHINESE_MACAO 0x1404
+#endif
+#ifndef TT_MS_LANGID_CHINESE_MACAU
+#define TT_MS_LANGID_CHINESE_MACAU TT_MS_LANGID_CHINESE_MACAO
+#endif
+#ifndef TT_MS_LANGID_CHINESE_PRC
+#define TT_MS_LANGID_CHINESE_PRC 0x0804
+#endif
+#ifndef TT_MS_LANGID_CHINESE_SINGAPORE
+#define TT_MS_LANGID_CHINESE_SINGAPORE 0x1004
+#endif
+#ifndef TT_MS_LANGID_CHINESE_TAIWAN
+#define TT_MS_LANGID_CHINESE_TAIWAN 0x0404
+#endif
+#ifndef TT_MS_LANGID_CLASSIC_LITHUANIAN_LITHUANIA
+#define TT_MS_LANGID_CLASSIC_LITHUANIAN_LITHUANIA 0x0827
+#endif
+#ifndef TT_MS_LANGID_CORSICAN_FRANCE
+#define TT_MS_LANGID_CORSICAN_FRANCE 0x0483
+#endif
+#ifndef TT_MS_LANGID_CROATIAN_BOSNIA_HERZEGOVINA
+#define TT_MS_LANGID_CROATIAN_BOSNIA_HERZEGOVINA 0x101A
+#endif
+#ifndef TT_MS_LANGID_CROATIAN_CROATIA
+#define TT_MS_LANGID_CROATIAN_CROATIA 0x041A
+#endif
+#ifndef TT_MS_LANGID_CZECH_CZECH_REPUBLIC
+#define TT_MS_LANGID_CZECH_CZECH_REPUBLIC 0x0405
+#endif
+#ifndef TT_MS_LANGID_DANISH_DENMARK
+#define TT_MS_LANGID_DANISH_DENMARK 0x0406
+#endif
+#ifndef TT_MS_LANGID_DARI_AFGHANISTAN
+#define TT_MS_LANGID_DARI_AFGHANISTAN 0x048C
+#endif
+#ifndef TT_MS_LANGID_DHIVEHI_MALDIVES
+#define TT_MS_LANGID_DHIVEHI_MALDIVES 0x0465
+#endif
+#ifndef TT_MS_LANGID_DIVEHI_MALDIVES
+#define TT_MS_LANGID_DIVEHI_MALDIVES TT_MS_LANGID_DHIVEHI_MALDIVES
+#endif
+#ifndef TT_MS_LANGID_DUTCH_BELGIUM
+#define TT_MS_LANGID_DUTCH_BELGIUM 0x0813
+#endif
+#ifndef TT_MS_LANGID_DUTCH_NETHERLANDS
+#define TT_MS_LANGID_DUTCH_NETHERLANDS 0x0413
+#endif
+#ifndef TT_MS_LANGID_DZONGHKA_BHUTAN
+#define TT_MS_LANGID_DZONGHKA_BHUTAN 0x0851
+#endif
+#ifndef TT_MS_LANGID_EDO_NIGERIA
+#define TT_MS_LANGID_EDO_NIGERIA 0x0466
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_AUSTRALIA
+#define TT_MS_LANGID_ENGLISH_AUSTRALIA 0x0C09
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_BELIZE
+#define TT_MS_LANGID_ENGLISH_BELIZE 0x2809
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_CANADA
+#define TT_MS_LANGID_ENGLISH_CANADA 0x1009
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_CARIBBEAN
+#define TT_MS_LANGID_ENGLISH_CARIBBEAN 0x2409
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_GENERAL
+#define TT_MS_LANGID_ENGLISH_GENERAL 0x0009
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_HONG_KONG
+#define TT_MS_LANGID_ENGLISH_HONG_KONG 0x3C09
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_INDIA
+#define TT_MS_LANGID_ENGLISH_INDIA 0x4009
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_INDONESIA
+#define TT_MS_LANGID_ENGLISH_INDONESIA 0x3809
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_IRELAND
+#define TT_MS_LANGID_ENGLISH_IRELAND 0x1809
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_JAMAICA
+#define TT_MS_LANGID_ENGLISH_JAMAICA 0x2009
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_MALAYSIA
+#define TT_MS_LANGID_ENGLISH_MALAYSIA 0x4409
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_NEW_ZEALAND
+#define TT_MS_LANGID_ENGLISH_NEW_ZEALAND 0x1409
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_PHILIPPINES
+#define TT_MS_LANGID_ENGLISH_PHILIPPINES 0x3409
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_SINGAPORE
+#define TT_MS_LANGID_ENGLISH_SINGAPORE 0x4809
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_SOUTH_AFRICA
+#define TT_MS_LANGID_ENGLISH_SOUTH_AFRICA 0x1C09
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_TRINIDAD
+#define TT_MS_LANGID_ENGLISH_TRINIDAD 0x2C09
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_UNITED_KINGDOM
+#define TT_MS_LANGID_ENGLISH_UNITED_KINGDOM 0x0809
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_UNITED_STATES
+#define TT_MS_LANGID_ENGLISH_UNITED_STATES 0x0409
+#endif
+#ifndef TT_MS_LANGID_ENGLISH_ZIMBABWE
+#define TT_MS_LANGID_ENGLISH_ZIMBABWE 0x3009
+#endif
+#ifndef TT_MS_LANGID_ESTONIAN_ESTONIA
+#define TT_MS_LANGID_ESTONIAN_ESTONIA 0x0425
+#endif
+#ifndef TT_MS_LANGID_FAEROESE_FAEROE_ISLANDS
+#define TT_MS_LANGID_FAEROESE_FAEROE_ISLANDS 0x0438
+#endif
+#ifndef TT_MS_LANGID_FARSI_IRAN
+#define TT_MS_LANGID_FARSI_IRAN 0x0429
+#endif
+#ifndef TT_MS_LANGID_FILIPINO_PHILIPPINES
+#define TT_MS_LANGID_FILIPINO_PHILIPPINES 0x0464
+#endif
+#ifndef TT_MS_LANGID_FINNISH_FINLAND
+#define TT_MS_LANGID_FINNISH_FINLAND 0x040B
+#endif
+#ifndef TT_MS_LANGID_FRENCH_BELGIUM
+#define TT_MS_LANGID_FRENCH_BELGIUM 0x080C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_CAMEROON
+#define TT_MS_LANGID_FRENCH_CAMEROON 0x2C0C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_CANADA
+#define TT_MS_LANGID_FRENCH_CANADA 0x0C0C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_CONGO
+#define TT_MS_LANGID_FRENCH_CONGO 0x240C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_COTE_D_IVOIRE
+#define TT_MS_LANGID_FRENCH_COTE_D_IVOIRE 0x300C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_FRANCE
+#define TT_MS_LANGID_FRENCH_FRANCE 0x040C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_HAITI
+#define TT_MS_LANGID_FRENCH_HAITI 0x3C0C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_LUXEMBOURG
+#define TT_MS_LANGID_FRENCH_LUXEMBOURG 0x140C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_MALI
+#define TT_MS_LANGID_FRENCH_MALI 0x340C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_MONACO
+#define TT_MS_LANGID_FRENCH_MONACO 0x180C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_MOROCCO
+#define TT_MS_LANGID_FRENCH_MOROCCO 0x380C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_NORTH_AFRICA
+#define TT_MS_LANGID_FRENCH_NORTH_AFRICA 0xE40CU
+#endif
+#ifndef TT_MS_LANGID_FRENCH_REUNION
+#define TT_MS_LANGID_FRENCH_REUNION 0x200C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_SENEGAL
+#define TT_MS_LANGID_FRENCH_SENEGAL 0x280C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_SWITZERLAND
+#define TT_MS_LANGID_FRENCH_SWITZERLAND 0x100C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_WEST_INDIES
+#define TT_MS_LANGID_FRENCH_WEST_INDIES 0x1C0C
+#endif
+#ifndef TT_MS_LANGID_FRENCH_ZAIRE
+#define TT_MS_LANGID_FRENCH_ZAIRE TT_MS_LANGID_FRENCH_CONGO
+#endif
+#ifndef TT_MS_LANGID_FRISIAN_NETHERLANDS
+#define TT_MS_LANGID_FRISIAN_NETHERLANDS 0x0462
+#endif
+#ifndef TT_MS_LANGID_FULFULDE_NIGERIA
+#define TT_MS_LANGID_FULFULDE_NIGERIA 0x0467
+#endif
+#ifndef TT_MS_LANGID_GALICIAN_GALICIAN
+#define TT_MS_LANGID_GALICIAN_GALICIAN 0x0456
+#endif
+#ifndef TT_MS_LANGID_GALICIAN_SPAIN
+#define TT_MS_LANGID_GALICIAN_SPAIN TT_MS_LANGID_GALICIAN_GALICIAN
+#endif
+#ifndef TT_MS_LANGID_GEORGIAN_GEORGIA
+#define TT_MS_LANGID_GEORGIAN_GEORGIA 0x0437
+#endif
+#ifndef TT_MS_LANGID_GERMAN_AUSTRIA
+#define TT_MS_LANGID_GERMAN_AUSTRIA 0x0C07
+#endif
+#ifndef TT_MS_LANGID_GERMAN_GERMANY
+#define TT_MS_LANGID_GERMAN_GERMANY 0x0407
+#endif
+#ifndef TT_MS_LANGID_GERMAN_LIECHTENSTEI
+#define TT_MS_LANGID_GERMAN_LIECHTENSTEI TT_MS_LANGID_GERMAN_LIECHTENSTEIN
+#endif
+#ifndef TT_MS_LANGID_GERMAN_LIECHTENSTEIN
+#define TT_MS_LANGID_GERMAN_LIECHTENSTEIN 0x1407
+#endif
+#ifndef TT_MS_LANGID_GERMAN_LUXEMBOURG
+#define TT_MS_LANGID_GERMAN_LUXEMBOURG 0x1007
+#endif
+#ifndef TT_MS_LANGID_GERMAN_SWITZERLAND
+#define TT_MS_LANGID_GERMAN_SWITZERLAND 0x0807
+#endif
+#ifndef TT_MS_LANGID_GREEK_GREECE
+#define TT_MS_LANGID_GREEK_GREECE 0x0408
+#endif
+#ifndef TT_MS_LANGID_GREENLANDIC_GREENLAND
+#define TT_MS_LANGID_GREENLANDIC_GREENLAND 0x046F
+#endif
+#ifndef TT_MS_LANGID_GUARANI_PARAGUAY
+#define TT_MS_LANGID_GUARANI_PARAGUAY 0x0474
+#endif
+#ifndef TT_MS_LANGID_GUJARATI_INDIA
+#define TT_MS_LANGID_GUJARATI_INDIA 0x0447
+#endif
+#ifndef TT_MS_LANGID_HAUSA_NIGERIA
+#define TT_MS_LANGID_HAUSA_NIGERIA 0x0468
+#endif
+#ifndef TT_MS_LANGID_HAWAIIAN_UNITED_STATES
+#define TT_MS_LANGID_HAWAIIAN_UNITED_STATES 0x0475
+#endif
+#ifndef TT_MS_LANGID_HEBREW_ISRAEL
+#define TT_MS_LANGID_HEBREW_ISRAEL 0x040D
+#endif
+#ifndef TT_MS_LANGID_HINDI_INDIA
+#define TT_MS_LANGID_HINDI_INDIA 0x0439
+#endif
+#ifndef TT_MS_LANGID_HUNGARIAN_HUNGARY
+#define TT_MS_LANGID_HUNGARIAN_HUNGARY 0x040E
+#endif
+#ifndef TT_MS_LANGID_IBIBIO_NIGERIA
+#define TT_MS_LANGID_IBIBIO_NIGERIA 0x0469
+#endif
+#ifndef TT_MS_LANGID_ICELANDIC_ICELAND
+#define TT_MS_LANGID_ICELANDIC_ICELAND 0x040F
+#endif
+#ifndef TT_MS_LANGID_IGBO_NIGERIA
+#define TT_MS_LANGID_IGBO_NIGERIA 0x0470
+#endif
+#ifndef TT_MS_LANGID_INDONESIAN_INDONESIA
+#define TT_MS_LANGID_INDONESIAN_INDONESIA 0x0421
+#endif
+#ifndef TT_MS_LANGID_INUKTITUT_CANADA
+#define TT_MS_LANGID_INUKTITUT_CANADA 0x045D
+#endif
+#ifndef TT_MS_LANGID_INUKTITUT_CANADA_LATIN
+#define TT_MS_LANGID_INUKTITUT_CANADA_LATIN 0x085D
+#endif
+#ifndef TT_MS_LANGID_IRISH_GAELIC_IRELAND
+#define TT_MS_LANGID_IRISH_GAELIC_IRELAND 0x043C
+#endif
+#ifndef TT_MS_LANGID_IRISH_IRELAND
+#define TT_MS_LANGID_IRISH_IRELAND 0x083C
+#endif
+#ifndef TT_MS_LANGID_ISIXHOSA_SOUTH_AFRICA
+#define TT_MS_LANGID_ISIXHOSA_SOUTH_AFRICA 0x0434
+#endif
+#ifndef TT_MS_LANGID_ISIZULU_SOUTH_AFRICA
+#define TT_MS_LANGID_ISIZULU_SOUTH_AFRICA 0x0435
+#endif
+#ifndef TT_MS_LANGID_ITALIAN_ITALY
+#define TT_MS_LANGID_ITALIAN_ITALY 0x0410
+#endif
+#ifndef TT_MS_LANGID_ITALIAN_SWITZERLAND
+#define TT_MS_LANGID_ITALIAN_SWITZERLAND 0x0810
+#endif
+#ifndef TT_MS_LANGID_JAPANESE_JAPAN
+#define TT_MS_LANGID_JAPANESE_JAPAN 0x0411
+#endif
+#ifndef TT_MS_LANGID_KANNADA_INDIA
+#define TT_MS_LANGID_KANNADA_INDIA 0x044B
+#endif
+#ifndef TT_MS_LANGID_KANURI_NIGERIA
+#define TT_MS_LANGID_KANURI_NIGERIA 0x0471
+#endif
+#ifndef TT_MS_LANGID_KASHMIRI_INDIA
+#define TT_MS_LANGID_KASHMIRI_INDIA TT_MS_LANGID_KASHMIRI_SASIA
+#endif
+#ifndef TT_MS_LANGID_KASHMIRI_PAKISTAN
+#define TT_MS_LANGID_KASHMIRI_PAKISTAN 0x0460
+#endif
+#ifndef TT_MS_LANGID_KASHMIRI_SASIA
+#define TT_MS_LANGID_KASHMIRI_SASIA 0x0860
+#endif
+#ifndef TT_MS_LANGID_KAZAKH_KAZAKHSTAN
+#define TT_MS_LANGID_KAZAKH_KAZAKHSTAN 0x043F
+#endif
+#ifndef TT_MS_LANGID_KAZAK_KAZAKSTAN
+#define TT_MS_LANGID_KAZAK_KAZAKSTAN TT_MS_LANGID_KAZAKH_KAZAKHSTAN
+#endif
+#ifndef TT_MS_LANGID_KHMER_CAMBODIA
+#define TT_MS_LANGID_KHMER_CAMBODIA 0x0453
+#endif
+#ifndef TT_MS_LANGID_KICHE_GUATEMALA
+#define TT_MS_LANGID_KICHE_GUATEMALA 0x0486
+#endif
+#ifndef TT_MS_LANGID_KINYARWANDA_RWANDA
+#define TT_MS_LANGID_KINYARWANDA_RWANDA 0x0487
+#endif
+#ifndef TT_MS_LANGID_KIRGHIZ_KIRGHIZSTAN
+#define TT_MS_LANGID_KIRGHIZ_KIRGHIZSTAN TT_MS_LANGID_KYRGYZ_KYRGYZSTAN
+#endif
+#ifndef TT_MS_LANGID_KIRGHIZ_KIRGHIZ_REPUBLIC
+#define TT_MS_LANGID_KIRGHIZ_KIRGHIZ_REPUBLIC TT_MS_LANGID_KYRGYZ_KYRGYZSTAN
+#endif
+#ifndef TT_MS_LANGID_KISWAHILI_KENYA
+#define TT_MS_LANGID_KISWAHILI_KENYA 0x0441
+#endif
+#ifndef TT_MS_LANGID_KONKANI_INDIA
+#define TT_MS_LANGID_KONKANI_INDIA 0x0457
+#endif
+#ifndef TT_MS_LANGID_KOREAN_EXTENDED_WANSUNG_KOREA
+#define TT_MS_LANGID_KOREAN_EXTENDED_WANSUNG_KOREA TT_MS_LANGID_KOREAN_KOREA
+#endif
+#ifndef TT_MS_LANGID_KOREAN_JOHAB_KOREA
+#define TT_MS_LANGID_KOREAN_JOHAB_KOREA 0x0812
+#endif
+#ifndef TT_MS_LANGID_KOREAN_KOREA
+#define TT_MS_LANGID_KOREAN_KOREA 0x0412
+#endif
+#ifndef TT_MS_LANGID_KYRGYZ_KYRGYZSTAN
+#define TT_MS_LANGID_KYRGYZ_KYRGYZSTAN 0x0440
+#endif
+#ifndef TT_MS_LANGID_LAO_LAOS
+#define TT_MS_LANGID_LAO_LAOS 0x0454
+#endif
+#ifndef TT_MS_LANGID_LATIN
+#define TT_MS_LANGID_LATIN 0x0476
+#endif
+#ifndef TT_MS_LANGID_LATVIAN_LATVIA
+#define TT_MS_LANGID_LATVIAN_LATVIA 0x0426
+#endif
+#ifndef TT_MS_LANGID_LITHUANIAN_LITHUANIA
+#define TT_MS_LANGID_LITHUANIAN_LITHUANIA 0x0427
+#endif
+#ifndef TT_MS_LANGID_LOWER_SORBIAN_GERMANY
+#define TT_MS_LANGID_LOWER_SORBIAN_GERMANY 0x082E
+#endif
+#ifndef TT_MS_LANGID_LUXEMBOURGISH_LUXEMBOURG
+#define TT_MS_LANGID_LUXEMBOURGISH_LUXEMBOURG 0x046E
+#endif
+#ifndef TT_MS_LANGID_MACEDONIAN_MACEDONIA
+#define TT_MS_LANGID_MACEDONIAN_MACEDONIA 0x042F
+#endif
+#ifndef TT_MS_LANGID_MALAYALAM_INDIA
+#define TT_MS_LANGID_MALAYALAM_INDIA 0x044C
+#endif
+#ifndef TT_MS_LANGID_MALAY_BRUNEI_DARUSSALAM
+#define TT_MS_LANGID_MALAY_BRUNEI_DARUSSALAM 0x083E
+#endif
+#ifndef TT_MS_LANGID_MALAY_MALAYSIA
+#define TT_MS_LANGID_MALAY_MALAYSIA 0x043E
+#endif
+#ifndef TT_MS_LANGID_MALTESE_MALTA
+#define TT_MS_LANGID_MALTESE_MALTA 0x043A
+#endif
+#ifndef TT_MS_LANGID_MANIPURI_INDIA
+#define TT_MS_LANGID_MANIPURI_INDIA 0x0458
+#endif
+#ifndef TT_MS_LANGID_MAORI_NEW_ZEALAND
+#define TT_MS_LANGID_MAORI_NEW_ZEALAND 0x0481
+#endif
+#ifndef TT_MS_LANGID_MAPUDUNGUN_CHILE
+#define TT_MS_LANGID_MAPUDUNGUN_CHILE 0x047A
+#endif
+#ifndef TT_MS_LANGID_MARATHI_INDIA
+#define TT_MS_LANGID_MARATHI_INDIA 0x044E
+#endif
+#ifndef TT_MS_LANGID_MOHAWK_MOHAWK
+#define TT_MS_LANGID_MOHAWK_MOHAWK 0x047C
+#endif
+#ifndef TT_MS_LANGID_MOLDAVIAN_MOLDAVIA
+#define TT_MS_LANGID_MOLDAVIAN_MOLDAVIA 0x0818
+#endif
+#ifndef TT_MS_LANGID_MONGOLIAN_MONGOLIA
+#define TT_MS_LANGID_MONGOLIAN_MONGOLIA 0x0450
+#endif
+#ifndef TT_MS_LANGID_MONGOLIAN_MONGOLIA_MONGOLIAN
+#define TT_MS_LANGID_MONGOLIAN_MONGOLIA_MONGOLIAN TT_MS_LANGID_MONGOLIAN_PRC
+#endif
+#ifndef TT_MS_LANGID_MONGOLIAN_PRC
+#define TT_MS_LANGID_MONGOLIAN_PRC 0x0850
+#endif
+#ifndef TT_MS_LANGID_NEPALI_INDIA
+#define TT_MS_LANGID_NEPALI_INDIA 0x0861
+#endif
+#ifndef TT_MS_LANGID_NEPALI_NEPAL
+#define TT_MS_LANGID_NEPALI_NEPAL 0x0461
+#endif
+#ifndef TT_MS_LANGID_NORWEGIAN_NORWAY_BOKMAL
+#define TT_MS_LANGID_NORWEGIAN_NORWAY_BOKMAL 0x0414
+#endif
+#ifndef TT_MS_LANGID_NORWEGIAN_NORWAY_NYNORSK
+#define TT_MS_LANGID_NORWEGIAN_NORWAY_NYNORSK 0x0814
+#endif
+#ifndef TT_MS_LANGID_OCCITAN_FRANCE
+#define TT_MS_LANGID_OCCITAN_FRANCE 0x0482
+#endif
+#ifndef TT_MS_LANGID_ODIA_INDIA
+#define TT_MS_LANGID_ODIA_INDIA 0x0448
+#endif
+#ifndef TT_MS_LANGID_ORIYA_INDIA
+#define TT_MS_LANGID_ORIYA_INDIA TT_MS_LANGID_ODIA_INDIA
+#endif
+#ifndef TT_MS_LANGID_OROMO_ETHIOPIA
+#define TT_MS_LANGID_OROMO_ETHIOPIA 0x0472
+#endif
+#ifndef TT_MS_LANGID_PAPIAMENTU_NETHERLANDS_ANTILLES
+#define TT_MS_LANGID_PAPIAMENTU_NETHERLANDS_ANTILLES 0x0479
+#endif
+#ifndef TT_MS_LANGID_PASHTO_AFGHANISTAN
+#define TT_MS_LANGID_PASHTO_AFGHANISTAN 0x0463
+#endif
+#ifndef TT_MS_LANGID_POLISH_POLAND
+#define TT_MS_LANGID_POLISH_POLAND 0x0415
+#endif
+#ifndef TT_MS_LANGID_PORTUGUESE_BRAZIL
+#define TT_MS_LANGID_PORTUGUESE_BRAZIL 0x0416
+#endif
+#ifndef TT_MS_LANGID_PORTUGUESE_PORTUGAL
+#define TT_MS_LANGID_PORTUGUESE_PORTUGAL 0x0816
+#endif
+#ifndef TT_MS_LANGID_PUNJABI_ARABIC_PAKISTAN
+#define TT_MS_LANGID_PUNJABI_ARABIC_PAKISTAN 0x0846
+#endif
+#ifndef TT_MS_LANGID_PUNJABI_INDIA
+#define TT_MS_LANGID_PUNJABI_INDIA 0x0446
+#endif
+#ifndef TT_MS_LANGID_QUECHUA_BOLIVIA
+#define TT_MS_LANGID_QUECHUA_BOLIVIA 0x046B
+#endif
+#ifndef TT_MS_LANGID_QUECHUA_ECUADOR
+#define TT_MS_LANGID_QUECHUA_ECUADOR 0x086B
+#endif
+#ifndef TT_MS_LANGID_QUECHUA_PERU
+#define TT_MS_LANGID_QUECHUA_PERU 0x0C6B
+#endif
+#ifndef TT_MS_LANGID_RHAETO_ROMANIC_SWITZERLAND
+#define TT_MS_LANGID_RHAETO_ROMANIC_SWITZERLAND TT_MS_LANGID_ROMANSH_SWITZERLAND
+#endif
+#ifndef TT_MS_LANGID_ROMANIAN_ROMANIA
+#define TT_MS_LANGID_ROMANIAN_ROMANIA 0x0418
+#endif
+#ifndef TT_MS_LANGID_ROMANSH_SWITZERLAND
+#define TT_MS_LANGID_ROMANSH_SWITZERLAND 0x0417
+#endif
+#ifndef TT_MS_LANGID_RUSSIAN_MOLDAVIA
+#define TT_MS_LANGID_RUSSIAN_MOLDAVIA 0x0819
+#endif
+#ifndef TT_MS_LANGID_RUSSIAN_RUSSIA
+#define TT_MS_LANGID_RUSSIAN_RUSSIA 0x0419
+#endif
+#ifndef TT_MS_LANGID_SAAMI_LAPONIA
+#define TT_MS_LANGID_SAAMI_LAPONIA 0x043B
+#endif
+#ifndef TT_MS_LANGID_SAMI_INARI_FINLAND
+#define TT_MS_LANGID_SAMI_INARI_FINLAND 0x243B
+#endif
+#ifndef TT_MS_LANGID_SAMI_LULE_NORWAY
+#define TT_MS_LANGID_SAMI_LULE_NORWAY 0x103B
+#endif
+#ifndef TT_MS_LANGID_SAMI_LULE_SWEDEN
+#define TT_MS_LANGID_SAMI_LULE_SWEDEN 0x143B
+#endif
+#ifndef TT_MS_LANGID_SAMI_NORTHERN_FINLAND
+#define TT_MS_LANGID_SAMI_NORTHERN_FINLAND 0x0C3B
+#endif
+#ifndef TT_MS_LANGID_SAMI_NORTHERN_NORWAY
+#define TT_MS_LANGID_SAMI_NORTHERN_NORWAY 0x043B
+#endif
+#ifndef TT_MS_LANGID_SAMI_NORTHERN_SWEDEN
+#define TT_MS_LANGID_SAMI_NORTHERN_SWEDEN 0x083B
+#endif
+#ifndef TT_MS_LANGID_SAMI_SKOLT_FINLAND
+#define TT_MS_LANGID_SAMI_SKOLT_FINLAND 0x203B
+#endif
+#ifndef TT_MS_LANGID_SAMI_SOUTHERN_NORWAY
+#define TT_MS_LANGID_SAMI_SOUTHERN_NORWAY 0x183B
+#endif
+#ifndef TT_MS_LANGID_SAMI_SOUTHERN_SWEDEN
+#define TT_MS_LANGID_SAMI_SOUTHERN_SWEDEN 0x1C3B
+#endif
+#ifndef TT_MS_LANGID_SANSKRIT_INDIA
+#define TT_MS_LANGID_SANSKRIT_INDIA 0x044F
+#endif
+#ifndef TT_MS_LANGID_SCOTTISH_GAELIC_UNITED_KINGDOM
+#define TT_MS_LANGID_SCOTTISH_GAELIC_UNITED_KINGDOM 0x083C
+#endif
+#ifndef TT_MS_LANGID_SEPEDI_SOUTH_AFRICA
+#define TT_MS_LANGID_SEPEDI_SOUTH_AFRICA TT_MS_LANGID_SESOTHO_SA_LEBOA_SOUTH_AFRICA
+#endif
+#ifndef TT_MS_LANGID_SERBIAN_BOSNIA_HERZ_CYRILLIC
+#define TT_MS_LANGID_SERBIAN_BOSNIA_HERZ_CYRILLIC 0x1C1A
+#endif
+#ifndef TT_MS_LANGID_SERBIAN_BOSNIA_HERZ_LATIN
+#define TT_MS_LANGID_SERBIAN_BOSNIA_HERZ_LATIN 0x181A
+#endif
+#ifndef TT_MS_LANGID_SERBIAN_SERBIA_CYRILLIC
+#define TT_MS_LANGID_SERBIAN_SERBIA_CYRILLIC 0x0C1A
+#endif
+#ifndef TT_MS_LANGID_SERBIAN_SERBIA_LATIN
+#define TT_MS_LANGID_SERBIAN_SERBIA_LATIN 0x081A
+#endif
+#ifndef TT_MS_LANGID_SESOTHO_SA_LEBOA_SOUTH_AFRICA
+#define TT_MS_LANGID_SESOTHO_SA_LEBOA_SOUTH_AFRICA 0x046C
+#endif
+#ifndef TT_MS_LANGID_SETSWANA_SOUTH_AFRICA
+#define TT_MS_LANGID_SETSWANA_SOUTH_AFRICA 0x0432
+#endif
+#ifndef TT_MS_LANGID_SINDHI_INDIA
+#define TT_MS_LANGID_SINDHI_INDIA 0x0459
+#endif
+#ifndef TT_MS_LANGID_SINDHI_PAKISTAN
+#define TT_MS_LANGID_SINDHI_PAKISTAN 0x0859
+#endif
+#ifndef TT_MS_LANGID_SINHALA_SRI_LANKA
+#define TT_MS_LANGID_SINHALA_SRI_LANKA 0x045B
+#endif
+#ifndef TT_MS_LANGID_SINHALESE_SRI_LANKA
+#define TT_MS_LANGID_SINHALESE_SRI_LANKA TT_MS_LANGID_SINHALA_SRI_LANKA
+#endif
+#ifndef TT_MS_LANGID_SLOVAK_SLOVAKIA
+#define TT_MS_LANGID_SLOVAK_SLOVAKIA 0x041B
+#endif
+#ifndef TT_MS_LANGID_SLOVENE_SLOVENIA
+#define TT_MS_LANGID_SLOVENE_SLOVENIA TT_MS_LANGID_SLOVENIAN_SLOVENIA
+#endif
+#ifndef TT_MS_LANGID_SLOVENIAN_SLOVENIA
+#define TT_MS_LANGID_SLOVENIAN_SLOVENIA 0x0424
+#endif
+#ifndef TT_MS_LANGID_SOMALI_SOMALIA
+#define TT_MS_LANGID_SOMALI_SOMALIA 0x0477
+#endif
+#ifndef TT_MS_LANGID_SORBIAN_GERMANY
+#define TT_MS_LANGID_SORBIAN_GERMANY TT_MS_LANGID_UPPER_SORBIAN_GERMANY
+#endif
+#ifndef TT_MS_LANGID_SOTHO_SOUTHERN_SOUTH_AFRICA
+#define TT_MS_LANGID_SOTHO_SOUTHERN_SOUTH_AFRICA TT_MS_LANGID_SESOTHO_SA_LEBOA_SOUTH_AFRICA
+#endif
+#ifndef TT_MS_LANGID_SPANISH_ARGENTINA
+#define TT_MS_LANGID_SPANISH_ARGENTINA 0x2C0A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_BOLIVIA
+#define TT_MS_LANGID_SPANISH_BOLIVIA 0x400A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_CHILE
+#define TT_MS_LANGID_SPANISH_CHILE 0x340A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_COLOMBIA
+#define TT_MS_LANGID_SPANISH_COLOMBIA 0x240A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_COSTA_RICA
+#define TT_MS_LANGID_SPANISH_COSTA_RICA 0x140A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_DOMINICAN_REPUBLIC
+#define TT_MS_LANGID_SPANISH_DOMINICAN_REPUBLIC 0x1C0A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_ECUADOR
+#define TT_MS_LANGID_SPANISH_ECUADOR 0x300A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_EL_SALVADOR
+#define TT_MS_LANGID_SPANISH_EL_SALVADOR 0x440A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_GUATEMALA
+#define TT_MS_LANGID_SPANISH_GUATEMALA 0x100A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_HONDURAS
+#define TT_MS_LANGID_SPANISH_HONDURAS 0x480A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_LATIN_AMERICA
+#define TT_MS_LANGID_SPANISH_LATIN_AMERICA 0xE40AU
+#endif
+#ifndef TT_MS_LANGID_SPANISH_MEXICO
+#define TT_MS_LANGID_SPANISH_MEXICO 0x080A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_NICARAGUA
+#define TT_MS_LANGID_SPANISH_NICARAGUA 0x4C0A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_PANAMA
+#define TT_MS_LANGID_SPANISH_PANAMA 0x180A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_PARAGUAY
+#define TT_MS_LANGID_SPANISH_PARAGUAY 0x3C0A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_PERU
+#define TT_MS_LANGID_SPANISH_PERU 0x280A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_PUERTO_RICO
+#define TT_MS_LANGID_SPANISH_PUERTO_RICO 0x500A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_SPAIN_INTERNATIONAL_SORT
+#define TT_MS_LANGID_SPANISH_SPAIN_INTERNATIONAL_SORT TT_MS_LANGID_SPANISH_SPAIN_MODERN_SORT
+#endif
+#ifndef TT_MS_LANGID_SPANISH_SPAIN_MODERN_SORT
+#define TT_MS_LANGID_SPANISH_SPAIN_MODERN_SORT 0x0C0A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_SPAIN_TRADITIONAL_SORT
+#define TT_MS_LANGID_SPANISH_SPAIN_TRADITIONAL_SORT 0x040A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_UNITED_STATES
+#define TT_MS_LANGID_SPANISH_UNITED_STATES 0x540A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_URUGUAY
+#define TT_MS_LANGID_SPANISH_URUGUAY 0x380A
+#endif
+#ifndef TT_MS_LANGID_SPANISH_VENEZUELA
+#define TT_MS_LANGID_SPANISH_VENEZUELA 0x200A
+#endif
+#ifndef TT_MS_LANGID_SUTU_SOUTH_AFRICA
+#define TT_MS_LANGID_SUTU_SOUTH_AFRICA 0x0430
+#endif
+#ifndef TT_MS_LANGID_SWAHILI_KENYA
+#define TT_MS_LANGID_SWAHILI_KENYA TT_MS_LANGID_KISWAHILI_KENYA
+#endif
+#ifndef TT_MS_LANGID_SWEDISH_FINLAND
+#define TT_MS_LANGID_SWEDISH_FINLAND 0x081D
+#endif
+#ifndef TT_MS_LANGID_SWEDISH_SWEDEN
+#define TT_MS_LANGID_SWEDISH_SWEDEN 0x041D
+#endif
+#ifndef TT_MS_LANGID_SYRIAC_SYRIA
+#define TT_MS_LANGID_SYRIAC_SYRIA 0x045A
+#endif
+#ifndef TT_MS_LANGID_TAJIK_TAJIKISTAN
+#define TT_MS_LANGID_TAJIK_TAJIKISTAN 0x0428
+#endif
+#ifndef TT_MS_LANGID_TAMAZIGHT_ALGERIA
+#define TT_MS_LANGID_TAMAZIGHT_ALGERIA 0x085F
+#endif
+#ifndef TT_MS_LANGID_TAMAZIGHT_MOROCCO
+#define TT_MS_LANGID_TAMAZIGHT_MOROCCO 0x045F
+#endif
+#ifndef TT_MS_LANGID_TAMAZIGHT_MOROCCO_LATIN
+#define TT_MS_LANGID_TAMAZIGHT_MOROCCO_LATIN TT_MS_LANGID_TAMAZIGHT_ALGERIA
+#endif
+#ifndef TT_MS_LANGID_TAMIL_INDIA
+#define TT_MS_LANGID_TAMIL_INDIA 0x0449
+#endif
+#ifndef TT_MS_LANGID_TATAR_RUSSIA
+#define TT_MS_LANGID_TATAR_RUSSIA 0x0444
+#endif
+#ifndef TT_MS_LANGID_TATAR_TATARSTAN
+#define TT_MS_LANGID_TATAR_TATARSTAN TT_MS_LANGID_TATAR_RUSSIA
+#endif
+#ifndef TT_MS_LANGID_TELUGU_INDIA
+#define TT_MS_LANGID_TELUGU_INDIA 0x044A
+#endif
+#ifndef TT_MS_LANGID_THAI_THAILAND
+#define TT_MS_LANGID_THAI_THAILAND 0x041E
+#endif
+#ifndef TT_MS_LANGID_TIBETAN_BHUTAN
+#define TT_MS_LANGID_TIBETAN_BHUTAN TT_MS_LANGID_DZONGHKA_BHUTAN
+#endif
+#ifndef TT_MS_LANGID_TIBETAN_CHINA
+#define TT_MS_LANGID_TIBETAN_CHINA TT_MS_LANGID_TIBETAN_PRC
+#endif
+#ifndef TT_MS_LANGID_TIBETAN_PRC
+#define TT_MS_LANGID_TIBETAN_PRC 0x0451
+#endif
+#ifndef TT_MS_LANGID_TIGRIGNA_ERYTHREA
+#define TT_MS_LANGID_TIGRIGNA_ERYTHREA 0x0873
+#endif
+#ifndef TT_MS_LANGID_TIGRIGNA_ERYTREA
+#define TT_MS_LANGID_TIGRIGNA_ERYTREA TT_MS_LANGID_TIGRIGNA_ERYTHREA
+#endif
+#ifndef TT_MS_LANGID_TIGRIGNA_ETHIOPIA
+#define TT_MS_LANGID_TIGRIGNA_ETHIOPIA 0x0473
+#endif
+#ifndef TT_MS_LANGID_TSONGA_SOUTH_AFRICA
+#define TT_MS_LANGID_TSONGA_SOUTH_AFRICA 0x0431
+#endif
+#ifndef TT_MS_LANGID_TSWANA_SOUTH_AFRICA
+#define TT_MS_LANGID_TSWANA_SOUTH_AFRICA TT_MS_LANGID_SETSWANA_SOUTH_AFRICA
+#endif
+#ifndef TT_MS_LANGID_TURKISH_TURKEY
+#define TT_MS_LANGID_TURKISH_TURKEY 0x041F
+#endif
+#ifndef TT_MS_LANGID_TURKMEN_TURKMENISTAN
+#define TT_MS_LANGID_TURKMEN_TURKMENISTAN 0x0442
+#endif
+#ifndef TT_MS_LANGID_UIGHUR_CHINA
+#define TT_MS_LANGID_UIGHUR_CHINA TT_MS_LANGID_UIGHUR_PRC
+#endif
+#ifndef TT_MS_LANGID_UIGHUR_PRC
+#define TT_MS_LANGID_UIGHUR_PRC 0x0480
+#endif
+#ifndef TT_MS_LANGID_UKRAINIAN_UKRAINE
+#define TT_MS_LANGID_UKRAINIAN_UKRAINE 0x0422
+#endif
+#ifndef TT_MS_LANGID_UPPER_SORBIAN_GERMANY
+#define TT_MS_LANGID_UPPER_SORBIAN_GERMANY 0x042E
+#endif
+#ifndef TT_MS_LANGID_URDU_INDIA
+#define TT_MS_LANGID_URDU_INDIA 0x0820
+#endif
+#ifndef TT_MS_LANGID_URDU_PAKISTAN
+#define TT_MS_LANGID_URDU_PAKISTAN 0x0420
+#endif
+#ifndef TT_MS_LANGID_UZBEK_UZBEKISTAN_CYRILLIC
+#define TT_MS_LANGID_UZBEK_UZBEKISTAN_CYRILLIC 0x0843
+#endif
+#ifndef TT_MS_LANGID_UZBEK_UZBEKISTAN_LATIN
+#define TT_MS_LANGID_UZBEK_UZBEKISTAN_LATIN 0x0443
+#endif
+#ifndef TT_MS_LANGID_VENDA_SOUTH_AFRICA
+#define TT_MS_LANGID_VENDA_SOUTH_AFRICA 0x0433
+#endif
+#ifndef TT_MS_LANGID_VIETNAMESE_VIET_NAM
+#define TT_MS_LANGID_VIETNAMESE_VIET_NAM 0x042A
+#endif
+#ifndef TT_MS_LANGID_WELSH_UNITED_KINGDOM
+#define TT_MS_LANGID_WELSH_UNITED_KINGDOM 0x0452
+#endif
+#ifndef TT_MS_LANGID_WELSH_WALES
+#define TT_MS_LANGID_WELSH_WALES TT_MS_LANGID_WELSH_UNITED_KINGDOM
+#endif
+#ifndef TT_MS_LANGID_WOLOF_SENEGAL
+#define TT_MS_LANGID_WOLOF_SENEGAL 0x0488
+#endif
+#ifndef TT_MS_LANGID_XHOSA_SOUTH_AFRICA
+#define TT_MS_LANGID_XHOSA_SOUTH_AFRICA TT_MS_LANGID_ISIXHOSA_SOUTH_AFRICA
+#endif
+#ifndef TT_MS_LANGID_YAKUT_RUSSIA
+#define TT_MS_LANGID_YAKUT_RUSSIA 0x0485
+#endif
+#ifndef TT_MS_LANGID_YIDDISH_GERMANY
+#define TT_MS_LANGID_YIDDISH_GERMANY 0x043D
+#endif
+#ifndef TT_MS_LANGID_YI_CHINA
+#define TT_MS_LANGID_YI_CHINA TT_MS_LANGID_YI_PRC
+#endif
+#ifndef TT_MS_LANGID_YI_PRC
+#define TT_MS_LANGID_YI_PRC 0x0478
+#endif
+#ifndef TT_MS_LANGID_YORUBA_NIGERIA
+#define TT_MS_LANGID_YORUBA_NIGERIA 0x046A
+#endif
+#ifndef TT_MS_LANGID_ZULU_SOUTH_AFRICA
+#define TT_MS_LANGID_ZULU_SOUTH_AFRICA TT_MS_LANGID_ISIZULU_SOUTH_AFRICA
+#endif
+#ifndef TT_NAME_ID_CID_FINDFONT_NAME
+#define TT_NAME_ID_CID_FINDFONT_NAME 20
+#endif
+#ifndef TT_NAME_ID_COPYRIGHT
+#define TT_NAME_ID_COPYRIGHT 0
+#endif
+#ifndef TT_NAME_ID_DARK_BACKGROUND
+#define TT_NAME_ID_DARK_BACKGROUND 24
+#endif
+#ifndef TT_NAME_ID_DESCRIPTION
+#define TT_NAME_ID_DESCRIPTION 10
+#endif
+#ifndef TT_NAME_ID_DESIGNER
+#define TT_NAME_ID_DESIGNER 9
+#endif
+#ifndef TT_NAME_ID_DESIGNER_URL
+#define TT_NAME_ID_DESIGNER_URL 12
+#endif
+#ifndef TT_NAME_ID_FONT_FAMILY
+#define TT_NAME_ID_FONT_FAMILY 1
+#endif
+#ifndef TT_NAME_ID_FONT_SUBFAMILY
+#define TT_NAME_ID_FONT_SUBFAMILY 2
+#endif
+#ifndef TT_NAME_ID_FULL_NAME
+#define TT_NAME_ID_FULL_NAME 4
+#endif
+#ifndef TT_NAME_ID_LICENSE
+#define TT_NAME_ID_LICENSE 13
+#endif
+#ifndef TT_NAME_ID_LICENSE_URL
+#define TT_NAME_ID_LICENSE_URL 14
+#endif
+#ifndef TT_NAME_ID_LIGHT_BACKGROUND
+#define TT_NAME_ID_LIGHT_BACKGROUND 23
+#endif
+#ifndef TT_NAME_ID_MAC_FULL_NAME
+#define TT_NAME_ID_MAC_FULL_NAME 18
+#endif
+#ifndef TT_NAME_ID_MANUFACTURER
+#define TT_NAME_ID_MANUFACTURER 8
+#endif
+#ifndef TT_NAME_ID_PREFERRED_FAMILY
+#define TT_NAME_ID_PREFERRED_FAMILY TT_NAME_ID_TYPOGRAPHIC_FAMILY
+#endif
+#ifndef TT_NAME_ID_PREFERRED_SUBFAMILY
+#define TT_NAME_ID_PREFERRED_SUBFAMILY TT_NAME_ID_TYPOGRAPHIC_SUBFAMILY
+#endif
+#ifndef TT_NAME_ID_PS_NAME
+#define TT_NAME_ID_PS_NAME 6
+#endif
+#ifndef TT_NAME_ID_SAMPLE_TEXT
+#define TT_NAME_ID_SAMPLE_TEXT 19
+#endif
+#ifndef TT_NAME_ID_TRADEMARK
+#define TT_NAME_ID_TRADEMARK 7
+#endif
+#ifndef TT_NAME_ID_TYPOGRAPHIC_FAMILY
+#define TT_NAME_ID_TYPOGRAPHIC_FAMILY 16
+#endif
+#ifndef TT_NAME_ID_TYPOGRAPHIC_SUBFAMILY
+#define TT_NAME_ID_TYPOGRAPHIC_SUBFAMILY 17
+#endif
+#ifndef TT_NAME_ID_UNIQUE_ID
+#define TT_NAME_ID_UNIQUE_ID 3
+#endif
+#ifndef TT_NAME_ID_VARIATIONS_PREFIX
+#define TT_NAME_ID_VARIATIONS_PREFIX 25
+#endif
+#ifndef TT_NAME_ID_VENDOR_URL
+#define TT_NAME_ID_VENDOR_URL 11
+#endif
+#ifndef TT_NAME_ID_VERSION_STRING
+#define TT_NAME_ID_VERSION_STRING 5
+#endif
+#ifndef TT_NAME_ID_WWS_FAMILY
+#define TT_NAME_ID_WWS_FAMILY 21
+#endif
+#ifndef TT_NAME_ID_WWS_SUBFAMILY
+#define TT_NAME_ID_WWS_SUBFAMILY 22
+#endif
+#ifndef TT_PLATFORM_ADOBE
+#define TT_PLATFORM_ADOBE 7
+#endif
+#ifndef TT_PLATFORM_APPLE_UNICODE
+#define TT_PLATFORM_APPLE_UNICODE 0
+#endif
+#ifndef TT_PLATFORM_CUSTOM
+#define TT_PLATFORM_CUSTOM 4
+#endif
+#ifndef TT_PLATFORM_ISO
+#define TT_PLATFORM_ISO 2
+#endif
+#ifndef TT_PLATFORM_MACINTOSH
+#define TT_PLATFORM_MACINTOSH 1
+#endif
+#ifndef TT_PLATFORM_MICROSOFT
+#define TT_PLATFORM_MICROSOFT 3
+#endif
+#ifndef TT_UCR_ALPHABETIC_PRESENTATION_FORMS
+#define TT_UCR_ALPHABETIC_PRESENTATION_FORMS (1UL << 30)
+#endif
+#ifndef TT_UCR_ANCIENT_GREEK_NUMBERS
+#define TT_UCR_ANCIENT_GREEK_NUMBERS (1UL << 6)
+#endif
+#ifndef TT_UCR_ANCIENT_SYMBOLS
+#define TT_UCR_ANCIENT_SYMBOLS (1UL << 23)
+#endif
+#ifndef TT_UCR_ARABIC
+#define TT_UCR_ARABIC (1UL << 13)
+#endif
+#ifndef TT_UCR_ARABIC_PRESENTATION_A
+#define TT_UCR_ARABIC_PRESENTATION_A TT_UCR_ARABIC_PRESENTATION_FORMS_A
+#endif
+#ifndef TT_UCR_ARABIC_PRESENTATION_B
+#define TT_UCR_ARABIC_PRESENTATION_B TT_UCR_ARABIC_PRESENTATION_FORMS_B
+#endif
+#ifndef TT_UCR_ARABIC_PRESENTATION_FORMS_A
+#define TT_UCR_ARABIC_PRESENTATION_FORMS_A (1UL << 31)
+#endif
+#ifndef TT_UCR_ARABIC_PRESENTATION_FORMS_B
+#define TT_UCR_ARABIC_PRESENTATION_FORMS_B (1UL << 3)
+#endif
+#ifndef TT_UCR_ARMENIAN
+#define TT_UCR_ARMENIAN (1UL << 10)
+#endif
+#ifndef TT_UCR_ARROWS
+#define TT_UCR_ARROWS (1UL << 5)
+#endif
+#ifndef TT_UCR_BALINESE
+#define TT_UCR_BALINESE (1UL << 27)
+#endif
+#ifndef TT_UCR_BASIC_LATIN
+#define TT_UCR_BASIC_LATIN (1UL << 0)
+#endif
+#ifndef TT_UCR_BENGALI
+#define TT_UCR_BENGALI (1UL << 16)
+#endif
+#ifndef TT_UCR_BLOCK_ELEMENTS
+#define TT_UCR_BLOCK_ELEMENTS (1UL << 12)
+#endif
+#ifndef TT_UCR_BOPOMOFO
+#define TT_UCR_BOPOMOFO (1UL << 19)
+#endif
+#ifndef TT_UCR_BOX_DRAWING
+#define TT_UCR_BOX_DRAWING (1UL << 11)
+#endif
+#ifndef TT_UCR_BRAILLE
+#define TT_UCR_BRAILLE (1UL << 18)
+#endif
+#ifndef TT_UCR_BUGINESE
+#define TT_UCR_BUGINESE (1UL << 0)
+#endif
+#ifndef TT_UCR_CANADIAN_ABORIGINAL_SYLLABICS
+#define TT_UCR_CANADIAN_ABORIGINAL_SYLLABICS (1UL << 13)
+#endif
+#ifndef TT_UCR_CHAM
+#define TT_UCR_CHAM (1UL << 22)
+#endif
+#ifndef TT_UCR_CHEROKEE
+#define TT_UCR_CHEROKEE (1UL << 12)
+#endif
+#ifndef TT_UCR_CJK_COMPATIBILITY
+#define TT_UCR_CJK_COMPATIBILITY (1UL << 23)
+#endif
+#ifndef TT_UCR_CJK_COMPATIBILITY_FORMS
+#define TT_UCR_CJK_COMPATIBILITY_FORMS (1UL << 1)
+#endif
+#ifndef TT_UCR_CJK_COMPATIBILITY_IDEOGRAPHS
+#define TT_UCR_CJK_COMPATIBILITY_IDEOGRAPHS (1UL << 29)
+#endif
+#ifndef TT_UCR_CJK_MISC
+#define TT_UCR_CJK_MISC TT_UCR_PHAGSPA
+#endif
+#ifndef TT_UCR_CJK_SYMBOLS
+#define TT_UCR_CJK_SYMBOLS (1UL << 16)
+#endif
+#ifndef TT_UCR_CJK_UNIFIED_IDEOGRAPHS
+#define TT_UCR_CJK_UNIFIED_IDEOGRAPHS (1UL << 27)
+#endif
+#ifndef TT_UCR_COMBINING_DIACRITICAL_MARKS
+#define TT_UCR_COMBINING_DIACRITICAL_MARKS (1UL << 6)
+#endif
+#ifndef TT_UCR_COMBINING_DIACRITICAL_MARKS_SYMB
+#define TT_UCR_COMBINING_DIACRITICAL_MARKS_SYMB (1UL << 2)
+#endif
+#ifndef TT_UCR_COMBINING_DIACRITICS
+#define TT_UCR_COMBINING_DIACRITICS TT_UCR_COMBINING_DIACRITICAL_MARKS
+#endif
+#ifndef TT_UCR_COMBINING_DIACRITICS_SYMB
+#define TT_UCR_COMBINING_DIACRITICS_SYMB TT_UCR_COMBINING_DIACRITICAL_MARKS_SYMB
+#endif
+#ifndef TT_UCR_COMBINING_HALF_MARKS
+#define TT_UCR_COMBINING_HALF_MARKS (1UL << 0)
+#endif
+#ifndef TT_UCR_CONTROL_PICTURES
+#define TT_UCR_CONTROL_PICTURES (1UL << 8)
+#endif
+#ifndef TT_UCR_COPTIC
+#define TT_UCR_COPTIC (1UL << 8)
+#endif
+#ifndef TT_UCR_COUNTING_ROD_NUMERALS
+#define TT_UCR_COUNTING_ROD_NUMERALS (1UL << 15)
+#endif
+#ifndef TT_UCR_CUNEIFORM
+#define TT_UCR_CUNEIFORM (1UL << 14)
+#endif
+#ifndef TT_UCR_CURRENCY_SYMBOLS
+#define TT_UCR_CURRENCY_SYMBOLS (1UL << 1)
+#endif
+#ifndef TT_UCR_CYPRIOT_SYLLABARY
+#define TT_UCR_CYPRIOT_SYLLABARY (1UL << 11)
+#endif
+#ifndef TT_UCR_CYRILLIC
+#define TT_UCR_CYRILLIC (1UL << 9)
+#endif
+#ifndef TT_UCR_DESERET
+#define TT_UCR_DESERET (1UL << 23)
+#endif
+#ifndef TT_UCR_DEVANAGARI
+#define TT_UCR_DEVANAGARI (1UL << 15)
+#endif
+#ifndef TT_UCR_DINGBATS
+#define TT_UCR_DINGBATS (1UL << 15)
+#endif
+#ifndef TT_UCR_ENCLOSED_ALPHANUMERICS
+#define TT_UCR_ENCLOSED_ALPHANUMERICS (1UL << 10)
+#endif
+#ifndef TT_UCR_ENCLOSED_CJK_LETTERS_MONTHS
+#define TT_UCR_ENCLOSED_CJK_LETTERS_MONTHS (1UL << 22)
+#endif
+#ifndef TT_UCR_ETHIOPIC
+#define TT_UCR_ETHIOPIC (1UL << 11)
+#endif
+#ifndef TT_UCR_GAME_TILES
+#define TT_UCR_GAME_TILES (1UL << 26)
+#endif
+#ifndef TT_UCR_GENERAL_PUNCTUATION
+#define TT_UCR_GENERAL_PUNCTUATION (1UL << 31)
+#endif
+#ifndef TT_UCR_GEOMETRIC_SHAPES
+#define TT_UCR_GEOMETRIC_SHAPES (1UL << 13)
+#endif
+#ifndef TT_UCR_GEORGIAN
+#define TT_UCR_GEORGIAN (1UL << 26)
+#endif
+#ifndef TT_UCR_GLAGOLITIC
+#define TT_UCR_GLAGOLITIC (1UL << 1)
+#endif
+#ifndef TT_UCR_GOTHIC
+#define TT_UCR_GOTHIC (1UL << 22)
+#endif
+#ifndef TT_UCR_GREEK
+#define TT_UCR_GREEK (1UL << 7)
+#endif
+#ifndef TT_UCR_GREEK_EXTENDED
+#define TT_UCR_GREEK_EXTENDED (1UL << 30)
+#endif
+#ifndef TT_UCR_GUJARATI
+#define TT_UCR_GUJARATI (1UL << 18)
+#endif
+#ifndef TT_UCR_GURMUKHI
+#define TT_UCR_GURMUKHI (1UL << 17)
+#endif
+#ifndef TT_UCR_HALFWIDTH_FULLWIDTH_FORMS
+#define TT_UCR_HALFWIDTH_FULLWIDTH_FORMS (1UL << 4)
+#endif
+#ifndef TT_UCR_HANGUL
+#define TT_UCR_HANGUL (1UL << 24)
+#endif
+#ifndef TT_UCR_HANGUL_COMPATIBILITY_JAMO
+#define TT_UCR_HANGUL_COMPATIBILITY_JAMO (1UL << 20)
+#endif
+#ifndef TT_UCR_HANGUL_JAMO
+#define TT_UCR_HANGUL_JAMO (1UL << 28)
+#endif
+#ifndef TT_UCR_HEBREW
+#define TT_UCR_HEBREW (1UL << 11)
+#endif
+#ifndef TT_UCR_HIRAGANA
+#define TT_UCR_HIRAGANA (1UL << 17)
+#endif
+#ifndef TT_UCR_IPA_EXTENSIONS
+#define TT_UCR_IPA_EXTENSIONS (1UL << 4)
+#endif
+#ifndef TT_UCR_KANBUN
+#define TT_UCR_KANBUN TT_UCR_PHAGSPA
+#endif
+#ifndef TT_UCR_KANNADA
+#define TT_UCR_KANNADA (1UL << 22)
+#endif
+#ifndef TT_UCR_KATAKANA
+#define TT_UCR_KATAKANA (1UL << 18)
+#endif
+#ifndef TT_UCR_KAYAH_LI
+#define TT_UCR_KAYAH_LI (1UL << 20)
+#endif
+#ifndef TT_UCR_KHAROSHTHI
+#define TT_UCR_KHAROSHTHI (1UL << 12)
+#endif
+#ifndef TT_UCR_KHMER
+#define TT_UCR_KHMER (1UL << 16)
+#endif
+#ifndef TT_UCR_LAO
+#define TT_UCR_LAO (1UL << 25)
+#endif
+#ifndef TT_UCR_LATIN1_SUPPLEMENT
+#define TT_UCR_LATIN1_SUPPLEMENT (1UL << 1)
+#endif
+#ifndef TT_UCR_LATIN_EXTENDED_A
+#define TT_UCR_LATIN_EXTENDED_A (1UL << 2)
+#endif
+#ifndef TT_UCR_LATIN_EXTENDED_ADDITIONAL
+#define TT_UCR_LATIN_EXTENDED_ADDITIONAL (1UL << 29)
+#endif
+#ifndef TT_UCR_LATIN_EXTENDED_B
+#define TT_UCR_LATIN_EXTENDED_B (1UL << 3)
+#endif
+#ifndef TT_UCR_LEPCHA
+#define TT_UCR_LEPCHA (1UL << 17)
+#endif
+#ifndef TT_UCR_LETTERLIKE_SYMBOLS
+#define TT_UCR_LETTERLIKE_SYMBOLS (1UL << 3)
+#endif
+#ifndef TT_UCR_LIMBU
+#define TT_UCR_LIMBU (1UL << 29)
+#endif
+#ifndef TT_UCR_LINEAR_B
+#define TT_UCR_LINEAR_B (1UL << 5)
+#endif
+#ifndef TT_UCR_MALAYALAM
+#define TT_UCR_MALAYALAM (1UL << 23)
+#endif
+#ifndef TT_UCR_MATHEMATICAL_OPERATORS
+#define TT_UCR_MATHEMATICAL_OPERATORS (1UL << 6)
+#endif
+#ifndef TT_UCR_MATH_ALPHANUMERIC_SYMBOLS
+#define TT_UCR_MATH_ALPHANUMERIC_SYMBOLS (1UL << 25)
+#endif
+#ifndef TT_UCR_MISCELLANEOUS_SYMBOLS
+#define TT_UCR_MISCELLANEOUS_SYMBOLS (1UL << 14)
+#endif
+#ifndef TT_UCR_MISCELLANEOUS_TECHNICAL
+#define TT_UCR_MISCELLANEOUS_TECHNICAL (1UL << 7)
+#endif
+#ifndef TT_UCR_MONGOLIAN
+#define TT_UCR_MONGOLIAN (1UL << 17)
+#endif
+#ifndef TT_UCR_MUSICAL_SYMBOLS
+#define TT_UCR_MUSICAL_SYMBOLS (1UL << 24)
+#endif
+#ifndef TT_UCR_MYANMAR
+#define TT_UCR_MYANMAR (1UL << 10)
+#endif
+#ifndef TT_UCR_NEW_TAI_LUE
+#define TT_UCR_NEW_TAI_LUE (1UL << 31)
+#endif
+#ifndef TT_UCR_NKO
+#define TT_UCR_NKO (1UL << 14)
+#endif
+#ifndef TT_UCR_NON_PLANE_0
+#define TT_UCR_NON_PLANE_0 TT_UCR_SURROGATES
+#endif
+#ifndef TT_UCR_NUMBER_FORMS
+#define TT_UCR_NUMBER_FORMS (1UL << 4)
+#endif
+#ifndef TT_UCR_OCR
+#define TT_UCR_OCR (1UL << 9)
+#endif
+#ifndef TT_UCR_OGHAM
+#define TT_UCR_OGHAM (1UL << 14)
+#endif
+#ifndef TT_UCR_OLD_ANATOLIAN
+#define TT_UCR_OLD_ANATOLIAN (1UL << 25)
+#endif
+#ifndef TT_UCR_OLD_ITALIC
+#define TT_UCR_OLD_ITALIC (1UL << 21)
+#endif
+#ifndef TT_UCR_OLD_PERSIAN
+#define TT_UCR_OLD_PERSIAN (1UL << 8)
+#endif
+#ifndef TT_UCR_OL_CHIKI
+#define TT_UCR_OL_CHIKI (1UL << 18)
+#endif
+#ifndef TT_UCR_ORIYA
+#define TT_UCR_ORIYA (1UL << 19)
+#endif
+#ifndef TT_UCR_OSMANYA
+#define TT_UCR_OSMANYA (1UL << 10)
+#endif
+#ifndef TT_UCR_PHAGSPA
+#define TT_UCR_PHAGSPA (1UL << 21)
+#endif
+#ifndef TT_UCR_PHAISTOS_DISC
+#define TT_UCR_PHAISTOS_DISC (1UL << 24)
+#endif
+#ifndef TT_UCR_PHILIPPINE
+#define TT_UCR_PHILIPPINE (1UL << 20)
+#endif
+#ifndef TT_UCR_PHOENICIAN
+#define TT_UCR_PHOENICIAN (1UL << 26)
+#endif
+#ifndef TT_UCR_PRIVATE_USE
+#define TT_UCR_PRIVATE_USE (1UL << 28)
+#endif
+#ifndef TT_UCR_PRIVATE_USE_SUPPLEMENTARY
+#define TT_UCR_PRIVATE_USE_SUPPLEMENTARY (1UL << 26)
+#endif
+#ifndef TT_UCR_REJANG
+#define TT_UCR_REJANG (1UL << 21)
+#endif
+#ifndef TT_UCR_RUNIC
+#define TT_UCR_RUNIC (1UL << 15)
+#endif
+#ifndef TT_UCR_SAURASHTRA
+#define TT_UCR_SAURASHTRA (1UL << 19)
+#endif
+#ifndef TT_UCR_SHAVIAN
+#define TT_UCR_SHAVIAN (1UL << 9)
+#endif
+#ifndef TT_UCR_SINHALA
+#define TT_UCR_SINHALA (1UL << 9)
+#endif
+#ifndef TT_UCR_SMALL_FORM_VARIANTS
+#define TT_UCR_SMALL_FORM_VARIANTS (1UL << 2)
+#endif
+#ifndef TT_UCR_SPACING_MODIFIER
+#define TT_UCR_SPACING_MODIFIER (1UL << 5)
+#endif
+#ifndef TT_UCR_SPECIALS
+#define TT_UCR_SPECIALS (1UL << 5)
+#endif
+#ifndef TT_UCR_SUNDANESE
+#define TT_UCR_SUNDANESE (1UL << 16)
+#endif
+#ifndef TT_UCR_SUPERSCRIPTS_SUBSCRIPTS
+#define TT_UCR_SUPERSCRIPTS_SUBSCRIPTS (1UL << 0)
+#endif
+#ifndef TT_UCR_SURROGATES
+#define TT_UCR_SURROGATES (1UL << 25)
+#endif
+#ifndef TT_UCR_SYLOTI_NAGRI
+#define TT_UCR_SYLOTI_NAGRI (1UL << 4)
+#endif
+#ifndef TT_UCR_SYRIAC
+#define TT_UCR_SYRIAC (1UL << 7)
+#endif
+#ifndef TT_UCR_TAGS
+#define TT_UCR_TAGS (1UL << 28)
+#endif
+#ifndef TT_UCR_TAI_LE
+#define TT_UCR_TAI_LE (1UL << 30)
+#endif
+#ifndef TT_UCR_TAI_XUAN_JING
+#define TT_UCR_TAI_XUAN_JING (1UL << 13)
+#endif
+#ifndef TT_UCR_TAMIL
+#define TT_UCR_TAMIL (1UL << 20)
+#endif
+#ifndef TT_UCR_TELUGU
+#define TT_UCR_TELUGU (1UL << 21)
+#endif
+#ifndef TT_UCR_THAANA
+#define TT_UCR_THAANA (1UL << 8)
+#endif
+#ifndef TT_UCR_THAI
+#define TT_UCR_THAI (1UL << 24)
+#endif
+#ifndef TT_UCR_TIBETAN
+#define TT_UCR_TIBETAN (1UL << 6)
+#endif
+#ifndef TT_UCR_TIFINAGH
+#define TT_UCR_TIFINAGH (1UL << 2)
+#endif
+#ifndef TT_UCR_UGARITIC
+#define TT_UCR_UGARITIC (1UL << 7)
+#endif
+#ifndef TT_UCR_VAI
+#define TT_UCR_VAI (1UL << 12)
+#endif
+#ifndef TT_UCR_VARIATION_SELECTORS
+#define TT_UCR_VARIATION_SELECTORS (1UL << 27)
+#endif
+#ifndef TT_UCR_YI
+#define TT_UCR_YI (1UL << 19)
+#endif
+#ifndef TT_UCR_YIJING
+#define TT_UCR_YIJING (1UL << 3)
+#endif
+
+/* Pinned public error and module-error values. */
+
+#ifndef FT_Err_Array_Too_Large
+#define FT_Err_Array_Too_Large 10
+#endif
+#ifndef FT_Err_Bad_Argument
+#define FT_Err_Bad_Argument 132
+#endif
+#ifndef FT_Err_Bbx_Too_Big
+#define FT_Err_Bbx_Too_Big 184
+#endif
+#ifndef FT_Err_CMap_Table_Missing
+#define FT_Err_CMap_Table_Missing 146
+#endif
+#ifndef FT_Err_Cannot_Open_Resource
+#define FT_Err_Cannot_Open_Resource 1
+#endif
+#ifndef FT_Err_Cannot_Open_Stream
+#define FT_Err_Cannot_Open_Stream 81
+#endif
+#ifndef FT_Err_Cannot_Render_Glyph
+#define FT_Err_Cannot_Render_Glyph 19
+#endif
+#ifndef FT_Err_Code_Overflow
+#define FT_Err_Code_Overflow 131
+#endif
+#ifndef FT_Err_Corrupted_Font_Glyphs
+#define FT_Err_Corrupted_Font_Glyphs 186
+#endif
+#ifndef FT_Err_Corrupted_Font_Header
+#define FT_Err_Corrupted_Font_Header 185
+#endif
+#ifndef FT_Err_Could_Not_Find_Context
+#define FT_Err_Could_Not_Find_Context 153
+#endif
+#ifndef FT_Err_DEF_In_Glyf_Bytecode
+#define FT_Err_DEF_In_Glyf_Bytecode 156
+#endif
+#ifndef FT_Err_Debug_OpCode
+#define FT_Err_Debug_OpCode 135
+#endif
+#ifndef FT_Err_Divide_By_Zero
+#define FT_Err_Divide_By_Zero 133
+#endif
+#ifndef FT_Err_ENDF_In_Exec_Stream
+#define FT_Err_ENDF_In_Exec_Stream 136
+#endif
+#ifndef FT_Err_Execution_Too_Long
+#define FT_Err_Execution_Too_Long 139
+#endif
+#ifndef FT_Err_Glyph_Too_Big
+#define FT_Err_Glyph_Too_Big 164
+#endif
+#ifndef FT_Err_Hmtx_Table_Missing
+#define FT_Err_Hmtx_Table_Missing 147
+#endif
+#ifndef FT_Err_Horiz_Header_Missing
+#define FT_Err_Horiz_Header_Missing 143
+#endif
+#ifndef FT_Err_Ignore
+#define FT_Err_Ignore 162
+#endif
+#ifndef FT_Err_Invalid_Argument
+#define FT_Err_Invalid_Argument 6
+#endif
+#ifndef FT_Err_Invalid_Cache_Handle
+#define FT_Err_Invalid_Cache_Handle 39
+#endif
+#ifndef FT_Err_Invalid_CharMap_Format
+#define FT_Err_Invalid_CharMap_Format 150
+#endif
+#ifndef FT_Err_Invalid_CharMap_Handle
+#define FT_Err_Invalid_CharMap_Handle 38
+#endif
+#ifndef FT_Err_Invalid_Character_Code
+#define FT_Err_Invalid_Character_Code 17
+#endif
+#ifndef FT_Err_Invalid_CodeRange
+#define FT_Err_Invalid_CodeRange 138
+#endif
+#ifndef FT_Err_Invalid_Composite
+#define FT_Err_Invalid_Composite 21
+#endif
+#ifndef FT_Err_Invalid_Driver_Handle
+#define FT_Err_Invalid_Driver_Handle 34
+#endif
+#ifndef FT_Err_Invalid_Face_Handle
+#define FT_Err_Invalid_Face_Handle 35
+#endif
+#ifndef FT_Err_Invalid_File_Format
+#define FT_Err_Invalid_File_Format 3
+#endif
+#ifndef FT_Err_Invalid_Frame_Operation
+#define FT_Err_Invalid_Frame_Operation 86
+#endif
+#ifndef FT_Err_Invalid_Frame_Read
+#define FT_Err_Invalid_Frame_Read 88
+#endif
+#ifndef FT_Err_Invalid_Glyph_Format
+#define FT_Err_Invalid_Glyph_Format 18
+#endif
+#ifndef FT_Err_Invalid_Glyph_Index
+#define FT_Err_Invalid_Glyph_Index 16
+#endif
+#ifndef FT_Err_Invalid_Handle
+#define FT_Err_Invalid_Handle 32
+#endif
+#ifndef FT_Err_Invalid_Horiz_Metrics
+#define FT_Err_Invalid_Horiz_Metrics 149
+#endif
+#ifndef FT_Err_Invalid_Library_Handle
+#define FT_Err_Invalid_Library_Handle 33
+#endif
+#ifndef FT_Err_Invalid_Offset
+#define FT_Err_Invalid_Offset 9
+#endif
+#ifndef FT_Err_Invalid_Opcode
+#define FT_Err_Invalid_Opcode 128
+#endif
+#ifndef FT_Err_Invalid_Outline
+#define FT_Err_Invalid_Outline 20
+#endif
+#ifndef FT_Err_Invalid_PPem
+#define FT_Err_Invalid_PPem 151
+#endif
+#ifndef FT_Err_Invalid_Pixel_Size
+#define FT_Err_Invalid_Pixel_Size 23
+#endif
+#ifndef FT_Err_Invalid_Post_Table
+#define FT_Err_Invalid_Post_Table 155
+#endif
+#ifndef FT_Err_Invalid_Post_Table_Format
+#define FT_Err_Invalid_Post_Table_Format 154
+#endif
+#ifndef FT_Err_Invalid_Reference
+#define FT_Err_Invalid_Reference 134
+#endif
+#ifndef FT_Err_Invalid_SVG_Document
+#define FT_Err_Invalid_SVG_Document 24
+#endif
+#ifndef FT_Err_Invalid_Size_Handle
+#define FT_Err_Invalid_Size_Handle 36
+#endif
+#ifndef FT_Err_Invalid_Slot_Handle
+#define FT_Err_Invalid_Slot_Handle 37
+#endif
+#ifndef FT_Err_Invalid_Stream_Handle
+#define FT_Err_Invalid_Stream_Handle 40
+#endif
+#ifndef FT_Err_Invalid_Stream_Operation
+#define FT_Err_Invalid_Stream_Operation 85
+#endif
+#ifndef FT_Err_Invalid_Stream_Read
+#define FT_Err_Invalid_Stream_Read 84
+#endif
+#ifndef FT_Err_Invalid_Stream_Seek
+#define FT_Err_Invalid_Stream_Seek 82
+#endif
+#ifndef FT_Err_Invalid_Stream_Skip
+#define FT_Err_Invalid_Stream_Skip 83
+#endif
+#ifndef FT_Err_Invalid_Table
+#define FT_Err_Invalid_Table 8
+#endif
+#ifndef FT_Err_Invalid_Version
+#define FT_Err_Invalid_Version 4
+#endif
+#ifndef FT_Err_Invalid_Vert_Metrics
+#define FT_Err_Invalid_Vert_Metrics 152
+#endif
+#ifndef FT_Err_Locations_Missing
+#define FT_Err_Locations_Missing 144
+#endif
+#ifndef FT_Err_Lower_Module_Version
+#define FT_Err_Lower_Module_Version 5
+#endif
+#ifndef FT_Err_Missing_Bbx_Field
+#define FT_Err_Missing_Bbx_Field 183
+#endif
+#ifndef FT_Err_Missing_Bitmap
+#define FT_Err_Missing_Bitmap 157
+#endif
+#ifndef FT_Err_Missing_Chars_Field
+#define FT_Err_Missing_Chars_Field 180
+#endif
+#ifndef FT_Err_Missing_Encoding_Field
+#define FT_Err_Missing_Encoding_Field 182
+#endif
+#ifndef FT_Err_Missing_Font_Field
+#define FT_Err_Missing_Font_Field 177
+#endif
+#ifndef FT_Err_Missing_Fontboundingbox_Field
+#define FT_Err_Missing_Fontboundingbox_Field 179
+#endif
+#ifndef FT_Err_Missing_Module
+#define FT_Err_Missing_Module 11
+#endif
+#ifndef FT_Err_Missing_Property
+#define FT_Err_Missing_Property 12
+#endif
+#ifndef FT_Err_Missing_SVG_Hooks
+#define FT_Err_Missing_SVG_Hooks 158
+#endif
+#ifndef FT_Err_Missing_Size_Field
+#define FT_Err_Missing_Size_Field 178
+#endif
+#ifndef FT_Err_Missing_Startchar_Field
+#define FT_Err_Missing_Startchar_Field 181
+#endif
+#ifndef FT_Err_Missing_Startfont_Field
+#define FT_Err_Missing_Startfont_Field 176
+#endif
+#ifndef FT_Err_Name_Table_Missing
+#define FT_Err_Name_Table_Missing 145
+#endif
+#ifndef FT_Err_Nested_DEFS
+#define FT_Err_Nested_DEFS 137
+#endif
+#ifndef FT_Err_Nested_Frame_Access
+#define FT_Err_Nested_Frame_Access 87
+#endif
+#ifndef FT_Err_No_Unicode_Glyph_Name
+#define FT_Err_No_Unicode_Glyph_Name 163
+#endif
+#ifndef FT_Err_Ok
+#define FT_Err_Ok 0
+#endif
+#ifndef FT_Err_Out_Of_Memory
+#define FT_Err_Out_Of_Memory 64
+#endif
+#ifndef FT_Err_Post_Table_Missing
+#define FT_Err_Post_Table_Missing 148
+#endif
+#ifndef FT_Err_Raster_Corrupted
+#define FT_Err_Raster_Corrupted 97
+#endif
+#ifndef FT_Err_Raster_Negative_Height
+#define FT_Err_Raster_Negative_Height 99
+#endif
+#ifndef FT_Err_Raster_Overflow
+#define FT_Err_Raster_Overflow 98
+#endif
+#ifndef FT_Err_Raster_Uninitialized
+#define FT_Err_Raster_Uninitialized 96
+#endif
+#ifndef FT_Err_Stack_Overflow
+#define FT_Err_Stack_Overflow 130
+#endif
+#ifndef FT_Err_Stack_Underflow
+#define FT_Err_Stack_Underflow 161
+#endif
+#ifndef FT_Err_Syntax_Error
+#define FT_Err_Syntax_Error 160
+#endif
+#ifndef FT_Err_Table_Missing
+#define FT_Err_Table_Missing 142
+#endif
+#ifndef FT_Err_Too_Few_Arguments
+#define FT_Err_Too_Few_Arguments 129
+#endif
+#ifndef FT_Err_Too_Many_Caches
+#define FT_Err_Too_Many_Caches 112
+#endif
+#ifndef FT_Err_Too_Many_Drivers
+#define FT_Err_Too_Many_Drivers 48
+#endif
+#ifndef FT_Err_Too_Many_Extensions
+#define FT_Err_Too_Many_Extensions 49
+#endif
+#ifndef FT_Err_Too_Many_Function_Defs
+#define FT_Err_Too_Many_Function_Defs 140
+#endif
+#ifndef FT_Err_Too_Many_Hints
+#define FT_Err_Too_Many_Hints 22
+#endif
+#ifndef FT_Err_Too_Many_Instruction_Defs
+#define FT_Err_Too_Many_Instruction_Defs 141
+#endif
+#ifndef FT_Err_Unimplemented_Feature
+#define FT_Err_Unimplemented_Feature 7
+#endif
+#ifndef FT_Err_Unknown_File_Format
+#define FT_Err_Unknown_File_Format 2
+#endif
+#ifndef FT_Err_Unlisted_Object
+#define FT_Err_Unlisted_Object 65
+#endif
+#ifndef FT_Mod_Err_Autofit
+#define FT_Mod_Err_Autofit 0
+#endif
+#ifndef FT_Mod_Err_BDF
+#define FT_Mod_Err_BDF 0
+#endif
+#ifndef FT_Mod_Err_Base
+#define FT_Mod_Err_Base 0
+#endif
+#ifndef FT_Mod_Err_Bzip2
+#define FT_Mod_Err_Bzip2 0
+#endif
+#ifndef FT_Mod_Err_CFF
+#define FT_Mod_Err_CFF 0
+#endif
+#ifndef FT_Mod_Err_CID
+#define FT_Mod_Err_CID 0
+#endif
+#ifndef FT_Mod_Err_Cache
+#define FT_Mod_Err_Cache 0
+#endif
+#ifndef FT_Mod_Err_GXvalid
+#define FT_Mod_Err_GXvalid 0
+#endif
+#ifndef FT_Mod_Err_Gzip
+#define FT_Mod_Err_Gzip 0
+#endif
+#ifndef FT_Mod_Err_LZW
+#define FT_Mod_Err_LZW 0
+#endif
+#ifndef FT_Mod_Err_OTvalid
+#define FT_Mod_Err_OTvalid 0
+#endif
+#ifndef FT_Mod_Err_PCF
+#define FT_Mod_Err_PCF 0
+#endif
+#ifndef FT_Mod_Err_PFR
+#define FT_Mod_Err_PFR 0
+#endif
+#ifndef FT_Mod_Err_PSaux
+#define FT_Mod_Err_PSaux 0
+#endif
+#ifndef FT_Mod_Err_PShinter
+#define FT_Mod_Err_PShinter 0
+#endif
+#ifndef FT_Mod_Err_PSnames
+#define FT_Mod_Err_PSnames 0
+#endif
+#ifndef FT_Mod_Err_Raster
+#define FT_Mod_Err_Raster 0
+#endif
+#ifndef FT_Mod_Err_SFNT
+#define FT_Mod_Err_SFNT 0
+#endif
+#ifndef FT_Mod_Err_Sdf
+#define FT_Mod_Err_Sdf 0
+#endif
+#ifndef FT_Mod_Err_Smooth
+#define FT_Mod_Err_Smooth 0
+#endif
+#ifndef FT_Mod_Err_TrueType
+#define FT_Mod_Err_TrueType 0
+#endif
+#ifndef FT_Mod_Err_Type1
+#define FT_Mod_Err_Type1 0
+#endif
+#ifndef FT_Mod_Err_Type42
+#define FT_Mod_Err_Type42 0
+#endif
+#ifndef FT_Mod_Err_Winfonts
+#define FT_Mod_Err_Winfonts 0
+#endif
+
+#endif

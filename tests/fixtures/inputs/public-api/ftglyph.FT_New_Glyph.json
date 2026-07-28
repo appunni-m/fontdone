@@ -1,0 +1,262 @@
+{
+  "version": 1,
+  "subject": "ftglyph.FT_New_Glyph",
+  "manifest_cases": [
+    "success_bitmap_outline_svg_empty_glyph",
+    "success_renderer_supported_custom_format",
+    "error_null_library_or_output",
+    "error_unsupported_format",
+    "error_allocation_failure"
+  ],
+  "cases": [
+    {
+      "case_id": "ftglyph.FT_New_Glyph.success_bitmap_outline_svg_empty_glyph",
+      "subject": "ftglyph.FT_New_Glyph",
+      "case": "success_bitmap_outline_svg_empty_glyph",
+      "operation": "ftglyph.new_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "formats": [
+            "FT_GLYPH_FORMAT_BITMAP",
+            "FT_GLYPH_FORMAT_OUTLINE",
+            "FT_GLYPH_FORMAT_SVG"
+          ],
+          "build_feature_for_svg": "FT_CONFIG_OPTION_SVG",
+          "initial_aglyph": "sentinel_non_null"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph"
+      ],
+      "expectation": {
+        "status": "build_dependent",
+        "output_shape": {
+          "status": "FT_Error",
+          "aglyph": "non-null on supported format",
+          "root": "library, clazz identity class, format, zero advance",
+          "payload": "zero-initialized class-specific record"
+        },
+        "compare": {
+          "mode": "identity_class",
+          "paths": [
+            "rows[*].status",
+            "rows[*].format",
+            "rows[*].aglyph_nullness",
+            "rows[*].clazz_class",
+            "rows[*].root.advance",
+            "rows[*].payload_zeroed"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftglyph.c:501-526",
+          "freetype/src/base/ftglyph.c:573-616"
+        ]
+      }
+    },
+    {
+      "case_id": "ftglyph.FT_New_Glyph.success_renderer_supported_custom_format",
+      "subject": "ftglyph.FT_New_Glyph",
+      "case": "success_renderer_supported_custom_format",
+      "operation": "ftglyph.custom_glyph_lifecycle",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "format": "renderer_supported_custom_tag",
+          "library": "live_library_with_registered_renderer",
+          "renderer_lookup": "FT_Lookup_Renderer",
+          "runtime_route": "actual_custom_glyph_lifecycle"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "add_status": "FT_Error",
+          "new_status": "FT_Error",
+          "done_library_status": "FT_Error",
+          "glyph_non_null": "bool",
+          "renderer_non_null": "bool",
+          "class_identity": "bool",
+          "root_format": "renderer class glyph_format",
+          "payload_zero_initialized": "bool",
+          "done_callback_count": "usize"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "add_status",
+            "new_status",
+            "done_library_status",
+            "glyph_non_null",
+            "renderer_non_null",
+            "class_identity",
+            "root_format",
+            "payload_zero_initialized",
+            "done_callback_count"
+          ]
+        },
+        "fixture_requirements": [
+          "the maintained route must register a renderer, select its custom glyph class, and destroy the transferred glyph through that class"
+        ],
+        "source_refs": [
+          "freetype/src/base/ftglyph.c:600-607"
+        ]
+      }
+    },
+    {
+      "case_id": "ftglyph.FT_New_Glyph.error_null_library_or_output",
+      "subject": "ftglyph.FT_New_Glyph",
+      "case": "error_null_library_or_output",
+      "operation": "ftglyph.new_glyph",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "rows": [
+            {
+              "library": null,
+              "aglyph": "valid_output_pointer",
+              "initial_aglyph": "sentinel_non_null"
+            },
+            {
+              "library": "live_library",
+              "aglyph": null
+            }
+          ],
+          "format": "FT_GLYPH_FORMAT_OUTLINE"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "status": "FT_Error",
+          "aglyph_after": "preserved for null library because ft_new_glyph is not entered"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "rows[*].status",
+            "rows[*].aglyph_after",
+            "rows[*].write_class"
+          ]
+        },
+        "error": "FT_Err_Invalid_Argument",
+        "source_refs": [
+          "freetype/src/base/ftglyph.c:580-581"
+        ]
+      }
+    },
+    {
+      "case_id": "ftglyph.FT_New_Glyph.error_unsupported_format",
+      "subject": "ftglyph.FT_New_Glyph",
+      "case": "error_unsupported_format",
+      "operation": "ftglyph.new_glyph",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "formats": [
+            {
+              "name": "unknown_tag",
+              "value": "FT_IMAGE_TAG('B','A','D','!')"
+            },
+            {
+              "name": "svg_when_disabled",
+              "value": "FT_GLYPH_FORMAT_SVG",
+              "build_feature_disabled": "FT_CONFIG_OPTION_SVG"
+            }
+          ],
+          "initial_aglyph": "sentinel_non_null"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph"
+      ],
+      "expectation": {
+        "status": "build_dependent",
+        "output_shape": {
+          "status": "FT_Error",
+          "aglyph_after": "preserved because no clazz is found before ft_new_glyph"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "rows[*].status",
+            "rows[*].aglyph_after",
+            "rows[*].build_feature_enabled"
+          ]
+        },
+        "error": "FT_Err_Invalid_Glyph_Format",
+        "source_refs": [
+          "freetype/src/base/ftglyph.c:600-611"
+        ]
+      }
+    },
+    {
+      "case_id": "ftglyph.FT_New_Glyph.error_allocation_failure",
+      "subject": "ftglyph.FT_New_Glyph",
+      "case": "error_allocation_failure",
+      "operation": "ftglyph.new_glyph",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "allocation_failure_facade": {
+            "kind": "ref",
+            "id": "facades/allocation/fail-ft-new-glyph.json"
+          }
+        },
+        "params": {
+          "formats": [
+            "FT_GLYPH_FORMAT_OUTLINE",
+            "FT_GLYPH_FORMAT_BITMAP"
+          ],
+          "failure_site": "FT_ALLOC glyph in ft_new_glyph",
+          "initial_aglyph": "sentinel_non_null"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "status": "FT_Error",
+          "aglyph_after": "null because ft_new_glyph writes *aglyph before allocation"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "rows[*].status",
+            "rows[*].aglyph_after",
+            "rows[*].allocation_events"
+          ]
+        },
+        "error": "FT_Err_Out_Of_Memory",
+        "fixture_requirements": [
+          "facades/allocation/fail-ft-new-glyph.json must deterministically fail the glyph allocation in ft_new_glyph"
+        ],
+        "source_refs": [
+          "freetype/src/base/ftglyph.c:501-526"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+target/
+/freetype/
+/fontdone-c-abi/Cargo.lock
+/fontdone-wasm/Cargo.lock
+/tests/fixtures/*.json
+/tests/fixtures/outputs/
+*.profraw
+
+# Local coverage database and runtime state.
+/.coverage-mcp/
+
+# Python tooling caches.
+__pycache__/
+*.py[cod]
+/.pytest_cache/
+/.mypy_cache/
+/.ruff_cache/
+
+# Local editor, OS, and transient output.
+.DS_Store
+*.log
+*.tmp
+*.swp
+*~

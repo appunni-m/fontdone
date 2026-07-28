@@ -1,0 +1,11 @@
+{
+  "payloads": [
+    {
+      "bzip2": "compressed/bzip2/valid-pcf-header.pcf.bz2",
+      "id": "small_pcf",
+      "raw": "compressed/bzip2/valid-pcf-header.raw"
+    }
+  ],
+  "source": "scripts/build_compressed_fixtures.py",
+  "version": 1
+}

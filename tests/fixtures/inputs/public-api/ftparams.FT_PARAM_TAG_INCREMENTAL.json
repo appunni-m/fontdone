@@ -1,0 +1,190 @@
+{
+  "version": 1,
+  "subject": "ftparams.FT_PARAM_TAG_INCREMENTAL",
+  "manifest_cases": [
+    "value_matches_header",
+    "incremental_interface_used_for_glyph_load",
+    "missing_or_null_interface_matches_c"
+  ],
+  "cases": [
+    {
+      "case_id": "ftparams.FT_PARAM_TAG_INCREMENTAL.value_matches_header",
+      "subject": "ftparams.FT_PARAM_TAG_INCREMENTAL",
+      "case": "value_matches_header",
+      "operation": "constant",
+      "schema": "constant",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "symbol": "FT_PARAM_TAG_INCREMENTAL",
+          "include": "<freetype/ftparams.h>",
+          "ctype": "FT_ULong",
+          "macro": "FT_MAKE_TAG('i','n','c','r')",
+          "value_hex": "0x696e6372",
+          "value_decimal": 1768842098,
+          "use_site": "FT_Open_Face stores FT_Incremental_Interface in face->internal when FT_CONFIG_OPTION_INCREMENTAL is enabled",
+          "source_refs": [
+            "freetype/include/freetype/ftparams.h",
+            "freetype/src/base/ftobjs.c"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:constant",
+        "header:ftparams",
+        "area:incremental"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "symbol": "string",
+          "ctype": "FT_ULong",
+          "value": "integer",
+          "import_compiles": "bool"
+        },
+        "compare": {
+          "mode": "value",
+          "paths": [
+            "symbol",
+            "value",
+            "import_compiles"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ftparams.FT_PARAM_TAG_INCREMENTAL.incremental_interface_used_for_glyph_load",
+      "subject": "ftparams.FT_PARAM_TAG_INCREMENTAL",
+      "case": "incremental_interface_used_for_glyph_load",
+      "operation": "ftincrem.incremental_state_lifecycle",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "path": "input/fonts/DejaVuSans.ttf"
+          }
+        },
+        "params": {
+          "face_index": 0,
+          "parameters": [
+            {
+              "tag": "FT_PARAM_TAG_INCREMENTAL",
+              "data": "FT_Incremental_Interface"
+            }
+          ],
+          "glyph_index": 36,
+          "load_flags": "FT_LOAD_NO_SCALE",
+          "horizontal_bearing_delta": 7,
+          "horizontal_advance_delta": 11,
+          "vertical_bearing_delta": 13,
+          "vertical_advance_delta": 17,
+          "runtime_route": "actual_incremental_state_lifecycle"
+        }
+      },
+      "classifiers": [
+        "kind:constant",
+        "header:ftparams",
+        "area:incremental",
+        "runtime:incremental_callbacks"
+      ],
+      "expectation": {
+        "status": "supported",
+        "output_shape": {
+          "open_error": "FT_Error",
+          "load_error": "FT_Error",
+          "done_face_error": "FT_Error",
+          "done_library_error": "FT_Error",
+          "callback_log": "ordered array",
+          "glyph_data": "FT_Data",
+          "release_count": "usize",
+          "release_matches_acquisition": "bool",
+          "slot": "public format, advance, and metrics"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "open_error",
+            "load_error",
+            "done_face_error",
+            "done_library_error",
+            "callback_log",
+            "glyph_data.length",
+            "release_count",
+            "release_matches_acquisition",
+            "slot"
+          ]
+        },
+        "fixture_requirements": [
+          "The tracked DejaVuSans.ttf input supplies the exact raw glyph bytes returned by get_glyph_data.",
+          "The callback log must prove FT_Open_Face retained the interface through FT_Load_Glyph, seeded horizontal and vertical metrics, applied callback mutations to public slot output, and released the acquired glyph bytes afterward."
+        ]
+      }
+    },
+    {
+      "case_id": "ftparams.FT_PARAM_TAG_INCREMENTAL.missing_or_null_interface_matches_c",
+      "subject": "ftparams.FT_PARAM_TAG_INCREMENTAL",
+      "case": "missing_or_null_interface_matches_c",
+      "operation": "freetype.open_face_incremental",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "file",
+            "role": "font",
+            "path": "input/fonts/DejaVuSans.ttf"
+          }
+        },
+        "params": {
+          "face_index": 0,
+          "variants": [
+            {
+              "label": "parameter_absent",
+              "parameters": []
+            },
+            {
+              "label": "parameter_data_null",
+              "parameters": [
+                {
+                  "tag": "FT_PARAM_TAG_INCREMENTAL",
+                  "data": "NULL"
+                }
+              ]
+            }
+          ],
+          "glyph_index": 1,
+          "load_flags": [
+            "FT_LOAD_DEFAULT"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:constant",
+        "header:ftparams",
+        "area:incremental"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "open_error": "FT_Error",
+          "load_error": "FT_Error",
+          "callback_event_log": "empty or unavailable",
+          "glyph_slot": "public fields"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "open_error",
+            "load_error",
+            "callback_event_log",
+            "glyph_slot"
+          ]
+        }
+      }
+    }
+  ]
+}

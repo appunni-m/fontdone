@@ -1,0 +1,3 @@
+# Offline fixture-generator environment. Runtime and ordinary parity checks do
+# not import this dependency.
+fonttools==4.60.2

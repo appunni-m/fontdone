@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "subject": "freetype-allocation-failure-facade",
+  "purpose": "Deterministic allocator-failure vocabulary for public lifecycle and copy-cleanup parity rows.",
+  "source_refs": [
+    "freetype/include/freetype/ftsystem.h",
+    "freetype/src/base/ftglyph.c"
+  ],
+  "modes": [
+    {
+      "id": "fail_next_allocation",
+      "fail_after_successes": 0,
+      "expected_cleanup": "No partial target exists to destroy."
+    },
+    {
+      "id": "fail_second_allocation",
+      "fail_after_successes": 1,
+      "expected_cleanup": "The allocated target record is destroyed after its copy hook fails."
+    },
+    {
+      "id": "count_without_failure",
+      "fail_after_successes": null,
+      "expected_cleanup": "Allocation and free callbacks are counted without forcing an error."
+    }
+  ]
+}

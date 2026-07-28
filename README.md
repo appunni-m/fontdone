@@ -1,0 +1,230 @@
+# fontdone
+
+<div align="center">
+
+**A pure-Rust font engine measured against FreeType 2.14.3.**
+
+[![CI](https://github.com/appunni-m/fontdone/actions/workflows/ci.yml/badge.svg)](https://github.com/appunni-m/fontdone/actions/workflows/ci.yml)
+[![License: FTL](https://img.shields.io/badge/license-FTL-blue.svg)](FTL.TXT)
+[![MSRV: Rust 1.87](https://img.shields.io/badge/MSRV-1.87-orange.svg)](https://github.com/appunni-m/fontdone/blob/main/rust-toolchain.toml)
+
+</div>
+
+> **Release:** `2.14.3-alpha.1`, not yet published. The project is suitable for
+> compatibility development and controlled evaluation, not as an unqualified
+> drop-in FreeType replacement.
+
+`fontdone` implements font loading, metrics, hinting, outlines, and
+rasterization in Rust. Runtime packages do not build, link, or load FreeType C.
+Pinned FreeType source is used only by ignored offline test tooling.
+
+## 1. Choose an integration
+
+| Consumer | Package | Contract | Start here |
+|---|---|---|---|
+| Rust application | `fontdone` | Compact masks/metrics API | [Rust integration](https://github.com/appunni-m/fontdone/blob/main/doc/INTEGRATION.md#2-compact-rust-api) |
+| Rust FreeType migration | `fontdone` | Safe Rust API preserving measured `FT_*` concepts | [Safe migration](https://github.com/appunni-m/fontdone/blob/main/doc/INTEGRATION.md#3-freetype-shaped-safe-rust) |
+| C or C-compatible host | `fontdone-c-abi` | Raw pointers, shipped headers, shared/static libraries | [C ABI guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-c-abi/README.md) |
+| Node.js host | `fontdone-wasm` | Low-level wasm32 linear-memory ABI | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
+
+The crates are not on crates.io yet. Evaluate from a local checkout:
+
+```toml
+[dependencies]
+fontdone = { path = "../fontdone" }
+```
+
+After the repository and release tag are public, a reproducible Git dependency
+can use the exact tag:
+
+```toml
+[dependencies]
+fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.1" }
+```
+
+## 2. Rust quick start
+
+```rust
+use fontdone::Font;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let bytes = std::fs::read("font.ttf")?;
+    let font = Font::truetype(&bytes, 16.0)?;
+    let mask = font.getmask("A")?;
+
+    println!(
+        "{}x{}, origin=({}, {}), advance={}",
+        mask.width, mask.height, mask.xmin, mask.ymin, mask.advance_width
+    );
+    Ok(())
+}
+```
+
+The input is copied into owned font data. `GlyphMask::pixels` is owned,
+tightly packed, row-major 8-bit coverage. The compact API renders the first
+Unicode scalar and does not shape text. See the
+[integration guide](https://github.com/appunni-m/fontdone/blob/main/doc/INTEGRATION.md) for formats, units, errors, ownership,
+threading, and compiled examples.
+
+## 3. Compatibility status
+
+Compatibility has 3 separate measurements. They must not be combined into one
+percentage.
+
+### 3.1 Maintained adoption map
+
+The generated [function adoption map](https://github.com/appunni-m/fontdone/blob/main/doc/FREETYPE_SUPPORT.md) classifies all
+218 pinned public functions by application-ready contract status:
+
+| Status | Functions | Meaning |
+|---|---:|---|
+| Complete | 52 | Maintained application behavior and mapping are complete |
+| Implemented, mapping incomplete | 5 | Runtime code exists; public mapping is incomplete |
+| Partial | 29 | Only the documented behavior is ready |
+| Planned | 69 | No application-ready implementation is claimed |
+| Intentionally excluded | 63 | Outside the currently declared product surface |
+| **Total** | **218** | Pinned FreeType 2.14.3 function inventory |
+
+This is a conservative adoption classification. A planned or excluded function
+can still have a declaration, stub, validation route, or focused runtime probe.
+That evidence does not make its complete application behavior available.
+
+### 3.2 Last committed runtime evidence
+
+The last committed full parity snapshot was recorded on **2026-07-30**:
+
+| Measurement | Count |
+|---|---:|
+| Runnable exact-comparison cases | 7,212 |
+| Passed cases | 7,212 |
+| Failed cases | 0 |
+| Explicitly pending cases | 95 |
+| Covered manifest cases | 4,084 |
+| Validated public API subjects | 1,543 |
+| Validated public API input files | 1,537 |
+| Logical declared cases | 4,258 |
+| Concrete expanded cases | 7,307 |
+| Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
+
+`7,212 / 7,212` means every runnable case in that execution matched. It does
+not turn the 95 pending cases into passes. Likewise, 218/218 function-route
+evidence can be satisfied by a narrow success or null-validation route; it is
+not equivalent to complete behavior for every input, state, or platform.
+
+Run `make test-parity` for current worktree evidence. It writes the full log
+and a source-digest-bound report under `target/parity-evidence/`. After a
+complete run, `make record-parity-snapshot` copies that report into the
+[committed runtime evidence](https://github.com/appunni-m/fontdone/blob/main/doc/runtime_parity_evidence.json)
+and updates this table. Recording fails if parity-relevant source changed after
+the run. Generated runtime reports under `target/` are newer authority for
+their exact worktree than the committed release snapshot.
+
+### 3.3 C ABI completion contract
+
+The latest committed scorecard has **9 / 12 categories complete**:
+
+| Category group | Status |
+|---|---|
+| Functions | 218 / 218 names, signatures, and traced function routes; 4,964 / 5,047 pinned-C runtime contract rows exact, with 83 pending |
+| Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
+| Ownership, state, errors, modules, headers | Complete under their blocking scorecard measurements |
+| Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
+| Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
+
+Only `make c-abi-contract-complete` is the full-contract pass condition. The
+ordinary `make c-abi-contract` command intentionally succeeds while reporting
+remaining debt. Pending runtime rows now block the functions category, even
+when every bare function name has some traced route. The self-cleaning
+[completion roadmap](https://github.com/appunni-m/fontdone/blob/main/doc/ROADMAP.md) defines the exact 12-category goal.
+
+The committed machine-readable snapshot is
+[`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
+
+## 4. What is implemented
+
+The Rust runtime contains:
+
+- SFNT, TrueType, CFF/CFF2, Type 1/Type 42, BDF, PCF, PFR, WinFNT, and
+  collection-facing load paths where listed by the adoption map;
+- TrueType bytecode hinting and Latin/CJK auto-hinting infrastructure;
+- smooth, mono, LCD, LCD-V, SDF, embedded-bitmap, outline, and selected color
+  and SVG routes;
+- metrics, charmaps, variation data, names, kerning, glyph objects, outlines,
+  stroking, caches, streams, validators, and module-state compatibility paths;
+- safe Rust, native C, and WebAssembly facades backed by the same Rust core.
+
+This list describes components, not universal format or API completeness.
+Always use the adoption map and exact parity cases for a compatibility claim.
+
+## 5. Repository map
+
+```text
+src/                  pure-Rust engine and safe APIs
+fontdone-c-abi/       native C artifact, headers, and C example
+fontdone-wasm/        wasm32 ABI, schema, declarations, and Node example
+tests/data/           maintained, non-generated contracts
+tests/fixtures/input/ tracked font and auxiliary inputs
+scripts/font_generation/
+                      deterministic font generators
+doc/                  integration, development, release, status, and roadmap
+```
+
+Runtime flow:
+
+```text
+font bytes -> table parsing -> scaling -> native/auto hinting -> rasterization
+                                                        |
+                                      Rust / C ABI / WASM observations
+```
+
+## 6. Build and verify
+
+Requirements and host support are documented in
+[`doc/DEVELOPMENT.md`](https://github.com/appunni-m/fontdone/blob/main/doc/DEVELOPMENT.md).
+
+```bash
+make setup       # fetch and build the pinned offline C oracle
+make test-fast   # workspace tests that do not need full parity
+make test-parity # exact C/Rust/C-ABI/WASM parity
+make lint        # rustfmt and Clippy
+make doc-test    # compile public Rust examples
+```
+
+Important complete gates:
+
+| Command | Contract |
+|---|---|
+| `make api-abi-audit` | Parse the pinned public declarations and local surfaces |
+| `make c-abi-contract` | Report every C-contract numerator, denominator, and debt item |
+| `make c-abi-contract-complete` | Fail unless all 12 C-contract categories complete |
+| `make test-integrations` | Run downstream Rust, external C, exports, and Node/WASM consumers |
+| `make check-docs` | Check every tracked Markdown document, status snapshot, links, commands, and rustdoc policy |
+| `make release-verify` | Run local release gates; requires assembled five-target platform evidence |
+
+`make help` is the maintained command index.
+
+## 7. Fixtures and licensing
+
+Tracked input fixtures remain under `tests/fixtures/input/`. Generated matrices
+and oracle outputs are ignored. Font-generation code is isolated under
+`scripts/font_generation/` so its deterministic inputs, output classification,
+and licensing can be reviewed separately.
+
+Read:
+
+- [fixture notices](https://github.com/appunni-m/fontdone/blob/main/tests/fixtures/THIRD_PARTY_NOTICES.md);
+- [font provenance](https://github.com/appunni-m/fontdone/blob/main/tests/fixtures/input/fonts/PROVENANCE.md);
+- [font-generation policy](https://github.com/appunni-m/fontdone/blob/main/scripts/font_generation/README.md).
+
+The root FreeType License does not relicense third-party font inputs.
+
+## 8. Project policies
+
+- [Documentation map](https://github.com/appunni-m/fontdone/blob/main/doc/README.md)
+- [Contributing](https://github.com/appunni-m/fontdone/blob/main/CONTRIBUTING.md)
+- [Security](https://github.com/appunni-m/fontdone/blob/main/SECURITY.md)
+- [Code of conduct](https://github.com/appunni-m/fontdone/blob/main/CODE_OF_CONDUCT.md)
+- [Changelog](CHANGELOG.md)
+
+`fontdone` is distributed under the FreeType Project License:
+[`LICENSE`](LICENSE), [`FTL.TXT`](FTL.TXT), and [`NOTICE.md`](NOTICE.md).

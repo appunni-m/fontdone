@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "subject": "fterrdef.FT_Err_Stack_Overflow",
+  "manifest_cases": [
+    "value_matches_header",
+    "tt_interpreter_stack_overflow",
+    "cff_stack_overflow_translates_to_invalid_file_format"
+  ],
+  "cases": [
+    {
+      "case_id": "fterrdef.FT_Err_Stack_Overflow.value_matches_header",
+      "subject": "fterrdef.FT_Err_Stack_Overflow",
+      "case": "value_matches_header",
+      "operation": "constant",
+      "schema": "api_constant",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "symbol": "FT_Err_Stack_Overflow",
+          "include": "<freetype/fterrors.h>",
+          "public_import": "#include <freetype/freetype.h>",
+          "header": "freetype/fterrdef.h",
+          "expected_value_from_pinned_header": 130,
+          "expected_value_hex": "0x82",
+          "expected_error_string_from_pinned_header": "stack overflow",
+          "pinned_source": "freetype/include/freetype/fterrdef.h:183-184"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "area:constant"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "value_type": "FT_Error",
+          "symbol": "FT_Err_Stack_Overflow",
+          "value": "integer",
+          "error_string": "string_from_FT_ERRORDEF_when_requested"
+        },
+        "compare": {
+          "mode": "value",
+          "paths": [
+            "value",
+            "symbol",
+            "header_symbol",
+            "error_string"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Stack_Overflow.tt_interpreter_stack_overflow",
+      "subject": "fterrdef.FT_Err_Stack_Overflow",
+      "case": "tt_interpreter_stack_overflow",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/glyf/hinter-glyph-interpreter-errors.ttf",
+            "requirements": "Project-authored glyph bytecode executes NPUSHB with 255 operands against the pinned 144-slot stack allocation."
+          }
+        },
+        "params": {
+          "expected_error_symbol": "FT_Err_Stack_Overflow",
+          "face_index": 0,
+          "glyph_index": 32,
+          "size": 20,
+          "load_flags": [
+            "FT_LOAD_PEDANTIC"
+          ],
+          "pinned_sources": [
+            "freetype/src/truetype/ttobjs.c:1067-1080",
+            "freetype/src/truetype/ttinterp.c:3663-3777",
+            "freetype/src/truetype/ttinterp.c:6796"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:truetype-bytecode",
+        "error-trigger",
+        "requires:fixture",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "error",
+        "error": "FT_Err_Stack_Overflow",
+        "fixture_requirements": "Project-authored glyph bytecode pushes 255 operands into the pinned 144-slot interpreter stack; pedantic loading exposes the exact error.",
+        "output_shape": {
+          "error": "FT_Error",
+          "error_symbol": "FT_Err_*",
+          "slot_state": "mutation_class_if_slot_is_involved",
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "error_symbol",
+            "slot_state.mutation_class"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Stack_Overflow.cff_stack_overflow_translates_to_invalid_file_format",
+      "subject": "fterrdef.FT_Err_Stack_Overflow",
+      "case": "cff_stack_overflow_translates_to_invalid_file_format",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/cff/pure-cff-cubic.otf",
+            "requirements": "Project-authored CFF glyph pushes 49 Type2 operands against the 48-operand Adobe-engine limit."
+          }
+        },
+        "params": {
+          "expected_error_symbol": "FT_Err_Invalid_File_Format",
+          "face_index": 0,
+          "glyph_index": 41,
+          "size": 12,
+          "load_flags": [
+            "FT_LOAD_DEFAULT"
+          ],
+          "pinned_sources": [
+            "freetype/src/cff/cf2intrp.c:546-550",
+            "freetype/src/cff/cf2ft.c:435"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:cff-type1",
+        "error-trigger",
+        "requires:fixture",
+        "route:exact",
+        "translation:public-boundary"
+      ],
+      "expectation": {
+        "status": "error",
+        "error": "FT_Err_Invalid_File_Format",
+        "fixture_requirements": "Project-authored CFF glyph exceeds the Adobe Type2 operand stack; pinned FreeType translates the decoder failure at the public CFF-driver boundary.",
+        "output_shape": {
+          "error": "FT_Error",
+          "error_symbol": "FT_Err_*",
+          "slot_state": "mutation_class_if_slot_is_involved",
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "error_symbol",
+            "slot_state.mutation_class"
+          ]
+        }
+      }
+    }
+  ]
+}

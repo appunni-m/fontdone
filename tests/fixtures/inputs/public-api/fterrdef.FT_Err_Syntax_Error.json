@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "subject": "fterrdef.FT_Err_Syntax_Error",
+  "manifest_cases": [
+    "value_matches_header",
+    "malformed_afm_pair_count"
+  ],
+  "cases": [
+    {
+      "case_id": "fterrdef.FT_Err_Syntax_Error.value_matches_header",
+      "subject": "fterrdef.FT_Err_Syntax_Error",
+      "case": "value_matches_header",
+      "operation": "constant",
+      "schema": "api_constant",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "symbol": "FT_Err_Syntax_Error",
+          "include": "<freetype/fterrors.h>",
+          "public_import": "#include <freetype/freetype.h>",
+          "header": "freetype/fterrdef.h",
+          "expected_value_from_pinned_header": 160,
+          "expected_value_hex": "0xA0",
+          "expected_error_string_from_pinned_header": "opcode syntax error",
+          "pinned_source": "freetype/include/freetype/fterrdef.h:244-245"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "area:constant"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "value_type": "FT_Error",
+          "symbol": "FT_Err_Syntax_Error",
+          "value": "integer",
+          "error_string": "string_from_FT_ERRORDEF_when_requested"
+        },
+        "compare": {
+          "mode": "value",
+          "paths": [
+            "value",
+            "symbol",
+            "header_symbol",
+            "error_string"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Syntax_Error.malformed_afm_pair_count",
+      "subject": "fterrdef.FT_Err_Syntax_Error",
+      "case": "malformed_afm_pair_count",
+      "operation": "freetype.attach_stream",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/type1/attach-afm-base.pfb",
+            "requirements": "Project-authored Type1 face that accepts an AFM auxiliary stream."
+          },
+          "attachment": {
+            "kind": "ref",
+            "role": "auxiliary_metrics_stream",
+            "id": "input/aux/type1/malformed-kern-count.afm",
+            "requirements": "Project-authored AFM reaches StartKernPairs without the mandatory integer count."
+          }
+        },
+        "params": {
+          "expected_error_symbol": "FT_Err_Syntax_Error",
+          "face_index": 0,
+          "size": 12,
+          "post_attach_probe": [
+            "FT_Get_Kerning"
+          ],
+          "pinned_sources": [
+            "freetype/src/base/ftobjs.c:2737-2793",
+            "freetype/src/type1/t1afm.c:201-234",
+            "freetype/src/psaux/afmparse.c:579-592"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:afm",
+        "error-trigger",
+        "requires:fixture",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "error",
+        "error": "FT_Err_Syntax_Error",
+        "fixture_requirements": "Project-authored Type1 face plus AFM with a missing StartKernPairs count; the face opens before FT_Attach_Stream returns Syntax_Error.",
+        "output_shape": {
+          "error": "FT_Error",
+          "error_symbol": "FT_Err_*",
+          "attach_status": "FT_Error",
+          "post_attach_probe": "face_state_after_rejected_attachment",
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "error_symbol",
+            "output.attach_status",
+            "output.status",
+            "output.post_attach_probe"
+          ]
+        }
+      }
+    }
+  ]
+}

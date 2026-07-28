@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "subject": "fterrdef.FT_Err_Could_Not_Find_Context",
+  "manifest_cases": [
+    "value_matches_header",
+    "truetype_context_allocation_failure_returns_error"
+  ],
+  "cases": [
+    {
+      "case_id": "fterrdef.FT_Err_Could_Not_Find_Context.value_matches_header",
+      "subject": "fterrdef.FT_Err_Could_Not_Find_Context",
+      "case": "value_matches_header",
+      "operation": "constant",
+      "schema": "api_constant",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "symbol": "FT_Err_Could_Not_Find_Context",
+          "include": "<freetype/fterrors.h>",
+          "header": "freetype/fterrdef.h",
+          "public_import": "#include <freetype/freetype.h>",
+          "error_prefix": "FT_Err_",
+          "expected_value_from_pinned_header": 153,
+          "expected_value_hex": "0x99",
+          "expected_error_string_from_pinned_header": "could not find context",
+          "pinned_source": "freetype/include/freetype/fterrdef.h"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "area:constant"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "value_type": "FT_Error",
+          "symbol": "FT_Err_Could_Not_Find_Context",
+          "header": "freetype/fterrdef.h",
+          "public_import": "freetype/freetype.h or freetype/fterrors.h",
+          "value": "integer",
+          "error_string": "string_from_FT_ERRORDEF_when_requested"
+        },
+        "compare": {
+          "mode": "value",
+          "paths": [
+            "value",
+            "symbol",
+            "header_symbol",
+            "error_string"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Could_Not_Find_Context.truetype_context_allocation_failure_returns_error",
+      "subject": "fterrdef.FT_Err_Could_Not_Find_Context",
+      "case": "truetype_context_allocation_failure_returns_error",
+      "operation": "fterrdef.truetype_context_allocation_failure",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "fixture": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "requirements": "Tracked bytecode-capable TrueType face reaches lazy size bytecode initialization on its first glyph load."
+          }
+        },
+        "params": {
+          "expected_error_symbol": "FT_Err_Could_Not_Find_Context",
+          "expected_error_value_source": "pinned fterrdef.h",
+          "pinned_sources": [
+            "freetype/src/truetype/ttinterp.c:345-378",
+            "freetype/src/truetype/ttobjs.c:1042-1045"
+          ],
+          "face_index": 0,
+          "glyph_index": 1,
+          "size": 12,
+          "load_flags": [
+            "FT_LOAD_DEFAULT"
+          ],
+          "allocation_failure": {
+            "phase": "TT_New_Context",
+            "fail_after_phase_allocation": 0
+          }
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "error-trigger",
+        "requires:fixture",
+        "requires:allocator-injection",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "error",
+        "error": "FT_Err_Could_Not_Find_Context",
+        "fixture_requirements": "Pinned C uses FT_New_Library with a custom FT_Memory and fails the first allocation made by the first glyph load, which is TT_New_Context's context record; Fontdone frontends inject at the same shared context-allocation seam.",
+        "output_shape": {
+          "error": "FT_Error",
+          "error_symbol": "FT_Err_*",
+          "failure_phase": "tt_new_context",
+          "context_allocation_attempted": "boolean",
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "error_symbol",
+            "output.failure_phase",
+            "output.load_status",
+            "output.context_allocation_attempted"
+          ]
+        }
+      }
+    }
+  ]
+}

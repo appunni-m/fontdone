@@ -1,0 +1,74 @@
+[package]
+name = "fontdone-c-abi"
+version = "2.14.3-alpha.1"
+edition = "2024"
+rust-version = "1.87"
+license = "FTL"
+publish = ["crates-io"]
+description = "FreeType-shaped native C ABI for the pure-Rust fontdone engine"
+readme = "README.md"
+repository = "https://github.com/appunni-m/fontdone"
+keywords = ["freetype", "font", "ffi", "c-abi"]
+categories = ["api-bindings", "rendering", "text-processing"]
+include = [
+    "/src/**",
+    "/include/**",
+    "/examples/**",
+    "/build.rs",
+    "/fontdone2.pc",
+    "/Cargo.toml",
+    "/README.md",
+    "/API_SUPPORT.md",
+    "/LICENSE",
+    "/FTL.TXT",
+    "/NOTICE.md",
+]
+
+[lib]
+name = "fontdone_c_abi"
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[dependencies]
+fontdone = { version = "=2.14.3-alpha.1", path = "..", default-features = false }
+
+[dev-dependencies]
+fontdone-wasm = { path = "../fontdone-wasm", default-features = false }
+
+[features]
+default = ["bzip2", "color-layers", "lzw"]
+abi-test-support = ["fontdone/abi-test-support"]
+bzip2 = ["fontdone/bzip2"]
+color-layers = ["fontdone/color-layers"]
+lzw = ["fontdone/lzw"]
+subpixel-rendering = [
+    "fontdone/subpixel-rendering",
+    "fontdone-wasm/subpixel-rendering",
+]
+
+[lints.rust]
+future-incompatible = { level = "deny", priority = -1 }
+nonstandard_style = { level = "deny", priority = -1 }
+unused = { level = "deny", priority = -1 }
+unsafe_code = "allow"
+unused_crate_dependencies = "warn"
+dead_code = "deny"
+deprecated = "allow"
+missing_docs = "warn"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+unwrap_in_result = "deny"
+todo = "deny"
+redundant_clone = "deny"
+large_enum_variant = "deny"
+needless_collect = "deny"
+clone_on_copy = "deny"
+unnecessary_to_owned = "deny"
+needless_borrow = "deny"
+map_unwrap_or = "deny"
+needless_range_loop = "deny"
+unnecessary_cast = "deny"
+cast_possible_truncation = "warn"
+cast_sign_loss = "warn"
+arithmetic_side_effects = "warn"

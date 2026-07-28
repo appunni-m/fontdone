@@ -1,0 +1,198 @@
+{
+  "version": 1,
+  "subject": "ftimage.FT_Raster",
+  "manifest_cases": [
+    "alias_matches_c",
+    "lifecycle_callback_contract",
+    "null_raster_errors"
+  ],
+  "cases": [
+    {
+      "case_id": "ftimage.FT_Raster.alias_matches_c",
+      "subject": "ftimage.FT_Raster",
+      "case": "alias_matches_c",
+      "operation": "abi_type_probe",
+      "schema": "abi_layout",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "include": "freetype/ftimage.h",
+          "symbol": "FT_Raster",
+          "typedef_target": "struct FT_RasterRec_*",
+          "opaque": true,
+          "nullable": true,
+          "probe": [
+            "sizeof",
+            "alignof",
+            "pointer_size",
+            "null_assignable",
+            "import_compiles"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:type",
+        "header:ftimage",
+        "area:abi_layout",
+        "area:raster"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "sizeof": "usize",
+          "alignof": "usize",
+          "pointer_size": "usize",
+          "null_assignable": "bool",
+          "import_compiles": "bool"
+        },
+        "compare": {
+          "mode": "layout",
+          "paths": [
+            "sizeof",
+            "alignof",
+            "pointer_size",
+            "null_assignable",
+            "import_compiles"
+          ]
+        },
+        "source_refs": [
+          "freetype/include/freetype/ftimage.h:1075-1089"
+        ]
+      }
+    },
+    {
+      "case_id": "ftimage.FT_Raster.lifecycle_callback_contract",
+      "subject": "ftimage.FT_Raster",
+      "case": "lifecycle_callback_contract",
+      "operation": "renderer.raster_lifecycle",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "renderer": "fixture_raster_lifecycle",
+          "glyph_format": "FT_GLYPH_FORMAT_OUTLINE",
+          "runtime_route": "actual_raster_lifecycle",
+          "sequence": [
+            "raster_new",
+            "module_init",
+            "raster_reset(NULL,0)",
+            "renderer_set_mode",
+            "raster_set_mode",
+            "renderer_render",
+            "raster_render",
+            "raster_done",
+            "module_done"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:type",
+        "header:ftimage",
+        "area:raster",
+        "runtime:renderer_class"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status_sequence": ["FT_Error"],
+          "selected_renderer_identity": "bool",
+          "raster_handle_created": "bool",
+          "new_memory_nonnull": "bool",
+          "reset": "object",
+          "set_mode": "object",
+          "render": "object",
+          "done_handle_identity": "bool",
+          "events": ["string"]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status_sequence",
+            "selected_renderer_identity",
+            "raster_handle_created",
+            "new_memory_nonnull",
+            "reset",
+            "set_mode",
+            "render",
+            "done_handle_identity",
+            "events"
+          ]
+        },
+        "fixture_requirements": [
+          "Register one callback-backed FT_Renderer_Class through FT_Add_Module, select it through FT_Set_Renderer, invoke its render callback, and remove it through FT_Remove_Module.",
+          "Compare the exact raster handle across raster_new, reset, set-mode, render, and done; prove reset receives NULL/0 and prove raster_done precedes module_done."
+        ],
+        "source_refs": [
+          "freetype/include/freetype/ftimage.h:1092-1241",
+          "freetype/src/base/ftobjs.c:4597-4610",
+          "freetype/src/base/ftobjs.c:4650-4650"
+        ]
+      }
+    },
+    {
+      "case_id": "ftimage.FT_Raster.null_raster_errors",
+      "subject": "ftimage.FT_Raster",
+      "case": "null_raster_errors",
+      "operation": "renderer.raster_render",
+      "schema": "raster_params_error",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "outline": {
+            "kind": "ref",
+            "id": "outlines/synthetic/simple-rectangle.json",
+            "asset_kind": "outline"
+          },
+          "bitmap": {
+            "kind": "ref",
+            "id": "bitmaps/synthetic/simple-gray-target.json",
+            "asset_kind": "bitmap"
+          }
+        },
+        "params": {
+          "raster": "NULL",
+          "renderer_matrix": [
+            "black",
+            "smooth",
+            "sdf",
+            "bitmap_sdf"
+          ],
+          "params_shape": "otherwise valid FT_Raster_Params or SDF_Raster_Params"
+        }
+      },
+      "classifiers": [
+        "kind:type",
+        "header:ftimage",
+        "area:raster",
+        "path:error"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "renderer": "string",
+          "status": "FT_Error",
+          "error": "string"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "renderer",
+            "status",
+            "error"
+          ]
+        },
+        "fixture_requirements": [
+          "Future direct raster callback probe with null-raster invocation for all renderer classes."
+        ],
+        "source_refs": [
+          "freetype/src/raster/ftraster.c:2677-2703",
+          "freetype/src/smooth/ftgrays.c:1964-2023",
+          "freetype/src/sdf/ftsdf.c:3811-3867",
+          "freetype/src/sdf/ftbsdf.c:1236-1307"
+        ]
+      }
+    }
+  ]
+}

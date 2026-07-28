@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "subject": "fterrdef.FT_Err_Invalid_Glyph_Format",
+  "manifest_cases": [
+    "value_matches_header",
+    "render_or_load_rejects_unsupported_glyph_format"
+  ],
+  "cases": [
+    {
+      "case_id": "fterrdef.FT_Err_Invalid_Glyph_Format.value_matches_header",
+      "subject": "fterrdef.FT_Err_Invalid_Glyph_Format",
+      "case": "value_matches_header",
+      "operation": "constant",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "symbol": "FT_Err_Invalid_Glyph_Format",
+          "include": "<freetype/fterrors.h>",
+          "definition_header": "freetype/fterrdef.h",
+          "value_type": "FT_Error",
+          "expected_value_from_pinned_header": 18,
+          "expected_hex_value": "0x12",
+          "expected_error_string": "unsupported glyph image format",
+          "module_errors": "FT_CONFIG_OPTION_USE_MODULE_ERRORS disabled in pinned public ABI so FT_ERR_BASE is 0"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "surface:public-c-api",
+        "coverage:value-import"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "symbol": "FT_Err_Invalid_Glyph_Format",
+          "value": "FT_Error integer",
+          "expected_value": 18,
+          "expected_hex_value": "0x12",
+          "error_string": "unsupported glyph image format",
+          "import": "<freetype/fterrors.h> expands freetype/fterrdef.h"
+        },
+        "compare": {
+          "mode": "value",
+          "paths": [
+            "symbol",
+            "numeric_value",
+            "error_string",
+            "import_compiles"
+          ]
+        },
+        "oracle": "generated_at_runtime_from_c_freetype",
+        "sources_checked": [
+          "freetype/include/freetype/fterrdef.h",
+          "freetype/include/freetype/fterrors.h"
+        ]
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Invalid_Glyph_Format.render_or_load_rejects_unsupported_glyph_format",
+      "subject": "fterrdef.FT_Err_Invalid_Glyph_Format",
+      "case": "render_or_load_rejects_unsupported_glyph_format",
+      "operation": "ftglyph.get_glyph",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "file",
+            "role": "font",
+            "path": "input/fonts/DejaVuSans.ttf"
+          }
+        },
+        "params": {
+          "call_sequence": [
+            "FT_New_Memory_Face",
+            "synthesize unsupported slot format",
+            "FT_Get_Glyph"
+          ],
+          "face_index": 0,
+          "pixel_size": 24,
+          "glyph_index": 36,
+          "load_flags": [
+            "FT_LOAD_DEFAULT"
+          ],
+          "unsupported_slot_formats": [
+            "unsupported_tag"
+          ],
+          "expected_error_symbol": "FT_Err_Invalid_Glyph_Format",
+          "expected_error_value": 18,
+          "c_behavior": "FT_Get_Glyph returns Invalid_Glyph_Format before writing through aglyph when the slot format has no registered glyph class"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "surface:public-c-api",
+        "coverage:exact-error-trigger"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "error": "FT_Error",
+          "expected_error_symbol": "FT_Err_Invalid_Glyph_Format",
+          "expected_error_value": 18,
+          "output_pointer_class": "non_null_preserved",
+          "cleanup_events": "none"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "status",
+            "output.rows[*].error",
+            "output.rows[*].output_pointer_class",
+            "output.cleanup_events"
+          ]
+        },
+        "oracle": "generated_at_runtime_from_c_freetype",
+        "sources_checked": [
+          "freetype/include/freetype/fterrdef.h",
+          "freetype/include/freetype/fterrors.h",
+          "freetype/src/base/ftglyph.c"
+        ]
+      }
+    }
+  ]
+}

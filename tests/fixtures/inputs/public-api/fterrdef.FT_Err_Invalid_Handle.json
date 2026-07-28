@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "subject": "fterrdef.FT_Err_Invalid_Handle",
+  "manifest_cases": [
+    "value_matches_header",
+    "generic_object_handle_validation"
+  ],
+  "cases": [
+    {
+      "case_id": "fterrdef.FT_Err_Invalid_Handle.value_matches_header",
+      "subject": "fterrdef.FT_Err_Invalid_Handle",
+      "case": "value_matches_header",
+      "operation": "constant",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "symbol": "FT_Err_Invalid_Handle",
+          "include": "<freetype/fterrors.h>",
+          "definition_header": "freetype/fterrdef.h",
+          "value_type": "FT_Error",
+          "expected_value_from_pinned_header": 32,
+          "expected_hex_value": "0x20",
+          "expected_error_string": "invalid object handle",
+          "module_errors": "FT_CONFIG_OPTION_USE_MODULE_ERRORS disabled in pinned public ABI so FT_ERR_BASE is 0"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "surface:public-c-api",
+        "coverage:value-import"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "symbol": "FT_Err_Invalid_Handle",
+          "value": "FT_Error integer",
+          "expected_value": 32,
+          "expected_hex_value": "0x20",
+          "error_string": "invalid object handle",
+          "import": "<freetype/fterrors.h> expands freetype/fterrdef.h"
+        },
+        "compare": {
+          "mode": "value",
+          "paths": [
+            "symbol",
+            "numeric_value",
+            "error_string",
+            "import_compiles"
+          ]
+        },
+        "oracle": "generated_at_runtime_from_c_freetype",
+        "sources_checked": [
+          "freetype/include/freetype/fterrdef.h",
+          "freetype/include/freetype/fterrors.h"
+        ]
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Invalid_Handle.generic_object_handle_validation",
+      "subject": "fterrdef.FT_Err_Invalid_Handle",
+      "case": "generic_object_handle_validation",
+      "operation": "fterrdef.open_face_non_driver",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "file",
+            "role": "font",
+            "path": "input/fonts/DejaVuSans.ttf"
+          }
+        },
+        "params": {
+          "call_sequence": [
+            "FT_New_Memory_Face",
+            "FT_Get_Module(library, \"smooth\")",
+            "FT_Open_Face with FT_OPEN_MEMORY | FT_OPEN_DRIVER and the smooth renderer module"
+          ],
+          "face_index": 0,
+          "runtime_route": "actual_ft_open_face_non_driver",
+          "invalid_handle": "registered renderer module passed where FT_Open_Face requires a font-driver module",
+          "expected_error_symbol": "FT_Err_Invalid_Handle",
+          "expected_error_value": 32,
+          "c_behavior": "ft_open_face_internal rejects an FT_OPEN_DRIVER module whose class lacks FT_MODULE_FONT_DRIVER"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "surface:public-c-api",
+        "coverage:exact-error-trigger"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "error": "FT_Error",
+          "expected_error_symbol": "FT_Err_Invalid_Handle",
+          "expected_error_value": 32,
+          "driver_module_present": true,
+          "face_null": true
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "status",
+            "output.driver_module_present",
+            "output.face_null"
+          ]
+        },
+        "oracle": "generated_at_runtime_from_c_freetype",
+        "sources_checked": [
+          "freetype/include/freetype/fterrdef.h",
+          "freetype/include/freetype/fterrors.h",
+          "freetype/src/base/ftobjs.c:2598-2618"
+        ]
+      }
+    }
+  ]
+}

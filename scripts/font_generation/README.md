@@ -1,0 +1,180 @@
+# Font-Generation Tooling
+
+This directory is the only repository location for scripts that create or
+modify font fixture files. Keeping the generators separate from oracle,
+benchmark, and audit scripts makes their licensing and provenance boundary
+explicit.
+
+## 1. Licensing
+
+The generator source code is part of `fontdone` and is distributed under the
+root FreeType License (`FTL.TXT`). It uses FontTools, which is an independently
+licensed build-time dependency. Running FontTools does not transfer FontTools'
+license to an output font.
+
+The root FTL does not replace the copyright or license of an input font.
+Generated output falls into one of these classes:
+
+1. **Synthetic:** tables, outlines, names, and byte streams are authored by
+   this project. The generator must emit an attribution identifying the
+   fixture as synthetic where the format supports it.
+2. **Derived:** the generator opens, copies, subsets, or mutates an existing
+   font. The output retains the input font's license. Its embedded attribution
+   and any required standalone license text must be preserved.
+3. **Malformed derivative:** the generator deliberately corrupts a synthetic
+   or properly licensed base fixture. Corruption does not erase the base
+   fixture's license.
+
+No script in this directory downloads fonts or reads from system font
+directories. Inputs must be repository-relative, reviewed fixtures.
+
+`scripts/build_compressed_fixtures.py` is outside this directory because it
+does not generate a font: it deterministically wraps an existing
+project-authored 8-byte PCF probe and project-authored byte strings as gzip,
+bzip2, zlib, and Unix-compress payloads. Python's standard-library codecs are
+the generators; decompression at runtime uses pure-Rust dependencies whose
+licenses are enforced by `make supply-chain`.
+
+## 2. Reviewed generators
+
+| Generator | Classification | Input or provenance |
+|---|---|---|
+| `build_autohint_script_fixtures.py` | Synthetic | Project-authored outlines and tables; one internal copy remains within the generated synthetic family. |
+| `build_cff_fixtures.py` | Synthetic | Project-authored CFF1/CFF2, TrueType control, and malformed table data. |
+| `build_render_fixtures.py` | Synthetic | Project-authored outlines and TrueType programs. |
+| `build_type1_fixtures.py` | Synthetic | Project-authored Type 1 charstrings, dictionaries, AFM data, notices, and a naked CID-keyed Type 1 resource. |
+| `build_type42_fixtures.py` | Synthetic | Project-authored embedded TrueType tables, outlines, names, and Type 42 wrapper. |
+| `generate_malformed_bdf_fixtures.py` | Synthetic | Project-authored BDF text, including intentionally malformed variants. |
+| `generate_winfnt_fixtures.py` | Synthetic | Project-authored binary WinFNT records and bitmap data. |
+| `build_cpal_palette_fixtures.py` | Derived | `tests/fixtures/input/fonts/DejaVuSans.ttf`; DejaVu/Bitstream terms remain applicable. |
+| `build_cmap_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; only cmap/table mutations. |
+| `build_gasp_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
+| `build_hinter_edge_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
+| `build_metric_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
+| `build_post_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
+| `build_sbit_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; `sfnt-bdf-table.otb` adds one project-authored 20 ppem EBLC/EBDT strike and a project-authored SFNT `BDF ` table. |
+| `build_pcf_fixtures.py` | Synthetic | Project-authored PCF directory, properties, accelerators, metrics, bitmap, and encoding tables. |
+| `build_pfr_fixtures.py` | Synthetic | Project-authored PFR v4 logical/physical font records, character advances, and kerning pairs; no third-party font material. |
+| `build_svg_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; adds one project-authored plain-XML OpenType SVG document and deterministic vertical metrics. |
+| `build_sfnt_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; the seven valid OpenType fixtures contain only project-authored BASE/GDEF/GPOS/GSUB/JSTF/MATH data. Seven malformed variants replace selected tables with deterministic one-byte payloads; `partial-malformed-layout.otf` retains valid GDEF/GPOS/GSUB and fails on the later MATH validation step. No third-party font is used. |
+| `build_ftmm_future_variable_fixtures.py` | Synthetic derivative | Repository-generated compact variable and MVAR fixtures. |
+| `build_fvar_fixtures.py` | Synthetic derivative | Repository-generated `compact-variable.ttf`. |
+| `build_mvar_fixtures.py` | Synthetic derivative | Repository-generated `compact-variable.ttf`. |
+| `build_name_fixtures.py` | Synthetic derivative | Repository-generated static and variable base fixtures. |
+
+The active third-party fixture families and their license classes are recorded
+in `tests/fixtures/THIRD_PARTY_NOTICES.md`.
+
+## 3. Review requirements
+
+Before adding or changing a generator:
+
+- State whether every output is synthetic or derived.
+- For each external base font, record upstream URL, version or commit, original
+  filename, SHA-256, license, modifications, and output SHA-256 in the fixture
+  inventory.
+- Preserve copyright, license, and reserved-font-name records.
+- Add any standalone license text required for redistribution.
+- Never fetch an unpinned URL, scan host fonts, or copy an unreviewed local
+  font.
+- Generate deterministically and fail when a required base fixture is absent.
+- Review `cargo package --list`; generated fixtures and these scripts must
+  remain outside the runtime crate.
+
+Run generators through their Makefile targets from the repository root. Do not
+invoke them from an assumed working directory.
+
+The OpenType validator family is regenerated and checked through:
+
+```bash
+make test-opentype-validator
+```
+
+That gate compares selection, absence, returned table bytes, malformed-table
+errors, partial-failure cleanup, and `FT_OpenType_Free` face-memory ownership
+against pinned FreeType in the Rust, C ABI, independently linked external-C,
+and WASM lanes.
+
+The GX/AAT and classic-kern validator family is regenerated and checked
+through:
+
+```bash
+make test-gx-validator
+```
+
+`build_gxvalid_fixtures.py` derives compact SFNT containers from the
+project-authored hinter control font and inserts only synthetic, minimal
+`feat`, `mort`, `morx`, `bsln`, `just`, `kern`, `opbd`, `trak`, `prop`, and
+`lcar` table bytes. It also creates deterministic absent/malformed controls and
+copies the project-generated Type 1 fixture for the non-SFNT error lane. The
+gate compares all maintained selection, table-length, dialect, exact-error, and
+face-memory ownership behavior against pinned FreeType, then repeats the
+function contract through an independently linked external-C consumer.
+
+The SFNT-BDF strike used by `FT_Get_BDF_Property` and
+`FT_Get_BDF_Charset_ID` is regenerated through:
+
+```bash
+make font-fixture-sbit
+```
+
+`tests/fixtures/input/fonts/bdf/sfnt-bdf-table.otb` is a synthetic derivative
+of the project-generated `hinter-control-matrix.ttf`. Its project-authored
+`BDF ` table contains 1 strike at 20 ppem and 5 properties:
+`CHARSET_REGISTRY=ISO10646`, `CHARSET_ENCODING=1`,
+`FAMILY_NAME=Fontdone SFNT BDF`, `PIXEL_SIZE=20`, and `POINT_SIZE=200`.
+The reviewed output is 5,240 bytes with SHA-256
+`81adb1735aa8b4219324c3ff5002c6c51795e18038292b4ee99e37522f9177ff`.
+It contains no third-party font material and needs no third-party license
+notice.
+
+The PCF property fixture is regenerated through:
+
+```bash
+make font-fixture-pcf
+```
+
+`tests/fixtures/input/fonts/pcf/properties-signed-only.pcf` is a
+project-authored 1-glyph PCF with 5 required PCF tables and 7 properties. It
+proves the PCF service rule that all numeric values—including
+`POINT_SIZE=-120`—are exposed as signed `BDF_PROPERTY_TYPE_INTEGER` values.
+The reviewed output is 400 bytes with SHA-256
+`4d840c337be40b056873b9cbe5a8ed5a23081d174761b04233bcac9cdd53cec7`.
+It contains no third-party font material and needs no third-party license
+notice.
+
+### 3.1. CID Type 1 fixture
+
+The naked CID-keyed Type 1 resource is regenerated through:
+
+```bash
+make font-fixture-type1
+```
+
+`tests/fixtures/input/fonts/cid/fontinfo-populated.cid` is a project-authored
+3-glyph CIDFont resource with `Adobe-Identity-0` ROS metadata, 1 FDArray entry,
+an 8-byte hexadecimal CIDMap, and populated FontInfo strings and scalars. It
+provides deterministic non-SFNT coverage for CID-keyed state, glyph-index to
+CID mapping, FontInfo output, and the absent private-dictionary service. The
+reviewed output is 900 bytes with SHA-256
+`8bad30fd383566771d5498ba12bbf04f941e876dc9538c50290ee46fae2c5f2e`.
+It contains no third-party font material and needs no third-party license
+notice.
+
+### 3.2. CFF2 fixture
+
+The CFF2 FontInfo control is regenerated through:
+
+```bash
+make font-fixture-cff
+```
+
+`tests/fixtures/input/fonts/cff2/fontinfo-invalid-argument.otf` is a
+project-authored 2-glyph OpenType/CFF2 face. Its CFF2 table contains 1 FDArray
+entry, 2 direct Type2 charstrings, no subroutines, and no variation regions.
+It proves that a valid CFF2 face opens successfully while
+`FT_Get_PS_Font_Info` returns `FT_Err_Invalid_Argument` and clears its output.
+The reviewed output is 804 bytes with SHA-256
+`6f457efaafee3496f42e8e2dd977acf39730a86252066135076050563949c4e3`.
+It contains no third-party font material and needs no third-party license
+notice.

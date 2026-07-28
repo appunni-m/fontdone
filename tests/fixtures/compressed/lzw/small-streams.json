@@ -1,0 +1,11 @@
+{
+  "payloads": [
+    {
+      "id": "small_pcf",
+      "lzw": "compressed/lzw/small-valid-pcf.Z",
+      "raw": "input/fonts/bitmap/bitmap-only.pcf"
+    }
+  ],
+  "source": "scripts/build_compressed_fixtures.py",
+  "version": 1
+}

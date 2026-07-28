@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "subject": "fterrdef.FT_Err_Too_Few_Arguments",
+  "manifest_cases": [
+    "value_matches_header",
+    "tt_interpreter_argument_underflow",
+    "cff_underflow_does_not_surface_too_few_arguments"
+  ],
+  "cases": [
+    {
+      "case_id": "fterrdef.FT_Err_Too_Few_Arguments.value_matches_header",
+      "subject": "fterrdef.FT_Err_Too_Few_Arguments",
+      "case": "value_matches_header",
+      "operation": "constant",
+      "schema": "api_constant",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "symbol": "FT_Err_Too_Few_Arguments",
+          "include": "<freetype/fterrors.h>",
+          "public_import": "#include <freetype/freetype.h>",
+          "header": "freetype/fterrdef.h",
+          "expected_value_from_pinned_header": 129,
+          "expected_value_hex": "0x81",
+          "expected_error_string_from_pinned_header": "too few arguments",
+          "pinned_source": "freetype/include/freetype/fterrdef.h:181-182"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "area:constant"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "value_type": "FT_Error",
+          "symbol": "FT_Err_Too_Few_Arguments",
+          "value": "integer",
+          "error_string": "string_from_FT_ERRORDEF_when_requested"
+        },
+        "compare": {
+          "mode": "value",
+          "paths": [
+            "value",
+            "symbol",
+            "header_symbol",
+            "error_string"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Too_Few_Arguments.tt_interpreter_argument_underflow",
+      "subject": "fterrdef.FT_Err_Too_Few_Arguments",
+      "case": "tt_interpreter_argument_underflow",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/glyf/hinter-glyph-interpreter-errors.ttf",
+            "requirements": "Project-authored glyph bytecode executes ADD with an empty operand stack."
+          }
+        },
+        "params": {
+          "expected_error_symbol": "FT_Err_Too_Few_Arguments",
+          "face_index": 0,
+          "glyph_index": 26,
+          "size": 20,
+          "load_flags": [
+            "FT_LOAD_PEDANTIC"
+          ],
+          "pinned_sources": [
+            "freetype/src/truetype/ttinterp.c:4819",
+            "freetype/src/truetype/ttinterp.c:5020",
+            "freetype/src/truetype/ttinterp.c:6781"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:truetype-bytecode",
+        "error-trigger",
+        "requires:fixture",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "error",
+        "error": "FT_Err_Too_Few_Arguments",
+        "fixture_requirements": "Project-authored glyph bytecode executes ADD with no operands; pedantic loading exposes the exact interpreter error.",
+        "output_shape": {
+          "error": "FT_Error",
+          "error_symbol": "FT_Err_*",
+          "slot_state": "mutation_class_if_slot_is_involved",
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "error_symbol",
+            "slot_state.mutation_class"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Too_Few_Arguments.cff_underflow_does_not_surface_too_few_arguments",
+      "subject": "fterrdef.FT_Err_Too_Few_Arguments",
+      "case": "cff_underflow_does_not_surface_too_few_arguments",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/cff/pure-cff-cubic.otf",
+            "requirements": "Project-authored CFF glyph executes escaped add without its two required Type2 operands."
+          }
+        },
+        "params": {
+          "expected_error_symbol": "FT_Err_Invalid_File_Format",
+          "face_index": 0,
+          "glyph_index": 42,
+          "size": 12,
+          "load_flags": [
+            "FT_LOAD_DEFAULT"
+          ],
+          "pinned_sources": [
+            "freetype/src/cff/cf2intrp.c:1073-1080",
+            "freetype/src/cff/cf2ft.c:435",
+            "freetype/src/psaux/cffdecode.c:2277-2279"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:cff-type2",
+        "error-trigger",
+        "requires:fixture",
+        "route:exact",
+        "translation:public-boundary"
+      ],
+      "expectation": {
+        "status": "error",
+        "error": "FT_Err_Invalid_File_Format",
+        "fixture_requirements": "Project-authored CFF glyph underflows the default Adobe Type2 engine; unlike the disabled old engine, pinned public FreeType reports Invalid_File_Format.",
+        "output_shape": {
+          "error": "FT_Error",
+          "error_symbol": "FT_Err_*",
+          "slot_state": "mutation_class_if_slot_is_involved",
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "error_symbol",
+            "slot_state.mutation_class"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "subject": "fterrdef.FT_Err_Name_Table_Missing",
+  "manifest_cases": [
+    "value_matches_header",
+    "sfnt_name_storage_out_of_bounds",
+    "sfnt_without_name_table"
+  ],
+  "cases": [
+    {
+      "case_id": "fterrdef.FT_Err_Name_Table_Missing.value_matches_header",
+      "subject": "fterrdef.FT_Err_Name_Table_Missing",
+      "case": "value_matches_header",
+      "operation": "constant",
+      "schema": "api_constant",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "symbol": "FT_Err_Name_Table_Missing",
+          "include": "<freetype/fterrors.h>",
+          "header": "freetype/fterrdef.h",
+          "public_import": "#include <freetype/freetype.h>",
+          "error_prefix": "FT_Err_",
+          "expected_value_from_pinned_header": 145,
+          "expected_value_hex": "0x91",
+          "expected_error_string_from_pinned_header": "name table missing",
+          "pinned_source": "freetype/include/freetype/fterrdef.h"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "area:constant"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "value_type": "FT_Error",
+          "header": "freetype/fterrdef.h",
+          "public_import": "freetype/freetype.h or freetype/fterrors.h",
+          "value": "integer",
+          "error_string": "string_from_FT_ERRORDEF_when_requested",
+          "symbol": "FT_Err_Name_Table_Missing"
+        },
+        "compare": {
+          "mode": "value",
+          "paths": [
+            "value",
+            "symbol",
+            "header_symbol",
+            "error_string"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_storage_out_of_bounds",
+      "subject": "fterrdef.FT_Err_Name_Table_Missing",
+      "case": "sfnt_name_storage_out_of_bounds",
+      "operation": "fterrdef.sfnt_load_name_diagnostic",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "file",
+            "role": "font",
+            "path": "input/fixtures/assets/fonts/name_table_bad_storage.ttf"
+          }
+        },
+        "params": {
+          "expected_error_symbol": "FT_Err_Name_Table_Missing",
+          "expected_error_value_source": "pinned fterrdef.h",
+          "pinned_source": "freetype/src/sfnt/ttload.c:933",
+          "face_index": 0,
+          "runtime_route": "internal_sfnt_load_name_service",
+          "table": "name",
+          "condition": "storage_start > storage_limit"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "error-trigger",
+        "route:controlled-pinned-service"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "error": "FT_Error",
+          "error_symbol": "FT_Err_*",
+          "name_count": "zero after failed internal service load",
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "status",
+            "output.name_count"
+          ]
+        },
+        "error": "FT_Err_Name_Table_Missing",
+        "fixture_requirements": "The project-authored table has one declared name record but only the six-byte header, making 6 + 12*numNameRecords greater than the table length."
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Name_Table_Missing.sfnt_without_name_table",
+      "subject": "fterrdef.FT_Err_Name_Table_Missing",
+      "case": "sfnt_without_name_table",
+      "operation": "new_memory_face",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "file",
+            "role": "font",
+            "path": "input/fixtures/assets/fonts/name_table_missing.ttf"
+          }
+        },
+        "params": {
+          "pinned_source": "freetype/src/sfnt/sfobjs.c:923-930",
+          "face_index": 0,
+          "table": "name",
+          "public_behavior": "FT_New_Memory_Face succeeds because the SFNT face loader treats name as optional"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "success-control",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "opened": true,
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "output.opened"
+          ]
+        },
+        "fixture_requirements": "The project-authored TrueType face has its name table removed and remains otherwise valid."
+      }
+    }
+  ]
+}

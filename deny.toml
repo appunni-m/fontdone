@@ -1,0 +1,24 @@
+# Supply-chain policy for the fontdone workspace.
+
+[advisories]
+unmaintained = "workspace"
+yanked = "deny"
+ignore = []
+
+[bans]
+multiple-versions = "deny"
+skip = []
+deny = []
+
+[licenses]
+allow = [
+    "FTL",
+    "MIT",
+    "Apache-2.0",
+    "Unicode-3.0",
+    "Zlib",
+]
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-git = []

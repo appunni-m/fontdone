@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "subject": "fterrdef.FT_Err_Glyph_Too_Big",
+  "manifest_cases": [
+    "value_matches_header",
+    "ps_builder_large_glyph_falls_back_unhinted"
+  ],
+  "cases": [
+    {
+      "case_id": "fterrdef.FT_Err_Glyph_Too_Big.value_matches_header",
+      "subject": "fterrdef.FT_Err_Glyph_Too_Big",
+      "case": "value_matches_header",
+      "operation": "constant",
+      "schema": "api_constant",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "symbol": "FT_Err_Glyph_Too_Big",
+          "include": "<freetype/fterrors.h>",
+          "header": "freetype/fterrdef.h",
+          "public_import": "#include <freetype/freetype.h>",
+          "error_prefix": "FT_Err_",
+          "expected_value_from_pinned_header": 164,
+          "expected_value_hex": "0xA4",
+          "expected_error_string_from_pinned_header": "glyph too big for hinting",
+          "pinned_source": "freetype/include/freetype/fterrdef.h"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "area:constant"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "value_type": "FT_Error",
+          "symbol": "FT_Err_Glyph_Too_Big",
+          "header": "freetype/fterrdef.h",
+          "public_import": "freetype/freetype.h or freetype/fterrors.h",
+          "value": "integer",
+          "error_string": "string_from_FT_ERRORDEF_when_requested"
+        },
+        "compare": {
+          "mode": "value",
+          "paths": [
+            "value",
+            "symbol",
+            "header_symbol",
+            "error_string"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Glyph_Too_Big.ps_builder_large_glyph_falls_back_unhinted",
+      "subject": "fterrdef.FT_Err_Glyph_Too_Big",
+      "case": "ps_builder_large_glyph_falls_back_unhinted",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "fixture": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/cff/pure-cff-cubic.otf",
+            "requirements": "Project-authored CFF face with a valid cubic glyph; loading above Adobe's 2000ppem transform limit enters the public unhinted retry."
+          }
+        },
+        "params": {
+          "face_index": 0,
+          "glyph_index": 1,
+          "size": 4096,
+          "load_flags": [
+            "FT_LOAD_DEFAULT"
+          ],
+          "pinned_sources": [
+            "freetype/src/psaux/psft.c:55-86",
+            "freetype/src/cff/cffgload.c:511-526"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "requires:fixture",
+        "route:exact",
+        "fallback:unhinted-retry"
+      ],
+      "expectation": {
+        "status": "ok",
+        "fixture_requirements": "A 4096ppem CFF glyph exceeds the Adobe engine transform limit, then succeeds because the public CFF loader retries unhinted and scales afterward.",
+        "output_shape": {
+          "status": "FT_Err_Ok",
+          "glyph_slot": "complete_metrics_outline_and_bitmap_state",
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "glyph_index",
+            "metrics",
+            "advance",
+            "outline"
+          ]
+        }
+      }
+    }
+  ]
+}
