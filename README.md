@@ -172,12 +172,19 @@ bytes against pinned FreeType. Correctness mismatches fail before a
 measurement can qualify.
 
 <!-- performance-baseline:start -->
-The committed ledger contains **0 / 5 clean runs** for its most-sampled current
-environment. Five runs from the same environment are required before
-regression thresholds can be reviewed.
+The committed ledger contains **1 / 5 clean runs**
+for its most-sampled current environment. Five runs from the same environment
+are required before regression thresholds can be reviewed.
 
-No qualifying clean ten-sample run has been committed yet. Dirty smoke runs
-are useful diagnostics but cannot enter this ledger.
+| Latest clean measurement | Value |
+|---|---:|
+| Source commit | `69148453d29396bcbfce18314332bf18bd12f55e` |
+| Samples | 10 |
+| Weighted latency speedup versus C | 0.330x |
+| Total throughput ratio versus C | 0.438x |
+| Median peak-RSS ratio versus C | 3.407x |
+| Shared-library byte-size ratio versus C | 2.330x |
+| Fontdone WASM size | 1,191,354 bytes |
 
 The regression policy is `collecting_baseline`. `make bench-regression`
 therefore fails closed until reviewed thresholds become active.
