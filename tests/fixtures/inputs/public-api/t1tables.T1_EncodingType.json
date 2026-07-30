@@ -71,8 +71,7 @@
           "type1_custom_encoding_font": {
             "kind": "ref",
             "id": "input/fonts/type1/custom-encoding-array.pfb",
-            "asset_kind": "font",
-            "status": "required_future_asset"
+            "asset_kind": "font"
           }
         },
         "params": {
@@ -136,20 +135,17 @@
           "type1_standard_encoding_font": {
             "kind": "ref",
             "id": "input/fonts/type1/standard-encoding.pfb",
-            "asset_kind": "font",
-            "status": "required_future_asset"
+            "asset_kind": "font"
           },
           "type1_isolatin1_encoding_font": {
             "kind": "ref",
             "id": "input/fonts/type1/isolatin1-encoding.pfb",
-            "asset_kind": "font",
-            "status": "required_future_asset"
+            "asset_kind": "font"
           },
           "type1_expert_encoding_font": {
             "kind": "ref",
             "id": "input/fonts/type1/expert-encoding.pfb",
-            "asset_kind": "font",
-            "status": "required_future_asset"
+            "asset_kind": "font"
           }
         },
         "params": {

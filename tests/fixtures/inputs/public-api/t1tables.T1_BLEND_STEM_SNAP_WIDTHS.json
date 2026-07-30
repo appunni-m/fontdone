@@ -72,8 +72,7 @@
           "type1_mm_font": {
             "kind": "ref",
             "id": "input/fonts/type1/mm-blend-fontinfo-private.pfb",
-            "asset_kind": "font",
-            "status": "required_future_asset"
+            "asset_kind": "font"
           }
         },
         "params": {
