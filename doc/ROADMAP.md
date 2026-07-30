@@ -350,10 +350,11 @@ increase is claimed until the next full all-lane measurement**:
 | 6 | `e63d25a0d954a472648918b9a3da9822ff517313` | Added a valid requester-backed C cache manager lifecycle covering face/size lookup, CMap/image/SBit cache construction, glyph/node ownership, face removal, reset, and teardown. |
 | 7 | `fe7210517b9f9ba31384a64370b6c33e4928267f` | Promoted existing Type1 MM/private, FontInfo, ForceBold, and Standard/ISOLatin1/Expert/custom-encoding fixtures from required-future status after all four lanes matched pinned C; removed 16 pending runtime rows. |
 | 8 | `890b67f3c12aadeaf4a7737cdd3a6e9fd897e812` | Promoted tracked Adobe custom/platform and Apple full-Unicode charmap fixtures; added Type 1 synthetic charmaps and Adobe encoding tags to every ABI facade; removed two stale runtime-skip guards and added the missing `freetype.enumerate_charmaps` dispatch. |
+| 9 | `c58dfaa8a0276c22455dd1f942d070f552b2f033` | Removed unused missing-font declarations from scalar TrueType interpreter-property fixtures, documented that the remaining glyph-output rows still require maintained inputs, and revalidated the unchanged parity denominator. |
 
 The latest clean parity-only verification is Coverage MCP run
-`07af678f-e860-4468-b22e-dbacc82e0605` against source commit
-`890b67f3c12aadeaf4a7737cdd3a6e9fd897e812`: 7,232 / 7,232 runnable
+`a8074648-cda6-4d92-9cf8-518698fdce16` against source commit
+`c58dfaa8a0276c22455dd1f942d070f552b2f033`: 7,232 / 7,232 runnable
 comparisons passed, 0 failed, and 75 remain explicitly pending. The committed
 source-digest attestation is
 `doc/runtime_parity_evidence.json`. Full coverage is intentionally deferred
