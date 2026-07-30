@@ -334,6 +334,26 @@ branches, 77 functions, and 771 regions. Pending counts decreased by 160 lines,
 denominators. The same run passed 7,212 / 7,212 runnable parity comparisons
 with 0 failures; 95 cases remained explicitly pending.
 
+### 8.1 Verified work after the baseline
+
+The following numbered batches are newer than the coverage snapshot above.
+They are retained as completed implementation/test work, but **no coverage
+increase is claimed until the next full all-lane measurement**:
+
+| Batch | Source commit | Verified change |
+|---:|---|---|
+| 1 | `ee43406610252d368a2b437746b6b99a76779c4d` | Fixed C-shaped bitmap-copy ownership so replacing the target allocation cannot unregister or invalidate the source buffer. |
+| 2 | `b2b7af666cc026ef402323c661ba6cb6e38037e1` | Added deterministic PFR parsing and bitmap lifecycle/state/validation tests, including packed gray, mono, LCD, negative-pitch, blend, conversion, and cleanup routes. |
+| 3 | `2fb2d5d044ff39ecd876fb04a906547c6b2e03a7` | Added CFF1, CFF2, glyf-cache, active/inactive gvar, malformed SVG range, gzip, primitive-read, and glyph-lookup tests; removed only mathematically unreachable SVG offset/count failures on the supported 32/64-bit targets. |
+
+The latest clean parity-only verification is Coverage MCP run
+`6dd04cbb-531f-46f7-99d8-af40dd025c14` against batch 3:
+7,212 / 7,212 runnable comparisons passed, 0 failed, and 95 remain explicitly
+pending. The committed source-digest attestation is
+`doc/runtime_parity_evidence.json`. Full coverage is intentionally deferred
+until a larger set of focused batches is ready, because the maintained
+all-lane pass takes roughly 50 minutes.
+
 Run:
 
 ```bash
