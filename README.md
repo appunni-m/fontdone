@@ -96,19 +96,19 @@ The last committed full parity snapshot was recorded on **2026-07-30**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,232 |
-| Passed cases | 7,232 |
+| Runnable exact-comparison cases | 7,233 |
+| Passed cases | 7,233 |
 | Failed cases | 0 |
-| Explicitly pending cases | 75 |
-| Covered manifest cases | 4,104 |
+| Explicitly pending cases | 74 |
+| Covered manifest cases | 4,105 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,258 |
 | Concrete expanded cases | 7,307 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,232 / 7,232` means every runnable case in that execution matched. It does
-not turn the 75 pending cases into passes. Likewise, 218/218 function-route
+`7,233 / 7,233` means every runnable case in that execution matched. It does
+not turn the 74 pending cases into passes. Likewise, 218/218 function-route
 evidence can be satisfied by a narrow success or null-validation route; it is
 not equivalent to complete behavior for every input, state, or platform.
 
