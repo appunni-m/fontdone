@@ -54,33 +54,33 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-07-30",
-    "source_commit": "e554aca48fb3168fa852dd79267f50d06201e1e4",
+    "source_commit": "09110a488bcc53c96def8ccf7e3d6c4e6418737f",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "86d007ea-e3f4-4e0d-90e1-0c357503a76b",
-    "snapshot_id": "e9945111-3786-4aa5-abd9-3d540bd52b35",
-    "duration_ms": 2884183,
+    "run_id": "a0f313a4-5f2e-49cd-8ebe-c6687334b349",
+    "snapshot_id": "5a122fcc-aa76-4503-82d3-e8bbb564f349",
+    "duration_ms": 2938668,
     "exit_code": 0,
-    "scope": "Rust core, native C ABI, and host-compiled WASM facade; test-harness source excluded",
+    "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; facade unit-test preflights passed; test-harness source excluded",
     "lines": {
-      "covered": 45547,
-      "total": 50898,
-      "percent": 89.4868167707965
+      "covered": 46028,
+      "total": 51219,
+      "percent": 89.86508912708175
     },
     "branches": {
-      "covered": 8986,
-      "total": 11915,
-      "percent": 75.41754091481326
+      "covered": 9036,
+      "total": 11907,
+      "percent": 75.88813303099018
     },
     "functions": {
-      "covered": 3112,
-      "total": 3585,
-      "percent": 86.80613668061368
+      "covered": 3189,
+      "total": 3639,
+      "percent": 87.63396537510305
     },
     "regions": {
-      "covered": 63052,
-      "total": 71420,
-      "percent": 88.28339400728088
+      "covered": 63823,
+      "total": 71957,
+      "percent": 88.69602679377961
     },
     "runtime_parity": {
       "runnable": 7212,
@@ -366,9 +366,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "36a0b8e931660c35138a9696d6f86365dccffa0cfe7fb9ed11aefeaba967674e",
-    "parity_tree_sha256": "34dedbfb8d0369b90fed09e2e56394a201ab243db45c1a616191295f9ee5014b",
-    "log_sha256": "efda578a8d0b998479f463b1947f6d212d8dba304b870a55f98a62a50ef4c7a8",
+    "sha256": "257dd06f9bbdffa35dbac2115c940c8474874e74e9f73e644e737304a7f9298e",
+    "parity_tree_sha256": "a24e57cde33aa8cfe5422162820ef36432b7d05d710cc5c2e79c572a029ab926",
+    "log_sha256": "54e03eaabad5df732a04c2dc91bd9dfc41a2ff43cb785e8bb99373b122c57163",
     "command": "make test-parity"
   }
 }

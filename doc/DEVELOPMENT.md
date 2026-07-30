@@ -188,26 +188,22 @@ only filename exclusion.
 
 The all-lane run is intentionally expensive, so budget roughly 45–60 minutes
 on a warm development host. It therefore runs in requested thorough CI, not on
-every commit. The last measured run took 48 minutes 4 seconds against commit
-`e554aca48fb3168fa852dd79267f50d06201e1e4`:
+every commit. The last measured run took 48 minutes 58.668 seconds against
+commit `09110a488bcc53c96def8ccf7e3d6c4e6418737f`:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 45,547 / 50,898 | 89.49% |
-| Branches | 8,986 / 11,915 | 75.42% |
-| Functions | 3,112 / 3,585 | 86.81% |
-| Regions | 63,052 / 71,420 | 88.28% |
+| Lines | 46,028 / 51,219 | 89.87% |
+| Branches | 9,036 / 11,907 | 75.89% |
+| Functions | 3,189 / 3,639 | 87.63% |
+| Regions | 63,823 / 71,957 | 88.70% |
 
 That managed run passed all 7,212 runnable parity comparisons with 0 failures;
 95 cases remained explicitly pending. Its Coverage MCP run ID is
-`86d007ea-e3f4-4e0d-90e1-0c357503a76b`, and its immutable snapshot ID is
-`e9945111-3786-4aa5-abd9-3d540bd52b35`.
-
-That historical snapshot ran the unified parity test target alone. The
-maintained command now also executes workspace unit and facade tests, so its
-next denominators are expected to change. The percentages apply only to the
-named source commit, suite, and toolchain. They are not a FreeType-parity
-percentage, and a covered line or branch does not prove an exact result.
+`a0f313a4-5f2e-49cd-8ebe-c6687334b349`, and its immutable snapshot ID is
+`5a122fcc-aa76-4503-82d3-e8bbb564f349`. The percentages apply only to the named
+source commit, suite, and toolchain. They are not a FreeType-parity percentage,
+and a covered line or branch does not prove an exact result.
 Generate a new report for the worktree being reviewed. LLVM JSON segments are
 normalized to segment start lines by the coverage parser; aggregate region
 coverage is preserved from LLVM summaries.

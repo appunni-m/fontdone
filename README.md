@@ -123,27 +123,26 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The last all-lane coverage run was recorded on **2026-07-30** against
-`e554aca48fb3168fa852dd79267f50d06201e1e4`:
+`09110a488bcc53c96def8ccf7e3d6c4e6418737f`:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 45,547 / 50,898 | 89.49% |
-| Branches | 8,986 / 11,915 | 75.42% |
-| Functions | 3,112 / 3,585 | 86.81% |
-| Regions | 63,052 / 71,420 | 88.28% |
+| Lines | 46,028 / 51,219 | 89.87% |
+| Branches | 9,036 / 11,907 | 75.89% |
+| Functions | 3,189 / 3,639 | 87.63% |
+| Regions | 63,823 / 71,957 | 88.70% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
-ABI, and host-compiled WASM facade. That historical run executed the unified
-parity target and completed in 48 minutes 4 seconds while passing all 7,212
-runnable parity comparisons; the 95 explicitly pending cases remain pending.
-The maintained `make test-coverage-all` command now runs every non-ignored
+ABI, and host-compiled WASM facade. The run completed in 48 minutes 58.668
+seconds while passing all 7,212 runnable parity comparisons with 0 failures;
+the 95 explicitly pending cases remain pending. The maintained
+`make test-coverage-all` command runs every non-ignored
 workspace unit and integration target under the default feature profile,
 including full parity, while excluding test-harness paths from the report.
 Facade unit tests run separately before one coherent root-package coverage build
 links and measures all three surfaces; this prevents LLVM from attributing
 multiple feature builds to the same source path. Optional feature profiles are
-verified separately by `make optional-feature-contract`. The next measured
-coverage denominators are therefore expected to change.
+verified separately by `make optional-feature-contract`.
 
 Coverage is a code-execution signal, not a compatibility score. These
 percentages apply only to the named source commit, suite, and toolchain. Run

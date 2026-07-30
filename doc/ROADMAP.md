@@ -318,19 +318,21 @@ gate so coverage never compares a feature-enabled implementation with a
 default-profile oracle. Executing code does not prove FreeType parity, so G02
 cannot satisfy any G01 item.
 
-Baseline snapshot `e9945111-3786-4aa5-abd9-3d540bd52b35`, produced from commit
-`e554aca48fb3168fa852dd79267f50d06201e1e4`, records:
+Baseline snapshot `5a122fcc-aa76-4503-82d3-e8bbb564f349`, produced from commit
+`09110a488bcc53c96def8ccf7e3d6c4e6418737f`, records:
 
 | Metric | Covered / total | Coverage | Pending |
 |---|---:|---:|---:|
-| Lines | 45,547 / 50,898 | 89.49% | 5,351 |
-| Branches | 8,986 / 11,915 | 75.42% | 2,929 |
-| Functions | 3,112 / 3,585 | 86.81% | 473 |
-| Regions | 63,052 / 71,420 | 88.28% | 8,368 |
+| Lines | 46,028 / 51,219 | 89.87% | 5,191 |
+| Branches | 9,036 / 11,907 | 75.89% | 2,871 |
+| Functions | 3,189 / 3,639 | 87.63% | 450 |
+| Regions | 63,823 / 71,957 | 88.70% | 8,134 |
 
-That baseline ran only the unified parity test target. The maintained command
-was expanded afterward to include workspace unit and facade tests, so the next
-source-matched run replaces these historical denominators.
+Against the preceding snapshot, covered counts increased by 481 lines, 50
+branches, 77 functions, and 771 regions. Pending counts decreased by 160 lines,
+58 branches, 23 functions, and 234 regions despite the expanded source
+denominators. The same run passed 7,212 / 7,212 runnable parity comparisons
+with 0 failures; 95 cases remained explicitly pending.
 
 Run:
 
