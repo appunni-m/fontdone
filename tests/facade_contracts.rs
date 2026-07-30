@@ -21,6 +21,17 @@ fn wasm_bitmap_bytes(bitmap: &wasm::FontdoneWasmBitmap) -> Vec<u8> {
     c_abi::abi_byte_slice(bitmap.buffer, len)
 }
 
+extern "C" fn cache_face_requester(
+    _face_id: c_abi::FTC_FaceID,
+    library: c_abi::FT_Library,
+    _req_data: c_abi::FT_Pointer,
+    aface: *mut c_abi::FT_Face,
+) -> c_abi::FT_Error {
+    let font = include_bytes!("fixtures/input/fonts/DejaVuSans.ttf");
+    let file_size = c_abi::FT_Long::try_from(font.len()).unwrap_or(c_abi::FT_Long::MAX);
+    c_abi::FT_New_Memory_Face(library, font.as_ptr(), file_size, 0, aface)
+}
+
 #[test]
 fn c_abi_bitmap_contract_covers_validation_copy_conversion_and_cleanup()
 -> Result<(), std::num::TryFromIntError> {
@@ -388,4 +399,97 @@ fn facade_null_contracts_cover_cache_transform_logging_and_memory_routes() {
     assert_eq!(wasm::fontdone_wasm_bitmap_rows(handle), 0);
     assert_eq!(wasm::fontdone_wasm_bitmap_pitch(handle), 0);
     assert_eq!(wasm::fontdone_wasm_done_face(handle), FT_Err_Ok);
+}
+
+#[test]
+fn c_cache_manager_valid_lifecycle_covers_requester_and_node_ownership() {
+    let mut library = ptr::null_mut();
+    assert_eq!(c_abi::FT_Init_FreeType(&mut library), FT_Err_Ok);
+
+    let mut manager = ptr::null_mut();
+    assert_eq!(
+        c_abi::FTC_Manager_New(
+            library,
+            4,
+            4,
+            0,
+            Some(cache_face_requester),
+            ptr::null_mut(),
+            &mut manager,
+        ),
+        FT_Err_Ok
+    );
+    assert!(!manager.is_null());
+
+    let mut face = ptr::null_mut();
+    assert_eq!(
+        c_abi::FTC_Manager_LookupFace(manager, ptr::null_mut(), &mut face),
+        FT_Err_Ok
+    );
+    assert!(!face.is_null());
+
+    let mut scaler = c_abi::FTC_ScalerRec {
+        face_id: ptr::null_mut(),
+        width: 20,
+        height: 20,
+        pixel: 0,
+        x_res: 72,
+        y_res: 72,
+    };
+    let mut size = ptr::null_mut();
+    assert_eq!(
+        c_abi::FTC_Manager_LookupSize(manager, &mut scaler, &mut size),
+        FT_Err_Ok
+    );
+    assert!(!size.is_null());
+
+    let mut cmap_cache = ptr::null_mut();
+    assert_eq!(
+        c_abi::FTC_CMapCache_New(manager, &mut cmap_cache),
+        FT_Err_Ok
+    );
+    assert!(!cmap_cache.is_null());
+    assert_ne!(
+        c_abi::FTC_CMapCache_Lookup(cmap_cache, ptr::null_mut(), -1, 65),
+        0
+    );
+
+    let mut image_cache = ptr::null_mut();
+    assert_eq!(
+        c_abi::FTC_ImageCache_New(manager, &mut image_cache),
+        FT_Err_Ok
+    );
+    let image_type = c_abi::FTC_ImageTypeRec {
+        face_id: ptr::null_mut(),
+        width: 20,
+        height: 20,
+        flags: 0,
+    };
+    let mut glyph = ptr::null_mut();
+    let mut node = ptr::null_mut();
+    assert_eq!(
+        c_abi::FTC_ImageCache_Lookup(
+            image_cache,
+            (&image_type as *const c_abi::FTC_ImageTypeRec).cast_mut(),
+            36,
+            &mut glyph,
+            &mut node,
+        ),
+        FT_Err_Ok
+    );
+    assert!(!glyph.is_null());
+    assert!(!node.is_null());
+    c_abi::FTC_Node_Unref(node, manager);
+
+    let mut sbit_cache = ptr::null_mut();
+    assert_eq!(
+        c_abi::FTC_SBitCache_New(manager, &mut sbit_cache),
+        FT_Err_Ok
+    );
+    assert!(!sbit_cache.is_null());
+
+    c_abi::FTC_Manager_RemoveFaceID(manager, ptr::null_mut());
+    c_abi::FTC_Manager_Reset(manager);
+    c_abi::FTC_Manager_Done(manager);
+    assert_eq!(c_abi::FT_Done_FreeType(library), FT_Err_Ok);
 }
