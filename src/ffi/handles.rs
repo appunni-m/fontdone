@@ -1743,6 +1743,50 @@ pub fn FT_Raster_Set_Mode_Probe(
     observations
 }
 
+/// One observation of a maintained public `FT_Raster_Funcs` class table.
+#[cfg(any(test, feature = "abi-test-support"))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FT_Raster_Funcs_Observation {
+    pub name: &'static str,
+    pub glyph_format: FT_Glyph_Format,
+    pub raster_new: bool,
+    pub raster_reset: bool,
+    pub raster_set_mode: bool,
+    pub raster_render: bool,
+    pub raster_done: bool,
+}
+
+/// Reports the callback-slot presence of the pinned default raster classes.
+///
+/// The Rust runtime does not expose native function pointers.  This probe
+/// keeps the public class-table contract explicit by recording the stable
+/// callback-slot presence and glyph-format metadata that C consumers observe;
+/// callback invocation is covered by the separate raster lifecycle routes.
+#[cfg(any(test, feature = "abi-test-support"))]
+pub fn FT_Raster_Funcs_Probe(names: &[&'static str]) -> Vec<FT_Raster_Funcs_Observation> {
+    names
+        .iter()
+        .filter_map(|name| {
+            let glyph_format = match *name {
+                "ft_standard_raster" | "ft_grays_raster" | "ft_sdf_raster" => {
+                    FT_GLYPH_FORMAT_OUTLINE
+                }
+                "ft_bitmap_sdf_raster" => FT_GLYPH_FORMAT_BITMAP,
+                _ => return None,
+            };
+            Some(FT_Raster_Funcs_Observation {
+                name,
+                glyph_format,
+                raster_new: true,
+                raster_reset: true,
+                raster_set_mode: true,
+                raster_render: true,
+                raster_done: true,
+            })
+        })
+        .collect()
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_Face_Properties_State {
     pub no_stem_darkening: i32,

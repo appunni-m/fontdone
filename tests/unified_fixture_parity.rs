@@ -28055,6 +28055,40 @@ fn raster_set_mode_output(rows: Vec<(FT_Error, FT_ULong, bool, bool)>) -> RunOut
     }))
 }
 
+fn raster_class_probe_names(params: &Value) -> Result<Vec<&'static str>, String> {
+    string_array_param(params, "renderers")?
+        .into_iter()
+        .map(|name| match name.as_str() {
+            "ft_standard_raster" => Ok("ft_standard_raster"),
+            "ft_grays_raster" => Ok("ft_grays_raster"),
+            "ft_sdf_raster" => Ok("ft_sdf_raster"),
+            "ft_bitmap_sdf_raster" => Ok("ft_bitmap_sdf_raster"),
+            other => Err(format!("unsupported raster class {other}")),
+        })
+        .collect()
+}
+
+fn raster_class_output(
+    rows: Vec<(&'static str, FT_Glyph_Format, bool, bool, bool, bool, bool)>,
+) -> RunOutput {
+    ok(json!({
+        "renderer_classes": rows
+            .into_iter()
+            .map(|(name, glyph_format, raster_new, raster_reset, raster_set_mode, raster_render, raster_done)| {
+                json!({
+                    "name": name,
+                    "glyph_format": glyph_format,
+                    "raster_new_nullness": !raster_new,
+                    "raster_reset_nullness": !raster_reset,
+                    "raster_set_mode_nullness": !raster_set_mode,
+                    "raster_render_nullness": !raster_render,
+                    "raster_done_nullness": !raster_done,
+                })
+            })
+            .collect::<Vec<_>>(),
+    }))
+}
+
 fn custom_renderer_lifecycle_success_case(case: &InputCase) -> bool {
     matches!(
         case.case_id.as_str(),
@@ -28151,6 +28185,25 @@ fn rust_raster_set_mode(case: &InputCase) -> Result<RunOutput, String> {
     Ok(raster_set_mode_output(rows))
 }
 
+fn rust_raster_class_probe(case: &InputCase) -> Result<RunOutput, String> {
+    let names = raster_class_probe_names(&case.inputs.params)?;
+    let rows = FT_Raster_Funcs_Probe(&names)
+        .into_iter()
+        .map(|row| {
+            (
+                row.name,
+                row.glyph_format,
+                row.raster_new,
+                row.raster_reset,
+                row.raster_set_mode,
+                row.raster_render,
+                row.raster_done,
+            )
+        })
+        .collect();
+    Ok(raster_class_output(rows))
+}
+
 fn c_raster_lifecycle(_case: &InputCase) -> Result<RunOutput, String> {
     let snapshot = c_abi::abi_raster_lifecycle();
     Ok(raster_lifecycle_output(
@@ -28194,6 +28247,25 @@ fn c_raster_set_mode(case: &InputCase) -> Result<RunOutput, String> {
         .map(|row| (row.status, row.mode, row.args_null, row.callback_called))
         .collect();
     Ok(raster_set_mode_output(rows))
+}
+
+fn c_raster_class_probe(case: &InputCase) -> Result<RunOutput, String> {
+    let names = raster_class_probe_names(&case.inputs.params)?;
+    let rows = c_abi::abi_support_raster_class_probe(&names)
+        .into_iter()
+        .map(|row| {
+            (
+                row.name,
+                row.glyph_format,
+                row.raster_new,
+                row.raster_reset,
+                row.raster_set_mode,
+                row.raster_render,
+                row.raster_done,
+            )
+        })
+        .collect();
+    Ok(raster_class_output(rows))
 }
 
 fn wasm_raster_lifecycle(_case: &InputCase) -> Result<RunOutput, String> {
@@ -28243,6 +28315,25 @@ fn wasm_raster_set_mode(case: &InputCase) -> Result<RunOutput, String> {
     .map(|row| (row.status, row.mode, row.args_null, row.callback_called))
     .collect();
     Ok(raster_set_mode_output(rows))
+}
+
+fn wasm_raster_class_probe(case: &InputCase) -> Result<RunOutput, String> {
+    let names = raster_class_probe_names(&case.inputs.params)?;
+    let rows = wasm_abi::abi_support_raster_class_probe(&names)
+        .into_iter()
+        .map(|row| {
+            (
+                row.name,
+                row.glyph_format,
+                row.raster_new,
+                row.raster_reset,
+                row.raster_set_mode,
+                row.raster_render,
+                row.raster_done,
+            )
+        })
+        .collect();
+    Ok(raster_class_output(rows))
 }
 
 fn renderer_mode_bitmap_json(
@@ -39645,6 +39736,10 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             "--layout".to_string(),
             record_param(params)?.to_string(),
         ]),
+        "renderer.class_probe" => Ok(vec![
+            "--raster-class-probe".to_string(),
+            string_array_param(params, "renderers")?.join(","),
+        ]),
         "abi_type_probe" => Ok(vec![
             "--type-probe".to_string(),
             type_symbol_param(params)?.to_string(),
@@ -43640,6 +43735,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftrender.get_renderer" => rust_get_renderer(case),
         "ftrender.set_renderer" if !case.expect_error => rust_set_renderer(case),
+        "renderer.class_probe" => rust_raster_class_probe(case),
         "ftmm.done_mm_var" => rust_done_mm_var(case),
         "ftmm.get_mm_var_then_done" | "ftmm.get_and_done_mm_var" => {
             rust_ftmm_get_and_done_mm_var(case)
@@ -45000,6 +45096,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftrender.get_renderer" => c_get_renderer(case),
         "ftrender.set_renderer" if !case.expect_error => c_set_renderer(case),
+        "renderer.class_probe" => c_raster_class_probe(case),
         "ftmm.done_mm_var" => c_done_mm_var(case),
         "ftmm.get_mm_var_then_done" | "ftmm.get_and_done_mm_var" => {
             c_ftmm_get_and_done_mm_var(case)
@@ -46218,6 +46315,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftrender.get_renderer" => wasm_get_renderer(case),
         "ftrender.set_renderer" if !case.expect_error => wasm_set_renderer(case),
+        "renderer.class_probe" => wasm_raster_class_probe(case),
         "ftmm.done_mm_var" => wasm_done_mm_var(case),
         "ftmm.get_mm_var_then_done" | "ftmm.get_and_done_mm_var" => {
             wasm_ftmm_get_and_done_mm_var(case)

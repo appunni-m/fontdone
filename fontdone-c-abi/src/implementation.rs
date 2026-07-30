@@ -2899,6 +2899,74 @@ pub struct AbiRasterSetModeRow {
     pub callback_called: bool,
 }
 
+/// One observation of a live C-shaped `FT_Raster_Funcs` table.
+#[cfg(feature = "abi-test-support")]
+pub struct AbiRasterFuncsObservation {
+    pub name: &'static str,
+    pub glyph_format: FT_Glyph_Format,
+    pub raster_new: bool,
+    pub raster_reset: bool,
+    pub raster_set_mode: bool,
+    pub raster_render: bool,
+    pub raster_done: bool,
+}
+
+/// Inspects the callback slots through the actual C ABI renderer records.
+#[cfg(feature = "abi-test-support")]
+pub fn abi_support_raster_class_probe(names: &[&str]) -> Vec<AbiRasterFuncsObservation> {
+    let mut library = ptr::null_mut();
+    if FT_Init_FreeType(&mut library) != rust_ffi::FT_Err_Ok {
+        return Vec::new();
+    }
+    let mut rows = Vec::new();
+    let Some(state) = library_state_mut(library) else {
+        let _ = FT_Done_Library(library);
+        return rows;
+    };
+    for &name in names {
+        let (canonical_name, renderer): (&'static str, *mut FT_RendererRec) = match name {
+            "ft_standard_raster" => (
+                "ft_standard_raster",
+                &mut state.raster1_renderer as *mut FT_RendererRec,
+            ),
+            "ft_grays_raster" => (
+                "ft_grays_raster",
+                &mut state.outline_renderer as *mut FT_RendererRec,
+            ),
+            "ft_sdf_raster" => (
+                "ft_sdf_raster",
+                &mut state.sdf_renderer as *mut FT_RendererRec,
+            ),
+            "ft_bitmap_sdf_raster" => (
+                "ft_bitmap_sdf_raster",
+                &mut state.bitmap_renderer as *mut FT_RendererRec,
+            ),
+            _ => continue,
+        };
+        // SAFETY: each renderer and class are owned by the live library state.
+        let Some(raster) = (unsafe {
+            renderer
+                .as_ref()
+                .and_then(|renderer| renderer.clazz.as_ref())
+                .and_then(|class| class.raster_class.as_ref())
+        }) else {
+            continue;
+        };
+        rows.push(AbiRasterFuncsObservation {
+            name: canonical_name,
+            glyph_format: raster.glyph_format,
+            raster_new: raster.raster_new.is_some(),
+            raster_reset: raster.raster_reset.is_some(),
+            raster_set_mode: raster.raster_set_mode.is_some(),
+            raster_render: raster.raster_render.is_some(),
+            raster_done: raster.raster_done.is_some(),
+        });
+    }
+    let _ = state;
+    let _ = FT_Done_Library(library);
+    rows
+}
+
 /// Registers a real C-shaped renderer and compares every set-mode matrix row.
 #[cfg(feature = "abi-test-support")]
 pub fn abi_raster_set_mode(
@@ -2973,7 +3041,7 @@ pub fn abi_raster_set_mode(
                 } else {
                     add_status
                 };
-                let state = ABI_RASTER_SET_MODE_STATE.with(|state| state.borrow().clone());
+                let state = ABI_RASTER_SET_MODE_STATE.with(|state| *state.borrow());
                 rows.push(AbiRasterSetModeRow {
                     status,
                     mode: state.mode,
@@ -5188,6 +5256,54 @@ fn abi_renderer_class(
     }
 }
 
+// The C ABI facade keeps the renderer class table observable even though the
+// default renderer implementation delegates rendering to the pure-Rust core.
+// These callbacks model the five non-null slots present in FreeType's four
+// maintained raster classes; the lifecycle routes exercise callback behavior
+// separately through their callback-backed synthetic renderer.
+unsafe extern "C" fn abi_default_raster_new(_memory: FT_Pointer, raster: *mut FT_Raster) -> c_int {
+    let Some(raster) = (unsafe { raster.as_mut() }) else {
+        return rust_ffi::FT_Err_Invalid_Argument;
+    };
+    *raster = ptr::null_mut();
+    rust_ffi::FT_Err_Ok
+}
+
+unsafe extern "C" fn abi_default_raster_reset(
+    _raster: FT_Raster,
+    _pool_base: *mut FT_Byte,
+    _pool_size: FT_ULong,
+) {
+}
+
+unsafe extern "C" fn abi_default_raster_set_mode(
+    _raster: FT_Raster,
+    _mode: FT_ULong,
+    _args: FT_Pointer,
+) -> c_int {
+    rust_ffi::FT_Err_Ok
+}
+
+unsafe extern "C" fn abi_default_raster_render(
+    _raster: FT_Raster,
+    _params: *const FT_Raster_Params,
+) -> c_int {
+    rust_ffi::FT_Err_Ok
+}
+
+unsafe extern "C" fn abi_default_raster_done(_raster: FT_Raster) {}
+
+fn abi_default_raster_funcs(glyph_format: FT_Glyph_Format) -> FT_Raster_Funcs {
+    FT_Raster_Funcs {
+        glyph_format,
+        raster_new: Some(abi_default_raster_new),
+        raster_reset: Some(abi_default_raster_reset),
+        raster_set_mode: Some(abi_default_raster_set_mode),
+        raster_render: Some(abi_default_raster_render),
+        raster_done: Some(abi_default_raster_done),
+    }
+}
+
 fn new_library_state(
     inner: rust_ffi::FT_Library,
     allocation_memory: FT_Memory,
@@ -5205,26 +5321,14 @@ fn new_library_state(
     let public_memory = system_memory
         .as_deref_mut()
         .map_or(allocation_memory, |memory| memory as *mut FT_MemoryRec);
-    let outline_raster_class = Box::new(FT_Raster_Funcs {
-        glyph_format: rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
-        ..FT_Raster_Funcs::default()
-    });
-    let synthetic_raster_class = Box::new(FT_Raster_Funcs {
-        glyph_format: rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
-        ..FT_Raster_Funcs::default()
-    });
-    let raster1_raster_class = Box::new(FT_Raster_Funcs {
-        glyph_format: rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
-        ..FT_Raster_Funcs::default()
-    });
-    let sdf_raster_class = Box::new(FT_Raster_Funcs {
-        glyph_format: rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
-        ..FT_Raster_Funcs::default()
-    });
-    let bitmap_raster_class = Box::new(FT_Raster_Funcs {
-        glyph_format: rust_ffi::FT_GLYPH_FORMAT_BITMAP,
-        ..FT_Raster_Funcs::default()
-    });
+    let outline_raster_class =
+        Box::new(abi_default_raster_funcs(rust_ffi::FT_GLYPH_FORMAT_OUTLINE));
+    let synthetic_raster_class =
+        Box::new(abi_default_raster_funcs(rust_ffi::FT_GLYPH_FORMAT_OUTLINE));
+    let raster1_raster_class =
+        Box::new(abi_default_raster_funcs(rust_ffi::FT_GLYPH_FORMAT_OUTLINE));
+    let sdf_raster_class = Box::new(abi_default_raster_funcs(rust_ffi::FT_GLYPH_FORMAT_OUTLINE));
+    let bitmap_raster_class = Box::new(abi_default_raster_funcs(rust_ffi::FT_GLYPH_FORMAT_BITMAP));
     let outline_renderer_class = Box::new(abi_renderer_class(
         SMOOTH_NAME.as_ptr().cast(),
         rust_ffi::FT_GLYPH_FORMAT_OUTLINE,

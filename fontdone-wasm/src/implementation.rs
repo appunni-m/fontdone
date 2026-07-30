@@ -5729,6 +5729,13 @@ pub fn abi_support_raster_set_mode_observation(
 }
 
 #[cfg(feature = "abi-test-support")]
+pub fn abi_support_raster_class_probe(
+    names: &[&'static str],
+) -> Vec<rust_ffi::FT_Raster_Funcs_Observation> {
+    rust_ffi::FT_Raster_Funcs_Probe(names)
+}
+
+#[cfg(feature = "abi-test-support")]
 pub fn abi_support_module_remove_lifecycle_observation() -> (
     i32,
     usize,

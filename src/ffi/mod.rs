@@ -332,7 +332,7 @@ pub use handles::{
     FT_ColrV1_PaintGraph_Snapshot, FT_ColrV1_PaintNode_Snapshot, FT_ColrV1_PaintRecord_Snapshot,
     FT_ColrV1_PublicPaintSolid_Snapshot, FT_Custom_Glyph_Lifecycle_Snapshot,
     FT_Glyph_Copy_Failure_Row, FT_Module_Callback_Event, FT_Palette_Data_Snapshot,
-    FT_Palette_Select_Snapshot, FT_Raster_Set_Mode_Observation,
+    FT_Palette_Select_Snapshot, FT_Raster_Funcs_Observation, FT_Raster_Set_Mode_Observation,
 };
 #[cfg(any(test, feature = "abi-test-support"))]
 export_parity_helpers!(
@@ -369,6 +369,7 @@ export_parity_helpers!(
     FT_Palette_Set_Active_Entry_For_Test,
     FT_Sfnt_Load_Name_Diagnostic,
     FT_Raster_Set_Mode_Probe,
+    FT_Raster_Funcs_Probe,
     FT_TrueType_Context_Allocation_Failure_Diagnostic,
     FT_Unsupported_GlyphSlot,
 );

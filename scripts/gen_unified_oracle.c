@@ -1892,6 +1892,65 @@ static int emit_raster_set_mode(int argc, char** argv) {
     return 0;
 }
 
+static const char* raster_probe_renderer_name(const char* raster_name) {
+    if (streq(raster_name, "ft_standard_raster")) return "raster1";
+    if (streq(raster_name, "ft_grays_raster")) return "smooth";
+    if (streq(raster_name, "ft_sdf_raster")) return "sdf";
+    if (streq(raster_name, "ft_bitmap_sdf_raster")) return "bsdf";
+    return NULL;
+}
+
+static int emit_raster_class_probe(int argc, char** argv) {
+    if (argc != 3) return 2;
+    char raster_names[8][64];
+    int raster_count = parse_csv_tokens(argv[2], raster_names, 8);
+    if (raster_count <= 0) {
+        printf("{");
+        print_status(FT_Err_Invalid_Argument);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+    FT_Library library = NULL;
+    FT_Error init_status = FT_Init_FreeType(&library);
+    if (init_status) {
+        printf("{");
+        print_status(init_status);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"renderer_classes\":[");
+    for (int i = 0; i < raster_count; i++) {
+        if (i) printf(",");
+        const char* renderer_name = raster_probe_renderer_name(raster_names[i]);
+        FT_Renderer renderer = renderer_name
+            ? (FT_Renderer)FT_Get_Module(library, renderer_name)
+            : NULL;
+        const FT_Raster_Funcs* raster_class = NULL;
+        if (renderer && renderer->clazz) {
+            raster_class = renderer->clazz->raster_class;
+        }
+        printf("{\"name\":\"%s\",\"glyph_format\":%ld,",
+               raster_names[i],
+               raster_class ? (long)raster_class->glyph_format : (long)FT_GLYPH_FORMAT_NONE);
+        printf("\"raster_new_nullness\":");
+        print_json_bool(!raster_class || !raster_class->raster_new);
+        printf(",\"raster_reset_nullness\":");
+        print_json_bool(!raster_class || !raster_class->raster_reset);
+        printf(",\"raster_set_mode_nullness\":");
+        print_json_bool(!raster_class || !raster_class->raster_set_mode);
+        printf(",\"raster_render_nullness\":");
+        print_json_bool(!raster_class || !raster_class->raster_render);
+        printf(",\"raster_done_nullness\":");
+        print_json_bool(!raster_class || !raster_class->raster_done);
+        printf("}");
+    }
+    printf("]}}\n");
+    FT_Done_Library(library);
+    return 0;
+}
+
 static int emit_raster_new_error(void) {
     memset(&fixture_raster_lifecycle, 0, sizeof(fixture_raster_lifecycle));
     fixture_raster_new_result = FT_Err_Out_Of_Memory;
@@ -34865,6 +34924,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 5 && streq(argv[1], "--raster-set-mode")) {
         return emit_raster_set_mode(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--raster-class-probe")) {
+        return emit_raster_class_probe(argc, argv);
     }
     if (argc == 2 && streq(argv[1], "--raster-new-error")) {
         return emit_raster_new_error();
