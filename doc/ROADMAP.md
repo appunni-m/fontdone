@@ -387,7 +387,7 @@ Requested thorough CI records ten samples and retains both JSON and Markdown
 evidence.
 
 <!-- performance-roadmap:start -->
-The most-sampled current environment has **1 / 5 qualifying clean runs**.
+The most-sampled current environment has **2 / 5 qualifying clean runs**.
 <!-- performance-roadmap:end -->
 
 | Measurement | Current state | Completion evidence |
