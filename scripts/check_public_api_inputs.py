@@ -4847,6 +4847,7 @@ def focused_success_real_parity_reason(row: ConcreteInput) -> str | None:
         "ftglyph.FT_Get_Glyph.success_svg_slot_deep_copy",
         "ftglyph.FT_Glyph_Copy.success_svg_copy_is_independent",
         "ftglyph.FT_Glyph_Transform.success_svg_transform_accumulates",
+        "ftglyph.FT_SvgGlyphRec.fields_match_svg_get_copy_transform",
     }
     if row.case_id in svg_glyph_cases:
         return (
