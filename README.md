@@ -96,11 +96,11 @@ The last committed full parity snapshot was recorded on **2026-07-30**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,212 |
-| Passed cases | 7,212 |
+| Runnable exact-comparison cases | 7,228 |
+| Passed cases | 7,228 |
 | Failed cases | 0 |
-| Explicitly pending cases | 95 |
-| Covered manifest cases | 4,084 |
+| Explicitly pending cases | 79 |
+| Covered manifest cases | 4,100 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,258 |
@@ -135,7 +135,9 @@ The last all-lane coverage run was recorded on **2026-07-30** against
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The run completed in 48 minutes 58.668
 seconds while passing all 7,212 runnable parity comparisons with 0 failures;
-the 95 explicitly pending cases remain pending. The maintained
+the 95 explicitly pending cases remain pending. Those parity counts belong to
+the historical coverage source commit above and are not a claim about the
+newer committed runtime snapshot. The maintained
 `make test-coverage-all` command runs every non-ignored
 workspace unit and integration target under the default feature profile,
 including full parity, while excluding test-harness paths from the report.

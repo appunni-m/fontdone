@@ -736,12 +736,40 @@ def validate_snapshot(errors: list[str]) -> None:
                 "not a full Git SHA"
             )
         coverage_runtime = coverage.get("runtime_parity", {})
+        if not isinstance(coverage_runtime, dict):
+            errors.append(
+                "doc/compatibility_snapshot.json: coverage runtime_parity is missing"
+            )
+            coverage_runtime = {}
         for key in ("runnable", "passed", "failed", "pending"):
-            if coverage_runtime.get(key) != runtime[key]:
+            if not isinstance(coverage_runtime.get(key), int):
                 errors.append(
                     "doc/compatibility_snapshot.json: coverage runtime_parity."
-                    f"{key} does not match committed runtime evidence"
+                    f"{key} is not an integer"
                 )
+        if (
+            isinstance(coverage_runtime.get("runnable"), int)
+            and isinstance(coverage_runtime.get("passed"), int)
+            and isinstance(coverage_runtime.get("failed"), int)
+            and (
+                coverage_runtime["passed"] != coverage_runtime["runnable"]
+                or coverage_runtime["failed"] != 0
+            )
+        ):
+            errors.append(
+                "doc/compatibility_snapshot.json: coverage runtime parity was not "
+                "fully passing"
+            )
+        coverage_source_matches_runtime = (
+            source_commit == evidence.get("source", {}).get("git_head")
+        )
+        if coverage_source_matches_runtime:
+            for key in ("runnable", "passed", "failed", "pending"):
+                if coverage_runtime.get(key) != runtime[key]:
+                    errors.append(
+                        "doc/compatibility_snapshot.json: coverage runtime_parity."
+                        f"{key} does not match committed runtime evidence"
+                    )
         for label, key in (
             ("Lines", "lines"),
             ("Branches", "branches"),
