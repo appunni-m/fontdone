@@ -353,11 +353,12 @@ increase is claimed until the next full all-lane measurement**:
 | 9 | `c58dfaa8a0276c22455dd1f942d070f552b2f033` | Removed unused missing-font declarations from scalar TrueType interpreter-property fixtures, documented that the remaining glyph-output rows still require maintained inputs, and revalidated the unchanged parity denominator. |
 | 10 | `15577d60d17a3dfe1b17081083029832d932e249` | Consolidated the per-commit GitHub checks into the exact `make ci-fast` gate plus MSRV, retained smoke diagnostics, and kept full parity, coverage, platform, performance, package, and supply-chain work manual for requested pre-merge audits. |
 | 11 | `e41acf4f5e2c01f6b6f4caafd2229d4de04abc4d` | Promoted the maintained eight-byte PCF control route for `FT_HAS_HORIZONTAL` from pending to exact parity, preserving pinned `FT_Err_Invalid_Stream_Operation` across Rust, C ABI, and WASM. |
+| 12 | `adf44e4fb451cc91399bde9bb9af46b00f38b7c9` | Routed the maintained pinned-C raster callback lifecycle through the New, Reset, and Done callback rows across Rust FFI, C ABI, and WASM; the failure and set-mode matrices remain explicitly pending. |
 
 The latest clean parity-only verification is Coverage MCP run
-`60fd579c-4b51-4de9-ac64-22faef9b6fd9` against source commit
-`e41acf4f5e2c01f6b6f4caafd2229d4de04abc4d`: 7,233 / 7,233 runnable
-comparisons passed, 0 failed, and 74 remain explicitly pending. The committed
+`03c99df6-2b5e-4758-ac51-cfb2a4dfa4b1` against source commit
+`adf44e4fb451cc91399bde9bb9af46b00f38b7c9`: 7,236 / 7,236 runnable
+comparisons passed, 0 failed, and 71 remain explicitly pending. The committed
 source-digest attestation is
 `doc/runtime_parity_evidence.json`. Full coverage is intentionally deferred
 until a larger set of focused batches is ready, because the maintained

@@ -96,19 +96,19 @@ The last committed full parity snapshot was recorded on **2026-07-30**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,233 |
-| Passed cases | 7,233 |
+| Runnable exact-comparison cases | 7,236 |
+| Passed cases | 7,236 |
 | Failed cases | 0 |
-| Explicitly pending cases | 74 |
-| Covered manifest cases | 4,105 |
+| Explicitly pending cases | 71 |
+| Covered manifest cases | 4,108 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,258 |
 | Concrete expanded cases | 7,307 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,233 / 7,233` means every runnable case in that execution matched. It does
-not turn the 74 pending cases into passes. Likewise, 218/218 function-route
+`7,236 / 7,236` means every runnable case in that execution matched. It does
+not turn the 71 pending cases into passes. Likewise, 218/218 function-route
 evidence can be satisfied by a narrow success or null-validation route; it is
 not equivalent to complete behavior for every input, state, or platform.
 
@@ -157,7 +157,7 @@ The latest committed scorecard has **9 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 names, signatures, and traced function routes; 4,984 / 5,047 pinned-C runtime contract rows exact, with 63 pending |
+| Functions | 218 / 218 names, signatures, and traced function routes; 4,988 / 5,047 pinned-C runtime contract rows exact, with 59 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership, state, errors, modules, headers | Complete under their blocking scorecard measurements |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
