@@ -7366,6 +7366,7 @@ fn module_name_from_abi(module_name: *const FT_String) -> Option<&'static str> {
         b"fixture_lifecycle" => Some("fixture_lifecycle"),
         b"fixture_renderer_lifecycle" => Some("fixture_renderer_lifecycle"),
         b"fixture_raster_lifecycle" => Some("fixture_raster_lifecycle"),
+        b"fixture_raster_new_error" => Some("fixture_raster_new_error"),
         b"fixture_custom_glyph" => Some("fixture_custom_glyph"),
         b"fixture_second" => Some("fixture_second"),
         b"fixture_final_destroy" => Some("fixture_final_destroy"),
