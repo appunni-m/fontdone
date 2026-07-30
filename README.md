@@ -96,11 +96,11 @@ The last committed full parity snapshot was recorded on **2026-07-30**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,228 |
-| Passed cases | 7,228 |
+| Runnable exact-comparison cases | 7,229 |
+| Passed cases | 7,229 |
 | Failed cases | 0 |
-| Explicitly pending cases | 79 |
-| Covered manifest cases | 4,100 |
+| Explicitly pending cases | 78 |
+| Covered manifest cases | 4,101 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,258 |
@@ -157,7 +157,7 @@ The latest committed scorecard has **9 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 names, signatures, and traced function routes; 4,980 / 5,047 pinned-C runtime contract rows exact, with 67 pending |
+| Functions | 218 / 218 names, signatures, and traced function routes; 4,981 / 5,047 pinned-C runtime contract rows exact, with 66 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership, state, errors, modules, headers | Complete under their blocking scorecard measurements |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
