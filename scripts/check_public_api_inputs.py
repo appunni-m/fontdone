@@ -8145,8 +8145,6 @@ def unresolved_runtime_asset_pending_reason(row: ConcreteInput) -> str | None:
         "ftgxval.FT_VALIDATE_mort_INDEX.indexes_mort_output_slot",
         "ftgxval.FT_VALIDATE_morx.validates_morx_table_slot",
         "ftgxval.FT_VALIDATE_morx_INDEX.indexes_morx_output_slot",
-        "ttnameid.TT_ADOBE_ID_CUSTOM.representative_charmap_encoding_match",
-        "ttnameid.TT_PLATFORM_ADOBE.representative_adobe_charmap_match",
     }
     if row.case_id in runtime_skipped_needs_input_cases:
         return (

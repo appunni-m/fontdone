@@ -4763,6 +4763,39 @@ impl Font {
 
     /// Return all selectable charmaps.
     pub fn charmaps(&self) -> Vec<CharmapInfo> {
+        if matches!(self.face_kind, FaceKind::Type1 { .. }) {
+            // FreeType's Type 1 driver synthesizes a Unicode charmap and, for
+            // recognized encodings, an Adobe-platform charmap even though the
+            // PostScript face has no SFNT `cmap` table.  Keep the synthetic
+            // records in the same order as `t1objs.c` so FT_Face->charmaps,
+            // FT_Get_Charmap_Index, and the ABI facades expose the C layout.
+            let mut charmaps = vec![CharmapInfo {
+                index: 0,
+                platform_id: 3,
+                encoding_id: 1,
+                format: 0,
+                language_id: 0,
+            }];
+            if let Some(encoding) = self.type1_encoding.as_ref() {
+                let encoding_id = match encoding.encoding_type {
+                    1 => Some(2), // T1_ENCODING_TYPE_ARRAY / TT_ADOBE_ID_CUSTOM
+                    2 => Some(0), // T1_ENCODING_TYPE_STANDARD
+                    3 => Some(3), // T1_ENCODING_TYPE_ISOLATIN1
+                    4 => Some(1), // T1_ENCODING_TYPE_EXPERT
+                    _ => None,
+                };
+                if let Some(encoding_id) = encoding_id {
+                    charmaps.push(CharmapInfo {
+                        index: 1,
+                        platform_id: 7,
+                        encoding_id,
+                        format: 0,
+                        language_id: 0,
+                    });
+                }
+            }
+            return charmaps;
+        }
         self.data
             .cmap
             .charmaps
@@ -4785,7 +4818,7 @@ impl Font {
 
     /// Equivalent to `FT_Get_Charmap_Index` for the active charmap.
     pub fn charmap_index(&self) -> Option<usize> {
-        if self.selected_charmap < self.data.cmap.charmaps.len() {
+        if self.selected_charmap < self.charmaps().len() {
             Some(self.selected_charmap)
         } else {
             None
@@ -4799,7 +4832,7 @@ impl Font {
     /// Returns [`FontError`] when the requested platform/encoding pair does
     /// not exist.
     pub fn select_charmap(&mut self, platform_id: u16, encoding_id: u16) -> Result<(), FontError> {
-        let Some(index) = self.data.cmap.charmaps.iter().position(|record| {
+        let Some(index) = self.charmaps().into_iter().position(|record| {
             record.platform_id == platform_id && record.encoding_id == encoding_id
         }) else {
             return Err(FontError::InvalidFont(format!(
@@ -4816,6 +4849,10 @@ impl Font {
     ///
     /// Returns [`FontError`] when the face has no Unicode charmap.
     pub fn select_unicode_charmap(&mut self) -> Result<(), FontError> {
+        if matches!(self.face_kind, FaceKind::Type1 { .. }) {
+            self.selected_charmap = 0;
+            return Ok(());
+        }
         // C `find_unicode_charmap` (src/base/ftobjs.c:1372-1453) does not
         // fall back to the first charmap when no FT_ENCODING_UNICODE map exists.
         let Some(index) = default_unicode_charmap_index(&self.data.cmap) else {
@@ -4833,7 +4870,7 @@ impl Font {
     ///
     /// Returns [`FontError`] when `index` is outside the charmap list.
     pub fn set_charmap(&mut self, index: usize) -> Result<(), FontError> {
-        if index >= self.data.cmap.charmaps.len() {
+        if index >= self.charmaps().len() {
             return Err(FontError::InvalidFont(format!(
                 "charmap index {index} out of range"
             )));

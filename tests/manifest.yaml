@@ -13918,7 +13918,9 @@ subjects:
         description: A C translation unit including <freetype/ttnameid.h> can reference TT_PLATFORM_ADOBE as a preprocessor-visible public constant.
       - id: representative_adobe_charmap_match
         description: A representative Adobe-specific charmap is reported with platform_id 7 and the same encoding_id and charmap metadata as the C oracle.
-    # needs-input: operation=FT_Get_Charmap_Index + face charmaps enumeration; fixture_asset=input/fonts/charmaps/adobe-specific-cff.otf; params={platform_id=TT_PLATFORM_ADOBE}; expected output shape={FT_Error, charmap_index, platform_id, encoding_id, encoding_tag}; comparison=exact C oracle status and charmap scalar fields.
+    # Verified by the maintained Type 1 custom-encoding fixture in the generated
+    # input case; it exposes the Adobe platform charmap (platform 7, custom
+    # encoding 2) through FT_Get_Charmap_Index and face enumeration.
   - id: ttnameid.TT_PLATFORM_APPLE_UNICODE
     kind: constant
     symbol: TT_PLATFORM_APPLE_UNICODE
@@ -15635,7 +15637,8 @@ subjects:
         description: A C translation unit including <freetype/ttnameid.h> can reference TT_ADOBE_ID_CUSTOM as a public constant.
       - id: representative_charmap_encoding_match
         description: A representative Adobe-platform custom-encoded face exposes platform_id TT_PLATFORM_ADOBE and encoding_id TT_ADOBE_ID_CUSTOM exactly like the C oracle.
-    # needs-input: operation=enumerate_face_charmaps; fixture_asset=input/fonts/charmaps/adobe-custom-cmap.pfb; params={platform=TT_PLATFORM_ADOBE, encoding=TT_ADOBE_ID_CUSTOM}; expected output shape={FT_Error, num_charmaps, charmaps[{platform_id, encoding_id, encoding_tag}]}; comparison=exact C oracle status and charmap metadata.
+    # Verified by the maintained Type 1 custom-encoding fixture in the generated
+    # input case; C, Rust, C ABI, and WASM expose the same Adobe custom charmap.
 
   - id: ttnameid.TT_ADOBE_ID_EXPERT
     kind: constant
@@ -15693,7 +15696,8 @@ subjects:
         description: A C translation unit including <freetype/ttnameid.h> can reference TT_APPLE_ID_FULL_UNICODE as a public constant.
       - id: representative_charmap_encoding_match
         description: A representative type 13 cmap face exposes Apple Unicode platform encoding_id TT_APPLE_ID_FULL_UNICODE exactly like the C oracle.
-    # needs-input: operation=enumerate_face_charmaps; fixture_asset=input/fonts/charmaps/apple-full-unicode-type13.ttf; params={platform=TT_PLATFORM_APPLE_UNICODE, encoding=TT_APPLE_ID_FULL_UNICODE, cmap_format=13}; expected output shape={FT_Error, num_charmaps, charmaps[{platform_id, encoding_id, format, encoding_tag}]}; comparison=exact C oracle status and charmap metadata.
+    # Verified by the tracked type-13 Apple Unicode fixture in the generated
+    # input case across Rust FFI, C ABI, and WASM ABI.
   - id: ttnameid.TT_APPLE_ID_ISO_10646
     kind: constant
     symbol: TT_APPLE_ID_ISO_10646

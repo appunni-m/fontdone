@@ -349,10 +349,11 @@ increase is claimed until the next full all-lane measurement**:
 | 5 | `9eebbe6aed0f4051630e750aa87c08a09f97e90e` | Added null/error contracts for C cache constructors/lookups, face and outline entry points, transform/lang-tag outputs, logging/property controls, plus WASM allocation, face-open, bitmap-accessor, and cleanup routes. |
 | 6 | `e63d25a0d954a472648918b9a3da9822ff517313` | Added a valid requester-backed C cache manager lifecycle covering face/size lookup, CMap/image/SBit cache construction, glyph/node ownership, face removal, reset, and teardown. |
 | 7 | `fe7210517b9f9ba31384a64370b6c33e4928267f` | Promoted existing Type1 MM/private, FontInfo, ForceBold, and Standard/ISOLatin1/Expert/custom-encoding fixtures from required-future status after all four lanes matched pinned C; removed 16 pending runtime rows. |
+| 8 | `parity-promotion source commit` | Promoted tracked Adobe custom/platform and Apple full-Unicode charmap fixtures; added Type 1 synthetic charmaps and Adobe encoding tags to every ABI facade; removed two stale runtime-skip guards and added the missing `freetype.enumerate_charmaps` dispatch. |
 
-The latest clean parity-only verification is Coverage MCP run
-`4bb41d7a-f463-40f6-85d9-3c8c1355564d` against batch 7:
-7,228 / 7,228 runnable comparisons passed, 0 failed, and 79 remain explicitly
+The latest parity-only verification is Coverage MCP run
+`952d663c-b47d-4703-919a-e0a08534bb96` against the charmap promotion:
+7,232 / 7,232 runnable comparisons passed, 0 failed, and 75 remain explicitly
 pending. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. Full coverage is intentionally deferred
 until a larger set of focused batches is ready, because the maintained

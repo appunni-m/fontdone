@@ -13295,6 +13295,14 @@ fn registered_charmap_metadata(charmap: FT_CharMap) -> Option<CharmapMetadata> {
 
 fn charmap_encoding(platform_id: FT_UShort, encoding_id: FT_UShort) -> FT_Encoding {
     match (platform_id, encoding_id) {
+        (TT_PLATFORM_ADOBE_U16, TT_ADOBE_ID_STANDARD_U16) => {
+            FT_ENCODING_ADOBE_STANDARD as FT_Encoding
+        }
+        (TT_PLATFORM_ADOBE_U16, TT_ADOBE_ID_EXPERT_U16) => FT_ENCODING_ADOBE_EXPERT as FT_Encoding,
+        (TT_PLATFORM_ADOBE_U16, TT_ADOBE_ID_CUSTOM_U16) => FT_ENCODING_ADOBE_CUSTOM as FT_Encoding,
+        (TT_PLATFORM_ADOBE_U16, TT_ADOBE_ID_LATIN_1_U16) => {
+            FT_ENCODING_ADOBE_LATIN_1 as FT_Encoding
+        }
         (TT_PLATFORM_ISO_U16, _) | (TT_PLATFORM_APPLE_UNICODE_U16, _) => {
             FT_ENCODING_UNICODE as FT_Encoding
         }
@@ -13313,6 +13321,7 @@ fn charmap_encoding(platform_id: FT_UShort, encoding_id: FT_UShort) -> FT_Encodi
 }
 
 const TT_PLATFORM_APPLE_UNICODE_U16: FT_UShort = TT_PLATFORM_APPLE_UNICODE as FT_UShort;
+const TT_PLATFORM_ADOBE_U16: FT_UShort = TT_PLATFORM_ADOBE as FT_UShort;
 const TT_PLATFORM_MACINTOSH_U16: FT_UShort = TT_PLATFORM_MACINTOSH as FT_UShort;
 const TT_PLATFORM_ISO_U16: FT_UShort = TT_PLATFORM_ISO as FT_UShort;
 const TT_PLATFORM_MICROSOFT_U16: FT_UShort = TT_PLATFORM_MICROSOFT as FT_UShort;
@@ -13325,6 +13334,10 @@ const TT_MS_ID_BIG_5_U16: FT_UShort = TT_MS_ID_BIG_5 as FT_UShort;
 const TT_MS_ID_WANSUNG_U16: FT_UShort = TT_MS_ID_WANSUNG as FT_UShort;
 const TT_MS_ID_JOHAB_U16: FT_UShort = TT_MS_ID_JOHAB as FT_UShort;
 const TT_MS_ID_UCS_4_U16: FT_UShort = TT_MS_ID_UCS_4 as FT_UShort;
+const TT_ADOBE_ID_STANDARD_U16: FT_UShort = TT_ADOBE_ID_STANDARD as FT_UShort;
+const TT_ADOBE_ID_EXPERT_U16: FT_UShort = TT_ADOBE_ID_EXPERT as FT_UShort;
+const TT_ADOBE_ID_CUSTOM_U16: FT_UShort = TT_ADOBE_ID_CUSTOM as FT_UShort;
+const TT_ADOBE_ID_LATIN_1_U16: FT_UShort = TT_ADOBE_ID_LATIN_1 as FT_UShort;
 
 fn os2_to_ffi(os2: &crate::tt::os2::Os2Table) -> TT_OS2 {
     TT_OS2 {

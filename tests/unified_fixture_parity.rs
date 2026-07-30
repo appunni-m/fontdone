@@ -40648,7 +40648,10 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(set_charmap_probe_chars_arg(params)?);
             Ok(args)
         }
-        "face.enumerate_charmaps" | "freetype.inspect_charmaps" | "freetype.charmap_ownership" => {
+        "face.enumerate_charmaps"
+        | "freetype.enumerate_charmaps"
+        | "freetype.inspect_charmaps"
+        | "freetype.charmap_ownership" => {
             let mut args = vec!["--inspect-charmaps".to_string()];
             push_font_source(case, &mut args)?;
             push_face_size(params, &mut args)?;
@@ -43294,9 +43297,10 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "charmap.get_char_index" => rust_charmap_get_char_index(case),
         "freetype.select_charmap" => rust_select_charmap(case),
         "freetype.set_charmap" => rust_set_charmap(case),
-        "face.enumerate_charmaps" | "freetype.inspect_charmaps" | "freetype.charmap_ownership" => {
-            rust_inspect_charmaps(case)
-        }
+        "face.enumerate_charmaps"
+        | "freetype.enumerate_charmaps"
+        | "freetype.inspect_charmaps"
+        | "freetype.charmap_ownership" => rust_inspect_charmaps(case),
         "freetype.get_charmap_index" => rust_get_charmap_index(case),
         "freetype.get_fstype_flags" => {
             let face = open_face(case)?;
@@ -44569,7 +44573,10 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             output
         }
         "freetype.set_charmap" => c_set_charmap(case),
-        "face.enumerate_charmaps" | "freetype.inspect_charmaps" | "freetype.charmap_ownership" => {
+        "face.enumerate_charmaps"
+        | "freetype.enumerate_charmaps"
+        | "freetype.inspect_charmaps"
+        | "freetype.charmap_ownership" => {
             let (library, face) = c_new_face_without_size(case)?;
             let output = c_inspect_charmaps(face, &case.inputs.params);
             c_done_face(face);
@@ -45797,7 +45804,10 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             output
         }
         "freetype.set_charmap" => wasm_set_charmap(case),
-        "face.enumerate_charmaps" | "freetype.inspect_charmaps" | "freetype.charmap_ownership" => {
+        "face.enumerate_charmaps"
+        | "freetype.enumerate_charmaps"
+        | "freetype.inspect_charmaps"
+        | "freetype.charmap_ownership" => {
             let handle = wasm_new_face_without_size(case)?;
             let output = wasm_inspect_charmaps(handle, &case.inputs.params);
             wasm_done_face(handle);
@@ -75720,6 +75730,7 @@ fn comparison_schema(case: &InputCase) -> &str {
             | "sfnt.table_info"
             | "freetype.inspect_available_sizes"
             | "face.enumerate_charmaps"
+            | "freetype.enumerate_charmaps"
             | "freetype.inspect_charmaps"
             | "freetype.charmap_ownership"
             | "freetype.get_charmap_index"
