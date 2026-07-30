@@ -7,6 +7,10 @@ PYTHON := python3
 PYCACHE_DIR := target/pycache
 BENCH_SAMPLES ?= 10
 BENCH_PROFILE ?= default
+COVERAGE_TOOLCHAIN ?= nightly
+CARGO_LLVM_COV_VERSION ?= 0.8.7
+CARGO_DENY_VERSION ?= 0.20.2
+CARGO_AUDIT_VERSION ?= 0.22.2
 PREFIX ?= /usr/local
 DESTDIR ?=
 PARITY_ARGS ?= -- --nocapture
@@ -25,7 +29,7 @@ PLATFORM_SYSROOT ?=
 PLATFORM_CLANG_TARGET ?= $(PLATFORM_TARGET)
 
 .DEFAULT_GOAL := help
-.NOTPARALLEL: ci release-verify
+.NOTPARALLEL: ci ci-commit ci-thorough release-verify
 
 .PHONY: help
 help:
@@ -36,7 +40,8 @@ help:
 	@printf "  make test-fast        Run tests that do not need the C oracle\n"
 	@printf "  make test-parity      Run the complete exact parity gate\n"
 	@printf "  make lint             Check formatting and Clippy\n"
-	@printf "  make ci               Run every required local CI gate\n"
+	@printf "  make ci               Run the per-commit local CI gate\n"
+	@printf "  make ci-thorough      Run the requested pre-merge local gate\n"
 	@printf "\nFocused work:\n"
 	@printf "  make test-op OP=<op>      Test one public operation\n"
 	@printf "  make test-case CASE=<id>  Test one case or subject\n"
@@ -53,6 +58,7 @@ help:
 	@printf "  make platform-contract-cross PLATFORM_TARGET=... PLATFORM_CC=... PLATFORM_NM=... PLATFORM_RUNNER='...' PLATFORM_SYSROOT=...  Record an emulated Linux target\n"
 	@printf "  make check-platform-contract  Require five fresh target bundles plus Windows import-library evidence\n"
 	@printf "  make c-abi-contract       Report all pinned C contract categories\n"
+	@printf "  make c-abi-contract-all-platforms  Validate five bundles and report current C-contract debt\n"
 	@printf "  make c-abi-contract-complete  Require all 12 C contract categories from assembled evidence\n"
 	@printf "  make test-coverage        Write core Rust coverage JSON\n"
 	@printf "  make test-coverage-all    Write all-lane branch coverage JSON\n"
@@ -74,7 +80,8 @@ help:
 	@printf "  make c-abi-install        Install C headers, libraries, and pkg-config metadata under PREFIX\n"
 	@printf "  make c-abi-install-check  Stage and verify the complete C installation layout\n"
 	@printf "\nMaintenance:\n"
-	@printf "  make setup-tools          Install optional audit tools\n"
+	@printf "  make setup-tools          Install pinned supply-chain audit tools\n"
+	@printf "  make setup-coverage-tools Install the pinned cargo-llvm-cov version\n"
 	@printf "  make supply-chain         Run dependency and license audits\n"
 	@printf "  make clean                Remove generated local artifacts\n"
 
@@ -83,7 +90,12 @@ setup: unified-oracle public-constants
 
 .PHONY: setup-tools
 setup-tools:
-	$(CARGO) install cargo-deny cargo-audit --locked
+	$(CARGO) install cargo-deny --version $(CARGO_DENY_VERSION) --locked
+	$(CARGO) install cargo-audit --version $(CARGO_AUDIT_VERSION) --locked
+
+.PHONY: setup-coverage-tools
+setup-coverage-tools:
+	$(CARGO) install cargo-llvm-cov --version $(CARGO_LLVM_COV_VERSION) --locked
 
 .PHONY: build
 build:
@@ -215,7 +227,7 @@ test-coverage: unified-oracle api-abi-check
 .PHONY: test-coverage-all
 test-coverage-all: unified-oracle api-abi-check
 	mkdir -p $(dir $(ALL_LANES_COVERAGE_OUTPUT))
-	$(CARGO) +nightly llvm-cov --branch --workspace \
+	$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov --branch --workspace \
 		--test unified_fixture_parity --locked --json \
 		--ignore-filename-regex '$(ALL_LANES_COVERAGE_IGNORE_REGEX)' \
 		--output-path $(ALL_LANES_COVERAGE_OUTPUT) -- unified_fixture_parity --nocapture
@@ -227,11 +239,11 @@ test-coverage-all: unified-oracle api-abi-check
 test-unified-condition-coverage: unified-oracle api-abi-check
 	mkdir -p $(dir $(CONDITION_COVERAGE_OUTPUT))
 	FONTDONE_ENABLE_SILENT_TRACE_LOGGER=1 \
-	RUSTFLAGS="-Zcoverage-options=condition" $(CARGO) +nightly llvm-cov \
+	RUSTFLAGS="-Zcoverage-options=condition" $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov \
 		--test unified_fixture_parity --locked --json \
 		--ignore-filename-regex '$(CORE_COVERAGE_IGNORE_REGEX)' \
 		--output-path $(CONDITION_COVERAGE_OUTPUT) -- unified_fixture_parity --nocapture
-	RUSTFLAGS="-Zcoverage-options=condition" $(CARGO) +nightly llvm-cov report \
+	RUSTFLAGS="-Zcoverage-options=condition" $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov report \
 		--show-missing-lines \
 		--ignore-filename-regex '$(CORE_COVERAGE_IGNORE_REGEX)' \
 		> $(CONDITION_COVERAGE_LINES_OUTPUT)
@@ -400,6 +412,12 @@ c-abi-contract-complete: check-c-contract-inventory test-c-abi-safety \
 	external-c-abi-audit audit-exact-errors test-c-consumer check-c-exports \
 	check-platform-contract
 	$(PYTHON) scripts/audit_api_abi.py --c-contract --require-c-contract-complete
+
+.PHONY: c-abi-contract-all-platforms
+c-abi-contract-all-platforms: check-c-contract-inventory test-c-abi-safety \
+	external-c-abi-audit audit-exact-errors test-c-consumer check-c-exports \
+	check-platform-contract
+	$(PYTHON) scripts/audit_api_abi.py --c-contract
 
 .PHONY: test-c-abi-safety
 test-c-abi-safety:
@@ -659,11 +677,17 @@ check-versions:
 package-verify: check-versions
 	$(PYTHON) scripts/verify_release.py
 
+.PHONY: ci-commit
+ci-commit: check-generated check-font-fixtures check-docs check-versions fmt clippy doc doc-test test-fast test-integrations test-parity bench-self-test
+
 .PHONY: ci
-ci: check-generated check-font-fixtures check-docs check-versions fmt clippy doc doc-test test-fast test-integrations test-parity package-verify bench-self-test
+ci: ci-commit
+
+.PHONY: ci-thorough
+ci-thorough: ci-commit package-verify supply-chain c-abi-contract test-coverage-all bench
 
 .PHONY: release-verify
-release-verify: ci c-abi-contract-complete
+release-verify: ci-thorough c-abi-contract-complete
 	$(MAKE) check-docs
 
 .PHONY: release-dry-run

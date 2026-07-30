@@ -211,6 +211,7 @@ make test-fast   # workspace tests that do not need full parity
 make test-parity # exact C/Rust/C-ABI/WASM parity
 make lint        # rustfmt and Clippy
 make doc-test    # compile public Rust examples
+make ci          # required per-commit local gate
 ```
 
 Important complete gates:
@@ -219,9 +220,11 @@ Important complete gates:
 |---|---|
 | `make api-abi-audit` | Parse the pinned public declarations and local surfaces |
 | `make c-abi-contract` | Report every C-contract numerator, denominator, and debt item |
+| `make c-abi-contract-all-platforms` | Validate five target bundles and report current C-contract debt |
 | `make c-abi-contract-complete` | Fail unless all 12 C-contract categories complete |
 | `make test-integrations` | Run downstream Rust, external C, exports, and Node/WASM consumers |
 | `make check-docs` | Check every tracked Markdown document, status snapshot, links, commands, and rustdoc policy |
+| `make ci-thorough` | Run the requested local pre-merge coverage, performance, contract, package, and supply-chain gate |
 | `make release-verify` | Run local release gates; requires assembled five-target platform evidence |
 
 `make help` is the maintained command index.

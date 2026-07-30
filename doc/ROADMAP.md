@@ -1,14 +1,14 @@
-# FreeType 2.14.3 C-contract completion roadmap
+# FreeType 2.14.3 parity, coverage, and performance roadmap
 
 Status: **ACTIVE**
 
 Owner: repository maintainers
 
-Open goals: **1**
+Open goals: **3**
 
-Deletion condition: goal G01 is complete, its durable contract data and release
-evidence remain reachable from maintained documentation, this file is removed
-from `doc/README.md`, and this file is deleted. The repository-retention audit
+Deletion condition: goals G01 through G03 are complete, their durable evidence
+remains reachable from maintained documentation, this file is removed from
+`doc/README.md`, and this file is deleted. The repository-retention audit
 rejects a retained roadmap with zero open goals.
 
 This is the repository's one active implementation plan. It does not claim
@@ -303,7 +303,84 @@ For each batch:
 7. report exact before/after numerators and denominators;
 8. run the full required gates when the batch is green.
 
-## 8. Completion gates
+## 8. Goal G02: reach 100% production-code coverage
+
+State: `OPEN`
+
+The maintained all-lane coverage suite measures reachable production source in
+the Rust core, C ABI, and host-compiled WASM facade. Test-harness source is the
+only filename exclusion. Executing code does not prove FreeType parity, so G02
+cannot satisfy any G01 item.
+
+Baseline snapshot `e9945111-3786-4aa5-abd9-3d540bd52b35`, produced from commit
+`e554aca48fb3168fa852dd79267f50d06201e1e4`, records:
+
+| Metric | Covered / total | Coverage | Pending |
+|---|---:|---:|---:|
+| Lines | 45,547 / 50,898 | 89.49% | 5,351 |
+| Branches | 8,986 / 11,915 | 75.42% | 2,929 |
+| Functions | 3,112 / 3,585 | 86.81% | 473 |
+| Regions | 63,052 / 71,420 | 88.28% | 8,368 |
+
+Run:
+
+```bash
+make test-coverage-all
+```
+
+G02 is complete only when a clean, source-matched run reports:
+
+1. lines equal total lines with a non-zero denominator;
+2. branches equal total branches with a non-zero denominator;
+3. functions equal total functions with a non-zero denominator;
+4. regions equal total regions with a non-zero denominator;
+5. no reachable production path is ignored, filtered, removed, or padded to
+   alter a metric;
+6. the same run passes every runnable parity case and produces a retained
+   machine-readable coverage artifact.
+
+## 9. Goal G03: establish enforceable performance baselines
+
+State: `OPEN`
+
+The maintained matrix already compares release-mode Fontdone with the pinned C
+oracle and records raw timing samples, environment metadata, output identity,
+and operation weights. Requested thorough CI now records ten samples and
+retains both JSON and Markdown evidence.
+
+| Measurement | Current state | Completion evidence |
+|---|---|---|
+| Latency | harness implemented; no accepted baseline | per-operation median, p90, and p99 from a clean source-bound run |
+| Throughput | derivable from timed operation counts; no accepted baseline | maintained operations/second summary and threshold |
+| Peak memory | not measured | peak RSS for the complete Rust and C workloads |
+| Binary size | not measured | stripped Rust artifacts and the compared FreeType artifacts by exact byte count |
+| Regression thresholds | not defined | machine-readable thresholds checked by `make` and requested thorough CI |
+
+Before setting thresholds, collect at least five clean ten-sample runs for one
+runner image and CPU model. The accepted baseline and its raw run identities
+must be reviewed together; results from different CPU models remain separate.
+Performance correctness mismatches fail before timing can count.
+
+G03 is complete only when latency, throughput, peak memory, and binary size all
+have reproducible C-vs-Rust measurements, reviewed machine-readable thresholds,
+and a failing regression gate exposed through `make` and requested thorough CI.
+
+## 10. CI evidence levels
+
+The required per-commit `Commit gate` runs fast tests, MSRV, format, Clippy,
+strict documentation, generated contracts and fixtures, full runnable parity,
+and Rust/C/WASM consumers. The manually dispatched `Thorough gate` repeats that
+gate and adds all-lane coverage, the ten-sample performance baseline, five
+platform bundles, the C scorecard, packages, and supply-chain audits.
+
+The thorough C scorecard uses `make c-abi-contract-all-platforms`, which
+validates every available measurement while preserving incomplete numerators.
+Only `make c-abi-contract-complete` may assert 12 / 12 completion.
+
+Crate publication, GitHub releases, and public issue creation remain outside
+this active development plan and require explicit approval.
+
+## 11. Completion gates
 
 G01 can change to `COMPLETE` only when all commands pass:
 
@@ -334,13 +411,18 @@ The final generated scorecard must show:
 Code coverage remains a separate quality signal. It may identify unexecuted
 Rust, C-ABI, or Wasm lines, but it cannot satisfy any completion item above.
 
-## 9. Evidence ledger
+The roadmap can be deleted only after G01, G02, and G03 are all complete and
+the requested thorough CI run for the same clean commit passes.
+
+## 12. Evidence ledger
 
 | Goal | State | Evidence | Verification |
 |---|---|---|---|
 | G01 | OPEN | pinned audit, route audit, external C consumers, generated 12-category scorecard, release evidence | `make c-abi-contract-complete && make release-verify` |
+| G02 | OPEN | source-bound all-lane LLVM coverage snapshot | `make test-coverage-all`; lines, branches, functions, and regions each exactly 100% |
+| G03 | OPEN | raw C/Rust timing, throughput, memory, size, and threshold ledgers | requested `make ci-thorough`; every performance regression gate passes |
 
-When G01 completes, preserve the executable ledgers and release evidence,
-update durable integration/release documentation, remove this roadmap from the
-documentation index, and delete this file. Completed implementation history
-belongs in Git history and release notes.
+When all three goals complete, preserve their executable ledgers and durable
+evidence, update integration and development documentation, remove this
+roadmap from the documentation index, and delete this file. Completed
+implementation history belongs in Git history and release notes.

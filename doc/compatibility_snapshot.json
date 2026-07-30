@@ -75,12 +75,12 @@
     "functions": {
       "covered": 3112,
       "total": 3585,
-      "percent": 86.80613668061367
+      "percent": 86.80613668061368
     },
     "regions": {
       "covered": 63052,
       "total": 71420,
-      "percent": 88.28339400728087
+      "percent": 88.28339400728088
     },
     "runtime_parity": {
       "runnable": 7212,
@@ -98,9 +98,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "d6e9528b51d979fba473d565e4c61895d42aa20077c0f385cfbe4270216cc253",
-    "parity_tree_sha256": "aa10e73d543c2ddbeaa4fd1e7c9d3d35dcfa83090853a57f35271900de49ca9c",
-    "log_sha256": "72bcba7c2411f7c287fb2c7163f1cb211bc623abd6792bc039458001e09879c2",
+    "sha256": "7ae9404a436d264431fa1945590728cced310054ac365d87eafe56a9b413eb49",
+    "parity_tree_sha256": "9244689df05ddeb65cf133c647907035adb13637897fa33627a9f8c77afde3f4",
+    "log_sha256": "01416f448e91fb798e8a123730e6fee085fb13dd23ba676e6ee4170215ffba03",
     "command": "make test-parity"
   }
 }

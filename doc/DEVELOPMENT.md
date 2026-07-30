@@ -25,6 +25,9 @@ the cross targets are claimed only to the extent recorded above.
 | Tool | Version | Used for |
 |---|---:|---|
 | Rust | MSRV 1.87; repository toolchain 1.96.1 | runtime and packages |
+| Rust nightly | 2026-07-16 in CI | LLVM branch and region coverage |
+| cargo-llvm-cov | 0.8.7 | combined coverage report |
+| cargo-deny / cargo-audit | 0.20.2 / 0.22.2 | supply-chain policy |
 | GNU Make | 3.81 or newer | maintained command interface |
 | Python | 3.9 or newer | audits, fixtures, consumers, releases |
 | CMake | 3.20 or newer | offline FreeType oracle |
@@ -32,8 +35,9 @@ the cross targets are claimed only to the extent recorded above.
 | Git, curl, tar, XZ | maintained OS versions | source and archive handling |
 | Node.js | 20 or newer | claimed WASM host |
 
-Install optional supply-chain tools with `make setup-tools`. Font generators
-use one pinned Python environment:
+Install the pinned supply-chain tools with `make setup-tools` and the coverage
+frontend with `make setup-coverage-tools`. Font generators use one pinned
+Python environment:
 
 ```bash
 python3 -m venv target/font-generation-venv
@@ -77,10 +81,12 @@ Run the smallest useful gate first:
 | Record parity evidence | `make record-parity-snapshot` | Promote the latest passing, source-matched report into committed evidence |
 | Integrations | `make test-integrations` | Downstream Rust, external C, exports, and Node/WASM |
 | C contract | `make c-abi-contract` | Report all 12 categories and remaining debt |
+| Five-platform C evidence | `make c-abi-contract-all-platforms` | Validate five assembled bundles and report current debt without claiming completion |
 | Complete C contract | `make c-abi-contract-complete` | Fail unless all categories and all five platform bundles complete |
 | Rust docs | `make doc` and `make doc-test` | Strict rustdoc and compiled examples |
 | Static quality | `make lint` | rustfmt and workspace Clippy policy |
-| Local CI | `make ci` | All platform-independent required gates |
+| Per-commit local CI | `make ci` | Required platform-independent commit gates |
+| Requested local audit | `make ci-thorough` | Commit gates plus coverage, performance, contract, package, and supply-chain evidence |
 
 `make test-parity` prints these values separately:
 
@@ -142,11 +148,17 @@ Linux i686 and powerpc64 use `make platform-contract-cross` with explicit
 compiler, symbol inspector, sysroot, and QEMU runner. Cross-compilation alone
 does not earn runtime credit.
 
-`make c-abi-contract-complete` expects exactly five fresh bundles assembled
-under `target/api-abi-audit/platform-contract/`. CI creates those bundles in
-three native and two cross jobs, downloads them into an aggregate job, and
-then runs the complete target. A single-host checkout normally runs
-`make c-abi-contract` instead.
+`make c-abi-contract-all-platforms` expects exactly five fresh bundles
+assembled under `target/api-abi-audit/platform-contract/`. Requested thorough
+CI creates those bundles in three native and two cross jobs, downloads them
+into an aggregate job, validates them, and writes the current 12-category
+scorecard. This command succeeds only when the evidence is internally exact;
+unfinished contract debt remains explicit in the scorecard.
+
+`make c-abi-contract-complete` performs the same evidence validation and then
+fails unless all 12 categories are complete. It is the final completion and
+release-strength gate, not an ordinary development check. A single-host
+checkout normally runs `make c-abi-contract`.
 
 ### 3.2 Coverage
 
@@ -164,8 +176,9 @@ writes `target/coverage/unified-runtime-all-lanes.json`. Test-harness source is
 excluded.
 
 The all-lane run is intentionally expensive, so budget roughly 45–60 minutes
-on a warm development host. The last measured run took 48 minutes 4 seconds
-against commit `e554aca48fb3168fa852dd79267f50d06201e1e4`:
+on a warm development host. It therefore runs in requested thorough CI, not on
+every commit. The last measured run took 48 minutes 4 seconds against commit
+`e554aca48fb3168fa852dd79267f50d06201e1e4`:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -244,22 +257,52 @@ it wraps project-authored bytes rather than generating a font.
 
 `.github/workflows/ci.yml` is the public verification contract:
 
-| Job family | Evidence |
+### 6.1 Per-commit gate
+
+Every push to `main` and every pull-request revision targeting `main` runs:
+
+| Job | Evidence |
 |---|---|
-| Rust matrix | MSRV, format, Clippy, tests, strict docs, benchmark contract |
-| Contracts | generated files, fixture reproducibility, docs, synchronized versions |
-| Parity | full exact oracle comparison and diagnostics |
-| Native C | Linux x86-64, macOS aarch64, Windows x86-64 |
-| Cross C | Linux i686 and powerpc64 under QEMU |
-| Aggregate C contract | all five downloaded platform bundles |
-| WASM | `wasm32-unknown-unknown` consumed by Node 20 |
+| Rust quality | format, Clippy, fast workspace tests, strict rustdoc, examples, and benchmark-harness self-test |
+| MSRV | the same fast workspace contract on Rust 1.87.0 |
+| Generated contracts | generated source, fixture reproducibility, documentation, and synchronized versions |
+| Exact parity | every currently runnable C/Rust/C-ABI/WASM comparison and retained diagnostics |
+| Integrations | downstream Rust, native C, exact exports, and `wasm32-unknown-unknown` under pinned Node 20 |
+
+The stable `Commit gate` succeeds only when all five jobs succeed. It is the
+single check suitable for ordinary branch protection. `make ci` is its serial
+single-host equivalent. Parity logs and source-bound diagnostics are retained
+for 14 days.
+
+### 6.2 Requested thorough gate
+
+The expensive gate runs only through `workflow_dispatch`. In the Actions UI,
+choose **CI**, select the pull-request branch in **Run workflow**, and run it.
+The selected branch head is the measured commit; do not merge a different
+revision under that result.
+
+The manual run first repeats the complete commit gate, then adds:
+
+| Job | Evidence |
+|---|---|
+| Coverage | all-lane line, branch, function, and region totals |
+| Performance | ten raw samples for pinned FreeType versus release-mode Fontdone |
+| Native C | Linux x86-64, macOS aarch64, and Windows x86-64 |
+| Cross C | Linux i686 and powerpc64 executed under QEMU |
+| C scorecard | five fresh platform bundles plus current 12-category debt |
 | Packages | all three inspected crate archives |
 | Supply chain | advisories, dependency, source, and license policy |
 
-Parity logs, the source-bound parity report, and diagnostics are retained for
-14 days. Platform and package evidence is retained for 30 days. Release
-preflight evidence is retained for 90 days.
-Superseded CI runs on the same ref are cancelled; release runs are not.
+The stable `Thorough gate` succeeds only when every requested job produces
+valid evidence. It deliberately runs `make c-abi-contract-all-platforms`
+instead of pretending the unfinished 12-category contract is complete.
+Coverage, performance, platform, contract, and package artifacts are retained
+for 30 days.
+
+The workflow pins every external action to an immutable commit and pins the
+Rust, Node, coverage, and audit tool versions. Superseded runs on the same
+event and ref are cancelled. A manual run is additional evidence; it is not a
+globally required PR check unless a maintainer explicitly requests it.
 
 ## 7. Performance
 
@@ -278,6 +321,12 @@ A publishable result uses release mode, retains raw samples and workload
 weights, states timing boundaries, records CPU/OS/toolchain/revision/dirty
 state, and labels whether the comparison is trustworthy. Performance never
 permits weaker parity.
+
+Requested thorough CI runs `make bench BENCH_SAMPLES=10 BENCH_PROFILE=default`
+and retains `target/fontdone-bench/latest.json` plus `latest.md`. This is a
+source-bound machine baseline, not yet a regression gate: stable thresholds
+remain open until repeated measurements establish defensible variance on the
+chosen runner class.
 
 ## 8. Repository retention
 

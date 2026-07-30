@@ -7,6 +7,10 @@ that exact version.
 Only the protected GitHub release workflow publishes. Local commands validate
 and assemble evidence but do not authorize publication.
 
+Publication is paused during active parity, coverage, and performance work.
+Do not dispatch the release workflow, publish a crate, create a tag, or create
+a GitHub release until the repository owner explicitly approves publication.
+
 ## 1. Release prerequisites
 
 - At least two current crates.io owners exist for each package.
@@ -45,18 +49,21 @@ digests under `target/release-evidence/`.
 
 ## 3. Required CI evidence
 
-The exact release commit must pass every job in
-[the CI contract](DEVELOPMENT.md#6-ci), including the five C platform lanes.
-Those lanes upload hash-bound platform bundles. The aggregate CI job downloads
-all five and runs `make c-abi-contract-complete`.
+The exact release commit must first pass the per-commit
+[CI contract](DEVELOPMENT.md#61-per-commit-gate), then a requested
+[thorough run](DEVELOPMENT.md#62-requested-thorough-gate). The latter uploads
+all five hash-bound C platform bundles and validates the assembled evidence.
+Release preflight additionally runs `make c-abi-contract-complete`; unfinished
+contract debt therefore cannot be released.
 
 The release preflight locates the successful CI run for the exact commit,
 downloads those same platform artifacts, and runs `make release-verify`.
 Without assembled bundles, a local `make release-verify` correctly fails the
 complete C contract. Use `make ci` and `make c-abi-contract` for ordinary
-single-host development. The final release step reruns `make check-docs` after
-the complete scorecard is generated, so a stale committed compatibility
-snapshot blocks publication.
+single-host development, and `make ci-thorough` only when a local exhaustive
+audit is requested. The final release step reruns `make check-docs` after the
+complete scorecard is generated, so a stale committed compatibility snapshot
+blocks publication.
 
 ## 4. Trigger and publication order
 
