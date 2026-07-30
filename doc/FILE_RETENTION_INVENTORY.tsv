@@ -16,7 +16,7 @@ NOTICE.md	1273	file	fb2d66458e48f7c5341d1847d985c0364129ecf4d3938db67382b5395756
 README.md	13662	file	b6da14027274d37bf97afcd934354f2e272fcf40a3b6bda542c9b9a4c0d0910c	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 SECURITY.md	1430	file	819fba2cd55207c5ed0dc3564ee230a11c2ba0d6c7c464b844b668158ce79e1b	-	keep-community	R09	Public community or security contract.
 deny.toml	341	file	d4d516ffd41e0c8e3de633cc3d807b5e0b1a53ec7b5f56ad8ea95c73da0a2bf1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-doc/DEVELOPMENT.md	20468	file	1eed7898c8ca66c71e56a8a344531ed9cfdc7ca1574af598d6130b1c33e11ebd	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/DEVELOPMENT.md	20468	file	5ccf86be47d6c18414360639894c68d573139aa2202f7f125035fd4324f7a15a	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/FILE_RETENTION_INVENTORY.tsv	0	generated	-	-	generated-audit	R11	Generated exhaustive inventory; refresh with scripts/audit_repository_files.py.
 doc/FREETYPE_SUPPORT.md	30950	file	6b6b13666ef8d7dd27a4dbc9546cca45565a6fd517476cbaecf02a0201ac2305	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/INTEGRATION.md	9253	file	7d46ae1f439b3e0254899a267c2087223ee080f0c5364f436de08fe3adaf314a	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
@@ -174,7 +174,7 @@ src/error.rs	8209	file	826d8e64f17705fa58f15c47724457bf60e285fee624eb581a9655a58
 src/ffi/constants.rs	7125	file	8d35fd175ba401a0438b754094a0ab16816caa1ad35847d1c181a82848672f53	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/convert.rs	13969	file	b16c6b96de9d900b65506e56abe854ce13de7b648dc2297bc6b815446e0813c1	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/generated_constants.rs	48665	file	923d866b8f24e0ecb80dc841eb556b6f528532ddbfb585ee349f5d7354123a50	-	keep-generated-source	R10	Generated source required to build the runtime crate without the offline oracle.
-src/ffi/handles.rs	519770	file	c31b49ebb357e9e7e14e1a2517795705dd08b91760f0cf394264562bfae8ee1b	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/ffi/handles.rs	520189	file	f9638ad4ac07e0366fbdb07bf7e67a615b8a500244051e3f53530b8b12ad03c5	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/mod.rs	12249	file	3679fd4ce7e7c9d07ceb0177de2abb4077259c10fc86d49bb7138930b01f65af	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/types.rs	39206	file	75e6000ce97a38753ef50eddf907ae33217beeede98673fa873537a1bdf538d2	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/fixed.rs	18666	file	8fcdf8158fd8a50574fcf37f31362cadafc440cfbde7f7ff10ce1669fdf9da83	-	keep-runtime	R01	Published pure-Rust runtime source.
@@ -182,7 +182,7 @@ src/font.rs	276657	file	9dd0d24f44ce6c88ebacc59e354fd4422224d400edb42b7c804a6d98
 src/grays.rs	40113	file	80087b7281ce535ff3272b74a14dc925506db15fcccea63621d788e1b3df84a3	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/lib.rs	4410	file	00d8e5db952162c50d00b4a860503fed82105c8f1dc2a654c6c1fe26d3baffa5	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/outline.rs	1929	file	041ef18b3895b7801bfb78766da6056245bceb976f0b08b81fa49510f2ed3c0d	-	keep-runtime	R01	Published pure-Rust runtime source.
-src/pfr.rs	14150	file	50f6e00093ced3f9734551bacd6fcc421dadbce8e394001ec73314de4899d2d5	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/pfr.rs	14208	file	2e2f63fc05da4307923f013061874181905bc54b5f816bafc621c7151ea8393e	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/render.rs	96890	file	1d0da3d28173c4cb0ac9c8031f266092183c558c6f480fad74ec948fd2094052	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/scaler.rs	65795	file	d746c8100d03f8cebb82cc44f241c038d70a34a61a31601a2908afb68040caae	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tables.rs	9364	file	a3d7a284674fcc8b1944520f44d076d91a4f778f39f9a781f53591fe412e8af2	-	keep-runtime	R01	Published pure-Rust runtime source.
@@ -2319,6 +2319,8 @@ tests/pipe_trace.rs	6312	file	2871e8fb783d748516c5542d70125ff3d9186ee63f88ab6612
 tests/support/generated_constant_lookup.rs	89931	file	3309eebd6fa4af72d165481e216c9a1dfcb574b3643a506e9221a8eec81f9d74	-	keep-generated-source	R10	Generated lookup required by the public constant parity test.
 tests/unified_fixture_parity.rs	3048478	file	87f59fd3961e13ba5becb8ef4d2b42f574a20ecc11db3d98407821cc7229bea2	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/unit/casts.rs	878	file	665b6ca875fe3308bc62c07e052e9558bcb02c9176cdb3ea786dcb57f7665ef5	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
+tests/unit/ffi/handles.rs	12414	file	c7b6670bda1dd79eb1c28f1fb74be932d4c6aa1e56dc613aecd803fa773a23bb	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
+tests/unit/pfr.rs	14117	file	f0799ba4a730a523fb2b35fb65f8d56bfaca6f8b1793d82bfb8659922fec2fa9	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/unit/tt/gvar.rs	7613	file	7b1e47ea2cd33e0c21d7826dca01a3ab3f6a031bc0cb06dc0db91001b4ea8689	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/unit/tt/hvar.rs	1966	file	6cb883656a31a71a86fcdf96c1bb1b6387645a40ef7096480b22d3dd9c52e9c5	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/unit/tt/mvar.rs	2601	file	c63b6c1dbcfa5863866598f097295ca0d38e3e459b4c9cda29e6b0d08b30d98f	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.

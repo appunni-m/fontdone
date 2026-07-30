@@ -302,6 +302,11 @@ pub fn FT_Bitmap_Copy(
             return err;
         }
     };
+    // `*target = *source` above copies the source pointer as public metadata.
+    // The replacement helper removes any pointer already stored in `target`,
+    // so clear this borrowed source pointer before installing the independent
+    // copy.  Otherwise a successful copy unregisters the source allocation.
+    target.buffer = ptr::null_mut();
 
     if flip {
         let pitch = usize::try_from(source.pitch.unsigned_abs()).unwrap_or(0);
@@ -14569,3 +14574,7 @@ fn c_face_index_to_core(face_index: FT_Long) -> Result<(usize, bool), FT_Error> 
     let face_index = usize::try_from(selected).map_err(|_| FT_Err_Invalid_Argument)?;
     Ok((face_index, true))
 }
+
+#[cfg(test)]
+#[path = "../../tests/unit/ffi/handles.rs"]
+mod tests;
