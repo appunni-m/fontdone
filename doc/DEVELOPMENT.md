@@ -275,14 +275,16 @@ bounded Ubuntu fast gate plus a separate MSRV check:
 
 | Job | Evidence |
 |---|---|
-| Fast gate | The exact `make ci-fast` command: generated contracts, reproducible fixtures, docs, versions, format, Clippy, strict rustdoc, examples, fast workspace tests, external Rust consumer, FFI purity, eight-case parity smoke, and benchmark-harness self-test |
+| Fast gate | The exact `make ci-fast PYTHON=target/font-generation-venv/bin/python` command used by CI: generated contracts, reproducible fixtures, docs, versions, format, Clippy, strict rustdoc, examples, fast workspace tests, external Rust consumer, FFI purity, eight-case parity smoke, and benchmark-harness self-test |
 | MSRV | the same fast workspace contract on Rust 1.87.0 |
 
 The stable `Commit gate` succeeds only when both jobs succeed. It is the single
-check suitable for ordinary branch protection. `make ci-fast` is the serial
-single-host equivalent (`make ci` remains an alias). Smoke diagnostics are
-retained for seven days. This gate is intentionally not a claim that the
-complete parity matrix or every consumer/platform lane ran.
+check suitable for ordinary branch protection. After creating the pinned font
+generation environment from section 1.2, run
+`make ci-fast PYTHON=target/font-generation-venv/bin/python` locally (`make ci`
+remains an alias when the required Python tools are already on `PATH`). Smoke
+diagnostics are retained for seven days. This gate is intentionally not a claim
+that the complete parity matrix or every consumer/platform lane ran.
 
 ### 6.2 Requested thorough gate
 
