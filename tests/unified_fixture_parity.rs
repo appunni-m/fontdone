@@ -27989,6 +27989,15 @@ fn raster_lifecycle_output(
     }
 }
 
+fn custom_renderer_lifecycle_success_case(case: &InputCase) -> bool {
+    matches!(
+        case.case_id.as_str(),
+        "ftimage.FT_Raster_Done_Func.renderer_lifecycle_calls_done"
+            | "ftimage.FT_Raster_New_Func.renderer_lifecycle_calls_new"
+            | "ftimage.FT_Raster_Reset_Func.renderer_lifecycle_calls_reset"
+    )
+}
+
 fn rust_raster_lifecycle(_case: &InputCase) -> Result<RunOutput, String> {
     let mut library = FT_Init_FreeType();
     let class = FT_Module_Class_Info {
@@ -41249,6 +41258,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             Ok(vec!["--add-module-styler".to_string()])
         }
         "ftmodapi.module_class_lifecycle" => Ok(vec!["--module-class-lifecycle".to_string()]),
+        "ftimage.custom_renderer_lifecycle" if custom_renderer_lifecycle_success_case(case) => {
+            Ok(vec!["--raster-lifecycle".to_string()])
+        }
         "renderer.raster_lifecycle" => Ok(vec!["--raster-lifecycle".to_string()]),
         "ftrender.render_mode_acceptance" => {
             let mut args = vec!["--renderer-mode-acceptance".to_string()];
@@ -43419,6 +43431,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftmodapi.set_debug_hook" => rust_set_debug_hook(case),
         "ftmodapi.add_module" => rust_add_module(case),
         "ftmodapi.module_class_lifecycle" => rust_module_class_lifecycle(case),
+        "ftimage.custom_renderer_lifecycle" if custom_renderer_lifecycle_success_case(case) => {
+            rust_raster_lifecycle(case)
+        }
         "renderer.raster_lifecycle" => rust_raster_lifecycle(case),
         "ftrender.render_mode_acceptance" => rust_renderer_mode_acceptance(case),
         "ftmodapi.add_get_remove_module" => rust_module_remove_lifecycle(case),
@@ -44770,6 +44785,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftmodapi.set_debug_hook" => c_set_debug_hook(case),
         "ftmodapi.add_module" => c_add_module(case),
         "ftmodapi.module_class_lifecycle" => c_module_class_lifecycle(case),
+        "ftimage.custom_renderer_lifecycle" if custom_renderer_lifecycle_success_case(case) => {
+            c_raster_lifecycle(case)
+        }
         "renderer.raster_lifecycle" => c_raster_lifecycle(case),
         "ftrender.render_mode_acceptance" => c_renderer_mode_acceptance(case),
         "ftmodapi.add_get_remove_module" => c_module_remove_lifecycle(case),
@@ -45979,6 +45997,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftmodapi.set_debug_hook" => wasm_set_debug_hook(case),
         "ftmodapi.add_module" => wasm_add_module(case),
         "ftmodapi.module_class_lifecycle" => wasm_module_class_lifecycle(case),
+        "ftimage.custom_renderer_lifecycle" if custom_renderer_lifecycle_success_case(case) => {
+            wasm_raster_lifecycle(case)
+        }
         "renderer.raster_lifecycle" => wasm_raster_lifecycle(case),
         "ftrender.render_mode_acceptance" => wasm_renderer_mode_acceptance(case),
         "ftmodapi.add_get_remove_module" => wasm_module_remove_lifecycle(case),

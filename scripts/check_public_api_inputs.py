@@ -5275,6 +5275,17 @@ def future_batch_unresolved_asset_pending_reason(row: ConcreteInput) -> str | No
 
 
 def future_batch_real_parity_reason(row: ConcreteInput) -> str | None:
+    if row.operation == "ftimage.custom_renderer_lifecycle" and row.case_id in {
+        "ftimage.FT_Raster_Done_Func.renderer_lifecycle_calls_done",
+        "ftimage.FT_Raster_New_Func.renderer_lifecycle_calls_new",
+        "ftimage.FT_Raster_Reset_Func.renderer_lifecycle_calls_reset",
+    }:
+        return (
+            "FT_Raster callback lifecycle validates the maintained callback-backed "
+            "renderer route: raster_new handle creation, reset(NULL,0), and "
+            "raster_done teardown ordering are observed through the pinned C oracle, "
+            "Rust FFI, C ABI, and WASM ABI"
+        )
     if (
         row.operation == "renderer.raster_lifecycle"
         and row.case_id == "ftimage.FT_Raster.lifecycle_callback_contract"
