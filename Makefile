@@ -41,7 +41,8 @@ help:
 	@printf "  make test-parity-smoke Run a small exact C/Rust/C-ABI/WASM runtime smoke matrix\n"
 	@printf "  make test-parity      Run the complete exact parity gate\n"
 	@printf "  make lint             Check formatting and Clippy\n"
-	@printf "  make ci               Run the fast per-commit local CI gate\n"
+	@printf "  make ci-fast          Run the exact fast per-commit local CI gate\n"
+	@printf "  make ci               Alias for make ci-fast\n"
 	@printf "  make ci-thorough      Run the requested pre-merge local gate\n"
 	@printf "\nFocused work:\n"
 	@printf "  make test-op OP=<op>      Test one public operation\n"
@@ -701,7 +702,7 @@ package-verify: check-versions
 	$(PYTHON) scripts/verify_release.py
 
 .PHONY: ci-fast
-ci-fast: check-generated check-font-fixtures check-docs check-versions fmt clippy doc doc-test test-fast test-ffi test-parity-smoke bench-self-test
+ci-fast: check-generated check-font-fixtures check-docs check-versions fmt clippy doc doc-test test-fast test-rust-consumer test-ffi test-parity-smoke bench-self-test
 
 .PHONY: ci-commit
 ci-commit: ci-fast

@@ -271,20 +271,18 @@ it wraps project-authored bytes rather than generating a font.
 ### 6.1 Per-commit gate
 
 Every push to `main` and every pull-request revision targeting `main` runs a
-small, platform-independent gate:
+bounded Ubuntu fast gate plus a separate MSRV check:
 
 | Job | Evidence |
 |---|---|
-| Rust quality | format, Clippy, fast workspace tests, strict rustdoc, examples, and benchmark-harness self-test |
+| Fast gate | The exact `make ci-fast` command: generated contracts, reproducible fixtures, docs, versions, format, Clippy, strict rustdoc, examples, fast workspace tests, external Rust consumer, FFI purity, eight-case parity smoke, and benchmark-harness self-test |
 | MSRV | the same fast workspace contract on Rust 1.87.0 |
-| Generated contracts | generated source, fixture reproducibility, documentation, and synchronized versions |
-| Runtime and ABI smoke | a fixed eight-case `load_char` C/Rust/C-ABI/WASM comparison plus the public API/ABI audit and runtime-purity guard |
 
-The stable `Commit gate` succeeds only when all four jobs succeed. It is the
-single check suitable for ordinary branch protection. `make ci` is its serial
-single-host equivalent. Smoke diagnostics are retained for seven days. This
-gate is intentionally not a claim that the complete parity matrix or every
-consumer/platform lane ran.
+The stable `Commit gate` succeeds only when both jobs succeed. It is the single
+check suitable for ordinary branch protection. `make ci-fast` is the serial
+single-host equivalent (`make ci` remains an alias). Smoke diagnostics are
+retained for seven days. This gate is intentionally not a claim that the
+complete parity matrix or every consumer/platform lane ran.
 
 ### 6.2 Requested thorough gate
 

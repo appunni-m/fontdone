@@ -254,7 +254,7 @@ make test-parity-smoke # eight exact runtime cases across every facade
 make test-parity # exact C/Rust/C-ABI/WASM parity
 make lint        # rustfmt and Clippy
 make doc-test    # compile public Rust examples
-make ci          # fast per-commit local gate
+make ci-fast     # exact fast per-commit local gate (make ci is an alias)
 ```
 
 Important complete gates:

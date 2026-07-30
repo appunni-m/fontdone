@@ -41,8 +41,8 @@ make lint
 make check-docs
 ```
 
-`make ci` is the local equivalent of the required per-commit GitHub gate.
-Run `make ci-thorough` only for a requested pre-merge audit; it adds full
+`make ci-fast` is the local equivalent of the required per-commit GitHub gate
+(`make ci` is an alias). Run `make ci-thorough` only for a requested pre-merge audit; it adds full
 coverage, C-contract, package, supply-chain, and ten-sample benchmark evidence.
 Use `make c-abi-contract-complete` only after all five platform bundles have
 been assembled. Benchmark changes also require `make bench-self-test` and

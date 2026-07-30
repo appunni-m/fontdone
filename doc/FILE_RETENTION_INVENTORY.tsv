@@ -1,9 +1,9 @@
 path	bytes	kind	sha256	symlink_target	retention_class	reason_code	reason
-.github/workflows/ci.yml	20072	file	ef520fd5a4d9fe6ceed3f6cdbfc506ed252a2c60e0a76658483106f2b8858104	-	keep-ci	R09	Public continuous-integration contract.
+.github/workflows/ci.yml	17880	file	87023f7214dd367b61e8475ea1acdba5d761720801dc5a49d50a8a1ea3459682	-	keep-ci	R09	Public continuous-integration contract.
 .github/workflows/release.yml	3735	file	68c211703c9057e5845c91e97b8ab35b81595c9f44357158788bc0d9bd36d3d7	-	keep-ci	R09	Public continuous-integration contract.
 .gitignore	359	file	84244657c36cfb20950321373d715bdaf4d79150fe55d848b737d96e76b8b48a	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 AGENT.md	9	symlink	-	AGENTS.md	keep-alias	R05	Repository tooling alias whose path identity is an explicit contract.
-AGENTS.md	2335	file	e27d2af186f1d56147f6ac58e0cfe44e42f2a470c4d87f38965ffbffa7c69a96	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+AGENTS.md	2364	file	a712d82dc4611c9f765183029379fd0cd711a29fc19fbc59db89f003e0bd2f78	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 CHANGELOG.md	2654	file	76247f8314cc6c448adec7a4f428b5093c1510b98385aca4f99e68a426d22780	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 CODE_OF_CONDUCT.md	834	file	fc5d9bcf71a578c1a1b80f10d3741125184c34b01841ead7209bc7fbd55d5b50	-	keep-community	R09	Public community or security contract.
 CONTRIBUTING.md	3011	file	e076524a90c599171729b9c20e7724d514e42ef8d60df687a25b311dc943cf82	-	keep-community	R09	Public community or security contract.
@@ -11,12 +11,12 @@ Cargo.lock	13761	file	39452d9a25e3f8c8c2202eed93be7d9cb93e326add959f4c2f85b16c2f
 Cargo.toml	2337	file	24618e2f91e8e25d40b2a7e5a62f872541c8379c10c01190170c91f6f825bd78	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 LICENSE	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-Makefile	30108	file	07977bf6db5058157209ce0954757e19539a7c55c1d98846aa73836139e447fc	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+Makefile	30193	file	b60df3585dd066a95a726dff0dfdaa41b5890f914444dce17bc891bece032195	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 NOTICE.md	1273	file	fb2d66458e48f7c5341d1847d985c0364129ecf4d3938db67382b5395756acef	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-README.md	13880	file	d4a880c3837e3fc7857c6d96cfc7bd3a13b9b0063b9ee97b402fa7e78c5e6fb4	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+README.md	13908	file	e92bf4fa48cfe2ea2980655144d5c3c30ca87ccb18b5cd618932ff5d7b5d5a2a	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 SECURITY.md	1430	file	819fba2cd55207c5ed0dc3564ee230a11c2ba0d6c7c464b844b668158ce79e1b	-	keep-community	R09	Public community or security contract.
 deny.toml	341	file	d4d516ffd41e0c8e3de633cc3d807b5e0b1a53ec7b5f56ad8ea95c73da0a2bf1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-doc/DEVELOPMENT.md	21011	file	5b9883241f978d90f83c180c2d9a85d699eb5631308bf4f6c61c02a1f71ceca8	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/DEVELOPMENT.md	20959	file	e534f99ad132975109c116b8f203269908c22e522b0ed9fd4e09700a43381f00	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/FILE_RETENTION_INVENTORY.tsv	0	generated	-	-	generated-audit	R11	Generated exhaustive inventory; refresh with scripts/audit_repository_files.py.
 doc/FREETYPE_SUPPORT.md	30950	file	6b6b13666ef8d7dd27a4dbc9546cca45565a6fd517476cbaecf02a0201ac2305	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/INTEGRATION.md	9253	file	7d46ae1f439b3e0254899a267c2087223ee080f0c5364f436de08fe3adaf314a	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
