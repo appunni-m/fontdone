@@ -250,10 +250,11 @@ Requirements and host support are documented in
 ```bash
 make setup       # fetch and build the pinned offline C oracle
 make test-fast   # workspace tests that do not need full parity
+make test-parity-smoke # eight exact runtime cases across every facade
 make test-parity # exact C/Rust/C-ABI/WASM parity
 make lint        # rustfmt and Clippy
 make doc-test    # compile public Rust examples
-make ci          # required per-commit local gate
+make ci          # fast per-commit local gate
 ```
 
 Important complete gates:
@@ -267,7 +268,7 @@ Important complete gates:
 | `make test-integrations` | Run downstream Rust, external C, exports, and Node/WASM consumers |
 | `make check-docs` | Check every tracked Markdown document, status snapshot, links, commands, and rustdoc policy |
 | `make bench-regression` | Fail unless reviewed latency, throughput, memory, and size thresholds all pass |
-| `make ci-thorough` | Run the requested local pre-merge coverage, performance, contract, package, and supply-chain gate |
+| `make ci-thorough` | Run the requested local pre-merge full parity, coverage, performance, contract, package, and supply-chain gate |
 | `make release-verify` | Run local release gates; requires assembled five-target platform evidence |
 
 `make help` is the maintained command index.

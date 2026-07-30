@@ -29,7 +29,7 @@ PLATFORM_SYSROOT ?=
 PLATFORM_CLANG_TARGET ?= $(PLATFORM_TARGET)
 
 .DEFAULT_GOAL := help
-.NOTPARALLEL: ci ci-commit ci-thorough release-verify
+.NOTPARALLEL: ci ci-fast ci-commit ci-thorough release-verify
 
 .PHONY: help
 help:
@@ -38,9 +38,10 @@ help:
 	@printf "  make setup            Build the pinned C oracle and public constants\n"
 	@printf "  make build            Build fontdone\n"
 	@printf "  make test-fast        Run tests that do not need the C oracle\n"
+	@printf "  make test-parity-smoke Run a small exact C/Rust/C-ABI/WASM runtime smoke matrix\n"
 	@printf "  make test-parity      Run the complete exact parity gate\n"
 	@printf "  make lint             Check formatting and Clippy\n"
-	@printf "  make ci               Run the per-commit local CI gate\n"
+	@printf "  make ci               Run the fast per-commit local CI gate\n"
 	@printf "  make ci-thorough      Run the requested pre-merge local gate\n"
 	@printf "\nFocused work:\n"
 	@printf "  make test-op OP=<op>      Test one public operation\n"
@@ -134,6 +135,13 @@ fresh-checkout-check:
 .PHONY: test-parity
 test-parity: unified-oracle bzip2-enabled-oracle api-abi-check test-ffi test-filter-guard
 	$(PYTHON) scripts/run_runtime_parity.py
+
+.PHONY: test-parity-smoke
+test-parity-smoke: unified-oracle api-abi-audit test-ffi
+	FONTDONE_UNIFIED_OPERATION_FILTER=load_char \
+	FONTDONE_UNIFIED_CASE_LIMIT=8 \
+	FONTDONE_UNIFIED_ORACLE_REFRESH=1 \
+	$(CARGO) test --test unified_fixture_parity --locked unified_fixture_parity -- --nocapture
 
 .PHONY: record-parity-snapshot
 record-parity-snapshot:
@@ -692,14 +700,17 @@ check-versions:
 package-verify: check-versions
 	$(PYTHON) scripts/verify_release.py
 
+.PHONY: ci-fast
+ci-fast: check-generated check-font-fixtures check-docs check-versions fmt clippy doc doc-test test-fast test-ffi test-parity-smoke bench-self-test
+
 .PHONY: ci-commit
-ci-commit: check-generated check-font-fixtures check-docs check-versions fmt clippy doc doc-test test-fast test-integrations test-parity bench-self-test
+ci-commit: ci-fast
 
 .PHONY: ci
-ci: ci-commit
+ci: ci-fast
 
 .PHONY: ci-thorough
-ci-thorough: ci-commit package-verify supply-chain c-abi-contract test-coverage-all bench
+ci-thorough: ci-fast test-parity test-integrations c-abi-contract package-verify supply-chain test-coverage-all bench
 
 .PHONY: release-verify
 release-verify: ci-thorough c-abi-contract-complete bench-regression

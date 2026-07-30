@@ -1,30 +1,30 @@
 path	bytes	kind	sha256	symlink_target	retention_class	reason_code	reason
-.github/workflows/ci.yml	18623	file	e5d939a78ca2f261e8a0cbc7c6a87a618dad6a603e3e26dbe003c0e462003d87	-	keep-ci	R09	Public continuous-integration contract.
+.github/workflows/ci.yml	20072	file	ef520fd5a4d9fe6ceed3f6cdbfc506ed252a2c60e0a76658483106f2b8858104	-	keep-ci	R09	Public continuous-integration contract.
 .github/workflows/release.yml	3735	file	68c211703c9057e5845c91e97b8ab35b81595c9f44357158788bc0d9bd36d3d7	-	keep-ci	R09	Public continuous-integration contract.
 .gitignore	359	file	84244657c36cfb20950321373d715bdaf4d79150fe55d848b737d96e76b8b48a	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 AGENT.md	9	symlink	-	AGENTS.md	keep-alias	R05	Repository tooling alias whose path identity is an explicit contract.
 AGENTS.md	2335	file	e27d2af186f1d56147f6ac58e0cfe44e42f2a470c4d87f38965ffbffa7c69a96	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 CHANGELOG.md	2654	file	76247f8314cc6c448adec7a4f428b5093c1510b98385aca4f99e68a426d22780	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 CODE_OF_CONDUCT.md	834	file	fc5d9bcf71a578c1a1b80f10d3741125184c34b01841ead7209bc7fbd55d5b50	-	keep-community	R09	Public community or security contract.
-CONTRIBUTING.md	2806	file	6f2e2c0905d17dce426848f65d96f1202f4c0774286a4e947f4ba5a77b2637c9	-	keep-community	R09	Public community or security contract.
+CONTRIBUTING.md	3011	file	e076524a90c599171729b9c20e7724d514e42ef8d60df687a25b311dc943cf82	-	keep-community	R09	Public community or security contract.
 Cargo.lock	13761	file	39452d9a25e3f8c8c2202eed93be7d9cb93e326add959f4c2f85b16c2fc6606d	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 Cargo.toml	2337	file	24618e2f91e8e25d40b2a7e5a62f872541c8379c10c01190170c91f6f825bd78	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 LICENSE	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-Makefile	29650	file	da044780a82ec94f05249b317a955ce21437138be59590487723d9a1eb51c238	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+Makefile	30108	file	07977bf6db5058157209ce0954757e19539a7c55c1d98846aa73836139e447fc	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 NOTICE.md	1273	file	fb2d66458e48f7c5341d1847d985c0364129ecf4d3938db67382b5395756acef	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-README.md	13800	file	a730c73fedce8387e89a025fba224d767059e478e3c1fd5e71613f6e917eeb47	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+README.md	13880	file	e2bca2f145ecb437a99e9a8db355e50de03a62dd8d56f588675532c0341e5784	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 SECURITY.md	1430	file	819fba2cd55207c5ed0dc3564ee230a11c2ba0d6c7c464b844b668158ce79e1b	-	keep-community	R09	Public community or security contract.
 deny.toml	341	file	d4d516ffd41e0c8e3de633cc3d807b5e0b1a53ec7b5f56ad8ea95c73da0a2bf1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-doc/DEVELOPMENT.md	20468	file	b032c59e7923912d00ccf290a132aae52f00a1b6201f571df1de54ea9e3e8152	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/DEVELOPMENT.md	21011	file	5b9883241f978d90f83c180c2d9a85d699eb5631308bf4f6c61c02a1f71ceca8	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/FILE_RETENTION_INVENTORY.tsv	0	generated	-	-	generated-audit	R11	Generated exhaustive inventory; refresh with scripts/audit_repository_files.py.
 doc/FREETYPE_SUPPORT.md	30950	file	6b6b13666ef8d7dd27a4dbc9546cca45565a6fd517476cbaecf02a0201ac2305	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/INTEGRATION.md	9253	file	7d46ae1f439b3e0254899a267c2087223ee080f0c5364f436de08fe3adaf314a	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/README.md	4113	file	62f4a7b439e124c958296e875037878e75531d2fee021cad7a78617ed74c3d0c	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/RELEASING.md	5805	file	4814369e27e1a842a572acfdcf0f3534dbc8a4aa5d2c158acfecef53b7582f1c	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/ROADMAP.md	24597	file	4b825d6a0326d247f34b642f05ff09a538eb320fe815f0e3cacdb396b247b39f	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
-doc/compatibility_snapshot.json	25722	file	e0f6c027fc5048d9ece38870bf1c5dfd7853d95573858fed7282aea8ebbf3cba	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/runtime_parity_evidence.json	1313	file	cafeeb6033feebfbd0bb2a3da57254caf406d2df72de32a45979a07d31ae1575	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/ROADMAP.md	24687	file	e8bf0e52efd5b39afe150e13970cfc06f6efc13f215c923caf4d1cc91e482d99	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
+doc/compatibility_snapshot.json	25722	file	7019a568b4e15fa4ef3b80cbf79b88f0ad29843e5b9ae77a92f6f7e66ddf80b8	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/runtime_parity_evidence.json	1312	file	a016c07ec21c8fc1f08ed2fa046f64cdc036b28a86275e38bbb3d89acdbd7d64	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 examples/bench_ops.rs	10086	file	a75d7bbf4e8e679ca393d8cffd68cc0824f7198bb5e85857ce4dd75d8e016a21	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/ffi_migration.rs	1806	file	3140c3cbf9182299f2ab8c98f6675dfd3d086c47177f7bf8783160a149eddda8	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/handle_error.rs	571	file	acbe9d9f2e838bb5ca27132dde73287fa123e3a069772a2b741ae6e010fae3b1	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.

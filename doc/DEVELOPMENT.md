@@ -75,6 +75,7 @@ Run the smallest useful gate first:
 | Scope | Command | Meaning |
 |---|---|---|
 | Rust workspace | `make test-fast` | Tests/checks excluding full parity and ignored trace diagnostics |
+| Runtime smoke | `make test-parity-smoke` | Eight fixed `load_char` cases across the Rust, C ABI, and WASM routes |
 | One operation | `make test-op OP=ftadvanc.get_advance` | Exact selected C/Rust/facade comparison |
 | One case | `make test-case CASE=freetype.FT_Load_Glyph.no_scale` | Exact selected case comparison |
 | Full parity | `make test-parity` | Every runnable exact case, route audit, facades, and purity guard |
@@ -89,8 +90,8 @@ Run the smallest useful gate first:
 | Complete C contract | `make c-abi-contract-complete` | Fail unless all categories and all five platform bundles complete |
 | Rust docs | `make doc` and `make doc-test` | Strict rustdoc and compiled examples |
 | Static quality | `make lint` | rustfmt and workspace Clippy policy |
-| Per-commit local CI | `make ci` | Required platform-independent commit gates |
-| Requested local audit | `make ci-thorough` | Commit gates plus coverage, performance, contract, package, and supply-chain evidence |
+| Per-commit local CI | `make ci` | Fast commit gates suitable for ordinary branch protection |
+| Requested local audit | `make ci-thorough` | Fast gates plus full parity, integrations, coverage, performance, contract, package, and supply-chain evidence |
 
 `make test-parity` prints these values separately:
 
@@ -269,32 +270,35 @@ it wraps project-authored bytes rather than generating a font.
 
 ### 6.1 Per-commit gate
 
-Every push to `main` and every pull-request revision targeting `main` runs:
+Every push to `main` and every pull-request revision targeting `main` runs a
+small, platform-independent gate:
 
 | Job | Evidence |
 |---|---|
 | Rust quality | format, Clippy, fast workspace tests, strict rustdoc, examples, and benchmark-harness self-test |
 | MSRV | the same fast workspace contract on Rust 1.87.0 |
 | Generated contracts | generated source, fixture reproducibility, documentation, and synchronized versions |
-| Exact parity | every currently runnable C/Rust/C-ABI/WASM comparison and retained diagnostics |
-| Integrations | downstream Rust, native C, exact exports, and `wasm32-unknown-unknown` under pinned Node 20 |
+| Runtime and ABI smoke | a fixed eight-case `load_char` C/Rust/C-ABI/WASM comparison plus the public API/ABI audit and runtime-purity guard |
 
-The stable `Commit gate` succeeds only when all five jobs succeed. It is the
+The stable `Commit gate` succeeds only when all four jobs succeed. It is the
 single check suitable for ordinary branch protection. `make ci` is its serial
-single-host equivalent. Parity logs and source-bound diagnostics are retained
-for 14 days.
+single-host equivalent. Smoke diagnostics are retained for seven days. This
+gate is intentionally not a claim that the complete parity matrix or every
+consumer/platform lane ran.
 
 ### 6.2 Requested thorough gate
 
 The expensive gate runs only through `workflow_dispatch`. In the Actions UI,
-choose **CI**, select the pull-request branch in **Run workflow**, and run it.
-The selected branch head is the measured commit; do not merge a different
-revision under that result.
+choose **CI**, select the pull-request branch in **Run workflow**, and run it
+when the change is ready for pre-merge review. The selected branch head is the
+measured commit; do not merge a different revision under that result.
 
-The manual run first repeats the complete commit gate, then adds:
+The manual run first repeats the fast commit gate, then adds:
 
 | Job | Evidence |
 |---|---|
+| Exact parity | every currently runnable C/Rust/C-ABI/WASM comparison and retained diagnostics |
+| Integrations | downstream Rust, native C, exact exports, and `wasm32-unknown-unknown` under pinned Node 20 |
 | Coverage | all-lane line, branch, function, and region totals |
 | Performance | ten raw latency/throughput samples, complete-process peak RSS, and exact release-artifact bytes for pinned FreeType versus Fontdone |
 | Native C | Linux x86-64, macOS aarch64, and Windows x86-64 |
@@ -306,8 +310,9 @@ The manual run first repeats the complete commit gate, then adds:
 The stable `Thorough gate` succeeds only when every requested job produces
 valid evidence. It deliberately runs `make c-abi-contract-all-platforms`
 instead of pretending the unfinished 12-category contract is complete.
-Coverage, performance, platform, contract, and package artifacts are retained
-for 30 days.
+Coverage, performance, platform, contract, package, parity, and integration
+artifacts are retained for 30 days (smoke artifacts are retained separately
+for seven days).
 
 The workflow pins every external action to an immutable commit and pins the
 Rust, Node, coverage, and audit tool versions. Superseded runs on the same

@@ -423,10 +423,12 @@ and a failing regression gate exposed through `make` and requested thorough CI.
 ## 10. CI evidence levels
 
 The required per-commit `Commit gate` runs fast tests, MSRV, format, Clippy,
-strict documentation, generated contracts and fixtures, full runnable parity,
-and Rust/C/WASM consumers. The manually dispatched `Thorough gate` repeats that
-gate and adds all-lane coverage, the ten-sample performance baseline, five
-platform bundles, the C scorecard, packages, and supply-chain audits.
+strict documentation, generated contracts and fixtures, and a fixed exact
+runtime/API smoke matrix across the Rust, C ABI, and WASM routes. The manually
+dispatched `Thorough gate` repeats that gate and adds the full runnable parity
+matrix, downstream consumers, all-lane coverage, the ten-sample performance
+baseline, five platform bundles, the C scorecard, packages, and supply-chain
+audits.
 
 The thorough C scorecard uses `make c-abi-contract-all-platforms`, which
 validates every available measurement while preserving incomplete numerators.

@@ -105,8 +105,41 @@ jobs:
           make check-docs
           make check-versions
 
+  abi-smoke:
+    name: Commit / Runtime and ABI smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Cache Cargo downloads
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: cargo-${{ runner.os }}-${{ env.RUST_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
+      - name: Install oracle build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes cmake clang make python3 xz-utils
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+      - name: Run representative exact runtime lanes
+        run: make test-parity-smoke
+      - name: Retain smoke diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: parity-smoke-diagnostics
+          path: |
+            target/api-abi-audit/
+            tests/fixtures/outputs/
+          if-no-files-found: ignore
+          retention-days: 7
+
   parity:
-    name: Commit / Exact parity
+    name: Thorough / Exact parity
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 70
     steps:
@@ -138,7 +171,8 @@ jobs:
           retention-days: 14
 
   integrations:
-    name: Commit / Rust, C, and WASM consumers
+    name: Thorough / Rust, C, and WASM consumers
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
@@ -168,7 +202,7 @@ jobs:
   commit-gate:
     name: Commit gate
     if: always()
-    needs: [rust-quality, msrv, contracts, parity, integrations]
+    needs: [rust-quality, msrv, contracts, abi-smoke]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -177,17 +211,15 @@ jobs:
           RUST_QUALITY: ${{ needs.rust-quality.result }}
           MSRV: ${{ needs.msrv.result }}
           CONTRACTS: ${{ needs.contracts.result }}
-          PARITY: ${{ needs.parity.result }}
-          INTEGRATIONS: ${{ needs.integrations.result }}
+          ABI_SMOKE: ${{ needs.abi-smoke.result }}
         run: |
           printf '%s\n' \
             "rust-quality=$RUST_QUALITY" \
             "msrv=$MSRV" \
             "contracts=$CONTRACTS" \
-            "parity=$PARITY" \
-            "integrations=$INTEGRATIONS"
+            "abi-smoke=$ABI_SMOKE"
           for result in \
-            "$RUST_QUALITY" "$MSRV" "$CONTRACTS" "$PARITY" "$INTEGRATIONS"
+            "$RUST_QUALITY" "$MSRV" "$CONTRACTS" "$ABI_SMOKE"
           do
             test "$result" = "success"
           done
@@ -472,6 +504,8 @@ jobs:
     if: always() && github.event_name == 'workflow_dispatch'
     needs:
       - commit-gate
+      - parity
+      - integrations
       - coverage
       - performance
       - platform-contract-scorecard
@@ -483,6 +517,8 @@ jobs:
       - name: Require every requested thorough check
         env:
           COMMIT_GATE: ${{ needs.commit-gate.result }}
+          PARITY: ${{ needs.parity.result }}
+          INTEGRATIONS: ${{ needs.integrations.result }}
           COVERAGE: ${{ needs.coverage.result }}
           PERFORMANCE: ${{ needs.performance.result }}
           PLATFORM_CONTRACT: ${{ needs.platform-contract-scorecard.result }}
@@ -491,13 +527,15 @@ jobs:
         run: |
           printf '%s\n' \
             "commit-gate=$COMMIT_GATE" \
+            "parity=$PARITY" \
+            "integrations=$INTEGRATIONS" \
             "coverage=$COVERAGE" \
             "performance=$PERFORMANCE" \
             "platform-contract=$PLATFORM_CONTRACT" \
             "packages=$PACKAGES" \
             "supply-chain=$SUPPLY_CHAIN"
           for result in \
-            "$COMMIT_GATE" "$COVERAGE" "$PERFORMANCE" \
+            "$COMMIT_GATE" "$PARITY" "$INTEGRATIONS" "$COVERAGE" "$PERFORMANCE" \
             "$PLATFORM_CONTRACT" "$PACKAGES" "$SUPPLY_CHAIN"
           do
             test "$result" = "success"

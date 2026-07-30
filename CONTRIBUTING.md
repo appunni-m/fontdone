@@ -80,7 +80,10 @@ make test-fast
 make test-parity
 ```
 
-Use `make ci` for the complete platform-independent local gate. Explain what
-changed, why it is correct, which commands ran, and any remaining debt.
+Use `make ci` for the fast per-commit gate. Before requesting merge, run
+`make ci-thorough` (or dispatch the **CI** workflow on the pull-request branch)
+when the full parity, integration, coverage, performance, contract, package,
+and supply-chain evidence is required. Explain what changed, why it is
+correct, which commands ran, and any remaining debt.
 Publication is maintainer-only and follows the
 [release guide](doc/RELEASING.md).
