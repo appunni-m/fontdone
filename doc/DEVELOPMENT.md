@@ -163,10 +163,27 @@ branch coverage across the core, C ABI, and host-compiled WASM facade and
 writes `target/coverage/unified-runtime-all-lanes.json`. Test-harness source is
 excluded.
 
-The all-lane run is intentionally expensive: the last observed run took about
-52 minutes, so budget roughly 45–60 minutes on a warm development host. No
-coverage percentage is committed as a current claim; generate it for the exact
-worktree and toolchain being reviewed.
+The all-lane run is intentionally expensive, so budget roughly 45–60 minutes
+on a warm development host. The last measured run took 48 minutes 4 seconds
+against commit `e554aca48fb3168fa852dd79267f50d06201e1e4`:
+
+| Metric | Covered / total | Coverage |
+|---|---:|---:|
+| Lines | 45,547 / 50,898 | 89.49% |
+| Branches | 8,986 / 11,915 | 75.42% |
+| Functions | 3,112 / 3,585 | 86.81% |
+| Regions | 63,052 / 71,420 | 88.28% |
+
+That managed run passed all 7,212 runnable parity comparisons with 0 failures;
+95 cases remained explicitly pending. Its Coverage MCP run ID is
+`86d007ea-e3f4-4e0d-90e1-0c357503a76b`, and its immutable snapshot ID is
+`e9945111-3786-4aa5-abd9-3d540bd52b35`.
+
+The percentages apply only to that source commit, suite, and toolchain. They
+are not a FreeType-parity percentage, and a covered line or branch does not
+prove an exact result. Generate a new report for the worktree being reviewed.
+LLVM JSON segments are normalized to segment start lines by the coverage
+parser; aggregate region coverage is preserved from LLVM summaries.
 
 ## 4. Diagnose parity failures
 

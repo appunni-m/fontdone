@@ -119,7 +119,30 @@ and updates this table. Recording fails if parity-relevant source changed after
 the run. Generated runtime reports under `target/` are newer authority for
 their exact worktree than the committed release snapshot.
 
-### 3.3 C ABI completion contract
+### 3.3 Last measured combined coverage
+
+The last all-lane coverage run was recorded on **2026-07-30** against
+`e554aca48fb3168fa852dd79267f50d06201e1e4`:
+
+| Metric | Covered / total | Coverage |
+|---|---:|---:|
+| Lines | 45,547 / 50,898 | 89.49% |
+| Branches | 8,986 / 11,915 | 75.42% |
+| Functions | 3,112 / 3,585 | 86.81% |
+| Regions | 63,052 / 71,420 | 88.28% |
+
+This is an LLVM branch-coverage measurement from `make test-coverage-all`
+across the Rust core, native C ABI, and host-compiled WASM facade. Test-harness
+source is excluded. The run completed in 48 minutes 4 seconds while the same
+execution passed all 7,212 runnable parity comparisons; the 95 explicitly
+pending cases remain pending.
+
+Coverage is a code-execution signal, not a compatibility score. These
+percentages apply only to the named source commit, suite, and toolchain. Run
+`make test-coverage-all` again after source changes. The exact machine-readable
+measurement provenance is retained in the compatibility snapshot.
+
+### 3.4 C ABI completion contract
 
 The latest committed scorecard has **9 / 12 categories complete**:
 

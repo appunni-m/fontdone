@@ -34,6 +34,10 @@ First standalone alpha targeting FreeType 2.14.3.
   planned, and 63 intentionally excluded.
 - The last committed full runtime evidence passes 7,212 of 7,212 runnable
   comparisons with 0 failures and 95 explicitly pending cases.
+- The last measured combined core, C-ABI, and host-compiled WASM run reports
+  45,547/50,898 lines (89.49%), 8,986/11,915 branches (75.42%),
+  3,112/3,585 functions (86.81%), and 63,052/71,420 regions (88.28%) on
+  commit `e554aca48fb3168fa852dd79267f50d06201e1e4`.
 - Every pinned function has at least one runtime route, but route evidence does
   not imply every success path or lifecycle is complete.
 - The C contract is 9 of 12 categories complete. Its function category is

@@ -445,6 +445,72 @@ def validate_snapshot(errors: list[str]) -> None:
             "not equal total minus complete"
         )
 
+    coverage = snapshot.get("coverage")
+    if not isinstance(coverage, dict) or coverage.get("measured") is not True:
+        errors.append(
+            "doc/compatibility_snapshot.json: measured coverage snapshot is missing"
+        )
+    else:
+        if coverage.get("command") != "make test-coverage-all":
+            errors.append(
+                "doc/compatibility_snapshot.json: coverage command must be "
+                "make test-coverage-all"
+            )
+        if coverage.get("exit_code") != 0:
+            errors.append(
+                "doc/compatibility_snapshot.json: coverage run did not pass"
+            )
+        source_commit = str(coverage.get("source_commit", ""))
+        if re.fullmatch(r"[0-9a-f]{40}", source_commit) is None:
+            errors.append(
+                "doc/compatibility_snapshot.json: coverage source_commit is "
+                "not a full Git SHA"
+            )
+        coverage_runtime = coverage.get("runtime_parity", {})
+        for key in ("runnable", "passed", "failed", "pending"):
+            if coverage_runtime.get(key) != runtime[key]:
+                errors.append(
+                    "doc/compatibility_snapshot.json: coverage runtime_parity."
+                    f"{key} does not match committed runtime evidence"
+                )
+        for label, key in (
+            ("Lines", "lines"),
+            ("Branches", "branches"),
+            ("Functions", "functions"),
+            ("Regions", "regions"),
+        ):
+            metric = coverage.get(key, {})
+            covered = metric.get("covered")
+            total = metric.get("total")
+            percent = metric.get("percent")
+            if (
+                not isinstance(covered, int)
+                or not isinstance(total, int)
+                or not isinstance(percent, (int, float))
+                or covered < 0
+                or total <= 0
+                or covered > total
+            ):
+                errors.append(
+                    "doc/compatibility_snapshot.json: invalid coverage metric "
+                    f"{key}"
+                )
+                continue
+            computed = covered * 100.0 / total
+            if abs(float(percent) - computed) > 1e-10:
+                errors.append(
+                    "doc/compatibility_snapshot.json: coverage percentage does "
+                    f"not match {key} numerator and denominator"
+                )
+            expected = (
+                rf"\|\s*{label}\s*\|\s*{covered:,}\s*/\s*{total:,}\s*\|\s*"
+                rf"{computed:.2f}%\s*\|"
+            )
+            if re.search(expected, readme) is None:
+                errors.append(
+                    f"README.md: measured coverage row {label!r} is stale"
+                )
+
     for expected in (
         f"**{contract['categories_complete']} / "
         f"{contract['categories_total']} categories complete**",

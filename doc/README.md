@@ -20,7 +20,7 @@ These documents answer different questions:
 | Evidence | Question answered |
 |---|---|
 | [Function adoption map](FREETYPE_SUPPORT.md) | Which pinned FreeType functions are application-ready? |
-| [Compatibility snapshot](compatibility_snapshot.json) | What are the last committed measured denominators and debts? |
+| [Compatibility snapshot](compatibility_snapshot.json) | What are the last committed parity, contract, and code-coverage measurements and debts? |
 | [C-contract roadmap](ROADMAP.md) | What blocks a complete C replacement claim? |
 
 Runtime reports under `target/` describe the current worktree and supersede the
@@ -31,7 +31,9 @@ committed snapshot for that worktree. In particular:
 - `target/api-abi-audit/c_abi_contract_status.{json,md}` scores all 12 C
   contract categories;
 - `target/parity-evidence/runtime_parity.json` binds a full parity result to
-  its source tree, toolchain, oracle, and captured log.
+  its source tree, toolchain, oracle, and captured log;
+- `target/coverage/unified-runtime-all-lanes.json` records combined core,
+  C-ABI, and host-compiled WASM line, branch, function, and region coverage.
 
 ## 3. Project and fixture policies
 
