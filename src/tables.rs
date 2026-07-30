@@ -255,3 +255,105 @@ impl FontData {
             .map(|mvar| mvar.vertical_header_deltas(&self.normalized_variation_coords))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::font::Font;
+    use crate::tt::glyf::GlyphOutline;
+
+    const CFF1_FONT: &[u8] = include_bytes!("../tests/fixtures/input/fonts/cff/pure-cff-cubic.otf");
+    const CFF2_FONT: &[u8] =
+        include_bytes!("../tests/fixtures/input/fonts/cff2/fontinfo-invalid-argument.otf");
+    const GLYF_FONT: &[u8] = include_bytes!("../tests/fixtures/input/fonts/DejaVuSans.ttf");
+    const GVAR_FONT: &[u8] =
+        include_bytes!("../tests/fixtures/input/fonts/variable/gvar-hvar-wght.ttf");
+
+    #[test]
+    fn cff_outline_loaders_cover_cache_and_no_hinting_routes() -> Result<(), crate::FontError> {
+        let font = Font::truetype(CFF1_FONT, 16.0)?;
+        assert!(font.data.has_cff_outlines());
+        assert!(font.data.cff.is_some());
+        assert!(font.data.cff2.is_none());
+        font.data.glyph_cache.borrow_mut().clear();
+
+        let first = font.data.load_glyph_outline(1)?;
+        let cached = font.data.load_glyph_outline(1)?;
+        assert!(Rc::ptr_eq(&first, &cached));
+
+        let no_hinting = font.data.load_glyph_outline_no_hinting(1)?;
+        assert!(!Rc::ptr_eq(&first, &no_hinting));
+        assert_eq!(first.points.len(), no_hinting.points.len());
+        Ok(())
+    }
+
+    #[test]
+    fn cff2_outline_loaders_cover_cache_and_no_hinting_routes() -> Result<(), crate::FontError> {
+        let font = Font::truetype(CFF2_FONT, 16.0)?;
+        assert!(font.data.has_cff_outlines());
+        assert!(font.data.cff.is_none());
+        assert!(font.data.cff2.is_some());
+        font.data.glyph_cache.borrow_mut().clear();
+
+        let first = font.data.load_glyph_outline(1)?;
+        let cached = font.data.load_glyph_outline(1)?;
+        assert!(Rc::ptr_eq(&first, &cached));
+
+        let no_hinting = font.data.load_glyph_outline_no_hinting(1)?;
+        assert!(!Rc::ptr_eq(&first, &no_hinting));
+        assert_eq!(first.points.len(), no_hinting.points.len());
+        Ok(())
+    }
+
+    #[test]
+    fn glyf_font_reports_non_cff_and_caches_loaded_outline() -> Result<(), crate::FontError> {
+        let font = Font::truetype(GLYF_FONT, 16.0)?;
+        assert!(!font.data.has_cff_outlines());
+        font.data.glyph_cache.borrow_mut().clear();
+
+        let first = font.data.load_glyph_outline(36)?;
+        let cached = font.data.load_glyph_outline(36)?;
+        assert!(Rc::ptr_eq(&first, &cached));
+
+        let no_hinting = font.data.load_glyph_outline_no_hinting(36)?;
+        assert!(!Rc::ptr_eq(&first, &no_hinting));
+        Ok(())
+    }
+
+    #[test]
+    fn gvar_helpers_cover_inactive_missing_and_active_glyph_routes() -> Result<(), crate::FontError>
+    {
+        let font = Font::truetype(GVAR_FONT, 16.0)?;
+        assert!(font.data.gvar.is_some());
+
+        let mut inactive = font.data.as_ref().clone();
+        inactive.normalized_variation_coords.clear();
+        let unchanged = inactive.apply_gvar_deltas(10, &GlyphOutline::default())?;
+        assert!(unchanged.points.is_empty());
+        assert_eq!(inactive.gvar_hori_advance_delta(10, 0)?, 0);
+
+        let mut active = font.data.as_ref().clone();
+        active.normalized_variation_coords = vec![0x2000];
+        let missing = active.apply_gvar_deltas(u16::MAX, &GlyphOutline::default())?;
+        assert!(missing.points.is_empty());
+        assert_eq!(active.gvar_hori_advance_delta(u16::MAX, 0)?, 0);
+
+        let base = crate::tt::glyf::load_glyph_no_hinting(
+            &active.glyf_data,
+            &active.loca_data,
+            active.head.index_to_loc_format,
+            10,
+            &active.hmtx,
+        )?;
+        let varied = active.apply_gvar_deltas(10, &base)?;
+        assert_eq!(varied.points.len(), base.points.len());
+        let _ = active.gvar_hori_advance_delta(10, base.points.len())?;
+        let _ = active.hmtx_hori_advance_with_gvar_delta(10, base.points.len())?;
+
+        let cff = Font::truetype(CFF1_FONT, 16.0)?;
+        assert_eq!(cff.data.gvar_hori_advance_delta(1, 0)?, 0);
+        let unchanged = cff.data.apply_gvar_deltas(1, &GlyphOutline::default())?;
+        assert!(unchanged.points.is_empty());
+        Ok(())
+    }
+}

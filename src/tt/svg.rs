@@ -42,24 +42,21 @@ impl SvgTable {
             return Err(invalid_svg_table());
         }
         let version = read_u16(data, 0)?;
-        let document_list_offset =
-            usize::try_from(read_u32(data, 2)?).map_err(|_| invalid_svg_table())?;
+        // Every supported fontdone target has a 32- or 64-bit `usize`, so an
+        // OpenType u32 offset is lossless.  Keeping this as a fallible
+        // conversion would create a target-independent dead error path.
+        let document_list_offset = read_u32(data, 2)? as usize;
         if document_list_offset < SVG_TABLE_HEADER_SIZE
             || document_list_offset > data.len().saturating_sub(SVG_DOCUMENT_LIST_MINIMUM_SIZE)
         {
             return Err(invalid_svg_table());
         }
-        let document_list = data
-            .get(document_list_offset..)
-            .ok_or_else(invalid_svg_table)?;
+        // The range check above proves this start offset is in bounds.
+        let document_list = &data[document_list_offset..];
         let document_count = usize::from(read_u16(document_list, 0)?);
-        let records_end = 2usize
-            .checked_add(
-                document_count
-                    .checked_mul(SVG_DOCUMENT_RECORD_SIZE)
-                    .ok_or_else(invalid_svg_table)?,
-            )
-            .ok_or_else(invalid_svg_table)?;
+        // `document_count` is a u16, so this cannot overflow a supported
+        // 32-bit (or wider) `usize`.
+        let records_end = 2 + document_count * SVG_DOCUMENT_RECORD_SIZE;
         if records_end > document_list.len() {
             return Err(invalid_svg_table());
         }
@@ -69,13 +66,17 @@ impl SvgTable {
             let record_offset = 2 + index * SVG_DOCUMENT_RECORD_SIZE;
             let start_glyph_id = read_u16(document_list, record_offset)?;
             let end_glyph_id = read_u16(document_list, record_offset + 2)?;
-            let document_offset = usize::try_from(read_u32(document_list, record_offset + 4)?)
-                .map_err(|_| invalid_svg_table())?;
-            let document_length = usize::try_from(read_u32(document_list, record_offset + 8)?)
-                .map_err(|_| invalid_svg_table())?;
-            let document_end = document_offset
-                .checked_add(document_length)
-                .ok_or_else(invalid_svg_table)?;
+            let document_offset = read_u32(document_list, record_offset + 4)?;
+            let document_length = read_u32(document_list, record_offset + 8)?;
+            // Widen before addition so malformed u32 offset/length pairs have
+            // one platform-independent bounds result on both 32- and 64-bit
+            // targets.
+            let document_end = u64::from(document_offset) + u64::from(document_length);
+            if document_end > document_list.len() as u64 {
+                return Err(invalid_svg_table());
+            }
+            let document_offset = document_offset as usize;
+            let document_end = document_end as usize;
             let document = document_list
                 .get(document_offset..document_end)
                 .ok_or_else(invalid_svg_table)?;
@@ -124,19 +125,24 @@ fn read_u32(data: &[u8], offset: usize) -> Result<u32, FontError> {
 mod tests {
     use super::*;
 
-    #[test]
-    fn parses_document_range_and_bytes() -> Result<(), FontError> {
-        let document = b"<svg/>";
+    fn one_document_table(start: u16, end: u16, document: &[u8]) -> Vec<u8> {
         let mut table = Vec::new();
         table.extend_from_slice(&0u16.to_be_bytes());
         table.extend_from_slice(&10u32.to_be_bytes());
         table.extend_from_slice(&0u32.to_be_bytes());
         table.extend_from_slice(&1u16.to_be_bytes());
-        table.extend_from_slice(&1u16.to_be_bytes());
-        table.extend_from_slice(&2u16.to_be_bytes());
+        table.extend_from_slice(&start.to_be_bytes());
+        table.extend_from_slice(&end.to_be_bytes());
         table.extend_from_slice(&14u32.to_be_bytes());
         table.extend_from_slice(&(document.len() as u32).to_be_bytes());
         table.extend_from_slice(document);
+        table
+    }
+
+    #[test]
+    fn parses_document_range_and_bytes() -> Result<(), FontError> {
+        let document = b"<svg/>";
+        let table = one_document_table(1, 2, document);
 
         let parsed = SvgTable::parse(&table)?;
         assert_eq!(parsed.version, 0);
@@ -149,5 +155,48 @@ mod tests {
         );
         assert!(parsed.document_for_glyph(3).is_none());
         Ok(())
+    }
+
+    #[test]
+    fn rejects_short_headers_and_invalid_document_list_ranges() {
+        for len in 0..SVG_MINIMUM_SIZE {
+            assert!(SvgTable::parse(&vec![0; len]).is_err(), "length {len}");
+        }
+
+        let mut before_header = one_document_table(1, 2, b"<svg/>");
+        before_header[2..6].copy_from_slice(&9u32.to_be_bytes());
+        assert!(SvgTable::parse(&before_header).is_err());
+
+        let mut after_last_complete_list = one_document_table(1, 2, b"<svg/>");
+        after_last_complete_list[2..6].copy_from_slice(&11u32.to_be_bytes());
+        assert!(SvgTable::parse(&after_last_complete_list).is_err());
+
+        let mut truncated_records = one_document_table(1, 2, b"<svg/>");
+        truncated_records[10..12].copy_from_slice(&2u16.to_be_bytes());
+        assert!(SvgTable::parse(&truncated_records).is_err());
+    }
+
+    #[test]
+    fn rejects_out_of_range_and_gzip_documents() {
+        let mut out_of_range = one_document_table(1, 2, b"<svg/>");
+        out_of_range[16..20].copy_from_slice(&u32::MAX.to_be_bytes());
+        out_of_range[20..24].copy_from_slice(&u32::MAX.to_be_bytes());
+        assert!(SvgTable::parse(&out_of_range).is_err());
+
+        let gzip = one_document_table(1, 2, &[0x1f, 0x8b, 0x08, 0]);
+        assert_eq!(
+            SvgTable::parse(&gzip),
+            Err(FontError::InvalidTable(
+                "SVG: gzip-compressed document unsupported".into()
+            ))
+        );
+    }
+
+    #[test]
+    fn primitive_readers_reject_missing_bytes_at_extreme_offsets() {
+        assert!(read_u16(&[], 0).is_err());
+        assert!(read_u16(&[0, 1], usize::MAX).is_err());
+        assert!(read_u32(&[], 0).is_err());
+        assert!(read_u32(&[0, 1, 2, 3], usize::MAX).is_err());
     }
 }

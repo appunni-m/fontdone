@@ -185,7 +185,7 @@ src/outline.rs	1929	file	041ef18b3895b7801bfb78766da6056245bceb976f0b08b81fa4951
 src/pfr.rs	14208	file	2e2f63fc05da4307923f013061874181905bc54b5f816bafc621c7151ea8393e	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/render.rs	96890	file	1d0da3d28173c4cb0ac9c8031f266092183c558c6f480fad74ec948fd2094052	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/scaler.rs	65795	file	d746c8100d03f8cebb82cc44f241c038d70a34a61a31601a2908afb68040caae	-	keep-runtime	R01	Published pure-Rust runtime source.
-src/tables.rs	9364	file	a3d7a284674fcc8b1944520f44d076d91a4f778f39f9a781f53591fe412e8af2	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/tables.rs	13483	file	a463f9f812929a7b6e785ebb9a9e4413c07064f1a32d400387ba8b8e36aac389	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/cff.rs	40162	file	c75201e9d40c31b4b11411679442135eb6183e322d984eaec978d1005e081335	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/cmap.rs	38131	file	33935cef1a32be12287a8dd003befb2fda6e14fd38f0fb2a974eaa66d757b75b	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/fvar.rs	4897	file	965e7c2e18b040627a7e2015f3f72c10d7973a58b3af8f8830daa373d61aa1dc	-	keep-runtime	R01	Published pure-Rust runtime source.
@@ -212,7 +212,7 @@ src/tt/name.rs	17640	file	807be208c125a706e621828ff8793a13e5d33425472744e8b60918
 src/tt/os2.rs	7249	file	eca0f420ef51f9e1b327caa0d49684b0e302499fba4bf9f8cc9916a1507522de	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/post.rs	8905	file	389c32f1b1bb9df4ddd1d9eb17361fcbef5a25290edc5f792e62bad45823e7e4	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/sbit.rs	33776	file	ea831bb4aae69513ba439f19dd83230d7ac4b380e62b259e52129e9c90d51a1a	-	keep-runtime	R01	Published pure-Rust runtime source.
-src/tt/svg.rs	5851	file	6c715e95467340941357a34e96f9932c6e79b9e1cfae52bb20e48c8e7589f077	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/tt/svg.rs	8078	file	945bb2321d835c67fb70c029910862fc7bf31f3ee05bfaf3f4e7427f71d3fea7	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/varstore.rs	12342	file	aac02a950bd62a500332871577ff6dfbf8149f1839db34c36cb517844e934365	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/vhea.rs	795	file	80835cb30dc06d39fa7d3479c46b93ed636c1fdcf68527c41617cb5bddf92846	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/vmtx.rs	2753	file	07158df982ce8e4a2e1d406a1c62ff3d28f03af8f8113e45cb11709de843f459	-	keep-runtime	R01	Published pure-Rust runtime source.
