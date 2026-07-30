@@ -354,10 +354,11 @@ increase is claimed until the next full all-lane measurement**:
 | 10 | `15577d60d17a3dfe1b17081083029832d932e249` | Consolidated the per-commit GitHub checks into the exact `make ci-fast` gate plus MSRV, retained smoke diagnostics, and kept full parity, coverage, platform, performance, package, and supply-chain work manual for requested pre-merge audits. |
 | 11 | `e41acf4f5e2c01f6b6f4caafd2229d4de04abc4d` | Promoted the maintained eight-byte PCF control route for `FT_HAS_HORIZONTAL` from pending to exact parity, preserving pinned `FT_Err_Invalid_Stream_Operation` across Rust, C ABI, and WASM. |
 | 12 | `adf44e4fb451cc91399bde9bb9af46b00f38b7c9` | Routed the maintained pinned-C raster callback lifecycle through the New, Reset, and Done callback rows across Rust FFI, C ABI, and WASM; the failure and set-mode matrices remain explicitly pending. |
+| 13 | `466799d94680e8707f7f665dec4da98b31ff051a` | Replaced the `FT_Raster_New_Func` out-of-memory placeholder with a pinned-C callback failure probe; Rust FFI, C ABI, and WASM now agree on `FT_Err_Out_Of_Memory`, the `raster_new` event, and no installed module. |
 
 The latest clean parity-only verification is Coverage MCP run
-`03c99df6-2b5e-4758-ac51-cfb2a4dfa4b1` against source commit
-`adf44e4fb451cc91399bde9bb9af46b00f38b7c9`: 7,236 / 7,236 runnable
+`34089c8a-d707-4ef8-9a17-77b048172ab0` against source commit
+`466799d94680e8707f7f665dec4da98b31ff051a`: 7,236 / 7,236 runnable
 comparisons passed, 0 failed, and 71 remain explicitly pending. The committed
 source-digest attestation is
 `doc/runtime_parity_evidence.json`. Full coverage is intentionally deferred

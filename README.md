@@ -92,7 +92,7 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The last committed full parity snapshot was recorded on **2026-07-30**:
+The last committed full parity snapshot was recorded on **2026-07-31**:
 
 | Measurement | Count |
 |---|---:|
@@ -111,6 +111,10 @@ The last committed full parity snapshot was recorded on **2026-07-30**:
 not turn the 71 pending cases into passes. Likewise, 218/218 function-route
 evidence can be satisfied by a narrow success or null-validation route; it is
 not equivalent to complete behavior for every input, state, or platform.
+
+The latest source-matched verification is Coverage MCP run
+`34089c8a-d707-4ef8-9a17-77b048172ab0` against commit
+`466799d94680e8707f7f665dec4da98b31ff051a`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
