@@ -42207,7 +42207,19 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             Ok(args)
         }
         "ftsynth.glyphslot_null_noop" => ftsynth_null_noop_oracle_args(params),
-        "ftglyph.get_glyph" | "ftglyph.glyph_copy" | "ftglyph.record_inspect" => {
+        "ftglyph.get_glyph"
+        | "ftglyph.glyph_copy"
+        | "ftglyph.record_inspect"
+        | "ftglyph.svg_glyph_alias_runtime" => {
+            if case.operation == "ftglyph.svg_glyph_alias_runtime" {
+                let mut args = vec!["--glyph-record".to_string()];
+                push_font_source(case, &mut args)?;
+                push_face_size(params, &mut args)?;
+                args.push("1".to_string());
+                args.push(FT_LOAD_COLOR.to_string());
+                args.push("record".to_string());
+                return Ok(args);
+            }
             if case.case_id == "ftglyph.FT_Get_Glyph.error_unsupported_format_or_bad_slot_payload" {
                 return Ok(vec!["--get-glyph-malformed-slots".to_string()]);
             }
@@ -43801,7 +43813,10 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftsynth.glyphslot_adjust_weight_after_load" => rust_ftsynth_weight(case, false),
         "ftsynth.glyphslot_embolden_after_load" => rust_ftsynth_weight(case, true),
         "ftsynth.glyphslot_null_noop" => rust_ftsynth_null_noop(case),
-        "ftglyph.get_glyph" | "ftglyph.glyph_copy" | "ftglyph.record_inspect" => {
+        "ftglyph.get_glyph"
+        | "ftglyph.glyph_copy"
+        | "ftglyph.record_inspect"
+        | "ftglyph.svg_glyph_alias_runtime" => {
             if case.operation == "ftglyph.get_glyph"
                 && case.inputs.params.get("unsupported_slot_formats").is_some()
             {
@@ -45207,7 +45222,10 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             output
         }
         "ftsynth.glyphslot_null_noop" => c_ftsynth_null_noop(case),
-        "ftglyph.get_glyph" | "ftglyph.glyph_copy" | "ftglyph.record_inspect" => {
+        "ftglyph.get_glyph"
+        | "ftglyph.glyph_copy"
+        | "ftglyph.record_inspect"
+        | "ftglyph.svg_glyph_alias_runtime" => {
             if bitmap_glyph_record_paths_case(case) {
                 return c_bitmap_glyph_record_paths(case);
             }
@@ -46401,7 +46419,10 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             output
         }
         "ftsynth.glyphslot_null_noop" => wasm_ftsynth_null_noop(case),
-        "ftglyph.get_glyph" | "ftglyph.glyph_copy" | "ftglyph.record_inspect" => {
+        "ftglyph.get_glyph"
+        | "ftglyph.glyph_copy"
+        | "ftglyph.record_inspect"
+        | "ftglyph.svg_glyph_alias_runtime" => {
             if bitmap_glyph_record_paths_case(case) {
                 return wasm_bitmap_glyph_record_paths(case);
             }
@@ -50490,6 +50511,7 @@ fn ftglyph_svg_record_case(case: &InputCase) -> bool {
         case_id_base(&case.case_id),
         "ftglyph.FT_Get_Glyph.success_svg_slot_deep_copy"
             | "ftglyph.FT_Glyph_Copy.success_svg_copy_is_independent"
+            | "ftglyph.FT_SvgGlyph.pointer_alias_matches_record_when_enabled"
             | "ftglyph.FT_SvgGlyphRec.fields_match_svg_get_copy_transform"
     )
 }
@@ -51058,11 +51080,17 @@ fn svg_glyph_record_output(
 }
 
 fn rust_svg_glyph_record(face: &FT_Face, case: &InputCase) -> Result<RunOutput, String> {
-    let slot = match FT_Load_Glyph(
-        face,
-        glyph_index_param(&case.inputs.params)?,
-        load_flags_param(&case.inputs.params)?,
-    ) {
+    let glyph_index = if case.operation == "ftglyph.svg_glyph_alias_runtime" {
+        1
+    } else {
+        glyph_index_param(&case.inputs.params)?
+    };
+    let load_flags = if case.operation == "ftglyph.svg_glyph_alias_runtime" {
+        FT_LOAD_COLOR
+    } else {
+        load_flags_param(&case.inputs.params)?
+    };
+    let slot = match FT_Load_Glyph(face, glyph_index, load_flags) {
         Ok(slot) => slot,
         Err(error_code) => return Ok(error(error_code)),
     };
@@ -51107,11 +51135,17 @@ fn rust_svg_glyph_record(face: &FT_Face, case: &InputCase) -> Result<RunOutput, 
 }
 
 fn c_svg_glyph_record(face: c_abi::FT_Face, case: &InputCase) -> Result<RunOutput, String> {
-    let mut error_code = c_abi::FT_Load_Glyph(
-        face,
-        glyph_index_param(&case.inputs.params)?,
-        load_flags_param(&case.inputs.params)?,
-    );
+    let glyph_index = if case.operation == "ftglyph.svg_glyph_alias_runtime" {
+        1
+    } else {
+        glyph_index_param(&case.inputs.params)?
+    };
+    let load_flags = if case.operation == "ftglyph.svg_glyph_alias_runtime" {
+        FT_LOAD_COLOR
+    } else {
+        load_flags_param(&case.inputs.params)?
+    };
+    let mut error_code = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
     let mut source = ptr::null_mut();
     let mut target = ptr::null_mut();
     if error_code == FT_Err_Ok {
@@ -51168,11 +51202,17 @@ fn c_svg_glyph_record(face: c_abi::FT_Face, case: &InputCase) -> Result<RunOutpu
 }
 
 fn wasm_svg_glyph_record(handle: usize, case: &InputCase) -> Result<RunOutput, String> {
-    let mut error_code = wasm_abi::fontdone_wasm_load_glyph(
-        handle,
-        glyph_index_param(&case.inputs.params)?,
-        load_flags_param(&case.inputs.params)?,
-    );
+    let glyph_index = if case.operation == "ftglyph.svg_glyph_alias_runtime" {
+        1
+    } else {
+        glyph_index_param(&case.inputs.params)?
+    };
+    let load_flags = if case.operation == "ftglyph.svg_glyph_alias_runtime" {
+        FT_LOAD_COLOR
+    } else {
+        load_flags_param(&case.inputs.params)?
+    };
+    let mut error_code = wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, load_flags);
     let mut source = 0usize;
     let mut target = 0usize;
     if error_code == FT_Err_Ok {
