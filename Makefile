@@ -228,8 +228,8 @@ test-coverage: unified-oracle api-abi-check
 
 .PHONY: test-coverage-all
 test-coverage-all: unified-oracle api-abi-check
-	$(CARGO) test -p fontdone-c-abi --lib --locked
-	$(CARGO) test -p fontdone-wasm --lib --locked
+	$(CARGO) test -p fontdone-c-abi --lib --features abi-test-support --locked
+	$(CARGO) test -p fontdone-wasm --lib --features abi-test-support --locked
 	mkdir -p $(dir $(ALL_LANES_COVERAGE_OUTPUT))
 	$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov --branch -p fontdone \
 		--locked --json \
