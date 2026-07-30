@@ -2589,7 +2589,10 @@ unsafe extern "C" fn abi_raster_lifecycle_new(memory: FT_Pointer, raster: *mut F
 }
 
 #[cfg(feature = "abi-test-support")]
-unsafe extern "C" fn abi_raster_new_error(memory: FT_Pointer, _raster: *mut FT_Raster) -> c_int {
+unsafe extern "C" fn abi_raster_new_error_callback(
+    memory: FT_Pointer,
+    _raster: *mut FT_Raster,
+) -> c_int {
     let _ = memory;
     abi_raster_lifecycle_event("raster_new");
     rust_ffi::FT_Err_Out_Of_Memory
@@ -2665,7 +2668,7 @@ static ABI_RASTER_LIFECYCLE_FUNCS: FT_Raster_Funcs = FT_Raster_Funcs {
 #[cfg(feature = "abi-test-support")]
 static ABI_RASTER_NEW_ERROR_FUNCS: FT_Raster_Funcs = FT_Raster_Funcs {
     glyph_format: rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
-    raster_new: Some(abi_raster_new_error),
+    raster_new: Some(abi_raster_new_error_callback),
     raster_reset: Some(abi_raster_lifecycle_reset),
     raster_set_mode: Some(abi_raster_lifecycle_set_mode),
     raster_render: Some(abi_raster_lifecycle_render),
