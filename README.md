@@ -137,10 +137,13 @@ ABI, and host-compiled WASM facade. That historical run executed the unified
 parity target and completed in 48 minutes 4 seconds while passing all 7,212
 runnable parity comparisons; the 95 explicitly pending cases remain pending.
 The maintained `make test-coverage-all` command now runs every non-ignored
-workspace test under the default feature profile, including full parity, while
-excluding test-harness paths. Optional feature profiles are verified separately
-by `make optional-feature-contract`. The next measured coverage denominators are
-therefore expected to change.
+workspace unit and integration target under the default feature profile,
+including full parity, while excluding test-harness paths from the report.
+Facade unit tests run separately before one coherent root-package coverage build
+links and measures all three surfaces; this prevents LLVM from attributing
+multiple feature builds to the same source path. Optional feature profiles are
+verified separately by `make optional-feature-contract`. The next measured
+coverage denominators are therefore expected to change.
 
 Coverage is a code-execution signal, not a compatibility score. These
 percentages apply only to the named source commit, suite, and toolchain. Run
