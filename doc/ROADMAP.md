@@ -353,8 +353,8 @@ increase is claimed until the next full all-lane measurement**:
 | 9 | `c58dfaa8a0276c22455dd1f942d070f552b2f033` | Removed unused missing-font declarations from scalar TrueType interpreter-property fixtures, documented that the remaining glyph-output rows still require maintained inputs, and revalidated the unchanged parity denominator. |
 
 The latest clean parity-only verification is Coverage MCP run
-`a8074648-cda6-4d92-9cf8-518698fdce16` against source commit
-`c58dfaa8a0276c22455dd1f942d070f552b2f033`: 7,232 / 7,232 runnable
+`bc38111b-b040-42c3-8ce6-4082f84b11d6` against source commit
+`2d568b647e0d6ffd87cdea6b3c8d09ebb1b9c55a`: 7,232 / 7,232 runnable
 comparisons passed, 0 failed, and 75 remain explicitly pending. The committed
 source-digest attestation is
 `doc/runtime_parity_evidence.json`. Full coverage is intentionally deferred
