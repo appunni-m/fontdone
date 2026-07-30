@@ -69,7 +69,8 @@ threading, and compiled examples.
 ## 3. Compatibility status
 
 Compatibility has 3 separate measurements. They must not be combined into one
-percentage.
+percentage. Performance is tracked separately and cannot increase a
+compatibility score.
 
 ### 3.1 Maintained adoption map
 
@@ -163,6 +164,32 @@ when every bare function name has some traced route. The self-cleaning
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 
+### 3.5 Performance baseline
+
+The maintained release-mode benchmark measures per-operation latency and
+throughput, complete-process peak RSS, and exact unstripped release-artifact
+bytes against pinned FreeType. Correctness mismatches fail before a
+measurement can qualify.
+
+<!-- performance-baseline:start -->
+The committed ledger contains **0 / 5 clean runs** for its most-sampled current
+environment. Five runs from the same environment are required before
+regression thresholds can be reviewed.
+
+No qualifying clean ten-sample run has been committed yet. Dirty smoke runs
+are useful diagnostics but cannot enter this ledger.
+
+The regression policy is `collecting_baseline`. `make bench-regression`
+therefore fails closed until reviewed thresholds become active.
+<!-- performance-baseline:end -->
+
+Run `make bench` to generate a ten-sample report under
+`target/fontdone-bench/`. From a clean source commit, run
+`make record-performance-baseline` to append it to the committed ledger.
+Performance evidence is machine- and environment-specific; results from
+different environment identities are never pooled toward the five-run
+threshold-review minimum.
+
 ## 4. What is implemented
 
 The Rust runtime contains:
@@ -224,6 +251,7 @@ Important complete gates:
 | `make c-abi-contract-complete` | Fail unless all 12 C-contract categories complete |
 | `make test-integrations` | Run downstream Rust, external C, exports, and Node/WASM consumers |
 | `make check-docs` | Check every tracked Markdown document, status snapshot, links, commands, and rustdoc policy |
+| `make bench-regression` | Fail unless reviewed latency, throughput, memory, and size thresholds all pass |
 | `make ci-thorough` | Run the requested local pre-merge coverage, performance, contract, package, and supply-chain gate |
 | `make release-verify` | Run local release gates; requires assembled five-target platform evidence |
 

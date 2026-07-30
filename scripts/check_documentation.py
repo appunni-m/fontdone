@@ -32,6 +32,28 @@ LEGACY_MAC_HELPERS = {
     "FT_New_Face_From_FSRef",
     "FT_New_Face_From_FSSpec",
 }
+PERFORMANCE_ARTIFACT_IDS = {
+    "fontdone-rust-benchmark",
+    "freetype-c-benchmark",
+    "fontdone-c-abi-shared",
+    "freetype-shared",
+    "fontdone-wasm",
+}
+PERFORMANCE_THRESHOLD_KEYS = {
+    "minimum_weighted_speedup_vs_c",
+    "minimum_total_throughput_ratio_vs_c",
+    "maximum_peak_rss_ratio_vs_c",
+    "maximum_shared_library_size_ratio_vs_c",
+    "maximum_wasm_bytes",
+}
+PERFORMANCE_ENVIRONMENT_KEYS = {
+    "platform",
+    "machine",
+    "cpu_model",
+    "runner_image",
+    "rustc_version",
+    "c_compiler_version",
+}
 
 
 def normalize_link(raw: str) -> str:
@@ -195,6 +217,253 @@ def validate_make_commands(
                 errors.append(
                     f"{path.relative_to(ROOT)}: references missing Make target {target!r}"
                 )
+
+
+def validate_performance_snapshot(
+    snapshot: dict[str, object],
+    readme: str,
+    errors: list[str],
+) -> None:
+    performance = snapshot.get("performance")
+    if not isinstance(performance, dict):
+        errors.append(
+            "doc/compatibility_snapshot.json: performance ledger is missing"
+        )
+        return
+    matrix_path = ROOT / "tests" / "data" / "perf_operation_matrix.json"
+    matrix_bytes = matrix_path.read_bytes()
+    matrix_sha256 = hashlib.sha256(matrix_bytes).hexdigest()
+    matrix = json.loads(matrix_bytes)
+    policy = matrix.get("regression_policy", {})
+    if set(policy.get("environment_identity", [])) != PERFORMANCE_ENVIRONMENT_KEYS:
+        errors.append(
+            "tests/data/perf_operation_matrix.json: performance environment "
+            "identity fields are incomplete"
+        )
+    expected_fields = {
+        "schema_version": 1,
+        "command": "make bench BENCH_SAMPLES=10 BENCH_PROFILE=default",
+        "record_command": "make record-performance-baseline",
+        "matrix": "tests/data/perf_operation_matrix.json",
+        "matrix_version": matrix.get("version"),
+        "matrix_sha256": matrix_sha256,
+        "required_workload_profile": policy.get("required_workload_profile"),
+        "minimum_samples_per_run": policy.get("minimum_samples_per_run"),
+        "minimum_clean_runs_per_environment": policy.get(
+            "minimum_clean_runs_per_environment"
+        ),
+        "regression_status": policy.get("status"),
+        "thresholds": policy.get("thresholds"),
+    }
+    for key, expected in expected_fields.items():
+        if performance.get(key) != expected:
+            errors.append(
+                "doc/compatibility_snapshot.json: performance."
+                f"{key} is {performance.get(key)!r}, expected {expected!r}"
+            )
+
+    minimum_samples = policy.get("minimum_samples_per_run")
+    minimum_runs = policy.get("minimum_clean_runs_per_environment")
+    profile = policy.get("required_workload_profile")
+    matrix_row_ids = {row["id"] for row in matrix.get("rows", [])}
+    runs = performance.get("clean_runs")
+    if not isinstance(runs, list):
+        errors.append(
+            "doc/compatibility_snapshot.json: performance.clean_runs is not a list"
+        )
+        return
+    report_hashes = set()
+    current_runs = []
+    environment_run_counts: dict[str, int] = {}
+    for index, run in enumerate(runs):
+        prefix = (
+            "doc/compatibility_snapshot.json: "
+            f"performance.clean_runs[{index}]"
+        )
+        if not isinstance(run, dict):
+            errors.append(f"{prefix} is not an object")
+            continue
+        report_hash = str(run.get("report_sha256", ""))
+        if re.fullmatch(r"[0-9a-f]{64}", report_hash) is None:
+            errors.append(f"{prefix}.report_sha256 is invalid")
+        elif report_hash in report_hashes:
+            errors.append(f"{prefix}.report_sha256 is duplicated")
+        report_hashes.add(report_hash)
+        if re.fullmatch(r"[0-9a-f]{40}", str(run.get("source_commit", ""))) is None:
+            errors.append(f"{prefix}.source_commit is invalid")
+        if run.get("clean_source") is not True:
+            errors.append(f"{prefix} was not measured from a clean source")
+        if (
+            not isinstance(run.get("sample_count"), int)
+            or not isinstance(minimum_samples, int)
+            or run["sample_count"] < minimum_samples
+        ):
+            errors.append(f"{prefix}.sample_count is below the policy minimum")
+        environment_id = str(run.get("environment_id", ""))
+        if re.fullmatch(r"[0-9a-f]{64}", environment_id) is None:
+            errors.append(f"{prefix}.environment_id is invalid")
+        environment = run.get("environment")
+        if not isinstance(environment, dict):
+            errors.append(f"{prefix}.environment is missing")
+        else:
+            if set(environment) != PERFORMANCE_ENVIRONMENT_KEYS:
+                errors.append(f"{prefix}.environment fields are incomplete")
+            computed_id = hashlib.sha256(
+                json.dumps(
+                    environment,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ).encode()
+            ).hexdigest()
+            if environment_id != computed_id:
+                errors.append(f"{prefix}.environment_id does not match its fields")
+            for field, value in environment.items():
+                if field != "runner_image" and value in (None, ""):
+                    errors.append(f"{prefix}.environment.{field} is missing")
+
+        for section, keys in (
+            (
+                "latency",
+                (
+                    "rust_ns_per_iter_mean",
+                    "rust_ns_per_iter_median",
+                    "rust_ns_per_iter_p90",
+                    "rust_ns_per_iter_p99",
+                    "c_ns_per_iter_mean",
+                    "c_ns_per_iter_median",
+                    "c_ns_per_iter_p90",
+                    "c_ns_per_iter_p99",
+                    "weighted_speedup_vs_c",
+                ),
+            ),
+            (
+                "throughput",
+                (
+                    "operation_count",
+                    "rust_operations_per_second",
+                    "c_operations_per_second",
+                    "ratio_vs_c",
+                ),
+            ),
+            (
+                "peak_process_memory",
+                (
+                    "rust_peak_rss_bytes_median",
+                    "c_peak_rss_bytes_median",
+                    "rust_to_c_peak_rss_ratio",
+                ),
+            ),
+        ):
+            values = run.get(section)
+            if not isinstance(values, dict):
+                errors.append(f"{prefix}.{section} is missing")
+                continue
+            for key in keys:
+                value = values.get(key)
+                if (
+                    isinstance(value, bool)
+                    or not isinstance(value, (int, float))
+                    or value <= 0
+                ):
+                    errors.append(f"{prefix}.{section}.{key} is not positive")
+
+        binary_size = run.get("binary_size")
+        if not isinstance(binary_size, dict):
+            errors.append(f"{prefix}.binary_size is missing")
+        else:
+            artifacts = binary_size.get("artifacts")
+            artifact_ids = (
+                {artifact.get("id") for artifact in artifacts}
+                if isinstance(artifacts, list)
+                and all(isinstance(artifact, dict) for artifact in artifacts)
+                else set()
+            )
+            if (
+                artifact_ids != PERFORMANCE_ARTIFACT_IDS
+                or len(artifacts or []) != len(PERFORMANCE_ARTIFACT_IDS)
+            ):
+                errors.append(f"{prefix}.binary_size artifact set is incomplete")
+            else:
+                for artifact in artifacts:
+                    if (
+                        not isinstance(artifact.get("bytes"), int)
+                        or artifact["bytes"] <= 0
+                        or re.fullmatch(
+                            r"[0-9a-f]{64}",
+                            str(artifact.get("sha256", "")),
+                        )
+                        is None
+                    ):
+                        errors.append(
+                            f"{prefix}.binary_size artifact evidence is invalid"
+                        )
+
+        per_operation = run.get("per_operation")
+        operation_ids = (
+            {row.get("id") for row in per_operation}
+            if isinstance(per_operation, list)
+            and all(isinstance(row, dict) for row in per_operation)
+            else set()
+        )
+        if operation_ids != matrix_row_ids or len(per_operation or []) != len(
+            matrix_row_ids
+        ):
+            errors.append(f"{prefix}.per_operation does not match the matrix")
+        regression = run.get("regression")
+        observations = (
+            regression.get("observations")
+            if isinstance(regression, dict)
+            else None
+        )
+        if not isinstance(observations, dict) or set(observations) != (
+            PERFORMANCE_THRESHOLD_KEYS
+        ):
+            errors.append(f"{prefix}.regression observations are incomplete")
+
+        if (
+            run.get("matrix_sha256") == matrix_sha256
+            and run.get("matrix_version") == matrix.get("version")
+            and run.get("workload_profile") == profile
+        ):
+            current_runs.append(run)
+            environment_run_counts[environment_id] = (
+                environment_run_counts.get(environment_id, 0) + 1
+            )
+
+    if performance.get("current_matrix_clean_run_count") != len(current_runs):
+        errors.append(
+            "doc/compatibility_snapshot.json: performance current-run count "
+            "does not match clean_runs"
+        )
+    if performance.get("environment_run_counts") != environment_run_counts:
+        errors.append(
+            "doc/compatibility_snapshot.json: performance environment counts "
+            "do not match clean_runs"
+        )
+    ready = (
+        isinstance(minimum_runs, int)
+        and any(count >= minimum_runs for count in environment_run_counts.values())
+    )
+    if performance.get("ready_for_threshold_review") != ready:
+        errors.append(
+            "doc/compatibility_snapshot.json: performance threshold-review "
+            "readiness is stale"
+        )
+    qualifying_count = max(environment_run_counts.values(), default=0)
+    expected_readme = f"**{qualifying_count} / {minimum_runs} clean runs**"
+    if expected_readme not in readme:
+        errors.append(
+            f"README.md: missing performance baseline count {expected_readme!r}"
+        )
+    roadmap = (ROOT / "doc" / "ROADMAP.md").read_text(encoding="utf-8")
+    expected_roadmap = (
+        f"**{qualifying_count} / {minimum_runs} qualifying clean runs**"
+    )
+    if expected_roadmap not in roadmap:
+        errors.append(
+            "doc/ROADMAP.md: missing performance baseline count "
+            f"{expected_roadmap!r}"
+        )
 
 
 def validate_snapshot(errors: list[str]) -> None:
@@ -510,6 +779,8 @@ def validate_snapshot(errors: list[str]) -> None:
                 errors.append(
                     f"README.md: measured coverage row {label!r} is stale"
                 )
+
+    validate_performance_snapshot(snapshot, readme, errors)
 
     for expected in (
         f"**{contract['categories_complete']} / "

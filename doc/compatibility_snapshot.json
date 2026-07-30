@@ -91,6 +91,23 @@
     "warning": "LLVM JSON segments are normalized to segment start lines; aggregate region coverage is preserved from summaries.",
     "claim_scope": "The percentages apply only to the named source commit, suite, and toolchain; coverage is not a FreeType-parity percentage."
   },
+  "performance": {
+    "schema_version": 1,
+    "command": "make bench BENCH_SAMPLES=10 BENCH_PROFILE=default",
+    "record_command": "make record-performance-baseline",
+    "matrix": "tests/data/perf_operation_matrix.json",
+    "matrix_version": 2,
+    "matrix_sha256": "ee6f060cfd1bd0d3b034f8831a4b8fcbe3608cca6e2090bfa2af31f824ab0a97",
+    "required_workload_profile": "default",
+    "minimum_samples_per_run": 10,
+    "minimum_clean_runs_per_environment": 5,
+    "regression_status": "collecting_baseline",
+    "thresholds": null,
+    "current_matrix_clean_run_count": 0,
+    "environment_run_counts": {},
+    "ready_for_threshold_review": false,
+    "clean_runs": []
+  },
   "verification": [
     "make test-parity",
     "make c-abi-contract",

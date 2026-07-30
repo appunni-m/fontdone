@@ -343,18 +343,37 @@ G02 is complete only when a clean, source-matched run reports:
 
 State: `OPEN`
 
-The maintained matrix already compares release-mode Fontdone with the pinned C
-oracle and records raw timing samples, environment metadata, output identity,
-and operation weights. Requested thorough CI now records ten samples and
-retains both JSON and Markdown evidence.
+The maintained matrix compares release-mode Fontdone with the pinned C oracle.
+The harness builds before timing, executes both workload binaries directly,
+and records raw samples, environment identity, output identity, operation
+weights, peak process memory, and exact artifact hashes and byte counts.
+Requested thorough CI records ten samples and retains both JSON and Markdown
+evidence.
+
+<!-- performance-roadmap:start -->
+The most-sampled current environment has **0 / 5 qualifying clean runs**.
+<!-- performance-roadmap:end -->
 
 | Measurement | Current state | Completion evidence |
 |---|---|---|
-| Latency | harness implemented; no accepted baseline | per-operation median, p90, and p99 from a clean source-bound run |
-| Throughput | derivable from timed operation counts; no accepted baseline | maintained operations/second summary and threshold |
-| Peak memory | not measured | peak RSS for the complete Rust and C workloads |
-| Binary size | not measured | stripped Rust artifacts and the compared FreeType artifacts by exact byte count |
-| Regression thresholds | not defined | machine-readable thresholds checked by `make` and requested thorough CI |
+| Latency | per-operation mean, median, p90, and p99 implemented | clean source-bound ledger plus reviewed weighted-latency threshold |
+| Throughput | per-operation, group, and aggregate operations/second implemented | clean source-bound ledger plus aggregate C/Rust threshold |
+| Peak memory | complete direct-process peak RSS implemented for Rust and C | clean source-bound ledger plus C/Rust peak-RSS threshold |
+| Binary size | five unstripped release artifacts measured by exact bytes and SHA-256 | clean source-bound ledger plus shared-library ratio and WASM byte thresholds |
+| Regression thresholds | `collecting_baseline`; strict Make target implemented and intentionally failing closed | active reviewed thresholds passing through `make bench-regression` and requested thorough CI |
+
+Run and record one qualifying measurement with:
+
+```bash
+make bench BENCH_SAMPLES=10 BENCH_PROFILE=default
+make record-performance-baseline
+```
+
+`make record-performance-baseline` accepts only a clean current source commit,
+the maintained matrix and profile, at least ten complete C/Rust samples, exact
+matrix row coverage, positive memory observations, and all five artifact
+identities. It appends compact evidence to
+`doc/compatibility_snapshot.json`; it never sets thresholds.
 
 Before setting thresholds, collect at least five clean ten-sample runs for one
 runner image and CPU model. The accepted baseline and its raw run identities

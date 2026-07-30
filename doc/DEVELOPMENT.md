@@ -79,6 +79,10 @@ Run the smallest useful gate first:
 | One case | `make test-case CASE=freetype.FT_Load_Glyph.no_scale` | Exact selected case comparison |
 | Full parity | `make test-parity` | Every runnable exact case, route audit, facades, and purity guard |
 | Record parity evidence | `make record-parity-snapshot` | Promote the latest passing, source-matched report into committed evidence |
+| Performance smoke | `make bench-quick` | Run two C/Rust samples without qualifying them as baseline evidence |
+| Performance evidence | `make bench` | Run ten release-mode samples with latency, throughput, peak RSS, and artifact sizes |
+| Record performance | `make record-performance-baseline` | Append a qualifying clean report to committed measured evidence |
+| Performance contract | `make bench-regression` | Fail unless every reviewed performance threshold is active and passing |
 | Integrations | `make test-integrations` | Downstream Rust, external C, exports, and Node/WASM |
 | C contract | `make c-abi-contract` | Report all 12 categories and remaining debt |
 | Five-platform C evidence | `make c-abi-contract-all-platforms` | Validate five assembled bundles and report current debt without claiming completion |
@@ -286,7 +290,7 @@ The manual run first repeats the complete commit gate, then adds:
 | Job | Evidence |
 |---|---|
 | Coverage | all-lane line, branch, function, and region totals |
-| Performance | ten raw samples for pinned FreeType versus release-mode Fontdone |
+| Performance | ten raw latency/throughput samples, complete-process peak RSS, and exact release-artifact bytes for pinned FreeType versus Fontdone |
 | Native C | Linux x86-64, macOS aarch64, and Windows x86-64 |
 | Cross C | Linux i686 and powerpc64 executed under QEMU |
 | C scorecard | five fresh platform bundles plus current 12-category debt |
@@ -315,18 +319,51 @@ code.
 make bench-self-test
 make bench-quick
 make bench
+make record-performance-baseline
+make bench-regression
 ```
 
-A publishable result uses release mode, retains raw samples and workload
-weights, states timing boundaries, records CPU/OS/toolchain/revision/dirty
-state, and labels whether the comparison is trustworthy. Performance never
-permits weaker parity.
+`make bench-quick` is a two-sample smoke test. `make bench` defaults to ten
+samples of the `default` workload and builds both workload executables before
+timing. It executes those binaries directly, then records:
 
-Requested thorough CI runs `make bench BENCH_SAMPLES=10 BENCH_PROFILE=default`
-and retains `target/fontdone-bench/latest.json` plus `latest.md`. This is a
-source-bound machine baseline, not yet a regression gate: stable thresholds
-remain open until repeated measurements establish defensible variance on the
-chosen runner class.
+1. raw and summarized per-operation latency, including median, p90, and p99;
+2. per-operation and aggregate operations/second plus the C/Rust ratio;
+3. peak RSS for each complete direct benchmark process;
+4. exact byte counts and SHA-256 identities for the Rust and C workload
+   executables, Fontdone and FreeType shared libraries, and Fontdone WASM;
+5. workload weights, output identity, timing boundaries, CPU, OS, toolchains,
+   source commit, dirty state, and CI runner identity.
+
+The report paths are `target/fontdone-bench/latest.json` and `latest.md`.
+Timing-only rows are explicitly labeled; exact correctness remains the
+responsibility of parity tests and a benchmark output mismatch fails before
+the report is accepted.
+
+To enter committed evidence, a report must compare C, use the current matrix
+and `default` profile, contain at least ten complete samples, and have been
+measured from the current clean commit:
+
+```bash
+make bench BENCH_SAMPLES=10 BENCH_PROFILE=default
+make record-performance-baseline
+make check-docs
+```
+
+The recorder does not rerun the benchmark. It validates the raw row and
+artifact sets, hashes the report and environment identity, and appends a
+compact exact ledger to `doc/compatibility_snapshot.json`. Duplicate recording
+is idempotent. Reports from different environment identities remain separate.
+
+The matrix policy requires five clean ten-sample runs from one environment
+before maintainers review thresholds. Thresholds are never inferred or
+activated by the recorder. While the policy is `collecting_baseline`,
+`make bench-regression` intentionally fails after producing evidence. Once
+reviewed thresholds are active, that target enforces weighted latency,
+aggregate throughput, peak-RSS ratio, shared-library size ratio, and maximum
+WASM bytes. `make release-verify` includes the strict target; requested
+thorough CI continues to collect ten-sample evidence while the baseline is
+being established.
 
 ## 8. Repository retention
 

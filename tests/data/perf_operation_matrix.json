@@ -2,7 +2,29 @@
   "fixture_family": "fontdone-performance",
   "generator": "manual seed matrix; expand through scripts/bench_freetype.py",
   "oracle": "Rust runtime timings with optional batched FreeType C comparison",
-  "version": 1,
+  "version": 2,
+  "regression_policy": {
+    "status": "collecting_baseline",
+    "minimum_clean_runs_per_environment": 5,
+    "minimum_samples_per_run": 10,
+    "required_workload_profile": "default",
+    "environment_identity": [
+      "platform",
+      "machine",
+      "cpu_model",
+      "runner_image",
+      "rustc_version",
+      "c_compiler_version"
+    ],
+    "required_metrics": [
+      "weighted latency speedup versus C",
+      "total throughput ratio versus C",
+      "complete-process peak RSS ratio versus C",
+      "shared-library byte-size ratio versus C",
+      "Fontdone WASM byte size"
+    ],
+    "thresholds": null
+  },
   "workload_profiles": {
     "default": {
       "description": "Balanced text measurement, glyph metrics, and mask workload.",
@@ -17,7 +39,7 @@
         "dejavusans_glyph_metrics_a_20": 15,
         "dejavusans_render_mono_a_20": 4,
         "dejavusans_render_lcd_a_20": 4,
-        "droidsansfallback_getmask_hani_20": 6
+        "generated_cjk_getmask_hani_20": 6
       }
     },
     "interactive_text": {
@@ -33,7 +55,7 @@
         "dejavusans_glyph_metrics_a_20": 10,
         "dejavusans_render_mono_a_20": 2,
         "dejavusans_render_lcd_a_20": 2,
-        "droidsansfallback_getmask_hani_20": 8
+        "generated_cjk_getmask_hani_20": 8
       }
     },
     "font_loading_heavy": {
@@ -49,7 +71,7 @@
         "dejavusans_glyph_metrics_a_20": 6,
         "dejavusans_render_mono_a_20": 2,
         "dejavusans_render_lcd_a_20": 2,
-        "droidsansfallback_getmask_hani_20": 2
+        "generated_cjk_getmask_hani_20": 2
       }
     }
   },

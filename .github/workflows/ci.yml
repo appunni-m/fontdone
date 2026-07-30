@@ -256,6 +256,7 @@ jobs:
           sudo apt-get install --yes cmake clang make python3 xz-utils
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
           rustup override set "$RUST_TOOLCHAIN"
+          rustup target add wasm32-unknown-unknown
       - name: Record ten-sample C-vs-Rust baseline
         run: make bench BENCH_SAMPLES=10 BENCH_PROFILE=default
       - name: Retain raw samples and report

@@ -63,6 +63,8 @@ help:
 	@printf "  make test-coverage        Write core Rust coverage JSON\n"
 	@printf "  make test-coverage-all    Write all-lane branch coverage JSON\n"
 	@printf "  make bench-quick          Run the benchmark smoke gate\n"
+	@printf "  make bench-regression     Require the reviewed performance thresholds\n"
+	@printf "  make record-performance-baseline  Commit-ready evidence from the latest qualifying clean run\n"
 	@printf "\nGenerated inputs:\n"
 	@printf "  make font-fixtures        Rebuild fixture inputs and payloads\n"
 	@printf "  make check-font-fixtures  Reject fixture generator drift\n"
@@ -620,6 +622,15 @@ bench-self-test:
 	PYTHONPYCACHEPREFIX=$(PYCACHE_DIR) $(PYTHON) -m py_compile scripts/bench_freetype.py
 	$(PYTHON) scripts/bench_freetype.py --self-test
 
+.PHONY: bench-regression
+bench-regression: unified-oracle
+	$(PYTHON) scripts/bench_freetype.py --compare-c --samples $(BENCH_SAMPLES) \
+		--profile $(BENCH_PROFILE) --table --require-regression-thresholds
+
+.PHONY: record-performance-baseline
+record-performance-baseline:
+	$(PYTHON) scripts/bench_freetype.py --record
+
 .PHONY: test-rust-consumer
 test-rust-consumer:
 	$(PYTHON) scripts/test_rust_consumer.py
@@ -687,7 +698,7 @@ ci: ci-commit
 ci-thorough: ci-commit package-verify supply-chain c-abi-contract test-coverage-all bench
 
 .PHONY: release-verify
-release-verify: ci-thorough c-abi-contract-complete
+release-verify: ci-thorough c-abi-contract-complete bench-regression
 	$(MAKE) check-docs
 
 .PHONY: release-dry-run
