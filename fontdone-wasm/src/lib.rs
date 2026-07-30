@@ -319,6 +319,7 @@ document_wasm_test_support!(
     abi_support_add_synthetic_module_observation,
     abi_support_module_class_lifecycle_observation,
     abi_support_raster_lifecycle_observation,
+    abi_support_raster_new_error_observation,
     abi_support_module_remove_lifecycle_observation,
     abi_support_library_final_destroy_observation,
     abi_support_new_library_observation,

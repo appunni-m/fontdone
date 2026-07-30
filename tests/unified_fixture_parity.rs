@@ -27989,6 +27989,19 @@ fn raster_lifecycle_output(
     }
 }
 
+fn raster_new_error_output(
+    status: FT_Error,
+    module_installed: bool,
+    events: Vec<&str>,
+) -> RunOutput {
+    let output = json!({
+        "status": status,
+        "module_installed": module_installed,
+        "events": events,
+    });
+    error_with_output(status, output)
+}
+
 fn custom_renderer_lifecycle_success_case(case: &InputCase) -> bool {
     matches!(
         case.case_id.as_str(),
@@ -28052,6 +28065,29 @@ fn rust_raster_lifecycle(_case: &InputCase) -> Result<RunOutput, String> {
     ))
 }
 
+fn rust_raster_new_error(_case: &InputCase) -> Result<RunOutput, String> {
+    let mut library = FT_Init_FreeType();
+    let class = FT_Module_Class_Info {
+        module_flags: FT_MODULE_RENDERER as FT_ULong,
+        module_size: FT_Long::try_from(size_of::<c_abi::FT_RendererRec>())
+            .map_err(|_| "FT_RendererRec size does not fit FT_Long".to_string())?,
+        module_name: Some("fixture_raster_new_error"),
+        module_version: 0x0001_0000,
+        module_requires: 0x0002_0000,
+        module_interface_present: false,
+        module_init: FT_Module_Callback_Behavior::RasterNewOutOfMemory,
+        module_done: FT_Module_Callback_Behavior::RecordThenOk,
+    };
+    let status = FT_Add_Module(Some(&mut library), Some(&class));
+    let module_installed = FT_Library_Has_Module(Some(&library), "fixture_raster_new_error");
+    let events = FT_Library_Module_Callback_Events(Some(&library))
+        .into_iter()
+        .map(|event| event.kind)
+        .collect();
+    let _ = FT_Done_FreeType(Some(library));
+    Ok(raster_new_error_output(status, module_installed, events))
+}
+
 fn c_raster_lifecycle(_case: &InputCase) -> Result<RunOutput, String> {
     let snapshot = c_abi::abi_raster_lifecycle();
     Ok(raster_lifecycle_output(
@@ -28078,6 +28114,15 @@ fn c_raster_lifecycle(_case: &InputCase) -> Result<RunOutput, String> {
     ))
 }
 
+fn c_raster_new_error(_case: &InputCase) -> Result<RunOutput, String> {
+    let snapshot = c_abi::abi_raster_new_error();
+    Ok(raster_new_error_output(
+        snapshot.status,
+        snapshot.module_installed,
+        snapshot.events,
+    ))
+}
+
 fn wasm_raster_lifecycle(_case: &InputCase) -> Result<RunOutput, String> {
     let snapshot = wasm_abi::abi_support_raster_lifecycle_observation();
     Ok(raster_lifecycle_output(
@@ -28100,6 +28145,15 @@ fn wasm_raster_lifecycle(_case: &InputCase) -> Result<RunOutput, String> {
             snapshot.render_source_nonnull,
         ),
         snapshot.done_handle_identity,
+        snapshot.events,
+    ))
+}
+
+fn wasm_raster_new_error(_case: &InputCase) -> Result<RunOutput, String> {
+    let snapshot = wasm_abi::abi_support_raster_new_error_observation();
+    Ok(raster_new_error_output(
+        snapshot.status,
+        snapshot.module_installed,
         snapshot.events,
     ))
 }
@@ -41261,6 +41315,11 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         "ftimage.custom_renderer_lifecycle" if custom_renderer_lifecycle_success_case(case) => {
             Ok(vec!["--raster-lifecycle".to_string()])
         }
+        "ftimage.custom_renderer_lifecycle"
+            if case.case_id == "ftimage.FT_Raster_New_Func.renderer_new_error_propagates" =>
+        {
+            Ok(vec!["--raster-new-error".to_string()])
+        }
         "renderer.raster_lifecycle" => Ok(vec!["--raster-lifecycle".to_string()]),
         "ftrender.render_mode_acceptance" => {
             let mut args = vec!["--renderer-mode-acceptance".to_string()];
@@ -43431,6 +43490,11 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftmodapi.set_debug_hook" => rust_set_debug_hook(case),
         "ftmodapi.add_module" => rust_add_module(case),
         "ftmodapi.module_class_lifecycle" => rust_module_class_lifecycle(case),
+        "ftimage.custom_renderer_lifecycle"
+            if case.case_id == "ftimage.FT_Raster_New_Func.renderer_new_error_propagates" =>
+        {
+            rust_raster_new_error(case)
+        }
         "ftimage.custom_renderer_lifecycle" if custom_renderer_lifecycle_success_case(case) => {
             rust_raster_lifecycle(case)
         }
@@ -44785,6 +44849,11 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftmodapi.set_debug_hook" => c_set_debug_hook(case),
         "ftmodapi.add_module" => c_add_module(case),
         "ftmodapi.module_class_lifecycle" => c_module_class_lifecycle(case),
+        "ftimage.custom_renderer_lifecycle"
+            if case.case_id == "ftimage.FT_Raster_New_Func.renderer_new_error_propagates" =>
+        {
+            c_raster_new_error(case)
+        }
         "ftimage.custom_renderer_lifecycle" if custom_renderer_lifecycle_success_case(case) => {
             c_raster_lifecycle(case)
         }
@@ -45997,6 +46066,11 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftmodapi.set_debug_hook" => wasm_set_debug_hook(case),
         "ftmodapi.add_module" => wasm_add_module(case),
         "ftmodapi.module_class_lifecycle" => wasm_module_class_lifecycle(case),
+        "ftimage.custom_renderer_lifecycle"
+            if case.case_id == "ftimage.FT_Raster_New_Func.renderer_new_error_propagates" =>
+        {
+            wasm_raster_new_error(case)
+        }
         "ftimage.custom_renderer_lifecycle" if custom_renderer_lifecycle_success_case(case) => {
             wasm_raster_lifecycle(case)
         }

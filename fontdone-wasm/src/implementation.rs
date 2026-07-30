@@ -5669,6 +5669,41 @@ pub fn abi_support_raster_lifecycle_observation() -> AbiRasterLifecycleObservati
 }
 
 #[cfg(feature = "abi-test-support")]
+pub struct AbiRasterNewErrorObservation {
+    pub status: i32,
+    pub module_installed: bool,
+    pub events: Vec<&'static str>,
+}
+
+#[cfg(feature = "abi-test-support")]
+pub fn abi_support_raster_new_error_observation() -> AbiRasterNewErrorObservation {
+    let mut library = rust_ffi::FT_Init_FreeType();
+    let class = rust_ffi::FT_Module_Class_Info {
+        module_flags: rust_ffi::FT_MODULE_RENDERER as rust_ffi::FT_ULong,
+        module_size: abi_support_module_record_size(),
+        module_name: Some("fixture_raster_new_error"),
+        module_version: 0x0001_0000,
+        module_requires: 0x0002_0000,
+        module_interface_present: false,
+        module_init: rust_ffi::FT_Module_Callback_Behavior::RasterNewOutOfMemory,
+        module_done: rust_ffi::FT_Module_Callback_Behavior::RecordThenOk,
+    };
+    let status = rust_ffi::FT_Add_Module(Some(&mut library), Some(&class));
+    let module_installed =
+        rust_ffi::FT_Library_Has_Module(Some(&library), "fixture_raster_new_error");
+    let events = rust_ffi::FT_Library_Module_Callback_Events(Some(&library))
+        .into_iter()
+        .map(|event| event.kind)
+        .collect();
+    let _ = rust_ffi::FT_Done_FreeType(Some(library));
+    AbiRasterNewErrorObservation {
+        status,
+        module_installed,
+        events,
+    }
+}
+
+#[cfg(feature = "abi-test-support")]
 pub fn abi_support_module_remove_lifecycle_observation() -> (
     i32,
     usize,

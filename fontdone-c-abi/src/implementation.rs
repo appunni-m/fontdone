@@ -2589,6 +2589,13 @@ unsafe extern "C" fn abi_raster_lifecycle_new(memory: FT_Pointer, raster: *mut F
 }
 
 #[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn abi_raster_new_error(memory: FT_Pointer, _raster: *mut FT_Raster) -> c_int {
+    let _ = memory;
+    abi_raster_lifecycle_event("raster_new");
+    rust_ffi::FT_Err_Out_Of_Memory
+}
+
+#[cfg(feature = "abi-test-support")]
 unsafe extern "C" fn abi_raster_lifecycle_reset(
     raster: FT_Raster,
     pool_base: *mut FT_Byte,
@@ -2649,6 +2656,16 @@ unsafe extern "C" fn abi_raster_lifecycle_done(raster: FT_Raster) {
 static ABI_RASTER_LIFECYCLE_FUNCS: FT_Raster_Funcs = FT_Raster_Funcs {
     glyph_format: rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
     raster_new: Some(abi_raster_lifecycle_new),
+    raster_reset: Some(abi_raster_lifecycle_reset),
+    raster_set_mode: Some(abi_raster_lifecycle_set_mode),
+    raster_render: Some(abi_raster_lifecycle_render),
+    raster_done: Some(abi_raster_lifecycle_done),
+};
+
+#[cfg(feature = "abi-test-support")]
+static ABI_RASTER_NEW_ERROR_FUNCS: FT_Raster_Funcs = FT_Raster_Funcs {
+    glyph_format: rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
+    raster_new: Some(abi_raster_new_error),
     raster_reset: Some(abi_raster_lifecycle_reset),
     raster_set_mode: Some(abi_raster_lifecycle_set_mode),
     raster_render: Some(abi_raster_lifecycle_render),
@@ -2752,6 +2769,62 @@ pub struct AbiRasterLifecycleSnapshot {
     pub render_source_nonnull: bool,
     pub done_handle_identity: bool,
     pub events: Vec<&'static str>,
+}
+
+/// Observation of a renderer whose `raster_new` callback rejects registration.
+#[cfg(feature = "abi-test-support")]
+pub struct AbiRasterNewErrorSnapshot {
+    pub status: FT_Error,
+    pub module_installed: bool,
+    pub events: Vec<&'static str>,
+}
+
+/// Registers a callback-backed renderer and preserves the `raster_new` error
+/// contract: the callback is observed, registration fails, and the module is
+/// not discoverable.
+#[cfg(feature = "abi-test-support")]
+pub fn abi_raster_new_error() -> AbiRasterNewErrorSnapshot {
+    static NAME: &[u8] = b"fixture_raster_new_error\0";
+    ABI_RASTER_LIFECYCLE_STATE.with(|state| {
+        *state.borrow_mut() = AbiRasterLifecycleState::default();
+    });
+    let mut library = ptr::null_mut();
+    let init_status = FT_Init_FreeType(&mut library);
+    if init_status != rust_ffi::FT_Err_Ok {
+        return AbiRasterNewErrorSnapshot {
+            status: init_status,
+            module_installed: false,
+            events: Vec::new(),
+        };
+    }
+    let renderer_class = FT_Renderer_Class {
+        root: FT_Module_Class {
+            module_flags: rust_ffi::FT_MODULE_RENDERER as FT_ULong,
+            module_size: std::mem::size_of::<FT_RendererRec>() as FT_Long,
+            module_name: NAME.as_ptr().cast(),
+            module_version: 0x10_000,
+            module_requires: 0x20_000,
+            module_interface: ptr::null(),
+            module_init: Some(abi_raster_lifecycle_module_init),
+            module_done: Some(abi_raster_lifecycle_module_done),
+            get_interface: None,
+        },
+        glyph_format: rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
+        render_glyph: Some(abi_raster_lifecycle_renderer_render),
+        transform_glyph: None,
+        get_glyph_cbox: None,
+        set_mode: Some(abi_raster_lifecycle_renderer_set_mode),
+        raster_class: &ABI_RASTER_NEW_ERROR_FUNCS,
+    };
+    let status = FT_Add_Module(library, &renderer_class.root);
+    let module_installed = !FT_Get_Module(library, NAME.as_ptr().cast()).is_null();
+    let events = ABI_RASTER_LIFECYCLE_STATE.with(|state| state.borrow().events.clone());
+    let _ = FT_Done_FreeType(library);
+    AbiRasterNewErrorSnapshot {
+        status,
+        module_installed,
+        events,
+    }
 }
 
 /// Registers, selects, invokes, and removes an actual callback-backed raster.

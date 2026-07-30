@@ -1457,6 +1457,7 @@ typedef struct FixtureRasterLifecycleState_ {
 } FixtureRasterLifecycleState;
 
 static FixtureRasterLifecycleState fixture_raster_lifecycle;
+static FT_Error fixture_raster_new_result = FT_Err_Ok;
 
 static void fixture_raster_event(const char* event) {
     if (fixture_raster_lifecycle.event_count < 16) {
@@ -1469,6 +1470,9 @@ static int fixture_raster_new(void* memory, FT_Raster* raster) {
     fixture_raster_lifecycle.new_memory_nonnull = memory != NULL;
     if (!raster) {
         return FT_Err_Invalid_Argument;
+    }
+    if (fixture_raster_new_result != FT_Err_Ok) {
+        return fixture_raster_new_result;
     }
     fixture_raster_lifecycle.raster_handle =
         (FT_Raster)&fixture_raster_lifecycle.raster_token;
@@ -1569,6 +1573,7 @@ static FT_Error fixture_renderer_render(FT_Renderer renderer,
 
 static int emit_raster_lifecycle(void) {
     memset(&fixture_raster_lifecycle, 0, sizeof(fixture_raster_lifecycle));
+    fixture_raster_new_result = FT_Err_Ok;
     fixture_raster_lifecycle.mode_payload = 0x2468;
     FT_Library library = NULL;
     FT_Error init_status = FT_Init_FreeType(&library);
@@ -1654,6 +1659,58 @@ static int emit_raster_lifecycle(void) {
     }
     printf("]}}\n");
     FT_Done_Library(library);
+    return 0;
+}
+
+static int emit_raster_new_error(void) {
+    memset(&fixture_raster_lifecycle, 0, sizeof(fixture_raster_lifecycle));
+    fixture_raster_new_result = FT_Err_Out_Of_Memory;
+    FT_Library library = NULL;
+    FT_Error init_status = FT_Init_FreeType(&library);
+    if (init_status) {
+        printf("{");
+        print_status(init_status);
+        printf(",\"output\":null}\n");
+        fixture_raster_new_result = FT_Err_Ok;
+        return 0;
+    }
+
+    FT_Renderer_Class renderer_class = {
+        {
+            FT_MODULE_RENDERER,
+            sizeof(FT_RendererRec),
+            "fixture_raster_new_error",
+            0x00010000L,
+            0x00020000L,
+            NULL,
+            fixture_raster_module_init,
+            fixture_raster_module_done,
+            NULL
+        },
+        FT_GLYPH_FORMAT_OUTLINE,
+        fixture_renderer_render,
+        NULL,
+        NULL,
+        fixture_renderer_set_mode,
+        &fixture_raster_funcs
+    };
+    FT_Error add_status = FT_Add_Module(library, &renderer_class.root);
+    int module_installed =
+        FT_Get_Module(library, "fixture_raster_new_error") != NULL;
+
+    printf("{");
+    print_status(add_status);
+    printf(",\"output\":{\"status\":%d,\"module_installed\":",
+           add_status);
+    print_json_bool(module_installed);
+    printf(",\"events\":[");
+    for (int i = 0; i < fixture_raster_lifecycle.event_count; i++) {
+        if (i) printf(",");
+        printf("\"%s\"", fixture_raster_lifecycle.events[i]);
+    }
+    printf("]}}\n");
+    FT_Done_Library(library);
+    fixture_raster_new_result = FT_Err_Ok;
     return 0;
 }
 
@@ -34575,6 +34632,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 2 && streq(argv[1], "--raster-lifecycle")) {
         return emit_raster_lifecycle();
+    }
+    if (argc == 2 && streq(argv[1], "--raster-new-error")) {
+        return emit_raster_new_error();
     }
     if (argc == 7 && streq(argv[1], "--renderer-mode-acceptance")) {
         return emit_renderer_mode_acceptance(argc, argv);

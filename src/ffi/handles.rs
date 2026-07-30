@@ -1645,6 +1645,9 @@ pub struct FT_Face_Property {
 pub enum FT_Module_Callback_Behavior {
     None,
     RecordThenOk,
+    /// Test-support renderer behavior: fail during `raster_new` before the
+    /// renderer module is installed.
+    RasterNewOutOfMemory,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -10987,6 +10990,16 @@ pub fn FT_Add_Module(
     else {
         return FT_Err_Too_Many_Drivers as FT_Error;
     };
+    if clazz.module_flags & FT_MODULE_RENDERER as FT_ULong != 0
+        && clazz.module_init == FT_Module_Callback_Behavior::RasterNewOutOfMemory
+    {
+        // The pinned renderer-registration path invokes `raster_new` before
+        // module initialization.  A callback error aborts registration and
+        // leaves no discoverable module, while the callback's event remains
+        // observable to the caller's diagnostic harness.
+        record_module_callback_event(library, module_name, "raster_new");
+        return FT_Err_Out_Of_Memory as FT_Error;
+    }
     *slot = Some(FT_Installed_Module_Info {
         module_flags: clazz.module_flags,
         module_size: clazz.module_size,
