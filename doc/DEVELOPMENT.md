@@ -175,9 +175,12 @@ make test-coverage-all
 ```
 
 The focused command writes core Rust JSON. The all-lane command uses nightly
-branch coverage, runs every non-ignored workspace test including the complete
-parity matrix, and measures the core, native C ABI, and host-compiled WASM
-facade together. It writes
+branch coverage, runs every non-ignored workspace test under the default
+feature profile including the complete parity matrix, and measures the core,
+native C ABI, and host-compiled WASM facade together. Optional feature profiles
+are verified by `make optional-feature-contract`; mixing them into the default
+parity process would compare different runtime contracts. The coverage command
+writes
 `target/coverage/unified-runtime-all-lanes.json`; test-harness paths are the
 only filename exclusion.
 

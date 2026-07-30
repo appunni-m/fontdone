@@ -309,9 +309,12 @@ State: `OPEN`
 
 The maintained all-lane coverage suite measures reachable production source in
 the Rust core, C ABI, and host-compiled WASM facade. It runs every non-ignored
-workspace test, including the complete parity matrix; test-harness paths are
-the only filename exclusion. Executing code does not prove FreeType parity, so
-G02 cannot satisfy any G01 item.
+workspace test under the default feature profile, including the complete parity
+matrix; test-harness paths are the only filename exclusion. Optional feature
+profiles remain a separate `make optional-feature-contract` gate so coverage
+never compares a feature-enabled implementation with a default-profile oracle.
+Executing code does not prove FreeType parity, so G02 cannot satisfy any G01
+item.
 
 Baseline snapshot `e9945111-3786-4aa5-abd9-3d540bd52b35`, produced from commit
 `e554aca48fb3168fa852dd79267f50d06201e1e4`, records:
