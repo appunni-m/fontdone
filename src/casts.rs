@@ -25,7 +25,7 @@
 /// widening them for subpixel arithmetic and shifting back cannot exceed i32.
 #[inline(always)]
 pub(crate) fn i32_from_i64(x: i64) -> i32 {
-    debug_assert!(x >= i32::MIN as i64 && x <= i32::MAX as i64);
+    debug_assert!(i32::try_from(x).is_ok());
     #[allow(clippy::cast_possible_truncation)]
     {
         x as i32
@@ -83,7 +83,7 @@ pub(crate) fn u64_from_i64(x: i64) -> u64 {
 #[inline(always)]
 #[allow(clippy::cast_sign_loss)]
 pub(crate) fn usize_from_i64(x: i64) -> usize {
-    debug_assert!(x >= 0 && (x as u64) <= usize::MAX as u64);
+    debug_assert!(usize::try_from(x).is_ok());
     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     {
         x as usize
@@ -171,3 +171,7 @@ pub(crate) fn i32_from_f32(x: f32) -> i32 {
         x as i32
     }
 }
+
+#[cfg(test)]
+#[path = "../tests/unit/casts.rs"]
+mod tests;

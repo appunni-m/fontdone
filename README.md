@@ -132,11 +132,13 @@ The last all-lane coverage run was recorded on **2026-07-30** against
 | Functions | 3,112 / 3,585 | 86.81% |
 | Regions | 63,052 / 71,420 | 88.28% |
 
-This is an LLVM branch-coverage measurement from `make test-coverage-all`
-across the Rust core, native C ABI, and host-compiled WASM facade. Test-harness
-source is excluded. The run completed in 48 minutes 4 seconds while the same
-execution passed all 7,212 runnable parity comparisons; the 95 explicitly
-pending cases remain pending.
+This is an LLVM branch-coverage measurement across the Rust core, native C
+ABI, and host-compiled WASM facade. That historical run executed the unified
+parity target and completed in 48 minutes 4 seconds while passing all 7,212
+runnable parity comparisons; the 95 explicitly pending cases remain pending.
+The maintained `make test-coverage-all` command now runs every non-ignored
+workspace test, including full parity, while excluding test-harness paths. Its
+next measured denominators are therefore expected to change.
 
 Coverage is a code-execution signal, not a compatibility score. These
 percentages apply only to the named source commit, suite, and toolchain. Run

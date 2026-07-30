@@ -175,9 +175,11 @@ make test-coverage-all
 ```
 
 The focused command writes core Rust JSON. The all-lane command uses nightly
-branch coverage across the core, C ABI, and host-compiled WASM facade and
-writes `target/coverage/unified-runtime-all-lanes.json`. Test-harness source is
-excluded.
+branch coverage, runs every non-ignored workspace test including the complete
+parity matrix, and measures the core, native C ABI, and host-compiled WASM
+facade together. It writes
+`target/coverage/unified-runtime-all-lanes.json`; test-harness paths are the
+only filename exclusion.
 
 The all-lane run is intentionally expensive, so budget roughly 45–60 minutes
 on a warm development host. It therefore runs in requested thorough CI, not on
@@ -196,11 +198,14 @@ That managed run passed all 7,212 runnable parity comparisons with 0 failures;
 `86d007ea-e3f4-4e0d-90e1-0c357503a76b`, and its immutable snapshot ID is
 `e9945111-3786-4aa5-abd9-3d540bd52b35`.
 
-The percentages apply only to that source commit, suite, and toolchain. They
-are not a FreeType-parity percentage, and a covered line or branch does not
-prove an exact result. Generate a new report for the worktree being reviewed.
-LLVM JSON segments are normalized to segment start lines by the coverage
-parser; aggregate region coverage is preserved from LLVM summaries.
+That historical snapshot ran the unified parity test target alone. The
+maintained command now also executes workspace unit and facade tests, so its
+next denominators are expected to change. The percentages apply only to the
+named source commit, suite, and toolchain. They are not a FreeType-parity
+percentage, and a covered line or branch does not prove an exact result.
+Generate a new report for the worktree being reviewed. LLVM JSON segments are
+normalized to segment start lines by the coverage parser; aggregate region
+coverage is preserved from LLVM summaries.
 
 ## 4. Diagnose parity failures
 
@@ -382,9 +387,9 @@ or reason is stale.
 <!-- retention-counts:start -->
 | Reason | Paths | Retained context |
 |---|---:|---|
-| R01 | 57 | published pure-Rust runtime |
+| R01 | 56 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
-| R03 | 1,637 | executable parity tests and public contracts |
+| R03 | 1,643 | executable parity tests and public contracts |
 | R04 | 464 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 59 | maintained tooling, examples, and benchmarks |
@@ -393,7 +398,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,320** | **all retained paths** |
+| **Total** | **2,325** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

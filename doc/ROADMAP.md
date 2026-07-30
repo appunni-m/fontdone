@@ -308,9 +308,10 @@ For each batch:
 State: `OPEN`
 
 The maintained all-lane coverage suite measures reachable production source in
-the Rust core, C ABI, and host-compiled WASM facade. Test-harness source is the
-only filename exclusion. Executing code does not prove FreeType parity, so G02
-cannot satisfy any G01 item.
+the Rust core, C ABI, and host-compiled WASM facade. It runs every non-ignored
+workspace test, including the complete parity matrix; test-harness paths are
+the only filename exclusion. Executing code does not prove FreeType parity, so
+G02 cannot satisfy any G01 item.
 
 Baseline snapshot `e9945111-3786-4aa5-abd9-3d540bd52b35`, produced from commit
 `e554aca48fb3168fa852dd79267f50d06201e1e4`, records:
@@ -321,6 +322,10 @@ Baseline snapshot `e9945111-3786-4aa5-abd9-3d540bd52b35`, produced from commit
 | Branches | 8,986 / 11,915 | 75.42% | 2,929 |
 | Functions | 3,112 / 3,585 | 86.81% | 473 |
 | Regions | 63,052 / 71,420 | 88.28% | 8,368 |
+
+That baseline ran only the unified parity test target. The maintained command
+was expanded afterward to include workspace unit and facade tests, so the next
+source-matched run replaces these historical denominators.
 
 Run:
 

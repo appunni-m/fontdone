@@ -230,9 +230,9 @@ test-coverage: unified-oracle api-abi-check
 test-coverage-all: unified-oracle api-abi-check
 	mkdir -p $(dir $(ALL_LANES_COVERAGE_OUTPUT))
 	$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov --branch --workspace \
-		--test unified_fixture_parity --locked --json \
+		--all-features --locked --json \
 		--ignore-filename-regex '$(ALL_LANES_COVERAGE_IGNORE_REGEX)' \
-		--output-path $(ALL_LANES_COVERAGE_OUTPUT) -- unified_fixture_parity --nocapture
+		--output-path $(ALL_LANES_COVERAGE_OUTPUT) -- --nocapture
 	jq -c '(.data[]?.files[]?.segments[]? | select(length >= 3) | .[2]) |= if . > 2147483647 then 2147483647 else . end' \
 		$(ALL_LANES_COVERAGE_OUTPUT) > $(ALL_LANES_COVERAGE_OUTPUT).tmp
 	mv $(ALL_LANES_COVERAGE_OUTPUT).tmp $(ALL_LANES_COVERAGE_OUTPUT)

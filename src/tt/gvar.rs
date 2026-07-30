@@ -464,3 +464,7 @@ fn normalize_axis_delta(delta: i32, extent: i32) -> i32 {
     }
     (((i64::from(delta)) * i64::from(F2DOT14_ONE)) / i64::from(extent)) as i32
 }
+
+#[cfg(test)]
+#[path = "../../tests/unit/tt/gvar.rs"]
+mod tests;

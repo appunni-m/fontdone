@@ -191,3 +191,7 @@ fn optional_u32_at(data: &[u8], offset: usize) -> u32 {
         u32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]])
     })
 }
+
+#[cfg(test)]
+#[path = "../../tests/unit/tt/os2.rs"]
+mod tests;
