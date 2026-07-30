@@ -1662,6 +1662,236 @@ static int emit_raster_lifecycle(void) {
     return 0;
 }
 
+typedef struct FixtureRasterSetModeState_ {
+    int raster_token;
+    FT_Raster raster_handle;
+    int callback_called;
+    unsigned long mode;
+    int args_null;
+    FT_Error return_code;
+} FixtureRasterSetModeState;
+
+static FixtureRasterSetModeState fixture_raster_set_mode_state;
+
+static int fixture_raster_set_mode_new(void* memory, FT_Raster* raster) {
+    (void)memory;
+    if (!raster) {
+        return FT_Err_Invalid_Argument;
+    }
+    fixture_raster_set_mode_state.raster_handle =
+        (FT_Raster)&fixture_raster_set_mode_state.raster_token;
+    *raster = fixture_raster_set_mode_state.raster_handle;
+    return FT_Err_Ok;
+}
+
+static void fixture_raster_set_mode_reset(FT_Raster raster,
+                                          unsigned char* pool_base,
+                                          unsigned long pool_size) {
+    (void)raster;
+    (void)pool_base;
+    (void)pool_size;
+}
+
+static int fixture_raster_set_mode_callback(FT_Raster raster,
+                                            unsigned long mode,
+                                            void* args) {
+    fixture_raster_set_mode_state.callback_called =
+        raster == fixture_raster_set_mode_state.raster_handle;
+    fixture_raster_set_mode_state.mode = mode;
+    fixture_raster_set_mode_state.args_null = args == NULL;
+    return fixture_raster_set_mode_state.return_code;
+}
+
+static int fixture_raster_set_mode_render(FT_Raster raster,
+                                          const FT_Raster_Params* params) {
+    (void)raster;
+    (void)params;
+    return FT_Err_Ok;
+}
+
+static void fixture_raster_set_mode_done(FT_Raster raster) {
+    (void)raster;
+}
+
+static const FT_Raster_Funcs fixture_raster_set_mode_funcs = {
+    FT_GLYPH_FORMAT_OUTLINE,
+    fixture_raster_set_mode_new,
+    fixture_raster_set_mode_reset,
+    fixture_raster_set_mode_callback,
+    fixture_raster_set_mode_render,
+    fixture_raster_set_mode_done
+};
+
+static FT_Error fixture_raster_set_mode_module_init(FT_Module module) {
+    (void)module;
+    return FT_Err_Ok;
+}
+
+static void fixture_raster_set_mode_module_done(FT_Module module) {
+    (void)module;
+}
+
+static FT_Error fixture_raster_set_mode_renderer_callback(FT_Renderer renderer,
+                                                           FT_ULong mode_tag,
+                                                           FT_Pointer data) {
+    if (!renderer || !renderer->clazz || !renderer->clazz->raster_class ||
+        !renderer->clazz->raster_class->raster_set_mode) {
+        return FT_Err_Invalid_Argument;
+    }
+    return renderer->clazz->raster_class->raster_set_mode(
+        renderer->raster, mode_tag, data);
+}
+
+static int parse_csv_tokens(const char* input,
+                            char tokens[][64],
+                            int max_tokens) {
+    char buffer[256];
+    int count = 0;
+    if (!input || max_tokens <= 0 || snprintf(buffer, sizeof(buffer), "%s", input) < 0) {
+        return 0;
+    }
+    char* token = strtok(buffer, ",");
+    while (token && count < max_tokens) {
+        if (snprintf(tokens[count], 64, "%s", token) < 0) {
+            return 0;
+        }
+        count++;
+        token = strtok(NULL, ",");
+    }
+    return count;
+}
+
+static FT_ULong parse_raster_mode_tag(const char* token, int* valid) {
+    if (!token || strlen(token) != 4) {
+        *valid = 0;
+        return 0;
+    }
+    *valid = 1;
+    return FT_MAKE_TAG(token[0], token[1], token[2], token[3]);
+}
+
+static FT_Error parse_raster_set_mode_status(const char* token, int* valid) {
+    if (streq(token, "FT_Err_Ok")) {
+        *valid = 1;
+        return FT_Err_Ok;
+    }
+    if (streq(token, "FT_Err_Unimplemented_Feature")) {
+        *valid = 1;
+        return FT_Err_Unimplemented_Feature;
+    }
+    char* end = NULL;
+    long value = strtol(token, &end, 10);
+    if (!token || !*token || !end || *end != '\0' || value < 0 || value > 255) {
+        *valid = 0;
+        return FT_Err_Invalid_Argument;
+    }
+    *valid = 1;
+    return (FT_Error)value;
+}
+
+static int emit_raster_set_mode(int argc, char** argv) {
+    char mode_tokens[8][64];
+    char args_tokens[8][64];
+    char return_tokens[8][64];
+    int mode_count = parse_csv_tokens(argv[2], mode_tokens, 8);
+    int args_count = parse_csv_tokens(argv[3], args_tokens, 8);
+    int return_count = parse_csv_tokens(argv[4], return_tokens, 8);
+    FT_ULong modes[8];
+    int args_null[8];
+    FT_Error return_codes[8];
+    int valid = mode_count > 0 && args_count > 0 && return_count > 0;
+    for (int i = 0; valid && i < mode_count; i++) {
+        modes[i] = parse_raster_mode_tag(mode_tokens[i], &valid);
+    }
+    for (int i = 0; valid && i < args_count; i++) {
+        if (streq(args_tokens[i], "null")) {
+            args_null[i] = 1;
+        } else if (streq(args_tokens[i], "non_null")) {
+            args_null[i] = 0;
+        } else {
+            valid = 0;
+        }
+    }
+    for (int i = 0; valid && i < return_count; i++) {
+        return_codes[i] = parse_raster_set_mode_status(return_tokens[i], &valid);
+    }
+    if (!valid || argc != 5) {
+        printf("{");
+        print_status(FT_Err_Invalid_Argument);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+
+    memset(&fixture_raster_set_mode_state, 0, sizeof(fixture_raster_set_mode_state));
+    FT_Library library = NULL;
+    FT_Error init_status = FT_Init_FreeType(&library);
+    if (init_status) {
+        printf("{");
+        print_status(init_status);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+    FT_Renderer_Class renderer_class = {
+        {
+            FT_MODULE_RENDERER,
+            sizeof(FT_RendererRec),
+            "fixture_raster_set_mode",
+            0x00010000L,
+            0x00020000L,
+            NULL,
+            fixture_raster_set_mode_module_init,
+            fixture_raster_set_mode_module_done,
+            NULL
+        },
+        FT_GLYPH_FORMAT_OUTLINE,
+        NULL,
+        NULL,
+        NULL,
+        fixture_raster_set_mode_renderer_callback,
+        &fixture_raster_set_mode_funcs
+    };
+    FT_Error add_status = FT_Add_Module(library, &renderer_class.root);
+    FT_Renderer renderer = (FT_Renderer)FT_Get_Module(
+        library, "fixture_raster_set_mode");
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"rows\":[");
+    int first = 1;
+    for (int mode_index = 0; mode_index < mode_count; mode_index++) {
+        for (int args_index = 0; args_index < args_count; args_index++) {
+            for (int return_index = 0; return_index < return_count; return_index++) {
+                if (!first) printf(",");
+                first = 0;
+                fixture_raster_set_mode_state.callback_called = 0;
+                fixture_raster_set_mode_state.mode = 0;
+                fixture_raster_set_mode_state.args_null = 0;
+                fixture_raster_set_mode_state.return_code = return_codes[return_index];
+                int payload = 0x2468;
+                FT_Parameter parameter = {
+                    modes[mode_index],
+                    args_null[args_index] ? NULL : &payload
+                };
+                FT_Error status = add_status;
+                if (add_status == FT_Err_Ok && renderer) {
+                    status = FT_Set_Renderer(library, renderer, 1, &parameter);
+                }
+                printf("{\"status\":%d,\"mode\":%lu,\"args_nullness\":\"%s\",\"callback_called\":",
+                       status,
+                       fixture_raster_set_mode_state.mode,
+                       fixture_raster_set_mode_state.args_null ? "null" : "non_null");
+                print_json_bool(fixture_raster_set_mode_state.callback_called);
+                printf("}");
+            }
+        }
+    }
+    printf("]}}\n");
+    if (add_status == FT_Err_Ok && renderer) {
+        FT_Remove_Module(library, renderer);
+    }
+    FT_Done_FreeType(library);
+    return 0;
+}
+
 static int emit_raster_new_error(void) {
     memset(&fixture_raster_lifecycle, 0, sizeof(fixture_raster_lifecycle));
     fixture_raster_new_result = FT_Err_Out_Of_Memory;
@@ -34632,6 +34862,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 2 && streq(argv[1], "--raster-lifecycle")) {
         return emit_raster_lifecycle();
+    }
+    if (argc == 5 && streq(argv[1], "--raster-set-mode")) {
+        return emit_raster_set_mode(argc, argv);
     }
     if (argc == 2 && streq(argv[1], "--raster-new-error")) {
         return emit_raster_new_error();

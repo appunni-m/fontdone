@@ -1680,6 +1680,69 @@ pub struct FT_Module_Callback_Event {
     pub kind: &'static str,
 }
 
+/// One observation from the maintained `FT_Raster_Set_Mode_Func` probe.
+#[cfg(any(test, feature = "abi-test-support"))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FT_Raster_Set_Mode_Observation {
+    pub status: FT_Error,
+    pub mode: FT_ULong,
+    pub args_null: bool,
+    pub callback_called: bool,
+}
+
+/// Exercises a safe Rust model of the public raster set-mode callback contract.
+///
+/// The core facade does not expose raw C callback tables.  This test-support
+/// route keeps the same synchronous callback boundary: every matrix row invokes
+/// a typed callback with the mode tag and payload nullness, then propagates the
+/// callback's configured `FT_Error` unchanged.
+#[cfg(any(test, feature = "abi-test-support"))]
+pub fn FT_Raster_Set_Mode_Probe(
+    mode_tags: &[FT_ULong],
+    args_pointer_classes: &[bool],
+    return_codes: &[FT_Error],
+) -> Vec<FT_Raster_Set_Mode_Observation> {
+    struct CallbackContext {
+        return_code: FT_Error,
+        mode: FT_ULong,
+        args_null: bool,
+        callback_called: bool,
+    }
+
+    fn set_mode_callback(
+        context: &mut CallbackContext,
+        mode: FT_ULong,
+        args_null: bool,
+    ) -> FT_Error {
+        context.mode = mode;
+        context.args_null = args_null;
+        context.callback_called = true;
+        context.return_code
+    }
+
+    let mut observations = Vec::new();
+    for &mode in mode_tags {
+        for &args_null in args_pointer_classes {
+            for &return_code in return_codes {
+                let mut context = CallbackContext {
+                    return_code,
+                    mode: 0,
+                    args_null: false,
+                    callback_called: false,
+                };
+                let status = set_mode_callback(&mut context, mode, args_null);
+                observations.push(FT_Raster_Set_Mode_Observation {
+                    status,
+                    mode: context.mode,
+                    args_null: context.args_null,
+                    callback_called: context.callback_called,
+                });
+            }
+        }
+    }
+    observations
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_Face_Properties_State {
     pub no_stem_darkening: i32,

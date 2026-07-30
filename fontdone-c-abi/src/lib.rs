@@ -298,6 +298,7 @@ document_abi_test_support!(
     abi_custom_memory_lifecycle,
     abi_raster_lifecycle,
     abi_raster_new_error,
+    abi_raster_set_mode,
     abi_custom_glyph_lifecycle,
     abi_incremental_glyph_lifecycle,
     abi_incremental_state_lifecycle,

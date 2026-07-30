@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "kind": "raster_renderer_model",
+  "description": "Synthetic renderer-module fixture used by the harness to compare FT_Raster_Set_Mode_Func payload nullness, callback invocation, mode tags, and callback error propagation without storing oracle output.",
+  "set_mode_behavior": {
+    "record_mode": true,
+    "record_args_pointer_class": true,
+    "return_codes": [
+      0,
+      "FT_Err_Unimplemented_Feature"
+    ]
+  }
+}

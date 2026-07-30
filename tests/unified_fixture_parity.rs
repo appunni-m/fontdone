@@ -28003,6 +28003,58 @@ fn raster_new_error_output(
     error_with_output(status, output)
 }
 
+fn raster_set_mode_inputs(
+    params: &Value,
+) -> Result<(Vec<FT_ULong>, Vec<bool>, Vec<FT_Error>), String> {
+    let mode_tags = string_array_param(params, "mode_tags")?
+        .into_iter()
+        .map(|tag| {
+            let bytes = tag.as_bytes();
+            let bytes: [u8; 4] = bytes
+                .try_into()
+                .map_err(|_| format!("mode tag must contain exactly four bytes: {tag}"))?;
+            Ok(FT_ULong::from(u32::from_be_bytes(bytes)))
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    let args_pointer_classes = string_array_param(params, "args_pointer_classes")?
+        .into_iter()
+        .map(|class| match class.as_str() {
+            "null" => Ok(true),
+            "non_null" => Ok(false),
+            other => Err(format!("unsupported set-mode pointer class {other}")),
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    let return_codes = array_param(params, "return_codes")?
+        .iter()
+        .map(|value| {
+            let code = if let Some(symbol) = value.as_str() {
+                rust_constant(symbol)?
+            } else {
+                i64_value(value, "return_codes[]")?
+            };
+            FT_Error::try_from(code)
+                .map_err(|error| format!("return_codes[] does not fit FT_Error: {error}"))
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    Ok((mode_tags, args_pointer_classes, return_codes))
+}
+
+fn raster_set_mode_output(rows: Vec<(FT_Error, FT_ULong, bool, bool)>) -> RunOutput {
+    ok(json!({
+        "rows": rows
+            .into_iter()
+            .map(|(status, mode, args_null, callback_called)| {
+                json!({
+                    "status": status,
+                    "mode": mode,
+                    "args_nullness": if args_null { "null" } else { "non_null" },
+                    "callback_called": callback_called,
+                })
+            })
+            .collect::<Vec<_>>(),
+    }))
+}
+
 fn custom_renderer_lifecycle_success_case(case: &InputCase) -> bool {
     matches!(
         case.case_id.as_str(),
@@ -28089,6 +28141,16 @@ fn rust_raster_new_error(_case: &InputCase) -> Result<RunOutput, String> {
     Ok(raster_new_error_output(status, module_installed, events))
 }
 
+fn rust_raster_set_mode(case: &InputCase) -> Result<RunOutput, String> {
+    let (mode_tags, args_pointer_classes, return_codes) =
+        raster_set_mode_inputs(&case.inputs.params)?;
+    let rows = FT_Raster_Set_Mode_Probe(&mode_tags, &args_pointer_classes, &return_codes)
+        .into_iter()
+        .map(|row| (row.status, row.mode, row.args_null, row.callback_called))
+        .collect();
+    Ok(raster_set_mode_output(rows))
+}
+
 fn c_raster_lifecycle(_case: &InputCase) -> Result<RunOutput, String> {
     let snapshot = c_abi::abi_raster_lifecycle();
     Ok(raster_lifecycle_output(
@@ -28124,6 +28186,16 @@ fn c_raster_new_error(_case: &InputCase) -> Result<RunOutput, String> {
     ))
 }
 
+fn c_raster_set_mode(case: &InputCase) -> Result<RunOutput, String> {
+    let (mode_tags, args_pointer_classes, return_codes) =
+        raster_set_mode_inputs(&case.inputs.params)?;
+    let rows = c_abi::abi_raster_set_mode(&mode_tags, &args_pointer_classes, &return_codes)
+        .into_iter()
+        .map(|row| (row.status, row.mode, row.args_null, row.callback_called))
+        .collect();
+    Ok(raster_set_mode_output(rows))
+}
+
 fn wasm_raster_lifecycle(_case: &InputCase) -> Result<RunOutput, String> {
     let snapshot = wasm_abi::abi_support_raster_lifecycle_observation();
     Ok(raster_lifecycle_output(
@@ -28157,6 +28229,20 @@ fn wasm_raster_new_error(_case: &InputCase) -> Result<RunOutput, String> {
         snapshot.module_installed,
         snapshot.events,
     ))
+}
+
+fn wasm_raster_set_mode(case: &InputCase) -> Result<RunOutput, String> {
+    let (mode_tags, args_pointer_classes, return_codes) =
+        raster_set_mode_inputs(&case.inputs.params)?;
+    let rows = wasm_abi::abi_support_raster_set_mode_observation(
+        &mode_tags,
+        &args_pointer_classes,
+        &return_codes,
+    )
+    .into_iter()
+    .map(|row| (row.status, row.mode, row.args_null, row.callback_called))
+    .collect();
+    Ok(raster_set_mode_output(rows))
 }
 
 fn renderer_mode_bitmap_json(
@@ -41321,6 +41407,30 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         {
             Ok(vec!["--raster-new-error".to_string()])
         }
+        "ftimage.raster_set_mode" => {
+            let _ = raster_set_mode_inputs(&case.inputs.params)?;
+            let mode_tags = string_array_param(&case.inputs.params, "mode_tags")?.join(",");
+            let args_pointer_classes =
+                string_array_param(&case.inputs.params, "args_pointer_classes")?.join(",");
+            let (_, _, return_codes) = raster_set_mode_inputs(&case.inputs.params)?;
+            let return_codes = return_codes
+                .into_iter()
+                .map(|code| {
+                    if code == FT_Err_Unimplemented_Feature {
+                        "FT_Err_Unimplemented_Feature".to_string()
+                    } else {
+                        code.to_string()
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(",");
+            Ok(vec![
+                "--raster-set-mode".to_string(),
+                mode_tags,
+                args_pointer_classes,
+                return_codes,
+            ])
+        }
         "renderer.raster_lifecycle" => Ok(vec!["--raster-lifecycle".to_string()]),
         "ftrender.render_mode_acceptance" => {
             let mut args = vec!["--renderer-mode-acceptance".to_string()];
@@ -43497,6 +43607,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         {
             rust_raster_new_error(case)
         }
+        "ftimage.raster_set_mode" => rust_raster_set_mode(case),
         "ftimage.custom_renderer_lifecycle" if custom_renderer_lifecycle_success_case(case) => {
             rust_raster_lifecycle(case)
         }
@@ -44856,6 +44967,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         {
             c_raster_new_error(case)
         }
+        "ftimage.raster_set_mode" => c_raster_set_mode(case),
         "ftimage.custom_renderer_lifecycle" if custom_renderer_lifecycle_success_case(case) => {
             c_raster_lifecycle(case)
         }
@@ -46073,6 +46185,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         {
             wasm_raster_new_error(case)
         }
+        "ftimage.raster_set_mode" => wasm_raster_set_mode(case),
         "ftimage.custom_renderer_lifecycle" if custom_renderer_lifecycle_success_case(case) => {
             wasm_raster_lifecycle(case)
         }

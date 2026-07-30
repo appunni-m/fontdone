@@ -531,6 +531,7 @@ REAL_PARITY_OPERATIONS = {
     "ftsizes.done_size_sequence",
     "ftsizes.activate_size_sequence",
     "ftsizes.activate_select_size_sequence",
+    "ftimage.raster_set_mode",
 }
 
 EXPLICIT_UNSUPPORTED_OPERATIONS = set()
@@ -3879,6 +3880,12 @@ def ftimage_subsystem_pending_reason(row: ConcreteInput) -> str | None:
             "keeping this generic would be a green placeholder"
         )
 
+    if (
+        row.case_id == "ftimage.FT_Raster_Set_Mode_Func.set_mode_result_is_observable"
+        and row.operation == "ftimage.raster_set_mode"
+    ):
+        return None
+
     ftimage_rows_without_maintained_route = {
         "ftimage.FT_GLYPH_FORMAT_PLOTTER.source_emitter_inventory": (
             "FT_GLYPH_FORMAT_PLOTTER success parity needs a maintained glyph "
@@ -3949,6 +3956,19 @@ def ftimage_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     if exact_error_public_route(row.operation, row.case_id, row.expect_error):
         return None
     return reason
+
+
+def ftimage_raster_set_mode_real_parity_reason(row: ConcreteInput) -> str | None:
+    if (
+        row.case_id == "ftimage.FT_Raster_Set_Mode_Func.set_mode_result_is_observable"
+        and row.operation == "ftimage.raster_set_mode"
+    ):
+        return (
+            "FT_Raster_Set_Mode_Func mode tags, payload nullness, callback invocation, "
+            "and callback error propagation compare through a maintained custom "
+            "renderer route across pinned C, Rust FFI, C ABI, and WASM ABI"
+        )
+    return None
 
 
 def ftimage_outline_owner_real_parity_reason(row: ConcreteInput) -> str | None:
@@ -8374,6 +8394,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     ftimage_pending = ftimage_subsystem_pending_reason(row)
     if ftimage_pending:
         return ("pending-route", ftimage_pending)
+    ftimage_raster_set_mode_real = ftimage_raster_set_mode_real_parity_reason(row)
+    if ftimage_raster_set_mode_real:
+        return ("real-parity", ftimage_raster_set_mode_real)
     ftimage_outline_owner_real = ftimage_outline_owner_real_parity_reason(row)
     if ftimage_outline_owner_real:
         return ("real-parity", ftimage_outline_owner_real)

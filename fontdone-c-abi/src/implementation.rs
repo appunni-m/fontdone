@@ -2782,6 +2782,214 @@ pub struct AbiRasterNewErrorSnapshot {
     pub events: Vec<&'static str>,
 }
 
+#[cfg(feature = "abi-test-support")]
+#[derive(Default, Clone, Copy)]
+struct AbiRasterSetModeState {
+    raster_handle: usize,
+    callback_called: bool,
+    mode: FT_ULong,
+    args_null: bool,
+    return_code: FT_Error,
+}
+
+#[cfg(feature = "abi-test-support")]
+thread_local! {
+    static ABI_RASTER_SET_MODE_STATE: RefCell<AbiRasterSetModeState> =
+        RefCell::new(AbiRasterSetModeState::default());
+}
+
+#[cfg(feature = "abi-test-support")]
+static ABI_RASTER_SET_MODE_TOKEN: usize = 0;
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn abi_raster_set_mode_new(_memory: FT_Pointer, raster: *mut FT_Raster) -> c_int {
+    let Some(raster) = (unsafe { raster.as_mut() }) else {
+        return rust_ffi::FT_Err_Invalid_Argument;
+    };
+    let handle: FT_Raster = ptr::from_ref(&ABI_RASTER_SET_MODE_TOKEN).cast_mut().cast();
+    ABI_RASTER_SET_MODE_STATE.with(|state| {
+        state.borrow_mut().raster_handle = handle.addr();
+    });
+    *raster = handle;
+    rust_ffi::FT_Err_Ok
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn abi_raster_set_mode_reset(
+    _raster: FT_Raster,
+    _pool_base: *mut FT_Byte,
+    _pool_size: FT_ULong,
+) {
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn abi_raster_set_mode_callback(
+    raster: FT_Raster,
+    mode: FT_ULong,
+    args: FT_Pointer,
+) -> c_int {
+    ABI_RASTER_SET_MODE_STATE.with(|state| {
+        let mut state = state.borrow_mut();
+        state.callback_called = true;
+        state.mode = mode;
+        state.args_null = args.is_null();
+        if raster.addr() != state.raster_handle {
+            state.callback_called = false;
+        }
+        state.return_code
+    })
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn abi_raster_set_mode_render(
+    _raster: FT_Raster,
+    _params: *const FT_Raster_Params,
+) -> c_int {
+    rust_ffi::FT_Err_Ok
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn abi_raster_set_mode_done(_raster: FT_Raster) {}
+
+#[cfg(feature = "abi-test-support")]
+static ABI_RASTER_SET_MODE_FUNCS: FT_Raster_Funcs = FT_Raster_Funcs {
+    glyph_format: rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
+    raster_new: Some(abi_raster_set_mode_new),
+    raster_reset: Some(abi_raster_set_mode_reset),
+    raster_set_mode: Some(abi_raster_set_mode_callback),
+    raster_render: Some(abi_raster_set_mode_render),
+    raster_done: Some(abi_raster_set_mode_done),
+};
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn abi_raster_set_mode_module_init(_module: FT_Module) -> FT_Error {
+    rust_ffi::FT_Err_Ok
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn abi_raster_set_mode_module_done(_module: FT_Module) {}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn abi_raster_set_mode_renderer_callback(
+    renderer: FT_Renderer,
+    mode: FT_ULong,
+    data: FT_Pointer,
+) -> FT_Error {
+    let Some(renderer) = (unsafe { renderer.as_ref() }) else {
+        return rust_ffi::FT_Err_Invalid_Argument;
+    };
+    let raster_class = unsafe {
+        renderer
+            .clazz
+            .as_ref()
+            .and_then(|clazz| clazz.raster_class.as_ref())
+    };
+    let Some(callback) = raster_class.and_then(|class| class.raster_set_mode) else {
+        return rust_ffi::FT_Err_Unimplemented_Feature;
+    };
+    unsafe { callback(renderer.raster, mode, data) }
+}
+
+/// One observation from the actual callback-backed C ABI set-mode probe.
+#[cfg(feature = "abi-test-support")]
+pub struct AbiRasterSetModeRow {
+    pub status: FT_Error,
+    pub mode: FT_ULong,
+    pub args_null: bool,
+    pub callback_called: bool,
+}
+
+/// Registers a real C-shaped renderer and compares every set-mode matrix row.
+#[cfg(feature = "abi-test-support")]
+pub fn abi_raster_set_mode(
+    mode_tags: &[FT_ULong],
+    args_pointer_classes: &[bool],
+    return_codes: &[FT_Error],
+) -> Vec<AbiRasterSetModeRow> {
+    static NAME: &[u8] = b"fixture_raster_set_mode\0";
+    ABI_RASTER_SET_MODE_STATE.with(|state| {
+        *state.borrow_mut() = AbiRasterSetModeState::default();
+    });
+    let mut rows = Vec::new();
+    let mut library = ptr::null_mut();
+    let init_status = FT_Init_FreeType(&mut library);
+    if init_status != rust_ffi::FT_Err_Ok {
+        for _mode in mode_tags {
+            for _args_null in args_pointer_classes {
+                for _return_code in return_codes {
+                    rows.push(AbiRasterSetModeRow {
+                        status: init_status,
+                        mode: 0,
+                        args_null: false,
+                        callback_called: false,
+                    });
+                }
+            }
+        }
+        return rows;
+    }
+    let renderer_class = FT_Renderer_Class {
+        root: FT_Module_Class {
+            module_flags: rust_ffi::FT_MODULE_RENDERER as FT_ULong,
+            module_size: std::mem::size_of::<FT_RendererRec>() as FT_Long,
+            module_name: NAME.as_ptr().cast(),
+            module_version: 0x10_000,
+            module_requires: 0x20_000,
+            module_interface: ptr::null(),
+            module_init: Some(abi_raster_set_mode_module_init),
+            module_done: Some(abi_raster_set_mode_module_done),
+            get_interface: None,
+        },
+        glyph_format: rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
+        render_glyph: None,
+        transform_glyph: None,
+        get_glyph_cbox: None,
+        set_mode: Some(abi_raster_set_mode_renderer_callback),
+        raster_class: &ABI_RASTER_SET_MODE_FUNCS,
+    };
+    let add_status = FT_Add_Module(library, &renderer_class.root);
+    let renderer = FT_Get_Module(library, NAME.as_ptr().cast()).cast::<FT_RendererRec>();
+    for &mode in mode_tags {
+        for &args_null in args_pointer_classes {
+            for &return_code in return_codes {
+                ABI_RASTER_SET_MODE_STATE.with(|state| {
+                    let mut state = state.borrow_mut();
+                    state.callback_called = false;
+                    state.mode = 0;
+                    state.args_null = false;
+                    state.return_code = return_code;
+                });
+                let mut payload = 0x2468_i32;
+                let mut parameter = FT_Parameter {
+                    tag: mode,
+                    data: if args_null {
+                        ptr::null_mut()
+                    } else {
+                        ptr::from_mut(&mut payload).cast::<c_void>()
+                    },
+                };
+                let status = if add_status == rust_ffi::FT_Err_Ok && !renderer.is_null() {
+                    FT_Set_Renderer(library, renderer, 1, &mut parameter)
+                } else {
+                    add_status
+                };
+                let state = ABI_RASTER_SET_MODE_STATE.with(|state| state.borrow().clone());
+                rows.push(AbiRasterSetModeRow {
+                    status,
+                    mode: state.mode,
+                    args_null: state.args_null,
+                    callback_called: state.callback_called,
+                });
+            }
+        }
+    }
+    if add_status == rust_ffi::FT_Err_Ok && !renderer.is_null() {
+        let _ = FT_Remove_Module(library, renderer.cast());
+    }
+    let _ = FT_Done_Library(library);
+    rows
+}
+
 /// Registers a callback-backed renderer and preserves the `raster_new` error
 /// contract: the callback is observed, registration fails, and the module is
 /// not discoverable.
@@ -7367,6 +7575,7 @@ fn module_name_from_abi(module_name: *const FT_String) -> Option<&'static str> {
         b"fixture_renderer_lifecycle" => Some("fixture_renderer_lifecycle"),
         b"fixture_raster_lifecycle" => Some("fixture_raster_lifecycle"),
         b"fixture_raster_new_error" => Some("fixture_raster_new_error"),
+        b"fixture_raster_set_mode" => Some("fixture_raster_set_mode"),
         b"fixture_custom_glyph" => Some("fixture_custom_glyph"),
         b"fixture_second" => Some("fixture_second"),
         b"fixture_final_destroy" => Some("fixture_final_destroy"),

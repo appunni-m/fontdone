@@ -5704,6 +5704,31 @@ pub fn abi_support_raster_new_error_observation() -> AbiRasterNewErrorObservatio
 }
 
 #[cfg(feature = "abi-test-support")]
+pub struct AbiRasterSetModeObservation {
+    pub status: FT_Error,
+    pub mode: FT_ULong,
+    pub args_null: bool,
+    pub callback_called: bool,
+}
+
+#[cfg(feature = "abi-test-support")]
+pub fn abi_support_raster_set_mode_observation(
+    mode_tags: &[FT_ULong],
+    args_pointer_classes: &[bool],
+    return_codes: &[FT_Error],
+) -> Vec<AbiRasterSetModeObservation> {
+    rust_ffi::FT_Raster_Set_Mode_Probe(mode_tags, args_pointer_classes, return_codes)
+        .into_iter()
+        .map(|row| AbiRasterSetModeObservation {
+            status: row.status,
+            mode: row.mode,
+            args_null: row.args_null,
+            callback_called: row.callback_called,
+        })
+        .collect()
+}
+
+#[cfg(feature = "abi-test-support")]
 pub fn abi_support_module_remove_lifecycle_observation() -> (
     i32,
     usize,
