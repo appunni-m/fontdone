@@ -4618,6 +4618,7 @@ subjects:
       - id: glyph_hinting_runtime_effect
         description: A TrueType glyph loaded after setting this value follows the pinned C version-35 bytecode interpreter behavior.
     # needs-input: operation=FT_Property_Set, FT_Property_Get, FT_New_Face, FT_Set_Char_Size, and FT_Load_Glyph; fixture_asset=TrueType font with bytecode that exercises GETINFO and backward-compatibility-sensitive instructions; params module_name="truetype", property_name="interpreter-version", FT_UInt value TT_INTERPRETER_VERSION_35, string value "35" when environment-property path is enabled, invalid values before/after success; expected output shape=FT_Error plus FT_UInt interpreter_version readback, representative glyph metrics/outline/bitmap hashes, and GETINFO-observable behavior if fixture exposes it; comparison=exact C oracle macro value, set/get error codes, readback 35, hinting outputs, string-vs-integer behavior, and output preservation on invalid values.
+    # note: scalar property cases intentionally declare no font asset; only glyph_hinting_runtime_effect awaits the maintained bytecode-interpreter-version and backward-compat-phantom-points inputs.
 
   - id: ftdriver.TT_INTERPRETER_VERSION_38
     kind: constant
@@ -4632,6 +4633,7 @@ subjects:
       - id: glyph_hinting_runtime_effect
         description: A TrueType glyph loaded after setting this value matches C behavior for the stored interpreter version rather than assuming readback remains 38.
     # needs-input: operation=FT_Property_Set, FT_Property_Get, FT_New_Face, FT_Set_Char_Size, and FT_Load_Glyph; fixture_asset=TrueType font with bytecode sensitive to subpixel/minimal interpreter behavior and GETINFO; params module_name="truetype", property_name="interpreter-version", FT_UInt value TT_INTERPRETER_VERSION_38, string value "38" when environment-property path is enabled, pinned build variants with and without TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL if available; expected output shape=FT_Error plus FT_UInt interpreter_version readback, representative glyph metrics/outline/bitmap hashes, and GETINFO-observable behavior if fixture exposes it; comparison=exact C oracle macro value 38, set/get error code, readback normalization to 40 or Unimplemented_Feature per build config, hinting outputs, string-vs-integer behavior, and output preservation on invalid values.
+    # note: scalar property cases intentionally declare no font asset; only glyph_hinting_runtime_effect awaits the maintained bytecode-interpreter-version and backward-compat-phantom-points inputs.
 
   - id: ftdriver.TT_INTERPRETER_VERSION_40
     kind: constant
@@ -4648,6 +4650,7 @@ subjects:
       - id: glyph_hinting_runtime_effect
         description: A TrueType glyph loaded after setting this value follows the pinned C version-40 bytecode interpreter behavior.
     # needs-input: operation=FT_Property_Get, FT_Property_Set, FT_New_Face, FT_Set_Char_Size, and FT_Load_Glyph; fixture_asset=TrueType font with bytecode sensitive to version-40 minimal subpixel hinting, GETINFO, backward compatibility, and phantom-point behavior; params module_name="truetype", property_name="interpreter-version", initial get before set, FT_UInt value TT_INTERPRETER_VERSION_40, string value "40" when environment-property path is enabled, invalid value controls; expected output shape=FT_Error plus FT_UInt initial and post-set interpreter_version readback, representative glyph metrics/outline/bitmap hashes, and GETINFO-observable behavior if fixture exposes it; comparison=exact C oracle macro value, default readback for pinned build config, set/get error codes, readback 40 or Unimplemented_Feature per build config, hinting outputs, string-vs-integer behavior, and output preservation on invalid values.
+    # note: scalar property/default cases intentionally declare no font asset; only glyph_hinting_runtime_effect awaits the maintained bytecode-interpreter-version and backward-compat-phantom-points inputs.
   - id: ftdriver.FT_Prop_GlyphToScriptMap
     kind: record
     symbol: FT_Prop_GlyphToScriptMap
