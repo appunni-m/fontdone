@@ -215,6 +215,7 @@ pub(super) fn error_to_ft(error: FontError) -> FT_Error {
             FT_Err_Unknown_File_Format as FT_Error
         }
         FontError::SfntZeroTablesStreamOperation => FT_Err_Invalid_Stream_Operation as FT_Error,
+        FontError::PcfZeroTablesStreamOperation => FT_Err_Invalid_Stream_Operation as FT_Error,
         // FreeType 2.14.3 rejects physically truncated SFNT face header tables
         // as `Unknown_File_Format` during face open.  Pillow exposes this
         // through `ImageFont.truetype` as `OSError("unknown file format")`.

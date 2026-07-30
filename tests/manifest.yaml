@@ -2118,8 +2118,8 @@ subjects:
         description: Supported SFNT outline fonts with hhea/hmtx horizontal metrics, such as DejaVuSans.ttf, report true and expose C-matching horizontal advances.
         # needs-input: concrete fixture input must be added before this case can declare font_variability coverage.
       - id: no_horizontal_metrics_control
-        description: Any fixture format lacking horizontal metrics reports the same false or synthesized behavior as the C oracle.
-    # needs-input: operation=FT_HAS_HORIZONTAL; fixture_asset=input/fonts/DejaVuSans.ttf plus any available nonstandard/bitmap fixture without horizontal metrics if the pinned C driver supports one; params live FT_Face and representative glyph indexes after FT_Set_Char_Size; expected output shape=FT_Bool macro value, raw face_flags FT_FACE_FLAG_HORIZONTAL bit, hhea/hmtx-derived face metrics, and loaded glyph horizontal advance metrics; comparison=exact C oracle boolean, bit, and metric equality.
+        description: The maintained eight-byte control input is rejected by pinned FreeType before a face exists; all three runtime lanes preserve FT_Err_Invalid_Stream_Operation instead of fabricating a no-horizontal face.
+    # needs-input: operation=FT_HAS_HORIZONTAL; fixture_asset=input/fonts/DejaVuSans.ttf for the success route plus the maintained invalid control bytes for the exact open-error route; params live FT_Face macro evaluation after a successful open or FT_New_Memory_Face error; comparison=exact C oracle flag/value or error parity.
   - id: freetype.FT_HAS_KERNING
     kind: macro
     symbol: FT_HAS_KERNING

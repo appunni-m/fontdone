@@ -91,7 +91,7 @@
       "case": "no_horizontal_metrics_control",
       "operation": "freetype.face_macro",
       "schema": "macro_probe",
-      "expect_error": false,
+      "expect_error": true,
       "inputs": {
         "assets": {
           "font": {
@@ -103,7 +103,10 @@
         "params": {
           "face_index": 0,
           "macro": "FT_HAS_HORIZONTAL",
-          "probe": "C false or synthesized behavior"
+          "probe": "invalid control bytes are rejected before macro evaluation",
+          "expected_error_symbol": "FT_Err_Invalid_Stream_Operation",
+          "expected_error_value_source": "pinned fterrdef.h",
+          "pinned_source": "pinned FT_New_Memory_Face result"
         }
       },
       "classifiers": [
@@ -112,21 +115,23 @@
         "area:face-flags"
       ],
       "expectation": {
-        "status": "ok",
+        "status": "error",
+        "error": "FT_Err_Invalid_Stream_Operation",
         "output_shape": {
-          "return": "int-like boolean",
-          "macro": "evaluated by C/Rust ABI probe"
+          "error": "FT_Error",
+          "error_symbol": "FT_Err_Invalid_Stream_Operation",
+          "macro_evaluated": false,
+          "face": "null after failed open"
         },
         "compare": {
-          "mode": "exact",
+          "mode": "exact_error",
           "paths": [
-            "macro_result",
-            "face_flags",
-            "glyph_metrics"
-          ]
+            "error"
+          ],
+          "compare_error_output": true
         },
         "fixture_requirements": [
-          "Fixture lacking real horizontal metrics, if accepted by pinned C FreeType"
+          "Eight-byte PCF control bytes; pinned FreeType rejects the stream with FT_Err_Invalid_Stream_Operation before a face exists"
         ]
       }
     }

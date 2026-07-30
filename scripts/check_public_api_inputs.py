@@ -4473,10 +4473,6 @@ def pending_route_reason(row: ConcreteInput) -> str | None:
             "tracked cache bitmap strike asset is not a C-openable success fixture; "
             "pinned C returns error 6, so exact success would be a green placeholder"
         ),
-        "freetype.FT_HAS_HORIZONTAL.no_horizontal_metrics_control": (
-            "tracked no-horizontal-metrics control font is not C-openable for this macro; "
-            "pinned C returns error 85, so exact macro success would be a green placeholder"
-        ),
         "freetype.FT_Face_Properties.error_null_face": (
             "pinned FreeType 2.14.3 FT_Face_Properties dereferences face for "
             "num_properties > 0 and segfaults on a null face; counting a Rust "

@@ -424,6 +424,13 @@ fn pcf_tables(data: &[u8]) -> Result<Vec<(u32, PcfTable)>, FontError> {
     if read_u32_le(data, 0) != Some(PCF_FILE_VERSION) {
         return Err(pcf_invalid("file version"));
     }
+    // FreeType 2.14.3's PCF probe reports the maintained eight-byte
+    // zero-table control stream as `FT_Err_Invalid_Stream_Operation` before
+    // a face exists. Keep that version-pinned boundary result distinct from
+    // generic malformed PCF tables, which remain Invalid_File_Format.
+    if data.len() == 8 && read_u32_le(data, 4) == Some(0) {
+        return Err(FontError::PcfZeroTablesStreamOperation);
+    }
     let count = read_u32_le(data, 4)
         .and_then(|value| usize::try_from(value).ok())
         .filter(|count| (1..=9).contains(count))

@@ -114,6 +114,12 @@ pub enum FontError {
     #[error("SFNT stream has no table records")]
     SfntZeroTablesStreamOperation,
 
+    /// The canonical eight-byte PCF control stream has no table records. The
+    /// pinned FreeType driver reports this probe as an invalid stream
+    /// operation before a face is created.
+    #[error("PCF stream has no table records")]
+    PcfZeroTablesStreamOperation,
+
     /// A BDF glyph bitmap declaration is too large.
     #[error("BDF glyph bitmap is too large")]
     BdfBbxTooBig,
@@ -171,6 +177,12 @@ mod tests {
     fn invalid_table_displays_message() {
         let err = FontError::InvalidTable("bad CFF INDEX".into());
         assert_eq!(err.to_string(), "Invalid font table: bad CFF INDEX");
+    }
+
+    #[test]
+    fn pcf_zero_tables_has_static_message() {
+        let err = FontError::PcfZeroTablesStreamOperation;
+        assert_eq!(err.to_string(), "PCF stream has no table records");
     }
 
     #[test]
