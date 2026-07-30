@@ -347,9 +347,10 @@ increase is claimed until the next full all-lane measurement**:
 | 3 | `2fb2d5d044ff39ecd876fb04a906547c6b2e03a7` | Added CFF1, CFF2, glyf-cache, active/inactive gvar, malformed SVG range, gzip, primitive-read, and glyph-lookup tests; removed only mathematically unreachable SVG offset/count failures on the supported 32/64-bit targets. |
 | 4 | `e87d704dc269683338faa12cf2a89b0af0c1dc02` | Added root integration contracts for C ABI and WASM bitmap initialization, null validation, deep/self-copy, conversion, cleanup, stale-library rejection, and post-copy ownership independence. |
 | 5 | `9eebbe6aed0f4051630e750aa87c08a09f97e90e` | Added null/error contracts for C cache constructors/lookups, face and outline entry points, transform/lang-tag outputs, logging/property controls, plus WASM allocation, face-open, bitmap-accessor, and cleanup routes. |
+| 6 | `e63d25a0d954a472648918b9a3da9822ff517313` | Added a valid requester-backed C cache manager lifecycle covering face/size lookup, CMap/image/SBit cache construction, glyph/node ownership, face removal, reset, and teardown. |
 
 The latest clean parity-only verification is Coverage MCP run
-`2d555875-5d1b-458b-8051-ddbad06de099` against batch 5:
+`e44db64a-11ab-4df4-8713-f8cd503e01fe` against batch 6:
 7,212 / 7,212 runnable comparisons passed, 0 failed, and 95 remain explicitly
 pending. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. Full coverage is intentionally deferred
