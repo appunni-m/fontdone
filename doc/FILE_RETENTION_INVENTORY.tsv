@@ -2319,7 +2319,7 @@ tests/pipe_trace.rs	6312	file	2871e8fb783d748516c5542d70125ff3d9186ee63f88ab6612
 tests/support/generated_constant_lookup.rs	89931	file	3309eebd6fa4af72d165481e216c9a1dfcb574b3643a506e9221a8eec81f9d74	-	keep-generated-source	R10	Generated lookup required by the public constant parity test.
 tests/unified_fixture_parity.rs	3048478	file	87f59fd3961e13ba5becb8ef4d2b42f574a20ecc11db3d98407821cc7229bea2	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/unit/casts.rs	878	file	665b6ca875fe3308bc62c07e052e9558bcb02c9176cdb3ea786dcb57f7665ef5	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
-tests/unit/ffi/handles.rs	12414	file	c7b6670bda1dd79eb1c28f1fb74be932d4c6aa1e56dc613aecd803fa773a23bb	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
+tests/unit/ffi/handles.rs	25246	file	0ead869dd3e2e4d27c935778f330e753fa614d79fcaf88bc302ab27ff132c56d	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/unit/pfr.rs	14117	file	f0799ba4a730a523fb2b35fb65f8d56bfaca6f8b1793d82bfb8659922fec2fa9	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/unit/tt/gvar.rs	7613	file	7b1e47ea2cd33e0c21d7826dca01a3ab3f6a031bc0cb06dc0db91001b4ea8689	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/unit/tt/hvar.rs	1966	file	6cb883656a31a71a86fcdf96c1bb1b6387645a40ef7096480b22d3dd9c52e9c5	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.

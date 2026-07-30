@@ -401,3 +401,452 @@ fn bitmap_done_validates_handles_and_releases_owned_memory() {
     assert_eq!(bitmap, FT_Bitmap_C::default());
     done(&library, &mut bitmap);
 }
+
+#[test]
+fn bitmap_strength_rounding_and_embolden_guards_are_exact() {
+    assert_eq!(ft_bitmap_strength_pixels(0), Some(0));
+    assert_eq!(ft_bitmap_strength_pixels(31), Some(0));
+    assert_eq!(ft_bitmap_strength_pixels(32), Some(1));
+    assert_eq!(ft_bitmap_strength_pixels(-64), Some(-1));
+    assert_eq!(
+        ft_bitmap_strength_pixels((i64::from(i32::MAX) + 1) << 6),
+        None
+    );
+    assert_eq!(ft_bitmap_strength_pixels(FT_Long::MAX), None);
+
+    let library = FT_Init_FreeType();
+    assert_eq!(
+        FT_Bitmap_Embolden(None, None, 0, 0),
+        FT_Err_Invalid_Library_Handle as FT_Error
+    );
+    assert_eq!(
+        FT_Bitmap_Embolden(Some(&library), None, 0, 0),
+        FT_Err_Invalid_Argument
+    );
+
+    let mut empty = FT_Bitmap_C::default();
+    assert_eq!(
+        FT_Bitmap_Embolden(Some(&library), Some(&mut empty), 0, 0),
+        FT_Err_Invalid_Argument
+    );
+
+    let mut bitmap = owned_bitmap(1, 1, 1, FT_PIXEL_MODE_GRAY, vec![20]);
+    assert_eq!(
+        FT_Bitmap_Embolden(Some(&library), Some(&mut bitmap), -64, 0),
+        FT_Err_Invalid_Argument
+    );
+    assert_eq!(
+        FT_Bitmap_Embolden(Some(&library), Some(&mut bitmap), 0, 0),
+        FT_Err_Ok
+    );
+    assert_eq!(
+        FT_Bitmap_Embolden(
+            Some(&library),
+            Some(&mut bitmap),
+            (i64::from(i32::MAX) + 1) << 6,
+            0,
+        ),
+        FT_Err_Invalid_Argument
+    );
+    done(&library, &mut bitmap);
+
+    let mut bgra = owned_bitmap(1, 1, 4, FT_PIXEL_MODE_BGRA, vec![1, 2, 3, 4]);
+    assert_eq!(
+        FT_Bitmap_Embolden(Some(&library), Some(&mut bgra), 64, 64),
+        FT_Err_Ok
+    );
+    assert_eq!((bgra.width, bgra.rows, bgra.pitch), (1, 1, 4));
+    done(&library, &mut bgra);
+}
+
+#[test]
+fn bitmap_embolden_covers_packed_lcd_and_pitch_variants() {
+    let library = FT_Init_FreeType();
+    let cases = [
+        (
+            owned_bitmap(1, 1, 1, FT_PIXEL_MODE_MONO, vec![0x80]),
+            9 * 64,
+            0,
+            (9, 1, 2),
+        ),
+        (
+            owned_bitmap(4, 1, 1, FT_PIXEL_MODE_GRAY2, vec![0b0001_1011]),
+            64,
+            0,
+            (5, 1, 5),
+        ),
+        (
+            owned_bitmap(2, 1, 1, FT_PIXEL_MODE_GRAY4, vec![0xab]),
+            64,
+            0,
+            (3, 1, 3),
+        ),
+        (
+            owned_bitmap(1, 1, 1, FT_PIXEL_MODE_LCD, vec![20]),
+            64,
+            0,
+            (4, 1, 4),
+        ),
+        (
+            owned_bitmap(1, 1, 1, FT_PIXEL_MODE_LCD_V, vec![20]),
+            0,
+            64,
+            (1, 4, 1),
+        ),
+        (
+            owned_bitmap(2, 1, -2, FT_PIXEL_MODE_GRAY, vec![10, 20]),
+            64,
+            64,
+            (3, 2, -3),
+        ),
+    ];
+    for (mut bitmap, x_strength, y_strength, expected) in cases {
+        assert_eq!(
+            FT_Bitmap_Embolden(Some(&library), Some(&mut bitmap), x_strength, y_strength,),
+            FT_Err_Ok
+        );
+        assert_eq!((bitmap.width, bitmap.rows, bitmap.pitch), expected);
+        assert!(FT_Bitmap_Owned_Buffer_Bytes(Some(&bitmap)).is_some());
+        done(&library, &mut bitmap);
+    }
+
+    let mut invalid = owned_bitmap(1, 1, 1, FT_PIXEL_MODE_NONE, vec![1]);
+    assert_eq!(
+        FT_Bitmap_Embolden(Some(&library), Some(&mut invalid), 64, 0),
+        FT_Err_Invalid_Glyph_Format
+    );
+    done(&library, &mut invalid);
+}
+
+#[test]
+fn assure_buffer_and_gray_conversion_validate_owned_storage() {
+    let library = FT_Init_FreeType();
+    let mut padded = owned_bitmap(2, 1, 4, FT_PIXEL_MODE_GRAY, vec![1, 2, 3, 4]);
+    assert_eq!(ft_bitmap_assure_buffer(&mut padded, 1, 0), FT_Err_Ok);
+    assert_eq!(
+        FT_Bitmap_Owned_Buffer_Bytes(Some(&padded)),
+        Some(vec![1, 2, 3, 0])
+    );
+    done(&library, &mut padded);
+
+    let mut missing = FT_Bitmap_C {
+        rows: 1,
+        width: 1,
+        pitch: 1,
+        pixel_mode: FT_PIXEL_MODE_GRAY as u8,
+        ..FT_Bitmap_C::default()
+    };
+    assert_eq!(
+        ft_bitmap_assure_buffer(&mut missing, 1, 0),
+        FT_Err_Invalid_Argument
+    );
+
+    let mut short = owned_bitmap(2, 1, 2, FT_PIXEL_MODE_GRAY, vec![1]);
+    assert_eq!(
+        ft_bitmap_assure_buffer(&mut short, 1, 0),
+        FT_Err_Invalid_Argument
+    );
+    done(&library, &mut short);
+
+    let mut invalid = owned_bitmap(1, 1, 1, FT_PIXEL_MODE_BGRA, vec![1]);
+    assert_eq!(
+        ft_bitmap_assure_buffer(&mut invalid, 1, 0),
+        FT_Err_Invalid_Glyph_Format
+    );
+    done(&library, &mut invalid);
+
+    let mut gray2 = owned_bitmap(4, 1, 1, FT_PIXEL_MODE_GRAY2, vec![0b0001_1011]);
+    assert_eq!(convert_public_bitmap_to_gray(&mut gray2, 2, 4), FT_Err_Ok);
+    assert_eq!((gray2.pitch, gray2.pixel_mode, gray2.num_grays), (4, 2, 4));
+    assert_eq!(
+        FT_Bitmap_Owned_Buffer_Bytes(Some(&gray2)),
+        Some(vec![0, 1, 2, 3])
+    );
+    done(&library, &mut gray2);
+
+    let mut gray4 = owned_bitmap(2, 1, -1, FT_PIXEL_MODE_GRAY4, vec![0xab]);
+    assert_eq!(convert_public_bitmap_to_gray(&mut gray4, 4, 16), FT_Err_Ok);
+    assert_eq!(
+        (gray4.pitch, gray4.pixel_mode, gray4.num_grays),
+        (-2, 2, 16)
+    );
+    assert_eq!(
+        FT_Bitmap_Owned_Buffer_Bytes(Some(&gray4)),
+        Some(vec![10, 11])
+    );
+    done(&library, &mut gray4);
+}
+
+#[test]
+fn gray_bitmap_helpers_cover_modes_directions_and_bounds() {
+    let library = FT_Init_FreeType();
+    let cases = [
+        (
+            owned_bitmap(4, 1, 1, FT_PIXEL_MODE_MONO, vec![0b1010_0000]),
+            vec![1, 0, 1, 0],
+        ),
+        (
+            owned_bitmap(4, 1, 1, FT_PIXEL_MODE_GRAY2, vec![0b0001_1011]),
+            vec![0, 1, 2, 3],
+        ),
+        (
+            owned_bitmap(2, 1, 1, FT_PIXEL_MODE_GRAY4, vec![0xab]),
+            vec![10, 11],
+        ),
+        (
+            owned_bitmap(3, 1, 3, FT_PIXEL_MODE_GRAY, vec![1, 2, 3]),
+            vec![1, 2, 3],
+        ),
+        (
+            owned_bitmap(3, 1, 3, FT_PIXEL_MODE_LCD, vec![4, 5, 6]),
+            vec![4, 5, 6],
+        ),
+        (
+            owned_bitmap(3, 1, 3, FT_PIXEL_MODE_LCD_V, vec![7, 8, 9]),
+            vec![7, 8, 9],
+        ),
+        (
+            owned_bitmap(1, 1, 4, FT_PIXEL_MODE_BGRA, vec![0, 0, 0, 255]),
+            vec![255],
+        ),
+        (
+            owned_bitmap(2, 2, -2, FT_PIXEL_MODE_GRAY, vec![1, 2, 3, 4]),
+            vec![1, 2, 3, 4],
+        ),
+    ];
+    for (mut bitmap, expected) in cases {
+        let gray = match bitmap_to_gray(&bitmap) {
+            Ok(gray) => gray,
+            Err(error) => panic!("valid bitmap was rejected: {error}"),
+        };
+        assert_eq!(gray.bytes, expected);
+        done(&library, &mut bitmap);
+    }
+
+    let positive = GrayBitmap {
+        rows: 2,
+        width: 2,
+        pitch: 3,
+        bytes: vec![0; 6],
+    };
+    assert_eq!(positive.row_range(0), Some(0..2));
+    assert_eq!(positive.row_range(1), Some(3..5));
+    assert_eq!(positive.row_range(2), None);
+    let negative = GrayBitmap {
+        pitch: -3,
+        ..positive.clone()
+    };
+    assert_eq!(negative.row_range(0), Some(3..5));
+    assert_eq!(negative.row_range(1), Some(0..2));
+    let short = GrayBitmap {
+        bytes: vec![0],
+        ..positive
+    };
+    assert_eq!(short.row_range(0), None);
+
+    let bitmap = FT_Bitmap_C {
+        rows: 2,
+        pitch: 3,
+        ..FT_Bitmap_C::default()
+    };
+    assert_eq!(bitmap_row_start(&bitmap, 1), Some(3));
+    let bitmap = FT_Bitmap_C {
+        pitch: -3,
+        ..bitmap
+    };
+    assert_eq!(bitmap_row_start(&bitmap, 0), Some(3));
+    assert_eq!(bitmap_row_start(&bitmap, 2), None);
+
+    let invalid = owned_bitmap(1, 1, 1, FT_PIXEL_MODE_NONE, vec![1]);
+    assert!(matches!(
+        bitmap_to_gray(&invalid),
+        Err(error) if error == FT_Err_Invalid_Argument
+    ));
+    let mut invalid = invalid;
+    done(&library, &mut invalid);
+    assert!(matches!(
+        bitmap_to_gray(&FT_Bitmap_C::default()),
+        Err(error) if error == FT_Err_Invalid_Argument
+    ));
+}
+
+#[test]
+fn bitmap_blend_validates_inputs_and_composites_gray_masks() {
+    let library = FT_Init_FreeType();
+    let source_offset = FT_Vector { x: 0, y: 64 };
+    let color = FT_Color {
+        blue: 10,
+        green: 20,
+        red: 30,
+        alpha: 255,
+    };
+    let source = FT_Bitmap_C::default();
+    let mut target = FT_Bitmap_C::default();
+    let mut target_offset = FT_Vector::default();
+    assert_eq!(
+        FT_Bitmap_Blend(
+            None,
+            Some(&source),
+            source_offset,
+            Some(&mut target),
+            Some(&mut target_offset),
+            color,
+        ),
+        FT_Err_Invalid_Argument
+    );
+    assert_eq!(
+        FT_Bitmap_Blend(
+            Some(&library),
+            None,
+            source_offset,
+            Some(&mut target),
+            Some(&mut target_offset),
+            color,
+        ),
+        FT_Err_Invalid_Argument
+    );
+
+    let invalid_target = FT_Bitmap_C {
+        pixel_mode: FT_PIXEL_MODE_GRAY as u8,
+        ..FT_Bitmap_C::default()
+    };
+    target = invalid_target;
+    assert_eq!(
+        FT_Bitmap_Blend(
+            Some(&library),
+            Some(&source),
+            source_offset,
+            Some(&mut target),
+            Some(&mut target_offset),
+            color,
+        ),
+        FT_Err_Invalid_Argument
+    );
+
+    target = FT_Bitmap_C::default();
+    assert_eq!(
+        FT_Bitmap_Blend(
+            Some(&library),
+            Some(&source),
+            source_offset,
+            Some(&mut target),
+            Some(&mut target_offset),
+            color,
+        ),
+        FT_Err_Ok
+    );
+
+    let mut mask = owned_bitmap(1, 1, 1, FT_PIXEL_MODE_GRAY, vec![255]);
+    assert_eq!(
+        FT_Bitmap_Blend(
+            Some(&library),
+            Some(&mask),
+            source_offset,
+            Some(&mut target),
+            Some(&mut target_offset),
+            color,
+        ),
+        FT_Err_Ok
+    );
+    assert_eq!((target.width, target.rows, target.pitch), (1, 1, 4));
+    assert_eq!(
+        FT_Bitmap_Owned_Buffer_Bytes(Some(&target)),
+        Some(vec![10, 20, 30, 255])
+    );
+    assert_eq!(target_offset, FT_Vector { x: 0, y: 64 });
+
+    let second_color = FT_Color {
+        blue: 110,
+        green: 120,
+        red: 130,
+        alpha: 128,
+    };
+    assert_eq!(
+        FT_Bitmap_Blend(
+            Some(&library),
+            Some(&mask),
+            source_offset,
+            Some(&mut target),
+            Some(&mut target_offset),
+            second_color,
+        ),
+        FT_Err_Ok
+    );
+    assert_eq!(
+        FT_Bitmap_Owned_Buffer_Bytes(Some(&target)),
+        Some(vec![59, 69, 79, 255])
+    );
+    done(&library, &mut mask);
+    done(&library, &mut target);
+}
+
+#[test]
+fn bitmap_blend_covers_expansion_non_gray_and_negative_pitch_routes() {
+    let library = FT_Init_FreeType();
+    let color = FT_Color {
+        blue: 1,
+        green: 2,
+        red: 3,
+        alpha: 255,
+    };
+    let mut source = owned_bitmap(1, 1, 1, FT_PIXEL_MODE_MONO, vec![0x80]);
+    let mut target = owned_bitmap(1, 1, 4, FT_PIXEL_MODE_BGRA, vec![9, 8, 7, 255]);
+    let mut target_offset = FT_Vector { x: 64, y: 64 };
+    assert_eq!(
+        FT_Bitmap_Blend(
+            Some(&library),
+            Some(&source),
+            FT_Vector { x: 0, y: 64 },
+            Some(&mut target),
+            Some(&mut target_offset),
+            color,
+        ),
+        FT_Err_Ok
+    );
+    assert_eq!((target.width, target.rows, target.pitch), (2, 1, 8));
+    assert_eq!(
+        FT_Bitmap_Owned_Buffer_Bytes(Some(&target)),
+        Some(vec![0, 0, 0, 1, 9, 8, 7, 255])
+    );
+    done(&library, &mut source);
+    done(&library, &mut target);
+
+    let mut source = owned_bitmap(1, 1, -1, FT_PIXEL_MODE_GRAY, vec![255]);
+    let mut target = owned_bitmap(1, 1, 4, FT_PIXEL_MODE_BGRA, vec![9, 8, 7, 255]);
+    let mut target_offset = FT_Vector { x: 0, y: 64 };
+    assert_eq!(
+        FT_Bitmap_Blend(
+            Some(&library),
+            Some(&source),
+            FT_Vector { x: 0, y: 64 },
+            Some(&mut target),
+            Some(&mut target_offset),
+            color,
+        ),
+        FT_Err_Invalid_Argument
+    );
+    done(&library, &mut source);
+    done(&library, &mut target);
+
+    let mut source = owned_bitmap(1, 1, -1, FT_PIXEL_MODE_GRAY, vec![255]);
+    let mut target = FT_Bitmap_C::default();
+    let mut target_offset = FT_Vector::default();
+    assert_eq!(
+        FT_Bitmap_Blend(
+            Some(&library),
+            Some(&source),
+            FT_Vector { x: 0, y: 64 },
+            Some(&mut target),
+            Some(&mut target_offset),
+            color,
+        ),
+        FT_Err_Ok
+    );
+    assert_eq!(target.pitch, 4);
+    assert_eq!(
+        FT_Bitmap_Owned_Buffer_Bytes(Some(&target)),
+        Some(vec![0, 0, 0, 0])
+    );
+    done(&library, &mut source);
+    done(&library, &mut target);
+}
