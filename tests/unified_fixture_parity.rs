@@ -43584,6 +43584,10 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             });
             Ok(args)
         }
+        "ftincrem.validate_callback_table" if !case.expect_error => Ok(vec![
+            "--incremental-callback-table".to_string(),
+            incremental_callback_tables_arg(params)?,
+        ]),
         "ftincrem.incremental_glyph_lifecycle" if !case.expect_error => {
             let mut args = vec!["--incremental-glyph-lifecycle".to_string()];
             push_font_source(case, &mut args)?;
@@ -45022,6 +45026,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftglyph.custom_glyph_lifecycle" if !case.expect_error => rust_custom_glyph_lifecycle(),
         "ftincrem.opaque_handle_lifecycle" if !case.expect_error => {
             rust_incremental_opaque_handle(case)
+        }
+        "ftincrem.validate_callback_table" if !case.expect_error => {
+            rust_incremental_callback_table_contract(case)
         }
         "ftincrem.incremental_glyph_lifecycle" if !case.expect_error => {
             rust_incremental_glyph_lifecycle(case)
@@ -46482,6 +46489,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftincrem.opaque_handle_lifecycle" if !case.expect_error => {
             c_incremental_opaque_handle(case)
         }
+        "ftincrem.validate_callback_table" if !case.expect_error => {
+            c_incremental_callback_table_contract(case)
+        }
         "ftincrem.incremental_glyph_lifecycle" if !case.expect_error => {
             c_incremental_glyph_lifecycle(case)
         }
@@ -47737,6 +47747,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftglyph.custom_glyph_lifecycle" if !case.expect_error => wasm_custom_glyph_lifecycle(),
         "ftincrem.opaque_handle_lifecycle" if !case.expect_error => {
             wasm_incremental_opaque_handle(case)
+        }
+        "ftincrem.validate_callback_table" if !case.expect_error => {
+            wasm_incremental_callback_table_contract(case)
         }
         "ftincrem.incremental_glyph_lifecycle" if !case.expect_error => {
             wasm_incremental_glyph_lifecycle(case)
@@ -56660,6 +56673,22 @@ fn cache_scaler_rows_arg(params: &Value) -> Result<String, String> {
         .join(";"))
 }
 
+fn incremental_callback_tables_arg(params: &Value) -> Result<String, String> {
+    Ok(incremental_callback_table_specs(params)?
+        .into_iter()
+        .map(|spec| {
+            format!(
+                "{}={}{}{}",
+                spec.name,
+                if spec.get_glyph_data { '1' } else { '0' },
+                if spec.free_glyph_data { '1' } else { '0' },
+                if spec.get_glyph_metrics { '1' } else { '0' },
+            )
+        })
+        .collect::<Vec<_>>()
+        .join(";"))
+}
+
 fn cache_glyph_indexes(params: &Value) -> Result<Vec<u32>, String> {
     if let Some(values) = params.get("glyph_indexes").and_then(Value::as_array) {
         let indexes = values
@@ -64921,6 +64950,161 @@ fn wasm_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String>
             stored_interface_identity: snapshot.stored_interface_identity,
         }),
     ))
+}
+
+#[derive(Clone)]
+struct IncrementalCallbackTableSpec {
+    name: String,
+    get_glyph_data: bool,
+    free_glyph_data: bool,
+    get_glyph_metrics: bool,
+}
+
+#[derive(Clone, Copy)]
+struct IncrementalCallbackTableObserved {
+    get_glyph_data: bool,
+    free_glyph_data: bool,
+    get_glyph_metrics: bool,
+}
+
+fn incremental_callback_table_specs(
+    params: &Value,
+) -> Result<Vec<IncrementalCallbackTableSpec>, String> {
+    params
+        .get("callback_tables")
+        .and_then(Value::as_array)
+        .ok_or_else(|| "callback_tables must be an array".to_string())?
+        .iter()
+        .map(|table| {
+            let name = table
+                .get("name")
+                .and_then(Value::as_str)
+                .ok_or_else(|| "callback table name must be a string".to_string())?
+                .to_string();
+            let table_name = name.clone();
+            let slot = |field: &str| -> Result<bool, String> {
+                match table.get(field).and_then(Value::as_str) {
+                    Some("present") => Ok(true),
+                    Some("null") => Ok(false),
+                    Some(value) => Err(format!(
+                        "callback table {table_name} field {field} has unsupported value {value}"
+                    )),
+                    None => Err(format!("callback table {table_name} omits {field}")),
+                }
+            };
+            Ok(IncrementalCallbackTableSpec {
+                name,
+                get_glyph_data: slot("get_glyph_data")?,
+                free_glyph_data: slot("free_glyph_data")?,
+                get_glyph_metrics: slot("get_glyph_metrics")?,
+            })
+        })
+        .collect()
+}
+
+fn incremental_callback_table_output(
+    specs: &[IncrementalCallbackTableSpec],
+    observed: &[IncrementalCallbackTableObserved],
+) -> RunOutput {
+    let tables = specs
+        .iter()
+        .zip(observed.iter())
+        .map(|(spec, observed)| {
+            json!({
+                "table_name": spec.name,
+                "accepted_by_model": observed.get_glyph_data && observed.free_glyph_data,
+                "required_fields": ["get_glyph_data", "free_glyph_data"],
+                "optional_fields": ["get_glyph_metrics"],
+                "callback_slots": {
+                    "get_glyph_data": observed.get_glyph_data,
+                    "free_glyph_data": observed.free_glyph_data,
+                    "get_glyph_metrics": observed.get_glyph_metrics,
+                },
+            })
+        })
+        .collect::<Vec<_>>();
+    ok(json!({"tables": tables}))
+}
+
+unsafe extern "C" fn rust_incremental_table_get_glyph_metrics(
+    _incremental: FT_Incremental,
+    _glyph_index: FT_UInt,
+    _vertical: FT_Bool,
+    _metrics: *mut FT_Incremental_MetricsRec,
+) -> FT_Error {
+    FT_Err_Invalid_Argument as FT_Error
+}
+
+fn rust_incremental_callback_table_contract(case: &InputCase) -> Result<RunOutput, String> {
+    let specs = incremental_callback_table_specs(&case.inputs.params)?;
+    let observed = specs
+        .iter()
+        .map(|spec| {
+            let funcs = FT_Incremental_FuncsRec {
+                get_glyph_data: spec
+                    .get_glyph_data
+                    .then_some(rust_opaque_incremental_get_glyph_data),
+                free_glyph_data: spec
+                    .free_glyph_data
+                    .then_some(rust_opaque_incremental_free_glyph_data),
+                get_glyph_metrics: spec
+                    .get_glyph_metrics
+                    .then_some(rust_incremental_table_get_glyph_metrics),
+            };
+            IncrementalCallbackTableObserved {
+                get_glyph_data: funcs.get_glyph_data.is_some(),
+                free_glyph_data: funcs.free_glyph_data.is_some(),
+                get_glyph_metrics: funcs.get_glyph_metrics.is_some(),
+            }
+        })
+        .collect::<Vec<_>>();
+    Ok(incremental_callback_table_output(&specs, &observed))
+}
+
+fn c_incremental_callback_table_contract(case: &InputCase) -> Result<RunOutput, String> {
+    let specs = incremental_callback_table_specs(&case.inputs.params)?;
+    let tables = specs
+        .iter()
+        .map(|spec| {
+            (
+                spec.get_glyph_data,
+                spec.free_glyph_data,
+                spec.get_glyph_metrics,
+            )
+        })
+        .collect::<Vec<_>>();
+    let observed = c_abi::abi_incremental_callback_table_contract(&tables)
+        .into_iter()
+        .map(|snapshot| IncrementalCallbackTableObserved {
+            get_glyph_data: snapshot.get_glyph_data,
+            free_glyph_data: snapshot.free_glyph_data,
+            get_glyph_metrics: snapshot.get_glyph_metrics,
+        })
+        .collect::<Vec<_>>();
+    Ok(incremental_callback_table_output(&specs, &observed))
+}
+
+fn wasm_incremental_callback_table_contract(case: &InputCase) -> Result<RunOutput, String> {
+    let specs = incremental_callback_table_specs(&case.inputs.params)?;
+    let tables = specs
+        .iter()
+        .map(|spec| {
+            (
+                spec.get_glyph_data,
+                spec.free_glyph_data,
+                spec.get_glyph_metrics,
+            )
+        })
+        .collect::<Vec<_>>();
+    let observed = wasm_abi::abi_support_incremental_callback_table_contract(&tables)
+        .into_iter()
+        .map(|snapshot| IncrementalCallbackTableObserved {
+            get_glyph_data: snapshot.get_glyph_data,
+            free_glyph_data: snapshot.free_glyph_data,
+            get_glyph_metrics: snapshot.get_glyph_metrics,
+        })
+        .collect::<Vec<_>>();
+    Ok(incremental_callback_table_output(&specs, &observed))
 }
 
 struct IncrementalGlyphObserved {

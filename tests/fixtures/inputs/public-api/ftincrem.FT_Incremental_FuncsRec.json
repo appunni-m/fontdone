@@ -158,7 +158,8 @@
             "get_glyph_data": "must_not_be_null",
             "free_glyph_data": "must_not_be_null",
             "get_glyph_metrics": "may_be_null"
-          }
+          },
+          "runtime_route": "actual_incremental_callback_table_contract"
         }
       },
       "classifiers": [
@@ -169,21 +170,19 @@
       "expectation": {
         "status": "ok",
         "output_shape": {
-          "table_name": "string",
-          "accepted_by_model": "bool",
-          "required_fields": "array<string>",
-          "optional_fields": "array<string>"
+          "tables": "array<callback_table_contract>"
         },
         "compare": {
           "mode": "exact",
           "paths": [
-            "accepted_by_model",
-            "required_fields",
-            "optional_fields"
+            "tables"
           ]
         },
         "source_refs": [
           "freetype/include/freetype/ftincrem.h"
+        ],
+        "fixture_requirements": [
+          "The four table variants are constructed as real FT_Incremental_FuncsRec values in every lane. Required callback pointers are classified from the pinned header contract, the optional metrics pointer is allowed to be null, and no invalid required-pointer table is called through."
         ]
       }
     },

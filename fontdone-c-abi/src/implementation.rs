@@ -3418,6 +3418,64 @@ pub struct AbiIncrementalOpaqueSnapshot {
     pub stored_interface_identity: bool,
 }
 
+#[cfg(feature = "abi-test-support")]
+pub struct AbiIncrementalCallbackTableSnapshot {
+    pub get_glyph_data: bool,
+    pub free_glyph_data: bool,
+    pub get_glyph_metrics: bool,
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn abi_incremental_table_get_glyph_data(
+    _incremental: FT_Incremental,
+    _glyph_index: FT_UInt,
+    _adata: *mut FT_Data,
+) -> FT_Error {
+    rust_ffi::FT_Err_Invalid_Argument as FT_Error
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn abi_incremental_table_free_glyph_data(
+    _incremental: FT_Incremental,
+    _data: *mut FT_Data,
+) {
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn abi_incremental_table_get_glyph_metrics(
+    _incremental: FT_Incremental,
+    _glyph_index: FT_UInt,
+    _vertical: FT_Bool,
+    _metrics: *mut FT_Incremental_MetricsRec,
+) -> FT_Error {
+    rust_ffi::FT_Err_Invalid_Argument as FT_Error
+}
+
+/// Constructs each callback table shape from the pinned `ftincrem.h` record
+/// and observes the resulting function-pointer nullability without invoking a
+/// table whose required callbacks are incomplete.
+#[cfg(feature = "abi-test-support")]
+pub fn abi_incremental_callback_table_contract(
+    tables: &[(bool, bool, bool)],
+) -> Vec<AbiIncrementalCallbackTableSnapshot> {
+    tables
+        .iter()
+        .map(|&(get_glyph_data, free_glyph_data, get_glyph_metrics)| {
+            let funcs = FT_Incremental_FuncsRec {
+                get_glyph_data: get_glyph_data.then_some(abi_incremental_table_get_glyph_data),
+                free_glyph_data: free_glyph_data.then_some(abi_incremental_table_free_glyph_data),
+                get_glyph_metrics: get_glyph_metrics
+                    .then_some(abi_incremental_table_get_glyph_metrics),
+            };
+            AbiIncrementalCallbackTableSnapshot {
+                get_glyph_data: funcs.get_glyph_data.is_some(),
+                free_glyph_data: funcs.free_glyph_data.is_some(),
+                get_glyph_metrics: funcs.get_glyph_metrics.is_some(),
+            }
+        })
+        .collect()
+}
+
 /// Opens an actual C-ABI `FT_Open_Face` parameter route with an inaccessible
 /// client object and records only callback identity and ownership events.
 #[cfg(feature = "abi-test-support")]

@@ -33836,6 +33836,88 @@ static void incremental_lifecycle_free_glyph_data(FT_Incremental incremental,
     }
 }
 
+static FT_Error incremental_table_get_glyph_data(FT_Incremental incremental,
+                                                 FT_UInt glyph_index,
+                                                 FT_Data* glyph_data) {
+    (void)incremental;
+    (void)glyph_index;
+    (void)glyph_data;
+    return FT_Err_Invalid_Argument;
+}
+
+static void incremental_table_free_glyph_data(FT_Incremental incremental,
+                                              FT_Data* glyph_data) {
+    (void)incremental;
+    (void)glyph_data;
+}
+
+static FT_Error incremental_table_get_glyph_metrics(
+    FT_Incremental incremental,
+    FT_UInt glyph_index,
+    FT_Bool vertical,
+    FT_Incremental_MetricsRec* metrics) {
+    (void)incremental;
+    (void)glyph_index;
+    (void)vertical;
+    (void)metrics;
+    return FT_Err_Invalid_Argument;
+}
+
+static int emit_incremental_callback_table_contract(int argc, char** argv) {
+    if (argc != 3) return 2;
+    const char* encoded = argv[2];
+    size_t encoded_length = strlen(encoded);
+    char* rows = (char*)malloc(encoded_length + 1);
+    if (!rows) return 1;
+    memcpy(rows, encoded, encoded_length + 1);
+
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"tables\":[");
+    int first = 1;
+    char* cursor = rows;
+    while (cursor && *cursor) {
+        char* next = strchr(cursor, ';');
+        if (next) *next = '\0';
+        char* equals = strchr(cursor, '=');
+        if (!equals || equals == cursor || strlen(equals + 1) < 3) {
+            free(rows);
+            return 2;
+        }
+        *equals = '\0';
+        const char* name = cursor;
+        const char* bits = equals + 1;
+        int get_glyph_data = bits[0] == '1';
+        int free_glyph_data = bits[1] == '1';
+        int get_glyph_metrics = bits[2] == '1';
+        FT_Incremental_FuncsRec funcs;
+        memset(&funcs, 0, sizeof(funcs));
+        funcs.get_glyph_data = get_glyph_data ? incremental_table_get_glyph_data : NULL;
+        funcs.free_glyph_data = free_glyph_data ? incremental_table_free_glyph_data : NULL;
+        funcs.get_glyph_metrics =
+            get_glyph_metrics ? incremental_table_get_glyph_metrics : NULL;
+        if (!first) printf(",");
+        first = 0;
+        printf("{\"table_name\":\"");
+        print_json_string_content(name);
+        printf("\",\"accepted_by_model\":");
+        print_json_bool(funcs.get_glyph_data != NULL && funcs.free_glyph_data != NULL);
+        printf(",\"required_fields\":[\"get_glyph_data\",\"free_glyph_data\"]");
+        printf(",\"optional_fields\":[\"get_glyph_metrics\"]");
+        printf(",\"callback_slots\":{\"get_glyph_data\":");
+        print_json_bool(funcs.get_glyph_data != NULL);
+        printf(",\"free_glyph_data\":");
+        print_json_bool(funcs.free_glyph_data != NULL);
+        printf(",\"get_glyph_metrics\":");
+        print_json_bool(funcs.get_glyph_metrics != NULL);
+        printf("}}");
+        cursor = next ? next + 1 : NULL;
+    }
+    printf("]}}\n");
+    free(rows);
+    return 0;
+}
+
 static int emit_incremental_glyph_lifecycle(int argc, char** argv) {
     int with_metrics = streq(argv[1], "--incremental-state-lifecycle");
     if ((!with_metrics && argc != 7) || (with_metrics && argc != 11)) return 2;
@@ -35488,6 +35570,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 7 && streq(argv[1], "--incremental-glyph-lifecycle")) {
         return emit_incremental_glyph_lifecycle(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--incremental-callback-table")) {
+        return emit_incremental_callback_table_contract(argc, argv);
     }
     if ((argc == 7 || argc == 8) && streq(argv[1], "--incremental-opaque-handle")) {
         return emit_incremental_opaque_handle(argc, argv);

@@ -36,6 +36,7 @@ pub type FT_Byte = u8;
 pub type FT_Bytes = *const FT_Byte;
 pub type FT_Data = rust_ffi::FT_Data;
 pub type FT_Incremental = rust_ffi::FT_Incremental;
+pub type FT_Incremental_MetricsRec = rust_ffi::FT_Incremental_MetricsRec;
 pub type FT_Incremental_FuncsRec = rust_ffi::FT_Incremental_FuncsRec;
 pub type FT_Incremental_InterfaceRec = rust_ffi::FT_Incremental_InterfaceRec;
 pub type FT_LayerIterator = rust_ffi::FT_LayerIterator;
@@ -6049,6 +6050,64 @@ pub struct AbiIncrementalOpaqueSnapshot {
     pub callbacks_after_face_done: usize,
     pub client_object_still_valid: bool,
     pub stored_interface_identity: bool,
+}
+
+#[cfg(feature = "abi-test-support")]
+pub struct AbiIncrementalCallbackTableSnapshot {
+    pub get_glyph_data: bool,
+    pub free_glyph_data: bool,
+    pub get_glyph_metrics: bool,
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn wasm_incremental_table_get_glyph_data(
+    _incremental: FT_Incremental,
+    _glyph_index: FT_UInt,
+    _adata: *mut FT_Data,
+) -> FT_Error {
+    rust_ffi::FT_Err_Invalid_Argument as FT_Error
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn wasm_incremental_table_free_glyph_data(
+    _incremental: FT_Incremental,
+    _data: *mut FT_Data,
+) {
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn wasm_incremental_table_get_glyph_metrics(
+    _incremental: FT_Incremental,
+    _glyph_index: FT_UInt,
+    _vertical: FT_Bool,
+    _metrics: *mut FT_Incremental_MetricsRec,
+) -> FT_Error {
+    rust_ffi::FT_Err_Invalid_Argument as FT_Error
+}
+
+/// Constructs each callback table shape from the pinned `ftincrem.h` record
+/// and observes function-pointer nullability without invoking incomplete
+/// required tables.
+#[cfg(feature = "abi-test-support")]
+pub fn abi_support_incremental_callback_table_contract(
+    tables: &[(bool, bool, bool)],
+) -> Vec<AbiIncrementalCallbackTableSnapshot> {
+    tables
+        .iter()
+        .map(|&(get_glyph_data, free_glyph_data, get_glyph_metrics)| {
+            let funcs = FT_Incremental_FuncsRec {
+                get_glyph_data: get_glyph_data.then_some(wasm_incremental_table_get_glyph_data),
+                free_glyph_data: free_glyph_data.then_some(wasm_incremental_table_free_glyph_data),
+                get_glyph_metrics: get_glyph_metrics
+                    .then_some(wasm_incremental_table_get_glyph_metrics),
+            };
+            AbiIncrementalCallbackTableSnapshot {
+                get_glyph_data: funcs.get_glyph_data.is_some(),
+                free_glyph_data: funcs.free_glyph_data.is_some(),
+                get_glyph_metrics: funcs.get_glyph_metrics.is_some(),
+            }
+        })
+        .collect()
 }
 
 /// Opens a pure-Rust Wasm-facade face through the incremental parameter path

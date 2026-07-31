@@ -3525,6 +3525,13 @@ def ftincrem_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     ):
         return None
     if (
+        row.case_id == "ftincrem.FT_Incremental_FuncsRec.required_and_optional_callbacks"
+        and row.operation == "ftincrem.validate_callback_table"
+        and row.params.get("runtime_route")
+        == "actual_incremental_callback_table_contract"
+    ):
+        return None
+    if (
         row.case_id == "ftincrem.FT_Incremental_Metrics.null_not_passed_by_c"
         and row.operation == "ftincrem.incremental_metrics_nullness"
         and row.params.get("runtime_route") == "actual_incremental_metrics_nullness"
@@ -3689,6 +3696,18 @@ def ftincrem_real_parity_reason(row: ConcreteInput) -> str | None:
             "and stores that exact interface pointer: pinned C, Rust FFI, C ABI, "
             "and WASM compare the face-internal pointer identity and cast class "
             "on the same DejaVuSans input"
+        )
+    if (
+        row.case_id == "ftincrem.FT_Incremental_FuncsRec.required_and_optional_callbacks"
+        and row.operation == "ftincrem.validate_callback_table"
+        and row.params.get("runtime_route")
+        == "actual_incremental_callback_table_contract"
+    ):
+        return (
+            "Pinned C, Rust FFI, C ABI, and WASM construct each callback table "
+            "with real function-pointer slots and compare required-pointer "
+            "acceptance, optional metrics nullability, and the exact required "
+            "and optional field lists from freetype/ftincrem.h"
         )
     if (
         row.case_id
