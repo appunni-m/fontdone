@@ -96,25 +96,25 @@ The last committed full parity snapshot was recorded on **2026-07-31**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,247 |
-| Passed cases | 7,247 |
+| Runnable exact-comparison cases | 7,255 |
+| Passed cases | 7,255 |
 | Failed cases | 0 |
-| Explicitly pending cases | 60 |
-| Covered manifest cases | 4,118 |
+| Explicitly pending cases | 52 |
+| Covered manifest cases | 4,126 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,258 |
 | Concrete expanded cases | 7,307 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,244 / 7,244` means every runnable case in that execution matched. It does
-not turn the 63 pending cases into passes. Likewise, 218/218 function-route
+`7,255 / 7,255` means every runnable case in that execution matched. It does
+not turn the 52 pending cases into passes. Likewise, 218/218 function-route
 evidence can be satisfied by a narrow success or null-validation route; it is
 not equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP run
-`6c380900-bdb3-4e47-b588-fa91d8da3d83` against commit
-`514cca075fc5181b9bbd1005e4d53f6c3462381c`.
+`87cdb8e3-ee97-416e-8a90-5247a47b456f` against clean commit
+`68066aa35fb62c152c5e0757184c7bfcdc4bdc7c`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -161,7 +161,7 @@ The latest committed scorecard has **9 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 names, signatures, and traced function routes; 4,999 / 5,047 pinned-C runtime contract rows exact, with 48 pending |
+| Functions | 218 / 218 names, signatures, and traced function routes; 5,007 / 5,047 pinned-C runtime contract rows exact, with 40 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership, state, errors, modules, headers | Complete under their blocking scorecard measurements |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
