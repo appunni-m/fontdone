@@ -2390,7 +2390,8 @@ fn compare_backend_outputs_with_oracle_cache(
         .zip(expanded_oracle_outputs.iter())
         .map(|(case, output)| {
             let output = project_incremental_metrics_nullness(case, output.clone())?;
-            project_incremental_metrics_seed(case, output)
+            let output = project_incremental_metrics_seed(case, output)?;
+            project_incremental_metrics_override(case, output)
         })
         .collect::<Result<Arc<[_]>, _>>()?;
     let result = {
@@ -43381,6 +43382,7 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         "ftincrem.incremental_state_lifecycle"
         | "ftincrem.incremental_metrics_nullness"
         | "ftincrem.incremental_metrics_seed"
+        | "ftincrem.incremental_metrics_override"
             if !case.expect_error =>
         {
             let mut args = vec!["--incremental-state-lifecycle".to_string()];
@@ -44815,6 +44817,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftincrem.incremental_metrics_seed" if !case.expect_error => {
             project_incremental_metrics_seed(case, rust_incremental_state_lifecycle(case)?)
+        }
+        "ftincrem.incremental_metrics_override" if !case.expect_error => {
+            project_incremental_metrics_override(case, rust_incremental_state_lifecycle(case)?)
         }
         "ftcache.manager_remove_face_id" if !case.expect_error => rust_manager_remove_face_id(case),
         "ftcache.manager_done" if !case.expect_error => rust_manager_done(case),
@@ -46251,6 +46256,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftincrem.incremental_metrics_seed" if !case.expect_error => {
             project_incremental_metrics_seed(case, c_incremental_state_lifecycle(case)?)
         }
+        "ftincrem.incremental_metrics_override" if !case.expect_error => {
+            project_incremental_metrics_override(case, c_incremental_state_lifecycle(case)?)
+        }
         "ftcache.manager_remove_face_id" if !case.expect_error => c_manager_remove_face_id(case),
         "ftcache.manager_done" if !case.expect_error => c_manager_done(case),
         "ftcache.manager_lifecycle" if !case.expect_error => {
@@ -47488,6 +47496,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftincrem.incremental_metrics_seed" if !case.expect_error => {
             project_incremental_metrics_seed(case, wasm_incremental_state_lifecycle(case)?)
+        }
+        "ftincrem.incremental_metrics_override" if !case.expect_error => {
+            project_incremental_metrics_override(case, wasm_incremental_state_lifecycle(case)?)
         }
         "ftcache.manager_remove_face_id" if !case.expect_error => wasm_manager_remove_face_id(case),
         "ftcache.manager_done" if !case.expect_error => wasm_manager_done(case),
@@ -64600,6 +64611,65 @@ fn project_incremental_metrics_seed(
             "seed_metrics": snapshot,
             "vertical_arg": false,
             "glyph_index": glyph_index,
+        }),
+    })
+}
+
+/// Projects the maintained incremental lifecycle trace into the public
+/// horizontal override contract.  Both the callback's post-mutation record and
+/// the resulting slot metrics must be present; a missing callback cannot count
+/// as a successful override route.
+fn project_incremental_metrics_override(
+    case: &InputCase,
+    state: RunOutput,
+) -> Result<RunOutput, String> {
+    if case.case_id != "ftincrem.FT_Incremental_MetricsRec.horizontal_override_applied" {
+        return Ok(state);
+    }
+    if state.status.kind != StatusKind::Ok {
+        return Ok(state);
+    }
+    let glyph_index = glyph_index_param(&case.inputs.params)?;
+    let callback_log = state
+        .output
+        .get("callback_log")
+        .and_then(Value::as_array)
+        .ok_or_else(|| "incremental metrics override trace has no callback_log".to_string())?;
+    let metric_event = callback_log
+        .iter()
+        .find(|event| {
+            event.get("event").and_then(Value::as_str) == Some("get_glyph_metrics")
+                && event.get("vertical").and_then(Value::as_bool) == Some(false)
+        })
+        .ok_or_else(|| {
+            "incremental metrics override trace did not observe a horizontal callback".to_string()
+        })?;
+    if metric_event.get("glyph_index") != Some(&json!(glyph_index)) {
+        return Err(
+            "incremental metrics override callback glyph does not match request".to_string(),
+        );
+    }
+    let callback_metrics = metric_event
+        .get("output")
+        .cloned()
+        .ok_or_else(|| "incremental metrics override event has no output snapshot".to_string())?;
+    let slot_metrics = state
+        .output
+        .get("slot")
+        .and_then(|slot| slot.get("metrics"))
+        .cloned()
+        .ok_or_else(|| "incremental metrics override trace has no slot metrics".to_string())?;
+    let load_error = state
+        .output
+        .get("load_error")
+        .cloned()
+        .ok_or_else(|| "incremental metrics override trace has no load_error".to_string())?;
+    Ok(RunOutput {
+        status: state.status,
+        output: json!({
+            "load_error": load_error,
+            "callback_metrics": callback_metrics,
+            "slot_metrics": slot_metrics,
         }),
     })
 }

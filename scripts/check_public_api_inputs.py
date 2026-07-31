@@ -3501,6 +3501,13 @@ def ftincrem_subsystem_pending_reason(row: ConcreteInput) -> str | None:
         and unresolved_assets_reason(row) is None
     ):
         return None
+    if (
+        row.case_id == "ftincrem.FT_Incremental_MetricsRec.horizontal_override_applied"
+        and row.operation == "ftincrem.incremental_metrics_override"
+        and row.params.get("runtime_route") == "actual_incremental_metrics_override"
+        and unresolved_assets_reason(row) is None
+    ):
+        return None
     ftincrem_rows_without_maintained_route = {
         "ftincrem.FT_Incremental.handle_passed_without_deref": (
             "FT_Incremental handle identity parity needs a maintained "
@@ -3613,6 +3620,18 @@ def ftincrem_real_parity_reason(row: ConcreteInput) -> str | None:
             "horizontal FT_Incremental_MetricsRec before callback mutation; "
             "pinned C, Rust FFI, C ABI, and WASM compare the exact seed fields, "
             "vertical flag, and glyph index"
+        )
+    if (
+        row.case_id == "ftincrem.FT_Incremental_MetricsRec.horizontal_override_applied"
+        and row.operation == "ftincrem.incremental_metrics_override"
+        and row.params.get("runtime_route") == "actual_incremental_metrics_override"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_Incremental_GetGlyphMetricsFunc mutates the horizontal seeded "
+            "metrics and public slot output through the maintained lifecycle; "
+            "pinned C, Rust FFI, C ABI, and WASM compare load status, callback "
+            "metrics, and horizontal slot metrics"
         )
     return None
 

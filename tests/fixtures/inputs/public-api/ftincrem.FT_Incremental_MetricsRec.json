@@ -146,28 +146,27 @@
       "case_id": "ftincrem.FT_Incremental_MetricsRec.horizontal_override_applied",
       "subject": "ftincrem.FT_Incremental_MetricsRec",
       "case": "horizontal_override_applied",
-      "operation": "ftincrem.override_glyph_metrics",
+      "operation": "ftincrem.incremental_metrics_override",
       "schema": "api_result",
       "expect_error": false,
       "inputs": {
         "assets": {
           "font": {
             "kind": "ref",
-            "id": "input/fonts/incremental/minimal-glyf-incremental.ttf"
+            "role": "font",
+            "path": "input/fonts/DejaVuSans.ttf"
           }
         },
         "params": {
-          "glyph_index": 1,
+          "face_index": 0,
+          "glyph_index": 36,
+          "load_flags": "FT_LOAD_NO_SCALE",
+          "horizontal_bearing_delta": 7,
+          "horizontal_advance_delta": 11,
+          "vertical_bearing_delta": 13,
+          "vertical_advance_delta": 17,
           "vertical": false,
-          "callback_sets": {
-            "bearing_x": 123,
-            "bearing_y": 0,
-            "advance": 700,
-            "advance_v": 0
-          },
-          "load_flags": [
-            "FT_LOAD_DEFAULT"
-          ]
+          "runtime_route": "actual_incremental_metrics_override"
         }
       },
       "classifiers": [
@@ -176,7 +175,7 @@
         "horizontal_metrics"
       ],
       "expectation": {
-        "status": "build_dependent",
+        "status": "supported",
         "output_shape": {
           "load_error": "FT_Error",
           "slot_metrics": "FT_Glyph_Metrics",
@@ -195,7 +194,8 @@
           "freetype/src/truetype/ttgload.c"
         ],
         "fixture_requirements": [
-          "Requires an incremental TrueType row where the metrics callback succeeds and mutates bearing_x and advance."
+          "The tracked DejaVuSans.ttf input reaches FT_Incremental_GetGlyphMetricsFunc through the maintained incremental state lifecycle route.",
+          "The horizontal callback output and public slot metrics must prove the callback mutation changes bearing and advance exactly like pinned C across all ABI lanes."
         ]
       }
     },
