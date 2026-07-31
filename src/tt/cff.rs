@@ -1111,4 +1111,101 @@ mod tests {
         assert!(Type2Decoder::new(&[10, 14]).decode().is_err());
         Ok(())
     }
+
+    fn empty_index() -> Vec<u8> {
+        vec![0, 0]
+    }
+
+    fn index_with(objects: &[&[u8]]) -> Vec<u8> {
+        let mut index = Vec::new();
+        index.extend_from_slice(&(objects.len() as u16).to_be_bytes());
+        if objects.is_empty() {
+            return index;
+        }
+        index.push(1); // offSize = 1
+        let mut offset = 1usize;
+        index.push(offset as u8);
+        for object in objects {
+            offset += object.len();
+            index.push(offset as u8);
+        }
+        for object in objects {
+            index.extend_from_slice(object);
+        }
+        index
+    }
+
+    #[test]
+    fn parse_minimal_cff_table() -> Result<(), FontError> {
+        // CFF header (4) + Name INDEX (empty) + Top DICT INDEX + String
+        // INDEX (empty) + Global Subr INDEX (empty) + CharStrings INDEX.
+        let mut table = Vec::new();
+        table.extend_from_slice(&[1, 0, 4, 4]); // header
+        table.extend_from_slice(&empty_index()); // Name
+        // Top DICT object: CharStrings offset operand + operator 17.
+        // Operand is a one-byte CFF number: value = byte - 139.
+        let top_dict_bytes = [156u8, 17]; // offset 17, operator CharStrings
+        let top_index = index_with(&[&top_dict_bytes]);
+        table.extend_from_slice(&top_index);
+        table.extend_from_slice(&empty_index()); // String
+        table.extend_from_slice(&empty_index()); // Global Subr
+        table.extend_from_slice(&index_with(&[&[14u8]])); // CharStrings
+
+        let cff = parse_cff(&table)?;
+        assert_eq!(cff.charstrings.len(), 1);
+        assert_eq!(cff.charstrings[0], vec![14]);
+        assert!(cff.font_info().family_name.is_none());
+        assert!(cff.cid_info().is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn parse_cff_rejects_bad_headers_and_indexes() {
+        assert!(parse_cff(&[0u8; 3]).is_err());
+        // Header claims a huge header size.
+        assert!(parse_cff(&[1, 0, 200, 4]).is_err());
+        // Invalid INDEX offSize.
+        let mut table = vec![1, 0, 4, 4, 0, 1, 0, 0];
+        table[5] = 5; // Name INDEX count = 1 with offSize 5
+        assert!(parse_cff(&table).is_err());
+    }
+
+    #[test]
+    fn parse_cid_keyed_cff() -> Result<(), FontError> {
+        // Top DICT carries ROS (registry/ordering/supplement) plus a charset
+        // offset and CharStrings offset; String INDEX maps the SIDs.
+        let mut table = Vec::new();
+        table.extend_from_slice(&[1, 0, 4, 4]); // header
+        table.extend_from_slice(&empty_index()); // Name
+        // String INDEX: "Adobe", "Identity".
+        let strings = index_with(&[b"Adobe", b"Identity"]);
+        // Top DICT is 11 bytes: ROS(7) + charset(2) + CharStrings(2).
+        let top_index = index_with(&[&[0u8; 11]]);
+        let charset_offset = 4 + 2 + top_index.len() + strings.len() + 2;
+        let charstrings_offset = charset_offset + 4; // format 0 + one CID
+        let mut top_dict = Vec::new();
+        // ROS with registry SID 391 ("Adobe") and ordering SID 392
+        // ("Identity"): 247-encoding gives [248, 27] and [248, 28].
+        top_dict.extend_from_slice(&[248, 27, 248, 28, 139, 12, 30]);
+        top_dict.push((charset_offset + 139) as u8);
+        top_dict.push(15); // charset operator
+        top_dict.push((charstrings_offset + 139) as u8);
+        top_dict.push(17); // CharStrings operator
+
+        table.extend_from_slice(&index_with(&[&top_dict]));
+        table.extend_from_slice(&strings);
+        table.extend_from_slice(&empty_index()); // Global Subr
+        table.extend_from_slice(&[0, 7]); // charset format 0
+        table.extend_from_slice(&1u16.to_be_bytes()); // one CID
+        table.extend_from_slice(&index_with(&[&[14u8]])); // CharStrings
+        let cff = parse_cff(&table)?;
+        let cid = cff
+            .cid_info()
+            .ok_or_else(|| FontError::InvalidTable("expected CID info".into()))?;
+        assert_eq!(cid.registry, "Adobe");
+        assert_eq!(cid.ordering, "Identity");
+        assert_eq!(cid.supplement, 0);
+        assert_eq!(cid.glyph_cids, vec![0]);
+        Ok(())
+    }
 }
