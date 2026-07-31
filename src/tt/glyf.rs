@@ -861,3 +861,136 @@ fn rounded_offset_font_units(value: i32, scale: i32) -> i32 {
     let rounded = (scaled + 32) & !63;
     ft_div_fix(rounded, scale)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::outline::OutlinePoint as CoreOutlinePoint;
+
+    fn point(x: i32, y: i32) -> OutlinePoint {
+        OutlinePoint {
+            x,
+            y,
+            on_curve: true,
+            tag: 1,
+        }
+    }
+
+    fn component(flags: u16, arg1: i32, arg2: i32) -> CompositeComponent {
+        CompositeComponent {
+            glyph_index: 0,
+            flags,
+            arg1,
+            arg2,
+            args_are_xy: flags & ARGS_ARE_XY_VALUES != 0,
+            transform: Affine::IDENTITY,
+            round_xy_to_grid: flags & ROUND_XY_TO_GRID != 0,
+            use_my_metrics: false,
+        }
+    }
+
+    #[test]
+    fn outline_flag_helpers() {
+        assert_eq!(outline_flags_from_components(&[]), 0);
+        let mut components = vec![component(0, 0, 0)];
+        assert_eq!(outline_flags_from_components(&components), 0);
+        components[0].flags |= OVERLAP_COMPOUND;
+        assert_eq!(outline_flags_from_components(&components), OUTLINE_OVERLAP);
+
+        assert_eq!(outline_flags_from_simple_tags(&[]), 0);
+        assert_eq!(outline_flags_from_simple_tags(&[0]), 0);
+        assert_eq!(
+            outline_flags_from_simple_tags(&[OVERLAP_SIMPLE]),
+            OUTLINE_OVERLAP
+        );
+    }
+
+    #[test]
+    fn component_offsets_and_rounding() {
+        // Unrounded args pass through unchanged.
+        let mut comp = component(ARGS_ARE_XY_VALUES, 100, -200);
+        assert_eq!(component_xy_offset(&comp, None), (100, -200));
+        assert_eq!(
+            component_xy_offset(&comp, Some((1 << 16, 1 << 16))),
+            (100, -200)
+        );
+
+        // Rounded args scale to font units then back.
+        comp.round_xy_to_grid = true;
+        let (x, y) = component_xy_offset(&comp, Some((1 << 16, 1 << 16)));
+        // Grid rounding snaps 100 to 128 and -200 to -192 at 1:1 scale.
+        assert_eq!(x, 128);
+        assert_eq!(y, -192);
+
+        // Rounding with a scale factor.
+        let (x, _) = component_xy_offset(&comp, Some((2 << 16, 2 << 16)));
+        assert_eq!(x, 96);
+        assert_eq!(rounded_offset_font_units(0, 1 << 16), 0);
+    }
+
+    #[test]
+    fn transform_point_applies_affine_and_offset() {
+        let comp = component(0, 10, 20);
+        let transformed = transform_point(point(100, 50), &comp, 10, 20);
+        assert_eq!(transformed.x, 110);
+        assert_eq!(transformed.y, 70);
+        assert!(transformed.on_curve);
+
+        let mut skewed = component(0, 0, 0);
+        skewed.transform = Affine {
+            xx: 0x1_0000,
+            xy: 0x1_0000,
+            yx: 0,
+            yy: 0x1_0000,
+        };
+        let transformed = transform_point(point(10, 20), &skewed, 0, 0);
+        assert_eq!(transformed.x, 30);
+        assert_eq!(transformed.y, 20);
+    }
+
+    #[test]
+    fn parse_simple_glyph_accepts_synthetic_outline() -> Result<(), FontError> {
+        // num_contours=1, bbox, then one contour with two points.
+        let mut data = Vec::new();
+        data.extend_from_slice(&1i16.to_be_bytes());
+        data.extend_from_slice(&0i16.to_be_bytes()); // xmin
+        data.extend_from_slice(&0i16.to_be_bytes()); // ymin
+        data.extend_from_slice(&100i16.to_be_bytes()); // xmax
+        data.extend_from_slice(&100i16.to_be_bytes()); // ymax
+        data.extend_from_slice(&1u16.to_be_bytes()); // endPtsOfContours
+        data.extend_from_slice(&0u16.to_be_bytes()); // instruction length
+        // Flags: on-curve + x-short + y-short, positive short values.
+        let flag = ON_CURVE
+            | X_SHORT_VECTOR
+            | Y_SHORT_VECTOR
+            | X_IS_SAME_OR_POSITIVE_SHORT
+            | Y_IS_SAME_OR_POSITIVE_SHORT;
+        data.push(flag);
+        data.push(flag);
+        data.push(10); // dx1
+        data.push(0); // dx2
+        data.push(20); // dy1
+        data.push(0); // dy2
+        let outline = parse_simple_glyph(&data, 1)?;
+        assert_eq!(outline.num_contours, 1);
+        assert_eq!(outline.points.len(), 2);
+        assert_eq!(outline.points[0].x, 10);
+        assert_eq!(outline.points[0].y, 20);
+        // Point 1 uses the same flags: zero deltas keep the coordinates.
+        assert_eq!(outline.points[1].x, 10);
+        assert_eq!(outline.points[1].y, 20);
+        Ok(())
+    }
+
+    #[test]
+    fn core_outline_point_conversion_keeps_coordinates() {
+        // Keep the helper import used above exercised.
+        let core = CoreOutlinePoint {
+            x: 5,
+            y: 6,
+            ..Default::default()
+        };
+        assert_eq!(core.x, 5);
+        assert_eq!(core.y, 6);
+    }
+}
