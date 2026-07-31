@@ -52647,7 +52647,7 @@ fn rust_otsvg_document_probe(case: &InputCase) -> Result<RunOutput, String> {
     }
     let load_flags = params
         .get("load_flags")
-        .map_or(Ok(FT_LOAD_COLOR), |value| load_flags_param_value(value));
+        .map_or(Ok(FT_LOAD_COLOR), load_flags_param_value);
     let glyph_index = svg_document_glyph_index(params)?;
     let slot = match FT_Load_Glyph(&face, glyph_index, load_flags?) {
         Ok(slot) => slot,
@@ -52699,7 +52699,7 @@ fn c_otsvg_document_probe(case: &InputCase) -> Result<RunOutput, String> {
     }
     let load_flags = params
         .get("load_flags")
-        .map_or(Ok(FT_LOAD_COLOR), |value| load_flags_param_value(value));
+        .map_or(Ok(FT_LOAD_COLOR), load_flags_param_value);
     let glyph_index = svg_document_glyph_index(params)?;
     let mut status = c_abi::FT_Load_Glyph(face, glyph_index, load_flags?);
     let mut glyph = ptr::null_mut();
@@ -52772,7 +52772,7 @@ fn wasm_otsvg_document_probe(case: &InputCase) -> Result<RunOutput, String> {
     }
     let load_flags = params
         .get("load_flags")
-        .map_or(Ok(FT_LOAD_COLOR), |value| load_flags_param_value(value));
+        .map_or(Ok(FT_LOAD_COLOR), load_flags_param_value);
     let glyph_index = svg_document_glyph_index(params)?;
     let mut status = wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, load_flags?);
     let mut glyph_handle = 0usize;
