@@ -8406,6 +8406,252 @@ static FT_Error open_record_face(FT_Library library,
     return err;
 }
 
+/*
+ * Keep public FT_Glyph/FT_GlyphRec probes address-independent.  `clazz` is a
+ * private implementation pointer: callers may observe the detached record,
+ * format, and public behavior selected by that format, but must not compare
+ * the private class address itself.
+ */
+static void print_glyph_type_contract_row(const char* path,
+                                          FT_Error status,
+                                          FT_Glyph glyph,
+                                          const char* class_identity,
+                                          const char* behavior) {
+    printf("{\"path\":\"%s\",\"status\":%d,\"handle_nullness\":\"%s\",\"record_relationship\":\"%s\",\"format\":",
+           path,
+           status,
+           glyph ? "nonnull" : "null",
+           glyph ? "FT_GlyphRec" : "none");
+    if (glyph) {
+        printf("%ld", (long)glyph->format);
+    } else {
+        printf("null");
+    }
+    printf(",\"clazz_identity_class\":\"%s\",\"ownership_or_class_behavior\":\"%s\"}",
+           class_identity,
+           behavior);
+}
+
+static void print_glyph_type_contract_status_row(const char* path,
+                                                 FT_Error status,
+                                                 FT_Glyph_Format format,
+                                                 const char* class_identity,
+                                                 const char* behavior) {
+    printf("{\"path\":\"%s\",\"status\":%d,\"handle_nullness\":\"null\",\"record_relationship\":\"none\",\"format\":",
+           path,
+           status);
+    if (status == FT_Err_Ok) {
+        printf("%ld", (long)format);
+    } else {
+        printf("null");
+    }
+    printf(",\"clazz_identity_class\":\"%s\",\"ownership_or_class_behavior\":\"%s\"}",
+           class_identity,
+           behavior);
+}
+
+static int emit_glyph_type_contract_case(int argc, char** argv) {
+    if (argc != 13) {
+        fprintf(stderr,
+                "--glyph-type-contract-case requires CASE OUTLINE_KIND OUTLINE_SOURCE "
+                "BITMAP_KIND BITMAP_SOURCE FACE_INDEX OUTLINE_SIZE BITMAP_SIZE "
+                "OUTLINE_GLYPH BITMAP_GLYPH RENDER_MODE\n");
+        return 2;
+    }
+    const char* case_id = argv[2];
+    const char* outline_kind = argv[3];
+    const char* outline_value = argv[4];
+    const char* bitmap_kind = argv[5];
+    const char* bitmap_value = argv[6];
+    FT_Long face_index = (FT_Long)strtol(argv[7], NULL, 10);
+    FT_UInt outline_size = (FT_UInt)strtoul(argv[8], NULL, 10);
+    FT_UInt bitmap_size = (FT_UInt)strtoul(argv[9], NULL, 10);
+    FT_UInt outline_glyph_index = (FT_UInt)strtoul(argv[10], NULL, 10);
+    FT_UInt bitmap_glyph_index = (FT_UInt)strtoul(argv[11], NULL, 10);
+    FT_Render_Mode render_mode = (FT_Render_Mode)strtol(argv[12], NULL, 10);
+
+    FT_Library library = NULL;
+    FT_Face outline_face = NULL;
+    FT_Face bitmap_face = NULL;
+    FT_Glyph outline_glyph = NULL;
+    FT_Glyph bitmap_glyph = NULL;
+    unsigned char* outline_data = NULL;
+    unsigned char* bitmap_data = NULL;
+    FT_Error error = FT_Init_FreeType(&library);
+    if (!error) {
+        error = open_record_face(library,
+                                 outline_kind,
+                                 outline_value,
+                                 face_index,
+                                 outline_size,
+                                 outline_size,
+                                 &outline_data,
+                                 &outline_face);
+    }
+    if (!error) {
+        error = FT_Load_Glyph(outline_face, outline_glyph_index, FT_LOAD_DEFAULT);
+    }
+
+    printf("{");
+    print_status(0);
+    printf(",\"output\":{\"rows\":[");
+
+    if (streq(case_id, "ftglyph.FT_Glyph.caller_owned_lifetime")) {
+        FT_Error outline_error = error;
+        if (!outline_error) {
+            outline_error = FT_Get_Glyph(outline_face->glyph, &outline_glyph);
+        }
+        print_glyph_type_contract_row("FT_Get_Glyph outline",
+                                      outline_error,
+                                      outline_glyph,
+                                      "outline_class",
+                                      "caller_owned_detached_outline");
+        if (outline_glyph) {
+            FT_Done_Glyph(outline_glyph);
+            outline_glyph = NULL;
+        }
+
+        FT_Error copy_error = error;
+        FT_Glyph copy = NULL;
+        if (!copy_error) {
+            copy_error = FT_Get_Glyph(outline_face->glyph, &outline_glyph);
+        }
+        if (!copy_error) {
+            copy_error = FT_Glyph_Copy(outline_glyph, &copy);
+        }
+        if (outline_glyph) {
+            FT_Done_Glyph(outline_glyph);
+            outline_glyph = NULL;
+        }
+        printf(",");
+        print_glyph_type_contract_row("FT_Glyph_Copy outline",
+                                      copy_error,
+                                      copy,
+                                      "outline_class",
+                                      "caller_owned_detached_copy");
+        if (copy) {
+            FT_Done_Glyph(copy);
+        }
+
+        FT_Error bitmap_conversion_error = error;
+        if (!bitmap_conversion_error) {
+            bitmap_conversion_error = FT_Get_Glyph(outline_face->glyph, &outline_glyph);
+        }
+        if (!bitmap_conversion_error) {
+            bitmap_conversion_error = FT_Glyph_To_Bitmap(&outline_glyph, render_mode, NULL, 0);
+        }
+        printf(",");
+        print_glyph_type_contract_row("FT_Glyph_To_Bitmap outline",
+                                      bitmap_conversion_error,
+                                      outline_glyph,
+                                      "bitmap_class",
+                                      "caller_owned_detached_bitmap");
+        if (outline_glyph) {
+            FT_Done_Glyph(outline_glyph);
+            outline_glyph = NULL;
+        }
+
+        FT_Error bitmap_error = open_record_face(library,
+                                                 bitmap_kind,
+                                                 bitmap_value,
+                                                 face_index,
+                                                 bitmap_size,
+                                                 bitmap_size,
+                                                 &bitmap_data,
+                                                 &bitmap_face);
+        if (!bitmap_error) {
+            bitmap_error = FT_Load_Glyph(bitmap_face, bitmap_glyph_index, FT_LOAD_DEFAULT);
+        }
+        if (!bitmap_error) {
+            bitmap_error = FT_Get_Glyph(bitmap_face->glyph, &bitmap_glyph);
+        }
+        printf(",");
+        print_glyph_type_contract_row("FT_Get_Glyph bitmap",
+                                      bitmap_error,
+                                      bitmap_glyph,
+                                      "bitmap_class",
+                                      "caller_owned_detached_bitmap");
+        if (bitmap_glyph) {
+            FT_Done_Glyph(bitmap_glyph);
+            bitmap_glyph = NULL;
+        }
+    } else {
+        FT_Error outline_error = error;
+        if (!outline_error) {
+            outline_error = FT_Get_Glyph(outline_face->glyph, &outline_glyph);
+        }
+        print_glyph_type_contract_row("outline",
+                                      outline_error,
+                                      outline_glyph,
+                                      "outline_class",
+                                      "public_outline_behavior");
+        if (outline_glyph) {
+            FT_Done_Glyph(outline_glyph);
+            outline_glyph = NULL;
+        }
+
+        FT_Error bitmap_error = open_record_face(library,
+                                                 bitmap_kind,
+                                                 bitmap_value,
+                                                 face_index,
+                                                 bitmap_size,
+                                                 bitmap_size,
+                                                 &bitmap_data,
+                                                 &bitmap_face);
+        if (!bitmap_error) {
+            bitmap_error = FT_Load_Glyph(bitmap_face, bitmap_glyph_index, FT_LOAD_DEFAULT);
+        }
+        if (!bitmap_error) {
+            bitmap_error = FT_Get_Glyph(bitmap_face->glyph, &bitmap_glyph);
+        }
+        printf(",");
+        print_glyph_type_contract_row("bitmap",
+                                      bitmap_error,
+                                      bitmap_glyph,
+                                      "bitmap_class",
+                                      "public_bitmap_behavior");
+        if (bitmap_glyph) {
+            FT_Done_Glyph(bitmap_glyph);
+            bitmap_glyph = NULL;
+        }
+
+        printf(",");
+        print_glyph_type_contract_status_row("svg_optional",
+                                             FT_Err_Invalid_Glyph_Format,
+                                             FT_GLYPH_FORMAT_SVG,
+                                             "unsupported_svg",
+                                             "optional_svg_unsupported");
+        FT_GlyphRec bad_record;
+        memset(&bad_record, 0, sizeof(bad_record));
+        printf(",");
+        print_glyph_type_contract_row("bad_null_clazz",
+                                      FT_Err_Ok,
+                                      &bad_record,
+                                      "null_class",
+                                      "public_class_rejected");
+    }
+    printf("]}}\n");
+
+    if (outline_glyph) {
+        FT_Done_Glyph(outline_glyph);
+    }
+    if (bitmap_glyph) {
+        FT_Done_Glyph(bitmap_glyph);
+    }
+    if (outline_face) {
+        FT_Done_Face(outline_face);
+    }
+    if (bitmap_face) {
+        FT_Done_Face(bitmap_face);
+    }
+    if (library) {
+        FT_Done_FreeType(library);
+    }
+    free(outline_data);
+    free(bitmap_data);
+    return 0;
+}
+
 static void print_bitmap_glyph_record_row(const char* creation_path, FT_BitmapGlyph glyph) {
     FT_Bitmap* bitmap = &glyph->bitmap;
     long len = 0;
@@ -34911,6 +35157,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 10 && streq(argv[1], "--glyph-record")) {
         return emit_face_or_slot(argc, argv);
+    }
+    if (argc == 13 && streq(argv[1], "--glyph-type-contract-case")) {
+        return emit_glyph_type_contract_case(argc, argv);
     }
     if (argc == 13 && streq(argv[1], "--bitmap-glyph-record-paths")) {
         return emit_bitmap_glyph_record_paths(argc, argv);

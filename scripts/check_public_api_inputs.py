@@ -3675,6 +3675,28 @@ def done_glyph_lifecycle_real_parity_reason(row: ConcreteInput) -> str | None:
     )
 
 
+def glyph_type_contract_real_parity_reason(row: ConcreteInput) -> str | None:
+    """Address-independent public FT_Glyph/FT_GlyphRec class contract."""
+    if row.case_id == "ftglyph.FT_Glyph.caller_owned_lifetime":
+        return (
+            "FT_Get_Glyph, FT_Glyph_Copy, FT_Glyph_To_Bitmap, and FT_Done_Glyph "
+            "caller-owned handle behavior validates with exact public record "
+            "format, nullness, class classification, and detached ownership "
+            "across pinned C, Rust FFI, C ABI, and WASM"
+        )
+    if row.case_id in {
+        "ftglyph.FT_GlyphRec.clazz_is_private_identity_only",
+        "ftglyph.FT_Glyph_Class.opaque_class_identity_only",
+    }:
+        return (
+            "FT_GlyphRec and FT_Glyph_Class identity validates through outline, "
+            "bitmap, optional-SVG, and null-class public behavior without "
+            "comparing private clazz addresses across pinned C, Rust FFI, C ABI, "
+            "and WASM"
+        )
+    return None
+
+
 def ftglyph_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     """Rows for glyph object behavior that do not have a maintained route."""
     if (
@@ -3697,18 +3719,6 @@ def ftglyph_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     if reason is not None:
         return reason
     ftglyph_rows_without_maintained_route = {
-        "ftglyph.FT_Glyph.caller_owned_lifetime": (
-            "FT_Glyph caller-owned lifetime parity needs a maintained "
-            "allocation/free event route for FT_New_Glyph, FT_Get_Glyph, "
-            "FT_Glyph_Copy, FT_Glyph_To_Bitmap, and FT_Done_Glyph; treating "
-            "the handle as an opaque non-null pointer would be a green placeholder"
-        ),
-        "ftglyph.FT_Glyph_Class.opaque_class_identity_only": (
-            "FT_Glyph_Class identity parity must create outline, bitmap, and "
-            "SVG glyphs through public operations and classify the private "
-            "class pointer only by stable public behavior; raw private pointer "
-            "or field comparison is not portable C/Rust/C-ABI/WASM parity"
-        ),
         "ftglyph.FT_New_Glyph.success_renderer_supported_custom_format": (
             "FT_New_Glyph custom-format success parity needs a maintained "
             "synthetic renderer registration route where pinned C accepts the "
@@ -4630,16 +4640,6 @@ def pending_route_reason(row: ConcreteInput) -> str | None:
         )
     if row.case_id == "ftglyph.FT_Get_Glyph.error_advance_out_of_16_16_range":
         return None
-    if row.case_id == "ftglyph.FT_GlyphRec.clazz_is_private_identity_only":
-        return (
-            "FT_GlyphRec clazz identity requires a maintained record-inspection "
-            "route that creates outline, bitmap, and SVG glyphs through public "
-            "C-observable operations and classifies the private clazz pointer "
-            "only by public behavior and glyph format, matching "
-            "freetype/include/freetype/ftglyph.h:93-120 across Rust FFI, C ABI, "
-            "and WASM; raw pointer identity or layout-only checks would be a "
-            "green placeholder"
-        )
     if (
         (row.operation, row.case_id) in exact_error_route_gaps
         and (row.operation, row.case_id) not in FTERRDEF_EXACT_ERROR_BATCH
@@ -8438,6 +8438,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     ftincrem_real = ftincrem_real_parity_reason(row)
     if ftincrem_real:
         return ("real-parity", ftincrem_real)
+    glyph_type_contract_real = glyph_type_contract_real_parity_reason(row)
+    if glyph_type_contract_real:
+        return ("real-parity", glyph_type_contract_real)
     ftglyph_pending = ftglyph_subsystem_pending_reason(row)
     if ftglyph_pending:
         return ("pending-route", ftglyph_pending)

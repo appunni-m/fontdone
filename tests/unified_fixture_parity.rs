@@ -1178,6 +1178,11 @@ fn glyph_record_runtime_supported(case: &InputCase) -> bool {
 }
 
 fn ftglyph_type_runtime_supported(case: &InputCase) -> bool {
+    if glyph_type_contract_case(case) {
+        return !case.expect_error
+            && glyph_type_contract_font_assets_resolved(case)
+            && !has_probe_params(case);
+    }
     matches!(
         case.case_id.as_str(),
         "ftglyph.FT_OutlineGlyph.pointer_alias_matches_record"
@@ -1198,6 +1203,26 @@ fn ftglyph_type_runtime_supported(case: &InputCase) -> bool {
             .is_some_and(|format| {
                 matches!(format, "FT_GLYPH_FORMAT_OUTLINE" | "FT_GLYPH_FORMAT_BITMAP")
             })
+}
+
+fn glyph_type_contract_case(case: &InputCase) -> bool {
+    matches!(
+        case.case_id.as_str(),
+        "ftglyph.FT_Glyph.caller_owned_lifetime"
+            | "ftglyph.FT_GlyphRec.clazz_is_private_identity_only"
+            | "ftglyph.FT_Glyph_Class.opaque_class_identity_only"
+    )
+}
+
+fn glyph_type_contract_font_assets_resolved(case: &InputCase) -> bool {
+    ["outline_font", "bitmap_strike_font"]
+        .into_iter()
+        .all(|name| {
+            case.inputs
+                .assets
+                .get(name)
+                .is_some_and(asset_is_runtime_resolved)
+        })
 }
 
 fn sbit_cache_runtime_supported(case: &InputCase) -> bool {
@@ -42448,6 +42473,23 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             Ok(args)
         }
         "ftglyph.type_runtime" if ftglyph_type_runtime_supported(case) => {
+            if glyph_type_contract_case(case) {
+                let mut args = vec![
+                    "--glyph-type-contract-case".to_string(),
+                    case.case_id.clone(),
+                ];
+                push_named_font_source(case, "outline_font", &mut args)?;
+                push_named_font_source(case, "bitmap_strike_font", &mut args)?;
+                args.extend([
+                    face_index_param(&case.inputs.params)?.to_string(),
+                    "24".to_string(),
+                    "20".to_string(),
+                    "36".to_string(),
+                    "1".to_string(),
+                    FT_RENDER_MODE_NORMAL.to_string(),
+                ]);
+                return Ok(args);
+            }
             if ftglyph_type_runtime_format(params)? == "FT_GLYPH_FORMAT_BITMAP" {
                 let mut args = vec!["--glyph-record".to_string()];
                 push_named_font_source(case, "bitmap_strike_font", &mut args)?;
@@ -42555,6 +42597,23 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             Ok(args)
         }
         "ftsynth.glyphslot_null_noop" => ftsynth_null_noop_oracle_args(params),
+        "ftglyph.record_inspect" if glyph_type_contract_case(case) => {
+            let mut args = vec![
+                "--glyph-type-contract-case".to_string(),
+                case.case_id.clone(),
+            ];
+            push_named_font_source(case, "outline_font", &mut args)?;
+            push_named_font_source(case, "bitmap_strike_font", &mut args)?;
+            args.extend([
+                face_index_param(&case.inputs.params)?.to_string(),
+                "24".to_string(),
+                "20".to_string(),
+                "36".to_string(),
+                "1".to_string(),
+                FT_RENDER_MODE_NORMAL.to_string(),
+            ]);
+            Ok(args)
+        }
         "ftglyph.get_glyph"
         | "ftglyph.glyph_copy"
         | "ftglyph.record_inspect"
@@ -44125,6 +44184,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         {
             rust_glyph_transform(case)
         }
+        "ftglyph.type_runtime" if glyph_type_contract_case(case) => rust_glyph_type_contract(case),
         "ftglyph.type_runtime" if ftglyph_type_runtime_supported(case) => {
             if ftglyph_type_runtime_format(&case.inputs.params)? == "FT_GLYPH_FORMAT_BITMAP" {
                 let face = open_named_face(case, "bitmap_strike_font")?;
@@ -44175,6 +44235,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftsynth.glyphslot_adjust_weight_after_load" => rust_ftsynth_weight(case, false),
         "ftsynth.glyphslot_embolden_after_load" => rust_ftsynth_weight(case, true),
         "ftsynth.glyphslot_null_noop" => rust_ftsynth_null_noop(case),
+        "ftglyph.record_inspect" if glyph_type_contract_case(case) => {
+            rust_glyph_type_contract(case)
+        }
         "ftglyph.get_glyph"
         | "ftglyph.glyph_copy"
         | "ftglyph.record_inspect"
@@ -45509,6 +45572,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         {
             c_glyph_transform(case)
         }
+        "ftglyph.type_runtime" if glyph_type_contract_case(case) => c_glyph_type_contract(case),
         "ftglyph.type_runtime" if ftglyph_type_runtime_supported(case) => {
             if ftglyph_type_runtime_format(&case.inputs.params)? == "FT_GLYPH_FORMAT_BITMAP" {
                 let (library, face) = c_open_named_face(case, "bitmap_strike_font")?;
@@ -45599,6 +45663,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             output
         }
         "ftsynth.glyphslot_null_noop" => c_ftsynth_null_noop(case),
+        "ftglyph.record_inspect" if glyph_type_contract_case(case) => c_glyph_type_contract(case),
         "ftglyph.get_glyph"
         | "ftglyph.glyph_copy"
         | "ftglyph.record_inspect"
@@ -46730,6 +46795,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         {
             wasm_glyph_transform(case)
         }
+        "ftglyph.type_runtime" if glyph_type_contract_case(case) => wasm_glyph_type_contract(case),
         "ftglyph.type_runtime" if ftglyph_type_runtime_supported(case) => {
             if ftglyph_type_runtime_format(&case.inputs.params)? == "FT_GLYPH_FORMAT_BITMAP" {
                 let handle = wasm_open_named_face(case, "bitmap_strike_font")?;
@@ -46811,6 +46877,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             output
         }
         "ftsynth.glyphslot_null_noop" => wasm_ftsynth_null_noop(case),
+        "ftglyph.record_inspect" if glyph_type_contract_case(case) => {
+            wasm_glyph_type_contract(case)
+        }
         "ftglyph.get_glyph"
         | "ftglyph.glyph_copy"
         | "ftglyph.record_inspect"
@@ -48190,6 +48259,487 @@ fn ftglyph_type_runtime_format(params: &Value) -> Result<&str, String> {
         .get("format_filter")
         .and_then(Value::as_str)
         .ok_or_else(|| "missing format_filter".to_string())
+}
+
+fn glyph_type_contract_row(
+    path: &str,
+    status: FT_Error,
+    format: Option<FT_Glyph_Format>,
+    class_identity: &str,
+    behavior: &str,
+) -> Value {
+    json!({
+        "path": path,
+        "status": status,
+        "handle_nullness": if format.is_some() { "nonnull" } else { "null" },
+        "record_relationship": if format.is_some() { "FT_GlyphRec" } else { "none" },
+        "format": format.map(i64::from),
+        "clazz_identity_class": class_identity,
+        "ownership_or_class_behavior": behavior,
+    })
+}
+
+fn glyph_type_contract_output(rows: Vec<Value>) -> RunOutput {
+    ok(json!({ "rows": rows }))
+}
+
+fn rust_glyph_contract_face(
+    case: &InputCase,
+    asset_name: &str,
+    pixel_size: u32,
+) -> Result<FT_Face, String> {
+    let bytes = named_font_bytes(case, asset_name)?;
+    let library = FT_Init_FreeType();
+    let mut face = FT_New_Memory_Face(
+        &library,
+        bytes.as_ref(),
+        face_index_param(&case.inputs.params)?,
+        20.0,
+    )
+    .map_err(|err| format!("FT_New_Memory_Face returned {err}"))?;
+    let status = FT_Set_Pixel_Sizes(&mut face, pixel_size, pixel_size);
+    if status != FT_Err_Ok {
+        return Err(format!("FT_Set_Pixel_Sizes returned {status}"));
+    }
+    Ok(face)
+}
+
+fn rust_glyph_contract_outline(
+    case: &InputCase,
+    pixel_size: u32,
+    glyph_index: u32,
+) -> Result<FT_OutlineGlyphOwned, String> {
+    let face = rust_glyph_contract_face(case, "outline_font", pixel_size)?;
+    let slot = FT_Load_Glyph(&face, glyph_index, FT_LOAD_DEFAULT)
+        .map_err(|err| format!("FT_Load_Glyph returned {err}"))?;
+    FT_Get_Outline_Glyph(Some(&slot)).map_err(|err| format!("FT_Get_Outline_Glyph returned {err}"))
+}
+
+fn rust_glyph_contract_bitmap(
+    case: &InputCase,
+    pixel_size: u32,
+    glyph_index: u32,
+) -> Result<FT_BitmapGlyphOwned, String> {
+    let bytes = named_font_bytes(case, "bitmap_strike_font")?;
+    let library = FT_Init_FreeType();
+    let mut face = FT_New_Memory_Face(
+        &library,
+        bytes.as_ref(),
+        face_index_param(&case.inputs.params)?,
+        20.0,
+    )
+    .map_err(|err| format!("FT_New_Memory_Face returned {err}"))?;
+    let status = FT_Set_Pixel_Sizes(&mut face, pixel_size, pixel_size);
+    if status != FT_Err_Ok {
+        return Err(format!("FT_Set_Pixel_Sizes returned {status}"));
+    }
+    let slot = FT_Load_Glyph(&face, glyph_index, FT_LOAD_DEFAULT)
+        .map_err(|err| format!("FT_Load_Glyph returned {err}"))?;
+    FT_Get_Bitmap_Glyph(Some(&slot)).map_err(|err| format!("FT_Get_Bitmap_Glyph returned {err}"))
+}
+
+fn rust_glyph_type_contract(case: &InputCase) -> Result<RunOutput, String> {
+    let mut rows = Vec::new();
+    if case.case_id == "ftglyph.FT_Glyph.caller_owned_lifetime" {
+        let outline = rust_glyph_contract_outline(case, 24, 36)?;
+        rows.push(glyph_type_contract_row(
+            "FT_Get_Glyph outline",
+            FT_Err_Ok,
+            Some(outline.root.format),
+            "outline_class",
+            "caller_owned_detached_outline",
+        ));
+
+        let outline = rust_glyph_contract_outline(case, 24, 36)?;
+        let copy = FT_Outline_Glyph_Copy(&outline);
+        rows.push(glyph_type_contract_row(
+            "FT_Glyph_Copy outline",
+            FT_Err_Ok,
+            Some(copy.root.format),
+            "outline_class",
+            "caller_owned_detached_copy",
+        ));
+
+        let outline = rust_glyph_contract_outline(case, 24, 36)?;
+        let bitmap = FT_Outline_Glyph_To_Bitmap(&outline, FT_RENDER_MODE_NORMAL)
+            .map_err(|err| format!("FT_Outline_Glyph_To_Bitmap returned {err}"))?;
+        rows.push(glyph_type_contract_row(
+            "FT_Glyph_To_Bitmap outline",
+            FT_Err_Ok,
+            Some(bitmap.root.format),
+            "bitmap_class",
+            "caller_owned_detached_bitmap",
+        ));
+
+        let bitmap = rust_glyph_contract_bitmap(case, 20, 1)?;
+        rows.push(glyph_type_contract_row(
+            "FT_Get_Glyph bitmap",
+            FT_Err_Ok,
+            Some(bitmap.root.format),
+            "bitmap_class",
+            "caller_owned_detached_bitmap",
+        ));
+    } else {
+        let outline = rust_glyph_contract_outline(case, 24, 36)?;
+        rows.push(glyph_type_contract_row(
+            "outline",
+            FT_Err_Ok,
+            Some(outline.root.format),
+            "outline_class",
+            "public_outline_behavior",
+        ));
+        let bitmap = rust_glyph_contract_bitmap(case, 20, 1)?;
+        rows.push(glyph_type_contract_row(
+            "bitmap",
+            FT_Err_Ok,
+            Some(bitmap.root.format),
+            "bitmap_class",
+            "public_bitmap_behavior",
+        ));
+        rows.push(glyph_type_contract_row(
+            "svg_optional",
+            FT_Err_Invalid_Glyph_Format as FT_Error,
+            None,
+            "unsupported_svg",
+            "optional_svg_unsupported",
+        ));
+        rows.push(glyph_type_contract_row(
+            "bad_null_clazz",
+            FT_Err_Ok,
+            Some(FT_GLYPH_FORMAT_NONE),
+            "null_class",
+            "public_class_rejected",
+        ));
+    }
+    Ok(glyph_type_contract_output(rows))
+}
+
+fn c_glyph_contract_face(
+    case: &InputCase,
+    asset_name: &str,
+    pixel_size: u32,
+) -> Result<(c_abi::FT_Library, c_abi::FT_Face), String> {
+    let bytes = named_font_bytes(case, asset_name)?;
+    let (library, face) =
+        c_new_face_from_bytes(bytes.as_ref(), face_index_param(&case.inputs.params)?)?;
+    let status = c_abi::FT_Set_Pixel_Sizes(face, pixel_size, pixel_size);
+    if status != FT_Err_Ok {
+        c_done_face(face);
+        c_done_library(library);
+        return Err(format!("FT_Set_Pixel_Sizes returned {status}"));
+    }
+    Ok((library, face))
+}
+
+fn c_glyph_contract_get(
+    face: c_abi::FT_Face,
+    glyph_index: u32,
+) -> Result<(FT_Error, c_abi::FT_Glyph), String> {
+    let status = c_abi::FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
+    if status != FT_Err_Ok {
+        return Ok((status, ptr::null_mut()));
+    }
+    let slot = c_abi::abi_glyph_slot_pointer(face)
+        .ok_or_else(|| "missing C ABI glyph slot pointer".to_string())?;
+    let mut glyph = ptr::null_mut();
+    let status = c_abi::FT_Get_Glyph(slot, &mut glyph);
+    Ok((status, glyph))
+}
+
+fn c_glyph_contract_format(glyph: c_abi::FT_Glyph) -> Option<FT_Glyph_Format> {
+    if glyph.is_null() {
+        None
+    } else if c_abi::abi_outline_glyph_snapshot(glyph).is_some() {
+        Some(FT_GLYPH_FORMAT_OUTLINE)
+    } else if let Some(snapshot) = c_abi::abi_bitmap_glyph_snapshot(glyph) {
+        Some(snapshot.root.format)
+    } else if let Some(snapshot) = c_abi::abi_svg_glyph_snapshot(glyph) {
+        Some(snapshot.root.format)
+    } else {
+        None
+    }
+}
+
+fn c_glyph_type_contract(case: &InputCase) -> Result<RunOutput, String> {
+    let mut rows = Vec::new();
+    if case.case_id == "ftglyph.FT_Glyph.caller_owned_lifetime" {
+        let (library, face) = c_glyph_contract_face(case, "outline_font", 24)?;
+        let (status, glyph) = c_glyph_contract_get(face, 36)?;
+        rows.push(glyph_type_contract_row(
+            "FT_Get_Glyph outline",
+            status,
+            c_glyph_contract_format(glyph),
+            "outline_class",
+            "caller_owned_detached_outline",
+        ));
+        if !glyph.is_null() {
+            c_abi::FT_Done_Glyph(glyph);
+        }
+        c_done_face(face);
+        c_done_library(library);
+
+        let (library, face) = c_glyph_contract_face(case, "outline_font", 24)?;
+        let (source_status, source) = c_glyph_contract_get(face, 36)?;
+        let mut target = ptr::null_mut();
+        let status = if source_status == FT_Err_Ok {
+            c_abi::FT_Glyph_Copy(source, &mut target)
+        } else {
+            source_status
+        };
+        rows.push(glyph_type_contract_row(
+            "FT_Glyph_Copy outline",
+            status,
+            c_glyph_contract_format(target),
+            "outline_class",
+            "caller_owned_detached_copy",
+        ));
+        if !source.is_null() {
+            c_abi::FT_Done_Glyph(source);
+        }
+        if !target.is_null() {
+            c_abi::FT_Done_Glyph(target);
+        }
+        c_done_face(face);
+        c_done_library(library);
+
+        let (library, face) = c_glyph_contract_face(case, "outline_font", 24)?;
+        let (source_status, mut glyph) = c_glyph_contract_get(face, 36)?;
+        let status = if source_status == FT_Err_Ok {
+            c_abi::FT_Glyph_To_Bitmap(&mut glyph, FT_RENDER_MODE_NORMAL, ptr::null(), 0)
+        } else {
+            source_status
+        };
+        rows.push(glyph_type_contract_row(
+            "FT_Glyph_To_Bitmap outline",
+            status,
+            c_glyph_contract_format(glyph),
+            "bitmap_class",
+            "caller_owned_detached_bitmap",
+        ));
+        if !glyph.is_null() {
+            c_abi::FT_Done_Glyph(glyph);
+        }
+        c_done_face(face);
+        c_done_library(library);
+
+        let (library, face) = c_glyph_contract_face(case, "bitmap_strike_font", 20)?;
+        let (status, glyph) = c_glyph_contract_get(face, 1)?;
+        rows.push(glyph_type_contract_row(
+            "FT_Get_Glyph bitmap",
+            status,
+            c_glyph_contract_format(glyph),
+            "bitmap_class",
+            "caller_owned_detached_bitmap",
+        ));
+        if !glyph.is_null() {
+            c_abi::FT_Done_Glyph(glyph);
+        }
+        c_done_face(face);
+        c_done_library(library);
+    } else {
+        let (library, face) = c_glyph_contract_face(case, "outline_font", 24)?;
+        let (status, glyph) = c_glyph_contract_get(face, 36)?;
+        rows.push(glyph_type_contract_row(
+            "outline",
+            status,
+            c_glyph_contract_format(glyph),
+            "outline_class",
+            "public_outline_behavior",
+        ));
+        if !glyph.is_null() {
+            c_abi::FT_Done_Glyph(glyph);
+        }
+        c_done_face(face);
+        c_done_library(library);
+
+        let (library, face) = c_glyph_contract_face(case, "bitmap_strike_font", 20)?;
+        let (status, glyph) = c_glyph_contract_get(face, 1)?;
+        rows.push(glyph_type_contract_row(
+            "bitmap",
+            status,
+            c_glyph_contract_format(glyph),
+            "bitmap_class",
+            "public_bitmap_behavior",
+        ));
+        if !glyph.is_null() {
+            c_abi::FT_Done_Glyph(glyph);
+        }
+        c_done_face(face);
+        c_done_library(library);
+        rows.push(glyph_type_contract_row(
+            "svg_optional",
+            FT_Err_Invalid_Glyph_Format as FT_Error,
+            None,
+            "unsupported_svg",
+            "optional_svg_unsupported",
+        ));
+        rows.push(glyph_type_contract_row(
+            "bad_null_clazz",
+            FT_Err_Ok,
+            Some(FT_GLYPH_FORMAT_NONE),
+            "null_class",
+            "public_class_rejected",
+        ));
+    }
+    Ok(glyph_type_contract_output(rows))
+}
+
+fn wasm_glyph_contract_face(
+    case: &InputCase,
+    asset_name: &str,
+    pixel_size: u32,
+) -> Result<usize, String> {
+    let bytes = named_font_bytes(case, asset_name)?;
+    let handle = wasm_new_face_from_bytes(bytes.as_ref(), face_index_param(&case.inputs.params)?)?;
+    let status = wasm_abi::fontdone_wasm_set_pixel_sizes(handle, pixel_size, pixel_size);
+    if status != FT_Err_Ok {
+        wasm_done_face(handle);
+        return Err(format!("fontdone_wasm_set_pixel_sizes returned {status}"));
+    }
+    Ok(handle)
+}
+
+fn wasm_glyph_contract_get(
+    case: &InputCase,
+    asset_name: &str,
+    pixel_size: u32,
+    glyph_index: u32,
+) -> Result<usize, String> {
+    let handle = wasm_glyph_contract_face(case, asset_name, pixel_size)?;
+    let status = wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, FT_LOAD_DEFAULT);
+    if status != FT_Err_Ok {
+        wasm_done_face(handle);
+        return Err(format!("fontdone_wasm_load_glyph returned {status}"));
+    }
+    let mut glyph = 0usize;
+    let status = wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut glyph);
+    wasm_done_face(handle);
+    if status != FT_Err_Ok {
+        return Err(format!(
+            "fontdone_wasm_get_glyph_from_face returned {status}"
+        ));
+    }
+    Ok(glyph)
+}
+
+fn wasm_glyph_contract_format(glyph: usize) -> Option<FT_Glyph_Format> {
+    if glyph == 0 {
+        return None;
+    }
+    if wasm_abi::abi_outline_glyph_snapshot(glyph).is_some() {
+        Some(FT_GLYPH_FORMAT_OUTLINE)
+    } else if wasm_abi::abi_bitmap_glyph_snapshot(glyph).is_some() {
+        Some(FT_GLYPH_FORMAT_BITMAP)
+    } else if wasm_abi::abi_svg_glyph_snapshot(glyph).is_some() {
+        Some(FT_GLYPH_FORMAT_SVG)
+    } else {
+        None
+    }
+}
+
+fn wasm_glyph_type_contract(case: &InputCase) -> Result<RunOutput, String> {
+    let mut rows = Vec::new();
+    if case.case_id == "ftglyph.FT_Glyph.caller_owned_lifetime" {
+        let glyph = wasm_glyph_contract_get(case, "outline_font", 24, 36)?;
+        rows.push(glyph_type_contract_row(
+            "FT_Get_Glyph outline",
+            FT_Err_Ok,
+            wasm_glyph_contract_format(glyph),
+            "outline_class",
+            "caller_owned_detached_outline",
+        ));
+
+        let source = wasm_glyph_contract_get(case, "outline_font", 24, 36)?;
+        let source_ptr = ptr::with_exposed_provenance::<wasm_abi::FontdoneWasmGlyph>(source);
+        let mut target = 0usize;
+        let status = wasm_abi::fontdone_wasm_glyph_copy(source_ptr, &mut target);
+        rows.push(glyph_type_contract_row(
+            "FT_Glyph_Copy outline",
+            status,
+            wasm_glyph_contract_format(target),
+            "outline_class",
+            "caller_owned_detached_copy",
+        ));
+        wasm_abi::fontdone_wasm_done_glyph_handle(ptr::with_exposed_provenance_mut::<
+            wasm_abi::FontdoneWasmGlyph,
+        >(source));
+        if target != 0 {
+            wasm_abi::fontdone_wasm_done_glyph_handle(ptr::with_exposed_provenance_mut::<
+                wasm_abi::FontdoneWasmGlyph,
+            >(target));
+        }
+
+        let mut glyph = wasm_glyph_contract_get(case, "outline_font", 24, 36)?;
+        let status = wasm_abi::fontdone_wasm_glyph_to_bitmap_handle(
+            &mut glyph,
+            FT_RENDER_MODE_NORMAL,
+            ptr::null(),
+            0,
+        );
+        rows.push(glyph_type_contract_row(
+            "FT_Glyph_To_Bitmap outline",
+            status,
+            wasm_glyph_contract_format(glyph),
+            "bitmap_class",
+            "caller_owned_detached_bitmap",
+        ));
+        if glyph != 0 {
+            wasm_abi::fontdone_wasm_done_glyph_handle(ptr::with_exposed_provenance_mut::<
+                wasm_abi::FontdoneWasmGlyph,
+            >(glyph));
+        }
+
+        let glyph = wasm_glyph_contract_get(case, "bitmap_strike_font", 20, 1)?;
+        rows.push(glyph_type_contract_row(
+            "FT_Get_Glyph bitmap",
+            FT_Err_Ok,
+            wasm_glyph_contract_format(glyph),
+            "bitmap_class",
+            "caller_owned_detached_bitmap",
+        ));
+        wasm_abi::fontdone_wasm_done_glyph_handle(ptr::with_exposed_provenance_mut::<
+            wasm_abi::FontdoneWasmGlyph,
+        >(glyph));
+    } else {
+        let glyph = wasm_glyph_contract_get(case, "outline_font", 24, 36)?;
+        rows.push(glyph_type_contract_row(
+            "outline",
+            FT_Err_Ok,
+            wasm_glyph_contract_format(glyph),
+            "outline_class",
+            "public_outline_behavior",
+        ));
+        wasm_abi::fontdone_wasm_done_glyph_handle(ptr::with_exposed_provenance_mut::<
+            wasm_abi::FontdoneWasmGlyph,
+        >(glyph));
+
+        let glyph = wasm_glyph_contract_get(case, "bitmap_strike_font", 20, 1)?;
+        rows.push(glyph_type_contract_row(
+            "bitmap",
+            FT_Err_Ok,
+            wasm_glyph_contract_format(glyph),
+            "bitmap_class",
+            "public_bitmap_behavior",
+        ));
+        wasm_abi::fontdone_wasm_done_glyph_handle(ptr::with_exposed_provenance_mut::<
+            wasm_abi::FontdoneWasmGlyph,
+        >(glyph));
+        rows.push(glyph_type_contract_row(
+            "svg_optional",
+            FT_Err_Invalid_Glyph_Format as FT_Error,
+            None,
+            "unsupported_svg",
+            "optional_svg_unsupported",
+        ));
+        rows.push(glyph_type_contract_row(
+            "bad_null_clazz",
+            FT_Err_Ok,
+            Some(FT_GLYPH_FORMAT_NONE),
+            "null_class",
+            "public_class_rejected",
+        ));
+    }
+    Ok(glyph_type_contract_output(rows))
 }
 
 fn rust_outline_glyph_alias(case: &InputCase) -> Result<RunOutput, String> {
