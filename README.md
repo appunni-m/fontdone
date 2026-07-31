@@ -161,7 +161,7 @@ The latest committed scorecard has **9 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 names, signatures, and traced function routes; 4,996 / 5,047 pinned-C runtime contract rows exact, with 51 pending |
+| Functions | 218 / 218 names, signatures, and traced function routes; 4,997 / 5,047 pinned-C runtime contract rows exact, with 50 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership, state, errors, modules, headers | Complete under their blocking scorecard measurements |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
