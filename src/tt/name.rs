@@ -515,3 +515,132 @@ fn decode_mac_roman_bytes(bytes: &[u8]) -> String {
     }
     result
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Build a format-0 name table with one record per (platform, encoding).
+    fn name_table(records: &[(u16, u16, u16, u16, &[u8])]) -> Vec<u8> {
+        let mut data = Vec::new();
+        data.extend_from_slice(&0u16.to_be_bytes()); // format 0
+        data.extend_from_slice(&(records.len() as u16).to_be_bytes());
+        let string_offset = 6 + records.len() * 12;
+        data.extend_from_slice(&(string_offset as u16).to_be_bytes());
+        let mut cursor = 0usize;
+        for (platform, encoding, language, name_id, bytes) in records {
+            data.extend_from_slice(&platform.to_be_bytes());
+            data.extend_from_slice(&encoding.to_be_bytes());
+            data.extend_from_slice(&language.to_be_bytes());
+            data.extend_from_slice(&name_id.to_be_bytes());
+            data.extend_from_slice(&(bytes.len() as u16).to_be_bytes());
+            data.extend_from_slice(&(cursor as u16).to_be_bytes());
+            cursor += bytes.len();
+        }
+        for (_, _, _, _, bytes) in records {
+            data.extend_from_slice(bytes);
+        }
+        data
+    }
+
+    fn utf16be(text: &str) -> Vec<u8> {
+        text.encode_utf16()
+            .flat_map(|unit| unit.to_be_bytes())
+            .collect()
+    }
+
+    #[test]
+    fn parses_windows_names_with_priorities() -> Result<(), FontError> {
+        let family = utf16be("Family");
+        let regular = utf16be("Regular");
+        let postscript = utf16be("Family-Regular");
+        let unicode = utf16be("UnicodeFamily");
+        let records = vec![
+            (3, 1, 0x0409, 1, family.as_slice()),
+            (3, 1, 0x0409, 2, regular.as_slice()),
+            (3, 1, 0x0409, 6, postscript.as_slice()),
+            (0, 3, 0, 1, unicode.as_slice()),
+        ];
+        let table = parse_name(&name_table(&records))?;
+        assert_eq!(table.family, "Family");
+        assert_eq!(table.subfamily, "Regular");
+        assert_eq!(table.postscript_name.as_deref(), Some("Family-Regular"));
+        Ok(())
+    }
+
+    #[test]
+    fn prefers_english_windows_over_apple() -> Result<(), FontError> {
+        let win = utf16be("WinFamily");
+        let german = utf16be("GermanFamily");
+        let apple = b"AppleFamily".to_vec();
+        let records = vec![
+            (1, 0, 0, 1, apple.as_slice()),
+            (3, 1, 0x0409, 1, win.as_slice()),
+            (3, 1, 0x0407, 1, german.as_slice()),
+        ];
+        let table = parse_name(&name_table(&records))?;
+        assert_eq!(table.family, "WinFamily");
+        Ok(())
+    }
+
+    #[test]
+    fn rejects_short_and_overflowing_tables() {
+        assert!(parse_name(&[0; 5]).is_err());
+        let mut data = vec![0u8; 6];
+        data[2..4].copy_from_slice(&2u16.to_be_bytes());
+        assert!(parse_name(&data).is_err());
+        // Zero-length records are dropped.
+        let records = vec![(3, 1, 0x0409, 1, &[][..])];
+        let table = match parse_name(&name_table(&records)) {
+            Ok(table) => table,
+            Err(error) => panic!("empty record table rejected: {error}"),
+        };
+        assert_eq!(table.records.len(), 0);
+    }
+
+    #[test]
+    fn format1_language_tags_parse() -> Result<(), FontError> {
+        // Format 1 with one record whose language references a lang tag.
+        let mut data = Vec::new();
+        data.extend_from_slice(&1u16.to_be_bytes()); // format 1
+        data.extend_from_slice(&1u16.to_be_bytes()); // one record
+        let string_offset = 6 + 12 + 2 + 4;
+        data.extend_from_slice(&(string_offset as u16).to_be_bytes());
+        data.extend_from_slice(&3u16.to_be_bytes()); // platform
+        data.extend_from_slice(&1u16.to_be_bytes()); // encoding
+        data.extend_from_slice(&0x8000u16.to_be_bytes()); // language -> tag 0
+        data.extend_from_slice(&1u16.to_be_bytes()); // name id
+        data.extend_from_slice(&12u16.to_be_bytes()); // UTF-16BE "Tagged" length
+        data.extend_from_slice(&6u16.to_be_bytes()); // offset past tag string
+        data.extend_from_slice(&1u16.to_be_bytes()); // lang tag count
+        data.extend_from_slice(&6u16.to_be_bytes()); // tag length
+        data.extend_from_slice(&0u16.to_be_bytes()); // tag offset
+        data.extend_from_slice(b"en-US\0"); // tag string
+        data.extend_from_slice(&utf16be("Tagged"));
+        let table = parse_name(&data)?;
+        assert_eq!(table.family, "Tagged");
+        assert_eq!(table.lang_tags.len(), 1);
+        Ok(())
+    }
+
+    #[test]
+    fn unknown_language_tag_record_is_dropped() -> Result<(), FontError> {
+        let mut data = Vec::new();
+        data.extend_from_slice(&1u16.to_be_bytes());
+        data.extend_from_slice(&1u16.to_be_bytes());
+        let string_offset = 6 + 12 + 2 + 4;
+        data.extend_from_slice(&(string_offset as u16).to_be_bytes());
+        data.extend_from_slice(&3u16.to_be_bytes());
+        data.extend_from_slice(&1u16.to_be_bytes());
+        data.extend_from_slice(&0x8000u16.to_be_bytes()); // tag index 0
+        data.extend_from_slice(&1u16.to_be_bytes());
+        data.extend_from_slice(&6u16.to_be_bytes());
+        data.extend_from_slice(&0u16.to_be_bytes());
+        data.extend_from_slice(&0u16.to_be_bytes()); // zero tags
+        data.extend_from_slice(&utf16be("Ghost"));
+        let table = parse_name(&data)?;
+        assert_eq!(table.records.len(), 0);
+        assert_eq!(table.family, "Unknown");
+        Ok(())
+    }
+}
