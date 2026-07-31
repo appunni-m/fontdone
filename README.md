@@ -96,26 +96,26 @@ The last committed full parity snapshot was recorded on **2026-07-31**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,280 |
-| Passed cases | 7,280 |
+| Runnable exact-comparison cases | 7,281 |
+| Passed cases | 7,281 |
 | Failed cases | 0 |
-| Explicitly pending cases | 28 |
-| Covered manifest cases | 4,151 |
+| Explicitly pending cases | 27 |
+| Covered manifest cases | 4,152 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,259 |
 | Concrete expanded cases | 7,308 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,280 / 7,280` means every runnable case in that execution matched. It does
-not turn the 38 pending cases into passes. Likewise, 218/218 function-route
+`7,281 / 7,281` means every runnable case in that execution matched. It does
+not turn the 27 pending cases into passes. Likewise, 218/218 function-route
 evidence can be satisfied by a narrow success or null-validation route; it is
 not equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP run
-`228c8199-7fe9-4597-a64e-9aa8bd04c523` from clean commit
-`89ab202c4b05c70302e7c7ebd877861fbfad92fb`; its source-bound digest is
-`c0538bd34b71fb02ef5d38b5207388eaf24b93edb17bd301ede0c7d66e50d27c`.
+`0bb09385-d685-4cb6-8a70-6ab98e106967` from clean commit
+`f741a9da88867158ee92b4127862fe7eda9f6748`; its source-bound digest is
+`b7b7241032d2346baaebc6eb2066953f62a6da09f426e85d48acdfce4696a90f`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -162,7 +162,7 @@ The latest committed scorecard has **9 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 names, signatures, and traced function routes; 5,032 / 5,048 pinned-C runtime contract rows exact, with 16 pending |
+| Functions | 218 / 218 names, signatures, and traced function routes; 5,033 / 5,048 pinned-C runtime contract rows exact, with 15 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership, state, errors, modules, headers | Complete under their blocking scorecard measurements |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
@@ -177,7 +177,7 @@ when every bare function name has some traced route. The self-cleaning
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`aaebcb64-b3ce-40f4-9878-7383090c9214`.
+`2a1c6855-cfab-4192-ab15-5fef367f8b4b`.
 
 ### 3.5 Performance baseline
 
