@@ -450,4 +450,78 @@ mod tests {
         assert_eq!(direction_compute(-15, 1), Direction::Left);
         assert_eq!(direction_compute(0, 0), Direction::None);
     }
+
+    #[test]
+    fn reload_builds_points_contours_and_directions() {
+        let raw = crate::tt::glyf::GlyphOutline {
+            num_contours: 1,
+            end_pts_of_contours: vec![3],
+            points: vec![
+                crate::tt::glyf::OutlinePoint {
+                    x: 0,
+                    y: 0,
+                    on_curve: true,
+                    tag: 1,
+                },
+                crate::tt::glyf::OutlinePoint {
+                    x: 1000,
+                    y: 0,
+                    on_curve: true,
+                    tag: 1,
+                },
+                crate::tt::glyf::OutlinePoint {
+                    x: 1000,
+                    y: 1000,
+                    on_curve: false,
+                    tag: 0,
+                },
+                crate::tt::glyf::OutlinePoint {
+                    x: 0,
+                    y: 1000,
+                    on_curve: true,
+                    tag: 1,
+                },
+            ],
+            unrounded_points: None,
+            xmin: 0,
+            ymin: 0,
+            xmax: 1000,
+            ymax: 1000,
+            bbox_xmin: 0,
+            is_composite: false,
+            sub_lsb: 0,
+            instructions: Vec::new(),
+            components: Vec::new(),
+            outline_flags: 0,
+            has_cubic_tags: false,
+        };
+        let scaled = raw
+            .points
+            .iter()
+            .map(|point| crate::outline::OutlinePoint {
+                x: point.x,
+                y: point.y,
+                on_curve: point.on_curve,
+            })
+            .collect::<Vec<_>>();
+
+        let mut hints = GlyphHints::new(1 << 16, 1 << 16, 0, 0);
+        reload(&mut hints, &raw, &scaled, 2048, 0);
+
+        assert_eq!(hints.points.len(), 4);
+        assert_eq!(hints.contours, vec![0]);
+        assert_eq!(hints.contour_y_minima.len(), 1);
+        assert_eq!(hints.contour_y_maxima, vec![1000]);
+        // Off-curve point carries the conic control flag.
+        assert_ne!(hints.points[2].flags & AF_FLAG_CONIC, 0);
+        assert_eq!(hints.points[2].flags & AF_FLAG_CONTROL, AF_FLAG_CONIC);
+        // Circular linking: last point's next wraps to the contour start.
+        assert_eq!(hints.points[3].next, 0);
+        assert_eq!(hints.points[0].prev, 3);
+        // Horizontal first edge -> Right, vertical second -> Up.
+        assert_eq!(hints.points[0].out_dir, Direction::Right);
+        assert_eq!(hints.points[1].out_dir, Direction::Up);
+        assert_eq!(hints.points[0].in_dir, Direction::Down);
+        assert_eq!(hints.points[1].in_dir, Direction::Right);
+    }
 }
