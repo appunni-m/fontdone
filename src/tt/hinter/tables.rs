@@ -92,4 +92,13 @@ mod tests {
         assert_eq!(cvt[0], 100 * 64);
         assert_eq!(cvt[1], -50 * 64);
     }
+
+    #[test]
+    fn test_parse_cvt_rejects_odd_length() {
+        let error = match parse_cvt(&[0x00, 0x64, 0xFF]) {
+            Err(error) => error,
+            Ok(_) => panic!("odd-length cvt should be rejected"),
+        };
+        assert!(error.to_string().contains("must be even"));
+    }
 }

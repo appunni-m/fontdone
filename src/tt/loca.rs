@@ -71,32 +71,136 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sanitizes_locations_like_pinned_freetype() {
-        let earlier_oversized_next = [0_u8, 1, 0, 20, 0, 21];
+    fn short_format_locations() {
+        // Short format stores offsets in 2-byte units.
+        let loca = [0u16, 10, 20, 30];
+        let bytes = loca
+            .iter()
+            .flat_map(|value| value.to_be_bytes())
+            .collect::<Vec<_>>();
+        let loc = match get_glyph_location(&bytes, 0, 0, 100) {
+            Some(loc) => loc,
+            None => panic!("glyph 0 location missing"),
+        };
         assert_eq!(
-            get_glyph_location(&earlier_oversized_next, 0, 0, 16),
+            loc,
+            GlyphLocation {
+                offset: 0,
+                length: 20
+            }
+        );
+        let loc = match get_glyph_location(&bytes, 1, 0, 100) {
+            Some(loc) => loc,
+            None => panic!("glyph 1 location missing"),
+        };
+        assert_eq!(
+            loc,
+            GlyphLocation {
+                offset: 20,
+                length: 20
+            }
+        );
+        // Missing record -> None.
+        assert!(get_glyph_location(&bytes, 5, 0, 100).is_none());
+    }
+
+    #[test]
+    fn long_format_locations() {
+        let offsets = [0u32, 100, 250, 400];
+        let bytes = offsets
+            .iter()
+            .flat_map(|value| value.to_be_bytes())
+            .collect::<Vec<_>>();
+        let loc = match get_glyph_location(&bytes, 0, 1, 500) {
+            Some(loc) => loc,
+            None => panic!("glyph 0 location missing"),
+        };
+        assert_eq!(
+            loc,
+            GlyphLocation {
+                offset: 0,
+                length: 100
+            }
+        );
+        let loc = match get_glyph_location(&bytes, 2, 1, 500) {
+            Some(loc) => loc,
+            None => panic!("glyph 2 location missing"),
+        };
+        assert_eq!(
+            loc,
+            GlyphLocation {
+                offset: 250,
+                length: 150
+            }
+        );
+        assert!(get_glyph_location(&bytes, 4, 1, 500).is_none());
+    }
+
+    #[test]
+    fn out_of_range_and_truncation() {
+        // This offset exceeds the glyf length -> empty glyph.
+        let offsets = [600u32, 600];
+        let bytes = offsets
+            .iter()
+            .flat_map(|value| value.to_be_bytes())
+            .collect::<Vec<_>>();
+        let loc = match get_glyph_location(&bytes, 0, 1, 500) {
+            Some(loc) => loc,
+            None => panic!("glyph 0 location missing"),
+        };
+        assert_eq!(
+            loc,
+            GlyphLocation {
+                offset: 0,
+                length: 0
+            }
+        );
+
+        // Earlier oversized next offset -> empty glyph.
+        let earlier = [0u8, 1, 0, 20, 0, 21];
+        let loc = get_glyph_location(&earlier, 0, 0, 16);
+        assert_eq!(
+            loc,
             Some(GlyphLocation {
                 offset: 0,
-                length: 0,
+                length: 0
             })
         );
 
-        let final_oversized_next = [0_u8, 0, 0, 1, 0, 20];
+        // Final glyph's next offset is truncated to the glyf length.
+        let offsets = [0u32, 600];
+        let bytes = offsets
+            .iter()
+            .flat_map(|value| value.to_be_bytes())
+            .collect::<Vec<_>>();
+        let loc = match get_glyph_location(&bytes, 0, 1, 500) {
+            Some(loc) => loc,
+            None => panic!("final glyph location missing"),
+        };
         assert_eq!(
-            get_glyph_location(&final_oversized_next, 1, 0, 16),
-            Some(GlyphLocation {
-                offset: 2,
-                length: 14,
-            })
+            loc,
+            GlyphLocation {
+                offset: 0,
+                length: 500
+            }
         );
 
-        let unordered = [0_u8, 4, 0, 2];
+        // Unordered entries use the remaining glyf bytes as length.
+        let offsets = [100u32, 50, 50];
+        let bytes = offsets
+            .iter()
+            .flat_map(|value| value.to_be_bytes())
+            .collect::<Vec<_>>();
+        let loc = match get_glyph_location(&bytes, 0, 1, 500) {
+            Some(loc) => loc,
+            None => panic!("unordered glyph location missing"),
+        };
         assert_eq!(
-            get_glyph_location(&unordered, 0, 0, 16),
-            Some(GlyphLocation {
-                offset: 8,
-                length: 8,
-            })
+            loc,
+            GlyphLocation {
+                offset: 100,
+                length: 400
+            }
         );
     }
 }
