@@ -33567,7 +33567,67 @@ typedef struct IncrementalGlyphLifecycleState_ {
     size_t metric_event_count;
     size_t release_count;
     int release_matches_acquisition;
+    FT_Incremental expected_object;
+    int object_identity_matches;
 } IncrementalGlyphLifecycleState;
+
+/* The opaque-handle route deliberately keeps the client object at an
+ * inaccessible sentinel address.  These callbacks record the pointer value
+ * only; the state is reached through this single-threaded oracle-side probe,
+ * never through the FT_Incremental object passed by FreeType. */
+static IncrementalGlyphLifecycleState* incremental_opaque_active_state = NULL;
+static int incremental_glyph_bounds(const IncrementalGlyphLifecycleState* state,
+                                    FT_UInt glyph_index,
+                                    size_t* start,
+                                    size_t* end);
+
+static FT_Error incremental_opaque_get_glyph_data(FT_Incremental incremental,
+                                                   FT_UInt glyph_index,
+                                                   FT_Data* glyph_data) {
+    IncrementalGlyphLifecycleState* state = incremental_opaque_active_state;
+    if (!state || !glyph_data) {
+        return FT_Err_Invalid_Argument;
+    }
+    state->object_identity_matches =
+        state->object_identity_matches && incremental == state->expected_object;
+    size_t start = 0;
+    size_t end = 0;
+    if (!incremental_glyph_bounds(state, glyph_index, &start, &end)) {
+        return FT_Err_Invalid_Glyph_Index;
+    }
+    if (end - start > (size_t)INT_MAX) {
+        return FT_Err_Array_Too_Large;
+    }
+    glyph_data->pointer = state->font_data + state->glyf_offset + start;
+    glyph_data->length = (FT_Int)(end - start);
+    state->acquired_pointer = glyph_data->pointer;
+    state->acquired_length = glyph_data->length;
+    if (state->event_count < 8) {
+        state->event_names[state->event_count] = "get_glyph_data";
+        state->event_glyphs[state->event_count] = glyph_index;
+        state->event_count++;
+    }
+    return FT_Err_Ok;
+}
+
+static void incremental_opaque_free_glyph_data(FT_Incremental incremental,
+                                                FT_Data* glyph_data) {
+    IncrementalGlyphLifecycleState* state = incremental_opaque_active_state;
+    if (!state || !glyph_data) {
+        return;
+    }
+    state->object_identity_matches =
+        state->object_identity_matches && incremental == state->expected_object;
+    state->release_count++;
+    state->release_matches_acquisition =
+        glyph_data->pointer == state->acquired_pointer &&
+        glyph_data->length == state->acquired_length;
+    if (state->event_count < 8) {
+        state->event_names[state->event_count] = "free_glyph_data";
+        state->event_glyphs[state->event_count] = state->requested_glyph;
+        state->event_count++;
+    }
+}
 
 static unsigned short incremental_u16(const unsigned char* bytes) {
     return (unsigned short)(((unsigned short)bytes[0] << 8) |
@@ -33914,6 +33974,108 @@ static int emit_incremental_glyph_lifecycle(int argc, char** argv) {
     print_glyph_metrics_object(slot_metrics);
     printf("}}}\n");
 
+    free(data);
+    return 0;
+}
+
+static int emit_incremental_opaque_handle(int argc, char** argv) {
+    if (argc != 7) return 2;
+    unsigned char* data = NULL;
+    long data_len_long = 0;
+    if (load_oracle_source_bytes(argv[2],
+                                 argv[3],
+                                 &data,
+                                 &data_len_long) != 0) {
+        fprintf(stderr, "failed to load opaque incremental glyph font source\n");
+        return 1;
+    }
+    size_t data_len = data_len_long < 0 ? 0 : (size_t)data_len_long;
+    FT_Long face_index = (FT_Long)atol(argv[4]);
+    FT_UInt glyph_index = (FT_UInt)strtoul(argv[5], NULL, 10);
+    FT_Int32 load_flags = (FT_Int32)strtol(argv[6], NULL, 10);
+    IncrementalGlyphLifecycleState state;
+    if (!incremental_prepare_glyph_source(&state,
+                                          data,
+                                          data_len,
+                                          glyph_index)) {
+        fprintf(stderr, "failed to locate opaque incremental glyph data\n");
+        free(data);
+        return 1;
+    }
+    state.expected_object = (FT_Incremental)(uintptr_t)1;
+    state.object_identity_matches = 1;
+    incremental_opaque_active_state = &state;
+
+    FT_Incremental_FuncsRec funcs;
+    memset(&funcs, 0, sizeof(funcs));
+    funcs.get_glyph_data = incremental_opaque_get_glyph_data;
+    funcs.free_glyph_data = incremental_opaque_free_glyph_data;
+    FT_Incremental_InterfaceRec interface;
+    memset(&interface, 0, sizeof(interface));
+    interface.funcs = &funcs;
+    interface.object = state.expected_object;
+    FT_Parameter parameter;
+    memset(&parameter, 0, sizeof(parameter));
+    parameter.tag = FT_PARAM_TAG_INCREMENTAL;
+    parameter.data = &interface;
+    FT_Open_Args args;
+    memset(&args, 0, sizeof(args));
+    args.flags = FT_OPEN_MEMORY | FT_OPEN_PARAMS;
+    args.memory_base = data;
+    args.memory_size = (FT_Long)data_len;
+    args.num_params = 1;
+    args.params = &parameter;
+
+    FT_Library library = NULL;
+    FT_Face face = NULL;
+    FT_Error open_error = FT_Init_FreeType(&library);
+    FT_Error load_error = open_error;
+    FT_Error done_face_error = FT_Err_Invalid_Face_Handle;
+    FT_Error done_library_error = FT_Err_Invalid_Library_Handle;
+    if (!open_error) {
+        open_error = FT_Open_Face(library, &args, face_index, &face);
+        load_error = open_error;
+        if (!open_error) {
+            load_error = FT_Load_Glyph(face, glyph_index, load_flags);
+            done_face_error = FT_Done_Face(face);
+            face = NULL;
+        }
+        done_library_error = FT_Done_FreeType(library);
+        library = NULL;
+    }
+    FT_Error status = open_error ? open_error
+                                 : load_error ? load_error
+                                              : done_face_error ? done_face_error
+                                                                : done_library_error;
+    const char* object_identity = state.event_count == 0
+                                      ? "no_callback"
+                                      : state.object_identity_matches
+                                          ? "same_opaque_client_pointer"
+                                          : "different_pointer";
+    printf("{");
+    print_status(status);
+    printf(",\"output\":{\"open_error\":%d,\"load_error\":%d,"
+           "\"done_face_error\":%d,\"done_library_error\":%d,"
+           "\"callback_events\":[",
+           open_error,
+           load_error,
+           done_face_error,
+           done_library_error);
+    for (size_t index = 0; index < state.event_count; index++) {
+        if (index) printf(",");
+        printf("{\"event\":\"%s\",\"glyph_index\":%u,"
+               "\"object_identity\":\"%s\"}",
+               state.event_names[index],
+               state.event_glyphs[index],
+               object_identity);
+    }
+    printf("],\"object_identity\":\"%s\",\"dereferenced_by_freetype\":false,"
+           "\"release_count\":%lu,\"release_matches_acquisition\":",
+           object_identity,
+           (unsigned long)state.release_count);
+    print_json_bool(state.release_matches_acquisition);
+    printf("}}\n");
+    incremental_opaque_active_state = NULL;
     free(data);
     return 0;
 }
@@ -35285,6 +35447,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 7 && streq(argv[1], "--incremental-glyph-lifecycle")) {
         return emit_incremental_glyph_lifecycle(argc, argv);
+    }
+    if (argc == 7 && streq(argv[1], "--incremental-opaque-handle")) {
+        return emit_incremental_opaque_handle(argc, argv);
     }
     if (argc == 11 && streq(argv[1], "--incremental-state-lifecycle")) {
         return emit_incremental_glyph_lifecycle(argc, argv);

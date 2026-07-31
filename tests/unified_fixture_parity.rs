@@ -20,6 +20,9 @@
 #![allow(clippy::unwrap_used)]
 #![allow(missing_docs)]
 #![allow(unused_crate_dependencies)]
+// The maintained callback probes intentionally cross the raw C callback ABI;
+// their sentinels are never dereferenced by the probe object itself.
+#![allow(unsafe_code)]
 
 use std::cell::{Cell, RefCell};
 use std::cmp::Reverse;
@@ -43567,6 +43570,14 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         "ftglyph.custom_glyph_lifecycle" if !case.expect_error => {
             Ok(vec!["--custom-glyph-lifecycle".to_string()])
         }
+        "ftincrem.opaque_handle_lifecycle" if !case.expect_error => {
+            let mut args = vec!["--incremental-opaque-handle".to_string()];
+            push_font_source(case, &mut args)?;
+            args.push(face_index_param(params)?.to_string());
+            args.push(glyph_index_param(params)?.to_string());
+            args.push(load_flags_param(params)?.to_string());
+            Ok(args)
+        }
         "ftincrem.incremental_glyph_lifecycle" if !case.expect_error => {
             let mut args = vec!["--incremental-glyph-lifecycle".to_string()];
             push_font_source(case, &mut args)?;
@@ -45003,6 +45014,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftcache.manager_new" if !case.expect_error => rust_manager_new(case),
         "ftcache.manager_ownership" if !case.expect_error => rust_manager_ownership(case),
         "ftglyph.custom_glyph_lifecycle" if !case.expect_error => rust_custom_glyph_lifecycle(),
+        "ftincrem.opaque_handle_lifecycle" if !case.expect_error => {
+            rust_incremental_opaque_handle(case)
+        }
         "ftincrem.incremental_glyph_lifecycle" if !case.expect_error => {
             rust_incremental_glyph_lifecycle(case)
         }
@@ -46459,6 +46473,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftcache.manager_new" if !case.expect_error => c_manager_new(case),
         "ftcache.manager_ownership" if !case.expect_error => c_manager_ownership(case),
         "ftglyph.custom_glyph_lifecycle" if !case.expect_error => c_custom_glyph_lifecycle(),
+        "ftincrem.opaque_handle_lifecycle" if !case.expect_error => {
+            c_incremental_opaque_handle(case)
+        }
         "ftincrem.incremental_glyph_lifecycle" if !case.expect_error => {
             c_incremental_glyph_lifecycle(case)
         }
@@ -47712,6 +47729,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftcache.manager_new" if !case.expect_error => wasm_manager_new(case),
         "ftcache.manager_ownership" if !case.expect_error => wasm_manager_ownership(case),
         "ftglyph.custom_glyph_lifecycle" if !case.expect_error => wasm_custom_glyph_lifecycle(),
+        "ftincrem.opaque_handle_lifecycle" if !case.expect_error => {
+            wasm_incremental_opaque_handle(case)
+        }
         "ftincrem.incremental_glyph_lifecycle" if !case.expect_error => {
             wasm_incremental_glyph_lifecycle(case)
         }
@@ -64523,6 +64543,236 @@ fn wasm_custom_glyph_lifecycle() -> Result<RunOutput, String> {
         payload_zero_initialized: snapshot.payload_zero_initialized,
         done_callback_count: snapshot.done_callback_count,
     }))
+}
+
+#[derive(Default)]
+struct RustOpaqueIncrementalState {
+    object: FT_Incremental,
+    requested_glyph: FT_UInt,
+    bytes: Vec<FT_Byte>,
+    acquired_pointer: usize,
+    acquired_length: FT_UInt,
+    events: Vec<(&'static str, FT_UInt)>,
+    object_identity_matches: bool,
+    release_count: usize,
+    release_matches_acquisition: bool,
+}
+
+thread_local! {
+    static RUST_OPAQUE_INCREMENTAL_STATE: RefCell<Option<RustOpaqueIncrementalState>> =
+        const { RefCell::new(None) };
+}
+
+unsafe extern "C" fn rust_opaque_incremental_get_glyph_data(
+    incremental: FT_Incremental,
+    glyph_index: FT_UInt,
+    adata: *mut FT_Data,
+) -> FT_Error {
+    RUST_OPAQUE_INCREMENTAL_STATE.with_borrow_mut(|state| {
+        let Some(state) = state.as_mut() else {
+            return FT_Err_Invalid_Argument as FT_Error;
+        };
+        state.object_identity_matches &= incremental == state.object;
+        let Some(adata) = (unsafe { adata.as_mut() }) else {
+            return FT_Err_Invalid_Argument as FT_Error;
+        };
+        if glyph_index != state.requested_glyph {
+            return FT_Err_Invalid_Glyph_Index as FT_Error;
+        }
+        let Ok(length) = FT_UInt::try_from(state.bytes.len()) else {
+            return FT_Err_Array_Too_Large as FT_Error;
+        };
+        adata.pointer = state.bytes.as_ptr();
+        adata.length = length;
+        state.acquired_pointer = adata.pointer.addr();
+        state.acquired_length = length;
+        state.events.push(("get_glyph_data", glyph_index));
+        FT_Err_Ok
+    })
+}
+
+unsafe extern "C" fn rust_opaque_incremental_free_glyph_data(
+    incremental: FT_Incremental,
+    data: *mut FT_Data,
+) {
+    RUST_OPAQUE_INCREMENTAL_STATE.with_borrow_mut(|state| {
+        let Some(state) = state.as_mut() else {
+            return;
+        };
+        state.object_identity_matches &= incremental == state.object;
+        let Some(data) = (unsafe { data.as_ref() }) else {
+            return;
+        };
+        state.release_count = state.release_count.saturating_add(1);
+        state.release_matches_acquisition =
+            data.pointer.addr() == state.acquired_pointer && data.length == state.acquired_length;
+        state
+            .events
+            .push(("free_glyph_data", state.requested_glyph));
+    });
+}
+
+fn opaque_incremental_output(
+    open_error: FT_Error,
+    load_error: FT_Error,
+    done_face_error: FT_Error,
+    done_library_error: FT_Error,
+    events: Vec<(&'static str, FT_UInt)>,
+    object_identity_matches: bool,
+    release_count: usize,
+    release_matches_acquisition: bool,
+    sentinel_survived: bool,
+) -> RunOutput {
+    let status = [open_error, load_error, done_face_error, done_library_error]
+        .into_iter()
+        .find(|status| *status != FT_Err_Ok)
+        .unwrap_or(FT_Err_Ok);
+    let object_identity = if events.is_empty() {
+        "no_callback"
+    } else if object_identity_matches {
+        "same_opaque_client_pointer"
+    } else {
+        "different_pointer"
+    };
+    let callback_events = events
+        .into_iter()
+        .map(|(event, glyph_index)| {
+            json!({
+                "event": event,
+                "glyph_index": glyph_index,
+                "object_identity": object_identity,
+            })
+        })
+        .collect::<Vec<_>>();
+    let output = json!({
+        "open_error": open_error,
+        "load_error": load_error,
+        "done_face_error": done_face_error,
+        "done_library_error": done_library_error,
+        "callback_events": callback_events,
+        "object_identity": object_identity,
+        "dereferenced_by_freetype": !sentinel_survived,
+        "release_count": release_count,
+        "release_matches_acquisition": release_matches_acquisition,
+    });
+    if status == FT_Err_Ok {
+        ok(output)
+    } else {
+        error_with_output(status, output)
+    }
+}
+
+fn rust_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String> {
+    let bytes = font_bytes(case)?;
+    let face_index = face_index_param(&case.inputs.params)?;
+    let glyph_index = glyph_index_param(&case.inputs.params)?;
+    let load_flags = load_flags_param(&case.inputs.params)?;
+    let mut library = FT_Init_FreeType();
+    let glyph_bytes = FT_New_Memory_Face(&library, bytes.as_ref(), face_index, 20.0)
+        .ok()
+        .and_then(|face| FT_Face_Incremental_Glyph_Data(&face, glyph_index))
+        .unwrap_or_default();
+    let object: FT_Incremental = ptr::without_provenance_mut(1);
+    RUST_OPAQUE_INCREMENTAL_STATE.with_borrow_mut(|state| {
+        *state = Some(RustOpaqueIncrementalState {
+            object,
+            requested_glyph: glyph_index,
+            bytes: glyph_bytes,
+            object_identity_matches: true,
+            ..Default::default()
+        });
+    });
+    let funcs = FT_Incremental_FuncsRec {
+        get_glyph_data: Some(rust_opaque_incremental_get_glyph_data),
+        free_glyph_data: Some(rust_opaque_incremental_free_glyph_data),
+        get_glyph_metrics: None,
+    };
+    let interface = FT_Incremental_InterfaceRec {
+        funcs: ptr::from_ref(&funcs),
+        object,
+    };
+    let (open_error, load_error, done_face_error) = match FT_Open_Face_With_Incremental(
+        &library,
+        bytes.as_ref(),
+        face_index,
+        20.0,
+        ptr::from_ref(&interface).cast_mut(),
+    ) {
+        Ok(face) => {
+            let load_error = match FT_Load_Glyph(&face, glyph_index, load_flags) {
+                Ok(_) => FT_Err_Ok,
+                Err(error) => error,
+            };
+            let done_face_error = FT_Done_Face(Some(face));
+            (FT_Err_Ok, load_error, done_face_error)
+        }
+        Err(error) => (error, error, FT_Err_Invalid_Face_Handle as FT_Error),
+    };
+    let done_library_error = FT_Done_Library(Some(&mut library));
+    let (events, object_identity_matches, release_count, release_matches_acquisition) =
+        RUST_OPAQUE_INCREMENTAL_STATE.with_borrow(|state| {
+            let state = state.as_ref().expect("opaque incremental state installed");
+            (
+                state.events.clone(),
+                state.object_identity_matches,
+                state.release_count,
+                state.release_matches_acquisition,
+            )
+        });
+    RUST_OPAQUE_INCREMENTAL_STATE.with_borrow_mut(|state| *state = None);
+    Ok(opaque_incremental_output(
+        open_error,
+        load_error,
+        done_face_error,
+        done_library_error,
+        events,
+        object_identity_matches,
+        release_count,
+        release_matches_acquisition,
+        true,
+    ))
+}
+
+fn c_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String> {
+    let bytes = font_bytes(case)?;
+    let snapshot = c_abi::abi_incremental_opaque_handle(
+        bytes.as_ref(),
+        face_index_param(&case.inputs.params)?,
+        glyph_index_param(&case.inputs.params)?,
+        load_flags_param(&case.inputs.params)?,
+    );
+    Ok(opaque_incremental_output(
+        snapshot.open_error,
+        snapshot.load_error,
+        snapshot.done_face_error,
+        snapshot.done_library_error,
+        snapshot.callback_log,
+        snapshot.object_identity_matches,
+        snapshot.release_count,
+        snapshot.release_matches_acquisition,
+        true,
+    ))
+}
+
+fn wasm_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String> {
+    let bytes = font_bytes(case)?;
+    let snapshot = wasm_abi::abi_support_incremental_opaque_handle(
+        bytes.as_ref(),
+        face_index_param(&case.inputs.params)?,
+        glyph_index_param(&case.inputs.params)?,
+        load_flags_param(&case.inputs.params)?,
+    );
+    Ok(opaque_incremental_output(
+        snapshot.open_error,
+        snapshot.load_error,
+        snapshot.done_face_error,
+        snapshot.done_library_error,
+        snapshot.callback_log,
+        snapshot.object_identity_matches,
+        snapshot.release_count,
+        snapshot.release_matches_acquisition,
+        true,
+    ))
 }
 
 struct IncrementalGlyphObserved {

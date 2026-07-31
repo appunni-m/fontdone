@@ -60,23 +60,27 @@
       "case_id": "ftincrem.FT_Incremental.handle_passed_without_deref",
       "subject": "ftincrem.FT_Incremental",
       "case": "handle_passed_without_deref",
-      "operation": "ftincrem.callback_handle_identity",
+      "operation": "ftincrem.opaque_handle_lifecycle",
       "schema": "api_result",
       "expect_error": false,
       "inputs": {
         "assets": {
           "font": {
             "kind": "ref",
-            "id": "input/fonts/incremental/minimal-glyf-incremental.ttf"
+            "id": "input/fonts/DejaVuSans.ttf"
           }
         },
         "params": {
-          "object_cookie": "opaque_client_pointer",
+          "object_cookie": "inaccessible_opaque_sentinel",
           "callbacks": [
             "get_glyph_data",
             "free_glyph_data"
           ],
-          "assert_no_pointee_access": true
+          "assert_no_pointee_access": true,
+          "face_index": 0,
+          "glyph_index": 36,
+          "load_flags": "FT_LOAD_NO_SCALE",
+          "runtime_route": "actual_incremental_opaque_handle"
         }
       },
       "classifiers": [
@@ -102,7 +106,7 @@
           "freetype/include/freetype/ftincrem.h"
         ],
         "fixture_requirements": [
-          "Requires callback instrumentation; the opaque pointer is client-owned and must be compared by identity only."
+          "The tracked DejaVuSans.ttf supplies the real SFNT tables and glyph bytes. The callback receives an inaccessible sentinel pointer; identity is compared without dereferencing it, and successful face/load completion proves FreeType did not dereference the client object."
         ]
       }
     },

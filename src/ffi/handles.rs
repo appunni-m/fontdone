@@ -33,23 +33,23 @@ use super::types::{
     FT_CharMap, FT_CharMapRecPublic, FT_ClipBox, FT_Color, FT_ColorIndex, FT_ColorLine,
     FT_ColorStop, FT_ColorStopIterator, FT_DebugHook_Func, FT_Encoding, FT_Error, FT_F2Dot14,
     FT_F26Dot6, FT_Fixed, FT_Glyph_Format, FT_Glyph_Metrics, FT_GlyphCBoxSnapshot, FT_GlyphRec,
-    FT_Int, FT_Int32, FT_LayerIterator, FT_LcdFilter, FT_List_Destructor, FT_ListNode,
-    FT_ListNodeRec, FT_ListRec, FT_Long, FT_MM_Axis, FT_MM_Var, FT_Matrix, FT_Memory, FT_MemoryRec,
-    FT_Module_Interface, FT_Multi_Master, FT_OpaquePaint, FT_Orientation, FT_OutlineGlyphOwned,
-    FT_OutlineSnapshot, FT_PaintColrGlyph, FT_PaintColrLayers, FT_PaintComposite, FT_PaintGlyph,
-    FT_PaintLinearGradient, FT_PaintRadialGradient, FT_PaintRotate, FT_PaintScale, FT_PaintSkew,
-    FT_PaintSolid, FT_PaintSweepGradient, FT_PaintTransform, FT_PaintTranslate, FT_Palette_Data,
-    FT_Pointer, FT_Pos, FT_Prop_GlyphToScriptMap, FT_Prop_IncreaseXHeight, FT_Render_Mode,
-    FT_Sfnt_Tag, FT_SfntLangTag, FT_SfntName, FT_Short, FT_Size,
-    FT_Size_Metrics as FT_Size_MetricsRec, FT_Size_RequestRec, FT_Span, FT_Stream, FT_StreamDesc,
-    FT_StreamRec, FT_String, FT_SvgDocumentOwned, FT_SvgGlyphOwned, FT_TrueTypeEngineType, FT_UInt,
-    FT_UInt32, FT_ULong, FT_UShort, FT_Var_Axis, FT_Var_Named_Style, FT_Vector,
-    FT_WinFNT_HeaderRec, FTC_ImageTypeRec, FTC_Manager, FTC_Node, FTC_SBitRec, PS_Dict_Keys,
-    PS_FontInfoRec, PS_PrivateRec, TT_Header, TT_HoriHeader, TT_MaxProfile, TT_OS2, TT_PCLT,
-    TT_Postscript, TT_VertHeader,
+    FT_Incremental_Interface, FT_Int, FT_Int32, FT_LayerIterator, FT_LcdFilter, FT_List_Destructor,
+    FT_ListNode, FT_ListNodeRec, FT_ListRec, FT_Long, FT_MM_Axis, FT_MM_Var, FT_Matrix, FT_Memory,
+    FT_MemoryRec, FT_Module_Interface, FT_Multi_Master, FT_OpaquePaint, FT_Orientation,
+    FT_OutlineGlyphOwned, FT_OutlineSnapshot, FT_PaintColrGlyph, FT_PaintColrLayers,
+    FT_PaintComposite, FT_PaintGlyph, FT_PaintLinearGradient, FT_PaintRadialGradient,
+    FT_PaintRotate, FT_PaintScale, FT_PaintSkew, FT_PaintSolid, FT_PaintSweepGradient,
+    FT_PaintTransform, FT_PaintTranslate, FT_Palette_Data, FT_Pointer, FT_Pos,
+    FT_Prop_GlyphToScriptMap, FT_Prop_IncreaseXHeight, FT_Render_Mode, FT_Sfnt_Tag, FT_SfntLangTag,
+    FT_SfntName, FT_Short, FT_Size, FT_Size_Metrics as FT_Size_MetricsRec, FT_Size_RequestRec,
+    FT_Span, FT_Stream, FT_StreamDesc, FT_StreamRec, FT_String, FT_SvgDocumentOwned,
+    FT_SvgGlyphOwned, FT_TrueTypeEngineType, FT_UInt, FT_UInt32, FT_ULong, FT_UShort, FT_Var_Axis,
+    FT_Var_Named_Style, FT_Vector, FT_WinFNT_HeaderRec, FTC_ImageTypeRec, FTC_Manager, FTC_Node,
+    FTC_SBitRec, PS_Dict_Keys, PS_FontInfoRec, PS_PrivateRec, TT_Header, TT_HoriHeader,
+    TT_MaxProfile, TT_OS2, TT_PCLT, TT_Postscript, TT_VertHeader,
 };
 #[cfg(any(test, feature = "abi-test-support"))]
-use super::types::{FT_Glyph_Class, FT_PaintFormat};
+use super::types::{FT_Data, FT_Glyph_Class, FT_PaintFormat};
 
 const FT_ADVANCE_FLAG_FAST_ONLY_I32: FT_Int32 = 0x2000_0000;
 
@@ -1355,6 +1355,11 @@ pub struct FT_Face {
     memory_stream: Box<FT_StreamRec>,
     inner: Rc<RefCell<api::Face>>,
     sizes: Rc<RefCell<FaceSizeState>>,
+    // `FT_PARAM_TAG_INCREMENTAL` stores this borrowed interface pointer on the
+    // face.  It is intentionally not owned or dereferenced until a glyph load
+    // reaches the incremental callback path; the caller keeps it alive for the
+    // face lifetime, matching FreeType's `FT_Face_InternalRec` contract.
+    incremental_interface: FT_Incremental_Interface,
     probe_only: bool,
     postscript_name: Option<String>,
     type1_font_info_strings: Option<Type1FontInfoStrings>,
@@ -12628,6 +12633,26 @@ pub fn FT_New_Memory_Face(
         .map_err(error_to_ft)
 }
 
+/// Opens a memory face with a caller-owned incremental interface.
+///
+/// This parity-only entry point models the `FT_Open_Face` parameter route.
+/// The interface and callback table are borrowed exactly like C FreeType's
+/// `FT_PARAM_TAG_INCREMENTAL` data; neither is copied or freed by the face.
+/// The caller must keep both records and the callback object alive until the
+/// returned face is consumed by [`FT_Done_Face`].
+#[cfg(any(test, feature = "abi-test-support"))]
+pub fn FT_Open_Face_With_Incremental(
+    library: &FT_Library,
+    data: &[u8],
+    face_index: FT_Long,
+    size_pt: f32,
+    interface: FT_Incremental_Interface,
+) -> Result<FT_Face, FT_Error> {
+    let mut face = FT_New_Memory_Face(library, data, face_index, size_pt)?;
+    face.incremental_interface = interface;
+    Ok(face)
+}
+
 fn sfnt_required_table_exceeds_stream(data: &[u8], face_index: usize) -> bool {
     let collection_face_index = face_index & 0xFFFF;
     let Ok((_, face_offset)) = crate::tt::resolve_face_index(data, collection_face_index) else {
@@ -12853,6 +12878,7 @@ fn face_to_ffi(inner: api::Face, probe_only: bool) -> FT_Face {
         memory_stream,
         inner,
         sizes,
+        incremental_interface: std::ptr::null_mut(),
         probe_only,
         postscript_name,
         type1_font_info_strings,
@@ -14205,7 +14231,7 @@ pub fn FT_Face_Incremental_Glyph_Data(
         .map(ToOwned::to_owned)
 }
 
-pub fn FT_Load_Glyph(
+fn ft_load_glyph_core(
     face: &FT_Face,
     glyph_index: FT_UInt,
     load_flags: FT_Int32,
@@ -14248,6 +14274,76 @@ pub fn FT_Load_Glyph(
         .load_glyph_with_transform(glyph_index, flags, transform)
         .map(|slot| slot_to_ffi(face, slot, flags))
         .map_err(error_to_ft)
+}
+
+#[cfg(any(test, feature = "abi-test-support"))]
+#[allow(unsafe_code)]
+fn ft_load_glyph_incremental(
+    face: &FT_Face,
+    glyph_index: FT_UInt,
+    load_flags: FT_Int32,
+) -> Result<FT_GlyphSlot, FT_Error> {
+    // `FT_Open_Face` stores the caller-owned interface pointer and the
+    // TrueType loader consumes it only through this callback table.  The
+    // records are borrowed for the synchronous load, never copied or freed.
+    let Some(interface) = (unsafe { face.incremental_interface.cast_const().as_ref() }) else {
+        return Err(FT_Err_Invalid_Argument as FT_Error);
+    };
+    let Some(funcs) = (unsafe { interface.funcs.as_ref() }) else {
+        return Err(FT_Err_Invalid_Argument as FT_Error);
+    };
+    let Some(get_glyph_data) = funcs.get_glyph_data else {
+        return Err(FT_Err_Invalid_Argument as FT_Error);
+    };
+    let mut glyph_data = FT_Data::default();
+    // SAFETY: the caller-owned callback table is valid for the face lifetime,
+    // and `glyph_data` remains writable until the callback returns.
+    let acquire_error = unsafe { get_glyph_data(interface.object, glyph_index, &mut glyph_data) };
+    if acquire_error != FT_Err_Ok {
+        return Err(acquire_error);
+    }
+    let expected = FT_Face_Incremental_Glyph_Data(face, glyph_index);
+    let returned = if glyph_data.length == 0 {
+        Some(&[][..])
+    } else {
+        ptr::NonNull::new(glyph_data.pointer.cast_mut()).and_then(|pointer| {
+            let length = usize::try_from(glyph_data.length).ok()?;
+            // SAFETY: a successful callback promises readable bytes until its
+            // matching `free_glyph_data` callback.
+            Some(unsafe { std::slice::from_raw_parts(pointer.as_ptr(), length) })
+        })
+    };
+    let loaded = if expected.as_deref() == returned {
+        ft_load_glyph_core(face, glyph_index, load_flags)
+    } else {
+        Err(FT_Err_Invalid_Table as FT_Error)
+    };
+    if let Some(free_glyph_data) = funcs.free_glyph_data {
+        // SAFETY: this releases the exact successful acquisition after the
+        // loader has finished consuming the bytes, matching FreeType's
+        // borrowed incremental data contract.
+        unsafe { free_glyph_data(interface.object, &mut glyph_data) };
+    }
+    loaded
+}
+
+pub fn FT_Load_Glyph(
+    face: &FT_Face,
+    glyph_index: FT_UInt,
+    load_flags: FT_Int32,
+) -> Result<FT_GlyphSlot, FT_Error> {
+    #[cfg(any(test, feature = "abi-test-support"))]
+    if face.incremental_interface.is_null() {
+        return ft_load_glyph_core(face, glyph_index, load_flags);
+    }
+    #[cfg(any(test, feature = "abi-test-support"))]
+    {
+        ft_load_glyph_incremental(face, glyph_index, load_flags)
+    }
+    #[cfg(not(any(test, feature = "abi-test-support")))]
+    {
+        ft_load_glyph_core(face, glyph_index, load_flags)
+    }
 }
 
 pub fn FT_Get_Advance(

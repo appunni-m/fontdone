@@ -34,6 +34,10 @@ pub type FT_Short = i16;
 pub type FT_UShort = u16;
 pub type FT_Byte = u8;
 pub type FT_Bytes = *const FT_Byte;
+pub type FT_Data = rust_ffi::FT_Data;
+pub type FT_Incremental = rust_ffi::FT_Incremental;
+pub type FT_Incremental_FuncsRec = rust_ffi::FT_Incremental_FuncsRec;
+pub type FT_Incremental_InterfaceRec = rust_ffi::FT_Incremental_InterfaceRec;
 pub type FT_LayerIterator = rust_ffi::FT_LayerIterator;
 pub type FT_ClipBox = rust_ffi::FT_ClipBox;
 pub type FT_ColorLine = rust_ffi::FT_ColorLine;
@@ -1697,6 +1701,9 @@ struct WasmMmVarStorage {
 
 thread_local! {
     static SIZE_HANDLE_OWNERS: RefCell<BTreeMap<usize, usize>> = const { RefCell::new(BTreeMap::new()) };
+    #[cfg(feature = "abi-test-support")]
+    static OPAQUE_INCREMENTAL_TRACE: RefCell<Option<WasmOpaqueIncrementalTrace>> =
+        const { RefCell::new(None) };
 }
 
 fn register_wasm_size_handle(face_handle: usize, size_handle: usize) {
@@ -5951,6 +5958,168 @@ pub fn abi_support_custom_glyph_lifecycle() -> AbiCustomGlyphSnapshot {
 #[cfg(feature = "abi-test-support")]
 pub fn abi_support_glyph_copy_failure_cleanup() -> [rust_ffi::FT_Glyph_Copy_Failure_Row; 3] {
     rust_ffi::FT_Glyph_Copy_Failure_Cleanup()
+}
+
+#[cfg(feature = "abi-test-support")]
+struct WasmOpaqueIncrementalTrace {
+    object: FT_Incremental,
+    requested_glyph: FT_UInt,
+    bytes: Box<[FT_Byte]>,
+    acquired_pointer: usize,
+    acquired_length: FT_UInt,
+    events: Vec<(&'static str, FT_UInt)>,
+    object_identity_matches: bool,
+    release_count: usize,
+    release_matches_acquisition: bool,
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn wasm_opaque_incremental_get_glyph_data(
+    incremental: FT_Incremental,
+    glyph_index: FT_UInt,
+    adata: *mut FT_Data,
+) -> FT_Error {
+    OPAQUE_INCREMENTAL_TRACE.with_borrow_mut(|trace| {
+        let Some(trace) = trace.as_mut() else {
+            return rust_ffi::FT_Err_Invalid_Argument;
+        };
+        trace.object_identity_matches &= incremental == trace.object;
+        let Some(adata) = (unsafe { adata.as_mut() }) else {
+            return rust_ffi::FT_Err_Invalid_Argument;
+        };
+        if glyph_index != trace.requested_glyph {
+            return rust_ffi::FT_Err_Invalid_Glyph_Index as FT_Error;
+        }
+        let Ok(length) = FT_UInt::try_from(trace.bytes.len()) else {
+            return rust_ffi::FT_Err_Array_Too_Large as FT_Error;
+        };
+        adata.pointer = trace.bytes.as_ptr();
+        adata.length = length;
+        trace.acquired_pointer = adata.pointer.addr();
+        trace.acquired_length = length;
+        trace.events.push(("get_glyph_data", glyph_index));
+        rust_ffi::FT_Err_Ok
+    })
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn wasm_opaque_incremental_free_glyph_data(
+    incremental: FT_Incremental,
+    data: *mut FT_Data,
+) {
+    OPAQUE_INCREMENTAL_TRACE.with_borrow_mut(|trace| {
+        let Some(trace) = trace.as_mut() else {
+            return;
+        };
+        trace.object_identity_matches &= incremental == trace.object;
+        let Some(data) = (unsafe { data.as_ref() }) else {
+            return;
+        };
+        trace.release_count = trace.release_count.saturating_add(1);
+        trace.release_matches_acquisition =
+            data.pointer.addr() == trace.acquired_pointer && data.length == trace.acquired_length;
+        trace
+            .events
+            .push(("free_glyph_data", trace.requested_glyph));
+    });
+}
+
+#[cfg(feature = "abi-test-support")]
+pub struct AbiIncrementalOpaqueSnapshot {
+    pub open_error: FT_Error,
+    pub load_error: FT_Error,
+    pub done_face_error: FT_Error,
+    pub done_library_error: FT_Error,
+    pub callback_log: Vec<(&'static str, FT_UInt)>,
+    pub object_identity_matches: bool,
+    pub release_count: usize,
+    pub release_matches_acquisition: bool,
+}
+
+/// Opens a pure-Rust Wasm-facade face through the incremental parameter path
+/// with an inaccessible client object and records callback identity events.
+#[cfg(feature = "abi-test-support")]
+pub fn abi_support_incremental_opaque_handle(
+    bytes: &[u8],
+    face_index: FT_Long,
+    glyph_index: FT_UInt,
+    load_flags: FT_Int32,
+) -> AbiIncrementalOpaqueSnapshot {
+    let mut library = rust_ffi::FT_Init_FreeType();
+    let glyph_bytes = rust_ffi::FT_New_Memory_Face(&library, bytes, face_index, 20.0)
+        .ok()
+        .and_then(|face| rust_ffi::FT_Face_Incremental_Glyph_Data(&face, glyph_index))
+        .unwrap_or_default()
+        .into_boxed_slice();
+    let object: FT_Incremental = ptr::without_provenance_mut(1);
+    OPAQUE_INCREMENTAL_TRACE.with_borrow_mut(|trace| {
+        *trace = Some(WasmOpaqueIncrementalTrace {
+            object,
+            requested_glyph: glyph_index,
+            bytes: glyph_bytes,
+            acquired_pointer: 0,
+            acquired_length: 0,
+            events: Vec::new(),
+            object_identity_matches: true,
+            release_count: 0,
+            release_matches_acquisition: false,
+        });
+    });
+    let funcs = FT_Incremental_FuncsRec {
+        get_glyph_data: Some(wasm_opaque_incremental_get_glyph_data),
+        free_glyph_data: Some(wasm_opaque_incremental_free_glyph_data),
+        get_glyph_metrics: None,
+    };
+    let interface = FT_Incremental_InterfaceRec {
+        funcs: ptr::from_ref(&funcs),
+        object,
+    };
+    let (open_error, load_error, done_face_error) = match rust_ffi::FT_Open_Face_With_Incremental(
+        &library,
+        bytes,
+        face_index,
+        20.0,
+        ptr::from_ref(&interface).cast_mut(),
+    ) {
+        Ok(face) => {
+            let load_error = match rust_ffi::FT_Load_Glyph(&face, glyph_index, load_flags) {
+                Ok(_) => rust_ffi::FT_Err_Ok,
+                Err(error) => error,
+            };
+            let done_face_error = rust_ffi::FT_Done_Face(Some(face));
+            (rust_ffi::FT_Err_Ok, load_error, done_face_error)
+        }
+        Err(error) => (
+            error,
+            error,
+            rust_ffi::FT_Err_Invalid_Face_Handle as FT_Error,
+        ),
+    };
+    let done_library_error = rust_ffi::FT_Done_Library(Some(&mut library));
+    let (callback_log, object_identity_matches, release_count, release_matches_acquisition) =
+        OPAQUE_INCREMENTAL_TRACE.with_borrow(|trace| {
+            trace
+                .as_ref()
+                .map_or((Vec::new(), false, 0, false), |trace| {
+                    (
+                        trace.events.clone(),
+                        trace.object_identity_matches,
+                        trace.release_count,
+                        trace.release_matches_acquisition,
+                    )
+                })
+        });
+    OPAQUE_INCREMENTAL_TRACE.with_borrow_mut(|trace| *trace = None);
+    AbiIncrementalOpaqueSnapshot {
+        open_error,
+        load_error,
+        done_face_error,
+        done_library_error,
+        callback_log,
+        object_identity_matches,
+        release_count,
+        release_matches_acquisition,
+    }
 }
 
 /// Normalized incremental-glyph lifecycle observations for the Wasm parity lane.

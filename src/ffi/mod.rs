@@ -362,6 +362,7 @@ export_parity_helpers!(
     FT_Malformed_Get_GlyphSlot,
     FT_Module_Requester_Service_Available,
     FT_New_Library_Without_Default_Modules,
+    FT_Open_Face_With_Incremental,
     FT_Open_Face_NonDriver_Diagnostic,
     FT_Palette_Active_Entries_Copy,
     FT_Palette_Data_Copy,

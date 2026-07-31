@@ -3479,6 +3479,13 @@ def property_service_pending_reason(row: ConcreteInput) -> str | None:
 def ftincrem_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     """Rows for incremental font callbacks that do not have a maintained route."""
     if (
+        row.case_id == "ftincrem.FT_Incremental.handle_passed_without_deref"
+        and row.operation == "ftincrem.opaque_handle_lifecycle"
+        and row.params.get("runtime_route") == "actual_incremental_opaque_handle"
+        and unresolved_assets_reason(row) is None
+    ):
+        return None
+    if (
         row.case_id
         == "ftincrem.FT_Incremental_FuncsRec.glyph_data_success_and_release"
         and row.operation == "ftincrem.incremental_glyph_lifecycle"
@@ -3592,6 +3599,19 @@ def ftincrem_subsystem_pending_reason(row: ConcreteInput) -> str | None:
 
 def ftincrem_real_parity_reason(row: ConcreteInput) -> str | None:
     """Incremental callback routes with direct four-lane lifecycle execution."""
+    if (
+        row.case_id == "ftincrem.FT_Incremental.handle_passed_without_deref"
+        and row.operation == "ftincrem.opaque_handle_lifecycle"
+        and row.params.get("runtime_route") == "actual_incremental_opaque_handle"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_PARAM_TAG_INCREMENTAL passes an inaccessible client-owned object "
+            "through the real glyph-data callback route; pinned C, Rust FFI, "
+            "C ABI, and WASM compare every callback's opaque-pointer identity, "
+            "callback order, and sentinel survival without dereferencing the "
+            "client object"
+        )
     if (
         row.case_id
         == "ftincrem.FT_Incremental_FuncsRec.glyph_data_success_and_release"

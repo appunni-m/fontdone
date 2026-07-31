@@ -329,6 +329,7 @@ document_wasm_test_support!(
     abi_support_custom_memory_lifecycle,
     abi_support_custom_glyph_lifecycle,
     abi_support_glyph_copy_failure_cleanup,
+    abi_support_incremental_opaque_handle,
     abi_support_incremental_glyph_lifecycle,
     abi_support_incremental_state_lifecycle,
     abi_support_reference_library_observation,

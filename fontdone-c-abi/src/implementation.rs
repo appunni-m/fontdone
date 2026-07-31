@@ -32,6 +32,12 @@ thread_local! {
     static TEST_OUTLINE_RENDER_USER_TOKEN: RefCell<*mut c_void> = const { RefCell::new(ptr::null_mut()) };
 }
 
+#[cfg(feature = "abi-test-support")]
+thread_local! {
+    static ABI_INCREMENTAL_OPAQUE_TRACE: RefCell<Option<AbiIncrementalOpaqueTrace>> =
+        const { RefCell::new(None) };
+}
+
 struct OwnedMmVar {
     head: Box<OwnedMmVarHead>,
     _axis: Box<[FT_Var_Axis]>,
@@ -3319,6 +3325,176 @@ struct AbiIncrementalGlyphData {
     acquired_length: FT_UInt,
     release_count: usize,
     release_matches_acquisition: bool,
+}
+
+#[cfg(feature = "abi-test-support")]
+struct AbiIncrementalOpaqueTrace {
+    object: FT_Incremental,
+    requested_glyph: FT_UInt,
+    bytes: Box<[FT_Byte]>,
+    acquired_pointer: usize,
+    acquired_length: FT_UInt,
+    events: Vec<(&'static str, FT_UInt)>,
+    object_identity_matches: bool,
+    release_count: usize,
+    release_matches_acquisition: bool,
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn abi_incremental_opaque_get_glyph_data(
+    incremental: FT_Incremental,
+    glyph_index: FT_UInt,
+    adata: *mut FT_Data,
+) -> FT_Error {
+    ABI_INCREMENTAL_OPAQUE_TRACE.with_borrow_mut(|trace| {
+        let Some(trace) = trace.as_mut() else {
+            return rust_ffi::FT_Err_Invalid_Argument;
+        };
+        trace.object_identity_matches &= incremental == trace.object;
+        let Some(adata) = (unsafe { adata.as_mut() }) else {
+            return rust_ffi::FT_Err_Invalid_Argument;
+        };
+        if glyph_index != trace.requested_glyph {
+            return rust_ffi::FT_Err_Invalid_Glyph_Index as FT_Error;
+        }
+        let Ok(length) = FT_UInt::try_from(trace.bytes.len()) else {
+            return rust_ffi::FT_Err_Array_Too_Large as FT_Error;
+        };
+        adata.pointer = trace.bytes.as_ptr();
+        adata.length = length;
+        trace.acquired_pointer = adata.pointer.addr();
+        trace.acquired_length = length;
+        trace.events.push(("get_glyph_data", glyph_index));
+        rust_ffi::FT_Err_Ok
+    })
+}
+
+#[cfg(feature = "abi-test-support")]
+unsafe extern "C" fn abi_incremental_opaque_free_glyph_data(
+    incremental: FT_Incremental,
+    data: *mut FT_Data,
+) {
+    ABI_INCREMENTAL_OPAQUE_TRACE.with_borrow_mut(|trace| {
+        let Some(trace) = trace.as_mut() else {
+            return;
+        };
+        trace.object_identity_matches &= incremental == trace.object;
+        let Some(data) = (unsafe { data.as_ref() }) else {
+            return;
+        };
+        trace.release_count = trace.release_count.saturating_add(1);
+        trace.release_matches_acquisition =
+            data.pointer.addr() == trace.acquired_pointer && data.length == trace.acquired_length;
+        trace
+            .events
+            .push(("free_glyph_data", trace.requested_glyph));
+    });
+}
+
+#[cfg(feature = "abi-test-support")]
+pub struct AbiIncrementalOpaqueSnapshot {
+    pub open_error: FT_Error,
+    pub load_error: FT_Error,
+    pub done_face_error: FT_Error,
+    pub done_library_error: FT_Error,
+    pub callback_log: Vec<(&'static str, FT_UInt)>,
+    pub object_identity_matches: bool,
+    pub release_count: usize,
+    pub release_matches_acquisition: bool,
+}
+
+/// Opens an actual C-ABI `FT_Open_Face` parameter route with an inaccessible
+/// client object and records only callback identity and ownership events.
+#[cfg(feature = "abi-test-support")]
+pub fn abi_incremental_opaque_handle(
+    bytes: &[u8],
+    face_index: FT_Long,
+    glyph_index: FT_UInt,
+    load_flags: FT_Int32,
+) -> AbiIncrementalOpaqueSnapshot {
+    let mut core_library = rust_ffi::FT_Init_FreeType();
+    let glyph_bytes = rust_ffi::FT_New_Memory_Face(&core_library, bytes, face_index, 20.0)
+        .ok()
+        .and_then(|face| rust_ffi::FT_Face_Incremental_Glyph_Data(&face, glyph_index))
+        .unwrap_or_default()
+        .into_boxed_slice();
+    let _ = rust_ffi::FT_Done_Library(Some(&mut core_library));
+    let object: FT_Incremental = ptr::without_provenance_mut(1);
+    ABI_INCREMENTAL_OPAQUE_TRACE.with_borrow_mut(|trace| {
+        *trace = Some(AbiIncrementalOpaqueTrace {
+            object,
+            requested_glyph: glyph_index,
+            bytes: glyph_bytes,
+            acquired_pointer: 0,
+            acquired_length: 0,
+            events: Vec::new(),
+            object_identity_matches: true,
+            release_count: 0,
+            release_matches_acquisition: false,
+        });
+    });
+    let funcs = FT_Incremental_FuncsRec {
+        get_glyph_data: Some(abi_incremental_opaque_get_glyph_data),
+        free_glyph_data: Some(abi_incremental_opaque_free_glyph_data),
+        get_glyph_metrics: None,
+    };
+    let interface = FT_Incremental_InterfaceRec {
+        funcs: ptr::from_ref(&funcs),
+        object,
+    };
+    let mut library = ptr::null_mut();
+    let init_error = FT_Init_FreeType(&mut library);
+    let mut face = ptr::null_mut();
+    let mut open_error = init_error;
+    let mut load_error = init_error;
+    let mut done_face_error = rust_ffi::FT_Err_Invalid_Face_Handle as FT_Error;
+    let mut done_library_error = rust_ffi::FT_Err_Invalid_Library_Handle as FT_Error;
+    if init_error == rust_ffi::FT_Err_Ok {
+        let mut parameter = FT_Parameter {
+            tag: rust_ffi::FT_PARAM_TAG_INCREMENTAL as FT_ULong,
+            data: ptr::from_ref(&interface).cast_mut().cast(),
+        };
+        let args = FT_Open_Args {
+            flags: (rust_ffi::FT_OPEN_MEMORY | rust_ffi::FT_OPEN_PARAMS) as FT_UInt,
+            memory_base: bytes.as_ptr(),
+            memory_size: FT_Long::try_from(bytes.len()).unwrap_or(FT_Long::MAX),
+            pathname: ptr::null_mut(),
+            stream: ptr::null_mut(),
+            driver: ptr::null_mut(),
+            num_params: 1,
+            params: ptr::from_mut(&mut parameter),
+        };
+        open_error = FT_Open_Face(library, &args, face_index, &mut face);
+        if open_error == rust_ffi::FT_Err_Ok {
+            load_error = FT_Load_Glyph(face, glyph_index, load_flags);
+            done_face_error = FT_Done_Face(face);
+        }
+        done_library_error = FT_Done_FreeType(library);
+    }
+    let (callback_log, object_identity_matches, release_count, release_matches_acquisition) =
+        ABI_INCREMENTAL_OPAQUE_TRACE.with_borrow(|trace| {
+            trace
+                .as_ref()
+                .map_or((Vec::new(), false, 0, false), |trace| {
+                    (
+                        trace.events.clone(),
+                        trace.object_identity_matches,
+                        trace.release_count,
+                        trace.release_matches_acquisition,
+                    )
+                })
+        });
+    ABI_INCREMENTAL_OPAQUE_TRACE.with_borrow_mut(|trace| *trace = None);
+    AbiIncrementalOpaqueSnapshot {
+        open_error,
+        load_error,
+        done_face_error,
+        done_library_error,
+        callback_log,
+        object_identity_matches,
+        release_count,
+        release_matches_acquisition,
+    }
 }
 
 /// One incremental metrics callback invocation and its in/out record.
