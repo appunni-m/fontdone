@@ -513,5 +513,133 @@ mod tests {
             error_to_ft(FontError::BytecodeDivideByZero),
             FT_Err_Divide_By_Zero as FT_Error
         );
+        assert_eq!(
+            error_to_ft(FontError::PcfZeroTablesStreamOperation),
+            FT_Err_Invalid_Stream_Operation as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::CouldNotFindContext),
+            FT_Err_Could_Not_Find_Context as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::CodeOverflow),
+            FT_Err_Code_Overflow as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BytecodeBadArgument),
+            FT_Err_Bad_Argument as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BytecodeTooFewArguments),
+            FT_Err_Too_Few_Arguments as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BytecodeDebugOpcode),
+            FT_Err_Debug_OpCode as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BytecodeEndfInExecStream),
+            FT_Err_ENDF_In_Exec_Stream as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BytecodeInvalidOpcode),
+            FT_Err_Invalid_Opcode as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BytecodeDefinitionInGlyph),
+            FT_Err_DEF_In_Glyf_Bytecode as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::CffStackOverflow),
+            FT_Err_Invalid_File_Format as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::InvalidReference),
+            FT_Err_Invalid_Reference as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::CannotRenderGlyph("x".into())),
+            FT_Err_Cannot_Render_Glyph
+        );
+        assert_eq!(
+            error_to_ft(FontError::UnimplementedFeature("x".into())),
+            FT_Err_Unimplemented_Feature
+        );
+        assert_eq!(
+            error_to_ft(FontError::InvalidArgument("x".into())),
+            FT_Err_Invalid_Argument
+        );
+        assert_eq!(
+            error_to_ft(FontError::MissingBitmap),
+            FT_Err_Missing_Bitmap as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::InvalidComposite),
+            FT_Err_Invalid_Composite as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BdfBbxTooBig),
+            FT_Err_Bbx_Too_Big as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BdfCorruptedFontHeader),
+            FT_Err_Corrupted_Font_Header as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BdfCorruptedFontGlyphs),
+            FT_Err_Corrupted_Font_Glyphs as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BdfMissingBbxField),
+            FT_Err_Missing_Bbx_Field as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BdfMissingEncodingField),
+            FT_Err_Missing_Encoding_Field as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BdfMissingFontField),
+            FT_Err_Missing_Font_Field as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BdfMissingFontboundingboxField),
+            FT_Err_Missing_Fontboundingbox_Field as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BdfMissingSizeField),
+            FT_Err_Missing_Size_Field as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BdfMissingStartcharField),
+            FT_Err_Missing_Startchar_Field as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BdfMissingStartfontStreamOperation),
+            FT_Err_Invalid_Stream_Operation as FT_Error
+        );
+    }
+
+    #[test]
+    fn render_mode_load_flag_mapping() {
+        assert_eq!(
+            load_flag_for_render_mode(RenderMode::Normal),
+            api::LoadFlags::DEFAULT
+        );
+        assert_eq!(
+            load_flag_for_render_mode(RenderMode::Mono),
+            api::LoadFlags::TARGET_MONO
+        );
+        assert_eq!(
+            load_flag_for_render_mode(RenderMode::Lcd),
+            api::LoadFlags::TARGET_LCD
+        );
+        assert_eq!(
+            load_flag_for_render_mode(RenderMode::LcdV),
+            api::LoadFlags::TARGET_LCD_V
+        );
+        assert_eq!(
+            load_flag_for_render_mode(RenderMode::Sdf),
+            api::LoadFlags::DEFAULT
+        );
     }
 }
