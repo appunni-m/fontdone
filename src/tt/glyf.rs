@@ -1091,4 +1091,106 @@ mod tests {
         assert_eq!(parsed.components[0].transform.xy, 0);
         Ok(())
     }
+
+    fn simple_glyph_bytes(xmin: i16, ymin: i16, xmax: i16, ymax: i16) -> Vec<u8> {
+        let mut data = Vec::new();
+        data.extend_from_slice(&1i16.to_be_bytes());
+        data.extend_from_slice(&xmin.to_be_bytes());
+        data.extend_from_slice(&ymin.to_be_bytes());
+        data.extend_from_slice(&xmax.to_be_bytes());
+        data.extend_from_slice(&ymax.to_be_bytes());
+        data.extend_from_slice(&1u16.to_be_bytes()); // one contour
+        data.extend_from_slice(&0u16.to_be_bytes()); // no instructions
+        let flag = ON_CURVE
+            | X_SHORT_VECTOR
+            | Y_SHORT_VECTOR
+            | X_IS_SAME_OR_POSITIVE_SHORT
+            | Y_IS_SAME_OR_POSITIVE_SHORT;
+        data.push(flag);
+        data.push(flag);
+        data.push(0); // dx1
+        data.push(0); // dx2
+        data.push(0); // dy1
+        data.push(0); // dy2
+        data
+    }
+
+    fn composite_glyph_bytes(component: u16, dx: i16, dy: i16) -> Vec<u8> {
+        let mut data = Vec::new();
+        data.extend_from_slice(&(-1i16).to_be_bytes());
+        data.extend_from_slice(&0i16.to_be_bytes()); // xmin
+        data.extend_from_slice(&0i16.to_be_bytes()); // ymin
+        data.extend_from_slice(&100i16.to_be_bytes()); // xmax
+        data.extend_from_slice(&100i16.to_be_bytes()); // ymax
+        data.extend_from_slice(&(ARG_1_AND_2_ARE_WORDS | ARGS_ARE_XY_VALUES).to_be_bytes());
+        data.extend_from_slice(&component.to_be_bytes());
+        data.extend_from_slice(&dx.to_be_bytes());
+        data.extend_from_slice(&dy.to_be_bytes());
+        data
+    }
+
+    #[test]
+    fn load_glyph_resolves_composite_components() -> Result<(), FontError> {
+        let simple = simple_glyph_bytes(0, 0, 100, 100);
+        let composite = composite_glyph_bytes(0, 10, 20);
+        let mut glyf = simple.clone();
+        glyf.extend_from_slice(&composite);
+
+        // Long-format loca: glyph 0 -> simple, glyph 1 -> composite.
+        let offsets = [
+            0u32,
+            simple.len() as u32,
+            glyf.len() as u32,
+            glyf.len() as u32,
+        ];
+        let loca = offsets
+            .iter()
+            .flat_map(|value| value.to_be_bytes())
+            .collect::<Vec<_>>();
+
+        let hmtx = crate::tt::hmtx::HmtxTable {
+            h_metrics: vec![crate::tt::hmtx::LongHorMetric {
+                advance_width: 500,
+                lsb: 0,
+            }],
+            left_side_bearings: Vec::new(),
+        };
+
+        let outline = load_glyph(&glyf, &loca, 1, 1, &hmtx)?;
+        assert!(outline.is_composite);
+        assert_eq!(outline.points.len(), 2);
+        assert_eq!(outline.components.len(), 1);
+        assert_eq!(outline.components[0].glyph_index, 0);
+        assert_eq!(outline.components[0].arg1, 10);
+        assert_eq!(outline.components[0].arg2, 20);
+        assert_eq!(outline.sub_lsb, 0);
+
+        // Glyph 0 is the simple glyph.
+        let outline = load_glyph(&glyf, &loca, 1, 0, &hmtx)?;
+        assert!(!outline.is_composite);
+        assert_eq!(outline.points.len(), 2);
+        assert_eq!(outline.xmin, 0);
+        assert_eq!(outline.xmax, 100);
+        Ok(())
+    }
+
+    #[test]
+    fn load_glyph_recursion_and_missing_glyph_errors() -> Result<(), FontError> {
+        let simple = simple_glyph_bytes(0, 0, 100, 100);
+        let mut glyf = simple.clone();
+        // Composite pointing at glyph 9 which does not exist.
+        glyf.extend_from_slice(&composite_glyph_bytes(9, 0, 0));
+        let offsets = [0u32, simple.len() as u32, glyf.len() as u32];
+        let loca = offsets
+            .iter()
+            .flat_map(|value| value.to_be_bytes())
+            .collect::<Vec<_>>();
+        let hmtx = crate::tt::hmtx::HmtxTable::default();
+        let error = match load_glyph(&glyf, &loca, 1, 1, &hmtx) {
+            Err(error) => error,
+            Ok(_) => panic!("missing component glyph should fail"),
+        };
+        assert!(error.to_string().contains("Invalid glyph composite"));
+        Ok(())
+    }
 }
