@@ -1953,6 +1953,15 @@ struct HintTarget {
 mod tests {
     use super::*;
 
+    const DEJAVU_SANS: &[u8] = include_bytes!("../tests/fixtures/input/fonts/DejaVuSans.ttf");
+
+    fn test_font() -> crate::Font {
+        match crate::Font::truetype(DEJAVU_SANS, 16.0) {
+            Ok(font) => font,
+            Err(err) => panic!("test font should load: {err}"),
+        }
+    }
+
     #[test]
     fn ppem_rounding_matches_c() {
         assert_eq!(ppem_from_size(16.0), 16);
@@ -1969,5 +1978,176 @@ mod tests {
         assert_eq!(scale_unrounded_fdot6(0, 0x1_0000), 0);
         assert_eq!(ft_div_fix_local(16 << 6, 2048), 0x8000);
         assert_eq!(ft_div_fix_local(0, 2048), 0);
+    }
+
+    #[test]
+    fn autohint_load_targets_scale_real_glyphs() {
+        let font = test_font();
+        let glyphs = [
+            font.char_index('A' as u32),
+            font.char_index('g' as u32),
+            font.char_index('o' as u32),
+        ];
+        for glyph in glyphs {
+            assert!(
+                glyph > 0,
+                "cmap should map the test characters (A={}, g={}, o={})",
+                glyphs[0],
+                glyphs[1],
+                glyphs[2]
+            );
+            let metrics = font.face_globals.get_metrics(glyph);
+            let scaled = match scale_glyph_for_metrics_with_autohint(
+                &font.data,
+                glyph,
+                metrics.as_deref(),
+                font.is_italic,
+            ) {
+                Ok(scaled) => scaled,
+                Err(err) => panic!("autohint normal target should scale: {err}"),
+            };
+            assert!(scaled.advance_width > 0);
+            assert!(scaled.slot_advance_width > 0);
+            assert!(
+                scaled.outline.n_contours > 0,
+                "DejaVu test glyph must have an outline"
+            );
+            assert!(!scaled.outline.points.is_empty());
+        }
+    }
+
+    #[test]
+    fn all_load_targets_produce_sane_geometry() {
+        let font = test_font();
+        let glyph = font.char_index('A' as u32);
+        assert!(glyph > 0);
+        let metrics = font.face_globals.get_metrics(glyph);
+
+        let scaled = [
+            scale_glyph_for_metrics_with_autohint_and_mode(
+                &font.data,
+                glyph,
+                metrics.as_deref(),
+                font.is_italic,
+                NativeHintMode::Normal,
+            ),
+            scale_glyph_for_metrics_with_autohint_and_mode(
+                &font.data,
+                glyph,
+                metrics.as_deref(),
+                font.is_italic,
+                NativeHintMode::Mono,
+            ),
+            scale_glyph_for_metrics_with_autohint_and_mode(
+                &font.data,
+                glyph,
+                metrics.as_deref(),
+                font.is_italic,
+                NativeHintMode::Lcd,
+            ),
+            scale_glyph_for_metrics_with_autohint_and_mode(
+                &font.data,
+                glyph,
+                metrics.as_deref(),
+                font.is_italic,
+                NativeHintMode::LcdV,
+            ),
+            scale_glyph_for_metrics_with_autohint_preserve_advance(
+                &font.data,
+                glyph,
+                metrics.as_deref(),
+                font.is_italic,
+            ),
+            scale_glyph_for_metrics_light(&font.data, glyph, metrics.as_deref(), font.is_italic),
+            scale_glyph_light(&font.data, glyph, metrics.as_deref(), font.is_italic),
+            scale_glyph_lcd(&font.data, glyph, metrics.as_deref(), font.is_italic),
+            scale_glyph_lcd_v(&font.data, glyph, metrics.as_deref(), font.is_italic),
+            scale_glyph_mono(&font.data, glyph, metrics.as_deref(), font.is_italic),
+            scale_glyph_native_default(&font.data, glyph, metrics.as_deref(), font.is_italic),
+            scale_glyph_no_hinting(&font.data, glyph, font.is_italic),
+        ];
+
+        for result in scaled {
+            let scaled = match result {
+                Ok(scaled) => scaled,
+                Err(err) => panic!("every load target should scale the test glyph: {err}"),
+            };
+            assert!(scaled.advance_width > 0);
+            assert!(scaled.outline.n_contours > 0);
+            assert!(!scaled.outline.points.is_empty());
+            // Pixel bbox derived from the raw cbox must stay ordered.
+            assert!(scaled.bbox_x_min <= scaled.bbox_x_max);
+            assert!(scaled.bbox_y_min <= scaled.bbox_y_max);
+            assert!(scaled.outline_cbox_x_min <= scaled.outline_cbox_x_max);
+            assert!(scaled.outline_cbox_y_min <= scaled.outline_cbox_y_max);
+        }
+    }
+
+    #[test]
+    fn bytecode_context_paths_match_internal_preparation() {
+        let font = test_font();
+        let glyph = font.char_index('A' as u32);
+        assert!(glyph > 0);
+
+        let data = &font.data;
+        let (Some(fpgm), Some(cvt)) = (&data.fpgm, &data.cvt) else {
+            panic!("DejaVuSans ships fpgm and cvt tables");
+        };
+        let scale = ScaleMetrics::from_font_data(data);
+        let context = match prepare_native_bytecode_context(
+            data,
+            scale,
+            NativeHintMode::Normal,
+            false,
+            cvt,
+            fpgm,
+        ) {
+            Ok(context) => context,
+            Err(err) => panic!("DejaVu bytecode should prepare: {err}"),
+        };
+
+        let native = match scale_glyph_native_default(data, glyph, None, font.is_italic) {
+            Ok(scaled) => scaled,
+            Err(err) => panic!("native default should scale: {err}"),
+        };
+        let native_with_context = match scale_glyph_native_default_with_bytecode_context(
+            data,
+            glyph,
+            None,
+            font.is_italic,
+            Some(&context),
+        ) {
+            Ok(scaled) => scaled,
+            Err(err) => panic!("native default with prepared context should scale: {err}"),
+        };
+        assert_eq!(native.advance_width, native_with_context.advance_width);
+        assert_eq!(
+            native.slot_advance_width,
+            native_with_context.slot_advance_width
+        );
+        assert_eq!(
+            native.outline_cbox_x_min,
+            native_with_context.outline_cbox_x_min
+        );
+        assert_eq!(
+            native.outline_cbox_y_min,
+            native_with_context.outline_cbox_y_min
+        );
+
+        let metrics = match scale_glyph_for_metrics(data, glyph, font.is_italic) {
+            Ok(scaled) => scaled,
+            Err(err) => panic!("metrics-only path should scale: {err}"),
+        };
+        let metrics_with_context = match scale_glyph_for_metrics_with_bytecode_context(
+            data,
+            glyph,
+            font.is_italic,
+            Some(&context),
+        ) {
+            Ok(scaled) => scaled,
+            Err(err) => panic!("metrics-only path with prepared context should scale: {err}"),
+        };
+        assert_eq!(metrics.advance_width, metrics_with_context.advance_width);
+        assert_eq!(metrics.lsb, metrics_with_context.lsb);
     }
 }
