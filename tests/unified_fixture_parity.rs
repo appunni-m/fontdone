@@ -21,7 +21,7 @@
 #![allow(missing_docs)]
 #![allow(unused_crate_dependencies)]
 
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::cmp::Reverse;
 use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::{CString, OsStr, c_void};
@@ -32,7 +32,7 @@ use std::os::raw::c_long;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::ptr;
-use std::sync::atomic::{AtomicBool, AtomicI32, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicI32, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -62421,23 +62421,25 @@ fn rust_open_face_stream(case: &InputCase) -> Result<RunOutput, String> {
     }
 }
 
-static C_OPEN_FACE_STREAM_CLOSE_CALLS: AtomicI32 = AtomicI32::new(0);
-static C_OPEN_FACE_STREAM_EXPECTED: AtomicUsize = AtomicUsize::new(0);
-static C_OPEN_FACE_STREAM_CALLBACK_IDENTITY: AtomicBool = AtomicBool::new(false);
+thread_local! {
+    static C_OPEN_FACE_STREAM_CLOSE_CALLS: Cell<i32> = const { Cell::new(0) };
+    static C_OPEN_FACE_STREAM_EXPECTED: Cell<usize> = const { Cell::new(0) };
+    static C_OPEN_FACE_STREAM_CALLBACK_IDENTITY: Cell<bool> = const { Cell::new(false) };
+}
 
 extern "C" fn c_open_face_stream_close(stream: c_abi::FT_Stream) {
-    C_OPEN_FACE_STREAM_CLOSE_CALLS.fetch_add(1, Ordering::SeqCst);
-    C_OPEN_FACE_STREAM_CALLBACK_IDENTITY.store(
-        stream.addr() == C_OPEN_FACE_STREAM_EXPECTED.load(Ordering::SeqCst),
-        Ordering::SeqCst,
-    );
+    C_OPEN_FACE_STREAM_CLOSE_CALLS.with(|calls| calls.set(calls.get().saturating_add(1)));
+    C_OPEN_FACE_STREAM_CALLBACK_IDENTITY.with(|identity| {
+        let expected = C_OPEN_FACE_STREAM_EXPECTED.with(Cell::get);
+        identity.set(stream.addr() == expected);
+    });
 }
 
 fn c_open_face_stream(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
-    C_OPEN_FACE_STREAM_CLOSE_CALLS.store(0, Ordering::SeqCst);
-    C_OPEN_FACE_STREAM_EXPECTED.store(0, Ordering::SeqCst);
-    C_OPEN_FACE_STREAM_CALLBACK_IDENTITY.store(false, Ordering::SeqCst);
+    C_OPEN_FACE_STREAM_CLOSE_CALLS.with(|calls| calls.set(0));
+    C_OPEN_FACE_STREAM_EXPECTED.with(|expected| expected.set(0));
+    C_OPEN_FACE_STREAM_CALLBACK_IDENTITY.with(|identity| identity.set(false));
     let mut library = std::ptr::null_mut();
     let init_err = c_abi::FT_Init_FreeType(&mut library);
     if init_err != FT_Err_Ok {
@@ -62460,7 +62462,7 @@ fn c_open_face_stream(case: &InputCase) -> Result<RunOutput, String> {
         cursor: std::ptr::null_mut(),
         limit: std::ptr::null_mut(),
     };
-    C_OPEN_FACE_STREAM_EXPECTED.store(ptr::from_mut(&mut stream).addr(), Ordering::SeqCst);
+    C_OPEN_FACE_STREAM_EXPECTED.with(|expected| expected.set(ptr::from_mut(&mut stream).addr()));
     let open_args = c_abi::FT_Open_Args {
         flags: FT_OPEN_STREAM as c_abi::FT_UInt,
         memory_base: std::ptr::null(),
@@ -62489,9 +62491,8 @@ fn c_open_face_stream(case: &InputCase) -> Result<RunOutput, String> {
     if err == FT_Err_Ok {
         c_done_face(face);
     }
-    let close_calls = C_OPEN_FACE_STREAM_CLOSE_CALLS.load(Ordering::SeqCst);
-    let close_callback_stream_identity =
-        C_OPEN_FACE_STREAM_CALLBACK_IDENTITY.load(Ordering::SeqCst);
+    let close_calls = C_OPEN_FACE_STREAM_CLOSE_CALLS.with(Cell::get);
+    let close_callback_stream_identity = C_OPEN_FACE_STREAM_CALLBACK_IDENTITY.with(Cell::get);
     c_done_library(library);
     Ok(open_face_stream_output(
         err,
