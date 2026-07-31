@@ -2353,15 +2353,42 @@ mod tests {
 
     #[test]
     fn type1_and_cid_faces_load_glyphs_through_the_facade() {
-        let cases: &[(&str, &[u8])] = &[(
-            "type1",
-            include_bytes!("../tests/fixtures/input/fonts/type1/simple-type1.pfb"),
-        )];
+        let cases: &[(&str, &[u8])] = &[
+            (
+                "type1-simple",
+                include_bytes!("../tests/fixtures/input/fonts/type1/simple-type1.pfb"),
+            ),
+            (
+                "type1-standard-encoding",
+                include_bytes!("../tests/fixtures/input/fonts/type1/standard-encoding.pfb"),
+            ),
+            (
+                "type1-fixed-pitch",
+                include_bytes!("../tests/fixtures/input/fonts/type1/fixed-pitch-type1.pfb"),
+            ),
+        ];
+        let mut total_outlined = 0usize;
         for (label, data) in cases {
             let face = match Face::from_memory(data, 0, 16.0) {
                 Ok(face) => face,
                 Err(err) => panic!("{label} fixture should load: {err}"),
             };
+            // At least one glyph index must produce a real outline through
+            // both the scaled and no-scale Type1 loaders.
+            let mut outlined = 0usize;
+            for glyph in 0..face.info().num_glyphs {
+                for flags in [LoadFlags::NO_HINTING, LoadFlags::NO_SCALE] {
+                    if let Ok(slot) = face.load_glyph(glyph, flags) {
+                        if slot
+                            .slot_outline()
+                            .is_some_and(|outline| outline.n_contours > 0)
+                        {
+                            outlined += 1;
+                        }
+                    }
+                }
+            }
+            total_outlined += outlined;
             let glyph = match face.first_char() {
                 Some((char_code, _)) => face.get_char_index(char_code),
                 // CID fixtures may expose no cmap; load the .notdef charstring.
@@ -2384,6 +2411,43 @@ mod tests {
                 Ok(slot) => assert_eq!(slot.format, GlyphFormat::Bitmap),
                 Err(err) => panic!("{label} render should succeed: {err}"),
             }
+        }
+        assert!(
+            total_outlined > 0,
+            "at least one Type1 fixture must contain an outlined glyph"
+        );
+    }
+
+    #[test]
+    fn no_scale_vertical_layout_and_empty_glyphs_complete_slots() {
+        let face = load(DEJAVU_SANS);
+        let glyph = face.get_char_index('A' as u32);
+        // DejaVuSans carries no vmtx: vertical layout synthesizes metrics.
+        match face.load_glyph(glyph, LoadFlags::NO_SCALE | LoadFlags::VERTICAL_LAYOUT) {
+            Ok(slot) => assert!(slot.metrics.vert_advance >= 0),
+            Err(err) => panic!("no-scale vertical layout should succeed: {err}"),
+        }
+        // The subset DejaVuSans leaves glyphs 1 and 2 empty; the no-scale
+        // loader must produce an empty slot, not an error.
+        for glyph in [1u16, 2] {
+            let face = load(DEJAVU_SANS);
+            match face.load_glyph(glyph, LoadFlags::NO_SCALE) {
+                Ok(slot) => assert!(slot.metrics.hori_advance >= 0),
+                Err(err) => panic!("no-scale empty glyph {glyph} should succeed: {err}"),
+            }
+        }
+        // CFF faces without vmtx synthesize vertical metrics on layout.
+        let cff = match Face::from_memory(
+            include_bytes!("../tests/fixtures/input/fonts/cff/pure-cff-cubic.otf"),
+            0,
+            16.0,
+        ) {
+            Ok(face) => face,
+            Err(err) => panic!("pure-cff-cubic should load: {err}"),
+        };
+        match cff.load_glyph(1, LoadFlags::NO_SCALE | LoadFlags::VERTICAL_LAYOUT) {
+            Ok(slot) => assert!(slot.metrics.vert_advance >= 0),
+            Err(err) => panic!("CFF no-scale vertical layout should succeed: {err}"),
         }
     }
 }
