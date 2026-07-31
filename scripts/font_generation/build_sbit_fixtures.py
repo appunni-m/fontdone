@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 BASE_FONT = ROOT / "tests" / "fixtures" / "input" / "fonts" / "glyf" / "hinter-control-matrix.ttf"
 OUT_DIR = ROOT / "tests" / "fixtures" / "input" / "fixtures" / "assets" / "fonts"
 BDF_OUT_DIR = ROOT / "tests" / "fixtures" / "input" / "fonts" / "bdf"
+BITMAP_OUT_DIR = ROOT / "tests" / "fixtures" / "input" / "fonts" / "bitmap"
 
 
 def raw_table(tag: str, data: bytes) -> DefaultTable:
@@ -985,6 +986,7 @@ def save_sbit_font(
     *,
     vertical_metrics: tuple[int, int] | None = None,
     table_tags: tuple[str, str] = ("EBLC", "EBDT"),
+    output_dir: Path = OUT_DIR,
 ) -> None:
     font = TTFont(BASE_FONT, recalcTimestamp=False)
     index_tag, data_tag = table_tags
@@ -992,8 +994,8 @@ def save_sbit_font(
     font[data_tag] = raw_table(data_tag, ebdt)
     if vertical_metrics is not None:
         add_vertical_metrics(font, *vertical_metrics)
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    out = OUT_DIR / name
+    output_dir.mkdir(parents=True, exist_ok=True)
+    out = output_dir / name
     if out.exists() or out.is_symlink():
         out.unlink()
     font.save(out, reorderTables=True)
@@ -1026,6 +1028,17 @@ def build_sfnt_bdf_strike() -> None:
     if out.exists() or out.is_symlink():
         out.unlink()
     font.save(out, reorderTables=True)
+
+
+def build_embedded_strikes() -> None:
+    """Build the maintained SFNT input used for FT_Face fixed-size records."""
+    eblc, ebdt = gray_format1_tables()
+    save_sbit_font(
+        "embedded-strikes.ttf",
+        eblc,
+        ebdt,
+        output_dir=BITMAP_OUT_DIR,
+    )
 
 
 def build_mono_format1_bitmap() -> None:
@@ -1222,6 +1235,7 @@ def main() -> None:
     build_missing_bitmap()
     build_gray_format1_bitmap()
     build_sfnt_bdf_strike()
+    build_embedded_strikes()
     build_mono_format1_bitmap()
     build_gray2_format1_bitmap()
     build_gray4_format1_bitmap()

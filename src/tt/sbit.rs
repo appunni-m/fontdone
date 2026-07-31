@@ -1,5 +1,6 @@
 //! Embedded bitmap strike metadata for EBLC/EBDT TrueType tables.
 
+use crate::casts::i16_from_i32;
 use crate::error::FontError;
 use crate::tt::{TableDirectory, tag};
 
@@ -22,6 +23,13 @@ struct SbitStrike {
     x_ppem: u8,
     y_ppem: u8,
     bit_depth: u8,
+    /// Horizontal line metrics from the EBLC strike record.  These are the
+    /// signed byte values consumed by `tt_face_load_strike_metrics` before
+    /// `FT_Face::available_sizes` is populated.
+    ascender: i8,
+    descender: i8,
+    max_before_bl: i8,
+    min_after_bl: i8,
     index_array_offset: u32,
     index_array_count: u32,
 }
@@ -30,6 +38,9 @@ struct SbitStrike {
 pub struct SbitStrikeMetrics {
     pub x_ppem: u16,
     pub y_ppem: u16,
+    /// Sanitized strike height in pixels, matching FreeType's
+    /// `FT_Size_Metrics.height >> 6` conversion.
+    pub height: i16,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -106,6 +117,10 @@ pub fn parse_sbit(directory: &TableDirectory, data: &[u8]) -> Option<SbitTable> 
         strikes.push(SbitStrike {
             index_array_offset: read_u32(eblc, offset)?,
             index_array_count: read_u32(eblc, offset + 8)?,
+            ascender: i8::from_ne_bytes([*eblc.get(offset + 16)?]),
+            descender: i8::from_ne_bytes([*eblc.get(offset + 17)?]),
+            max_before_bl: i8::from_ne_bytes([*eblc.get(offset + 24)?]),
+            min_after_bl: i8::from_ne_bytes([*eblc.get(offset + 25)?]),
             x_ppem: *eblc.get(offset + 44)?,
             y_ppem: *eblc.get(offset + 45)?,
             bit_depth: *eblc.get(offset + 46)?,
@@ -130,10 +145,7 @@ impl SbitTable {
     }
 
     pub fn strike_metrics(&self, index: usize) -> Option<SbitStrikeMetrics> {
-        self.strikes.get(index).map(|strike| SbitStrikeMetrics {
-            x_ppem: u16::from(strike.x_ppem),
-            y_ppem: u16::from(strike.y_ppem),
-        })
+        self.strikes.get(index).map(SbitStrike::metrics)
     }
 
     pub(crate) fn has_strike(&self, x_ppem: u16, y_ppem: u16) -> bool {
@@ -162,6 +174,38 @@ impl SbitTable {
 }
 
 impl SbitStrike {
+    fn metrics(&self) -> SbitStrikeMetrics {
+        // FreeType's `tt_face_load_strike_metrics` (`sfnt/ttsbit.c`) treats
+        // these fields as signed bytes, repairs the inconsistent positive
+        // descender form used by some EBLC producers, and falls back to the
+        // baseline values when both ascender and descender are absent.
+        let mut ascender = i32::from(self.ascender);
+        let mut descender = i32::from(self.descender);
+        if descender > 0 {
+            if self.min_after_bl < 0 {
+                descender = -descender;
+            }
+        } else if descender == 0 && ascender == 0 {
+            if self.max_before_bl != 0 || self.min_after_bl != 0 {
+                ascender = i32::from(self.max_before_bl);
+                descender = i32::from(self.min_after_bl);
+            } else {
+                ascender = i32::from(self.y_ppem);
+            }
+        }
+
+        let mut height = ascender - descender;
+        if height == 0 {
+            height = i32::from(self.y_ppem);
+        }
+
+        SbitStrikeMetrics {
+            x_ppem: u16::from(self.x_ppem),
+            y_ppem: u16::from(self.y_ppem),
+            height: i16_from_i32(height),
+        }
+    }
+
     fn find_image(
         self,
         eblc: &[u8],

@@ -29,6 +29,28 @@ fn done(library: &FT_Library, bitmap: &mut FT_Bitmap_C) {
 }
 
 #[test]
+fn sfnt_embedded_bitmap_strikes_populate_available_sizes() {
+    let data = include_bytes!("../../fixtures/input/fonts/bitmap/embedded-strikes.ttf");
+    let font = crate::font::Font::truetype_face(data, 0, 20.0);
+    assert!(font.is_ok(), "embedded-strikes fixture must load");
+    let font = match font {
+        Ok(font) => font,
+        Err(_) => return,
+    };
+
+    assert_eq!(
+        available_sizes_to_ffi(&font).as_ref(),
+        &[FT_Bitmap_Size {
+            height: 20,
+            width: 14,
+            size: 1280,
+            x_ppem: 1280,
+            y_ppem: 1280,
+        }]
+    );
+}
+
+#[test]
 fn error_string_and_diagnostic_guards_match_the_pinned_build() {
     assert_eq!(FT_Error_String(-1), None);
     assert_eq!(FT_Error_String(FT_Err_Max), None);

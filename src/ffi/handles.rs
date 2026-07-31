@@ -14,7 +14,7 @@ use std::ptr;
 use std::rc::{Rc, Weak};
 use std::sync::{Mutex, OnceLock};
 
-use crate::casts::usize_from_i32;
+use crate::casts::{i16_from_i32, i32_from_i64, usize_from_i32};
 use crate::font::{
     ActiveSizeState, BdfPropertyValue, KerningMode, SelectSizeError, SizeRequest, SizeRequestError,
     SizeRequestType, Type1FontInfo, Type1PrivateDict, WinFntHeader,
@@ -13406,6 +13406,52 @@ fn parse_tt_pclt(data: &[u8]) -> Option<TT_PCLT> {
 }
 
 fn available_sizes_to_ffi(font: &crate::font::Font) -> Box<[FT_Bitmap_Size]> {
+    if let Some(sbit) = font.data.sbit.as_ref() {
+        // `sfnt_init_face` builds FT_Bitmap_Size records from every valid
+        // EBLC/CBLC strike.  A missing OS/2 table uses FreeType's sentinel
+        // values (average width and units-per-em both become one).
+        let (mut avg_width, mut units_per_em) =
+            font.data.os2.as_ref().map_or((1_i32, 1_i32), |os2| {
+                (
+                    i32::from(os2.x_avg_char_width),
+                    i32::from(font.data.head.units_per_em),
+                )
+            });
+        if units_per_em == 0
+            || font
+                .data
+                .os2
+                .as_ref()
+                .is_some_and(|os2| os2.version == 0xFFFF)
+        {
+            avg_width = 1;
+            units_per_em = 1;
+        }
+
+        return (0..sbit.strike_count())
+            .filter_map(|index| {
+                let metrics = sbit.strike_metrics(index)?;
+                // FreeType omits strikes with a zero PPEM from both the
+                // public array and its internal strike-index map.
+                if metrics.x_ppem == 0 || metrics.y_ppem == 0 {
+                    return None;
+                }
+                let width = (i64::from(avg_width) * i64::from(metrics.x_ppem)
+                    + i64::from(units_per_em) / 2)
+                    / i64::from(units_per_em);
+                let width = i32_from_i64(width);
+                Some(FT_Bitmap_Size {
+                    height: metrics.height,
+                    width: i16_from_i32(width),
+                    size: FT_Pos::from(i32::from(metrics.y_ppem) << 6),
+                    x_ppem: FT_Pos::from(i32::from(metrics.x_ppem) << 6),
+                    y_ppem: FT_Pos::from(i32::from(metrics.y_ppem) << 6),
+                })
+            })
+            .collect::<Vec<_>>()
+            .into_boxed_slice();
+    }
+
     let Some(size) = font.winfnt_bitmap_size() else {
         return Box::new([]);
     };
