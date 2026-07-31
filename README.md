@@ -92,29 +92,29 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The last committed full parity snapshot was recorded on **2026-07-30**:
+The last committed full parity snapshot was recorded on **2026-07-31**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,237 |
-| Passed cases | 7,237 |
+| Runnable exact-comparison cases | 7,238 |
+| Passed cases | 7,238 |
 | Failed cases | 0 |
-| Explicitly pending cases | 70 |
-| Covered manifest cases | 4,109 |
+| Explicitly pending cases | 69 |
+| Covered manifest cases | 4,110 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,258 |
 | Concrete expanded cases | 7,307 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,237 / 7,237` means every runnable case in that execution matched. It does
-not turn the 70 pending cases into passes. Likewise, 218/218 function-route
+`7,238 / 7,238` means every runnable case in that execution matched. It does
+not turn the 69 pending cases into passes. Likewise, 218/218 function-route
 evidence can be satisfied by a narrow success or null-validation route; it is
 not equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP run
-`07c57da4-03ea-434e-a115-06846e4bc6ec` against commit
-`e29819f5812ac521fd78b1e90e52f080cd17124a`.
+`71a991ac-1ec2-4d37-8bd4-25d15107ac72` against commit
+`8eed8f2f22288e53429503bed169d2b8608cc10e`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -161,7 +161,7 @@ The latest committed scorecard has **9 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 names, signatures, and traced function routes; 4,989 / 5,047 pinned-C runtime contract rows exact, with 58 pending |
+| Functions | 218 / 218 names, signatures, and traced function routes; 4,990 / 5,047 pinned-C runtime contract rows exact, with 57 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership, state, errors, modules, headers | Complete under their blocking scorecard measurements |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
