@@ -3929,6 +3929,12 @@ def ftimage_subsystem_pending_reason(row: ConcreteInput) -> str | None:
         and unresolved_assets_reason(row) is None
     ):
         return None
+    if (
+        row.case_id == "ftimage.FT_GLYPH_FORMAT_SVG.unsupported_svg_build_classification"
+        and row.operation == "freetype.load_svg_glyph"
+        and unresolved_assets_reason(row) is None
+    ):
+        return None
 
     ftimage_rows_without_maintained_route = {
         "ftimage.FT_GLYPH_FORMAT_PLOTTER.source_emitter_inventory": (
@@ -4068,6 +4074,16 @@ def ftimage_svg_glyph_load_real_parity_reason(row: ConcreteInput) -> str | None:
             "slot format, SVG document length, and document hash through the "
             "maintained OT-SVG fixture across pinned C, Rust FFI, C ABI, and "
             "WASM ABI"
+        )
+    if (
+        row.case_id == "ftimage.FT_GLYPH_FORMAT_SVG.unsupported_svg_build_classification"
+        and row.operation == "freetype.load_svg_glyph"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_GLYPH_FORMAT_SVG build-feature parity compares the pinned C "
+            "SVG feature classification, same-input FT_Load_Glyph status, and "
+            "slot format through Rust FFI, C ABI, and WASM ABI"
         )
     return None
 

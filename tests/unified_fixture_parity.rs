@@ -42284,6 +42284,13 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             Ok(args)
         }
         "freetype.load_svg_glyph" => {
+            if case.case_id == "ftimage.FT_GLYPH_FORMAT_SVG.unsupported_svg_build_classification" {
+                let mut args = vec!["--svg-feature-face-probe".to_string()];
+                push_named_font_source(case, "svg_font", &mut args)?;
+                args.push(face_index_param(params)?.to_string());
+                args.push("load".to_string());
+                return Ok(args);
+            }
             let mut args = vec!["--load-svg-glyph".to_string()];
             push_named_font_source(case, "svg_font", &mut args)?;
             push_face_size(params, &mut args)?;
@@ -52134,6 +52141,17 @@ fn svg_feature_face_output(feature_available: bool) -> RunOutput {
     }))
 }
 
+fn svg_feature_load_output(feature_enabled: bool, status: FT_Error, slot_format: i32) -> RunOutput {
+    ok(json!({
+        "svg_feature_enabled": feature_enabled,
+        "status": status,
+        "slot_format": slot_format,
+        "svg_document_length": 0,
+        "svg_document_hash": Value::Null,
+        "classification": if feature_enabled { "enabled" } else { "unsupported" }
+    }))
+}
+
 fn rust_svg_feature_probe(case: &InputCase) -> Result<RunOutput, String> {
     match case.case_id.as_str() {
         "ftglyph.FT_SvgGlyph.feature_availability_recorded" => {
@@ -52209,6 +52227,21 @@ fn wasm_svg_feature_probe(case: &InputCase) -> Result<RunOutput, String> {
 }
 
 fn rust_svg_glyph_load(case: &InputCase) -> Result<RunOutput, String> {
+    if case.case_id == "ftimage.FT_GLYPH_FORMAT_SVG.unsupported_svg_build_classification" {
+        let library = FT_Init_FreeType();
+        let feature_enabled =
+            FT_Library_Renderer_Class(Some(&library), FT_GLYPH_FORMAT_SVG).is_some();
+        let face = open_face(case)?;
+        let (status, slot_format) = match FT_Load_Glyph(&face, 1, FT_LOAD_COLOR) {
+            Ok(slot) => (FT_Err_Ok, slot.format),
+            Err(status) => (status, FT_GLYPH_FORMAT_NONE),
+        };
+        return Ok(svg_feature_load_output(
+            feature_enabled,
+            status,
+            slot_format,
+        ));
+    }
     let face = open_face(case)?;
     let glyph_index = svg_glyph_load_index(&case.inputs.params)?;
     let load_flags = load_flags_param(&case.inputs.params)?;
@@ -52230,6 +52263,24 @@ fn rust_svg_glyph_load(case: &InputCase) -> Result<RunOutput, String> {
 
 fn c_svg_glyph_load(case: &InputCase) -> Result<RunOutput, String> {
     let (library, face) = c_open_face(case)?;
+    if case.case_id == "ftimage.FT_GLYPH_FORMAT_SVG.unsupported_svg_build_classification" {
+        let mut glyph = ptr::null_mut();
+        let feature_error = c_abi::FT_New_Glyph(library, FT_GLYPH_FORMAT_SVG, &mut glyph);
+        let feature_enabled = feature_error == FT_Err_Ok;
+        if !glyph.is_null() {
+            c_abi::FT_Done_Glyph(glyph);
+        }
+        let status = c_abi::FT_Load_Glyph(face, 1, FT_LOAD_COLOR);
+        let slot_format = if status == FT_Err_Ok {
+            c_abi::abi_slot_snapshot(face).map_or(FT_GLYPH_FORMAT_NONE, |slot| slot.format)
+        } else {
+            FT_GLYPH_FORMAT_NONE
+        };
+        let output = svg_feature_load_output(feature_enabled, status, slot_format);
+        c_done_face(face);
+        c_done_library(library);
+        return Ok(output);
+    }
     let glyph_index = svg_glyph_load_index(&case.inputs.params)?;
     let load_flags = load_flags_param(&case.inputs.params)?;
     let mut error_code = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
@@ -52260,6 +52311,19 @@ fn c_svg_glyph_load(case: &InputCase) -> Result<RunOutput, String> {
 
 fn wasm_svg_glyph_load(case: &InputCase) -> Result<RunOutput, String> {
     let handle = wasm_open_face(case)?;
+    if case.case_id == "ftimage.FT_GLYPH_FORMAT_SVG.unsupported_svg_build_classification" {
+        let feature_enabled =
+            wasm_abi::abi_support_default_renderer_class(FT_GLYPH_FORMAT_SVG).is_some();
+        let status = wasm_abi::fontdone_wasm_load_glyph(handle, 1, FT_LOAD_COLOR);
+        let slot_format = if status == FT_Err_Ok {
+            wasm_abi::abi_slot_snapshot(handle).map_or(FT_GLYPH_FORMAT_NONE, |slot| slot.format)
+        } else {
+            FT_GLYPH_FORMAT_NONE
+        };
+        let output = svg_feature_load_output(feature_enabled, status, slot_format);
+        wasm_done_face(handle);
+        return Ok(output);
+    }
     let glyph_index = svg_glyph_load_index(&case.inputs.params)?;
     let load_flags = load_flags_param(&case.inputs.params)?;
     let mut error_code = wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, load_flags);

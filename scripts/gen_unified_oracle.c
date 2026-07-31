@@ -17630,8 +17630,9 @@ static int emit_svg_feature_probe(int argc, char** argv) {
 }
 
 static int emit_svg_feature_face_probe(int argc, char** argv) {
-    if (argc != 5) {
-        fprintf(stderr, "--svg-feature-face-probe requires SOURCE_KIND SOURCE_VALUE FACE_INDEX\n");
+    int load_classification = argc == 6 && streq(argv[5], "load");
+    if (argc != 5 && !load_classification) {
+        fprintf(stderr, "--svg-feature-face-probe requires SOURCE_KIND SOURCE_VALUE FACE_INDEX [load]\n");
         return 2;
     }
     OracleFace face;
@@ -17640,6 +17641,22 @@ static int emit_svg_feature_face_probe(int argc, char** argv) {
         return opened;
     }
     int available = (face.face->face_flags & FT_FACE_FLAG_SVG) != 0;
+    if (load_classification) {
+        FT_Error load_error = FT_Load_Glyph(face.face, 1, FT_LOAD_COLOR);
+        FT_Glyph_Format slot_format = FT_GLYPH_FORMAT_NONE;
+        if (!load_error && face.face->glyph) {
+            slot_format = face.face->glyph->format;
+        }
+        printf("{");
+        print_status(FT_Err_Ok);
+        printf(",\"output\":{\"svg_feature_enabled\":%s,\"status\":%d,\"slot_format\":%d,\"svg_document_length\":0,\"svg_document_hash\":null,\"classification\":\"%s\"}}\n",
+               available ? "true" : "false",
+               load_error,
+               slot_format,
+               available ? "enabled" : "unsupported");
+        close_oracle_face(&face);
+        return 0;
+    }
     printf("{");
     print_status(FT_Err_Ok);
     printf(",\"output\":{\"feature_available\":%s,\"classification\":\"%s\"}}\n",
@@ -34513,7 +34530,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 2 && streq(argv[1], "--svg-feature-probe")) {
         return emit_svg_feature_probe(argc, argv);
     }
-    if (argc == 5 && streq(argv[1], "--svg-feature-face-probe")) {
+    if ((argc == 5 || argc == 6) && streq(argv[1], "--svg-feature-face-probe")) {
         return emit_svg_feature_face_probe(argc, argv);
     }
     // Generic null-source handler: intercept commands with "null" in handle-level
