@@ -1099,18 +1099,15 @@ mod tests {
         let mut eblc = Vec::new();
         eblc.extend_from_slice(&0x0002_0000u32.to_be_bytes());
         eblc.extend_from_slice(&1u32.to_be_bytes());
-        eblc.extend_from_slice(&0u32.to_be_bytes()); // index array offset (patched)
-        eblc.extend_from_slice(&1u32.to_be_bytes()); // index array count
-        eblc.extend_from_slice(&[0; 11]); // strike record paddings
-        eblc.extend_from_slice(&[0; 34]);
-        eblc[54] = 12; // x_ppem
-        eblc[55] = 12; // y_ppem
-        eblc[56] = 1; // bit depth
-        // Index subtable array starts at byte 58.
-        let subtable_offset = 58 + 8;
+        eblc.extend_from_slice(&[0; 48]); // strike record (8..56)
+        eblc[16..20].copy_from_slice(&1u32.to_be_bytes()); // index array count
+        eblc[52] = 12; // x_ppem
+        eblc[53] = 12; // y_ppem
+        eblc[54] = 1; // bit depth
+        // Strike record spans 8..56; index subtable array starts at 56.
         eblc.extend_from_slice(&first_glyph.to_be_bytes());
         eblc.extend_from_slice(&last_glyph.to_be_bytes());
-        eblc.extend_from_slice(&(subtable_offset as u32).to_be_bytes());
+        eblc.extend_from_slice(&8u32.to_be_bytes()); // relative to array start
         // Index subtable header.
         eblc.extend_from_slice(&index_format.to_be_bytes());
         eblc.extend_from_slice(&image_format.to_be_bytes());
@@ -1122,7 +1119,7 @@ mod tests {
 
     #[test]
     fn find_image_misses_out_of_range_glyph() {
-        let eblc = eblc_with_subtable(58, 1, 2, 1, 1);
+        let eblc = eblc_with_subtable(56, 1, 2, 1, 1);
         let (font, directory) = directory_for(&eblc, &[0x00, 0x01]);
         let sbit = parse_ok(&font, &directory, "valid EBLC parses");
         let error = match sbit.load_glyph(5, 12, 12, 0) {
@@ -1143,5 +1140,57 @@ mod tests {
             Ok(_) => panic!("missing range array should fail"),
         };
         assert!(error.to_string().contains("bitmap"));
+    }
+
+    #[test]
+    fn format1_image_loads_simple_bitmap() {
+        // EBLC: one strike (bit depth 1), one range entry, format-1 index
+        // subtable with a two-offset array; EBDT holds a 2x2 mono bitmap
+        // with small metrics.
+        let mut eblc = Vec::new();
+        eblc.extend_from_slice(&0x0002_0000u32.to_be_bytes());
+        eblc.extend_from_slice(&1u32.to_be_bytes());
+        eblc.extend_from_slice(&[0; 48]); // strike record (8..56)
+        eblc[8..12].copy_from_slice(&56u32.to_be_bytes()); // index array offset
+        eblc[16..20].copy_from_slice(&1u32.to_be_bytes()); // index array count
+        eblc[52] = 12; // x_ppem
+        eblc[53] = 12; // y_ppem
+        eblc[54] = 1; // bit depth
+        // Index subtable array (one entry) at 56; subtable at 64.
+        eblc.extend_from_slice(&1u16.to_be_bytes()); // first glyph
+        eblc.extend_from_slice(&1u16.to_be_bytes()); // last glyph
+        eblc.extend_from_slice(&8u32.to_be_bytes()); // relative to array start
+        // Index subtable: format 1, image format 1, image data offset 0,
+        // then the glyph offset array [0, 9].
+        eblc.extend_from_slice(&1u16.to_be_bytes());
+        eblc.extend_from_slice(&1u16.to_be_bytes());
+        eblc.extend_from_slice(&0u32.to_be_bytes());
+        eblc.extend_from_slice(&0u32.to_be_bytes());
+        eblc.extend_from_slice(&9u32.to_be_bytes());
+
+        // EBDT: 5-byte small metrics + 2 rows of 1-byte mono pixels (7 bytes,
+        // with the range [0, 9) padded to the declared image size).
+        let mut ebdt = Vec::new();
+        ebdt.extend_from_slice(&2u8.to_be_bytes()); // height
+        ebdt.extend_from_slice(&2u8.to_be_bytes()); // width
+        ebdt.extend_from_slice(&0u8.to_be_bytes()); // bearing x
+        ebdt.extend_from_slice(&2u8.to_be_bytes()); // bearing y
+        ebdt.extend_from_slice(&3u8.to_be_bytes()); // advance
+        ebdt.extend_from_slice(&0b1100_0000u8.to_be_bytes());
+        ebdt.extend_from_slice(&0b0011_0000u8.to_be_bytes());
+        ebdt.extend_from_slice(&[0; 2]); // pad to 9 bytes
+
+        let (font, directory) = directory_for(&eblc, &ebdt);
+        let sbit = parse_ok(&font, &directory, "valid sbit parses");
+        let glyph = match sbit.load_glyph(1, 12, 12, 0) {
+            Ok(glyph) => glyph,
+            Err(error) => panic!("format-1 image failed: {error}"),
+        };
+        assert_eq!(glyph.metrics.width, 128);
+        assert_eq!(glyph.metrics.height, 128);
+        assert_eq!(glyph.bitmap.width, 2);
+        assert_eq!(glyph.bitmap.rows, 2);
+        assert_eq!(glyph.bitmap.pitch, 1);
+        assert_eq!(glyph.bitmap.buffer, vec![0b1100_0000, 0b0011_0000]);
     }
 }
