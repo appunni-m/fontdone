@@ -551,6 +551,26 @@ def build_colr_v1_all_paints_font(path: Path) -> None:
     font.save(path, reorderTables=False)
 
 
+def build_colr_v1_malformed_paints_font(path: Path) -> None:
+    """Build a deterministic COLRv1 control with an invalid base-list offset.
+
+    The SFNT remains openable, but both pinned C and Rust reject its COLR v1
+    root lookup before dereferencing paint records.  The mutation is applied
+    after canonical serialization so no external font or nondeterministic
+    table writer is involved.
+    """
+    source = COLOR_OUTPUT_DIR / "colr-v1-all-paints.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    table = font.reader.tables.get(b"COLR")
+    if table is None or table.length < 18:
+        raise RuntimeError(f"canonical COLRv1 fixture has no usable COLR table: {source}")
+    data = bytearray(source.read_bytes())
+    table_offset = table.offset
+    data[table_offset + 14 : table_offset + 18] = (0).to_bytes(4, "big")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
 def color_line(extend: ot.ExtendMode, stops: list[tuple[float, int, float]]) -> dict[str, object]:
     return {
         "Extend": int(extend),
@@ -843,6 +863,7 @@ def main() -> None:
     build_colr_v1_transform_paints_font(COLOR_OUTPUT_DIR / "colr-v1-transform-paints.ttf")
     build_colr_v1_root_transform_font(COLOR_OUTPUT_DIR / "colr-v1-root-transform.ttf")
     build_colr_v1_all_paints_font(COLOR_OUTPUT_DIR / "colr-v1-all-paints.ttf")
+    build_colr_v1_malformed_paints_font(COLOR_OUTPUT_DIR / "malformed-colr-v1-paints.ttf")
     build_colr_v1_static_gradients_font(COLOR_OUTPUT_DIR / "colr-v1-static-gradients.ttf")
     build_colr_v1_variable_gradients_font(COLOR_OUTPUT_DIR / "colr-v1-variable-gradients.ttf")
     build_colr_v1_clipbox_font(COLOR_OUTPUT_DIR / "colr-v1-clipbox-format1-format2.ttf", True)

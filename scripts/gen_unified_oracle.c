@@ -20283,6 +20283,95 @@ static void print_gradient_paint_payload_json(FT_COLR_Paint paint) {
     }
 }
 
+static void print_linear_gradient_record_json(FT_COLR_Paint paint) {
+    printf("{\"format\":%d,\"u\":{\"linear_gradient\":{\"colorline\":",
+           paint.format);
+    print_colorline_json(paint.u.linear_gradient.colorline);
+    printf(",\"p0\":");
+    print_ft_vector_json(paint.u.linear_gradient.p0);
+    printf(",\"p1\":");
+    print_ft_vector_json(paint.u.linear_gradient.p1);
+    printf(",\"p2\":");
+    print_ft_vector_json(paint.u.linear_gradient.p2);
+    printf("}}}");
+}
+
+static void print_linear_gradient_run_json(FT_Face face,
+                                           const char* label,
+                                           FT_UInt base_glyph) {
+    FT_OpaquePaint opaque;
+    memset(&opaque, 0, sizeof(opaque));
+    FT_Bool root_return = FT_Get_Color_Glyph_Paint(face, base_glyph, FT_COLOR_NO_ROOT_TRANSFORM, &opaque);
+    FT_COLR_Paint paint;
+    memset(&paint, 0, sizeof(paint));
+    FT_Bool paint_return = FT_Get_Paint(face, opaque, &paint);
+    printf("{\"label\":\"%s\",\"base_glyph\":%u,\"root_return\":%u,\"return\":%u,\"paint\":",
+           label,
+           base_glyph,
+           root_return,
+           paint_return);
+    print_linear_gradient_record_json(paint);
+    printf(",\"color_stops\":[");
+    if (paint_return && paint.format == FT_COLR_PAINTFORMAT_LINEAR_GRADIENT) {
+        FT_ColorStopIterator iterator = paint.u.linear_gradient.colorline.color_stop_iterator;
+        FT_ColorStop color_stop;
+        memset(&color_stop, 0, sizeof(color_stop));
+        for (FT_UInt index = 0; index < iterator.num_color_stops; index++) {
+            if (index) {
+                printf(",");
+            }
+            if (!FT_Get_Colorline_Stops(face, &color_stop, &iterator)) {
+                break;
+            }
+            print_color_stop_json(color_stop);
+        }
+    }
+    printf("]}");
+}
+
+static int emit_colr_linear_gradient_case(int argc, char** argv) {
+    if (argc != 9) {
+        fprintf(stderr,
+                "--color-linear-gradient-case requires STATIC_KIND STATIC_SOURCE "
+                "VARIABLE_KIND VARIABLE_SOURCE MALFORMED_KIND MALFORMED_SOURCE FACE_INDEX\n");
+        return 2;
+    }
+    OracleFace static_face;
+    OracleFace variable_face;
+    OracleFace malformed_face;
+    int opened = open_oracle_face(argv[2], argv[3], atol(argv[8]), &static_face);
+    if (opened != 0) {
+        return opened;
+    }
+    opened = open_oracle_face(argv[4], argv[5], atol(argv[8]), &variable_face);
+    if (opened != 0) {
+        close_oracle_face(&static_face);
+        return opened;
+    }
+    opened = open_oracle_face(argv[6], argv[7], atol(argv[8]), &malformed_face);
+    if (opened != 0) {
+        close_oracle_face(&variable_face);
+        close_oracle_face(&static_face);
+        return opened;
+    }
+    printf("{\"status\":{\"kind\":\"ok\",\"error_code\":0},\"output\":{\"runs\":[");
+    print_linear_gradient_run_json(static_face.face, "linear_horizontal", 40);
+    printf(",");
+    print_linear_gradient_run_json(variable_face.face, "linear_variable_default", 36);
+    FT_Fixed coords[2] = {900 * 65536, 1 * 65536};
+    FT_Error set_status = FT_Set_Var_Design_Coordinates(variable_face.face, 2, coords);
+    (void)set_status;
+    printf(",");
+    print_linear_gradient_run_json(variable_face.face, "linear_variable_wght_900_grad_1", 36);
+    printf(",");
+    print_linear_gradient_run_json(malformed_face.face, "malformed_control", 40);
+    printf("]}}\n");
+    close_oracle_face(&malformed_face);
+    close_oracle_face(&variable_face);
+    close_oracle_face(&static_face);
+    return 0;
+}
+
 static int colorline_from_gradient_paint(FT_COLR_Paint paint, FT_ColorLine* colorline) {
     if (paint.format == FT_COLR_PAINTFORMAT_LINEAR_GRADIENT) {
         *colorline = paint.u.linear_gradient.colorline;
@@ -35063,6 +35152,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 6 && streq(argv[1], "--color-paint-graph-case")) {
         return emit_color_paint_graph_case(argc, argv);
+    }
+    if (argc == 9 && streq(argv[1], "--color-linear-gradient-case")) {
+        return emit_colr_linear_gradient_case(argc, argv);
     }
     if (argc == 8 && streq(argv[1], "--get-char-index")) {
         return emit_face_or_slot(argc, argv);

@@ -4515,6 +4515,17 @@ pub fn abi_support_colr_v1_paint_colorline(
 }
 
 #[cfg(feature = "abi-test-support")]
+pub fn abi_support_colr_v1_paint_linear_gradient(
+    face: FT_Face,
+    opaque_paint: FT_OpaquePaint,
+) -> Option<FT_PaintLinearGradient> {
+    rust_ffi::FT_ColrV1_Paint_LinearGradient_Copy(
+        face_state(face).map(|state| &state.inner),
+        opaque_paint,
+    )
+}
+
+#[cfg(feature = "abi-test-support")]
 pub fn abi_support_colr_v1_paint_transform(
     face: FT_Face,
     opaque_paint: FT_OpaquePaint,

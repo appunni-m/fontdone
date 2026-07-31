@@ -337,6 +337,7 @@ pub use handles::{
 #[cfg(any(test, feature = "abi-test-support"))]
 export_parity_helpers!(
     FT_ColrV1_Paint_ColorLine_Copy,
+    FT_ColrV1_Paint_LinearGradient_Copy,
     FT_ColrV1_Paint_Transform_Copy,
     FT_ColrV1_PaintGraph_Copy,
     FT_ColrV1_PublicPaintSolid_Copy,

@@ -367,16 +367,20 @@ increase is claimed until the next full all-lane measurement**:
 | 23 | `abb16646c6bbb93be42b4b967037a38ad90fbb07` | Routed `FT_LOAD_SVG_ONLY.svg_only_behavior` with the project-authored SVG/non-SVG pair fixture through a same-input pinned-C oracle and exact Rust FFI, C ABI, and WASM observations: SVG glyph success includes slot format/document hash, while the non-SVG glyph preserves the public rejection error. Clean full parity run `3f342b8e-f106-4054-a33e-6fab40d29ce6` passed 7,257 / 7,257 runnable comparisons with 50 explicitly pending concrete cases; clean C-ABI scorecard run `e54a80df-e416-46d2-ac15-9eb4374f9c23` reports C01 runtime rows 5,009 / 5,047 with 38 pending. |
 | 24 | `74f6e87388b5cb31f397449db4d17d0b276b2772` | Routed both `FT_SVG_DocumentRec` payload/metrics rows through the project-authored OT-SVG fixture and exact pinned-C, Rust FFI, C ABI, and WASM observations; the follow-up Clippy fix keeps the parity harness warning-free. Focused run `0277b598-09cc-4413-b62c-5f8c5acc6ad5` passed all three selected cases; clean full parity run `0fae0ab3-1df2-4aa8-aaa6-cc5a09945209` passed 7,259 / 7,259 runnable comparisons with 48 explicitly pending concrete cases; clean C-ABI scorecard run `1ea13e0e-c422-4c53-a2ab-1e10192322e0` reports C01 runtime rows 5,011 / 5,047 with 36 pending. |
 
-The latest clean parity-only verification is Coverage MCP run
-`0fae0ab3-1df2-4aa8-aaa6-cc5a09945209` after the SVG document-record routes:
-7,259 / 7,259 runnable comparisons passed, 0 failed, and 48 remain explicitly
-pending. The same run reported 4,130 covered manifest cases, 4,258 logical
-cases, and 7,307 concrete cases; all 218 function routes were present in each
-of Rust, C ABI, and WASM. The committed source-digest attestation is
-`doc/runtime_parity_evidence.json` and records a clean worktree at
-`74f6e87388b5cb31f397449db4d17d0b276b2772`. Full coverage is intentionally deferred
-until a larger set of focused batches is ready, because the maintained
-all-lane pass takes roughly 50 minutes.
+The latest source-bound parity verification is Coverage MCP run
+`1b85a9ab-fa73-4c29-95f4-af1a4122e0dd` on clean commit `481d26d`:
+the new
+`FT_PaintLinearGradient` route passed static, variable-coordinate, and
+malformed-COLRv1 controls across Rust FFI, C ABI, and WASM. It passed 7,260 /
+7,260 runnable comparisons, 0 failed, and 47 remain explicitly pending. The
+same run reported 4,131 covered manifest cases, 4,258 logical cases, and 7,307
+concrete cases; all 218 function routes were present in each ABI surface. The
+committed source-digest attestation is `doc/runtime_parity_evidence.json` and
+records digest `09960ded43446de811898c1be77611f91275bfb1e23fcafb587cc94851133638`.
+The companion C-ABI scorecard run `224a8b47-a67b-4515-8acf-88658449f017`
+reports 5,012 / 5,047 exact runtime rows, with 35 pending. Full coverage is
+intentionally deferred until a larger set of focused batches is ready, because
+the maintained all-lane pass takes roughly 50 minutes.
 
 Run:
 

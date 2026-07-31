@@ -307,6 +307,7 @@ document_abi_test_support!(
     abi_support_gzip_stream_close,
     abi_support_colr_v1_paint_layer_iterator,
     abi_support_colr_v1_paint_colorline,
+    abi_support_colr_v1_paint_linear_gradient,
     abi_support_colr_v1_paint_transform,
     abi_support_colr_v1_paint_graph,
     abi_support_colr_v1_public_paint_solid,

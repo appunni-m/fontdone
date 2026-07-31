@@ -2958,6 +2958,12 @@ impl BackendComparisonWorker {
             "ftcolor.get_color_glyph_clipbox" if color_glyph_clipbox_route_supported(case) => {
                 rust_color_glyph_clipbox_case(case)
             }
+            "ftcolor.get_paint_and_colorline_stops"
+                if case.case_id
+                    == "ftcolor.FT_PaintLinearGradient.get_paint_linear_gradient_values" =>
+            {
+                rust_color_linear_gradient_case(case)
+            }
             operation
                 if operation.starts_with("ftcolor.")
                     && color_paint_success_route_supported(case) =>
@@ -3369,6 +3375,12 @@ impl BackendComparisonWorker {
             "ftcolor.get_color_glyph_clipbox" if color_glyph_clipbox_route_supported(case) => {
                 c_color_glyph_clipbox_case(case)
             }
+            "ftcolor.get_paint_and_colorline_stops"
+                if case.case_id
+                    == "ftcolor.FT_PaintLinearGradient.get_paint_linear_gradient_values" =>
+            {
+                c_color_linear_gradient_case(case)
+            }
             operation
                 if operation.starts_with("ftcolor.")
                     && color_paint_success_route_supported(case) =>
@@ -3775,6 +3787,12 @@ impl BackendComparisonWorker {
             }
             "ftcolor.get_color_glyph_clipbox" if color_glyph_clipbox_route_supported(case) => {
                 wasm_color_glyph_clipbox_case(case)
+            }
+            "ftcolor.get_paint_and_colorline_stops"
+                if case.case_id
+                    == "ftcolor.FT_PaintLinearGradient.get_paint_linear_gradient_values" =>
+            {
+                wasm_color_linear_gradient_case(case)
             }
             operation
                 if operation.starts_with("ftcolor.")
@@ -14406,6 +14424,7 @@ fn color_paint_success_route_supported(case: &InputCase) -> bool {
             | "ftcolor.FT_PaintTransform.get_paint_transform_values"
             | "ftcolor.FT_PaintTranslate.get_paint_translate_values"
             | "ftcolor.FT_COLR_PAINTFORMAT_LINEAR_GRADIENT.paint_linear_gradient_payload"
+            | "ftcolor.FT_PaintLinearGradient.get_paint_linear_gradient_values"
             | "ftcolor.FT_PaintLinearGradient.get_paint_linear_gradient_static_values"
             | "ftcolor.FT_PaintLinearGradient.get_paint_linear_gradient_variable_values"
             | "ftcolor.FT_COLR_PAINTFORMAT_RADIAL_GRADIENT.paint_radial_gradient_payload"
@@ -14558,6 +14577,216 @@ fn colorline_json(colorline: FT_ColorLine) -> Value {
         "extend": colorline.extend,
         "color_stop_iterator": color_stop_iterator_json(colorline.color_stop_iterator),
     })
+}
+
+fn linear_gradient_copy(
+    backend: ColorPaintBackend,
+    rust_face: Option<&FT_Face>,
+    c_face: c_abi::FT_Face,
+    wasm_handle: usize,
+    opaque: FT_OpaquePaint,
+) -> Option<FT_PaintLinearGradient> {
+    match backend {
+        ColorPaintBackend::Rust => FT_ColrV1_Paint_LinearGradient_Copy(rust_face, opaque),
+        ColorPaintBackend::CAbi => c_abi::abi_support_colr_v1_paint_linear_gradient(c_face, opaque),
+        ColorPaintBackend::Wasm => {
+            wasm_abi::abi_support_colr_v1_paint_linear_gradient(wasm_handle, opaque)
+        }
+    }
+}
+
+fn linear_gradient_paint_json(
+    paint: FT_COLR_Paint,
+    linear: Option<FT_PaintLinearGradient>,
+) -> Value {
+    let linear = linear.unwrap_or_default();
+    json!({
+        "format": paint.format,
+        "u": {
+            "linear_gradient": {
+                "colorline": colorline_json(linear.colorline),
+                "p0": ft_vector_json(linear.p0),
+                "p1": ft_vector_json(linear.p1),
+                "p2": ft_vector_json(linear.p2),
+            }
+        }
+    })
+}
+
+fn linear_gradient_run_json(
+    backend: ColorPaintBackend,
+    rust_face: Option<&FT_Face>,
+    c_face: c_abi::FT_Face,
+    wasm_handle: usize,
+    label: &str,
+    base_glyph: FT_UInt,
+) -> Value {
+    let (root_return, opaque) = color_paint_call(
+        backend,
+        rust_face,
+        c_face,
+        wasm_handle,
+        base_glyph,
+        FT_COLOR_NO_ROOT_TRANSFORM as FT_UInt,
+    );
+    let (paint_return, paint) = get_paint_call(backend, rust_face, c_face, wasm_handle, opaque);
+    let linear = if paint_return != 0
+        && paint.format == FT_COLR_PAINTFORMAT_LINEAR_GRADIENT as FT_PaintFormat
+    {
+        linear_gradient_copy(backend, rust_face, c_face, wasm_handle, opaque)
+    } else {
+        None
+    };
+    let mut color_stops = Vec::new();
+    if let Some(linear) = linear {
+        let mut iterator = linear.colorline.color_stop_iterator;
+        let mut color_stop = FT_ColorStop::default();
+        let count = usize::try_from(iterator.num_color_stops).unwrap_or(0);
+        for _ in 0..count {
+            if get_colorline_stops_call(
+                backend,
+                rust_face,
+                c_face,
+                wasm_handle,
+                &mut color_stop,
+                &mut iterator,
+            ) == 0
+            {
+                break;
+            }
+            color_stops.push(color_stop_json(color_stop));
+        }
+    }
+    json!({
+        "label": label,
+        "base_glyph": base_glyph,
+        "root_return": root_return,
+        "return": paint_return,
+        "paint": linear_gradient_paint_json(paint, linear),
+        "color_stops": color_stops,
+    })
+}
+
+fn color_linear_gradient_output_for_open_faces(
+    backend: ColorPaintBackend,
+    static_rust_face: Option<&mut FT_Face>,
+    static_c_face: c_abi::FT_Face,
+    static_wasm_handle: usize,
+    mut variable_rust_face: Option<&mut FT_Face>,
+    variable_c_face: c_abi::FT_Face,
+    variable_wasm_handle: usize,
+    malformed_rust_face: Option<&FT_Face>,
+    malformed_c_face: c_abi::FT_Face,
+    malformed_wasm_handle: usize,
+) -> RunOutput {
+    let static_face = static_rust_face.as_deref();
+    let variable_face = variable_rust_face.as_deref();
+    let mut runs = vec![linear_gradient_run_json(
+        backend,
+        static_face,
+        static_c_face,
+        static_wasm_handle,
+        "linear_horizontal",
+        40,
+    )];
+    runs.push(linear_gradient_run_json(
+        backend,
+        variable_face,
+        variable_c_face,
+        variable_wasm_handle,
+        "linear_variable_default",
+        36,
+    ));
+    let set_status = set_color_variable_design_coords(
+        backend,
+        variable_rust_face.as_deref_mut(),
+        variable_c_face,
+        variable_wasm_handle,
+    );
+    let varied = linear_gradient_run_json(
+        backend,
+        variable_rust_face.as_deref(),
+        variable_c_face,
+        variable_wasm_handle,
+        "linear_variable_wght_900_grad_1",
+        36,
+    );
+    let _ = set_status;
+    runs.push(varied);
+    runs.push(linear_gradient_run_json(
+        backend,
+        malformed_rust_face,
+        malformed_c_face,
+        malformed_wasm_handle,
+        "malformed_control",
+        40,
+    ));
+    ok(json!({"runs": runs}))
+}
+
+fn rust_color_linear_gradient_case(case: &InputCase) -> Result<RunOutput, String> {
+    let mut static_face = open_named_face(case, "static_font")?;
+    let mut variable_face = open_named_face(case, "variable_font")?;
+    let malformed_face = open_named_face(case, "malformed_font")?;
+    Ok(color_linear_gradient_output_for_open_faces(
+        ColorPaintBackend::Rust,
+        Some(&mut static_face),
+        ptr::null_mut(),
+        0,
+        Some(&mut variable_face),
+        ptr::null_mut(),
+        0,
+        Some(&malformed_face),
+        ptr::null_mut(),
+        0,
+    ))
+}
+
+fn c_color_linear_gradient_case(case: &InputCase) -> Result<RunOutput, String> {
+    let (static_library, static_face) = c_open_named_face(case, "static_font")?;
+    let (variable_library, variable_face) = c_open_named_face(case, "variable_font")?;
+    let (malformed_library, malformed_face) = c_open_named_face(case, "malformed_font")?;
+    let output = color_linear_gradient_output_for_open_faces(
+        ColorPaintBackend::CAbi,
+        None,
+        static_face,
+        0,
+        None,
+        variable_face,
+        0,
+        None,
+        malformed_face,
+        0,
+    );
+    c_done_face(static_face);
+    c_done_library(static_library);
+    c_done_face(variable_face);
+    c_done_library(variable_library);
+    c_done_face(malformed_face);
+    c_done_library(malformed_library);
+    Ok(output)
+}
+
+fn wasm_color_linear_gradient_case(case: &InputCase) -> Result<RunOutput, String> {
+    let static_handle = wasm_open_named_face(case, "static_font")?;
+    let variable_handle = wasm_open_named_face(case, "variable_font")?;
+    let malformed_handle = wasm_open_named_face(case, "malformed_font")?;
+    let output = color_linear_gradient_output_for_open_faces(
+        ColorPaintBackend::Wasm,
+        None,
+        ptr::null_mut(),
+        static_handle,
+        None,
+        ptr::null_mut(),
+        variable_handle,
+        None,
+        ptr::null_mut(),
+        malformed_handle,
+    );
+    wasm_done_face(static_handle);
+    wasm_done_face(variable_handle);
+    wasm_done_face(malformed_handle);
+    Ok(output)
 }
 
 fn get_paint_colorline_copy(
@@ -40852,6 +41081,17 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                     dy.to_string(),
                 ]);
             }
+            Ok(args)
+        }
+        "ftcolor.get_paint_and_colorline_stops"
+            if case.case_id
+                == "ftcolor.FT_PaintLinearGradient.get_paint_linear_gradient_values" =>
+        {
+            let mut args = vec!["--color-linear-gradient-case".to_string()];
+            push_required_asset_source(case, "static_font", &mut args)?;
+            push_required_asset_source(case, "variable_font", &mut args)?;
+            push_required_asset_source(case, "malformed_font", &mut args)?;
+            args.push(face_index_param(params)?.to_string());
             Ok(args)
         }
         operation

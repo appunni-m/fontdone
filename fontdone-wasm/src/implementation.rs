@@ -742,6 +742,7 @@ pub type FT_OpaquePaint = rust_ffi::FT_OpaquePaint;
 pub type FT_ColorIndex = rust_ffi::FT_ColorIndex;
 pub type FT_PaintSolid = rust_ffi::FT_PaintSolid;
 pub type FT_PaintGlyph = rust_ffi::FT_PaintGlyph;
+pub type FT_PaintLinearGradient = rust_ffi::FT_PaintLinearGradient;
 pub type FT_PaintComposite = rust_ffi::FT_PaintComposite;
 pub type FT_COLR_Paint = rust_ffi::FT_COLR_Paint;
 
@@ -1405,6 +1406,17 @@ pub fn abi_support_colr_v1_paint_colorline(
     opaque_paint: FT_OpaquePaint,
 ) -> Option<FT_ColorLine> {
     rust_ffi::FT_ColrV1_Paint_ColorLine_Copy(face_ref(handle).map(|face| &face.face), opaque_paint)
+}
+
+#[cfg(feature = "abi-test-support")]
+pub fn abi_support_colr_v1_paint_linear_gradient(
+    handle: usize,
+    opaque_paint: FT_OpaquePaint,
+) -> Option<FT_PaintLinearGradient> {
+    rust_ffi::FT_ColrV1_Paint_LinearGradient_Copy(
+        face_ref(handle).map(|face| &face.face),
+        opaque_paint,
+    )
 }
 
 #[cfg(feature = "abi-test-support")]

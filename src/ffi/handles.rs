@@ -1514,6 +1514,7 @@ enum ColrV1Paint {
         p0: FT_Vector,
         p1: FT_Vector,
         p2: FT_Vector,
+        var_index_base: Option<u32>,
     },
     RadialGradient {
         colorline: ColrV1ColorLine,
@@ -8486,6 +8487,7 @@ fn parse_colr_v1_paint(
                     x: colr_i16_to_fixed(read_i16_be(data, offset + 12)?),
                     y: colr_i16_to_fixed(read_i16_be(data, offset + 14)?),
                 },
+                var_index_base: None,
             })
         }
         6 => {
@@ -8542,6 +8544,7 @@ fn parse_colr_v1_paint(
                     x: colr_i16_to_fixed(read_i16_be(data, offset + 12)?),
                     y: colr_i16_to_fixed(read_i16_be(data, offset + 14)?),
                 },
+                var_index_base: Some(read_u32_be(data, offset + 16)?),
             })
         }
         10 => {
@@ -8986,6 +8989,41 @@ fn colr_v1_colorline_to_public(colorline: &ColrV1ColorLine) -> FT_ColorLine {
     }
 }
 
+fn colr_v1_linear_gradient_to_public(
+    face: &FT_Face,
+    colr: &ColrV1State,
+    colorline: &ColrV1ColorLine,
+    p0: FT_Vector,
+    p1: FT_Vector,
+    p2: FT_Vector,
+    var_index_base: Option<u32>,
+) -> FT_PaintLinearGradient {
+    let mut points = [p0, p1, p2];
+    if let Some(var_index_base) = var_index_base.filter(|base| *base != u32::MAX) {
+        if let Some(var_store) = &colr.var_store {
+            let normalized_coords = face.inner.borrow();
+            let normalized_coords = normalized_coords.font().normalized_variation_coords();
+            let outer_index = (var_index_base >> 16) as u16;
+            let inner_index = var_index_base as u16;
+            for (point_index, point) in points.iter_mut().enumerate() {
+                let offset = u16::try_from(point_index * 2).unwrap_or(u16::MAX);
+                let x_index = inner_index.saturating_add(offset);
+                let y_index = x_index.saturating_add(1);
+                let x_delta = var_store.item_delta(outer_index, x_index, normalized_coords);
+                let y_delta = var_store.item_delta(outer_index, y_index, normalized_coords);
+                point.x = point.x.saturating_add(FT_Fixed::from(x_delta) << 16);
+                point.y = point.y.saturating_add(FT_Fixed::from(y_delta) << 16);
+            }
+        }
+    }
+    FT_PaintLinearGradient {
+        colorline: colr_v1_colorline_to_public(colorline),
+        p0: points[0],
+        p1: points[1],
+        p2: points[2],
+    }
+}
+
 fn colr_v1_root_transform_paint(face: &FT_Face, opaque_paint: FT_OpaquePaint) -> FT_PaintTransform {
     let mut root_scale = FT_Matrix {
         xx: (face.size_metrics.x_scale + 32) >> 6,
@@ -9086,15 +9124,19 @@ pub fn FT_Get_Paint(
             p0,
             p1,
             p2,
+            var_index_base,
         } => {
             paint_out.format = FT_COLR_PAINTFORMAT_LINEAR_GRADIENT as _;
             paint_out.u = FT_COLR_PaintUnion {
-                linear_gradient: FT_PaintLinearGradient {
-                    colorline: colr_v1_colorline_to_public(colorline),
-                    p0: *p0,
-                    p1: *p1,
-                    p2: *p2,
-                },
+                linear_gradient: colr_v1_linear_gradient_to_public(
+                    face,
+                    colr,
+                    colorline,
+                    *p0,
+                    *p1,
+                    *p2,
+                    *var_index_base,
+                ),
             };
         }
         ColrV1Paint::RadialGradient {
@@ -9468,6 +9510,37 @@ pub fn FT_ColrV1_Paint_ColorLine_Copy(
 }
 
 #[cfg(any(test, feature = "abi-test-support"))]
+pub fn FT_ColrV1_Paint_LinearGradient_Copy(
+    face: Option<&FT_Face>,
+    opaque_paint: FT_OpaquePaint,
+) -> Option<FT_PaintLinearGradient> {
+    if opaque_paint.p.is_null() || opaque_paint.insert_root_transform != 0 {
+        return None;
+    }
+    let colr = face?.colr_v1.as_ref()?;
+    match colr_v1_find_paint_by_ptr(colr, opaque_paint.p.cast_const())? {
+        ColrV1Paint::LinearGradient {
+            colorline,
+            p0,
+            p1,
+            p2,
+            var_index_base,
+        } => Some(FT_PaintLinearGradient {
+            ..colr_v1_linear_gradient_to_public(
+                face?,
+                colr,
+                colorline,
+                *p0,
+                *p1,
+                *p2,
+                *var_index_base,
+            )
+        }),
+        _ => None,
+    }
+}
+
+#[cfg(any(test, feature = "abi-test-support"))]
 pub fn FT_ColrV1_Paint_Transform_Copy(
     face: Option<&FT_Face>,
     opaque_paint: FT_OpaquePaint,
@@ -9626,6 +9699,7 @@ fn colr_v1_snapshot_paint(
             p0,
             p1,
             p2,
+            ..
         } => nodes.push(FT_ColrV1_PaintNode_Snapshot {
             depth,
             format: FT_COLR_PAINTFORMAT_LINEAR_GRADIENT as FT_UShort,

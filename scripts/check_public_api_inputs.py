@@ -538,6 +538,7 @@ REAL_PARITY_OPERATIONS = {
     "ftsizes.activate_select_size_sequence",
     "ftimage.raster_set_mode",
     "renderer.class_probe",
+    "ftcolor.get_paint_and_colorline_stops",
 }
 
 EXPLICIT_UNSUPPORTED_OPERATIONS = set()
@@ -2554,6 +2555,16 @@ def ftcolor_colorline_gradient_pending_reason(row: ConcreteInput) -> str | None:
     return None
 
 
+def ftcolor_linear_gradient_real_parity_reason(row: ConcreteInput) -> str | None:
+    if row.case_id != "ftcolor.FT_PaintLinearGradient.get_paint_linear_gradient_values":
+        return None
+    return (
+        "FT_PaintLinearGradient payload and ColorStop sequences validate through "
+        "the maintained static, variable-coordinate, and malformed COLRv1 font "
+        "runs against pinned C, Rust FFI, C ABI, and WASM ABI"
+    )
+
+
 def ftcolor_root_paint_pending_reason(row: ConcreteInput) -> str | None:
     """Case-specific COLR root paint and root transform rows needing real routing."""
     if not row.operation.startswith("ftcolor."):
@@ -3055,6 +3066,8 @@ def ftcolor_colrv1_composite_real_parity_reason(row: ConcreteInput) -> str | Non
 def ftcolor_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     """Rows for the COLR/CPAL subsystem that do not have a maintained success route."""
     if not row.operation.startswith("ftcolor."):
+        return None
+    if ftcolor_linear_gradient_real_parity_reason(row):
         return None
     if ftcolor_colrv1_composite_real_parity_reason(row):
         return None
@@ -8456,6 +8469,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     ftcolor_colrv1_real = ftcolor_colrv1_composite_real_parity_reason(row)
     if ftcolor_colrv1_real:
         return ("real-parity", ftcolor_colrv1_real)
+    ftcolor_linear_gradient_real = ftcolor_linear_gradient_real_parity_reason(row)
+    if ftcolor_linear_gradient_real:
+        return ("real-parity", ftcolor_linear_gradient_real)
     ftcolor_pending = ftcolor_subsystem_pending_reason(row)
     if ftcolor_pending:
         return ("pending-route", ftcolor_pending)

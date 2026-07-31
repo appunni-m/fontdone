@@ -65,6 +65,15 @@ licenses are enforced by `make supply-chain`.
 The active third-party fixture families and their license classes are recorded
 in `tests/fixtures/THIRD_PARTY_NOTICES.md`.
 
+The color generator also writes the maintained COLRv1 controls under
+`tests/fixtures/input/fonts/color/`.  `colr-v1-all-paints.ttf` is the reviewed
+DejaVu-derived paint graph.  `malformed-colr-v1-paints.ttf` is a deterministic
+malformed derivative: after serialization, the generator sets the COLR v1
+`BaseGlyphV1List` offset to zero while leaving the surrounding SFNT openable.
+The control therefore exercises rejection at the root lookup without relying
+on a truncated file or an unreviewed external font.  Its SHA-256 is
+`e6c68052444afec852031d662ecebe08ca587070c4bdcc253f4832b097774052`.
+
 ## 3. Review requirements
 
 Before adding or changing a generator:

@@ -243,11 +243,8 @@
             "id": "input/fonts/color/malformed-colr-v1-paints.ttf",
             "asset_kind": "font",
             "properties": [
-              "truncated paint table records",
-              "out-of-range paint offsets",
-              "invalid ColorLine offsets",
-              "invalid LayerV1List offsets",
-              "bad BaseGlyphV1List paint offsets"
+              "SFNT-openable COLR v1 control with a zero BaseGlyphV1List offset",
+              "invalid COLR v1 root lookup that must be rejected before paint dereference"
             ]
           }
         },
