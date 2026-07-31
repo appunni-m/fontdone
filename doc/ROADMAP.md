@@ -359,7 +359,7 @@ increase is claimed until the next full all-lane measurement**:
 | 15 | `8eed8f2f22288e53429503bed169d2b8608cc10e` | Routed the maintained `FT_Raster_Funcs` callback-slot matrix through live pinned-C class tables and Rust FFI, C ABI, and WASM observations for standard, grays, SDF, and bitmap-SDF renderers. |
 | 16 | `bc4513a6e712d53b047e4fdc21f0814f8f83d0be` | Routed the maintained `FT_GLYPH_FORMAT_PLOTTER` source-emitter inventory through pinned-C, Rust FFI, C ABI, and WASM renderer lookup; the pinned module set has no runtime plotter emitter. |
 | 17 | `514cca075fc5181b9bbd1005e4d53f6c3462381c` | Routed the maintained SVG glyph-load contract through pinned-C, Rust FFI, C ABI, and WASM observations for enabled SVG document success and `FT_LOAD_SVG_ONLY` error behavior; removed two pending runtime rows. |
-| 18 | `c16e21ea68b6aecb2cdd2c7258266326ae958e62` | Added the explicit GitHub `merge_group`/`checks_requested` trigger so the same bounded commit gate reports required status checks for merge-queue revisions; kept full parity, coverage, performance, platform, package, and supply-chain jobs manual. |
+| 18 | `c16e21ea68b6aecb2cdd2c7258266326ae958e62` | Added the explicit GitHub `merge_group`/`checks_requested` trigger so the same bounded commit gate reports required status checks for merge-queue revisions; registered `make ci-fast` run `e3277efd-1af9-4a4e-9ccb-912a16b629ab` passed on the resulting clean SHA; kept full parity, coverage, performance, platform, package, and supply-chain jobs manual. |
 
 The latest clean parity-only verification is Coverage MCP run
 `997763ca-ac41-4cb8-82bb-ce0b14c7c632` against source commit
