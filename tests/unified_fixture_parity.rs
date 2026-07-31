@@ -54,6 +54,7 @@ use sha2::{Digest, Sha256};
 
 const OUTLINE_RENDER_USER_TOKEN: usize = 0x1234_5678;
 const FTMM_AXIS_FLAG_HIDDEN: FT_UInt = 1;
+const INCREMENTAL_CLIENT_OBJECT_MAGIC: u64 = 0x46_54_49_4E_43_4C_49_46;
 
 extern "C" fn debug_hook_a(_arg: FT_Pointer) -> FT_Error {
     FT_Err_Ok
@@ -43576,6 +43577,15 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(face_index_param(params)?.to_string());
             args.push(glyph_index_param(params)?.to_string());
             args.push(load_flags_param(params)?.to_string());
+            args.push(
+                if params.get("runtime_route").and_then(Value::as_str)
+                    == Some("actual_incremental_client_lifetime")
+                {
+                    "1".to_string()
+                } else {
+                    "0".to_string()
+                },
+            );
             Ok(args)
         }
         "ftincrem.incremental_glyph_lifecycle" if !case.expect_error => {
@@ -64556,6 +64566,8 @@ struct RustOpaqueIncrementalState {
     object_identity_matches: bool,
     release_count: usize,
     release_matches_acquisition: bool,
+    face_done: bool,
+    callbacks_after_face_done: usize,
 }
 
 thread_local! {
@@ -64572,6 +64584,9 @@ unsafe extern "C" fn rust_opaque_incremental_get_glyph_data(
         let Some(state) = state.as_mut() else {
             return FT_Err_Invalid_Argument as FT_Error;
         };
+        if state.face_done {
+            state.callbacks_after_face_done = state.callbacks_after_face_done.saturating_add(1);
+        }
         state.object_identity_matches &= incremental == state.object;
         let Some(adata) = (unsafe { adata.as_mut() }) else {
             return FT_Err_Invalid_Argument as FT_Error;
@@ -64599,6 +64614,9 @@ unsafe extern "C" fn rust_opaque_incremental_free_glyph_data(
         let Some(state) = state.as_mut() else {
             return;
         };
+        if state.face_done {
+            state.callbacks_after_face_done = state.callbacks_after_face_done.saturating_add(1);
+        }
         state.object_identity_matches &= incremental == state.object;
         let Some(data) = (unsafe { data.as_ref() }) else {
             return;
@@ -64612,6 +64630,13 @@ unsafe extern "C" fn rust_opaque_incremental_free_glyph_data(
     });
 }
 
+#[derive(Clone, Copy)]
+struct IncrementalLifetimeObserved {
+    object_freed_by_freetype: bool,
+    callbacks_after_face_done: usize,
+    client_object_still_valid: bool,
+}
+
 fn opaque_incremental_output(
     open_error: FT_Error,
     load_error: FT_Error,
@@ -64622,6 +64647,7 @@ fn opaque_incremental_output(
     release_count: usize,
     release_matches_acquisition: bool,
     sentinel_survived: bool,
+    lifetime: Option<IncrementalLifetimeObserved>,
 ) -> RunOutput {
     let status = [open_error, load_error, done_face_error, done_library_error]
         .into_iter()
@@ -64644,7 +64670,7 @@ fn opaque_incremental_output(
             })
         })
         .collect::<Vec<_>>();
-    let output = json!({
+    let mut output = json!({
         "open_error": open_error,
         "load_error": load_error,
         "done_face_error": done_face_error,
@@ -64655,6 +64681,11 @@ fn opaque_incremental_output(
         "release_count": release_count,
         "release_matches_acquisition": release_matches_acquisition,
     });
+    if let Some(lifetime) = lifetime {
+        output["object_freed_by_freetype"] = json!(lifetime.object_freed_by_freetype);
+        output["callbacks_after_face_done"] = json!(lifetime.callbacks_after_face_done);
+        output["client_object_still_valid"] = json!(lifetime.client_object_still_valid);
+    }
     if status == FT_Err_Ok {
         ok(output)
     } else {
@@ -64667,12 +64698,22 @@ fn rust_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String>
     let face_index = face_index_param(&case.inputs.params)?;
     let glyph_index = glyph_index_param(&case.inputs.params)?;
     let load_flags = load_flags_param(&case.inputs.params)?;
+    let lifetime_route = case
+        .inputs
+        .params
+        .get("runtime_route")
+        .and_then(Value::as_str)
+        == Some("actual_incremental_client_lifetime");
     let mut library = FT_Init_FreeType();
     let glyph_bytes = FT_New_Memory_Face(&library, bytes.as_ref(), face_index, 20.0)
         .ok()
         .and_then(|face| FT_Face_Incremental_Glyph_Data(&face, glyph_index))
         .unwrap_or_default();
-    let object: FT_Incremental = ptr::without_provenance_mut(1);
+    let mut client_object = lifetime_route.then(|| Box::new(INCREMENTAL_CLIENT_OBJECT_MAGIC));
+    let object: FT_Incremental = client_object.as_mut().map_or_else(
+        || ptr::without_provenance_mut(1),
+        |client_object| ptr::from_mut(client_object.as_mut()).cast(),
+    );
     RUST_OPAQUE_INCREMENTAL_STATE.with_borrow_mut(|state| {
         *state = Some(RustOpaqueIncrementalState {
             object,
@@ -64704,21 +64745,40 @@ fn rust_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String>
                 Err(error) => error,
             };
             let done_face_error = FT_Done_Face(Some(face));
+            RUST_OPAQUE_INCREMENTAL_STATE.with_borrow_mut(|state| {
+                if let Some(state) = state.as_mut() {
+                    state.face_done = true;
+                }
+            });
             (FT_Err_Ok, load_error, done_face_error)
         }
         Err(error) => (error, error, FT_Err_Invalid_Face_Handle as FT_Error),
     };
     let done_library_error = FT_Done_Library(Some(&mut library));
-    let (events, object_identity_matches, release_count, release_matches_acquisition) =
-        RUST_OPAQUE_INCREMENTAL_STATE.with_borrow(|state| {
-            let state = state.as_ref().expect("opaque incremental state installed");
-            (
-                state.events.clone(),
-                state.object_identity_matches,
-                state.release_count,
-                state.release_matches_acquisition,
-            )
-        });
+    let (
+        events,
+        object_identity_matches,
+        release_count,
+        release_matches_acquisition,
+        callbacks_after_face_done,
+    ) = RUST_OPAQUE_INCREMENTAL_STATE.with_borrow(|state| {
+        let state = state.as_ref().expect("opaque incremental state installed");
+        (
+            state.events.clone(),
+            state.object_identity_matches,
+            state.release_count,
+            state.release_matches_acquisition,
+            state.callbacks_after_face_done,
+        )
+    });
+    let lifetime = client_object.as_deref().map(|client_object| {
+        let client_object_still_valid = *client_object == INCREMENTAL_CLIENT_OBJECT_MAGIC;
+        IncrementalLifetimeObserved {
+            object_freed_by_freetype: !client_object_still_valid,
+            callbacks_after_face_done,
+            client_object_still_valid,
+        }
+    });
     RUST_OPAQUE_INCREMENTAL_STATE.with_borrow_mut(|state| *state = None);
     Ok(opaque_incremental_output(
         open_error,
@@ -64729,18 +64789,31 @@ fn rust_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String>
         object_identity_matches,
         release_count,
         release_matches_acquisition,
-        true,
+        lifetime.is_none_or(|lifetime| lifetime.client_object_still_valid),
+        lifetime,
     ))
 }
 
 fn c_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
+    let lifetime_route = case
+        .inputs
+        .params
+        .get("runtime_route")
+        .and_then(Value::as_str)
+        == Some("actual_incremental_client_lifetime");
     let snapshot = c_abi::abi_incremental_opaque_handle(
         bytes.as_ref(),
         face_index_param(&case.inputs.params)?,
         glyph_index_param(&case.inputs.params)?,
         load_flags_param(&case.inputs.params)?,
+        lifetime_route,
     );
+    let lifetime = lifetime_route.then_some(IncrementalLifetimeObserved {
+        object_freed_by_freetype: snapshot.object_freed_by_freetype,
+        callbacks_after_face_done: snapshot.callbacks_after_face_done,
+        client_object_still_valid: snapshot.client_object_still_valid,
+    });
     Ok(opaque_incremental_output(
         snapshot.open_error,
         snapshot.load_error,
@@ -64750,18 +64823,31 @@ fn c_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String> {
         snapshot.object_identity_matches,
         snapshot.release_count,
         snapshot.release_matches_acquisition,
-        true,
+        lifetime.is_none_or(|lifetime| lifetime.client_object_still_valid),
+        lifetime,
     ))
 }
 
 fn wasm_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
+    let lifetime_route = case
+        .inputs
+        .params
+        .get("runtime_route")
+        .and_then(Value::as_str)
+        == Some("actual_incremental_client_lifetime");
     let snapshot = wasm_abi::abi_support_incremental_opaque_handle(
         bytes.as_ref(),
         face_index_param(&case.inputs.params)?,
         glyph_index_param(&case.inputs.params)?,
         load_flags_param(&case.inputs.params)?,
+        lifetime_route,
     );
+    let lifetime = lifetime_route.then_some(IncrementalLifetimeObserved {
+        object_freed_by_freetype: snapshot.object_freed_by_freetype,
+        callbacks_after_face_done: snapshot.callbacks_after_face_done,
+        client_object_still_valid: snapshot.client_object_still_valid,
+    });
     Ok(opaque_incremental_output(
         snapshot.open_error,
         snapshot.load_error,
@@ -64771,7 +64857,8 @@ fn wasm_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String>
         snapshot.object_identity_matches,
         snapshot.release_count,
         snapshot.release_matches_acquisition,
-        true,
+        lifetime.is_none_or(|lifetime| lifetime.client_object_still_valid),
+        lifetime,
     ))
 }
 

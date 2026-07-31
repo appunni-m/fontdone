@@ -33569,7 +33569,12 @@ typedef struct IncrementalGlyphLifecycleState_ {
     int release_matches_acquisition;
     FT_Incremental expected_object;
     int object_identity_matches;
+    int face_done;
+    size_t callbacks_after_face_done;
+    uint64_t client_object_magic;
 } IncrementalGlyphLifecycleState;
+
+#define INCREMENTAL_CLIENT_OBJECT_MAGIC UINT64_C(0x4654494e434c4946)
 
 /* The opaque-handle route deliberately keeps the client object at an
  * inaccessible sentinel address.  These callbacks record the pointer value
@@ -33587,6 +33592,9 @@ static FT_Error incremental_opaque_get_glyph_data(FT_Incremental incremental,
     IncrementalGlyphLifecycleState* state = incremental_opaque_active_state;
     if (!state || !glyph_data) {
         return FT_Err_Invalid_Argument;
+    }
+    if (state->face_done) {
+        state->callbacks_after_face_done++;
     }
     state->object_identity_matches =
         state->object_identity_matches && incremental == state->expected_object;
@@ -33615,6 +33623,9 @@ static void incremental_opaque_free_glyph_data(FT_Incremental incremental,
     IncrementalGlyphLifecycleState* state = incremental_opaque_active_state;
     if (!state || !glyph_data) {
         return;
+    }
+    if (state->face_done) {
+        state->callbacks_after_face_done++;
     }
     state->object_identity_matches =
         state->object_identity_matches && incremental == state->expected_object;
@@ -33979,7 +33990,7 @@ static int emit_incremental_glyph_lifecycle(int argc, char** argv) {
 }
 
 static int emit_incremental_opaque_handle(int argc, char** argv) {
-    if (argc != 7) return 2;
+    if (argc != 7 && argc != 8) return 2;
     unsigned char* data = NULL;
     long data_len_long = 0;
     if (load_oracle_source_bytes(argv[2],
@@ -33993,6 +34004,7 @@ static int emit_incremental_opaque_handle(int argc, char** argv) {
     FT_Long face_index = (FT_Long)atol(argv[4]);
     FT_UInt glyph_index = (FT_UInt)strtoul(argv[5], NULL, 10);
     FT_Int32 load_flags = (FT_Int32)strtol(argv[6], NULL, 10);
+    int lifetime_route = argc == 8 && streq(argv[7], "1");
     IncrementalGlyphLifecycleState state;
     if (!incremental_prepare_glyph_source(&state,
                                           data,
@@ -34003,6 +34015,10 @@ static int emit_incremental_opaque_handle(int argc, char** argv) {
         return 1;
     }
     state.expected_object = (FT_Incremental)(uintptr_t)1;
+    state.client_object_magic = INCREMENTAL_CLIENT_OBJECT_MAGIC;
+    if (lifetime_route) {
+        state.expected_object = (FT_Incremental)&state;
+    }
     state.object_identity_matches = 1;
     incremental_opaque_active_state = &state;
 
@@ -34038,6 +34054,7 @@ static int emit_incremental_opaque_handle(int argc, char** argv) {
         if (!open_error) {
             load_error = FT_Load_Glyph(face, glyph_index, load_flags);
             done_face_error = FT_Done_Face(face);
+            state.face_done = 1;
             face = NULL;
         }
         done_library_error = FT_Done_FreeType(library);
@@ -34074,6 +34091,15 @@ static int emit_incremental_opaque_handle(int argc, char** argv) {
            object_identity,
            (unsigned long)state.release_count);
     print_json_bool(state.release_matches_acquisition);
+    if (lifetime_route) {
+        int client_object_still_valid =
+            state.client_object_magic == INCREMENTAL_CLIENT_OBJECT_MAGIC;
+        printf(",\"object_freed_by_freetype\":");
+        print_json_bool(!client_object_still_valid);
+        printf(",\"callbacks_after_face_done\":%lu,\"client_object_still_valid\":",
+               (unsigned long)state.callbacks_after_face_done);
+        print_json_bool(client_object_still_valid);
+    }
     printf("}}\n");
     incremental_opaque_active_state = NULL;
     free(data);
@@ -35448,7 +35474,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 7 && streq(argv[1], "--incremental-glyph-lifecycle")) {
         return emit_incremental_glyph_lifecycle(argc, argv);
     }
-    if (argc == 7 && streq(argv[1], "--incremental-opaque-handle")) {
+    if ((argc == 7 || argc == 8) && streq(argv[1], "--incremental-opaque-handle")) {
         return emit_incremental_opaque_handle(argc, argv);
     }
     if (argc == 11 && streq(argv[1], "--incremental-state-lifecycle")) {

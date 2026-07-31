@@ -114,20 +114,24 @@
       "case_id": "ftincrem.FT_Incremental.lifetime_owned_by_client",
       "subject": "ftincrem.FT_Incremental",
       "case": "lifetime_owned_by_client",
-      "operation": "ftincrem.client_lifetime_model",
+      "operation": "ftincrem.opaque_handle_lifecycle",
       "schema": "api_result",
       "expect_error": false,
       "inputs": {
         "assets": {
           "font": {
             "kind": "ref",
-            "id": "input/fonts/incremental/minimal-glyf-incremental.ttf"
+            "id": "input/fonts/DejaVuSans.ttf"
           }
         },
         "params": {
           "object_owner": "client",
           "freetype_lifetime_action": "stores_pointer_only",
-          "destroy_face_before_client_object": true
+          "destroy_face_before_client_object": true,
+          "face_index": 0,
+          "glyph_index": 36,
+          "load_flags": "FT_LOAD_NO_SCALE",
+          "runtime_route": "actual_incremental_client_lifetime"
         }
       },
       "classifiers": [
@@ -155,7 +159,7 @@
           "freetype/src/base/ftobjs.c"
         ],
         "fixture_requirements": [
-          "Requires harness-side client object lifetime tracking; no oracle bytes are stored in the input JSON."
+          "The tracked DejaVuSans.ttf route passes a client-owned canary through the actual FT_PARAM_TAG_INCREMENTAL interface. Face destruction occurs before the canary is released; all four lanes compare that FreeType did not free it and emitted no callback after face destruction."
         ]
       }
     }

@@ -75,6 +75,9 @@ pub type FT_List_Destructor =
 
 const PROPERTY_SENTINEL: FT_UInt = 0xDEAD_BEEF;
 
+#[cfg(feature = "abi-test-support")]
+const INCREMENTAL_CLIENT_OBJECT_MAGIC: u64 = 0x46_54_49_4E_43_4C_49_46;
+
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
 pub struct FontdoneWasmStatus {
@@ -5971,6 +5974,8 @@ struct WasmOpaqueIncrementalTrace {
     object_identity_matches: bool,
     release_count: usize,
     release_matches_acquisition: bool,
+    face_done: bool,
+    callbacks_after_face_done: usize,
 }
 
 #[cfg(feature = "abi-test-support")]
@@ -5983,6 +5988,9 @@ unsafe extern "C" fn wasm_opaque_incremental_get_glyph_data(
         let Some(trace) = trace.as_mut() else {
             return rust_ffi::FT_Err_Invalid_Argument;
         };
+        if trace.face_done {
+            trace.callbacks_after_face_done = trace.callbacks_after_face_done.saturating_add(1);
+        }
         trace.object_identity_matches &= incremental == trace.object;
         let Some(adata) = (unsafe { adata.as_mut() }) else {
             return rust_ffi::FT_Err_Invalid_Argument;
@@ -6011,6 +6019,9 @@ unsafe extern "C" fn wasm_opaque_incremental_free_glyph_data(
         let Some(trace) = trace.as_mut() else {
             return;
         };
+        if trace.face_done {
+            trace.callbacks_after_face_done = trace.callbacks_after_face_done.saturating_add(1);
+        }
         trace.object_identity_matches &= incremental == trace.object;
         let Some(data) = (unsafe { data.as_ref() }) else {
             return;
@@ -6034,6 +6045,9 @@ pub struct AbiIncrementalOpaqueSnapshot {
     pub object_identity_matches: bool,
     pub release_count: usize,
     pub release_matches_acquisition: bool,
+    pub object_freed_by_freetype: bool,
+    pub callbacks_after_face_done: usize,
+    pub client_object_still_valid: bool,
 }
 
 /// Opens a pure-Rust Wasm-facade face through the incremental parameter path
@@ -6044,6 +6058,7 @@ pub fn abi_support_incremental_opaque_handle(
     face_index: FT_Long,
     glyph_index: FT_UInt,
     load_flags: FT_Int32,
+    lifetime_route: bool,
 ) -> AbiIncrementalOpaqueSnapshot {
     let mut library = rust_ffi::FT_Init_FreeType();
     let glyph_bytes = rust_ffi::FT_New_Memory_Face(&library, bytes, face_index, 20.0)
@@ -6051,7 +6066,11 @@ pub fn abi_support_incremental_opaque_handle(
         .and_then(|face| rust_ffi::FT_Face_Incremental_Glyph_Data(&face, glyph_index))
         .unwrap_or_default()
         .into_boxed_slice();
-    let object: FT_Incremental = ptr::without_provenance_mut(1);
+    let mut client_object = lifetime_route.then(|| Box::new(INCREMENTAL_CLIENT_OBJECT_MAGIC));
+    let object: FT_Incremental = client_object.as_mut().map_or_else(
+        || ptr::without_provenance_mut(1),
+        |client_object| ptr::from_mut(client_object.as_mut()).cast(),
+    );
     OPAQUE_INCREMENTAL_TRACE.with_borrow_mut(|trace| {
         *trace = Some(WasmOpaqueIncrementalTrace {
             object,
@@ -6063,6 +6082,8 @@ pub fn abi_support_incremental_opaque_handle(
             object_identity_matches: true,
             release_count: 0,
             release_matches_acquisition: false,
+            face_done: false,
+            callbacks_after_face_done: 0,
         });
     });
     let funcs = FT_Incremental_FuncsRec {
@@ -6087,6 +6108,11 @@ pub fn abi_support_incremental_opaque_handle(
                 Err(error) => error,
             };
             let done_face_error = rust_ffi::FT_Done_Face(Some(face));
+            OPAQUE_INCREMENTAL_TRACE.with_borrow_mut(|trace| {
+                if let Some(trace) = trace.as_mut() {
+                    trace.face_done = true;
+                }
+            });
             (rust_ffi::FT_Err_Ok, load_error, done_face_error)
         }
         Err(error) => (
@@ -6096,19 +6122,28 @@ pub fn abi_support_incremental_opaque_handle(
         ),
     };
     let done_library_error = rust_ffi::FT_Done_Library(Some(&mut library));
-    let (callback_log, object_identity_matches, release_count, release_matches_acquisition) =
-        OPAQUE_INCREMENTAL_TRACE.with_borrow(|trace| {
-            trace
-                .as_ref()
-                .map_or((Vec::new(), false, 0, false), |trace| {
-                    (
-                        trace.events.clone(),
-                        trace.object_identity_matches,
-                        trace.release_count,
-                        trace.release_matches_acquisition,
-                    )
-                })
-        });
+    let (
+        callback_log,
+        object_identity_matches,
+        release_count,
+        release_matches_acquisition,
+        callbacks_after_face_done,
+    ) = OPAQUE_INCREMENTAL_TRACE.with_borrow(|trace| {
+        trace
+            .as_ref()
+            .map_or((Vec::new(), false, 0, false, 0), |trace| {
+                (
+                    trace.events.clone(),
+                    trace.object_identity_matches,
+                    trace.release_count,
+                    trace.release_matches_acquisition,
+                    trace.callbacks_after_face_done,
+                )
+            })
+    });
+    let client_object_still_valid = client_object
+        .as_deref()
+        .is_some_and(|client_object| *client_object == INCREMENTAL_CLIENT_OBJECT_MAGIC);
     OPAQUE_INCREMENTAL_TRACE.with_borrow_mut(|trace| *trace = None);
     AbiIncrementalOpaqueSnapshot {
         open_error,
@@ -6119,6 +6154,13 @@ pub fn abi_support_incremental_opaque_handle(
         object_identity_matches,
         release_count,
         release_matches_acquisition,
+        object_freed_by_freetype: lifetime_route && !client_object_still_valid,
+        callbacks_after_face_done: if lifetime_route {
+            callbacks_after_face_done
+        } else {
+            0
+        },
+        client_object_still_valid: lifetime_route && client_object_still_valid,
     }
 }
 
