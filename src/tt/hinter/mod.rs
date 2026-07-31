@@ -813,4 +813,396 @@ mod tests {
         assert!(outcome.advance_width > 0);
         Ok(())
     }
+
+    #[test]
+    fn glyph_bytecode_executes_mirp_shc_and_single_width_rules() -> Result<(), FontError> {
+        let scale = HintScale {
+            x_scale: 1 << 16,
+            y_scale: 1 << 16,
+            tt_scale: 1 << 16,
+            ppem: 16,
+            x_ratio: 1 << 16,
+            y_ratio: 1 << 16,
+            point_size: 16 << 6,
+            storage_size: 8,
+            max_function_defs: 64,
+            max_instruction_defs: 64,
+            max_stack_elements: 64,
+            num_glyphs: 10,
+            twilight_points: 8,
+            is_composite: false,
+            reset_vectors_at_glyph_entry: false,
+            metrics_legacy_phantoms: false,
+            pedantic_hinting: false,
+            native_hint_mode: NativeHintMode::Normal,
+            phantom_x_override: None,
+            interpreter_version: 40,
+        };
+        let context = prepare_context(&[64], &[], &[], &scale)?;
+        let raw = [
+            OutlinePoint {
+                x: 0,
+                y: 0,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 100,
+                y: 0,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 200,
+                y: 0,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 300,
+                y: 100,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 0,
+                y: 100,
+                on_curve: true,
+            },
+        ];
+        let mut scaled = raw
+            .iter()
+            .map(|point| crate::outline::OutlinePoint {
+                x: point.x,
+                y: point.y,
+                on_curve: point.on_curve,
+            })
+            .collect::<Vec<_>>();
+        // SSWCI 32, SSW 64, MIRP[0] point 3 with cvt 0 (64 == single width,
+        // so the cut-in branch replaces the distance), then SHC[0] shifts
+        // contour 0 by the reference-point displacement.
+        let program = [
+            0xB0, 32, 0x1E, 0xB0, 64, 0x1F, 0xB0, 3, 0xB0, 0, 0xE0, 0xB0, 0, 0x34,
+        ];
+        let outcome = hint_glyph(
+            &mut scaled,
+            &raw,
+            &[0x01; 5],
+            &[4],
+            500,
+            500,
+            0,
+            0,
+            0,
+            0,
+            &scale,
+            &program,
+            &context,
+        )?;
+        assert_eq!(outcome.context.gs.single_width_cutin, 32);
+        assert_eq!(outcome.context.gs.single_width_value, 64);
+        assert!(outcome.advance_width > 0);
+        Ok(())
+    }
+
+    #[test]
+    fn prep_programs_exercise_twilight_point_paths() -> Result<(), FontError> {
+        let scale = HintScale {
+            x_scale: 1 << 16,
+            y_scale: 1 << 16,
+            tt_scale: 1 << 16,
+            ppem: 16,
+            x_ratio: 1 << 16,
+            y_ratio: 1 << 16,
+            point_size: 16 << 6,
+            storage_size: 8,
+            max_function_defs: 64,
+            max_instruction_defs: 64,
+            max_stack_elements: 64,
+            num_glyphs: 10,
+            twilight_points: 8,
+            is_composite: false,
+            reset_vectors_at_glyph_entry: false,
+            metrics_legacy_phantoms: false,
+            pedantic_hinting: false,
+            native_hint_mode: NativeHintMode::Normal,
+            phantom_x_override: None,
+            interpreter_version: 40,
+        };
+        // prep runs with zp0=zp1=zp2=0 (twilight): MIAP writes twilight
+        // org/cur, and MIRP/MSIRP move twilight points relative to rp0.
+        let prep = [
+            0xB0, 2, 0xB0, 0, 0x3E, // MIAP[0] point 2, cvt 0
+            0xB0, 2, 0xB0, 0, 0xE0, // MIRP[0] point 2, cvt 0
+            0xB0, 2, 0xB0, 50, 0x3A, // MSIRP[0] point 2, distance 50
+        ];
+        let context = prepare_context(&[100], &[], &prep, &scale)?;
+        let raw = [OutlinePoint {
+            x: 100,
+            y: 200,
+            on_curve: true,
+        }];
+        let mut scaled = raw
+            .iter()
+            .map(|point| crate::outline::OutlinePoint {
+                x: point.x,
+                y: point.y,
+                on_curve: point.on_curve,
+            })
+            .collect::<Vec<_>>();
+        let outcome = hint_glyph(
+            &mut scaled,
+            &raw,
+            &[1],
+            &[0],
+            500,
+            500,
+            0,
+            0,
+            0,
+            0,
+            &scale,
+            &[0x4B], // MPPEM
+            &context,
+        )?;
+        assert!(outcome.advance_width > 0);
+        Ok(())
+    }
+
+    #[test]
+    fn glyph_bytecode_executes_mdrp_md_shz_and_vector_getters() -> Result<(), FontError> {
+        let scale = HintScale {
+            x_scale: 1 << 16,
+            y_scale: 1 << 16,
+            tt_scale: 1 << 16,
+            ppem: 16,
+            x_ratio: 1 << 16,
+            y_ratio: 1 << 16,
+            point_size: 16 << 6,
+            storage_size: 8,
+            max_function_defs: 64,
+            max_instruction_defs: 64,
+            max_stack_elements: 64,
+            num_glyphs: 10,
+            twilight_points: 8,
+            is_composite: false,
+            reset_vectors_at_glyph_entry: false,
+            metrics_legacy_phantoms: false,
+            pedantic_hinting: false,
+            native_hint_mode: NativeHintMode::Normal,
+            phantom_x_override: None,
+            interpreter_version: 40,
+        };
+        let context = prepare_context(&[64], &[], &[], &scale)?;
+        let raw = [
+            OutlinePoint {
+                x: 0,
+                y: 0,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 100,
+                y: 0,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 200,
+                y: 0,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 300,
+                y: 100,
+                on_curve: true,
+            },
+        ];
+        let mut scaled = raw
+            .iter()
+            .map(|point| crate::outline::OutlinePoint {
+                x: point.x,
+                y: point.y,
+                on_curve: point.on_curve,
+            })
+            .collect::<Vec<_>>();
+        // INSTCTRL[3]=4 (v40, no backward compatibility), SSWCI 32,
+        // MDRP[0] point 3 (single-width cut-in), MD[0] point 3 versus
+        // point 0 (original-outline distance), SHZ[0] whole-zone shift,
+        // SHPIX point 2, GPV/GFV stored to slots 4/5.
+        let program = [
+            0xB0, 4, 0xB0, 3, 0x8E, // INSTCTRL[3]=4
+            0xB0, 32, 0x1E, // SSWCI 32
+            0xB0, 3, 0xC0, // MDRP[0] point 3
+            0xB0, 0, 0xB0, 3, 0x49, // MD[1] l=0, k=3 (cur distance)
+            0xB0, 0, 0xB0, 3, 0x4A, // MD[0] l=0, k=3
+            0xB0, 0, 0x36, // SHZ[0] zone 0
+            0xB0, 2, 0xB0, 64, 0x38, // SHPIX point 2, amount 64
+            0x0C, 0xB0, 4, 0x23, 0x42, // GPV + store top
+            0x0D, 0xB0, 5, 0x23, 0x42, // GFV + store top
+        ];
+        let outcome = hint_glyph(
+            &mut scaled,
+            &raw,
+            &[0x01; 4],
+            &[3],
+            500,
+            500,
+            0,
+            0,
+            0,
+            0,
+            &scale,
+            &program,
+            &context,
+        )?;
+        assert_eq!(outcome.context.gs.single_width_cutin, 32);
+        // GPV pushes proj.x then proj.y; the stored top is proj.y = 0.
+        assert_eq!(outcome.context.storage[4], 0);
+        assert_eq!(outcome.context.storage[5], 0);
+        Ok(())
+    }
+
+    #[test]
+    fn prep_programs_exercise_md_mdrp_and_isect_twilight_paths() -> Result<(), FontError> {
+        let scale = HintScale {
+            x_scale: 1 << 16,
+            y_scale: 1 << 16,
+            tt_scale: 1 << 16,
+            ppem: 16,
+            x_ratio: 1 << 16,
+            y_ratio: 1 << 16,
+            point_size: 16 << 6,
+            storage_size: 8,
+            max_function_defs: 64,
+            max_instruction_defs: 64,
+            max_stack_elements: 64,
+            num_glyphs: 10,
+            twilight_points: 8,
+            is_composite: false,
+            reset_vectors_at_glyph_entry: false,
+            metrics_legacy_phantoms: false,
+            pedantic_hinting: false,
+            native_hint_mode: NativeHintMode::Normal,
+            phantom_x_override: None,
+            interpreter_version: 40,
+        };
+        // MD[0] measures original-outline twilight distance, MDRP moves a
+        // twilight point, SHPIX shifts a twilight point, and ISECT
+        // intersects twilight lines at point 6.
+        let prep = [
+            0xB0, 0, 0xB0, 2, 0x4A, // MD[0] l=0, k=2
+            0xB0, 2, 0xC0, // MDRP[0] point 2
+            0xB0, 2, 0xB0, 64, 0x38, // SHPIX point 2, amount 64
+            0xB0, 6, 0xB0, 0, 0xB0, 1, 0xB0, 2, 0xB0, 3, 0x0F, // ISECT
+        ];
+        let context = prepare_context(&[100], &[], &prep, &scale)?;
+        let raw = [OutlinePoint {
+            x: 100,
+            y: 200,
+            on_curve: true,
+        }];
+        let mut scaled = raw
+            .iter()
+            .map(|point| crate::outline::OutlinePoint {
+                x: point.x,
+                y: point.y,
+                on_curve: point.on_curve,
+            })
+            .collect::<Vec<_>>();
+        let outcome = hint_glyph(
+            &mut scaled,
+            &raw,
+            &[1],
+            &[0],
+            500,
+            500,
+            0,
+            0,
+            0,
+            0,
+            &scale,
+            &[0x4B], // MPPEM
+            &context,
+        )?;
+        assert!(outcome.advance_width > 0);
+        Ok(())
+    }
+
+    #[test]
+    fn md_non_square_scale_and_shpix_y_touch_paths() -> Result<(), FontError> {
+        let scale = HintScale {
+            x_scale: 2 << 16,
+            y_scale: 1 << 16,
+            tt_scale: 1 << 16,
+            ppem: 16,
+            x_ratio: 1 << 16,
+            y_ratio: 1 << 16,
+            point_size: 16 << 6,
+            storage_size: 8,
+            max_function_defs: 64,
+            max_instruction_defs: 64,
+            max_stack_elements: 64,
+            num_glyphs: 10,
+            twilight_points: 8,
+            is_composite: false,
+            reset_vectors_at_glyph_entry: false,
+            metrics_legacy_phantoms: false,
+            pedantic_hinting: false,
+            native_hint_mode: NativeHintMode::Normal,
+            phantom_x_override: None,
+            interpreter_version: 40,
+        };
+        let context = prepare_context(&[], &[], &[], &scale)?;
+        let raw = [
+            OutlinePoint {
+                x: 0,
+                y: 0,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 100,
+                y: 0,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 200,
+                y: 0,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 300,
+                y: 100,
+                on_curve: true,
+            },
+        ];
+        let mut scaled = raw
+            .iter()
+            .map(|point| crate::outline::OutlinePoint {
+                x: point.x,
+                y: point.y,
+                on_curve: point.on_curve,
+            })
+            .collect::<Vec<_>>();
+        // Non-square scales take the per-axis MD path.  SHPIX in v40
+        // compatibility mode moves a Y-touched point only.
+        let program = [
+            0xB0, 0, 0xB0, 3, 0x4A, // MD[0] with x_scale != y_scale
+            0x00, // SVTCA[0]: freedom = Y
+            0xB0, 3, 0xC0, // MDRP[0] point 3 (Y-touch)
+            0x01, // SVTCA[1]: freedom = X
+            0xB0, 3, 0xB0, 64, 0x38, // SHPIX point 3 (Y-touched)
+        ];
+        let outcome = hint_glyph(
+            &mut scaled,
+            &raw,
+            &[0x01; 4],
+            &[3],
+            500,
+            500,
+            0,
+            0,
+            0,
+            0,
+            &scale,
+            &program,
+            &context,
+        )?;
+        assert!(outcome.advance_width > 0);
+        Ok(())
+    }
 }
