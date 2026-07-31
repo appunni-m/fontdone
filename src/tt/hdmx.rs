@@ -74,6 +74,13 @@ pub fn parse_hdmx(data: &[u8], num_glyphs: u16) -> Result<HdmxTable, FontError> 
 mod tests {
     use super::*;
 
+    fn parse_ok(data: &[u8], num_glyphs: u16, label: &str) -> HdmxTable {
+        match parse_hdmx(data, num_glyphs) {
+            Ok(table) => table,
+            Err(error) => panic!("{label}: {error}"),
+        }
+    }
+
     #[test]
     fn parses_and_finds_width_record() {
         let data = [
@@ -84,10 +91,46 @@ mod tests {
             4, 5, 6, // glyph widths
             0, 0, 0, // padding
         ];
-        let table = parse_hdmx(&data, 3).unwrap_or_else(|err| {
-            panic!("valid hdmx parses successfully: {err}");
-        });
+        let table = parse_ok(&data, 3, "valid hdmx parses");
         assert_eq!(table.width_for_ppem(10, 1), Some(5));
         assert_eq!(table.width_for_ppem(9, 1), None);
+    }
+
+    #[test]
+    fn rejects_bad_record_counts_and_sizes() {
+        assert!(parse_hdmx(&[0; 7], 3).is_err());
+        // Record count 0.
+        assert!(parse_hdmx(&[0, 0, 0, 0, 0, 0, 0, 8], 3).is_err());
+        // Record count above 255.
+        let mut data = vec![0u8; 8];
+        data[2..4].copy_from_slice(&256u16.to_be_bytes());
+        assert!(parse_hdmx(&data, 3).is_err());
+        // Record-size mismatch.
+        let mut data = vec![0u8; 8];
+        data[2..4].copy_from_slice(&1u16.to_be_bytes());
+        data[4..8].copy_from_slice(&4u32.to_be_bytes());
+        assert!(parse_hdmx(&data, 3).is_err());
+    }
+
+    #[test]
+    fn accepts_large_record_size_normalization() {
+        let mut data = vec![0u8; 8];
+        data[2..4].copy_from_slice(&1u16.to_be_bytes());
+        // record size with high bits set is masked to 8 for 3 glyphs.
+        data[4..8].copy_from_slice(&0xFFFF_0008u32.to_be_bytes());
+        data.extend_from_slice(&[10, 7, 4, 5, 6, 0, 0, 0]);
+        let table = parse_ok(&data, 3, "normalized record size parses");
+        assert_eq!(table.width_for_ppem(10, 2), Some(6));
+    }
+
+    #[test]
+    fn truncation_stops_cleanly() {
+        let mut data = vec![0u8; 8];
+        data[2..4].copy_from_slice(&2u16.to_be_bytes());
+        data[4..8].copy_from_slice(&8u32.to_be_bytes());
+        data.extend_from_slice(&[10, 7, 4, 5, 6, 0, 0, 0]); // record 1
+        data.extend_from_slice(&[20, 8]); // truncated record 2
+        let table = parse_ok(&data, 3, "truncated records parse");
+        assert_eq!(table.records.len(), 1);
     }
 }

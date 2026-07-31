@@ -408,3 +408,94 @@ const MAC_POST_NAMES: [&str; 258] = [
 fn mac_post_name(index: usize) -> Option<&'static str> {
     MAC_POST_NAMES.get(index).copied()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::error::FontError;
+
+    fn post_header(format: u32, underline_position: i16, underline_thickness: i16) -> Vec<u8> {
+        let mut data = format.to_be_bytes().to_vec();
+        data.extend_from_slice(&0u32.to_be_bytes()); // italicAngle
+        data.extend_from_slice(&underline_position.to_be_bytes());
+        data.extend_from_slice(&underline_thickness.to_be_bytes());
+        data.extend_from_slice(&0x8000_0000u32.to_be_bytes()); // is_fixed_pitch
+        data.extend_from_slice(&[0; 16]); // min/max mem fields -> names start at 32
+        data
+    }
+
+    #[test]
+    fn parses_format_10_header() -> Result<(), FontError> {
+        let data = post_header(0x0001_0000, -100, 50);
+        let table = parse_post(&data).ok_or(FontError::InvalidFont("post header".into()))?;
+        assert_eq!(table.format_type, 0x0001_0000);
+        assert_eq!(table.underline_position, -100);
+        assert_eq!(table.underline_thickness, 50);
+        assert_eq!(table.is_fixed_pitch, 0x8000_0000);
+        assert_eq!(table.glyph_name(0, 10), Some(".notdef"));
+        assert_eq!(table.glyph_name(5, 258), mac_post_name(5));
+        assert_eq!(table.glyph_name(10, 258), mac_post_name(10));
+        assert_eq!(table.glyph_name(10, 5), None);
+        Ok(())
+    }
+
+    #[test]
+    fn rejects_short_post() {
+        assert!(parse_post(&[0u8; 15]).is_none());
+    }
+
+    #[test]
+    fn parses_format_20_names() -> Result<(), FontError> {
+        let mut data = post_header(0x0002_0000, 0, 0);
+        data.extend_from_slice(&2u16.to_be_bytes()); // num_glyphs
+        data.extend_from_slice(&258u16.to_be_bytes());
+        data.extend_from_slice(&1u16.to_be_bytes());
+        data.push(4);
+        data.extend_from_slice(b"Test");
+        let table = parse_post(&data).ok_or(FontError::InvalidFont("post 2.0".into()))?;
+        assert_eq!(table.glyph_name(0, 2), Some("Test"));
+        assert_eq!(table.glyph_name(1, 2), Some(".null"));
+        Ok(())
+    }
+
+    #[test]
+    fn format_20_truncated_names_fall_back() -> Result<(), FontError> {
+        let mut data = post_header(0x0002_0000, 0, 0);
+        data.extend_from_slice(&1u16.to_be_bytes()); // num_glyphs
+        data.extend_from_slice(&300u16.to_be_bytes()); // index 300 -> 42 custom names
+        data.push(10);
+        data.extend_from_slice(b"ab"); // truncated string
+        let table = parse_post(&data).ok_or(FontError::InvalidFont("post truncated".into()))?;
+        assert!(table.glyph_name(0, 1).is_some());
+        Ok(())
+    }
+
+    #[test]
+    fn parses_format_25_indices() -> Result<(), FontError> {
+        let mut data = post_header(0x0002_5000, 0, 0);
+        data.extend_from_slice(&2u16.to_be_bytes()); // num_glyphs
+        data.push(1);
+        data.push(0xFF);
+        let table = parse_post(&data).ok_or(FontError::InvalidFont("post 2.5".into()))?;
+        assert_eq!(table.glyph_name(0, 2), Some(".null"));
+        assert_eq!(table.glyph_name(1, 2), Some(".notdef"));
+        Ok(())
+    }
+
+    #[test]
+    fn rejects_bad_format_25_ranges() -> Result<(), FontError> {
+        let mut data = post_header(0x0002_5000, 0, 0);
+        data.extend_from_slice(&500u16.to_be_bytes()); // too many glyphs
+        let table = parse_post(&data).ok_or(FontError::InvalidFont("post 2.5 empty".into()))?;
+        assert!(table.glyph_indices.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn unknown_format_has_no_names() -> Result<(), FontError> {
+        let data = post_header(0x0003_0000, 0, 0);
+        let table = parse_post(&data).ok_or(FontError::InvalidFont("post unknown".into()))?;
+        assert_eq!(table.glyph_name(0, 2), Some(".notdef"));
+        Ok(())
+    }
+}

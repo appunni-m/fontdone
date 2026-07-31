@@ -413,3 +413,41 @@ fn build_direction_chain(hints: &mut GlyphHints, units_per_em: i32) {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn hypot_approximates_absolutes() {
+        assert_eq!(ft_hypot(3, 4), 4 + 1); // 4 + 3*3/8 = 5 with integer math
+        assert_eq!(ft_hypot(0, 0), 0);
+        assert_eq!(ft_hypot(10, 0), 10);
+        assert_eq!(ft_hypot(0, -10), 10);
+        assert_eq!(ft_hypot(-6, -8), 10);
+    }
+
+    #[test]
+    fn corner_flatness_classification() {
+        // Collinear vectors are flat.
+        assert!(corner_is_flat(100, 0, 100, 0));
+        // A sharp turn is not flat.
+        assert!(!corner_is_flat(100, 0, 0, 100));
+        // A small balanced corner is not flat (rounded threshold is 0).
+        assert!(!corner_is_flat(1, 0, 1, 0));
+    }
+
+    #[test]
+    fn direction_classification() {
+        assert_eq!(direction_compute(100, 0), Direction::Right);
+        assert_eq!(direction_compute(-100, 0), Direction::Left);
+        assert_eq!(direction_compute(0, 100), Direction::Up);
+        assert_eq!(direction_compute(0, -100), Direction::Down);
+        // Dominant axis must exceed 14x the other.
+        assert_eq!(direction_compute(15, 1), Direction::Right);
+        assert_eq!(direction_compute(14, 1), Direction::None);
+        assert_eq!(direction_compute(1, 15), Direction::Up);
+        assert_eq!(direction_compute(-15, 1), Direction::Left);
+        assert_eq!(direction_compute(0, 0), Direction::None);
+    }
+}

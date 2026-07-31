@@ -944,3 +944,146 @@ fn read_u32(data: &[u8], offset: usize) -> Option<u32> {
     let bytes: [u8; 4] = data.get(offset..end)?.try_into().ok()?;
     Some(u32::from_be_bytes(bytes))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tt::TableRecord;
+
+    fn minimal_eblc(strike_index_array_offset: u32, x_ppem: u8, y_ppem: u8) -> Vec<u8> {
+        let mut eblc = vec![0u8; 8 + 48];
+        eblc[0..4].copy_from_slice(&0x0002_0000u32.to_be_bytes()); // version 2.0
+        eblc[4..8].copy_from_slice(&1u32.to_be_bytes()); // one strike
+        eblc[8..12].copy_from_slice(&strike_index_array_offset.to_be_bytes());
+        eblc[16..20].copy_from_slice(&1u32.to_be_bytes()); // index array count
+        eblc[24] = 100; // max_before_bl
+        eblc[25] = 246; // min_after_bl as signed i8 = -10
+        eblc[52] = x_ppem;
+        eblc[53] = y_ppem;
+        eblc[54] = 1; // bit depth
+        eblc
+    }
+
+    fn directory_for(eblc: &[u8], ebdt: &[u8]) -> (Vec<u8>, TableDirectory) {
+        let mut font = vec![0u8; 12];
+        let eblc_offset = font.len();
+        font.extend_from_slice(eblc);
+        let ebdt_offset = font.len();
+        font.extend_from_slice(ebdt);
+        let directory = TableDirectory {
+            records: vec![
+                TableRecord {
+                    tag: tag(b"EBLC"),
+                    offset: eblc_offset as u32,
+                    length: eblc.len() as u32,
+                },
+                TableRecord {
+                    tag: tag(b"EBDT"),
+                    offset: ebdt_offset as u32,
+                    length: ebdt.len() as u32,
+                },
+            ],
+        };
+        (font, directory)
+    }
+
+    fn parse_ok(font: &[u8], directory: &TableDirectory, label: &str) -> SbitTable {
+        match parse_sbit(directory, font) {
+            Some(table) => table,
+            None => panic!("{label}: sbit table rejected"),
+        }
+    }
+
+    #[test]
+    fn parses_strikes_and_metrics() {
+        let eblc = minimal_eblc(0, 12, 10);
+        let (font, directory) = directory_for(&eblc, &[0x00, 0x01]);
+        let sbit = parse_ok(&font, &directory, "valid EBLC parses");
+        assert_eq!(sbit.kind(), SbitTableKind::Eblc);
+        assert_eq!(sbit.strike_count(), 1);
+        let metrics = match sbit.strike_metrics(0) {
+            Some(metrics) => metrics,
+            None => panic!("strike metrics missing"),
+        };
+        assert_eq!(metrics.x_ppem, 12);
+        assert_eq!(metrics.y_ppem, 10);
+        assert!(sbit.has_strike(12, 10));
+        assert!(!sbit.has_strike(20, 10));
+        assert!(sbit.strike_metrics(1).is_none());
+    }
+
+    #[test]
+    fn rejects_missing_or_invalid_tables() {
+        let (font, directory) = directory_for(&[0u8; 8], &[]);
+        assert!(parse_sbit(&directory, &font).is_none()); // empty EBDT
+        let eblc = minimal_eblc(0, 12, 10);
+        let mut bad_version = eblc.clone();
+        bad_version[0..4].copy_from_slice(&0x0001_0000u32.to_be_bytes());
+        let (font, directory) = directory_for(&bad_version, &[0x00, 0x01]);
+        assert!(parse_sbit(&directory, &font).is_none());
+        let mut many_strikes = eblc;
+        many_strikes[4..8].copy_from_slice(&0x1_0000u32.to_be_bytes());
+        let (font, directory) = directory_for(&many_strikes, &[0x00, 0x01]);
+        assert!(parse_sbit(&directory, &font).is_none());
+        let (font, empty_directory) = (Vec::new(), TableDirectory { records: vec![] });
+        assert!(parse_sbit(&empty_directory, &font).is_none());
+    }
+
+    #[test]
+    fn load_glyph_rejects_missing_strike() {
+        let eblc = minimal_eblc(0, 12, 10);
+        let (font, directory) = directory_for(&eblc, &[0x00, 0x01]);
+        let sbit = parse_ok(&font, &directory, "valid EBLC parses");
+        let error = match sbit.load_glyph(1, 20, 10, 0) {
+            Err(error) => error,
+            Ok(_) => panic!("missing strike should fail"),
+        };
+        assert!(error.to_string().contains("strike not selected"));
+    }
+
+    #[test]
+    fn metric_readers_and_bit_depth_layout() {
+        let small = match read_small_metrics(&[10, 20, 0xFF, 2, 30]) {
+            Ok(metrics) => metrics,
+            Err(error) => panic!("small metrics rejected: {error}"),
+        };
+        assert_eq!(small.height, 640);
+        assert_eq!(small.width, 1280);
+        assert_eq!(small.hori_bearing_x, -64);
+        assert_eq!(small.hori_bearing_y, 128);
+        assert_eq!(small.hori_advance, 1920);
+        assert_eq!(small.vert_advance, 0);
+        assert!(read_small_metrics(&[0; 4]).is_err());
+
+        let big = match read_big_metrics(&[1, 2, 3, 4, 5, 6, 7, 8]) {
+            Ok(metrics) => metrics,
+            Err(error) => panic!("big metrics rejected: {error}"),
+        };
+        assert_eq!(big.height, 64);
+        assert_eq!(big.vert_bearing_x, 384);
+        assert_eq!(big.vert_advance, 512);
+        assert!(read_big_metrics(&[0; 7]).is_err());
+
+        assert_eq!(metric_dimension(128), 2);
+        let mono = match bitmap_layout_for_bit_depth(1, 9) {
+            Ok(layout) => layout,
+            Err(error) => panic!("mono layout rejected: {error}"),
+        };
+        assert_eq!(mono, (SbitPixelMode::Mono, 2, 2));
+        let gray = match bitmap_layout_for_bit_depth(8, 4) {
+            Ok(layout) => layout,
+            Err(error) => panic!("gray layout rejected: {error}"),
+        };
+        assert_eq!(gray, (SbitPixelMode::Gray, 4, 256));
+        assert!(bitmap_layout_for_bit_depth(3, 4).is_err());
+    }
+
+    #[test]
+    fn eblc_versions() {
+        assert!(valid_eblc_version(0x0002_0000));
+        assert!(valid_eblc_version(0x0003_0000));
+        assert!(valid_eblc_version(0x0000_0200));
+        assert!(!valid_eblc_version(0x0001_0000));
+        assert!(!valid_eblc_version(0x0000_0100));
+    }
+}

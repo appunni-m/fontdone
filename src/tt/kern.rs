@@ -78,3 +78,66 @@ fn parse_format0(subtable: &[u8], pairs: &mut Vec<KernPair>) {
         });
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn parse_ok(data: &[u8], label: &str) -> KernTable {
+        match parse_kern(data) {
+            Ok(table) => table,
+            Err(error) => panic!("{label}: {error}"),
+        }
+    }
+
+    fn format0_subtable(pairs: &[(u16, u16, i16)]) -> Vec<u8> {
+        let mut bytes = vec![0, 0, 0, 0, 0, 1]; // version 0, length, coverage=1 (horizontal)
+        bytes.extend_from_slice(&(pairs.len() as u16).to_be_bytes());
+        bytes.extend_from_slice(&[0; 6]); // searchRange, entrySelector, rangeShift
+        for (left, right, value) in pairs {
+            bytes.extend_from_slice(&left.to_be_bytes());
+            bytes.extend_from_slice(&right.to_be_bytes());
+            bytes.extend_from_slice(&value.to_be_bytes());
+        }
+        let length = bytes.len() as u16;
+        bytes[2..4].copy_from_slice(&length.to_be_bytes());
+        bytes
+    }
+
+    #[test]
+    fn parses_horizontal_format0_pairs() {
+        let mut data = vec![0, 0, 0, 1]; // version 0, one subtable
+        let subtable = format0_subtable(&[(65, 66, -40), (66, 65, 10)]);
+        data.extend_from_slice(&subtable);
+        let table = parse_ok(&data, "valid kern parses");
+        assert!(!table.is_empty());
+        assert_eq!(table.get(65, 66), -40);
+        assert_eq!(table.get(66, 65), 10);
+        assert_eq!(table.get(65, 67), 0);
+    }
+
+    #[test]
+    fn rejects_short_and_ignores_non_horizontal_tables() {
+        assert!(parse_kern(&[0, 0]).is_err());
+        assert!(parse_kern(&[0, 0, 0, 0]).is_ok());
+        // Coverage bits 0-1 select vertical/horizontal; bit 0 clear means
+        // the format-0 horizontal branch is skipped.
+        let mut data = vec![0, 0, 0, 1];
+        let mut subtable = vec![0u8; 20];
+        subtable[4] = 0; // coverage = 0 -> not horizontal
+        data.extend_from_slice(&(subtable.len() as u16).to_be_bytes());
+        data.extend_from_slice(&subtable);
+        let table = parse_ok(&data, "non-horizontal kern parses empty");
+        assert!(table.is_empty());
+    }
+
+    #[test]
+    fn stops_on_malformed_subtable() {
+        let mut data = vec![0, 0, 0, 1];
+        // Header with length 10 (< 14) causes parsing to stop.
+        data.extend_from_slice(&10u16.to_be_bytes());
+        data.extend_from_slice(&[0; 6]);
+        let table = parse_ok(&data, "malformed subtable stops cleanly");
+        assert!(table.is_empty());
+    }
+}
