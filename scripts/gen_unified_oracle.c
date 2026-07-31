@@ -27826,6 +27826,78 @@ static int emit_face_properties_case(int argc, char** argv) {
     return 0;
 }
 
+static int emit_face_properties_render_case(int argc, char** argv) {
+    if (argc != 10) {
+        fprintf(stderr,
+                "--face-properties-render-case requires case_id source_kind "
+                "source_value face_index size_ppem glyph_index load_flags seeds_csv\n");
+        return 2;
+    }
+    const char* case_id = argv[2];
+    if (!streq(case_id, "ftparams.FT_PARAM_TAG_RANDOM_SEED.valid_seed_sets_face_property")) {
+        fprintf(stderr, "unsupported face properties render case: %s\n", case_id);
+        return 2;
+    }
+    OracleFace face = {0};
+    int opened = open_oracle_face(argv[3], argv[4], atol(argv[5]), &face);
+    if (opened) {
+        return opened;
+    }
+    FT_UInt size_ppem = (FT_UInt)strtoul(argv[6], NULL, 10);
+    FT_UInt glyph_index = (FT_UInt)strtoul(argv[7], NULL, 10);
+    FT_Int32 load_flags = (FT_Int32)strtol(argv[8], NULL, 10);
+    char seed_tokens[16][64];
+    int seed_count = parse_csv_tokens(argv[9], seed_tokens, 16);
+    if (seed_count <= 0) {
+        fprintf(stderr, "face properties render case requires at least one seed\n");
+        close_oracle_face(&face);
+        return 2;
+    }
+
+    FT_Error error = FT_Set_Pixel_Sizes(face.face, 0, size_ppem);
+    FT_Int32 observed_seeds[16] = {0};
+    FT_Int32 observed_random_seeds[16] = {0};
+    if (!error) {
+        for (int index = 0; index < seed_count; index++) {
+            FT_Int32 seed = (FT_Int32)strtol(seed_tokens[index], NULL, 10);
+            FT_Parameter property = {FT_PARAM_TAG_RANDOM_SEED, &seed};
+            error = FT_Face_Properties(face.face, 1, &property);
+            if (error) {
+                break;
+            }
+            observed_seeds[index] = seed;
+            observed_random_seeds[index] =
+                face.face->internal ? face.face->internal->random_seed : -9999;
+        }
+    }
+    if (!error) {
+        error = FT_Load_Glyph(face.face, glyph_index, load_flags);
+    }
+
+    printf("{");
+    print_status(error);
+    if (error) {
+        printf(",\"output\":null}\n");
+    } else {
+        printf(",\"output\":{\"return\":%d,\"face_random_seed\":%d,\"seed_states\":[",
+               error,
+               face.face->internal ? face.face->internal->random_seed : -9999);
+        for (int index = 0; index < seed_count; index++) {
+            if (index) {
+                printf(",");
+            }
+            printf("{\"requested\":%d,\"random_seed\":%d}",
+                   observed_seeds[index],
+                   observed_random_seeds[index]);
+        }
+        printf("],\"post_call_slot\":{");
+        print_slot_body(face.face->glyph, glyph_index);
+        printf("}}}\n");
+    }
+    close_oracle_face(&face);
+    return 0;
+}
+
 static void print_bdf_property_atom(const char* value) {
     printf("{\"null\":");
     print_json_bool(value == NULL);
@@ -35612,6 +35684,9 @@ static int dispatch(int argc, char** argv) {
     }
     if ((argc == 3 || argc == 6) && streq(argv[1], "--face-properties-case")) {
         return emit_face_properties_case(argc, argv);
+    }
+    if (argc == 10 && streq(argv[1], "--face-properties-render-case")) {
+        return emit_face_properties_render_case(argc, argv);
     }
     if (argc == 6 && streq(argv[1], "--bdf-property-case")) {
         return emit_bdf_property_case(argc, argv);

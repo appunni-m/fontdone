@@ -3866,6 +3866,13 @@ def ftglyph_subsystem_pending_reason(row: ConcreteInput) -> str | None:
 def ftparams_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     """Rows for FT_Open_Args parameters that do not have a maintained route."""
     if (
+        row.case_id == "ftparams.FT_PARAM_TAG_RANDOM_SEED.valid_seed_sets_face_property"
+        and row.operation == "freetype.face_properties_then_render"
+        and row.params.get("runtime_route") == "actual_face_properties_random_seed"
+        and unresolved_assets_reason(row) is None
+    ):
+        return None
+    if (
         row.case_id
         == "ftparams.FT_PARAM_TAG_INCREMENTAL.incremental_interface_used_for_glyph_load"
         and row.operation == "ftincrem.incremental_state_lifecycle"
@@ -3935,6 +3942,22 @@ def ftparams_incremental_real_parity_reason(row: ConcreteInput) -> str | None:
             "through glyph-data acquisition, horizontal and vertical metric "
             "seed/override callbacks, public slot publication, and matching "
             "release across pinned C, Rust FFI, C ABI, and WASM ABI"
+        )
+    return None
+
+
+def ftparams_face_properties_real_parity_reason(row: ConcreteInput) -> str | None:
+    if (
+        row.case_id == "ftparams.FT_PARAM_TAG_RANDOM_SEED.valid_seed_sets_face_property"
+        and row.operation == "freetype.face_properties_then_render"
+        and row.params.get("runtime_route") == "actual_face_properties_random_seed"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_PARAM_TAG_RANDOM_SEED applies both valid and negative FT_Int32 "
+            "values, exposes the pinned C normalized face-internal state, and "
+            "compares the unchanged post-load CFF slot through pinned C, Rust "
+            "FFI, C ABI, and WASM ABI"
         )
     return None
 
@@ -8644,6 +8667,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     ftparams_incremental_reason = ftparams_incremental_real_parity_reason(row)
     if ftparams_incremental_reason:
         return ("real-parity", ftparams_incremental_reason)
+    ftparams_face_properties_reason = ftparams_face_properties_real_parity_reason(row)
+    if ftparams_face_properties_reason:
+        return ("real-parity", ftparams_face_properties_reason)
     ftparams_pending = ftparams_subsystem_pending_reason(row)
     if ftparams_pending:
         return ("pending-route", ftparams_pending)

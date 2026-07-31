@@ -66,9 +66,8 @@
           "cff_font": {
             "kind": "ref",
             "role": "font",
-            "path": "input/fonts/cff/randomized-cff.otf",
-            "status": "required_future_asset",
-            "requires": "CFF, Type1, or CID face whose driver observes face->internal->random_seed"
+            "id": "input/fonts/cff/pure-cff-cubic.otf",
+            "requirements": "Reviewed tracked CFF fixture; pinned CFF output is unchanged by random_seed while the internal value is observable through the maintained parity probe."
           }
         },
         "params": {
@@ -92,7 +91,8 @@
             "load_flags": [
               "FT_LOAD_DEFAULT"
             ]
-          }
+          },
+          "runtime_route": "actual_face_properties_random_seed"
         }
       },
       "classifiers": [
@@ -105,6 +105,7 @@
         "output_shape": {
           "return": "FT_Error",
           "face_random_seed": "FT_Int32 internal snapshot if runner can expose it",
+          "seed_states": "requested and normalized internal FT_Int32 values",
           "post_call_slot": "public glyph slot fields"
         },
         "compare": {
@@ -116,7 +117,7 @@
           ]
         },
         "fixture_requirements": [
-          "Add a driver/font probe where random_seed changes observable output or expose a C-side internal snapshot for parity only."
+          "Use the reviewed tracked CFF fixture and compare the C-side internal seed snapshot plus unchanged post-call slot output."
         ]
       }
     },

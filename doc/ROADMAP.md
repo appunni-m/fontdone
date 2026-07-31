@@ -26,14 +26,16 @@ check, or a route that silently executes another frontend.
 > `c-abi-contract`, `fmt`, `clippy`, and `check-docs`, then commit the
 > milestone and rerun the full `make test-parity` gate. Run
 > `make test-coverage-all` only after parity routes are complete and drive
-> lines, branches, functions, and regions to 100%. Do not use native C at
-> runtime, weaken expectations, hide failures in fixtures, publish packages,
-> or create issues. Finish only when pending routes are zero, every parity
+> lines, branches, functions, and regions to 100%. Then run
+> `make bench-regression` and `make record-performance-baseline` to preserve a
+> reproducible performance baseline. Do not use native C at runtime, weaken
+> expectations, hide failures in fixtures, publish packages, or create issues.
+> Finish only when pending routes are zero, every parity
 > case passes, all 218 functions have four-lane evidence, all 12 C-contract
 > categories are complete, `make c-abi-contract-complete` passes, the evidence
-> and documentation are source-bound, and the worktree is clean. Report the
-> exact command, commit, evidence artifact, and remaining count after every
-> milestone.
+> and documentation are source-bound, a performance baseline is recorded, and
+> the worktree is clean. Report the exact command, commit, evidence artifact,
+> and remaining count after every milestone.
 
 ## 1. Goal G01: complete the pinned C contract
 

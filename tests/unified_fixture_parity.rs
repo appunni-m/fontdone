@@ -4755,6 +4755,172 @@ fn wasm_face_properties_output(handle: usize, err: FT_Error) -> Result<RunOutput
     })))
 }
 
+fn face_properties_random_seed_values(params: &Value) -> Result<Vec<i32>, String> {
+    let properties = params
+        .get("properties")
+        .and_then(Value::as_array)
+        .ok_or_else(|| "missing face-properties properties array".to_string())?;
+    properties
+        .iter()
+        .map(|property| {
+            let tag = property
+                .get("tag")
+                .and_then(Value::as_str)
+                .ok_or_else(|| "missing face-property tag".to_string())?;
+            if tag != "FT_PARAM_TAG_RANDOM_SEED" {
+                return Err(format!("unexpected face-property tag {tag}"));
+            }
+            let value = property
+                .get("data")
+                .ok_or_else(|| "missing random-seed property data".to_string())?;
+            let value = i64_value(value, "random-seed property data")?;
+            i32::try_from(value)
+                .map_err(|err| format!("random-seed property data does not fit i32: {err}"))
+        })
+        .collect()
+}
+
+fn face_properties_post_probe(params: &Value) -> Result<(u32, u32, u32, i32), String> {
+    let probe = params
+        .get("post_call_probe")
+        .ok_or_else(|| "missing face-properties post_call_probe".to_string())?;
+    let (pixel_width, pixel_height) = pixel_size_param(probe)?;
+    Ok((
+        pixel_width,
+        pixel_height,
+        glyph_index_param(probe)?,
+        load_flags_param(probe)?,
+    ))
+}
+
+fn face_properties_random_seed_output(
+    final_state: FT_Face_Properties_State,
+    seed_states: Vec<Value>,
+    post_call_slot: Value,
+) -> RunOutput {
+    ok(json!({
+        "return": FT_Err_Ok,
+        "face_random_seed": final_state.random_seed,
+        "seed_states": seed_states,
+        "post_call_slot": post_call_slot
+    }))
+}
+
+fn rust_face_properties_random_seed(case: &InputCase) -> Result<RunOutput, String> {
+    let (pixel_width, pixel_height, glyph_index, load_flags) =
+        face_properties_post_probe(&case.inputs.params)?;
+    let seed_values = face_properties_random_seed_values(&case.inputs.params)?;
+    let mut face = open_face(case)?;
+    let size_error = FT_Set_Pixel_Sizes(&mut face, pixel_width, pixel_height);
+    if size_error != FT_Err_Ok {
+        return Ok(error(size_error));
+    }
+    let mut seed_states = Vec::with_capacity(seed_values.len());
+    for seed in seed_values {
+        let property = FT_Face_Property {
+            tag: FT_PARAM_TAG_RANDOM_SEED as FT_ULong,
+            value: Some(FT_Face_Property_Value::Int32(seed)),
+        };
+        let property_error =
+            FT_Face_Properties(Some(&mut face), Some(std::slice::from_ref(&property)));
+        if property_error != FT_Err_Ok {
+            return Ok(error(property_error));
+        }
+        let state = FT_Face_Properties_Get_State(&face);
+        seed_states.push(json!({
+            "requested": seed,
+            "random_seed": state.random_seed
+        }));
+    }
+    let post_call_slot = match FT_Load_Glyph(&face, glyph_index, load_flags) {
+        Ok(slot) => slot_json(&slot),
+        Err(err) => return Ok(error(err)),
+    };
+    Ok(face_properties_random_seed_output(
+        FT_Face_Properties_Get_State(&face),
+        seed_states,
+        post_call_slot,
+    ))
+}
+
+fn c_face_properties_random_seed(case: &InputCase) -> Result<RunOutput, String> {
+    let (pixel_width, pixel_height, glyph_index, load_flags) =
+        face_properties_post_probe(&case.inputs.params)?;
+    let seed_values = face_properties_random_seed_values(&case.inputs.params)?;
+    let (library, face) = c_open_face_with_size(case, (pixel_width, pixel_height))?;
+    let output = (|| {
+        let mut seed_states = Vec::with_capacity(seed_values.len());
+        for seed in seed_values {
+            let mut value = seed;
+            let mut property = c_abi::FT_Parameter {
+                tag: FT_PARAM_TAG_RANDOM_SEED as c_abi::FT_ULong,
+                data: (&mut value as *mut c_abi::FT_Int32).cast(),
+            };
+            let property_error = c_abi::FT_Face_Properties(face, 1, &mut property);
+            if property_error != FT_Err_Ok {
+                return Ok(error(property_error));
+            }
+            let state = c_abi::abi_face_properties_state(face)
+                .ok_or_else(|| "missing C ABI random-seed face state".to_string())?;
+            seed_states.push(json!({
+                "requested": seed,
+                "random_seed": state.random_seed
+            }));
+        }
+        let load_error = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
+        if load_error != FT_Err_Ok {
+            return Ok(error(load_error));
+        }
+        let post_call_slot = c_slot_json(face)?;
+        let final_state = c_abi::abi_face_properties_state(face)
+            .ok_or_else(|| "missing C ABI final random-seed face state".to_string())?;
+        Ok(face_properties_random_seed_output(
+            final_state,
+            seed_states,
+            post_call_slot,
+        ))
+    })();
+    c_done_face(face);
+    c_done_library(library);
+    output
+}
+
+fn wasm_face_properties_random_seed(case: &InputCase) -> Result<RunOutput, String> {
+    let (pixel_width, pixel_height, glyph_index, load_flags) =
+        face_properties_post_probe(&case.inputs.params)?;
+    let seed_values = face_properties_random_seed_values(&case.inputs.params)?;
+    let handle = wasm_open_face_with_size(case, (pixel_width, pixel_height))?;
+    let output = (|| {
+        let mut seed_states = Vec::with_capacity(seed_values.len());
+        for seed in seed_values {
+            let property_error = wasm_abi::fontdone_wasm_face_properties_one(handle, 2, 2, seed);
+            if property_error != FT_Err_Ok {
+                return Ok(error(property_error));
+            }
+            let state = wasm_abi::abi_face_properties_state(handle)
+                .ok_or_else(|| "missing WASM random-seed face state".to_string())?;
+            seed_states.push(json!({
+                "requested": seed,
+                "random_seed": state.random_seed
+            }));
+        }
+        let load_error = wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, load_flags);
+        if load_error != FT_Err_Ok {
+            return Ok(error(load_error));
+        }
+        let post_call_slot = wasm_slot_json(handle)?;
+        let final_state = wasm_abi::abi_face_properties_state(handle)
+            .ok_or_else(|| "missing WASM final random-seed face state".to_string())?;
+        Ok(face_properties_random_seed_output(
+            final_state,
+            seed_states,
+            post_call_slot,
+        ))
+    })();
+    wasm_done_face(handle);
+    output
+}
+
 fn rust_get_gasp(case: &InputCase) -> Result<RunOutput, String> {
     let ppem = u32_param(&case.inputs.params, "ppem")?;
     if lifecycle_handle_param(&case.inputs.params, "face") == Some("null") {
@@ -40453,6 +40619,32 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             }
             Ok(args)
         }
+        "freetype.face_properties_then_render"
+            if case.case_id
+                == "ftparams.FT_PARAM_TAG_RANDOM_SEED.valid_seed_sets_face_property" =>
+        {
+            let mut args = vec![
+                "--face-properties-render-case".to_string(),
+                case.case_id.clone(),
+            ];
+            push_font_source(case, &mut args)?;
+            args.push(face_index_param(params)?.to_string());
+            let probe = params
+                .get("post_call_probe")
+                .ok_or_else(|| "missing face-properties post_call_probe".to_string())?;
+            let (_, pixel_height) = pixel_size_param(probe)?;
+            args.push(pixel_height.to_string());
+            args.push(glyph_index_param(probe)?.to_string());
+            args.push(load_flags_param(probe)?.to_string());
+            args.push(
+                face_properties_random_seed_values(params)?
+                    .into_iter()
+                    .map(|seed| seed.to_string())
+                    .collect::<Vec<_>>()
+                    .join(","),
+            );
+            Ok(args)
+        }
         "freetype.face_flags_after_variation"
             if case.case_id
                 == "freetype.FT_FACE_FLAG_VARIATION.face_property_variation_selection" =>
@@ -45008,6 +45200,12 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             }
         }
         "freetype.face_properties" => rust_face_properties(case),
+        "freetype.face_properties_then_render"
+            if case.case_id
+                == "ftparams.FT_PARAM_TAG_RANDOM_SEED.valid_seed_sets_face_property" =>
+        {
+            rust_face_properties_random_seed(case)
+        }
         "ftotval.open_type_validate" => rust_open_type_validate(case),
         "ftotval.open_type_free" | "ftotval.open_type_validate_then_free" => {
             rust_open_type_free(case)
@@ -45211,6 +45409,12 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_face_owned_handles(case)
         }
         "freetype.face_properties" => c_face_properties(case),
+        "freetype.face_properties_then_render"
+            if case.case_id
+                == "ftparams.FT_PARAM_TAG_RANDOM_SEED.valid_seed_sets_face_property" =>
+        {
+            c_face_properties_random_seed(case)
+        }
         "ftotval.open_type_validate" => c_open_type_validate(case),
         "ftotval.open_type_free" | "ftotval.open_type_validate_then_free" => c_open_type_free(case),
         "ftgxval.truetype_gx_validate" | "FT_TrueTypeGX_Validate" => c_gx_validation(case),
@@ -46514,6 +46718,12 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             wasm_face_owned_handles(case)
         }
         "freetype.face_properties" => wasm_face_properties(case),
+        "freetype.face_properties_then_render"
+            if case.case_id
+                == "ftparams.FT_PARAM_TAG_RANDOM_SEED.valid_seed_sets_face_property" =>
+        {
+            wasm_face_properties_random_seed(case)
+        }
         "ftotval.open_type_validate" => wasm_open_type_validate(case),
         "ftotval.open_type_free" | "ftotval.open_type_validate_then_free" => {
             wasm_open_type_free(case)
