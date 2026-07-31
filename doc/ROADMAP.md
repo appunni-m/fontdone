@@ -365,15 +365,16 @@ increase is claimed until the next full all-lane measurement**:
 | 21 | `a7db2c44a60c581298601697b536b976284c7d61` | Added project-authored deterministic AAT/GX inputs and routed eight `FT_TrueTypeGX_Validate` table-length/index rows through pinned C, Rust FFI, C ABI, and WASM. Clean full parity run `a5b5421a-ad05-4d3f-9082-bcccda2cc1c8` passed 7,255 / 7,255 runnable comparisons with 52 explicitly pending concrete cases; clean C-ABI scorecard run `7f7133e5-4cf2-4c9c-b238-4beb5a9ba5b8` reports C01 runtime rows 5,007 / 5,047 with 40 pending. |
 | 22 | `2f05af7f3f3fd767ecc04679fce58abc9781af2b` | Routed `FT_GLYPH_FORMAT_SVG.unsupported_svg_build_classification` through a same-input pinned-C SVG feature/load probe and exact Rust FFI, C ABI, and WASM observations. Clean full parity run `ef1090a4-3ed3-493f-aaa5-0d83d9853078` passed 7,256 / 7,256 runnable comparisons with 51 explicitly pending concrete cases; clean C-ABI scorecard run `90455200-661a-4be1-b6f3-994b5a70724e` reports C01 runtime rows 5,008 / 5,047 with 39 pending. |
 | 23 | `abb16646c6bbb93be42b4b967037a38ad90fbb07` | Routed `FT_LOAD_SVG_ONLY.svg_only_behavior` with the project-authored SVG/non-SVG pair fixture through a same-input pinned-C oracle and exact Rust FFI, C ABI, and WASM observations: SVG glyph success includes slot format/document hash, while the non-SVG glyph preserves the public rejection error. Clean full parity run `3f342b8e-f106-4054-a33e-6fab40d29ce6` passed 7,257 / 7,257 runnable comparisons with 50 explicitly pending concrete cases; clean C-ABI scorecard run `e54a80df-e416-46d2-ac15-9eb4374f9c23` reports C01 runtime rows 5,009 / 5,047 with 38 pending. |
+| 24 | `e46451e6a74f20b57a3a421003db701d487341d5` | Routed both `FT_SVG_DocumentRec` payload/metrics rows through the project-authored OT-SVG fixture and exact pinned-C, Rust FFI, C ABI, and WASM observations. Focused run `0277b598-09cc-4413-b62c-5f8c5acc6ad5` passed all three selected cases; clean full parity run `d00e188b-7dc6-4593-9f69-92c47d56f8f7` passed 7,259 / 7,259 runnable comparisons with 48 explicitly pending concrete cases; clean C-ABI scorecard run `96e536da-be0f-413a-829f-b195c2525064` reports C01 runtime rows 5,011 / 5,047 with 36 pending. |
 
 The latest clean parity-only verification is Coverage MCP run
-`3f342b8e-f106-4054-a33e-6fab40d29ce6` after the SVG-only glyph-pair route:
-7,257 / 7,257 runnable comparisons passed, 0 failed, and 50 remain explicitly
-pending. The same run reported 4,128 covered manifest cases, 4,258 logical
+`d00e188b-7dc6-4593-9f69-92c47d56f8f7` after the SVG document-record routes:
+7,259 / 7,259 runnable comparisons passed, 0 failed, and 48 remain explicitly
+pending. The same run reported 4,130 covered manifest cases, 4,258 logical
 cases, and 7,307 concrete cases; all 218 function routes were present in each
 of Rust, C ABI, and WASM. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json` and records a clean worktree at
-`abb16646c6bbb93be42b4b967037a38ad90fbb07`. Full coverage is intentionally deferred
+`e46451e6a74f20b57a3a421003db701d487341d5`. Full coverage is intentionally deferred
 until a larger set of focused batches is ready, because the maintained
 all-lane pass takes roughly 50 minutes.
 
