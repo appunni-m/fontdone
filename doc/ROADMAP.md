@@ -357,11 +357,12 @@ increase is claimed until the next full all-lane measurement**:
 | 13 | `466799d94680e8707f7f665dec4da98b31ff051a` | Replaced the `FT_Raster_New_Func` out-of-memory placeholder with a pinned-C callback failure probe; Rust FFI, C ABI, and WASM now agree on `FT_Err_Out_Of_Memory`, the `raster_new` event, and no installed module. |
 | 14 | `e29819f5812ac521fd78b1e90e52f080cd17124a` | Routed the maintained `FT_Raster_Set_Mode_Func` matrix through pinned-C callbacks; mode tags, null/non-null payloads, callback status propagation, and callback invocation now agree across Rust FFI, C ABI, and WASM. |
 | 15 | `8eed8f2f22288e53429503bed169d2b8608cc10e` | Routed the maintained `FT_Raster_Funcs` callback-slot matrix through live pinned-C class tables and Rust FFI, C ABI, and WASM observations for standard, grays, SDF, and bitmap-SDF renderers. |
+| 16 | `bc4513a6e712d53b047e4fdc21f0814f8f83d0be` | Routed the maintained `FT_GLYPH_FORMAT_PLOTTER` source-emitter inventory through pinned-C, Rust FFI, C ABI, and WASM renderer lookup; the pinned module set has no runtime plotter emitter. |
 
 The latest clean parity-only verification is Coverage MCP run
-`71a991ac-1ec2-4d37-8bd4-25d15107ac72` against source commit
-`8eed8f2f22288e53429503bed169d2b8608cc10e`: 7,238 / 7,238 runnable
-comparisons passed, 0 failed, and 69 remain explicitly pending. The committed
+`ece66f53-4a8e-4349-9867-e50f6d86b782` against source commit
+`bc4513a6e712d53b047e4fdc21f0814f8f83d0be`: 7,239 / 7,239 runnable
+comparisons passed, 0 failed, and 68 remain explicitly pending. The committed
 source-digest attestation is
 `doc/runtime_parity_evidence.json`. Full coverage is intentionally deferred
 until a larger set of focused batches is ready, because the maintained
