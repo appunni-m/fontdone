@@ -1086,4 +1086,62 @@ mod tests {
         assert!(!valid_eblc_version(0x0001_0000));
         assert!(!valid_eblc_version(0x0000_0100));
     }
+
+    fn eblc_with_subtable(
+        index_array_offset: u32,
+        first_glyph: u16,
+        last_glyph: u16,
+        index_format: u16,
+        image_format: u16,
+    ) -> Vec<u8> {
+        // EBLC header: version, numStrikes, strike record, then the index
+        // subtable array (one entry) and the index subtable.
+        let mut eblc = Vec::new();
+        eblc.extend_from_slice(&0x0002_0000u32.to_be_bytes());
+        eblc.extend_from_slice(&1u32.to_be_bytes());
+        eblc.extend_from_slice(&0u32.to_be_bytes()); // index array offset (patched)
+        eblc.extend_from_slice(&1u32.to_be_bytes()); // index array count
+        eblc.extend_from_slice(&[0; 11]); // strike record paddings
+        eblc.extend_from_slice(&[0; 34]);
+        eblc[54] = 12; // x_ppem
+        eblc[55] = 12; // y_ppem
+        eblc[56] = 1; // bit depth
+        // Index subtable array starts at byte 58.
+        let subtable_offset = 58 + 8;
+        eblc.extend_from_slice(&first_glyph.to_be_bytes());
+        eblc.extend_from_slice(&last_glyph.to_be_bytes());
+        eblc.extend_from_slice(&(subtable_offset as u32).to_be_bytes());
+        // Index subtable header.
+        eblc.extend_from_slice(&index_format.to_be_bytes());
+        eblc.extend_from_slice(&image_format.to_be_bytes());
+        eblc.extend_from_slice(&0u32.to_be_bytes()); // image data offset
+        // Patch the strike's index array offset.
+        eblc[8..12].copy_from_slice(&index_array_offset.to_be_bytes());
+        eblc
+    }
+
+    #[test]
+    fn find_image_misses_out_of_range_glyph() {
+        let eblc = eblc_with_subtable(58, 1, 2, 1, 1);
+        let (font, directory) = directory_for(&eblc, &[0x00, 0x01]);
+        let sbit = parse_ok(&font, &directory, "valid EBLC parses");
+        let error = match sbit.load_glyph(5, 12, 12, 0) {
+            Err(error) => error,
+            Ok(_) => panic!("out-of-range glyph should report missing bitmap"),
+        };
+        assert!(error.to_string().contains("bitmap"));
+    }
+
+    #[test]
+    fn find_image_reports_missing_range_array() {
+        // Index array offset points past the EBLC data.
+        let eblc = eblc_with_subtable(0, 1, 2, 1, 1);
+        let (font, directory) = directory_for(&eblc, &[0x00, 0x01]);
+        let sbit = parse_ok(&font, &directory, "valid EBLC parses");
+        let error = match sbit.load_glyph(1, 12, 12, 0) {
+            Err(error) => error,
+            Ok(_) => panic!("missing range array should fail"),
+        };
+        assert!(error.to_string().contains("bitmap"));
+    }
 }

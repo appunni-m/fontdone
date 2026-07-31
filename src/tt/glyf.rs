@@ -993,4 +993,102 @@ mod tests {
         assert_eq!(core.x, 5);
         assert_eq!(core.y, 6);
     }
+
+    #[test]
+    fn parses_composite_components_with_transforms() -> Result<(), FontError> {
+        // Two components: the first with word args + 2x2 transform and
+        // MORE_COMPONENTS set; the second a terminal scale component.
+        let mut data = Vec::new();
+        let flags1 = ARG_1_AND_2_ARE_WORDS
+            | ARGS_ARE_XY_VALUES
+            | WE_HAVE_A_TWO_BY_TWO
+            | MORE_COMPONENTS
+            | USE_MY_METRICS;
+        data.extend_from_slice(&flags1.to_be_bytes());
+        data.extend_from_slice(&10u16.to_be_bytes()); // glyph index
+        data.extend_from_slice(&100i16.to_be_bytes());
+        data.extend_from_slice(&(-50i16).to_be_bytes());
+        data.extend_from_slice(&0x4000i16.to_be_bytes()); // xx
+        data.extend_from_slice(&0x2000i16.to_be_bytes()); // yx
+        data.extend_from_slice(&0x1000i16.to_be_bytes()); // xy
+        data.extend_from_slice(&0x4000i16.to_be_bytes()); // yy
+
+        let flags2 = ARGS_ARE_XY_VALUES | WE_HAVE_A_SCALE;
+        data.extend_from_slice(&flags2.to_be_bytes());
+        data.extend_from_slice(&20u16.to_be_bytes());
+        data.push(5); // byte arg1
+        data.push(250); // byte arg2 = -6
+        data.extend_from_slice(&0x2000i16.to_be_bytes()); // scale
+
+        let parsed = parse_composite_components(&data, 0, false)?;
+        assert_eq!(parsed.components.len(), 2);
+        assert_eq!(parsed.components[0].glyph_index, 10);
+        assert_eq!(parsed.components[0].arg1, 100);
+        assert_eq!(parsed.components[0].arg2, -50);
+        assert!(parsed.components[0].args_are_xy);
+        assert!(parsed.components[0].use_my_metrics);
+        assert_eq!(parsed.components[0].transform.xx, 0x4000 * 4);
+        assert_eq!(parsed.components[0].transform.yx, 0x2000 * 4);
+        assert_eq!(parsed.components[0].transform.xy, 0x1000 * 4);
+        assert_eq!(parsed.components[0].transform.yy, 0x4000 * 4);
+        assert!(parsed.components[1].args_are_xy);
+        assert_eq!(parsed.components[1].arg1, 5);
+        assert_eq!(parsed.components[1].arg2, -6);
+        assert_eq!(parsed.components[1].transform.xx, 0x2000 * 4);
+        assert_eq!(parsed.components[1].transform.yy, 0x2000 * 4);
+        assert!(parsed.instructions.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn composite_instruction_parsing_and_errors() -> Result<(), FontError> {
+        // Terminal component with instructions: one byte then a zero-length
+        // instruction stream.
+        let mut data = Vec::new();
+        data.extend_from_slice(&(ARGS_ARE_XY_VALUES | WE_HAVE_INSTRUCTIONS).to_be_bytes());
+        data.extend_from_slice(&1u16.to_be_bytes());
+        data.push(3);
+        data.push(4);
+        data.extend_from_slice(&0u16.to_be_bytes()); // instruction length
+        let parsed = parse_composite_components(&data, 0, true)?;
+        assert_eq!(parsed.components.len(), 1);
+        assert!(parsed.instructions.is_empty());
+
+        // Truncated header.
+        let error = match parse_composite_components(&[0u8; 3], 0, false) {
+            Err(error) => error,
+            Ok(_) => panic!("short composite header should fail"),
+        };
+        assert!(error.to_string().contains("composite header overflow"));
+
+        // Component args extend past the end.
+        let mut data = Vec::new();
+        data.extend_from_slice(&ARG_1_AND_2_ARE_WORDS.to_be_bytes());
+        data.extend_from_slice(&1u16.to_be_bytes());
+        data.extend_from_slice(&1i16.to_be_bytes());
+        let error = match parse_composite_components(&data, 0, false) {
+            Err(error) => error,
+            Ok(_) => panic!("short component should fail"),
+        };
+        assert!(error.to_string().contains("component overflow"));
+        Ok(())
+    }
+
+    #[test]
+    fn composite_xy_scale_and_byte_args() -> Result<(), FontError> {
+        let mut data = Vec::new();
+        data.extend_from_slice(&(ARGS_ARE_XY_VALUES | WE_HAVE_AN_X_Y_SCALE).to_be_bytes());
+        data.extend_from_slice(&2u16.to_be_bytes());
+        data.push(7);
+        data.push(9);
+        data.extend_from_slice(&0x3000i16.to_be_bytes()); // x scale
+        data.extend_from_slice(&0x4000i16.to_be_bytes()); // y scale
+        let parsed = parse_composite_components(&data, 0, false)?;
+        assert_eq!(parsed.components[0].arg1, 7);
+        assert_eq!(parsed.components[0].arg2, 9);
+        assert_eq!(parsed.components[0].transform.xx, 0x3000 * 4);
+        assert_eq!(parsed.components[0].transform.yy, 0x4000 * 4);
+        assert_eq!(parsed.components[0].transform.xy, 0);
+        Ok(())
+    }
 }
