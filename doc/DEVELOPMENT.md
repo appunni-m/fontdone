@@ -270,8 +270,9 @@ it wraps project-authored bytes rather than generating a font.
 
 ### 6.1 Per-commit gate
 
-Every push to `main` and every pull-request revision targeting `main` runs a
-bounded Ubuntu fast gate plus a separate MSRV check:
+Every push to `main`, every pull-request revision targeting `main`, and every
+GitHub merge-queue group runs a bounded Ubuntu fast gate plus a separate MSRV
+check:
 
 | Job | Evidence |
 |---|---|
@@ -279,8 +280,8 @@ bounded Ubuntu fast gate plus a separate MSRV check:
 | MSRV | the same fast workspace contract on Rust 1.87.0 |
 
 The stable `Commit gate` succeeds only when both jobs succeed. It is the single
-check suitable for ordinary branch protection. After creating the pinned font
-generation environment from section 1.2, run
+check suitable for ordinary branch protection and merge-queue checks. After
+creating the pinned font generation environment from section 1.2, run
 `make ci-fast PYTHON=target/font-generation-venv/bin/python` locally (`make ci`
 remains an alias when the required Python tools are already on `PATH`). Smoke
 diagnostics are retained for seven days. This gate is intentionally not a claim
