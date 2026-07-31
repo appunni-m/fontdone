@@ -3495,6 +3495,14 @@ def ftincrem_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     ):
         return None
     if (
+        row.case_id
+        == "ftincrem.FT_Incremental_InterfaceRec.open_face_stores_interface"
+        and row.operation == "ftincrem.opaque_handle_lifecycle"
+        and row.params.get("runtime_route") == "actual_incremental_interface_storage"
+        and unresolved_assets_reason(row) is None
+    ):
+        return None
+    if (
         row.case_id == "ftincrem.FT_Incremental_Metrics.null_not_passed_by_c"
         and row.operation == "ftincrem.incremental_metrics_nullness"
         and row.params.get("runtime_route") == "actual_incremental_metrics_nullness"
@@ -3611,6 +3619,20 @@ def ftincrem_real_parity_reason(row: ConcreteInput) -> str | None:
             "C ABI, and WASM compare every callback's opaque-pointer identity, "
             "callback order, and sentinel survival without dereferencing the "
             "client object"
+        )
+    if (
+        row.case_id
+        == "ftincrem.FT_Incremental_InterfaceRec.open_face_stores_interface"
+        and row.operation == "ftincrem.opaque_handle_lifecycle"
+        and row.params.get("runtime_route") == "actual_incremental_interface_storage"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_Open_Face stores the caller-owned FT_PARAM_TAG_INCREMENTAL "
+            "interface and later reaches its glyph-data callbacks; pinned C, "
+            "Rust FFI, C ABI, and WASM compare callback order, opaque-object "
+            "identity, and successful face/load completion without dereferencing "
+            "the client object"
         )
     if (
         row.case_id

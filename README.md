@@ -96,11 +96,11 @@ The last committed full parity snapshot was recorded on **2026-07-31**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,278 |
-| Passed cases | 7,278 |
+| Runnable exact-comparison cases | 7,279 |
+| Passed cases | 7,279 |
 | Failed cases | 0 |
-| Explicitly pending cases | 30 |
-| Covered manifest cases | 4,149 |
+| Explicitly pending cases | 29 |
+| Covered manifest cases | 4,150 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,259 |
@@ -162,7 +162,7 @@ The latest committed scorecard has **9 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 names, signatures, and traced function routes; 5,030 / 5,048 pinned-C runtime contract rows exact, with 18 pending |
+| Functions | 218 / 218 names, signatures, and traced function routes; 5,031 / 5,048 pinned-C runtime contract rows exact, with 17 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership, state, errors, modules, headers | Complete under their blocking scorecard measurements |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
@@ -177,7 +177,7 @@ when every bare function name has some traced route. The self-cleaning
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`f9ae84b7-5a36-40f2-a774-ebfb756f2d77`.
+`cfe2064b-914a-4e71-8665-e1b7e0fcb5cf`.
 
 ### 3.5 Performance baseline
 

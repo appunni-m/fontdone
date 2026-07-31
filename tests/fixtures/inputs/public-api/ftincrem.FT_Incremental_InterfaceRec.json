@@ -70,27 +70,30 @@
       "case_id": "ftincrem.FT_Incremental_InterfaceRec.open_face_stores_interface",
       "subject": "ftincrem.FT_Incremental_InterfaceRec",
       "case": "open_face_stores_interface",
-      "operation": "ftincrem.open_face_with_incremental_parameter",
+      "operation": "ftincrem.opaque_handle_lifecycle",
       "schema": "api_result",
       "expect_error": false,
       "inputs": {
         "assets": {
           "font": {
             "kind": "ref",
-            "id": "input/fonts/incremental/minimal-glyf-incremental.ttf"
+            "id": "input/fonts/DejaVuSans.ttf"
           }
         },
         "params": {
-          "open": "FT_Open_Face",
+          "object_cookie": "inaccessible_opaque_sentinel",
+          "callbacks": [
+            "get_glyph_data",
+            "free_glyph_data"
+          ],
           "open_args_flags": [
             "FT_OPEN_MEMORY",
             "FT_OPEN_PARAMS"
           ],
-          "parameter": {
-            "tag": "FT_PARAM_TAG_INCREMENTAL",
-            "data": "FT_Incremental_InterfaceRec*"
-          },
-          "source_behavior": "ftobjs.c stores params[i].data in face->internal->incremental_interface"
+          "face_index": 0,
+          "glyph_index": 36,
+          "load_flags": "FT_LOAD_NO_SCALE",
+          "runtime_route": "actual_incremental_interface_storage"
         }
       },
       "classifiers": [
@@ -101,23 +104,23 @@
       "expectation": {
         "status": "build_dependent",
         "output_shape": {
-          "open_error": "FT_Error",
-          "stored_interface_identity": "pointer_identity",
-          "face_has_incremental_interface": "bool"
+          "callback_events": "array<callback_event>",
+          "object_identity": "pointer_identity",
+          "dereferenced_by_freetype": "bool"
         },
         "compare": {
           "mode": "identity_class",
           "paths": [
-            "open_error",
-            "stored_interface_identity",
-            "face_has_incremental_interface"
+            "callback_events.object_identity",
+            "object_identity",
+            "dereferenced_by_freetype"
           ]
         },
         "source_refs": [
           "freetype/src/base/ftobjs.c"
         ],
         "fixture_requirements": [
-          "Requires an incremental-enabled FreeType build and a font that can be opened from memory with FT_OPEN_PARAMS."
+          "The tracked DejaVuSans.ttf is opened through FT_OPEN_MEMORY|FT_OPEN_PARAMS with FT_PARAM_TAG_INCREMENTAL. Callback execution after open proves the face retained the caller-owned interface; the opaque object identity is compared without dereference."
         ]
       }
     },
