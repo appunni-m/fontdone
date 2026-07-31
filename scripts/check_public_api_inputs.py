@@ -3891,6 +3891,11 @@ def ftimage_subsystem_pending_reason(row: ConcreteInput) -> str | None:
         and row.operation == "renderer.class_probe"
     ):
         return None
+    if (
+        row.case_id == "ftimage.FT_GLYPH_FORMAT_PLOTTER.source_emitter_inventory"
+        and row.operation == "ftimage.glyph_format_emitter_inventory"
+    ):
+        return None
 
     ftimage_rows_without_maintained_route = {
         "ftimage.FT_GLYPH_FORMAT_PLOTTER.source_emitter_inventory": (
@@ -3986,6 +3991,19 @@ def ftimage_raster_class_real_parity_reason(row: ConcreteInput) -> str | None:
             "FT_Raster_Funcs glyph-format and callback-slot presence compare through "
             "the maintained standard, grays, SDF, and bitmap-SDF renderer class "
             "probe across pinned C, Rust FFI, C ABI, and WASM ABI"
+        )
+    return None
+
+
+def ftimage_glyph_format_emitter_real_parity_reason(row: ConcreteInput) -> str | None:
+    if (
+        row.case_id == "ftimage.FT_GLYPH_FORMAT_PLOTTER.source_emitter_inventory"
+        and row.operation == "ftimage.glyph_format_emitter_inventory"
+    ):
+        return (
+            "FT_GLYPH_FORMAT_PLOTTER emitter inventory compares the pinned C, Rust "
+            "FFI, C ABI, and WASM renderer lookup; the current FreeType module set "
+            "has no renderer registered for the plotter format"
         )
     return None
 
@@ -8419,6 +8437,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     ftimage_raster_class_real = ftimage_raster_class_real_parity_reason(row)
     if ftimage_raster_class_real:
         return ("real-parity", ftimage_raster_class_real)
+    ftimage_glyph_format_emitter_real = ftimage_glyph_format_emitter_real_parity_reason(row)
+    if ftimage_glyph_format_emitter_real:
+        return ("real-parity", ftimage_glyph_format_emitter_real)
     ftimage_outline_owner_real = ftimage_outline_owner_real_parity_reason(row)
     if ftimage_outline_owner_real:
         return ("real-parity", ftimage_outline_owner_real)

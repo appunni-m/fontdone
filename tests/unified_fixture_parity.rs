@@ -29566,6 +29566,63 @@ fn wasm_get_renderer(case: &InputCase) -> Result<RunOutput, String> {
     })?))
 }
 
+fn glyph_format_emitter_inventory_output(
+    class: Option<(&'static str, FT_Glyph_Format, bool, bool)>,
+) -> Value {
+    let format = FT_GLYPH_FORMAT_PLOTTER;
+    if let Some((module_name, glyph_format, has_render_glyph, has_raster_class)) = class {
+        json!({
+            "constant_value": format,
+            "emitter_classification": "runtime-emitter",
+            "runtime_probe": {
+                "status": "renderer_present",
+                "renderer_present": true,
+                "renderer_class": {
+                    "module_name": module_name,
+                    "glyph_format": glyph_format,
+                    "has_render_glyph": has_render_glyph,
+                    "has_raster_class": has_raster_class,
+                },
+            },
+        })
+    } else {
+        json!({
+            "constant_value": format,
+            "emitter_classification": "no-runtime-emitter",
+            "runtime_probe": {
+                "status": "no_renderer_for_format",
+                "renderer_present": false,
+                "renderer_class": null,
+            },
+        })
+    }
+}
+
+fn rust_glyph_format_emitter_inventory(_case: &InputCase) -> Result<RunOutput, String> {
+    let library = FT_Init_FreeType();
+    Ok(ok(glyph_format_emitter_inventory_output(
+        FT_Library_Renderer_Class(Some(&library), FT_GLYPH_FORMAT_PLOTTER),
+    )))
+}
+
+fn c_glyph_format_emitter_inventory(_case: &InputCase) -> Result<RunOutput, String> {
+    let mut library = ptr::null_mut();
+    let error_status = c_abi::FT_Init_FreeType(&mut library);
+    if error_status != FT_Err_Ok {
+        return Ok(error(error_status));
+    }
+    let class = c_abi::abi_support_library_renderer_class(library, FT_GLYPH_FORMAT_PLOTTER);
+    let output = glyph_format_emitter_inventory_output(class);
+    c_done_library(library);
+    Ok(ok(output))
+}
+
+fn wasm_glyph_format_emitter_inventory(_case: &InputCase) -> Result<RunOutput, String> {
+    Ok(ok(glyph_format_emitter_inventory_output(
+        wasm_abi::abi_support_default_renderer_class(FT_GLYPH_FORMAT_PLOTTER),
+    )))
+}
+
 fn wasm_set_renderer(case: &InputCase) -> Result<RunOutput, String> {
     let format = renderer_source_format(&case.inputs.params)?;
     if format != FT_GLYPH_FORMAT_OUTLINE {
@@ -41589,6 +41646,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             },
             renderer_formats_arg(params)?,
         ]),
+        "ftimage.glyph_format_emitter_inventory" => {
+            Ok(vec!["--glyph-format-emitter-inventory".to_string()])
+        }
         "ftrender.set_renderer" if !case.expect_error => Ok(vec![
             "--set-renderer".to_string(),
             renderer_source_format(params)?.to_string(),
@@ -43734,6 +43794,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             rust_incremental_nullness_open(case)
         }
         "ftrender.get_renderer" => rust_get_renderer(case),
+        "ftimage.glyph_format_emitter_inventory" => rust_glyph_format_emitter_inventory(case),
         "ftrender.set_renderer" if !case.expect_error => rust_set_renderer(case),
         "renderer.class_probe" => rust_raster_class_probe(case),
         "ftmm.done_mm_var" => rust_done_mm_var(case),
@@ -45095,6 +45156,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_incremental_nullness_open(case)
         }
         "ftrender.get_renderer" => c_get_renderer(case),
+        "ftimage.glyph_format_emitter_inventory" => c_glyph_format_emitter_inventory(case),
         "ftrender.set_renderer" if !case.expect_error => c_set_renderer(case),
         "renderer.class_probe" => c_raster_class_probe(case),
         "ftmm.done_mm_var" => c_done_mm_var(case),
@@ -46314,6 +46376,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             wasm_incremental_nullness_open(case)
         }
         "ftrender.get_renderer" => wasm_get_renderer(case),
+        "ftimage.glyph_format_emitter_inventory" => wasm_glyph_format_emitter_inventory(case),
         "ftrender.set_renderer" if !case.expect_error => wasm_set_renderer(case),
         "renderer.class_probe" => wasm_raster_class_probe(case),
         "ftmm.done_mm_var" => wasm_done_mm_var(case),

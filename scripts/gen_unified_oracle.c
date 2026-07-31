@@ -28565,6 +28565,38 @@ static int emit_get_renderer(int argc, char** argv) {
     return 0;
 }
 
+static int emit_glyph_format_emitter_inventory(void) {
+    FT_Library library = NULL;
+    FT_Error error = FT_Init_FreeType(&library);
+    printf("{");
+    print_status(error);
+    if (error != FT_Err_Ok || !library) {
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+    FT_Renderer renderer = FT_Get_Renderer(library, FT_GLYPH_FORMAT_PLOTTER);
+    printf(",\"output\":{\"constant_value\":%ld,\"emitter_classification\":\"%s\",\"runtime_probe\":{\"status\":\"%s\",\"renderer_present\":%s,\"renderer_class\":",
+           (long)FT_GLYPH_FORMAT_PLOTTER,
+           renderer ? "runtime-emitter" : "no-runtime-emitter",
+           renderer ? "renderer_present" : "no_renderer_for_format",
+           renderer ? "true" : "false");
+    if (!renderer || !renderer->clazz) {
+        printf("null");
+    } else {
+        const char* module_name = renderer->root.clazz && renderer->root.clazz->module_name
+            ? renderer->root.clazz->module_name
+            : "";
+        printf("{\"module_name\":\"%s\",\"glyph_format\":%ld,\"has_render_glyph\":%s,\"has_raster_class\":%s}",
+               module_name,
+               (long)renderer->clazz->glyph_format,
+               renderer->clazz->render_glyph ? "true" : "false",
+               renderer->clazz->raster_class ? "true" : "false");
+    }
+    printf("}}}\n");
+    FT_Done_FreeType(library);
+    return 0;
+}
+
 static int emit_set_renderer(int argc, char** argv) {
     if (argc != 3) return 2;
     long format = strtol(argv[2], NULL, 10);
@@ -33848,6 +33880,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 4 && streq(argv[1], "--get-renderer")) {
         return emit_get_renderer(argc, argv);
+    }
+    if (argc == 2 && streq(argv[1], "--glyph-format-emitter-inventory")) {
+        return emit_glyph_format_emitter_inventory();
     }
     if (argc == 3 && streq(argv[1], "--set-renderer")) {
         return emit_set_renderer(argc, argv);

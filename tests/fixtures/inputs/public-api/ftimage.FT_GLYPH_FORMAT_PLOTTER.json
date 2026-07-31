@@ -21,7 +21,7 @@
       "operation": "ftimage.glyph_format_emitter_inventory",
       "schema": "api_result",
       "expect_error": false,
-      "inputs": {"assets": {"optional_plotter_font": {"kind": "ref", "id": "input/fonts/plotter/hershey-compatible.pfa"}}, "params": {"format": "FT_GLYPH_FORMAT_PLOTTER", "audit_paths": ["font drivers", "renderer classes"], "runtime_probe_if_asset_exists": true}},
+      "inputs": {"assets": {}, "params": {"format": "FT_GLYPH_FORMAT_PLOTTER", "audit_paths": ["font drivers", "renderer classes"], "runtime_probe_if_asset_exists": false}},
       "classifiers": ["kind:enum_variant", "header:ftimage", "path:source-audit"],
       "expectation": {"status": "build_dependent", "output_shape": {"constant_value": "FT_Glyph_Format", "emitter_classification": "reachable or no-runtime-emitter", "runtime_probe": "optional glyph slot format"}, "compare": {"mode": "unsupported_until_runner_added", "paths": ["constant_value", "emitter_classification", "runtime_probe.status"]}, "fixture_requirements": ["Do not invent plotter output. Add a font asset only if the pinned FreeType build has a driver path that can emit PLOTTER."]}
     }
