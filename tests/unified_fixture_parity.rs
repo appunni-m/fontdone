@@ -64630,22 +64630,41 @@ fn incremental_state_lifecycle_output(
             let metric = metric_events
                 .next()
                 .ok_or_else(|| "metric callback event has no metric record".to_string())?;
+            let (input, output) = if metric.vertical {
+                (
+                    json!({
+                        "bearing_x": metric.input.bearing_x,
+                        "bearing_y": metric.input.bearing_y,
+                        "advance": metric.input.advance,
+                    }),
+                    json!({
+                        "bearing_x": metric.output.bearing_x,
+                        "bearing_y": metric.output.bearing_y,
+                        "advance": metric.output.advance,
+                    }),
+                )
+            } else {
+                (
+                    json!({
+                        "bearing_x": metric.input.bearing_x,
+                        "bearing_y": metric.input.bearing_y,
+                        "advance": metric.input.advance,
+                        "advance_v": metric.input.advance_v,
+                    }),
+                    json!({
+                        "bearing_x": metric.output.bearing_x,
+                        "bearing_y": metric.output.bearing_y,
+                        "advance": metric.output.advance,
+                        "advance_v": metric.output.advance_v,
+                    }),
+                )
+            };
             Ok(json!({
                 "event": event,
                 "glyph_index": glyph_index,
                 "vertical": metric.vertical,
-                "input": {
-                    "bearing_x": metric.input.bearing_x,
-                    "bearing_y": metric.input.bearing_y,
-                    "advance": metric.input.advance,
-                    "advance_v": metric.input.advance_v,
-                },
-                "output": {
-                    "bearing_x": metric.output.bearing_x,
-                    "bearing_y": metric.output.bearing_y,
-                    "advance": metric.output.advance,
-                    "advance_v": metric.output.advance_v,
-                },
+                "input": input,
+                "output": output,
             }))
         })
         .collect::<Result<Vec<_>, String>>()?;

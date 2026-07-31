@@ -33797,19 +33797,31 @@ static int emit_incremental_glyph_lifecycle(int argc, char** argv) {
                    "\"vertical\":",
                    state.event_glyphs[index]);
             print_json_bool(state.metric_vertical[metric_index]);
-            printf(",\"input\":{\"bearing_x\":%ld,\"bearing_y\":%ld,"
-                   "\"advance\":%ld,\"advance_v\":%ld},"
-                   "\"output\":{\"bearing_x\":%ld,"
-                   "\"bearing_y\":%ld,\"advance\":%ld,"
-                   "\"advance_v\":%ld}}",
-                   state.metric_input_bearing_x[metric_index],
-                   state.metric_input_bearing_y[metric_index],
-                   state.metric_input_advance[metric_index],
-                   state.metric_input_advance_v[metric_index],
-                   state.metric_output_bearing_x[metric_index],
-                   state.metric_output_bearing_y[metric_index],
-                   state.metric_output_advance[metric_index],
-                   state.metric_output_advance_v[metric_index]);
+            if (state.metric_vertical[metric_index]) {
+                printf(",\"input\":{\"bearing_x\":%ld,\"bearing_y\":%ld,"
+                       "\"advance\":%ld},\"output\":{\"bearing_x\":%ld,"
+                       "\"bearing_y\":%ld,\"advance\":%ld}}",
+                       state.metric_input_bearing_x[metric_index],
+                       state.metric_input_bearing_y[metric_index],
+                       state.metric_input_advance[metric_index],
+                       state.metric_output_bearing_x[metric_index],
+                       state.metric_output_bearing_y[metric_index],
+                       state.metric_output_advance[metric_index]);
+            } else {
+                printf(",\"input\":{\"bearing_x\":%ld,\"bearing_y\":%ld,"
+                       "\"advance\":%ld,\"advance_v\":%ld},"
+                       "\"output\":{\"bearing_x\":%ld,"
+                       "\"bearing_y\":%ld,\"advance\":%ld,"
+                       "\"advance_v\":%ld}}",
+                       state.metric_input_bearing_x[metric_index],
+                       state.metric_input_bearing_y[metric_index],
+                       state.metric_input_advance[metric_index],
+                       state.metric_input_advance_v[metric_index],
+                       state.metric_output_bearing_x[metric_index],
+                       state.metric_output_bearing_y[metric_index],
+                       state.metric_output_advance[metric_index],
+                       state.metric_output_advance_v[metric_index]);
+            }
             metric_index++;
         } else {
             printf("{\"event\":\"%s\",\"glyph_index\":%u}",
