@@ -1191,6 +1191,132 @@ mod tests {
         assert_eq!(glyph.bitmap.buffer, vec![0b1100_0000, 0b0011_0000]);
     }
 
+    #[test]
+    fn index_format3_loads_glyph_indexed_offsets() {
+        let mut eblc = Vec::new();
+        eblc.extend_from_slice(&0x0002_0000u32.to_be_bytes());
+        eblc.extend_from_slice(&1u32.to_be_bytes());
+        eblc.extend_from_slice(&[0; 48]);
+        eblc[8..12].copy_from_slice(&56u32.to_be_bytes());
+        eblc[16..20].copy_from_slice(&1u32.to_be_bytes());
+        eblc[52] = 12;
+        eblc[53] = 12;
+        eblc[54] = 1;
+        eblc.extend_from_slice(&1u16.to_be_bytes()); // first glyph
+        eblc.extend_from_slice(&1u16.to_be_bytes()); // last glyph
+        eblc.extend_from_slice(&8u32.to_be_bytes());
+        // Index format 3: image format 1, then u16 start/end offsets.
+        eblc.extend_from_slice(&3u16.to_be_bytes());
+        eblc.extend_from_slice(&1u16.to_be_bytes());
+        eblc.extend_from_slice(&0u32.to_be_bytes());
+        eblc.extend_from_slice(&0u16.to_be_bytes()); // start
+        eblc.extend_from_slice(&7u16.to_be_bytes()); // end
+
+        let mut ebdt = Vec::new();
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&0u8.to_be_bytes());
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&3u8.to_be_bytes());
+        ebdt.extend_from_slice(&0b1100_0000u8.to_be_bytes());
+        ebdt.extend_from_slice(&0b0011_0000u8.to_be_bytes());
+
+        let (font, directory) = directory_for(&eblc, &ebdt);
+        let sbit = parse_ok(&font, &directory, "format-3 sbit parses");
+        let glyph = match sbit.load_glyph(1, 12, 12, 0) {
+            Ok(glyph) => glyph,
+            Err(error) => panic!("format-3 image failed: {error}"),
+        };
+        assert_eq!(glyph.bitmap.width, 2);
+        assert_eq!(glyph.bitmap.rows, 2);
+    }
+
+    #[test]
+    fn index_format2_loads_constant_size_images() {
+        let mut eblc = Vec::new();
+        eblc.extend_from_slice(&0x0002_0000u32.to_be_bytes());
+        eblc.extend_from_slice(&1u32.to_be_bytes());
+        eblc.extend_from_slice(&[0; 48]);
+        eblc[8..12].copy_from_slice(&56u32.to_be_bytes());
+        eblc[16..20].copy_from_slice(&1u32.to_be_bytes());
+        eblc[52] = 12;
+        eblc[53] = 12;
+        eblc[54] = 1;
+        eblc.extend_from_slice(&1u16.to_be_bytes()); // first glyph
+        eblc.extend_from_slice(&1u16.to_be_bytes()); // last glyph
+        eblc.extend_from_slice(&8u32.to_be_bytes());
+        // Index format 2: constant image size plus 8-byte big metrics.
+        eblc.extend_from_slice(&2u16.to_be_bytes());
+        eblc.extend_from_slice(&1u16.to_be_bytes());
+        eblc.extend_from_slice(&0u32.to_be_bytes());
+        eblc.extend_from_slice(&7u32.to_be_bytes()); // image size
+        eblc.extend_from_slice(&[2, 2, 0, 2, 3, 0, 0, 0]); // big metrics
+
+        let mut ebdt = Vec::new();
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&0u8.to_be_bytes());
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&3u8.to_be_bytes());
+        ebdt.extend_from_slice(&0b1100_0000u8.to_be_bytes());
+        ebdt.extend_from_slice(&0b0011_0000u8.to_be_bytes());
+
+        let (font, directory) = directory_for(&eblc, &ebdt);
+        let sbit = parse_ok(&font, &directory, "format-2 sbit parses");
+        let glyph = match sbit.load_glyph(1, 12, 12, 0) {
+            Ok(glyph) => glyph,
+            Err(error) => panic!("format-2 image failed: {error}"),
+        };
+        assert_eq!(glyph.bitmap.width, 2);
+        assert_eq!(glyph.bitmap.rows, 2);
+        assert_eq!(glyph.metrics.width, 128);
+        assert_eq!(glyph.metrics.height, 128);
+    }
+
+    #[test]
+    fn index_format4_loads_sparse_glyph_offsets() {
+        let mut eblc = Vec::new();
+        eblc.extend_from_slice(&0x0002_0000u32.to_be_bytes());
+        eblc.extend_from_slice(&1u32.to_be_bytes());
+        eblc.extend_from_slice(&[0; 48]);
+        eblc[8..12].copy_from_slice(&56u32.to_be_bytes());
+        eblc[16..20].copy_from_slice(&1u32.to_be_bytes());
+        eblc[52] = 12;
+        eblc[53] = 12;
+        eblc[54] = 1;
+        eblc.extend_from_slice(&1u16.to_be_bytes()); // first glyph
+        eblc.extend_from_slice(&2u16.to_be_bytes()); // last glyph
+        eblc.extend_from_slice(&8u32.to_be_bytes());
+        // Index format 4: sparse (glyph, offset) pairs; the matched entry's
+        // end offset comes from the following entry.
+        eblc.extend_from_slice(&4u16.to_be_bytes());
+        eblc.extend_from_slice(&1u16.to_be_bytes());
+        eblc.extend_from_slice(&0u32.to_be_bytes());
+        eblc.extend_from_slice(&1u32.to_be_bytes()); // num glyphs
+        eblc.extend_from_slice(&1u16.to_be_bytes()); // glyph 1
+        eblc.extend_from_slice(&0u16.to_be_bytes()); // offset 0
+        eblc.extend_from_slice(&0u16.to_be_bytes()); // terminator glyph
+        eblc.extend_from_slice(&7u16.to_be_bytes()); // end offset 7
+
+        let mut ebdt = Vec::new();
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&0u8.to_be_bytes());
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&3u8.to_be_bytes());
+        ebdt.extend_from_slice(&0b1100_0000u8.to_be_bytes());
+        ebdt.extend_from_slice(&0b0011_0000u8.to_be_bytes());
+
+        let (font, directory) = directory_for(&eblc, &ebdt);
+        let sbit = parse_ok(&font, &directory, "format-4 sbit parses");
+        let glyph = match sbit.load_glyph(1, 12, 12, 0) {
+            Ok(glyph) => glyph,
+            Err(error) => panic!("format-4 image failed: {error}"),
+        };
+        assert_eq!(glyph.bitmap.width, 2);
+        assert_eq!(glyph.bitmap.rows, 2);
+    }
+
     fn eblc_index_format5(first: u16, last: u16, image_size: u32) -> Vec<u8> {
         let mut eblc = Vec::new();
         eblc.extend_from_slice(&0x0002_0000u32.to_be_bytes());
@@ -1313,5 +1439,67 @@ mod tests {
         assert_eq!(glyph.bitmap.rows, 2);
         // The component bitmap is blitted into the compound canvas.
         assert_eq!(glyph.bitmap.buffer, vec![0b1100_0000, 0b1100_0000]);
+    }
+
+    #[test]
+    fn format8_compound_bit_aligned_shift_blits_component() {
+        // Same two-glyph layout, but the compound is 3 px wide and places
+        // its 2 px mono component at dx=1, forcing bit-aligned assembly.
+        let mut eblc = Vec::new();
+        eblc.extend_from_slice(&0x0002_0000u32.to_be_bytes());
+        eblc.extend_from_slice(&1u32.to_be_bytes());
+        eblc.extend_from_slice(&[0; 48]);
+        eblc[8..12].copy_from_slice(&56u32.to_be_bytes());
+        eblc[16..20].copy_from_slice(&2u32.to_be_bytes());
+        eblc[52] = 12;
+        eblc[53] = 12;
+        eblc[54] = 1;
+        eblc.extend_from_slice(&1u16.to_be_bytes());
+        eblc.extend_from_slice(&1u16.to_be_bytes());
+        eblc.extend_from_slice(&16u32.to_be_bytes());
+        eblc.extend_from_slice(&2u16.to_be_bytes());
+        eblc.extend_from_slice(&2u16.to_be_bytes());
+        eblc.extend_from_slice(&32u32.to_be_bytes());
+        eblc.extend_from_slice(&1u16.to_be_bytes());
+        eblc.extend_from_slice(&1u16.to_be_bytes());
+        eblc.extend_from_slice(&0u32.to_be_bytes());
+        eblc.extend_from_slice(&0u32.to_be_bytes());
+        eblc.extend_from_slice(&7u32.to_be_bytes());
+        eblc.extend_from_slice(&1u16.to_be_bytes());
+        eblc.extend_from_slice(&8u16.to_be_bytes());
+        eblc.extend_from_slice(&0u32.to_be_bytes());
+        eblc.extend_from_slice(&7u32.to_be_bytes());
+        eblc.extend_from_slice(&19u32.to_be_bytes());
+
+        let mut ebdt = Vec::new();
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&0u8.to_be_bytes());
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&3u8.to_be_bytes());
+        ebdt.extend_from_slice(&0b1100_0000u8.to_be_bytes());
+        ebdt.extend_from_slice(&0b1100_0000u8.to_be_bytes());
+        // Compound: 2 rows x 3 columns metrics, one component at dx=1.
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&3u8.to_be_bytes());
+        ebdt.extend_from_slice(&0u8.to_be_bytes());
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&3u8.to_be_bytes());
+        ebdt.extend_from_slice(&0u8.to_be_bytes());
+        ebdt.extend_from_slice(&1u16.to_be_bytes());
+        ebdt.extend_from_slice(&1u16.to_be_bytes());
+        ebdt.extend_from_slice(&1u8.to_be_bytes()); // dx = 1
+        ebdt.extend_from_slice(&0u8.to_be_bytes()); // dy = 0
+
+        let (font, directory) = directory_for(&eblc, &ebdt);
+        let sbit = parse_ok(&font, &directory, "valid sbit parses");
+        let glyph = match sbit.load_glyph(2, 12, 12, 0) {
+            Ok(glyph) => glyph,
+            Err(error) => panic!("shifted compound image failed: {error}"),
+        };
+        assert_eq!(glyph.bitmap.width, 3);
+        assert_eq!(glyph.bitmap.rows, 2);
+        // Component row 0b1100_0000 shifted one pixel right: 0b0110_0000.
+        assert_eq!(glyph.bitmap.buffer, vec![0b0110_0000, 0b0110_0000]);
     }
 }
