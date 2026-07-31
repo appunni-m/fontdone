@@ -359,12 +359,13 @@ increase is claimed until the next full all-lane measurement**:
 | 15 | `8eed8f2f22288e53429503bed169d2b8608cc10e` | Routed the maintained `FT_Raster_Funcs` callback-slot matrix through live pinned-C class tables and Rust FFI, C ABI, and WASM observations for standard, grays, SDF, and bitmap-SDF renderers. |
 | 16 | `bc4513a6e712d53b047e4fdc21f0814f8f83d0be` | Routed the maintained `FT_GLYPH_FORMAT_PLOTTER` source-emitter inventory through pinned-C, Rust FFI, C ABI, and WASM renderer lookup; the pinned module set has no runtime plotter emitter. |
 | 17 | `514cca075fc5181b9bbd1005e4d53f6c3462381c` | Routed the maintained SVG glyph-load contract through pinned-C, Rust FFI, C ABI, and WASM observations for enabled SVG document success and `FT_LOAD_SVG_ONLY` error behavior; removed two pending runtime rows. |
+| 18 | `c16e21ea68b6aecb2cdd2c7258266326ae958e62` | Added the explicit GitHub `merge_group`/`checks_requested` trigger so the same bounded commit gate reports required status checks for merge-queue revisions; kept full parity, coverage, performance, platform, package, and supply-chain jobs manual. |
 
 The latest clean parity-only verification is Coverage MCP run
-`6c380900-bdb3-4e47-b588-fa91d8da3d83` against source commit
-`514cca075fc5181b9bbd1005e4d53f6c3462381c`: 7,241 / 7,241 runnable
-comparisons passed, 0 failed, and 66 remain explicitly pending. The same run
-reported 4,112 covered manifest cases, 4,258 logical cases, and 7,307
+`997763ca-ac41-4cb8-82bb-ce0b14c7c632` against source commit
+`972b7fd53874c3aeb79b01f68e4d1f4615943c53`: 7,245 / 7,245 runnable
+comparisons passed, 0 failed, and 62 remain explicitly pending. The same run
+reported 4,116 covered manifest cases, 4,258 logical cases, and 7,307
 concrete cases; all 218 function routes were present in each of Rust, C ABI,
 and WASM. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. Full coverage is intentionally deferred
@@ -438,8 +439,8 @@ and a failing regression gate exposed through `make` and requested thorough CI.
 The required per-commit `Commit gate` runs fast tests, MSRV, format, Clippy,
 strict documentation, generated contracts and fixtures, independent Rust and
 C consumers, and a fixed exact runtime/API smoke matrix across the Rust, C ABI,
-and WASM routes. The manually
-dispatched `Thorough gate` repeats that gate and adds the full runnable parity
+and WASM routes for pushes, pull requests, and merge-queue groups. The
+manually dispatched `Thorough gate` repeats that gate and adds the full runnable parity
 matrix, downstream consumers, all-lane coverage, the ten-sample performance
 baseline, five platform bundles, the C scorecard, packages, and supply-chain
 audits.
