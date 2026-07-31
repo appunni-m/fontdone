@@ -113,8 +113,8 @@ evidence can be satisfied by a narrow success or null-validation route; it is
 not equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP run
-`d00e188b-7dc6-4593-9f69-92c47d56f8f7` against clean commit
-`e46451e6a74f20b57a3a421003db701d487341d5`.
+`0fae0ab3-1df2-4aa8-aaa6-cc5a09945209` against clean commit
+`74f6e87388b5cb31f397449db4d17d0b276b2772`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -176,7 +176,7 @@ when every bare function name has some traced route. The self-cleaning
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`96e536da-be0f-413a-829f-b195c2525064`.
+`1ea13e0e-c422-4c53-a2ab-1e10192322e0`.
 
 ### 3.5 Performance baseline
 
