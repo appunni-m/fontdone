@@ -614,9 +614,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "9bd1adb0f504e6fba1771fef723ff312e1de4fc30051b49f512c7876080060cb",
-    "parity_tree_sha256": "8ee619ef4ee8768e165f9830ea57615a59e115a977c063580bfe9273d27a262f",
-    "log_sha256": "264b110c56d104d5eac90b784e4b3a4e248e34e7d15b91f4bcd968feff388a41",
+    "sha256": "9d8210109f7a89c414a5322c2a069174c43fd8311990bfcf1461616e2bcf19ca",
+    "parity_tree_sha256": "d5e1e24283b45c973e338594371162d3a6d162c09cbc0db8f829531451e3f0d5",
+    "log_sha256": "833327d789faa780c339e1284cf09a5f7d985b7242ceaa1939d3bf2c8e3faced",
     "command": "make test-parity"
   }
 }

@@ -558,4 +558,68 @@ mod tests {
         );
         assert_eq!(dropout_control_from_outline_flags(0), 1);
     }
+
+    #[test]
+    fn prepare_and_hint_glyph_runs_bytecode() -> Result<(), FontError> {
+        let scale = HintScale {
+            x_scale: 1 << 16,
+            y_scale: 1 << 16,
+            tt_scale: 1 << 16,
+            ppem: 16,
+            x_ratio: 1 << 16,
+            y_ratio: 1 << 16,
+            point_size: 16 << 6,
+            storage_size: 8,
+            max_function_defs: 64,
+            max_instruction_defs: 64,
+            max_stack_elements: 64,
+            num_glyphs: 10,
+            twilight_points: 8,
+            is_composite: false,
+            reset_vectors_at_glyph_entry: false,
+            metrics_legacy_phantoms: false,
+            pedantic_hinting: false,
+            native_hint_mode: NativeHintMode::Normal,
+            phantom_x_override: None,
+            interpreter_version: 40,
+        };
+        let context = prepare_context(&[0, 64], &[0xB0, 10], &[0xB0, 0], &scale)?;
+        assert_eq!(context.storage.len(), 8);
+        assert_eq!(context.cvt.len(), 2);
+
+        // A single-point glyph whose program runs a NOP and stops.
+        let raw = [OutlinePoint {
+            x: 100,
+            y: 200,
+            on_curve: true,
+        }];
+        let scaled = raw
+            .iter()
+            .map(|point| crate::outline::OutlinePoint {
+                x: point.x,
+                y: point.y,
+                on_curve: true,
+            })
+            .collect::<Vec<_>>();
+        let mut scaled = scaled;
+        let outcome = hint_glyph(
+            &mut scaled,
+            &raw,
+            &[1],
+            &[0],
+            500,
+            500,
+            0,
+            0,
+            0,
+            0,
+            &scale,
+            &[0x00, 0x2D], // NOP, MPPEM
+            &context,
+        )?;
+        assert_eq!(scaled[0].x, 100);
+        assert_eq!(scaled[0].y, 200);
+        assert!(outcome.advance_width > 0);
+        Ok(())
+    }
 }
