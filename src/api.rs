@@ -2450,4 +2450,123 @@ mod tests {
             Err(err) => panic!("CFF no-scale vertical layout should succeed: {err}"),
         }
     }
+
+    #[test]
+    fn synthetic_emboldening_updates_outline_and_bitmap_slots() {
+        let face = load(DEJAVU_SANS);
+        let glyph = face.get_char_index('A' as u32);
+        let mut slot = match face.load_glyph(glyph, LoadFlags::DEFAULT) {
+            Ok(slot) => slot,
+            Err(err) => panic!("default load should succeed: {err}"),
+        };
+        let before_advance = slot.metrics.hori_advance;
+        let before_width = slot.metrics.width;
+        slot.adjust_outline_weight(16 << 6, 16 << 6);
+        assert!(slot.metrics.hori_advance > before_advance);
+        assert!(slot.metrics.width > before_width);
+        // Weighting recomputes the outline boxes.
+        assert!(slot.outline_cbox.x_max >= slot.outline_cbox.x_min);
+
+        let mut rendered = match face.load_glyph(glyph, LoadFlags::DEFAULT | LoadFlags::RENDER) {
+            Ok(slot) => slot,
+            Err(err) => panic!("render should succeed: {err}"),
+        };
+        let before_top = rendered.bitmap_top;
+        let before_width = rendered.metrics.width;
+        rendered.adjust_bitmap_weight(8 << 6, 8 << 6);
+        assert!(rendered.metrics.width >= before_width);
+        assert!(rendered.bitmap_top >= before_top);
+        assert_eq!(rendered.format, GlyphFormat::Bitmap);
+    }
+
+    #[test]
+    fn empty_slot_preserves_the_none_format() {
+        let empty = GlyphSlot::empty();
+        assert_eq!(empty.format, GlyphFormat::None);
+        assert!(empty.bitmap.is_none());
+        assert_eq!(empty.advance, Vector { x: 0, y: 0 });
+    }
+
+    #[test]
+    fn packed_and_mono_bitmaps_embolden_in_every_mode() {
+        // Gray2 converts to 8-bit gray before the embolden loop.
+        let mut gray2 = RenderedBitmap {
+            width: 4,
+            rows: 1,
+            pitch: 1,
+            pixel_mode: PixelMode::Gray2,
+            num_grays: 4,
+            left: 0,
+            top: 0,
+            buffer: vec![0b0000_0101],
+        };
+        assert!(convert_packed_gray_bitmap(&mut gray2, 2, 4));
+        assert_eq!(gray2.pixel_mode, PixelMode::Gray);
+        assert_eq!(gray2.pitch, 4);
+        assert!(embolden_8bit_positive_pitch_bitmap(&mut gray2, 1, 1));
+
+        // Gray4 likewise.
+        let mut gray4 = RenderedBitmap {
+            width: 4,
+            rows: 1,
+            pitch: 2,
+            pixel_mode: PixelMode::Gray4,
+            num_grays: 16,
+            left: 0,
+            top: 0,
+            buffer: vec![0b0000_0001, 0b0000_0010],
+        };
+        assert!(convert_packed_gray_bitmap(&mut gray4, 4, 16));
+        assert_eq!(gray4.pixel_mode, PixelMode::Gray);
+
+        // Monochrome embolden path.
+        let mut mono = RenderedBitmap {
+            width: 8,
+            rows: 2,
+            pitch: 1,
+            pixel_mode: PixelMode::Mono,
+            num_grays: 2,
+            left: 0,
+            top: 0,
+            buffer: vec![0b1111_0000, 0b1111_0000],
+        };
+        assert!(embolden_rendered_bitmap(&mut mono, 2, 1));
+
+        // LCD and color bitmaps are accepted without byte mutation.
+        let mut lcd = RenderedBitmap {
+            width: 9,
+            rows: 1,
+            pitch: 9,
+            pixel_mode: PixelMode::Lcd,
+            num_grays: 256,
+            left: 0,
+            top: 0,
+            buffer: vec![0; 9],
+        };
+        assert!(embolden_rendered_bitmap(&mut lcd, 1, 1));
+        let mut bgra = RenderedBitmap {
+            width: 4,
+            rows: 1,
+            pitch: 16,
+            pixel_mode: PixelMode::Bgra,
+            num_grays: 256,
+            left: 0,
+            top: 0,
+            buffer: vec![0; 16],
+        };
+        assert!(embolden_rendered_bitmap(&mut bgra, 1, 1));
+
+        // LcdV scales the vertical footprint by three.
+        let mut lcd_v = RenderedBitmap {
+            width: 3,
+            rows: 3,
+            pitch: 3,
+            pixel_mode: PixelMode::LcdV,
+            num_grays: 256,
+            left: 0,
+            top: 0,
+            buffer: vec![0; 9],
+        };
+        assert!(embolden_rendered_bitmap(&mut lcd_v, 1, 1));
+    }
 }
