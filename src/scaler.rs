@@ -1948,3 +1948,26 @@ struct HintTarget {
     is_italic: bool,
     mono: bool,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ppem_rounding_matches_c() {
+        assert_eq!(ppem_from_size(16.0), 16);
+        assert_eq!(ppem_from_size(16.5), 17);
+        assert_eq!(ppem_from_size(10.25), 10);
+        assert_eq!(ppem_from_size(1.0), 1);
+        assert_eq!(ppem_from_size(0.0), 0);
+    }
+
+    #[test]
+    fn unrounded_scaling_and_div_fix() {
+        // value 100 * scale 1.0 = 100, then (100+32)>>6 = 2.
+        assert_eq!(scale_unrounded_fdot6(100, 0x1_0000), 2);
+        assert_eq!(scale_unrounded_fdot6(0, 0x1_0000), 0);
+        assert_eq!(ft_div_fix_local(16 << 6, 2048), 0x8000);
+        assert_eq!(ft_div_fix_local(0, 2048), 0);
+    }
+}

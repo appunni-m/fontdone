@@ -1155,3 +1155,87 @@ const CURVE_TAG_ON: u8 = 1;
 const CURVE_TAG_CONIC: u8 = 0;
 const CURVE_TAG_CUBIC: u8 = 2;
 const OUTLINE_EVEN_ODD_FILL: u32 = 0x02;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pixel_helpers() {
+        assert_eq!(trunc(256), 1);
+        assert_eq!(trunc(-256), -1);
+        assert_eq!(trunc(0), 0);
+        assert_eq!(fract(0x1234), 0x34);
+        assert_eq!(fract(0), 0);
+        assert_eq!(add_int(i32::MAX, 1), i32::MIN);
+        assert_eq!(ft_udivprep(false, 2), 0);
+        assert_eq!(ft_udivprep(true, 2), 0x7FFF_FFFF);
+        assert_eq!(ft_udiv(1 << 32, 1), 1);
+        assert_eq!(ft_udiv(0, 5), 0);
+    }
+
+    #[test]
+    fn fill_rule_coverage() {
+        // area 512 -> coverage 1 (512 >> 9).
+        assert_eq!(fill_rule(512, 0), 1);
+        assert_eq!(fill_rule(0, 0), 0);
+        assert_eq!(fill_rule(1 << 20, 0), 0); // masked to a byte
+    }
+
+    #[test]
+    fn curve_tag_helpers() {
+        assert_eq!(curve_tag(true), CURVE_TAG_ON);
+        assert_eq!(curve_tag(false), CURVE_TAG_CONIC);
+        let pts = [crate::outline::OutlinePoint {
+            on_curve: true,
+            ..Default::default()
+        }];
+        assert_eq!(curve_tag_at(&pts, &[], 0), CURVE_TAG_ON);
+        assert_eq!(curve_tag_at(&pts, &[CURVE_TAG_CUBIC], 0), CURVE_TAG_CUBIC);
+        assert_eq!(curve_tag_at(&pts, &[0xFF], 0), 3);
+    }
+
+    #[test]
+    fn rasterize_empty_and_triangle() -> Result<(), FontError> {
+        let empty = Outline {
+            n_contours: 0,
+            ..Outline::default()
+        };
+        let result = rasterize(empty)?;
+        assert_eq!(result.width, 0);
+        assert!(result.pixels.is_empty());
+
+        // A right triangle in 26.6 coordinates with a 4x4 pixel box.
+        let outline = Outline {
+            n_contours: 1,
+            contours: vec![2],
+            points: vec![
+                crate::outline::OutlinePoint {
+                    x: 0,
+                    y: 0,
+                    on_curve: true,
+                },
+                crate::outline::OutlinePoint {
+                    x: 4 << 6,
+                    y: 0,
+                    on_curve: true,
+                },
+                crate::outline::OutlinePoint {
+                    x: 0,
+                    y: 4 << 6,
+                    on_curve: true,
+                },
+            ],
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 4,
+            cbox_y_max: 4,
+            ..Outline::default()
+        };
+        let result = rasterize(outline)?;
+        assert_eq!(result.width, 4);
+        assert_eq!(result.height, 4);
+        assert!(result.pixels.iter().any(|pixel| *pixel > 0));
+        Ok(())
+    }
+}
