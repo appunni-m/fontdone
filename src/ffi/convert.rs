@@ -333,3 +333,185 @@ pub(super) fn error_to_ft(error: FontError) -> FT_Error {
         FontError::BdfMissingStartcharField => FT_Err_Missing_Startchar_Field as FT_Error,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn load_target_mode_extracts_nibble() {
+        assert_eq!(FT_LOAD_TARGET_MODE(0), FT_RENDER_MODE_NORMAL);
+        assert_eq!(FT_LOAD_TARGET_MODE(1 << 16), FT_RENDER_MODE_LIGHT);
+        assert_eq!(FT_LOAD_TARGET_MODE(2 << 16), FT_RENDER_MODE_MONO);
+        assert_eq!(FT_LOAD_TARGET_MODE(4 << 16), FT_RENDER_MODE_LCD_V);
+        assert_eq!(FT_LOAD_TARGET_MODE(0x0000_FFFF), FT_RENDER_MODE_NORMAL);
+    }
+
+    #[test]
+    fn load_flags_round_trip() -> Result<(), FT_Error> {
+        let flags = FT_LOAD_NO_SCALE
+            | FT_LOAD_NO_RECURSE
+            | FT_LOAD_RENDER
+            | FT_LOAD_NO_HINTING
+            | FT_LOAD_FORCE_AUTOHINT
+            | FT_LOAD_PEDANTIC
+            | FT_LOAD_VERTICAL_LAYOUT
+            | FT_LOAD_COLOR
+            | FT_LOAD_NO_SVG;
+        let core = load_flags_to_core(flags)?;
+        assert!(core.contains(api::LoadFlags::NO_SCALE));
+        assert!(core.contains(api::LoadFlags::NO_RECURSE));
+        assert!(core.contains(api::LoadFlags::RENDER));
+        assert!(core.contains(api::LoadFlags::NO_HINTING));
+        assert!(core.contains(api::LoadFlags::FORCE_AUTOHINT));
+        assert!(core.contains(api::LoadFlags::PEDANTIC));
+        assert!(core.contains(api::LoadFlags::VERTICAL_LAYOUT));
+        assert!(core.contains(api::LoadFlags::COLOR));
+        assert!(core.contains(api::LoadFlags::NO_SVG));
+
+        let target = load_flags_to_core(FT_LOAD_TARGET_LIGHT)?;
+        assert!(target.contains(api::LoadFlags::TARGET_LIGHT));
+        let mono = load_flags_to_core(FT_LOAD_TARGET_MONO)?;
+        assert!(mono.contains(api::LoadFlags::TARGET_MONO));
+
+        assert!(load_flags_to_core(0x4000_0000).is_err());
+        assert!(load_flags_to_core(FT_LOAD_RENDER | 7 << 16).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn render_mode_conversions() {
+        assert_eq!(
+            render_mode_to_core(FT_RENDER_MODE_NORMAL),
+            Some(RenderMode::Normal)
+        );
+        assert_eq!(
+            render_mode_to_core(FT_RENDER_MODE_LIGHT),
+            Some(RenderMode::Normal)
+        );
+        assert_eq!(
+            render_mode_to_core(FT_RENDER_MODE_MONO),
+            Some(RenderMode::Mono)
+        );
+        assert_eq!(
+            render_mode_to_core(FT_RENDER_MODE_LCD),
+            Some(RenderMode::Lcd)
+        );
+        assert_eq!(
+            render_mode_to_core(FT_RENDER_MODE_LCD_V),
+            Some(RenderMode::LcdV)
+        );
+        assert_eq!(
+            render_mode_to_core(FT_RENDER_MODE_SDF),
+            Some(RenderMode::Sdf)
+        );
+        assert_eq!(render_mode_to_core(FT_RENDER_MODE_MAX), None);
+        assert_eq!(render_mode_to_core(0x7F), None);
+    }
+
+    #[test]
+    fn pixel_and_glyph_format_conversions() {
+        assert_eq!(pixel_mode_from_core(PixelMode::Gray), FT_PIXEL_MODE_GRAY);
+        assert_eq!(pixel_mode_from_core(PixelMode::Mono), FT_PIXEL_MODE_MONO);
+        assert_eq!(pixel_mode_from_core(PixelMode::Gray2), FT_PIXEL_MODE_GRAY2);
+        assert_eq!(pixel_mode_from_core(PixelMode::Gray4), FT_PIXEL_MODE_GRAY4);
+        assert_eq!(pixel_mode_from_core(PixelMode::Lcd), FT_PIXEL_MODE_LCD);
+        assert_eq!(pixel_mode_from_core(PixelMode::LcdV), FT_PIXEL_MODE_LCD_V);
+        assert_eq!(pixel_mode_from_core(PixelMode::Bgra), FT_PIXEL_MODE_BGRA);
+
+        assert_eq!(
+            glyph_format_from_core(api::GlyphFormat::None),
+            FT_GLYPH_FORMAT_NONE
+        );
+        assert_eq!(
+            glyph_format_from_core(api::GlyphFormat::Outline),
+            FT_GLYPH_FORMAT_OUTLINE
+        );
+        assert_eq!(
+            glyph_format_from_core(api::GlyphFormat::Composite),
+            FT_GLYPH_FORMAT_COMPOSITE
+        );
+        assert_eq!(
+            glyph_format_from_core(api::GlyphFormat::Bitmap),
+            FT_GLYPH_FORMAT_BITMAP
+        );
+        assert_eq!(
+            glyph_format_from_core(api::GlyphFormat::Svg),
+            FT_GLYPH_FORMAT_SVG
+        );
+    }
+
+    #[test]
+    fn error_mapping_covers_variants() {
+        assert_eq!(
+            error_to_ft(FontError::InvalidFont("data too short".into())),
+            FT_Err_Invalid_Stream_Operation as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::InvalidFont("unknown sfVersion: 0".into())),
+            FT_Err_Unknown_File_Format as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::InvalidFont("missing 'hmtx' table".into())),
+            FT_Err_Hmtx_Table_Missing as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::InvalidFont("head table too short".into())),
+            FT_Err_Unknown_File_Format as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::InvalidFont("face index 1".into())),
+            FT_Err_Invalid_Argument
+        );
+        assert_eq!(
+            error_to_ft(FontError::InvalidFont("other".into())),
+            FT_Err_Invalid_File_Format
+        );
+        assert_eq!(
+            error_to_ft(FontError::InvalidTable("bad".into())),
+            FT_Err_Invalid_Table
+        );
+        assert_eq!(
+            error_to_ft(FontError::ArrayTooLarge),
+            FT_Err_Array_Too_Large as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::RasterOverflow),
+            FT_Err_Raster_Overflow
+        );
+        assert_eq!(
+            error_to_ft(FontError::InvalidOutline(
+                "glyf: simple instructions overflow".into()
+            )),
+            FT_Err_Too_Many_Hints as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::InvalidOutline(
+                "bytecode: too many function definitions".into()
+            )),
+            FT_Err_Too_Many_Function_Defs as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::InvalidOutline(
+                "CFF: hmoveto argument count".into()
+            )),
+            FT_Err_Invalid_File_Format as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::InvalidOutline("generic".into())),
+            FT_Err_Invalid_Outline
+        );
+        assert_eq!(
+            error_to_ft(FontError::ExecutionTooLong),
+            FT_Err_Execution_Too_Long as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BytecodeStackOverflow),
+            FT_Err_Stack_Overflow as FT_Error
+        );
+        assert_eq!(
+            error_to_ft(FontError::BytecodeDivideByZero),
+            FT_Err_Divide_By_Zero as FT_Error
+        );
+    }
+}
