@@ -332,6 +332,7 @@ document_wasm_test_support!(
     abi_support_incremental_opaque_handle,
     abi_support_incremental_glyph_lifecycle,
     abi_support_incremental_state_lifecycle,
+    abi_support_incremental_callback_table_contract,
     abi_support_reference_library_observation,
     abi_support_reference_then_done_library_observation,
     abi_support_final_done_library_observation,

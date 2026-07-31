@@ -304,6 +304,7 @@ document_abi_test_support!(
     abi_incremental_opaque_handle,
     abi_incremental_glyph_lifecycle,
     abi_incremental_state_lifecycle,
+    abi_incremental_callback_table_contract,
     abi_support_gzip_stream_bytes,
     abi_support_gzip_stream_close,
     abi_support_colr_v1_paint_layer_iterator,
