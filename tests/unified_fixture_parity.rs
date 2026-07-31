@@ -2381,10 +2381,15 @@ fn compare_backend_outputs_with_oracle_cache(
         let _profile = ProfileStage::new("runtime.load_oracle_cache_outputs");
         read_oracle_cache_outputs(&oracle_batch.unique_cases, &cache_path)?
     };
-    let oracle_outputs = {
+    let expanded_oracle_outputs = {
         let _profile = ProfileStage::new("runtime.expand_oracle_cache_outputs");
         oracle_batch.expand_outputs(unique_oracle_outputs.as_ref())
     };
+    let oracle_outputs = cases
+        .iter()
+        .zip(expanded_oracle_outputs.iter())
+        .map(|(case, output)| project_incremental_metrics_nullness(case, output.clone()))
+        .collect::<Result<Arc<[_]>, _>>()?;
     let result = {
         let _profile = ProfileStage::new("runtime.compare_backend_outputs");
         compare_backend_outputs(cases, oracle_outputs.as_ref())
@@ -2598,9 +2603,7 @@ fn read_oracle_cache_outputs(
         .zip(reader.lines())
         .map(|(case, line)| {
             let line = line.map_err(|err| format!("{} oracle read error: {err}", case.case_id))?;
-            let output = parse_run_output(&line)
-                .map_err(|err| format!("{} oracle failed: {err}", case.case_id))?;
-            project_incremental_metrics_nullness(case, output)
+            parse_run_output(&line).map_err(|err| format!("{} oracle failed: {err}", case.case_id))
         })
         .collect::<Result<Vec<_>, _>>()?;
     let outputs = Arc::<[RunOutput]>::from(outputs);
