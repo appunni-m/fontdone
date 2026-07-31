@@ -8020,6 +8020,93 @@ mod tests {
     }
 
     #[test]
+    fn variable_instances_without_subfamily_synthesize_postscript_names() {
+        for fixture in [
+            "tests/fixtures/input/fonts/variable/variable-name-missing-subfamily.ttf",
+            "tests/fixtures/input/fonts/variable/variable-name-long-postscript.ttf",
+        ] {
+            let data =
+                match std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(fixture))
+                {
+                    Ok(data) => data,
+                    Err(err) => panic!("{fixture} should be readable: {err}"),
+                };
+            let mut font = match Font::truetype(&data, 16.0) {
+                Ok(font) => font,
+                Err(err) => panic!("variable fixture should load: {err}"),
+            };
+            for instance in 1..=12 {
+                match font.set_named_instance(instance) {
+                    Ok(()) => {}
+                    Err(err) => panic!("instance {instance} should apply: {err}"),
+                }
+                let name = match font.postscript_name() {
+                    Some(name) => name,
+                    None => panic!("instance {instance} must expose a postscript name"),
+                };
+                assert!(!name.is_empty());
+                assert!(name.len() <= 127);
+            }
+        }
+    }
+
+    #[test]
+    fn variation_postscript_name_helpers_match_pinned_bounds() {
+        // Synthesized names append axis tags only for non-default coords.
+        let axes = vec![
+            crate::tt::fvar::FvarAxis {
+                tag: u32::from_be_bytes(*b"wght"),
+                min_value: 100,
+                default_value: 400,
+                max_value: 900,
+                flags: 0,
+                name_id: 0,
+            },
+            crate::tt::fvar::FvarAxis {
+                tag: u32::from_be_bytes(*b"wdth"),
+                min_value: 500,
+                default_value: 500,
+                max_value: 1000,
+                flags: 0,
+                name_id: 0,
+            },
+        ];
+        // Coordinates equal to an axis default are omitted from the name.
+        let synthesized = super::synthesize_instance_postscript_name("Test", &axes, &[400, 700]);
+        assert!(synthesized.starts_with("Test_"));
+        assert!(synthesized.contains("wdth"));
+        assert!(!synthesized.contains("wght"));
+        assert_eq!(
+            super::fixed_16_16_to_short_decimal(0x0001_0000),
+            "1".to_string()
+        );
+        assert_eq!(
+            super::fixed_16_16_to_short_decimal(-(0x0001_0000)),
+            "-1".to_string()
+        );
+        assert_eq!(super::fixed_16_16_to_short_decimal(0), "0".to_string());
+        assert_eq!(
+            super::fixed_16_16_to_short_decimal(0x0001_8000),
+            "1.5".to_string()
+        );
+        assert_eq!(
+            super::fixed_16_16_to_short_decimal(0x0001_4000),
+            "1.25".to_string()
+        );
+
+        // Over-long names are truncated with a deterministic MurmurHash suffix.
+        let long = "A".repeat(200);
+        let limited = super::limit_variation_postscript_name("Test", long.clone());
+        assert!(limited.starts_with("Test-"));
+        assert!(limited.ends_with("..."));
+        assert!(limited.len() < long.len());
+        assert_eq!(
+            limited,
+            super::limit_variation_postscript_name("Test", long)
+        );
+    }
+
+    #[test]
     fn color_and_sbix_fonts_load_and_measure() {
         for data in [
             include_bytes!("../tests/fixtures/input/fonts/color/colr-v0-layers-cpal.ttf")

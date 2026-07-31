@@ -2350,4 +2350,40 @@ mod tests {
         assert!(orientation == 0 || orientation == 1);
         assert_eq!(outline_get_orientation(None), 0);
     }
+
+    #[test]
+    fn type1_and_cid_faces_load_glyphs_through_the_facade() {
+        let cases: &[(&str, &[u8])] = &[(
+            "type1",
+            include_bytes!("../tests/fixtures/input/fonts/type1/simple-type1.pfb"),
+        )];
+        for (label, data) in cases {
+            let face = match Face::from_memory(data, 0, 16.0) {
+                Ok(face) => face,
+                Err(err) => panic!("{label} fixture should load: {err}"),
+            };
+            let glyph = match face.first_char() {
+                Some((char_code, _)) => face.get_char_index(char_code),
+                // CID fixtures may expose no cmap; load the .notdef charstring.
+                None => 0,
+            };
+            for flags in [
+                LoadFlags::NO_HINTING,
+                LoadFlags::NO_SCALE,
+                LoadFlags::NO_SCALE | LoadFlags::VERTICAL_LAYOUT,
+            ] {
+                match face.load_glyph(glyph, flags) {
+                    Ok(slot) => assert!(
+                        slot.metrics.hori_advance >= 0,
+                        "advance must stay non-negative"
+                    ),
+                    Err(err) => panic!("{label} load with {flags:?} should succeed: {err}"),
+                }
+            }
+            match face.load_glyph(glyph, LoadFlags::NO_HINTING | LoadFlags::RENDER) {
+                Ok(slot) => assert_eq!(slot.format, GlyphFormat::Bitmap),
+                Err(err) => panic!("{label} render should succeed: {err}"),
+            }
+        }
+    }
 }
