@@ -1238,4 +1238,95 @@ mod tests {
         assert!(result.pixels.iter().any(|pixel| *pixel > 0));
         Ok(())
     }
+
+    fn triangle_outline() -> Outline {
+        Outline {
+            n_contours: 1,
+            contours: vec![2],
+            points: vec![
+                crate::outline::OutlinePoint {
+                    x: 0,
+                    y: 0,
+                    on_curve: true,
+                },
+                crate::outline::OutlinePoint {
+                    x: 4 << 6,
+                    y: 0,
+                    on_curve: true,
+                },
+                crate::outline::OutlinePoint {
+                    x: 0,
+                    y: 4 << 6,
+                    on_curve: true,
+                },
+            ],
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 4,
+            cbox_y_max: 4,
+            ..Outline::default()
+        }
+    }
+
+    #[test]
+    fn rasterize_in_explicit_boxes() -> Result<(), FontError> {
+        let boxed = rasterize_in_box(triangle_outline(), 8, 8)?;
+        assert_eq!(boxed.width, 8);
+        assert_eq!(boxed.height, 8);
+        assert!(boxed.pixels.iter().any(|pixel| *pixel > 0));
+
+        let shifted = rasterize_shifted_in_box(&triangle_outline(), 1 << 6, 1 << 6, 8, 8)?;
+        assert_eq!(shifted.width, 8);
+        assert_eq!(shifted.height, 8);
+        assert!(shifted.pixels.iter().any(|pixel| *pixel > 0));
+
+        // Empty outline is a no-op in an explicit box.
+        let empty = Outline {
+            n_contours: 0,
+            ..Outline::default()
+        };
+        let noop = rasterize_shifted_in_box(&empty, 0, 0, 8, 8)?;
+        assert!(noop.pixels.iter().all(|pixel| *pixel == 0));
+        Ok(())
+    }
+
+    #[test]
+    fn rasterize_into_target_buffer() -> Result<(), FontError> {
+        let mut target = vec![0u8; 64];
+        rasterize_shifted_in_box_to(
+            &triangle_outline(),
+            0,
+            0,
+            8,
+            8,
+            &mut target,
+            8,
+            1,
+            0,
+            0,
+            8,
+            0,
+            8,
+        )?;
+        assert!(target.iter().any(|pixel| *pixel > 0));
+
+        // Empty outlines and zero-sized boxes are no-ops.
+        let empty = Outline {
+            n_contours: 0,
+            ..Outline::default()
+        };
+        rasterize_shifted_in_box_to(&empty, 0, 0, 8, 8, &mut target, 8, 1, 0, 0, 8, 0, 8)?;
+        Ok(())
+    }
+
+    #[test]
+    fn direct_span_rasterization() -> Result<(), FontError> {
+        let spans = rasterize_direct_spans_in_box(&triangle_outline(), 8, 8)?;
+        assert!(!spans.is_empty());
+        assert!(spans.iter().all(|span| span.coverage > 0));
+
+        let clipped = rasterize_direct_spans_in_clip_box(&triangle_outline(), 8, 8, 0, 4, 0, 4)?;
+        assert!(!clipped.is_empty());
+        Ok(())
+    }
 }
