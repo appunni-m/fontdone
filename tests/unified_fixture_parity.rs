@@ -70019,8 +70019,7 @@ fn coordinate_endpoint_payload(
     transformed_vector: FT_Vector,
     runs: &[FTOutlineDecomposeRun],
 ) -> RunOutput {
-    let mut coordinates = Vec::new();
-    coordinates.reserve(
+    let mut coordinates = Vec::with_capacity(
         glyph_points
             .len()
             .saturating_mul(2)
