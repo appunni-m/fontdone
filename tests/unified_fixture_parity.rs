@@ -42298,6 +42298,15 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(load_flags_param(params)?.to_string());
             Ok(args)
         }
+        "freetype.load_glyph_pair" => {
+            let mut args = vec!["--load-svg-only-pair".to_string()];
+            push_font_source(case, &mut args)?;
+            push_face_size(params, &mut args)?;
+            args.push(svg_only_pair_glyph_index(params, "svg_glyph_selector")?.to_string());
+            args.push(svg_only_pair_glyph_index(params, "non_svg_glyph_selector")?.to_string());
+            args.push(load_flags_param(params)?.to_string());
+            Ok(args)
+        }
         "ftglyph.svg_feature_probe"
             if case.case_id == "ftglyph.FT_SvgGlyph.feature_availability_recorded" =>
         {
@@ -44159,6 +44168,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "load_char" => rust_load_char_public_api(case),
         "freetype.load_svg_glyph" => rust_svg_glyph_load(case),
+        "freetype.load_glyph_pair" => rust_svg_only_pair(case),
         "ftglyph.svg_feature_probe" => rust_svg_feature_probe(case),
         "load_glyph" => {
             if lifecycle_handle_param_is_null(&case.inputs.params, "face") {
@@ -45527,6 +45537,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             output
         }
         "freetype.load_svg_glyph" => c_svg_glyph_load(case),
+        "freetype.load_glyph_pair" => c_svg_only_pair(case),
         "ftglyph.svg_feature_probe" => c_svg_feature_probe(case),
         "load_glyph" => {
             if lifecycle_handle_param_is_null(&case.inputs.params, "face") {
@@ -46761,6 +46772,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             output
         }
         "freetype.load_svg_glyph" => wasm_svg_glyph_load(case),
+        "freetype.load_glyph_pair" => wasm_svg_only_pair(case),
         "ftglyph.svg_feature_probe" => wasm_svg_feature_probe(case),
         "load_glyph" => {
             if lifecycle_handle_param_is_null(&case.inputs.params, "face") {
@@ -52112,6 +52124,40 @@ fn svg_glyph_load_index(params: &Value) -> Result<u32, String> {
     u32_value(raw, "glyph_index")
 }
 
+fn svg_only_pair_glyph_index(params: &Value, selector: &str) -> Result<u32, String> {
+    params
+        .get(selector)
+        .and_then(Value::as_object)
+        .and_then(|selector| selector.get("glyph_index"))
+        .ok_or_else(|| format!("missing {selector}.glyph_index"))
+        .and_then(|value| u32_value(value, selector))
+}
+
+fn svg_only_svg_row(status: FT_Error, slot_format: i32, document: Option<&[u8]>) -> Value {
+    json!({
+        "status": status,
+        "slot_format": slot_format,
+        "svg_document": document.map(|bytes| json!({
+            "length": bytes.len(),
+            "hash": djb2_hash(bytes)
+        }))
+    })
+}
+
+fn svg_only_error_row(status: FT_Error) -> Value {
+    json!({
+        "status": status,
+        "error": status
+    })
+}
+
+fn svg_only_pair_output(svg_glyph: Value, non_svg_glyph: Value) -> RunOutput {
+    ok(json!({
+        "svg_glyph": svg_glyph,
+        "non_svg_glyph": non_svg_glyph
+    }))
+}
+
 const SVG_FEATURE_PROBE_OPERATIONS: [&str; 3] = [
     "FT_New_Glyph with FT_GLYPH_FORMAT_SVG",
     "FT_Get_Glyph from SVG slot when fixture asset exists",
@@ -52348,6 +52394,110 @@ fn wasm_svg_glyph_load(case: &InputCase) -> Result<RunOutput, String> {
     }
     wasm_done_face(handle);
     Ok(output)
+}
+
+fn rust_svg_only_pair(case: &InputCase) -> Result<RunOutput, String> {
+    let face = open_face(case)?;
+    let params = &case.inputs.params;
+    let svg_glyph_index = svg_only_pair_glyph_index(params, "svg_glyph_selector")?;
+    let non_svg_glyph_index = svg_only_pair_glyph_index(params, "non_svg_glyph_selector")?;
+    let load_flags = load_flags_param(params)?;
+    let svg_glyph = match FT_Load_Glyph(&face, svg_glyph_index, load_flags) {
+        Ok(slot) => svg_only_svg_row(
+            FT_Err_Ok,
+            slot.format,
+            slot.svg
+                .as_ref()
+                .map(|document| document.svg_document.as_slice()),
+        ),
+        Err(status) => svg_only_svg_row(status, FT_GLYPH_FORMAT_NONE, None),
+    };
+    let non_svg_glyph = match FT_Load_Glyph(&face, non_svg_glyph_index, load_flags) {
+        Ok(_) => svg_only_error_row(FT_Err_Ok),
+        Err(status) => svg_only_error_row(status),
+    };
+    Ok(svg_only_pair_output(svg_glyph, non_svg_glyph))
+}
+
+fn c_svg_only_pair(case: &InputCase) -> Result<RunOutput, String> {
+    let (library, face) = c_open_face(case)?;
+    let params = &case.inputs.params;
+    let svg_glyph_index = svg_only_pair_glyph_index(params, "svg_glyph_selector")?;
+    let non_svg_glyph_index = svg_only_pair_glyph_index(params, "non_svg_glyph_selector")?;
+    let load_flags = load_flags_param(params)?;
+
+    let mut svg_status = c_abi::FT_Load_Glyph(face, svg_glyph_index, load_flags);
+    let mut svg_glyph = ptr::null_mut();
+    let svg_row = if svg_status == FT_Err_Ok {
+        let slot = c_abi::abi_glyph_slot_pointer(face)
+            .ok_or_else(|| "missing c SVG-only load slot pointer".to_string())?;
+        svg_status = c_abi::FT_Get_Glyph(slot, &mut svg_glyph);
+        if svg_status == FT_Err_Ok {
+            let snapshot = c_abi::abi_svg_glyph_snapshot(svg_glyph)
+                .ok_or_else(|| "missing c SVG-only glyph snapshot".to_string())?;
+            svg_only_svg_row(
+                FT_Err_Ok,
+                snapshot.root.format,
+                Some(&snapshot.svg_document),
+            )
+        } else {
+            svg_only_svg_row(svg_status, FT_GLYPH_FORMAT_NONE, None)
+        }
+    } else {
+        svg_only_svg_row(svg_status, FT_GLYPH_FORMAT_NONE, None)
+    };
+    let non_svg_status = c_abi::FT_Load_Glyph(face, non_svg_glyph_index, load_flags);
+    let non_svg_row = if non_svg_status == FT_Err_Ok {
+        svg_only_error_row(FT_Err_Ok)
+    } else {
+        svg_only_error_row(non_svg_status)
+    };
+    if !svg_glyph.is_null() {
+        c_abi::FT_Done_Glyph(svg_glyph);
+    }
+    c_done_face(face);
+    c_done_library(library);
+    Ok(svg_only_pair_output(svg_row, non_svg_row))
+}
+
+fn wasm_svg_only_pair(case: &InputCase) -> Result<RunOutput, String> {
+    let handle = wasm_open_face(case)?;
+    let params = &case.inputs.params;
+    let svg_glyph_index = svg_only_pair_glyph_index(params, "svg_glyph_selector")?;
+    let non_svg_glyph_index = svg_only_pair_glyph_index(params, "non_svg_glyph_selector")?;
+    let load_flags = load_flags_param(params)?;
+
+    let mut svg_status = wasm_abi::fontdone_wasm_load_glyph(handle, svg_glyph_index, load_flags);
+    let mut glyph_handle = 0usize;
+    let svg_row = if svg_status == FT_Err_Ok {
+        svg_status = wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut glyph_handle);
+        if svg_status == FT_Err_Ok {
+            let snapshot = wasm_abi::abi_svg_glyph_snapshot(glyph_handle)
+                .ok_or_else(|| "missing wasm SVG-only glyph snapshot".to_string())?;
+            svg_only_svg_row(
+                FT_Err_Ok,
+                snapshot.root.format,
+                Some(&snapshot.svg_document),
+            )
+        } else {
+            svg_only_svg_row(svg_status, FT_GLYPH_FORMAT_NONE, None)
+        }
+    } else {
+        svg_only_svg_row(svg_status, FT_GLYPH_FORMAT_NONE, None)
+    };
+    let non_svg_status =
+        wasm_abi::fontdone_wasm_load_glyph(handle, non_svg_glyph_index, load_flags);
+    let non_svg_row = if non_svg_status == FT_Err_Ok {
+        svg_only_error_row(FT_Err_Ok)
+    } else {
+        svg_only_error_row(non_svg_status)
+    };
+    if glyph_handle != 0 {
+        let glyph = ptr::with_exposed_provenance_mut::<wasm_abi::FontdoneWasmGlyph>(glyph_handle);
+        wasm_abi::fontdone_wasm_done_glyph_handle(glyph);
+    }
+    wasm_done_face(handle);
+    Ok(svg_only_pair_output(svg_row, non_svg_row))
 }
 
 fn rust_svg_glyph_record(face: &FT_Face, case: &InputCase) -> Result<RunOutput, String> {

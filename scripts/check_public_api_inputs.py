@@ -467,6 +467,7 @@ REAL_PARITY_OPERATIONS = {
     "ftlcdfil.set_lcd_geometry",
     "load_char",
     "load_glyph",
+    "freetype.load_glyph_pair",
     "freetype.inspect_glyph_metrics",
     "freetype.inspect_glyph_slot",
     "freetype.get_subglyph_info",
@@ -4102,6 +4103,8 @@ def ftimage_outline_owner_real_parity_reason(row: ConcreteInput) -> str | None:
 def freetype_core_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     """Rows for core FreeType face/size/slot behavior without a maintained route."""
     if row.case_id == "freetype.FT_LOAD_SVG_ONLY.svg_only_behavior":
+        if unresolved_assets_reason(row) is None:
+            return None
         if exact_error_public_route(row.operation, row.case_id, row.expect_error):
             return None
         return (
@@ -4182,6 +4185,20 @@ def freetype_core_subsystem_pending_reason(row: ConcreteInput) -> str | None:
             "negative face-index probe, stream, and pathname behavior across "
             "pinned C, Rust FFI, C ABI, and WASM; current memory helpers alone "
             "do not prove the full argument-dispatch contract"
+        )
+    return None
+
+
+def freetype_svg_only_real_parity_reason(row: ConcreteInput) -> str | None:
+    if (
+        row.case_id == "freetype.FT_LOAD_SVG_ONLY.svg_only_behavior"
+        and row.operation == "freetype.load_glyph_pair"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_LOAD_SVG_ONLY compares the same-input pinned C, Rust FFI, C ABI, "
+            "and WASM pair probe: SVG glyph success with slot format/document "
+            "hash, and non-SVG glyph rejection with the public error code"
         )
     return None
 
@@ -8514,6 +8531,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     ftimage_outline_owner_real = ftimage_outline_owner_real_parity_reason(row)
     if ftimage_outline_owner_real:
         return ("real-parity", ftimage_outline_owner_real)
+    freetype_svg_only_real = freetype_svg_only_real_parity_reason(row)
+    if freetype_svg_only_real:
+        return ("real-parity", freetype_svg_only_real)
     freetype_core_pending = freetype_core_subsystem_pending_reason(row)
     if freetype_core_pending:
         return ("pending-route", freetype_core_pending)

@@ -8287,6 +8287,31 @@ static void print_svg_slot_load_payload(FT_GlyphSlot slot, FT_Error status) {
     printf("}}\n");
 }
 
+static void print_svg_only_pair_svg_row(FT_GlyphSlot slot, FT_Error status) {
+    FT_SVG_Document document = NULL;
+    if (!status && slot && slot->format == FT_GLYPH_FORMAT_SVG && slot->other) {
+        document = (FT_SVG_Document)slot->other;
+    }
+    printf("{\"status\":%ld,\"slot_format\":%ld,\"svg_document\":",
+           (long)status,
+           document && slot ? (long)slot->format : (long)FT_GLYPH_FORMAT_NONE);
+    if (!document) {
+        printf("null");
+    } else {
+        printf("{\"length\":%lu,\"hash\":",
+               (unsigned long)document->svg_document_length);
+        print_byte_hash_or_null(
+            document->svg_document,
+            (size_t)document->svg_document_length);
+        printf("}");
+    }
+    printf("}");
+}
+
+static void print_svg_only_pair_error_row(FT_Error status) {
+    printf("{\"status\":%ld,\"error\":%ld}", (long)status, (long)status);
+}
+
 static void print_glyph_record_payload(FT_Glyph glyph,
                                        int document_pointer_independent,
                                        int source_destroyed_before_target) {
@@ -17662,6 +17687,51 @@ static int emit_svg_feature_face_probe(int argc, char** argv) {
     printf(",\"output\":{\"feature_available\":%s,\"classification\":\"%s\"}}\n",
            available ? "true" : "false",
            available ? "enabled" : "unsupported");
+    close_oracle_face(&face);
+    return 0;
+}
+
+static int emit_svg_only_pair(int argc, char** argv) {
+    if (argc != 10) {
+        fprintf(stderr,
+                "--load-svg-only-pair requires SOURCE_KIND SOURCE_VALUE FACE_INDEX X Y SVG_GLYPH NON_SVG_GLYPH FLAGS\n");
+        return 2;
+    }
+    OracleFace face;
+    int opened = open_oracle_face(argv[2], argv[3], atol(argv[4]), &face);
+    if (opened != 0) {
+        return opened;
+    }
+    FT_Error size_error = FT_Set_Pixel_Sizes(
+        face.face,
+        (FT_UInt)strtoul(argv[5], NULL, 10),
+        (FT_UInt)strtoul(argv[6], NULL, 10));
+    if (size_error) {
+        printf("{");
+        print_status(size_error);
+        printf(",\"output\":null}\n");
+        close_oracle_face(&face);
+        return 0;
+    }
+    FT_UInt svg_glyph_index = (FT_UInt)strtoul(argv[7], NULL, 10);
+    FT_UInt non_svg_glyph_index = (FT_UInt)strtoul(argv[8], NULL, 10);
+    FT_Int32 load_flags = (FT_Int32)strtol(argv[9], NULL, 10);
+
+    FT_Error svg_status = FT_Load_Glyph(face.face, svg_glyph_index, load_flags);
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"svg_glyph\":");
+    if (svg_status) {
+        print_svg_only_pair_svg_row(NULL, svg_status);
+    } else {
+        print_svg_only_pair_svg_row(face.face->glyph, svg_status);
+    }
+
+    FT_Error non_svg_status = FT_Load_Glyph(face.face, non_svg_glyph_index, load_flags);
+    printf(",\"non_svg_glyph\":");
+    print_svg_only_pair_error_row(non_svg_status);
+    printf("}}\n");
+
     close_oracle_face(&face);
     return 0;
 }
@@ -34532,6 +34602,9 @@ static int dispatch(int argc, char** argv) {
     }
     if ((argc == 5 || argc == 6) && streq(argv[1], "--svg-feature-face-probe")) {
         return emit_svg_feature_face_probe(argc, argv);
+    }
+    if (argc == 10 && streq(argv[1], "--load-svg-only-pair")) {
+        return emit_svg_only_pair(argc, argv);
     }
     // Generic null-source handler: intercept commands with "null" in handle-level
     // parameters (source kind, source value, or face).
