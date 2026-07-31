@@ -1205,4 +1205,127 @@ mod tests {
         assert!(outcome.advance_width > 0);
         Ok(())
     }
+
+    #[test]
+    fn storage_cvt_and_stack_helpers_match_pedantic_policy() -> Result<(), FontError> {
+        let scale = HintScale {
+            x_scale: 1 << 16,
+            y_scale: 1 << 16,
+            tt_scale: 1 << 16,
+            ppem: 16,
+            x_ratio: 1 << 16,
+            y_ratio: 1 << 16,
+            point_size: 16 << 6,
+            storage_size: 8,
+            max_function_defs: 64,
+            max_instruction_defs: 64,
+            max_stack_elements: 64,
+            num_glyphs: 10,
+            twilight_points: 8,
+            is_composite: false,
+            reset_vectors_at_glyph_entry: false,
+            metrics_legacy_phantoms: false,
+            pedantic_hinting: false,
+            native_hint_mode: NativeHintMode::Normal,
+            phantom_x_override: None,
+            interpreter_version: 40,
+        };
+        let mut context = prepare_context(&[64], &[], &[], &scale)?;
+        assert_eq!(context.get_storage(0)?, 0);
+        context.set_storage(0, 42)?;
+        assert_eq!(context.get_storage(0)?, 42);
+        // Out-of-range access is lenient without pedantic hinting.
+        assert_eq!(context.get_storage(99)?, 0);
+        context.set_storage(99, 1)?;
+        // CVT reads apply the current size ratio; only the index policy
+        // matters here.
+        assert!(context.get_cvt(0)? != 0);
+        assert_eq!(context.get_cvt(99)?, 0);
+        context.push(7);
+        assert_eq!(context.top()?, 7);
+        assert_eq!(context.pop()?, 7);
+        // An empty-stack pop returns zero in normal mode.
+        assert_eq!(context.pop()?, 0);
+
+        // Pedantic mode turns the same edges into errors.
+        let pedantic = HintScale {
+            pedantic_hinting: true,
+            ..scale
+        };
+        let mut context = prepare_context(&[64], &[], &[], &pedantic)?;
+        assert!(context.get_storage(99).is_err());
+        assert!(context.set_storage(99, 1).is_err());
+        assert!(context.pop().is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn if_else_branches_skip_instruction_streams() -> Result<(), FontError> {
+        let scale = HintScale {
+            x_scale: 1 << 16,
+            y_scale: 1 << 16,
+            tt_scale: 1 << 16,
+            ppem: 16,
+            x_ratio: 1 << 16,
+            y_ratio: 1 << 16,
+            point_size: 16 << 6,
+            storage_size: 8,
+            max_function_defs: 64,
+            max_instruction_defs: 64,
+            max_stack_elements: 64,
+            num_glyphs: 10,
+            twilight_points: 8,
+            is_composite: false,
+            reset_vectors_at_glyph_entry: false,
+            metrics_legacy_phantoms: false,
+            pedantic_hinting: false,
+            native_hint_mode: NativeHintMode::Normal,
+            phantom_x_override: None,
+            interpreter_version: 40,
+        };
+        let context = prepare_context(&[], &[], &[], &scale)?;
+        let raw = [OutlinePoint {
+            x: 100,
+            y: 200,
+            on_curve: true,
+        }];
+        let run = |program: &[u8]| -> Result<usize, FontError> {
+            let mut scaled = raw
+                .iter()
+                .map(|point| crate::outline::OutlinePoint {
+                    x: point.x,
+                    y: point.y,
+                    on_curve: point.on_curve,
+                })
+                .collect::<Vec<_>>();
+            let outcome = hint_glyph(
+                &mut scaled,
+                &raw,
+                &[1],
+                &[0],
+                500,
+                500,
+                0,
+                0,
+                0,
+                0,
+                &scale,
+                program,
+                &context,
+            )?;
+            assert!(outcome.advance_width > 0);
+            Ok(outcome.context.storage[0] as usize)
+        };
+        // IF (true): storage[0] = 42, the ELSE arm is skipped.
+        let true_program = [
+            0xB0, 1, 0x58, 0xB0, 0, 0xB0, 42, 0x42, 0x1B, 0xB0, 0, 0xB0, 7, 0x42, 0x59,
+        ];
+        assert_eq!(run(&true_program)?, 42);
+        // IF (false): the THEN arm is skipped, ELSE stores 7.
+        let false_program = [
+            0xB0, 0, 0x58, 0xB0, 0, 0xB0, 42, 0x42, 0x1B, 0xB0, 0, 0xB0, 7, 0x42, 0x59,
+        ];
+        assert_eq!(run(&false_program)?, 7);
+        Ok(())
+    }
 }
