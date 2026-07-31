@@ -1329,4 +1329,184 @@ mod tests {
         assert!(!clipped.is_empty());
         Ok(())
     }
+
+    #[test]
+    fn cubic_outlines_rasterize_into_bitmaps_and_spans() -> Result<(), FontError> {
+        let outline = Outline {
+            n_contours: 1,
+            contours: vec![3],
+            points: vec![
+                crate::outline::OutlinePoint {
+                    x: 0,
+                    y: 0,
+                    on_curve: true,
+                },
+                crate::outline::OutlinePoint {
+                    x: 32,
+                    y: 512,
+                    on_curve: false,
+                },
+                crate::outline::OutlinePoint {
+                    x: 96,
+                    y: 512,
+                    on_curve: false,
+                },
+                crate::outline::OutlinePoint {
+                    x: 128,
+                    y: 0,
+                    on_curve: true,
+                },
+            ],
+            tags: vec![1, 2, 2, 1],
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 128,
+            cbox_y_max: 512,
+        };
+        let width = 8;
+        let height = 32;
+        let mut target = vec![0u8; width * height];
+        let mut scratch = RasterScratch::new();
+        rasterize_shifted_in_box_to_with_scratch(
+            &outline,
+            0,
+            0,
+            width,
+            height,
+            &mut target,
+            width,
+            1,
+            0,
+            outline.cbox_x_min,
+            outline.cbox_x_max,
+            outline.cbox_y_min,
+            outline.cbox_y_max,
+            &mut scratch,
+        )?;
+        assert!(
+            target.iter().any(|&byte| byte > 0),
+            "cubic outline must produce coverage"
+        );
+        let spans = rasterize_direct_spans_in_box(&outline, width, height)?;
+        assert!(!spans.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn sharp_conic_takes_the_forward_difference_loop() -> Result<(), FontError> {
+        // A conic with a far control point forces the DDA split-and-step
+        // path instead of the flat short-circuit.
+        let outline = Outline {
+            n_contours: 1,
+            contours: vec![2],
+            points: vec![
+                crate::outline::OutlinePoint {
+                    x: 0,
+                    y: 0,
+                    on_curve: true,
+                },
+                crate::outline::OutlinePoint {
+                    x: 64,
+                    y: 512,
+                    on_curve: false,
+                },
+                crate::outline::OutlinePoint {
+                    x: 128,
+                    y: 0,
+                    on_curve: true,
+                },
+            ],
+            tags: Vec::new(),
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 128,
+            cbox_y_max: 512,
+        };
+        let width = 8;
+        let height = 32;
+        let mut target = vec![0u8; width * height];
+        let mut scratch = RasterScratch::new();
+        rasterize_shifted_in_box_to_with_scratch(
+            &outline,
+            0,
+            0,
+            width,
+            height,
+            &mut target,
+            width,
+            1,
+            0,
+            outline.cbox_x_min,
+            outline.cbox_x_max,
+            outline.cbox_y_min,
+            outline.cbox_y_max,
+            &mut scratch,
+        )?;
+        assert!(target.iter().any(|&byte| byte > 0));
+        Ok(())
+    }
+
+    #[test]
+    fn cubic_arcs_outside_the_window_are_skipped() -> Result<(), FontError> {
+        let outline = Outline {
+            n_contours: 1,
+            contours: vec![3],
+            points: vec![
+                crate::outline::OutlinePoint {
+                    x: 0,
+                    y: 0,
+                    on_curve: true,
+                },
+                crate::outline::OutlinePoint {
+                    x: 32,
+                    y: 512,
+                    on_curve: false,
+                },
+                crate::outline::OutlinePoint {
+                    x: 96,
+                    y: 512,
+                    on_curve: false,
+                },
+                crate::outline::OutlinePoint {
+                    x: 128,
+                    y: 0,
+                    on_curve: true,
+                },
+            ],
+            tags: vec![1, 2, 2, 1],
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 128,
+            cbox_y_max: 512,
+        };
+        let width = 8;
+        let height = 4;
+        let mut target = vec![0u8; width * height];
+        let mut scratch = RasterScratch::new();
+        // Clip the window to the top pixel so the tall cubic's lower
+        // sub-arcs hit the out-of-window skip path.
+        rasterize_shifted_in_box_to_with_scratch(
+            &outline,
+            0,
+            0,
+            width,
+            height,
+            &mut target,
+            width,
+            1,
+            0,
+            outline.cbox_x_min,
+            outline.cbox_x_max,
+            448,
+            outline.cbox_y_max,
+            &mut scratch,
+        )?;
+        Ok(())
+    }
 }
