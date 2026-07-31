@@ -1161,15 +1161,14 @@ mod tests {
         eblc.extend_from_slice(&1u16.to_be_bytes()); // last glyph
         eblc.extend_from_slice(&8u32.to_be_bytes()); // relative to array start
         // Index subtable: format 1, image format 1, image data offset 0,
-        // then the glyph offset array [0, 9].
+        // then the glyph offset array [0, 7] for the 7-byte image.
         eblc.extend_from_slice(&1u16.to_be_bytes());
         eblc.extend_from_slice(&1u16.to_be_bytes());
         eblc.extend_from_slice(&0u32.to_be_bytes());
         eblc.extend_from_slice(&0u32.to_be_bytes());
-        eblc.extend_from_slice(&9u32.to_be_bytes());
+        eblc.extend_from_slice(&7u32.to_be_bytes());
 
-        // EBDT: 5-byte small metrics + 2 rows of 1-byte mono pixels (7 bytes,
-        // with the range [0, 9) padded to the declared image size).
+        // EBDT: 5-byte small metrics + 2 rows of 1-byte mono pixels.
         let mut ebdt = Vec::new();
         ebdt.extend_from_slice(&2u8.to_be_bytes()); // height
         ebdt.extend_from_slice(&2u8.to_be_bytes()); // width
@@ -1178,7 +1177,6 @@ mod tests {
         ebdt.extend_from_slice(&3u8.to_be_bytes()); // advance
         ebdt.extend_from_slice(&0b1100_0000u8.to_be_bytes());
         ebdt.extend_from_slice(&0b0011_0000u8.to_be_bytes());
-        ebdt.extend_from_slice(&[0; 2]); // pad to 9 bytes
 
         let (font, directory) = directory_for(&eblc, &ebdt);
         let sbit = parse_ok(&font, &directory, "valid sbit parses");
@@ -1191,6 +1189,65 @@ mod tests {
         assert_eq!(glyph.bitmap.width, 2);
         assert_eq!(glyph.bitmap.rows, 2);
         assert_eq!(glyph.bitmap.pitch, 1);
+        // Both 2-bit rows land in the single byte-wide row buffer.
         assert_eq!(glyph.bitmap.buffer, vec![0b1100_0000, 0b0011_0000]);
+    }
+
+    fn eblc_index_format5(first: u16, last: u16, image_size: u32) -> Vec<u8> {
+        let mut eblc = Vec::new();
+        eblc.extend_from_slice(&0x0002_0000u32.to_be_bytes());
+        eblc.extend_from_slice(&1u32.to_be_bytes());
+        eblc.extend_from_slice(&[0; 48]); // strike record
+        eblc[8..12].copy_from_slice(&56u32.to_be_bytes());
+        eblc[16..20].copy_from_slice(&1u32.to_be_bytes());
+        eblc[52] = 12; // x_ppem
+        eblc[53] = 12; // y_ppem
+        eblc[54] = 1; // bit depth
+        eblc.extend_from_slice(&first.to_be_bytes());
+        eblc.extend_from_slice(&last.to_be_bytes());
+        eblc.extend_from_slice(&8u32.to_be_bytes()); // subtable at 64
+        eblc.extend_from_slice(&5u16.to_be_bytes()); // index format 5
+        eblc.extend_from_slice(&5u16.to_be_bytes()); // image format 5
+        eblc.extend_from_slice(&0u32.to_be_bytes()); // image data offset
+        eblc.extend_from_slice(&image_size.to_be_bytes());
+        eblc.extend_from_slice(&2u8.to_be_bytes()); // height
+        eblc.extend_from_slice(&2u8.to_be_bytes()); // width
+        eblc.extend_from_slice(&0u8.to_be_bytes());
+        eblc.extend_from_slice(&2u8.to_be_bytes());
+        eblc.extend_from_slice(&3u8.to_be_bytes());
+        eblc.extend_from_slice(&0u8.to_be_bytes());
+        eblc.extend_from_slice(&0u8.to_be_bytes());
+        eblc.extend_from_slice(&0u8.to_be_bytes());
+        eblc.extend_from_slice(&1u32.to_be_bytes()); // sparse glyph count
+        eblc.extend_from_slice(&first.to_be_bytes()); // glyph code
+        eblc
+    }
+
+    #[test]
+    fn format5_bit_aligned_image_loads() {
+        // Index format 5 reads EBLC constant big metrics + sparse glyph code;
+        // the EBDT payload is a 2x2 mono bitmap packed by bit depth.
+        let eblc = eblc_index_format5(1, 1, 1);
+        // 2x2 mono: bits 0b1100_0011 packed into one byte.
+        let ebdt = vec![0b1100_0011];
+        let (font, directory) = directory_for(&eblc, &ebdt);
+        let sbit = parse_ok(&font, &directory, "valid sbit parses");
+        let glyph = match sbit.load_glyph(1, 12, 12, 0) {
+            Ok(glyph) => glyph,
+            Err(error) => panic!("format-5 image failed: {error}"),
+        };
+        assert_eq!(glyph.bitmap.width, 2);
+        assert_eq!(glyph.bitmap.rows, 2);
+        assert_eq!(glyph.bitmap.pitch, 1);
+        // Both 2-bit rows land in the single byte-wide row buffer.
+        assert_eq!(glyph.bitmap.buffer, vec![0b1100_0000, 0]);
+    }
+
+    #[test]
+    fn format5_missing_image_reports_missing_bitmap() {
+        let eblc = eblc_index_format5(1, 1, 1);
+        // An empty EBDT makes the whole sbit table unavailable.
+        let (font, directory) = directory_for(&eblc, &[]);
+        assert!(parse_sbit(&directory, &font).is_none());
     }
 }
