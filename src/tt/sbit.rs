@@ -224,7 +224,6 @@ impl SbitStrike {
         let Some(array) = eblc.get(array_start..array_end) else {
             return Err(no_bitmap_error(recurse_count));
         };
-
         for range_index in 0..count {
             let record = range_index * 8;
             let start = read_u16(array, record).ok_or_else(|| no_bitmap_error(recurse_count))?;
@@ -840,7 +839,6 @@ fn blit_packed_component_bitmap(
     let row_bytes = line_bits.div_ceil(8);
     let x_byte = dx >> 3;
     let x_shift = dx & 7;
-
     for row in 0..component.rows as usize {
         let target_start = dy
             .checked_add(row)
@@ -871,7 +869,6 @@ fn blit_packed_component_bitmap(
             .ok_or_else(|| {
                 FontError::InvalidFont("embedded bitmap compound component row truncated".into())
             })?;
-
         if x_shift == 0 {
             let mut index = 0usize;
             let mut remaining_bits = line_bits;
@@ -882,7 +879,8 @@ fn blit_packed_component_bitmap(
             }
             if remaining_bits > 0 {
                 let mask = 0xFF00u32 >> remaining_bits;
-                target_row[index] |= (u32::from(component_row[index]) & mask) as u8;
+                let value = (u32::from(component_row[index]) & mask) as u8;
+                target_row[index] |= value;
             }
         } else {
             let mut source_index = 0usize;
@@ -1199,7 +1197,7 @@ mod tests {
         eblc.extend_from_slice(&1u32.to_be_bytes());
         eblc.extend_from_slice(&[0; 48]); // strike record
         eblc[8..12].copy_from_slice(&56u32.to_be_bytes());
-        eblc[16..20].copy_from_slice(&1u32.to_be_bytes());
+        eblc[16..20].copy_from_slice(&1u32.to_be_bytes()); // index array count
         eblc[52] = 12; // x_ppem
         eblc[53] = 12; // y_ppem
         eblc[54] = 1; // bit depth
@@ -1249,5 +1247,71 @@ mod tests {
         // An empty EBDT makes the whole sbit table unavailable.
         let (font, directory) = directory_for(&eblc, &[]);
         assert!(parse_sbit(&directory, &font).is_none());
+    }
+
+    #[test]
+    fn format8_compound_image_blits_component() {
+        // EBLC covers glyphs 1..2: glyph 1 is a 2x2 mono image (9 bytes),
+        // glyph 2 is a compound that references glyph 1 at (0, 0).
+        let mut eblc = Vec::new();
+        eblc.extend_from_slice(&0x0002_0000u32.to_be_bytes());
+        eblc.extend_from_slice(&1u32.to_be_bytes());
+        eblc.extend_from_slice(&[0; 48]); // strike record
+        eblc[8..12].copy_from_slice(&56u32.to_be_bytes());
+        eblc[16..20].copy_from_slice(&2u32.to_be_bytes()); // two range entries
+        eblc[52] = 12; // x_ppem
+        eblc[53] = 12; // y_ppem
+        eblc[54] = 1; // bit depth
+        // Two range entries: glyph 1 -> simple format-1 subtable,
+        // glyph 2 -> compound format-8 subtable.
+        eblc.extend_from_slice(&1u16.to_be_bytes()); // first glyph
+        eblc.extend_from_slice(&1u16.to_be_bytes()); // last glyph
+        eblc.extend_from_slice(&16u32.to_be_bytes()); // subtable 1 at 72
+        eblc.extend_from_slice(&2u16.to_be_bytes()); // first glyph
+        eblc.extend_from_slice(&2u16.to_be_bytes()); // last glyph
+        eblc.extend_from_slice(&32u32.to_be_bytes()); // subtable 2 at 88
+        // Subtable 1 (format 1, image format 1): offsets [0, 7].
+        eblc.extend_from_slice(&1u16.to_be_bytes());
+        eblc.extend_from_slice(&1u16.to_be_bytes());
+        eblc.extend_from_slice(&0u32.to_be_bytes());
+        eblc.extend_from_slice(&0u32.to_be_bytes());
+        eblc.extend_from_slice(&7u32.to_be_bytes());
+        // Subtable 2 (format 1, image format 8): offsets [7, 19].
+        eblc.extend_from_slice(&1u16.to_be_bytes());
+        eblc.extend_from_slice(&8u16.to_be_bytes());
+        eblc.extend_from_slice(&0u32.to_be_bytes());
+        eblc.extend_from_slice(&7u32.to_be_bytes());
+        eblc.extend_from_slice(&19u32.to_be_bytes());
+
+        // EBDT: glyph 1 = 5-byte small metrics + 2 rows; glyph 2 = compound.
+        let mut ebdt = Vec::new();
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&0u8.to_be_bytes());
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&3u8.to_be_bytes());
+        ebdt.extend_from_slice(&0b1100_0000u8.to_be_bytes());
+        ebdt.extend_from_slice(&0b1100_0000u8.to_be_bytes());
+        // Compound: 2x2 small metrics, one component (glyph 1, dx=0, dy=0).
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&0u8.to_be_bytes());
+        ebdt.extend_from_slice(&2u8.to_be_bytes());
+        ebdt.extend_from_slice(&3u8.to_be_bytes());
+        ebdt.extend_from_slice(&0u8.to_be_bytes()); // format-8 padding byte
+        ebdt.extend_from_slice(&1u16.to_be_bytes()); // component count
+        ebdt.extend_from_slice(&1u16.to_be_bytes()); // glyph 1
+        ebdt.extend_from_slice(&0u8.to_be_bytes()); // dx
+        ebdt.extend_from_slice(&0u8.to_be_bytes()); // dy
+        let (font, directory) = directory_for(&eblc, &ebdt);
+        let sbit = parse_ok(&font, &directory, "valid sbit parses");
+        let glyph = match sbit.load_glyph(2, 12, 12, 0) {
+            Ok(glyph) => glyph,
+            Err(error) => panic!("compound image failed: {error}"),
+        };
+        assert_eq!(glyph.bitmap.width, 2);
+        assert_eq!(glyph.bitmap.rows, 2);
+        // The component bitmap is blitted into the compound canvas.
+        assert_eq!(glyph.bitmap.buffer, vec![0b1100_0000, 0b1100_0000]);
     }
 }
