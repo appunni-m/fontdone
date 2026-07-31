@@ -203,29 +203,27 @@
       "case_id": "ftincrem.FT_Incremental_MetricsRec.vertical_override_applied_where_c_calls_it",
       "subject": "ftincrem.FT_Incremental_MetricsRec",
       "case": "vertical_override_applied_where_c_calls_it",
-      "operation": "ftincrem.override_vertical_glyph_metrics",
+      "operation": "ftincrem.incremental_metrics_vertical_override",
       "schema": "api_result",
       "expect_error": false,
       "inputs": {
         "assets": {
           "vertical_font": {
             "kind": "ref",
-            "id": "input/fonts/incremental/vertical-metrics-incremental.ttf"
+            "role": "font",
+            "path": "input/fonts/DejaVuSans.ttf"
           }
         },
         "params": {
-          "glyph_index": 1,
+          "face_index": 0,
+          "glyph_index": 36,
           "vertical": true,
-          "load_flags": [
-            "FT_LOAD_VERTICAL_LAYOUT"
-          ],
-          "callback_sets": {
-            "bearing_x": 0,
-            "bearing_y": 800,
-            "advance": 1000,
-            "advance_v": 1000
-          },
-          "only_assert_when_c_calls_metrics_with_vertical_true": true
+          "load_flags": "FT_LOAD_VERTICAL_LAYOUT",
+          "horizontal_bearing_delta": 7,
+          "horizontal_advance_delta": 11,
+          "vertical_bearing_delta": 13,
+          "vertical_advance_delta": 17,
+          "runtime_route": "actual_incremental_metrics_vertical_override"
         }
       },
       "classifiers": [
@@ -234,10 +232,11 @@
         "vertical_metrics"
       ],
       "expectation": {
-        "status": "build_dependent",
+        "status": "supported",
         "output_shape": {
           "load_error": "FT_Error",
           "vertical_callback_seen": "bool",
+          "callback_metrics": "FT_Incremental_MetricsRec",
           "slot_metrics": "FT_Glyph_Metrics",
           "advance": "FT_Vector"
         },
@@ -246,6 +245,7 @@
           "paths": [
             "load_error",
             "vertical_callback_seen",
+            "callback_metrics",
             "slot_metrics.vertBearingY",
             "slot_metrics.vertAdvance",
             "advance"
