@@ -366,19 +366,20 @@ increase is claimed until the next full all-lane measurement**:
 | 22 | `2f05af7f3f3fd767ecc04679fce58abc9781af2b` | Routed `FT_GLYPH_FORMAT_SVG.unsupported_svg_build_classification` through a same-input pinned-C SVG feature/load probe and exact Rust FFI, C ABI, and WASM observations. Clean full parity run `ef1090a4-3ed3-493f-aaa5-0d83d9853078` passed 7,256 / 7,256 runnable comparisons with 51 explicitly pending concrete cases; clean C-ABI scorecard run `90455200-661a-4be1-b6f3-994b5a70724e` reports C01 runtime rows 5,008 / 5,047 with 39 pending. |
 | 23 | `abb16646c6bbb93be42b4b967037a38ad90fbb07` | Routed `FT_LOAD_SVG_ONLY.svg_only_behavior` with the project-authored SVG/non-SVG pair fixture through a same-input pinned-C oracle and exact Rust FFI, C ABI, and WASM observations: SVG glyph success includes slot format/document hash, while the non-SVG glyph preserves the public rejection error. Clean full parity run `3f342b8e-f106-4054-a33e-6fab40d29ce6` passed 7,257 / 7,257 runnable comparisons with 50 explicitly pending concrete cases; clean C-ABI scorecard run `e54a80df-e416-46d2-ac15-9eb4374f9c23` reports C01 runtime rows 5,009 / 5,047 with 38 pending. |
 | 24 | `74f6e87388b5cb31f397449db4d17d0b276b2772` | Routed both `FT_SVG_DocumentRec` payload/metrics rows through the project-authored OT-SVG fixture and exact pinned-C, Rust FFI, C ABI, and WASM observations; the follow-up Clippy fix keeps the parity harness warning-free. Focused run `0277b598-09cc-4413-b62c-5f8c5acc6ad5` passed all three selected cases; clean full parity run `0fae0ab3-1df2-4aa8-aaa6-cc5a09945209` passed 7,259 / 7,259 runnable comparisons with 48 explicitly pending concrete cases; clean C-ABI scorecard run `1ea13e0e-c422-4c53-a2ab-1e10192322e0` reports C01 runtime rows 5,011 / 5,047 with 36 pending. |
+| 25 | `25846d907293f04d4337a60a5ddf28a824065baa` | Promoted the nine GX/classic-kern semantic rows (`FT_VALIDATE_GX`, `FT_VALIDATE_MS`, and the seven table-slot validators) with deterministic valid, absent, truncated, and invalid-header SFNT controls. Focused GX and external-C gates passed; clean full parity run `660ffb48-3bc8-4995-ace8-525dbb51c468` passed 7,269 / 7,269 runnable comparisons with 38 explicitly pending concrete cases; clean C-ABI scorecard run `c5c5ccf7-79cc-4b62-8bfb-312012e8f281` reports C01 runtime rows 5,021 / 5,047 with 26 pending. |
 
 The latest source-bound parity verification is Coverage MCP run
-`1b85a9ab-fa73-4c29-95f4-af1a4122e0dd` on clean commit `481d26d`:
-the new
-`FT_PaintLinearGradient` route passed static, variable-coordinate, and
-malformed-COLRv1 controls across Rust FFI, C ABI, and WASM. It passed 7,260 /
-7,260 runnable comparisons, 0 failed, and 47 remain explicitly pending. The
-same run reported 4,131 covered manifest cases, 4,258 logical cases, and 7,307
-concrete cases; all 218 function routes were present in each ABI surface. The
-committed source-digest attestation is `doc/runtime_parity_evidence.json` and
-records digest `09960ded43446de811898c1be77611f91275bfb1e23fcafb587cc94851133638`.
-The companion C-ABI scorecard run `224a8b47-a67b-4515-8acf-88658449f017`
-reports 5,012 / 5,047 exact runtime rows, with 35 pending. Full coverage is
+`660ffb48-3bc8-4995-ace8-525dbb51c468` on clean commit `25846d9`:
+the nine GX/classic-kern semantic rows now run through deterministic valid,
+absent, truncated, and invalid-header controls across pinned C, Rust FFI, C
+ABI, and WASM. It passed 7,269 / 7,269 runnable comparisons, 0 failed, and 38
+remain explicitly pending. The same run reported 4,140 covered manifest cases,
+4,258 logical cases, and 7,307 concrete cases; all 218 function routes were
+present in each ABI surface. The committed source-digest attestation is
+`doc/runtime_parity_evidence.json` and records digest
+`0de603adb9683ffbf800ce101fb6091dedd41d406ec49ca84fb29395ae6c90a2`.
+The companion C-ABI scorecard run `c5c5ccf7-79cc-4b62-8bfb-312012e8f281`
+reports 5,021 / 5,047 exact runtime rows, with 26 pending. Full coverage is
 intentionally deferred until a larger set of focused batches is ready, because
 the maintained all-lane pass takes roughly 50 minutes.
 
