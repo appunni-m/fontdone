@@ -96,11 +96,11 @@ The last committed full parity snapshot was recorded on **2026-07-31**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,281 |
-| Passed cases | 7,281 |
+| Runnable exact-comparison cases | 7,282 |
+| Passed cases | 7,282 |
 | Failed cases | 0 |
-| Explicitly pending cases | 27 |
-| Covered manifest cases | 4,152 |
+| Explicitly pending cases | 26 |
+| Covered manifest cases | 4,153 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,259 |
