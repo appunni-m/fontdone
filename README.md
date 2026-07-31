@@ -162,7 +162,7 @@ The latest committed scorecard has **9 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 names, signatures, and traced function routes; 5,033 / 5,048 pinned-C runtime contract rows exact, with 15 pending |
+| Functions | 218 / 218 names, signatures, and traced function routes; 5,034 / 5,048 pinned-C runtime contract rows exact, with 14 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership, state, errors, modules, headers | Complete under their blocking scorecard measurements |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
@@ -177,7 +177,7 @@ when every bare function name has some traced route. The self-cleaning
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`2a1c6855-cfab-4192-ab15-5fef367f8b4b`.
+`64ef2417-f63a-4c6f-95ec-bd7d43c8228b`.
 
 ### 3.5 Performance baseline
 
