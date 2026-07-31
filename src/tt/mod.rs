@@ -25,6 +25,7 @@ pub mod name;
 pub mod os2;
 pub mod post;
 pub mod sbit;
+pub mod sbix;
 pub mod svg;
 pub mod varstore;
 pub mod vhea;

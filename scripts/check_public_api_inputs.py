@@ -3983,6 +3983,17 @@ def ftglyph_subsystem_pending_reason(row: ConcreteInput) -> str | None:
 def ftparams_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     """Rows for FT_Open_Args parameters that do not have a maintained route."""
     if (
+        row.case_id
+        in {
+            "ftparams.FT_PARAM_TAG_IGNORE_SBIX.open_face_ignores_sbix",
+            "ftparams.FT_PARAM_TAG_IGNORE_SBIX.bitmap_only_requires_real_sbix_fixture",
+        }
+        and row.operation == "freetype.open_face_with_params"
+        and row.params.get("runtime_route") == "actual_sbix_parameter_dispatch"
+        and unresolved_assets_reason(row) is None
+    ):
+        return None
+    if (
         row.case_id == "ftparams.FT_PARAM_TAG_RANDOM_SEED.valid_seed_sets_face_property"
         and row.operation == "freetype.face_properties_then_render"
         and row.params.get("runtime_route") == "actual_face_properties_random_seed"
@@ -4352,6 +4363,11 @@ def freetype_core_subsystem_pending_reason(row: ConcreteInput) -> str | None:
             "instead of reusing the constant-value flag route"
         )
     if row.case_id == "freetype.FT_Parameter.tag_data_parameters_match_c_behavior":
+        if (
+            row.params.get("runtime_route") == "actual_sbix_parameter_dispatch"
+            and unresolved_assets_reason(row) is None
+        ):
+            return None
         if exact_error_public_route(row.operation, row.case_id, row.expect_error):
             return None
         return (

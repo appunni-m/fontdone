@@ -567,6 +567,10 @@ font-fixture-gxvalid: font-fixture-hinter font-fixture-type1
 font-fixture-sbit: font-fixture-hinter
 	$(PYTHON) scripts/font_generation/build_sbit_fixtures.py
 
+.PHONY: font-fixture-sbix
+font-fixture-sbix: font-fixture-hinter
+	$(PYTHON) scripts/font_generation/build_sbix_fixtures.py
+
 .PHONY: font-fixture-pcf
 font-fixture-pcf:
 	$(PYTHON) scripts/font_generation/build_pcf_fixtures.py
@@ -590,6 +594,7 @@ font-fixtures: font-fixture-winfnt font-fixture-gasp font-fixture-metrics
 font-fixtures: font-fixture-mvar font-fixture-cmap font-fixture-color
 font-fixtures: font-fixture-post font-fixture-fvar font-fixture-ftmm-future
 font-fixtures: font-fixture-name font-fixture-sfnt font-fixture-sbit font-fixture-pcf font-fixture-pfr font-fixture-svg
+font-fixtures: font-fixture-sbix
 font-fixtures: font-fixture-gxvalid
 font-fixtures: font-fixture-malformed-bdf font-fixture-render font-fixture-cjk
 font-fixtures: font-fixture-compressed

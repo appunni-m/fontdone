@@ -67,11 +67,11 @@
             "kind": "ref",
             "role": "font",
             "path": "input/fonts/sbix/sbix-with-outlines.ttf",
-            "status": "required_future_asset",
             "requires": "SFNT with 'sbix' table and outline glyphs for the same glyph ids"
           }
         },
         "params": {
+          "runtime_route": "actual_sbix_parameter_dispatch",
           "face_index": 0,
           "open_flags": [
             "FT_OPEN_MEMORY",
@@ -107,21 +107,32 @@
       "expectation": {
         "status": "ok",
         "output_shape": {
-          "open_error": "FT_Error",
-          "face_flags": "FT_Long",
-          "glyph_slot": "format plus public metrics",
-          "outline_cbox": "FT_BBox when outline is loaded",
-          "bitmap": "FT_Bitmap descriptor when bitmap path is selected"
+          "variants": [
+            {
+              "label": "string",
+              "open_error": "FT_Error",
+              "face_flags": "FT_Long|null",
+              "num_fixed_sizes": "FT_Int|null",
+              "size_error": "FT_Error|null",
+              "load_error": "FT_Error|null",
+              "glyph_format": "FT_Glyph_Format|null",
+              "outline_cbox": "FT_BBox|null",
+              "bitmap": "FT_Bitmap descriptor|null"
+            }
+          ]
         },
         "compare": {
           "mode": "exact",
           "paths": [
-            "open_error",
-            "face_flags",
-            "glyph_slot.format",
-            "glyph_slot.metrics",
-            "outline_cbox",
-            "bitmap"
+            "variants[*].label",
+            "variants[*].open_error",
+            "variants[*].face_flags",
+            "variants[*].num_fixed_sizes",
+            "variants[*].size_error",
+            "variants[*].load_error",
+            "variants[*].glyph_format",
+            "variants[*].outline_cbox",
+            "variants[*].bitmap"
           ]
         },
         "fixture_requirements": [
@@ -201,11 +212,11 @@
             "kind": "ref",
             "role": "font",
             "path": "input/fonts/sbix/sbix-bitmap-only.ttf",
-            "status": "required_future_asset",
             "requires": "SFNT with sbix strikes and no outline table to preserve C's no-fabricated-outline behavior"
           }
         },
         "params": {
+          "runtime_route": "actual_sbix_parameter_dispatch",
           "face_index": 0,
           "parameters": [
             {
@@ -228,18 +239,32 @@
       "expectation": {
         "status": "ok",
         "output_shape": {
-          "open_error": "FT_Error",
-          "load_error": "FT_Error",
-          "face_flags": "FT_Long",
-          "glyph_slot": "public fields or null on load error"
+          "variants": [
+            {
+              "label": "string",
+              "open_error": "FT_Error",
+              "face_flags": "FT_Long|null",
+              "num_fixed_sizes": "FT_Int|null",
+              "size_error": "FT_Error|null",
+              "load_error": "FT_Error|null",
+              "glyph_format": "FT_Glyph_Format|null",
+              "outline_cbox": "FT_BBox|null",
+              "bitmap": "FT_Bitmap descriptor|null"
+            }
+          ]
         },
         "compare": {
           "mode": "exact",
           "paths": [
-            "open_error",
-            "load_error",
-            "face_flags",
-            "glyph_slot"
+            "variants[*].label",
+            "variants[*].open_error",
+            "variants[*].face_flags",
+            "variants[*].num_fixed_sizes",
+            "variants[*].size_error",
+            "variants[*].load_error",
+            "variants[*].glyph_format",
+            "variants[*].outline_cbox",
+            "variants[*].bitmap"
           ]
         },
         "fixture_requirements": [

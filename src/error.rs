@@ -98,6 +98,15 @@ pub enum FontError {
     #[error("Invalid argument: {0}")]
     InvalidArgument(String),
 
+    /// A public font table or glyph payload is structurally malformed in a
+    /// way FreeType reports as `FT_Err_Invalid_File_Format`.
+    #[error("Invalid file format: {0}")]
+    InvalidFileFormat(String),
+
+    /// The font bytes are not a format the selected driver recognizes.
+    #[error("Unknown file format: {0}")]
+    UnknownFileFormat(String),
+
     /// The selected embedded bitmap strike has no image for the glyph.
     #[error("Missing embedded bitmap")]
     MissingBitmap,

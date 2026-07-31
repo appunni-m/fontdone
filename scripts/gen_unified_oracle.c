@@ -32739,6 +32739,144 @@ static int emit_face_rec_populated_snapshot(int argc, char** argv) {
     return 0;
 }
 
+static void print_sbix_variant_row(const char* label,
+                                   FT_Error open_error,
+                                   FT_Face face) {
+    printf("{\"label\":\"%s\",\"open_error\":%d,", label, open_error);
+    if (open_error || !face) {
+        printf("\"face_flags\":null,\"num_fixed_sizes\":null,"
+               "\"size_error\":null,\"load_error\":null,"
+               "\"glyph_format\":null,\"outline_cbox\":null,\"bitmap\":null}");
+        return;
+    }
+    FT_Error size_error = FT_Set_Char_Size(face, 24 * 64, 24 * 64, 72, 72);
+    FT_Error load_error = -1;
+    if (!size_error) {
+        load_error = FT_Load_Glyph(face, 1, FT_LOAD_DEFAULT);
+    }
+    printf("\"face_flags\":%ld,\"num_fixed_sizes\":%d,"
+           "\"size_error\":%d,\"load_error\":%d,\"glyph_format\":%ld,",
+           face->face_flags,
+           face->num_fixed_sizes,
+           size_error,
+           load_error,
+           (long)(load_error || size_error ? 0 : face->glyph->format));
+    if (!load_error && !size_error && face->glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
+        FT_BBox cbox;
+        FT_Outline_Get_CBox(&face->glyph->outline, &cbox);
+        printf("\"outline_cbox\":{\"xMin\":%ld,\"yMin\":%ld,\"xMax\":%ld,\"yMax\":%ld},",
+               cbox.xMin, cbox.yMin, cbox.xMax, cbox.yMax);
+        printf("\"bitmap\":null}");
+    } else if (!load_error && !size_error && face->glyph->format == FT_GLYPH_FORMAT_BITMAP) {
+        printf("\"outline_cbox\":null,\"bitmap\":{");
+        printf("\"pixel_mode\":%d,\"width\":%u,\"rows\":%u,\"pitch\":%ld,"
+               "\"left\":%d,\"top\":%d,\"buffer_hex\":\"",
+               face->glyph->bitmap.pixel_mode,
+               face->glyph->bitmap.width,
+               face->glyph->bitmap.rows,
+               (long)face->glyph->bitmap.pitch,
+               face->glyph->bitmap_left,
+               face->glyph->bitmap_top);
+        if (face->glyph->bitmap.buffer) {
+            long pitch_abs = face->glyph->bitmap.pitch < 0
+                                 ? -face->glyph->bitmap.pitch
+                                 : face->glyph->bitmap.pitch;
+            long bytes = (long)face->glyph->bitmap.rows * pitch_abs;
+            print_hex_bytes(face->glyph->bitmap.buffer, bytes);
+        }
+        printf("\"}}");
+    } else {
+        printf("\"outline_cbox\":null,\"bitmap\":null}");
+    }
+}
+
+static int emit_sbix_params_case(int argc, char** argv) {
+    if (argc != 6) {
+        fprintf(stderr,
+                "--sbix-params-case requires SOURCE_KIND SOURCE_VALUE FACE_INDEX VARIANTS\n");
+        return 2;
+    }
+    OracleFace face_holder;
+    int opened = open_oracle_face(argv[2], argv[3], atol(argv[4]), &face_holder);
+    if (opened != 0) {
+        close_oracle_face(&face_holder);
+        return opened;
+    }
+
+    unsigned char* data = face_holder.data;
+    long data_len = face_holder.data_len;
+    size_t variants_len = strlen(argv[5]);
+    char* variants = (char*)malloc(variants_len + 1);
+    if (!variants) {
+        close_oracle_face(&face_holder);
+        return 1;
+    }
+    memcpy(variants, argv[5], variants_len + 1);
+
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"variants\":[");
+    char* cursor = variants;
+    int first = 1;
+    while (cursor && *cursor) {
+        char* next = strchr(cursor, ',');
+        if (next) {
+            *next = '\0';
+        }
+        char* colon = strchr(cursor, ':');
+        if (!colon) {
+            free(variants);
+            close_oracle_face(&face_holder);
+            return 2;
+        }
+        *colon = '\0';
+        const char* label = cursor;
+        int mode = atoi(colon + 1);
+
+        FT_Library library = NULL;
+        FT_Error init_error = FT_Init_FreeType(&library);
+        FT_Open_Args args;
+        memset(&args, 0, sizeof(args));
+        args.flags = FT_OPEN_MEMORY | FT_OPEN_PARAMS;
+        args.memory_base = data;
+        args.memory_size = data_len;
+        FT_Parameter params[1];
+        FT_Bool non_null = 1;
+        FT_Error open_error;
+        FT_Face face = NULL;
+        if (init_error) {
+            open_error = init_error;
+        } else if (mode == 3) {
+            args.num_params = 0;
+            args.params = NULL;
+            open_error = FT_Open_Face(library, &args, atol(argv[4]), &face);
+        } else {
+            args.num_params = 1;
+            args.params = params;
+            params[0].tag = mode == 2 ? 0x12345678UL : FT_PARAM_TAG_IGNORE_SBIX;
+            params[0].data = mode == 1 ? (void*)&non_null : NULL;
+            open_error = FT_Open_Face(library, &args, atol(argv[4]), &face);
+        }
+        if (!first) {
+            printf(",");
+        }
+        first = 0;
+        print_sbix_variant_row(label, open_error, face);
+        if (face) {
+            FT_Done_Face(face);
+        }
+        if (library) {
+            FT_Done_FreeType(library);
+        }
+        cursor = next ? next + 1 : NULL;
+    }
+    printf("]}}\n");
+
+    free(variants);
+    close_oracle_face(&face_holder);
+    return 0;
+}
+
 typedef struct MemoryFaceRow_ {
     FT_Long face_index;
     int has_file_size;
@@ -33411,13 +33549,14 @@ static int emit_open_face_name_options(int argc, char** argv) {
         }
         int ignore_family = 0;
         int ignore_subfamily = 0;
-        if (sscanf(cursor, "%d:%d", &ignore_family, &ignore_subfamily) != 2) {
+        int ignore_sbix = 0;
+        if (sscanf(cursor, "%d:%d:%d", &ignore_family, &ignore_subfamily, &ignore_sbix) != 3) {
             FT_Done_FreeType(library);
             free(data);
             free(rows_arg);
             return 2;
         }
-        FT_Parameter params[2];
+        FT_Parameter params[3];
         FT_Int num_params = 0;
         if (ignore_family) {
             params[num_params].tag = FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_FAMILY;
@@ -33426,6 +33565,11 @@ static int emit_open_face_name_options(int argc, char** argv) {
         }
         if (ignore_subfamily) {
             params[num_params].tag = FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_SUBFAMILY;
+            params[num_params].data = NULL;
+            num_params++;
+        }
+        if (ignore_sbix) {
+            params[num_params].tag = FT_PARAM_TAG_IGNORE_SBIX;
             params[num_params].data = NULL;
             num_params++;
         }
@@ -36508,6 +36652,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 15 && streq(argv[1], "--inspect-face-rec-populated")) {
         return emit_face_rec_populated_snapshot(argc, argv);
+    }
+    if (argc == 6 && streq(argv[1], "--sbix-params-case")) {
+        return emit_sbix_params_case(argc, argv);
     }
     if (argc == 9 && streq(argv[1], "--get-sfnt-vhea-mvar-sequence")) {
         return emit_face_or_slot(argc, argv);

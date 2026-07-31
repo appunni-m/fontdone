@@ -189,10 +189,20 @@ impl Library {
         size_pt: f32,
         ignore_typographic_family: bool,
         ignore_typographic_subfamily: bool,
+        ignore_sbix: bool,
     ) -> Result<Face, FontError> {
         let mut face = self.new_memory_face(data, face_index, size_pt)?;
         face.font
             .set_ignore_typographic_names(ignore_typographic_family, ignore_typographic_subfamily);
+        face.font.set_ignore_sbix(ignore_sbix);
+        if ignore_sbix && !face.font.has_outlines() && face.font.data.sbix.is_some() {
+            // Pinned `sfnt/sfobjs.c` rejects a bitmap-only `sbix` font when
+            // `FT_PARAM_TAG_IGNORE_SBIX` is present: with no outlines and no
+            // usable `bhed` table, face opening reports Unknown_File_Format.
+            return Err(FontError::UnknownFileFormat(
+                "sbix bitmap-only face with ignore-sbix parameter".into(),
+            ));
+        }
         Ok(face)
     }
 }

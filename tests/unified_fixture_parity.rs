@@ -40791,6 +40791,23 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(open_face_name_option_rows_arg(params)?);
             Ok(args)
         }
+        "freetype.open_face_with_params" if sbix_params_runtime_supported(case) => {
+            let mut args = vec!["--sbix-params-case".to_string()];
+            if case.inputs.assets.contains_key("sbix_font") {
+                push_required_asset_source(case, "sbix_font", &mut args)?;
+            } else {
+                push_font_source(case, &mut args)?;
+            }
+            args.push(face_index_param(params)?.to_string());
+            args.push(
+                sbix_params_variant_labels()
+                    .iter()
+                    .map(|(label, mode)| format!("{label}:{mode}"))
+                    .collect::<Vec<_>>()
+                    .join(","),
+            );
+            Ok(args)
+        }
         "freetype.open_face_with_params" if open_face_ignored_params_runtime_supported(case) => {
             let mut args = vec!["--open-face-ignored-params".to_string()];
             push_font_source(case, &mut args)?;
@@ -44324,6 +44341,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "freetype.open_face_with_params" if open_face_name_options_runtime_supported(case) => {
             rust_open_face_name_options(case)
         }
+        "freetype.open_face_with_params" if sbix_params_runtime_supported(case) => {
+            rust_sbix_params_case(case)
+        }
         "freetype.open_face_with_params" if open_face_ignored_params_runtime_supported(case) => {
             rust_open_face_ignored_params(case)
         }
@@ -45555,6 +45575,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "freetype.open_face_with_params" if open_face_name_options_runtime_supported(case) => {
             c_open_face_name_options(case)
+        }
+        "freetype.open_face_with_params" if sbix_params_runtime_supported(case) => {
+            c_sbix_params_case(case)
         }
         "freetype.open_face_with_params" if open_face_ignored_params_runtime_supported(case) => {
             c_open_face_ignored_params(case)
@@ -46872,6 +46895,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "freetype.open_face_with_params" if open_face_name_options_runtime_supported(case) => {
             wasm_open_face_name_options(case)
+        }
+        "freetype.open_face_with_params" if sbix_params_runtime_supported(case) => {
+            wasm_sbix_params_case(case)
         }
         "freetype.open_face_with_params" if open_face_ignored_params_runtime_supported(case) => {
             wasm_open_face_ignored_params(case)
@@ -64070,6 +64096,7 @@ fn rust_new_memory_face(case: &InputCase) -> Result<RunOutput, String> {
 struct OpenFaceNameOptionsRow {
     ignore_typographic_family: bool,
     ignore_typographic_subfamily: bool,
+    ignore_sbix: bool,
 }
 
 fn open_face_name_options_runtime_supported(case: &InputCase) -> bool {
@@ -64094,13 +64121,14 @@ fn open_face_name_option_rows_arg(params: &Value) -> Result<String, String> {
         .into_iter()
         .map(|row| {
             format!(
-                "{}:{}",
+                "{}:{}:{}",
                 if row.ignore_typographic_family { 1 } else { 0 },
                 if row.ignore_typographic_subfamily {
                     1
                 } else {
                     0
-                }
+                },
+                if row.ignore_sbix { 1 } else { 0 }
             )
         })
         .collect::<Vec<_>>()
@@ -64128,6 +64156,7 @@ fn open_face_name_option_row(value: &Value) -> Result<OpenFaceNameOptionsRow, St
     let mut row = OpenFaceNameOptionsRow {
         ignore_typographic_family: false,
         ignore_typographic_subfamily: false,
+        ignore_sbix: false,
     };
     let Some(params) = params else {
         return Ok(row);
@@ -64143,6 +64172,9 @@ fn open_face_name_option_row(value: &Value) -> Result<OpenFaceNameOptionsRow, St
             "FT_PARAM_TAG_IGNORE_PREFERRED_SUBFAMILY"
             | "FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_SUBFAMILY" => {
                 row.ignore_typographic_subfamily = true;
+            }
+            "FT_PARAM_TAG_IGNORE_SBIX" => {
+                row.ignore_sbix = true;
             }
             _ => {}
         }
@@ -64192,6 +64224,7 @@ fn rust_open_face_name_options(case: &InputCase) -> Result<RunOutput, String> {
             FT_Open_Face_Name_Options {
                 ignore_typographic_family: row.ignore_typographic_family,
                 ignore_typographic_subfamily: row.ignore_typographic_subfamily,
+                ignore_sbix: row.ignore_sbix,
             },
         );
         match status {
@@ -64277,6 +64310,7 @@ fn wasm_open_face_name_options(case: &InputCase) -> Result<RunOutput, String> {
             20.0,
             row.ignore_typographic_family.into(),
             row.ignore_typographic_subfamily.into(),
+            row.ignore_sbix.into(),
         );
         if status.error == FT_Err_Ok {
             let (family, style) = wasm_abi::abi_face_names(status.handle)
@@ -67338,6 +67372,329 @@ fn wasm_open_face_ignored_params(case: &InputCase) -> Result<RunOutput, String> 
         wasm_done_face(status.handle);
         Ok(ok(output))
     }
+}
+
+fn sbix_params_runtime_supported(case: &InputCase) -> bool {
+    matches!(
+        case.case_id.as_str(),
+        "ftparams.FT_PARAM_TAG_IGNORE_SBIX.open_face_ignores_sbix"
+            | "ftparams.FT_PARAM_TAG_IGNORE_SBIX.bitmap_only_requires_real_sbix_fixture"
+            | "freetype.FT_Parameter.tag_data_parameters_match_c_behavior"
+    ) && has_runtime_font_source(case)
+        && assets_are_runtime_resolved(case)
+}
+
+fn sbix_params_bytes(case: &InputCase) -> Result<Arc<[u8]>, String> {
+    if case.inputs.assets.contains_key("sbix_font") {
+        required_asset_bytes(case, "sbix_font")
+    } else {
+        font_bytes(case)
+    }
+}
+
+fn sbix_params_variant_labels() -> Vec<(&'static str, u8)> {
+    vec![
+        ("ignore_null", 0),
+        ("ignore_nonnull", 1),
+        ("unknown", 2),
+        ("zero_params", 3),
+    ]
+}
+
+fn sbix_variant_bitmap_json(
+    pixel_mode: i64,
+    width: u32,
+    rows: u32,
+    pitch: i64,
+    left: i64,
+    top: i64,
+    buffer: &[u8],
+) -> Value {
+    json!({
+        "pixel_mode": pixel_mode,
+        "width": width,
+        "rows": rows,
+        "pitch": pitch,
+        "left": left,
+        "top": top,
+        "buffer_hex": hex_bytes(buffer)
+    })
+}
+
+fn sbix_variant_row(
+    label: &str,
+    open_error: FT_Error,
+    face_flags: Option<i64>,
+    num_fixed_sizes: Option<i64>,
+    size_error: Option<FT_Error>,
+    load_error: Option<FT_Error>,
+    glyph_format: Option<i64>,
+    outline_cbox: Option<Value>,
+    bitmap: Option<Value>,
+) -> Value {
+    json!({
+        "label": label,
+        "open_error": open_error,
+        "face_flags": face_flags,
+        "num_fixed_sizes": num_fixed_sizes,
+        "size_error": size_error,
+        "load_error": load_error,
+        "glyph_format": glyph_format,
+        "outline_cbox": outline_cbox,
+        "bitmap": bitmap
+    })
+}
+
+fn rust_sbix_params_case(case: &InputCase) -> Result<RunOutput, String> {
+    let bytes = sbix_params_bytes(case)?;
+    let library = FT_Init_FreeType();
+    let face_index = face_index_param(&case.inputs.params)?;
+    let mut rows = Vec::new();
+    for (label, mode) in sbix_params_variant_labels() {
+        let options = FT_Open_Face_Name_Options {
+            ignore_sbix: mode <= 1,
+            ..FT_Open_Face_Name_Options::default()
+        };
+        match FT_New_Memory_Face_With_Name_Options(
+            &library,
+            bytes.as_ref(),
+            face_index,
+            20.0,
+            options,
+        ) {
+            Ok(mut face) => {
+                let size_error = FT_Set_Char_Size(&mut face, 24 * 64, 24 * 64, 72, 72);
+                let (load_error, glyph_format, outline_cbox, bitmap) = if size_error == FT_Err_Ok {
+                    match FT_Load_Glyph(&face, 1, FT_LOAD_DEFAULT) {
+                        Ok(slot) => {
+                            let cbox = json!({
+                                "xMin": slot.outline_cbox.xMin,
+                                "yMin": slot.outline_cbox.yMin,
+                                "xMax": slot.outline_cbox.xMax,
+                                "yMax": slot.outline_cbox.yMax
+                            });
+                            let bitmap = slot.bitmap.as_ref().map(|bitmap| {
+                                sbix_variant_bitmap_json(
+                                    bitmap.pixel_mode.into(),
+                                    bitmap.width,
+                                    bitmap.rows,
+                                    bitmap.pitch.into(),
+                                    slot.bitmap_left.into(),
+                                    slot.bitmap_top.into(),
+                                    &bitmap.buffer,
+                                )
+                            });
+                            (
+                                FT_Err_Ok,
+                                Some(i64::from(slot.format)),
+                                (slot.format == FT_GLYPH_FORMAT_OUTLINE).then_some(cbox),
+                                bitmap,
+                            )
+                        }
+                        Err(err) => (err, Some(0), None, None),
+                    }
+                } else {
+                    (size_error, Some(0), None, None)
+                };
+                rows.push(sbix_variant_row(
+                    label,
+                    FT_Err_Ok,
+                    Some(face.face_flags),
+                    Some(i64::from(face.num_fixed_sizes)),
+                    Some(size_error),
+                    Some(load_error),
+                    glyph_format,
+                    outline_cbox,
+                    bitmap,
+                ));
+            }
+            Err(err) => rows.push(sbix_variant_row(
+                label, err, None, None, None, None, None, None, None,
+            )),
+        }
+    }
+    Ok(ok(json!({"variants": rows})))
+}
+
+fn c_sbix_params_case(case: &InputCase) -> Result<RunOutput, String> {
+    let bytes = sbix_params_bytes(case)?;
+    let mut library = std::ptr::null_mut();
+    let init_err = c_abi::FT_Init_FreeType(&mut library);
+    if init_err != FT_Err_Ok {
+        return Ok(error(init_err));
+    }
+    let face_index = face_index_param(&case.inputs.params)?;
+    let file_size = i64::try_from(bytes.len()).map_err(|err| err.to_string())?;
+    let mut rows = Vec::new();
+    for (label, mode) in sbix_params_variant_labels() {
+        let mut non_null: c_abi::FT_Bool = 1;
+        let mut params = [c_abi::FT_Parameter {
+            tag: if mode == 2 {
+                0x12345678
+            } else {
+                FT_PARAM_TAG_IGNORE_SBIX as c_abi::FT_ULong
+            },
+            data: if mode == 1 {
+                std::ptr::from_mut(&mut non_null).cast::<c_void>()
+            } else {
+                std::ptr::null_mut()
+            },
+        }];
+        let open_args = c_abi::FT_Open_Args {
+            flags: (FT_OPEN_MEMORY | FT_OPEN_PARAMS) as c_abi::FT_UInt,
+            memory_base: bytes.as_ptr(),
+            memory_size: file_size,
+            pathname: std::ptr::null_mut(),
+            stream: std::ptr::null_mut(),
+            driver: std::ptr::null_mut(),
+            num_params: if mode == 3 { 0 } else { 1 },
+            params: if mode == 3 {
+                std::ptr::null_mut()
+            } else {
+                params.as_mut_ptr()
+            },
+        };
+        let mut face = std::ptr::null_mut();
+        let open_error = c_abi::FT_Open_Face(library, &open_args, face_index, &mut face);
+        if open_error != FT_Err_Ok {
+            rows.push(sbix_variant_row(
+                label, open_error, None, None, None, None, None, None, None,
+            ));
+            continue;
+        }
+        let info = c_abi::abi_face_info(face).ok_or_else(|| "missing c face info".to_string())?;
+        let size_error = c_abi::FT_Set_Char_Size(face, 24 * 64, 24 * 64, 72, 72);
+        let (load_error, glyph_format, outline_cbox, bitmap) = if size_error == FT_Err_Ok {
+            let load_error = c_abi::FT_Load_Glyph(face, 1, FT_LOAD_DEFAULT);
+            if load_error == FT_Err_Ok {
+                let slot = c_abi::abi_slot_snapshot(face)
+                    .ok_or_else(|| "missing c glyph slot snapshot".to_string())?;
+                let cbox = json!({
+                    "xMin": slot.outline_cbox.xMin,
+                    "yMin": slot.outline_cbox.yMin,
+                    "xMax": slot.outline_cbox.xMax,
+                    "yMax": slot.outline_cbox.yMax
+                });
+                let bitmap = slot.bitmap.as_ref().map(|bitmap| {
+                    sbix_variant_bitmap_json(
+                        bitmap.pixel_mode.into(),
+                        bitmap.width,
+                        bitmap.rows,
+                        bitmap.pitch.into(),
+                        bitmap.left.into(),
+                        bitmap.top.into(),
+                        &bitmap.buffer,
+                    )
+                });
+                (
+                    load_error,
+                    Some(i64::from(slot.format)),
+                    (slot.format == FT_GLYPH_FORMAT_OUTLINE).then_some(cbox),
+                    bitmap,
+                )
+            } else {
+                (load_error, Some(0), None, None)
+            }
+        } else {
+            (size_error, Some(0), None, None)
+        };
+        rows.push(sbix_variant_row(
+            label,
+            open_error,
+            Some(info.face_flags),
+            Some(i64::from(info.num_fixed_sizes)),
+            Some(size_error),
+            Some(load_error),
+            glyph_format,
+            outline_cbox,
+            bitmap,
+        ));
+        c_done_face(face);
+    }
+    c_done_library(library);
+    Ok(ok(json!({"variants": rows})))
+}
+
+fn wasm_sbix_params_case(case: &InputCase) -> Result<RunOutput, String> {
+    let bytes = sbix_params_bytes(case)?;
+    let face_index = face_index_param(&case.inputs.params)?;
+    let mut rows = Vec::new();
+    for (label, mode) in sbix_params_variant_labels() {
+        let status = wasm_abi::fontdone_wasm_open_face_with_name_options(
+            bytes.as_ptr(),
+            bytes.len(),
+            face_index,
+            20.0,
+            0,
+            0,
+            (mode <= 1).into(),
+        );
+        if status.error != FT_Err_Ok {
+            rows.push(sbix_variant_row(
+                label,
+                status.error,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+            ));
+            continue;
+        }
+        let handle = status.handle;
+        let info =
+            wasm_abi::abi_face_info(handle).ok_or_else(|| "missing wasm face info".to_string())?;
+        let size_error = wasm_abi::fontdone_wasm_set_char_size(handle, 24 * 64, 24 * 64, 72, 72);
+        let (load_error, glyph_format, outline_cbox, bitmap) = if size_error == FT_Err_Ok {
+            let load_error = wasm_abi::fontdone_wasm_load_glyph(handle, 1, FT_LOAD_DEFAULT);
+            if load_error == FT_Err_Ok {
+                let slot = wasm_abi::abi_slot_snapshot(handle)
+                    .ok_or_else(|| "missing wasm glyph slot snapshot".to_string())?;
+                let cbox = json!({
+                    "xMin": slot.outline_cbox.xMin,
+                    "yMin": slot.outline_cbox.yMin,
+                    "xMax": slot.outline_cbox.xMax,
+                    "yMax": slot.outline_cbox.yMax
+                });
+                let bitmap = slot.bitmap.as_ref().map(|bitmap| {
+                    sbix_variant_bitmap_json(
+                        bitmap.pixel_mode.into(),
+                        bitmap.width,
+                        bitmap.rows,
+                        bitmap.pitch.into(),
+                        bitmap.left.into(),
+                        bitmap.top.into(),
+                        &bitmap.buffer,
+                    )
+                });
+                (
+                    load_error,
+                    Some(i64::from(slot.format)),
+                    (slot.format == FT_GLYPH_FORMAT_OUTLINE).then_some(cbox),
+                    bitmap,
+                )
+            } else {
+                (load_error, Some(0), None, None)
+            }
+        } else {
+            (size_error, Some(0), None, None)
+        };
+        rows.push(sbix_variant_row(
+            label,
+            status.error,
+            Some(info.face_flags),
+            Some(i64::from(info.num_fixed_sizes)),
+            Some(size_error),
+            Some(load_error),
+            glyph_format,
+            outline_cbox,
+            bitmap,
+        ));
+        wasm_done_face(handle);
+    }
+    Ok(ok(json!({"variants": rows})))
 }
 
 fn rust_new_memory_face_variants(case: &InputCase) -> Result<RunOutput, String> {
@@ -79116,6 +79473,8 @@ fn font_error_to_ft(error: FontError) -> FT_Error {
         FontError::CannotRenderGlyph(_) => FT_Err_Cannot_Render_Glyph,
         FontError::UnimplementedFeature(_) => FT_Err_Unimplemented_Feature as FT_Error,
         FontError::InvalidArgument(_) => FT_Err_Invalid_Argument,
+        FontError::InvalidFileFormat(_) => FT_Err_Invalid_File_Format as FT_Error,
+        FontError::UnknownFileFormat(_) => FT_Err_Unknown_File_Format as FT_Error,
         FontError::MissingBitmap => FT_Err_Missing_Bitmap as FT_Error,
         FontError::InvalidComposite => FT_Err_Invalid_Composite as FT_Error,
         FontError::BdfMissingStartfontStreamOperation => {

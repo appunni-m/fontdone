@@ -9311,6 +9311,9 @@ fn open_face_name_options(args: &FT_Open_Args) -> rust_ffi::FT_Open_Face_Name_Op
             rust_ffi::FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_SUBFAMILY => {
                 options.ignore_typographic_subfamily = true;
             }
+            rust_ffi::FT_PARAM_TAG_IGNORE_SBIX => {
+                options.ignore_sbix = true;
+            }
             _ => {}
         }
     }

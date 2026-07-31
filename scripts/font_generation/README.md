@@ -53,6 +53,7 @@ licenses are enforced by `make supply-chain`.
 | `build_metric_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
 | `build_post_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
 | `build_sbit_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; bitmap outputs add project-authored EBLC/EBDT records, including the maintained `embedded-strikes.ttf` face-record input and the SFNT-BDF derivative. |
+| `build_sbix_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; adds one project-authored `sbix` strike (24 ppem) with a minimal `png ` record. The pinned oracle build has PNG decoding disabled, so glyph loading observes the public `Unimplemented_Feature` path while face flags and fixed-size strikes remain comparable. |
 | `build_pcf_fixtures.py` | Synthetic | Project-authored PCF directory, properties, accelerators, metrics, bitmap, and encoding tables. |
 | `build_pfr_fixtures.py` | Synthetic | Project-authored PFR v4 logical/physical font records, character advances, and kerning pairs; no third-party font material. |
 | `build_svg_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; adds one project-authored plain-XML OpenType SVG document and deterministic vertical metrics. |

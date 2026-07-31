@@ -282,7 +282,7 @@
         "assets": {
           "sbix_font": {
             "kind": "ref",
-            "id": "input/fonts/DejaVuSans.ttf"
+            "id": "input/fonts/sbix/sbix-with-outlines.ttf"
           },
           "font": {
             "kind": "ref",
@@ -290,6 +290,7 @@
           }
         },
         "params": {
+          "runtime_route": "actual_sbix_parameter_dispatch",
           "apis": [
             "FT_Open_Face with FT_OPEN_PARAMS",
             "FT_Face_Properties if implemented",
@@ -321,19 +322,32 @@
       "expectation": {
         "status": "ok",
         "output_shape": {
-          "return": "FT_Error",
-          "parameters": "array<{tag:FT_ULong,data:nullness_or_typed_value}>",
-          "observable_effect": "face_flags_or_property_snapshot"
+          "variants": [
+            {
+              "label": "string",
+              "open_error": "FT_Error",
+              "face_flags": "FT_Long|null",
+              "num_fixed_sizes": "FT_Int|null",
+              "size_error": "FT_Error|null",
+              "load_error": "FT_Error|null",
+              "glyph_format": "FT_Glyph_Format|null",
+              "outline_cbox": "FT_BBox|null",
+              "bitmap": "FT_Bitmap descriptor|null"
+            }
+          ]
         },
         "compare": {
           "mode": "exact",
           "paths": [
-            "status",
-            "error",
-            "parameters[].tag",
-            "parameters[].data_nullness",
-            "observable_effect",
-            "unknown_tag_behavior"
+            "variants[*].label",
+            "variants[*].open_error",
+            "variants[*].face_flags",
+            "variants[*].num_fixed_sizes",
+            "variants[*].size_error",
+            "variants[*].load_error",
+            "variants[*].glyph_format",
+            "variants[*].outline_cbox",
+            "variants[*].bitmap"
           ]
         },
         "fixture_requirements": [

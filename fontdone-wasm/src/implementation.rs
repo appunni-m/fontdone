@@ -2442,7 +2442,7 @@ pub extern "C" fn fontdone_wasm_open_face(
     face_index: FT_Long,
     size_pt: f32,
 ) -> FontdoneWasmStatus {
-    fontdone_wasm_open_face_with_name_options(file_base, file_size, face_index, size_pt, 0, 0)
+    fontdone_wasm_open_face_with_name_options(file_base, file_size, face_index, size_pt, 0, 0, 0)
 }
 
 /// Opens a memory face with a scalar return shape convenient for JavaScript hosts.
@@ -2516,6 +2516,7 @@ pub extern "C" fn fontdone_wasm_open_face_with_name_options(
     size_pt: f32,
     ignore_typographic_family: FT_Bool,
     ignore_typographic_subfamily: FT_Bool,
+    ignore_sbix: FT_Bool,
 ) -> FontdoneWasmStatus {
     if file_base.is_null() {
         return FontdoneWasmStatus {
@@ -2534,6 +2535,7 @@ pub extern "C" fn fontdone_wasm_open_face_with_name_options(
         rust_ffi::FT_Open_Face_Name_Options {
             ignore_typographic_family: ignore_typographic_family != 0,
             ignore_typographic_subfamily: ignore_typographic_subfamily != 0,
+            ignore_sbix: ignore_sbix != 0,
         },
     ) {
         Ok(face) => {

@@ -54,6 +54,9 @@ pub struct Font {
     pub size_pt: f32,
     /// Hinting/load policy used by compact rendering helpers.
     pub load_mode: LoadMode,
+    /// `FT_PARAM_TAG_IGNORE_SBIX` open-parameter state.  When set, an `sbix`
+    /// table is treated as absent, matching `sfnt/sfobjs.c` parameter dispatch.
+    pub ignore_sbix: bool,
     face_kind: FaceKind,
     type1_font_info: Option<Type1FontInfo>,
     type1_encoding: Option<Type1EncodingInfo>,
@@ -783,6 +786,7 @@ fn winfnt_font_data(data: &[u8], size_pt: f32, header: &WinFntHeader) -> Arc<Fon
         hdmx: None,
         kern: None,
         sbit: None,
+        sbix: None,
         svg: None,
         cff: None,
         cff2: None,
@@ -1347,6 +1351,7 @@ fn bdf_font_data(data: &[u8], size_pt: f32, metadata: &BdfMetadata) -> Arc<FontD
         hdmx: None,
         kern: None,
         sbit: None,
+        sbix: None,
         svg: None,
         cff: None,
         cff2: None,
@@ -2362,6 +2367,7 @@ fn non_sfnt_outline_font_data(
         hdmx: None,
         kern: None,
         sbit: None,
+        sbix: None,
         svg: None,
         cff: None,
         cff2: None,
@@ -3052,6 +3058,32 @@ impl Font {
         Self::truetype_face(data, face_index, size_pt)
     }
 
+    /// Apply `FT_PARAM_TAG_IGNORE_SBIX`, matching `sfnt/sfobjs.c` parameter
+    /// dispatch that treats an `sbix` table as absent when the tag is present.
+    pub fn set_ignore_sbix(&mut self, ignore: bool) {
+        self.ignore_sbix = ignore;
+    }
+
+    /// True when the SFNT face has outline data (`glyf`, CFF, or CFF2).
+    pub(crate) fn has_outlines(&self) -> bool {
+        !self.data.glyf_data.is_empty() || self.data.cff.is_some() || self.data.cff2.is_some()
+    }
+
+    /// Replicate the pinned TrueType driver's embedded-bitmap-first glyph
+    /// load when the active size matches an `sbix` strike.  Returns `None`
+    /// when no `sbix` strike is active so the outline path proceeds.
+    pub(crate) fn sbix_active_strike_load_error(
+        &self,
+        glyph_index: u16,
+        ppem: u16,
+    ) -> Option<Result<(), FontError>> {
+        let sbix = self.data.sbix.as_ref().filter(|_| !self.ignore_sbix)?;
+        if !sbix.has_strike(ppem) {
+            return None;
+        }
+        Some(sbix.load_glyph_error(glyph_index, self.data.maxp.num_glyphs, ppem, 0))
+    }
+
     /// Load a TrueType/OpenType font from raw bytes at a given point size.
     ///
     /// Parses all required tables eagerly. Matches `FT_New_Memory_Face` +
@@ -3139,6 +3171,7 @@ impl Font {
             data: font_data,
             size_pt,
             load_mode: LoadMode::Default,
+            ignore_sbix: false,
             face_kind: FaceKind::Type1 {
                 is_fixed_pitch: metadata.is_fixed_pitch,
             },
@@ -3192,6 +3225,7 @@ impl Font {
             data: font_data,
             size_pt,
             load_mode: LoadMode::Default,
+            ignore_sbix: false,
             face_kind: FaceKind::CidType1 {
                 is_fixed_pitch: metadata.is_fixed_pitch,
             },
@@ -3280,6 +3314,7 @@ impl Font {
             data: font_data,
             size_pt,
             load_mode: LoadMode::Default,
+            ignore_sbix: false,
             face_kind: FaceKind::Pfr,
             type1_font_info: None,
             type1_encoding: None,
@@ -3343,6 +3378,7 @@ impl Font {
             data: font_data,
             size_pt,
             load_mode: LoadMode::Default,
+            ignore_sbix: false,
             face_kind,
             type1_font_info: None,
             type1_encoding: None,
@@ -3391,6 +3427,7 @@ impl Font {
             data: font_data,
             size_pt,
             load_mode: LoadMode::Default,
+            ignore_sbix: false,
             face_kind: FaceKind::WinFnt { header },
             type1_font_info: None,
             type1_encoding: None,
@@ -3577,6 +3614,11 @@ impl Font {
             .and_then(|d| tt::kern::parse_kern(d).ok());
         let sfnt_bdf = dir.find(data, tag(b"BDF ")).and_then(parse_sfnt_bdf_table);
         let sbit = tt::sbit::parse_sbit(&dir, data);
+        let sbix = if sbit.is_none() {
+            tt::sbix::parse_sbix(&dir, data)
+        } else {
+            None
+        };
         let svg = dir
             .find(data, tag(b"SVG "))
             .and_then(|table| tt::svg::SvgTable::parse(table).ok());
@@ -3591,12 +3633,12 @@ impl Font {
 
         let loca_data = match dir.find(data, tag(b"loca")) {
             Some(bytes) => bytes.to_vec(),
-            None if cff.is_some() || cff2.is_some() => Vec::new(),
+            None if cff.is_some() || cff2.is_some() || sbix.is_some() => Vec::new(),
             None => return Err(FontError::InvalidFont("missing 'loca' table".into())),
         };
         let glyf_data = match dir.find(data, tag(b"glyf")) {
             Some(bytes) => bytes.to_vec(),
-            None if cff.is_some() || cff2.is_some() => Vec::new(),
+            None if cff.is_some() || cff2.is_some() || sbix.is_some() => Vec::new(),
             None => return Err(FontError::InvalidFont("missing 'glyf' table".into())),
         };
 
@@ -3646,6 +3688,7 @@ impl Font {
             hdmx,
             kern,
             sbit,
+            sbix,
             svg,
             cff,
             cff2,
@@ -3696,6 +3739,7 @@ impl Font {
             data: font_data,
             size_pt,
             load_mode,
+            ignore_sbix: false,
             face_kind: FaceKind::Sfnt,
             type1_font_info: None,
             type1_encoding: None,
@@ -4414,6 +4458,9 @@ impl Font {
         const FT_FACE_FLAG_CID_KEYED: u32 = 1 << 12;
         const FT_FACE_FLAG_VARIATION: u32 = 1 << 15;
         const FT_FACE_FLAG_SVG: u32 = 1 << 16;
+        const FT_FACE_FLAG_COLOR: u32 = 1 << 14;
+        const FT_FACE_FLAG_SBIX: u32 = 1 << 17;
+        const FT_FACE_FLAG_SBIX_OVERLAY: u32 = 1 << 18;
 
         if matches!(self.face_kind, FaceKind::Bdf | FaceKind::Pcf) {
             // FreeType's BDF and PCF drivers expose bitmap-only faces as
@@ -4505,6 +4552,36 @@ impl Font {
         {
             flags |= FT_FACE_FLAG_FIXED_SIZES;
         }
+        let has_sbix = !self.ignore_sbix && self.data.sbix.is_some();
+        if has_sbix {
+            // `sfnt/sfobjs.c` exposes a font with an `sbix` table as a
+            // bitmap-only color face unless `FT_PARAM_TAG_IGNORE_SBIX` was
+            // passed; `FT_FACE_FLAG_SCALABLE` is intentionally absent.  The
+            // `FT_FACE_FLAG_SBIX` bit itself is only set for faces that also
+            // carry outlines.
+            flags &= !FT_FACE_FLAG_SCALABLE;
+            flags |= FT_FACE_FLAG_COLOR;
+            if self.has_outlines() {
+                flags |= FT_FACE_FLAG_SBIX;
+            }
+            if self
+                .data
+                .sbix
+                .as_ref()
+                .is_some_and(|sbix| sbix.flags() & 2 != 0)
+            {
+                flags |= FT_FACE_FLAG_SBIX_OVERLAY;
+            }
+        }
+        if !self.ignore_sbix
+            && self
+                .data
+                .sbix
+                .as_ref()
+                .is_some_and(|sbix| sbix.strike_count() != 0)
+        {
+            flags |= FT_FACE_FLAG_FIXED_SIZES;
+        }
         if self
             .data
             .post
@@ -4552,7 +4629,12 @@ impl Font {
         if self.data.svg.is_some() {
             flags |= FT_FACE_FLAG_SVG;
         }
-        if self.data.table_directory.record(tag(b"glyf")).is_some() {
+        // The TrueType driver sets `FT_FACE_FLAG_HINTER` for every
+        // TrueType-format face (`ttobjs.c:tt_face_init`), including bitmap-only
+        // SFNT faces without a `glyf` table.
+        if self.data.raw_data.get(0..4) == Some(&u32::to_be_bytes(crate::tt::TRUE_MAGIC))
+            || self.data.table_directory.record(tag(b"glyf")).is_some()
+        {
             flags |= FT_FACE_FLAG_HINTER;
         }
         flags
@@ -4785,25 +4867,41 @@ impl Font {
             return Ok(());
         }
 
-        let sbit = self
+        let (x_ppem, y_ppem) = if let Some(sbit) = self
             .data
             .sbit
             .as_ref()
             .filter(|sbit| sbit.strike_count() != 0)
-            .ok_or(SelectSizeError::NoFixedSizes)?;
-        let metrics = sbit
-            .strike_metrics(strike_index)
-            .ok_or(SelectSizeError::InvalidArgument)?;
+        {
+            let metrics = sbit
+                .strike_metrics(strike_index)
+                .ok_or(SelectSizeError::InvalidArgument)?;
+            (u32::from(metrics.x_ppem), u32::from(metrics.y_ppem))
+        } else if let Some(sbix) = self
+            .data
+            .sbix
+            .as_ref()
+            .filter(|sbix| sbix.strike_count() != 0)
+        {
+            let metrics = sbix
+                .strike_metrics(
+                    strike_index,
+                    self.data.hhea.ascent,
+                    self.data.hhea.descent,
+                    self.data.hhea.line_gap,
+                    self.data.head.units_per_em,
+                )
+                .ok_or(SelectSizeError::InvalidArgument)?;
+            (u32::from(metrics.x_ppem), u32::from(metrics.y_ppem))
+        } else {
+            return Err(SelectSizeError::NoFixedSizes);
+        };
         // FreeType `FT_Select_Size` dispatches TrueType scalable bitmap faces
         // through `tt_size_select` (`src/truetype/ttdriver.c:312-331`), which
         // stores the strike index then calls `FT_Select_Metrics`
         // (`src/base/ftobjs.c:3210-3236`) to rebuild scalable size metrics
         // from the strike ppem values.
-        self.size_metrics = SizeMetrics::from_pixel_size(
-            u32::from(metrics.x_ppem),
-            u32::from(metrics.y_ppem),
-            &self.data,
-        );
+        self.size_metrics = SizeMetrics::from_pixel_size(x_ppem, y_ppem, &self.data);
         self.size_pt = f32::from(self.size_metrics.y_ppem);
         self.data.size_pt.set(self.size_pt);
         sync_active_size_metrics(&self.data, self.size_metrics);

@@ -25,6 +25,7 @@ use crate::tt::name::NameTable;
 use crate::tt::os2::Os2Table;
 use crate::tt::post::PostTable;
 use crate::tt::sbit::SbitTable;
+use crate::tt::sbix::SbixTable;
 use crate::tt::svg::SvgTable;
 use crate::tt::vhea::VheaTable;
 use crate::tt::vmtx::VmtxTable;
@@ -59,6 +60,7 @@ pub struct FontData {
     pub hdmx: Option<HdmxTable>,
     pub kern: Option<KernTable>,
     pub sbit: Option<SbitTable>,
+    pub sbix: Option<SbixTable>,
     pub svg: Option<SvgTable>,
     pub cff: Option<CffTable>,
     pub cff2: Option<Cff2Table>,
