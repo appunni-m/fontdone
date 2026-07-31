@@ -692,6 +692,37 @@
       "supported_host_contract": false
     },
     {
+      "name": "fontdone_wasm_interpreter_version_open",
+      "parameters": [
+        {
+          "name": "file_base",
+          "type": "*const c_uchar"
+        },
+        {
+          "name": "file_size",
+          "type": "usize"
+        },
+        {
+          "name": "face_index",
+          "type": "FT_Long"
+        },
+        {
+          "name": "size_pt",
+          "type": "f32"
+        },
+        {
+          "name": "interpreter_version",
+          "type": "FT_UInt"
+        },
+        {
+          "name": "out_readback",
+          "type": "*mut FT_UInt"
+        }
+      ],
+      "return": "FontdoneWasmStatus",
+      "supported_host_contract": false
+    },
+    {
       "name": "fontdone_wasm_open_face_handle",
       "parameters": [
         {

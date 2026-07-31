@@ -2611,6 +2611,62 @@ pub extern "C" fn fontdone_wasm_open_face(
     fontdone_wasm_open_face_with_name_options(file_base, file_size, face_index, size_pt, 0, 0, 0)
 }
 
+#[unsafe(no_mangle)]
+pub extern "C" fn fontdone_wasm_interpreter_version_open(
+    file_base: *const c_uchar,
+    file_size: usize,
+    face_index: FT_Long,
+    size_pt: f32,
+    interpreter_version: FT_UInt,
+    out_readback: *mut FT_UInt,
+) -> FontdoneWasmStatus {
+    if file_base.is_null() {
+        return FontdoneWasmStatus {
+            error: rust_ffi::FT_Err_Invalid_Argument,
+            handle: 0,
+        };
+    }
+    // SAFETY: the caller promises `file_size` readable bytes at `file_base`.
+    let data = unsafe { slice::from_raw_parts(file_base, file_size) };
+    let mut library = rust_ffi::FT_Init_FreeType();
+    let set_error = rust_ffi::FT_Property_Set(
+        Some(&mut library),
+        Some("truetype"),
+        Some("interpreter-version"),
+        Some(interpreter_version),
+    );
+    let mut readback = 0;
+    rust_ffi::FT_Property_Get(
+        Some(&library),
+        Some("truetype"),
+        Some("interpreter-version"),
+        Some(&mut readback),
+    );
+    if !out_readback.is_null() {
+        // SAFETY: the caller provides one writable FT_UInt output slot.
+        unsafe { *out_readback = readback };
+    }
+    if set_error != rust_ffi::FT_Err_Ok {
+        return FontdoneWasmStatus {
+            error: set_error,
+            handle: 0,
+        };
+    }
+    match rust_ffi::FT_New_Memory_Face(&library, data, face_index, size_pt) {
+        Ok(face) => {
+            let state = make_wasm_face_state(face);
+            let active_size = state.active_size;
+            let handle = Box::into_raw(state).addr();
+            register_wasm_size_handle(handle, active_size);
+            FontdoneWasmStatus {
+                error: rust_ffi::FT_Err_Ok,
+                handle,
+            }
+        }
+        Err(error) => FontdoneWasmStatus { error, handle: 0 },
+    }
+}
+
 /// Opens a memory face with a scalar return shape convenient for JavaScript hosts.
 ///
 /// The caller writes `file_size` font bytes into exported linear memory and

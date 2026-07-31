@@ -95,6 +95,7 @@ document_wasm_entry_points!(
     fontdone_wasm_open_face_handle,
     fontdone_wasm_open_external_stream_face,
     fontdone_wasm_open_face_with_name_options,
+    fontdone_wasm_interpreter_version_open,
     fontdone_wasm_ps_hinting_engine_open,
     fontdone_wasm_done_face,
     fontdone_wasm_new_size,

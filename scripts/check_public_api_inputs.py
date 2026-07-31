@@ -146,6 +146,7 @@ WASM_EXPORTS = {
     "fontdone_wasm_open_face_handle",
     "fontdone_wasm_open_external_stream_face",
     "fontdone_wasm_open_face_with_name_options",
+    "fontdone_wasm_interpreter_version_open",
     "fontdone_wasm_ps_hinting_engine_open",
     "fontdone_wasm_done_face",
     "fontdone_wasm_new_size",
@@ -5763,6 +5764,16 @@ def future_batch_unresolved_asset_pending_reason(row: ConcreteInput) -> str | No
 
 
 def future_batch_real_parity_reason(row: ConcreteInput) -> str | None:
+    if (
+        row.operation == "ftdriver.interpreter_version_glyph_output"
+        and row.params.get("runtime_route") == "actual_interpreter_version_glyph_effect"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "TT interpreter-version glyph output validates GETINFO-dependent "
+            "hinted outlines, advances, and control-font preservation through "
+            "pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+        )
     if row.operation == "ftimage.custom_renderer_lifecycle" and row.case_id in {
         "ftimage.FT_Raster_Done_Func.renderer_lifecycle_calls_done",
         "ftimage.FT_Raster_New_Func.renderer_lifecycle_calls_new",

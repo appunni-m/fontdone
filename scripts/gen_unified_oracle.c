@@ -33135,6 +33135,105 @@ static int emit_stem_darkening_case(int argc, char** argv) {
     return 0;
 }
 
+static int emit_interpreter_version_glyph_case(int argc, char** argv) {
+    if (argc != 10) {
+        fprintf(stderr,
+                "--interpreter-version-glyph-case requires MAIN_KIND MAIN_SRC "
+                "CONTROL_KIND CONTROL_SRC VALUE GLYPHS PPEMS FLAGS\n");
+        return 2;
+    }
+    unsigned int value = (unsigned int)strtoul(argv[6], NULL, 10);
+    const char* glyphs_arg = argv[7];
+    const char* ppems_arg = argv[8];
+    FT_Int32 load_flags = (FT_Int32)strtol(argv[9], NULL, 10);
+
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    FT_Error set_error = -1;
+    FT_Error get_error = -1;
+    FT_UInt readback = 0;
+    if (!init_error) {
+        set_error = FT_Property_Set(
+            library, "truetype", "interpreter-version", &value);
+        get_error =
+            FT_Property_Get(library, "truetype", "interpreter-version", &readback);
+    }
+    printf("{");
+    print_status(init_error ? init_error : FT_Err_Ok);
+    printf(",\"output\":{\"value\":%u,\"readback\":%u,\"set_error\":%d,"
+           "\"get_error\":%d,\"rows\":[",
+           value, readback, set_error, get_error);
+
+    struct FontSrc_ {
+        const char* label;
+        const char* kind;
+        const char* source;
+    } sources[2] = {
+        {"main", argv[2], argv[3]},
+        {"control", argv[4], argv[5]},
+    };
+    char glyphs_copy[512];
+    char ppems_copy[256];
+    snprintf(glyphs_copy, sizeof(glyphs_copy), "%s", glyphs_arg);
+    snprintf(ppems_copy, sizeof(ppems_copy), "%s", ppems_arg);
+    int first = 1;
+    for (int src_index = 0; src_index < 2; src_index++) {
+        OracleFace holder;
+        int opened = open_oracle_face(
+            sources[src_index].kind, sources[src_index].source, 0, &holder);
+        if (opened != 0) {
+            close_oracle_face(&holder);
+            continue;
+        }
+        char ppems[256];
+        memcpy(ppems, ppems_copy, sizeof(ppems_copy));
+        char* pcursor = ppems;
+        while (pcursor && *pcursor) {
+            char* pnext = strchr(pcursor, ',');
+            if (pnext) {
+                *pnext = '\0';
+            }
+            unsigned int ppem = (unsigned int)strtoul(pcursor, NULL, 10);
+            FT_Error size_error = FT_Set_Pixel_Sizes(holder.face, 0, ppem);
+            char glyphs[512];
+            memcpy(glyphs, glyphs_copy, sizeof(glyphs_copy));
+            char* gcursor = glyphs;
+            while (gcursor && *gcursor) {
+                char* gnext = strchr(gcursor, ',');
+                if (gnext) {
+                    *gnext = '\0';
+                }
+                unsigned int glyph = (unsigned int)strtoul(gcursor, NULL, 10);
+                FT_Error load_error = size_error ? size_error :
+                    FT_Load_Glyph(holder.face, glyph, load_flags);
+                if (!first) {
+                    printf(",");
+                }
+                first = 0;
+                printf("{\"font\":\"%s\",\"glyph\":%u,\"ppem\":%u,"
+                       "\"load_error\":%d,\"slot\":",
+                       sources[src_index].label, glyph, ppem, load_error);
+                if (load_error == FT_Err_Ok) {
+                    printf("{");
+                    print_slot_body(holder.face->glyph, glyph);
+                    printf("}");
+                } else {
+                    printf("{\"load_error\":%d}", load_error);
+                }
+                printf("}");
+                gcursor = gnext ? gnext + 1 : NULL;
+            }
+            pcursor = pnext ? pnext + 1 : NULL;
+        }
+        close_oracle_face(&holder);
+    }
+    printf("]}}\n");
+    if (library) {
+        FT_Done_FreeType(library);
+    }
+    return 0;
+}
+
 typedef struct MemoryFaceRow_ {
     FT_Long face_index;
     int has_file_size;
@@ -36919,6 +37018,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 6 && streq(argv[1], "--stem-darkening-case")) {
         return emit_stem_darkening_case(argc, argv);
+    }
+    if (argc == 10 && streq(argv[1], "--interpreter-version-glyph-case")) {
+        return emit_interpreter_version_glyph_case(argc, argv);
     }
     if (argc == 9 && streq(argv[1], "--get-sfnt-vhea-mvar-sequence")) {
         return emit_face_or_slot(argc, argv);

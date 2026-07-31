@@ -126,15 +126,12 @@
         "params": {
           "face_index": 0,
           "ppem_sizes": [
-            9,
             12,
             16,
             24
           ],
           "load_flags": [
-            "FT_LOAD_DEFAULT",
-            "FT_LOAD_TARGET_NORMAL",
-            "FT_LOAD_TARGET_LIGHT"
+            "FT_LOAD_RENDER"
           ],
           "value_symbol": "TT_INTERPRETER_VERSION_38",
           "value": 38,
@@ -143,7 +140,8 @@
             "backward_compat_component",
             "phantom_point_sensitive"
           ],
-          "compare_after_property_set": true
+          "compare_after_property_set": true,
+          "runtime_route": "actual_interpreter_version_glyph_effect"
         }
       },
       "classifiers": [
@@ -156,23 +154,32 @@
       "expectation": {
         "status": "ok",
         "output_shape": {
-          "status": "FT_Error",
-          "glyph_output": {
-            "metrics": "exact 26.6 fields",
-            "outline": "point/tag/contour coordinates",
-            "bitmap": "mode,width,rows,pitch,left,top,bytes hash"
-          },
-          "getinfo_observation": "if fixture exposes a glyph that reports GETINFO-dependent branches"
+          "value": "FT_UInt",
+          "readback": "FT_UInt",
+          "set_error": "FT_Error",
+          "get_error": "FT_Error",
+          "rows": [
+            {
+              "font": "string",
+              "glyph": "FT_UInt",
+              "ppem": "FT_UInt",
+              "load_error": "FT_Error",
+              "slot": "FT_GlyphSlot public fields or {load_error}"
+            }
+          ]
         },
         "compare": {
           "mode": "exact",
           "paths": [
-            "property_error",
-            "glyphs[].load_error",
-            "glyphs[].metrics",
-            "glyphs[].outline_hash",
-            "glyphs[].bitmap_hash",
-            "glyphs[].getinfo_observation"
+            "value",
+            "readback",
+            "set_error",
+            "get_error",
+            "rows[*].font",
+            "rows[*].glyph",
+            "rows[*].ppem",
+            "rows[*].load_error",
+            "rows[*].slot"
           ]
         },
         "fixture_requirements": [

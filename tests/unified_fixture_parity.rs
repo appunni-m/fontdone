@@ -40083,6 +40083,28 @@ fn error_status_success_slot_route_supported(case: &InputCase) -> bool {
 
 fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
     let params = &case.inputs.params;
+    if interpreter_version_glyph_runtime_supported(case) {
+        let mut args = vec!["--interpreter-version-glyph-case".to_string()];
+        push_required_asset_source(case, "font", &mut args)?;
+        push_required_asset_source(case, "control_font", &mut args)?;
+        args.push(interpreter_version_glyph_value(case)?.to_string());
+        args.push(
+            interpreter_version_glyph_indices(case)?
+                .iter()
+                .map(|glyph| glyph.to_string())
+                .collect::<Vec<_>>()
+                .join(","),
+        );
+        args.push(
+            interpreter_version_ppem_sizes(case)?
+                .iter()
+                .map(|ppem| ppem.to_string())
+                .collect::<Vec<_>>()
+                .join(","),
+        );
+        args.push(interpreter_version_load_flags(case)?.to_string());
+        return Ok(args);
+    }
     if ps_hinting_engine_runtime_supported(case) {
         let mut args = vec!["--ps-hinting-engine-case".to_string()];
         for (_, asset) in ps_hinting_engine_assets() {
@@ -44583,6 +44605,11 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftdriver.hinting_engine_property" if ps_hinting_engine_runtime_supported(case) => {
             rust_ps_hinting_engine_case(case)
         }
+        "ftdriver.interpreter_version_glyph_output"
+            if interpreter_version_glyph_runtime_supported(case) =>
+        {
+            rust_interpreter_version_glyph_case(case)
+        }
         "ftdriver.glyph_to_script_map" => rust_property_glyph_to_script_runtime_output(case),
         "ftdriver.glyph_to_script_map_effect" => rust_property_glyph_map_effect(case),
         "ftdriver.increase_x_height_effect" => rust_property_increase_x_height_effect(case),
@@ -45997,6 +46024,11 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftdriver.hinting_engine_property" if ps_hinting_engine_runtime_supported(case) => {
             c_ps_hinting_engine_case(case)
         }
+        "ftdriver.interpreter_version_glyph_output"
+            if interpreter_version_glyph_runtime_supported(case) =>
+        {
+            c_interpreter_version_glyph_case(case)
+        }
         "ftdriver.glyph_to_script_map" => c_property_glyph_to_script_runtime_output(case),
         "ftdriver.glyph_to_script_map_effect" => c_property_glyph_map_effect(case),
         "ftdriver.increase_x_height_effect" => c_property_increase_x_height_effect(case),
@@ -47264,6 +47296,11 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftdriver.hinting_engine_property" if ps_hinting_engine_runtime_supported(case) => {
             wasm_ps_hinting_engine_case(case)
+        }
+        "ftdriver.interpreter_version_glyph_output"
+            if interpreter_version_glyph_runtime_supported(case) =>
+        {
+            wasm_interpreter_version_glyph_case(case)
         }
         "ftdriver.glyph_to_script_map" => wasm_property_glyph_to_script_runtime_output(case),
         "ftdriver.glyph_to_script_map_effect" => wasm_property_glyph_map_effect(case),
@@ -68354,6 +68391,249 @@ fn wasm_stem_darkening_case(case: &InputCase) -> Result<RunOutput, String> {
     Ok(ok(
         json!({"rows": rows, "preserved_across_toggle": preserved}),
     ))
+}
+
+fn interpreter_version_glyph_runtime_supported(case: &InputCase) -> bool {
+    matches!(
+        case.case_id.as_str(),
+        "ftdriver.TT_INTERPRETER_VERSION_35.glyph_hinting_runtime_effect"
+            | "ftdriver.TT_INTERPRETER_VERSION_38.glyph_hinting_runtime_effect"
+            | "ftdriver.TT_INTERPRETER_VERSION_40.glyph_hinting_runtime_effect"
+    ) && assets_are_runtime_resolved(case)
+}
+
+fn interpreter_version_glyph_value(case: &InputCase) -> Result<u32, String> {
+    case.inputs
+        .params
+        .get("value")
+        .and_then(Value::as_u64)
+        .and_then(|value| u32::try_from(value).ok())
+        .ok_or_else(|| "missing interpreter-version value".to_string())
+}
+
+fn interpreter_version_glyph_indices(case: &InputCase) -> Result<Vec<u32>, String> {
+    let names = case
+        .inputs
+        .params
+        .get("glyphs")
+        .and_then(Value::as_array)
+        .ok_or_else(|| "missing interpreter-version glyphs list".to_string())?;
+    names
+        .iter()
+        .map(|name| {
+            let name = name
+                .as_str()
+                .ok_or_else(|| "glyph name must be a string".to_string())?;
+            match name {
+                "GETINFO_probe" => Ok(1),
+                "backward_compat_component" => Ok(2),
+                "phantom_point_sensitive" => Ok(3),
+                _ => Err(format!("unsupported interpreter-version glyph {name}")),
+            }
+        })
+        .collect()
+}
+
+fn interpreter_version_ppem_sizes(case: &InputCase) -> Result<Vec<u32>, String> {
+    case.inputs
+        .params
+        .get("ppem_sizes")
+        .and_then(Value::as_array)
+        .ok_or_else(|| "missing interpreter-version ppem_sizes".to_string())?
+        .iter()
+        .map(|value| u32_value(value, "ppem_sizes"))
+        .collect()
+}
+
+fn interpreter_version_load_flags(case: &InputCase) -> Result<i32, String> {
+    load_flags_param(&case.inputs.params)
+}
+
+fn interpreter_version_row(
+    font: &str,
+    glyph: u32,
+    ppem: u32,
+    load_error: FT_Error,
+    slot: Value,
+) -> Value {
+    json!({
+        "font": font,
+        "glyph": glyph,
+        "ppem": ppem,
+        "load_error": load_error,
+        "slot": slot
+    })
+}
+
+fn rust_interpreter_version_glyph_case(case: &InputCase) -> Result<RunOutput, String> {
+    let value = interpreter_version_glyph_value(case)?;
+    let glyphs = interpreter_version_glyph_indices(case)?;
+    let ppems = interpreter_version_ppem_sizes(case)?;
+    let load_flags = interpreter_version_load_flags(case)?;
+    let mut library = FT_Init_FreeType();
+    let set_error = FT_Property_Set(
+        Some(&mut library),
+        Some("truetype"),
+        Some("interpreter-version"),
+        Some(value),
+    );
+    let mut readback = 0;
+    let get_error = FT_Property_Get(
+        Some(&library),
+        Some("truetype"),
+        Some("interpreter-version"),
+        Some(&mut readback),
+    );
+    let mut rows = Vec::new();
+    for (label, asset) in [("main", "font"), ("control", "control_font")] {
+        let bytes = required_asset_bytes(case, asset)?;
+        let mut face = FT_New_Memory_Face(&library, bytes.as_ref(), 0, 20.0)
+            .map_err(|err| format!("open {asset} face: {err}"))?;
+        for ppem in &ppems {
+            let size_error = FT_Set_Pixel_Sizes(&mut face, 0, *ppem);
+            for glyph in &glyphs {
+                let load_error = if size_error == FT_Err_Ok {
+                    FT_Load_Glyph(&face, *glyph, load_flags)
+                        .map_or_else(|error| error, |_| FT_Err_Ok)
+                } else {
+                    size_error
+                };
+                let slot = if load_error == FT_Err_Ok {
+                    match FT_Load_Glyph(&face, *glyph, load_flags) {
+                        Ok(slot) => slot_json(&slot),
+                        Err(err) => json!({"load_error": err}),
+                    }
+                } else {
+                    json!({"load_error": load_error})
+                };
+                rows.push(interpreter_version_row(
+                    label, *glyph, *ppem, load_error, slot,
+                ));
+            }
+        }
+    }
+    Ok(ok(json!({
+        "value": value,
+        "readback": readback,
+        "set_error": set_error,
+        "get_error": get_error,
+        "rows": rows
+    })))
+}
+
+fn c_interpreter_version_glyph_case(case: &InputCase) -> Result<RunOutput, String> {
+    let value = interpreter_version_glyph_value(case)?;
+    let glyphs = interpreter_version_glyph_indices(case)?;
+    let ppems = interpreter_version_ppem_sizes(case)?;
+    let load_flags = interpreter_version_load_flags(case)?;
+    let mut library = std::ptr::null_mut();
+    let init_error = c_abi::FT_Init_FreeType(&mut library);
+    if init_error != FT_Err_Ok {
+        return Ok(error(init_error));
+    }
+    let value_storage = value;
+    let set_error = c_abi::FT_Property_Set(
+        library,
+        c"truetype".as_ptr(),
+        c"interpreter-version".as_ptr(),
+        (&value_storage as *const FT_UInt).cast(),
+    );
+    let mut readback = PROPERTY_SENTINEL;
+    let get_error = c_abi::FT_Property_Get(
+        library,
+        c"truetype".as_ptr(),
+        c"interpreter-version".as_ptr(),
+        (&mut readback as *mut FT_UInt).cast(),
+    );
+    let mut rows = Vec::new();
+    for (label, asset) in [("main", "font"), ("control", "control_font")] {
+        let bytes = required_asset_bytes(case, asset)?;
+        let file_size = i64::try_from(bytes.len()).map_err(|err| err.to_string())?;
+        let mut face = std::ptr::null_mut();
+        let open_error =
+            c_abi::FT_New_Memory_Face(library, bytes.as_ptr(), file_size, 0, &mut face);
+        if open_error != FT_Err_Ok {
+            c_done_library(library);
+            return Ok(error(open_error));
+        }
+        for ppem in &ppems {
+            let size_error = c_abi::FT_Set_Pixel_Sizes(face, 0, *ppem);
+            for glyph in &glyphs {
+                let load_error = if size_error == FT_Err_Ok {
+                    c_abi::FT_Load_Glyph(face, *glyph, load_flags)
+                } else {
+                    size_error
+                };
+                let slot = if load_error == FT_Err_Ok {
+                    c_slot_json(face)?
+                } else {
+                    json!({"load_error": load_error})
+                };
+                rows.push(interpreter_version_row(
+                    label, *glyph, *ppem, load_error, slot,
+                ));
+            }
+        }
+        c_done_face(face);
+    }
+    c_done_library(library);
+    Ok(ok(json!({
+        "value": value,
+        "readback": readback,
+        "set_error": set_error,
+        "get_error": get_error,
+        "rows": rows
+    })))
+}
+
+fn wasm_interpreter_version_glyph_case(case: &InputCase) -> Result<RunOutput, String> {
+    let value = interpreter_version_glyph_value(case)?;
+    let glyphs = interpreter_version_glyph_indices(case)?;
+    let ppems = interpreter_version_ppem_sizes(case)?;
+    let load_flags = interpreter_version_load_flags(case)?;
+    let mut rows = Vec::new();
+    let mut wasm_readback = 0u32;
+    for (label, asset) in [("main", "font"), ("control", "control_font")] {
+        let bytes = required_asset_bytes(case, asset)?;
+        let status = wasm_abi::fontdone_wasm_interpreter_version_open(
+            bytes.as_ptr(),
+            bytes.len(),
+            0,
+            20.0,
+            value,
+            &mut wasm_readback,
+        );
+        if status.error != FT_Err_Ok {
+            return Ok(error(status.error));
+        }
+        let handle = status.handle;
+        for ppem in &ppems {
+            let size_error = wasm_abi::fontdone_wasm_set_pixel_sizes(handle, 0, *ppem);
+            for glyph in &glyphs {
+                let load_error = if size_error == FT_Err_Ok {
+                    wasm_abi::fontdone_wasm_load_glyph(handle, *glyph, load_flags)
+                } else {
+                    size_error
+                };
+                let slot = if load_error == FT_Err_Ok {
+                    wasm_slot_json(handle)?
+                } else {
+                    json!({"load_error": load_error})
+                };
+                rows.push(interpreter_version_row(
+                    label, *glyph, *ppem, load_error, slot,
+                ));
+            }
+        }
+        wasm_done_face(handle);
+    }
+    Ok(ok(json!({
+        "value": value,
+        "readback": wasm_readback,
+        "set_error": FT_Err_Ok,
+        "get_error": FT_Err_Ok,
+        "rows": rows
+    })))
 }
 
 fn rust_new_memory_face_variants(case: &InputCase) -> Result<RunOutput, String> {
