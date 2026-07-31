@@ -361,16 +361,16 @@ increase is claimed until the next full all-lane measurement**:
 | 17 | `514cca075fc5181b9bbd1005e4d53f6c3462381c` | Routed the maintained SVG glyph-load contract through pinned-C, Rust FFI, C ABI, and WASM observations for enabled SVG document success and `FT_LOAD_SVG_ONLY` error behavior; removed two pending runtime rows. |
 | 18 | `c16e21ea68b6aecb2cdd2c7258266326ae958e62` | Added the explicit GitHub `merge_group`/`checks_requested` trigger so the same bounded commit gate reports required status checks for merge-queue revisions; registered `make ci-fast` run `e3277efd-1af9-4a4e-9ccb-912a16b629ab` passed on the resulting clean SHA; kept full parity, coverage, performance, platform, package, and supply-chain jobs manual. |
 | 19 | `a51f6c4a8fcd7ac60120d793fc13c0111a98bbff` | Refreshed the exact C-ABI scorecard in run `a1472533-552d-43de-b9ca-a0c3f5adbfe0`: 9 / 12 categories complete; C01 runtime rows 4,997 / 5,047 with 50 pending; C11 binary artifacts 7 / 8; C12 platform bundles 1 / 5; all other blocking categories complete. |
-| 20 | working tree after `3ea03b5` | Promoted the two SVG build-feature classification rows through an actual pinned-C oracle, Rust FFI, C ABI, and WASM route. Full parity run `6bf29ed8-c047-481f-a8b4-d440762c489a` passed 7,247 / 7,247 runnable comparisons with 60 explicitly pending concrete cases; the refreshed C-ABI scorecard run `66bc46c3-185a-469c-8573-f28a53f85920` reports C01 runtime rows 4,999 / 5,047 with 48 pending. |
+| 20 | `c7d6b3758d0229011c39c170c95719fa0502bc04` | Promoted the two SVG build-feature classification rows through an actual pinned-C oracle, Rust FFI, C ABI, and WASM route. Clean full parity run `3369e0ab-624f-4e46-8539-b862a9cc97b4` passed 7,247 / 7,247 runnable comparisons with 60 explicitly pending concrete cases; the refreshed C-ABI scorecard run `66bc46c3-185a-469c-8573-f28a53f85920` reports C01 runtime rows 4,999 / 5,047 with 48 pending. |
 
-The latest parity-only verification is Coverage MCP run
-`6bf29ed8-c047-481f-a8b4-d440762c489a` after the SVG feature-probe route: 7,247
+The latest clean parity-only verification is Coverage MCP run
+`3369e0ab-624f-4e46-8539-b862a9cc97b4` after the SVG feature-probe route: 7,247
 / 7,247 runnable comparisons passed, 0 failed, and 60 remain explicitly
 pending. The same run reported 4,118 covered manifest cases, 4,258 logical
 cases, and 7,307 concrete cases; all 218 function routes were present in each
 of Rust, C ABI, and WASM. The committed source-digest attestation is
-`doc/runtime_parity_evidence.json`; it must be refreshed after the implementation
-batch is committed. Full coverage is intentionally deferred
+`doc/runtime_parity_evidence.json` and records a clean worktree at
+`c7d6b3758d0229011c39c170c95719fa0502bc04`. Full coverage is intentionally deferred
 until a larger set of focused batches is ready, because the maintained
 all-lane pass takes roughly 50 minutes.
 
