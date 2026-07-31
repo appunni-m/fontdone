@@ -23,8 +23,8 @@ doc/INTEGRATION.md	9253	file	7d46ae1f439b3e0254899a267c2087223ee080f0c5364f436de
 doc/README.md	4113	file	62f4a7b439e124c958296e875037878e75531d2fee021cad7a78617ed74c3d0c	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/RELEASING.md	5805	file	4814369e27e1a842a572acfdcf0f3534dbc8a4aa5d2c158acfecef53b7582f1c	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/ROADMAP.md	34485	file	ecbf11d7282c472be0a0059724c2c041538358539ce3d306edde945a5f04ea3b	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
-doc/compatibility_snapshot.json	25722	file	faf0275feaeef2920572f3e15ab50107e7c24f11d087736ad08341887a368b45	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/runtime_parity_evidence.json	1312	file	4ac54045612d88636cdcc06dbff2d627497721b0e9bd03e1dbeaadc707059ad0	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/compatibility_snapshot.json	25722	file	00148cd1565734abdf47efa751feaf0b2f167c03dd9f57412fd3947fe3195fe6	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/runtime_parity_evidence.json	1312	file	a0320948031544f9082cef5102b4e2cba8d38d0ba87cc5852d16d876336bcc7a	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 examples/bench_ops.rs	10086	file	a75d7bbf4e8e679ca393d8cffd68cc0824f7198bb5e85857ce4dd75d8e016a21	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/ffi_migration.rs	1806	file	3140c3cbf9182299f2ab8c98f6675dfd3d086c47177f7bf8783160a149eddda8	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/handle_error.rs	571	file	acbe9d9f2e838bb5ca27132dde73287fa123e3a069772a2b741ae6e010fae3b1	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
@@ -190,7 +190,7 @@ src/scaler.rs	66593	file	f3f09d7eb8ce18334eb43022617a3fc0f28ce9344afadee6671e16d
 src/tables.rs	15303	file	70765bed768608f5537a7254017c8b291c32fdcc36ecb54ae5cff92a88711e38	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/cff.rs	40162	file	c75201e9d40c31b4b11411679442135eb6183e322d984eaec978d1005e081335	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/cmap.rs	45591	file	19e99a56b8f520b9d941004a00bb85ebb0601d665c9aa847858107cd6206525c	-	keep-runtime	R01	Published pure-Rust runtime source.
-src/tt/fvar.rs	4897	file	965e7c2e18b040627a7e2015f3f72c10d7973a58b3af8f8830daa373d61aa1dc	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/tt/fvar.rs	8306	file	b0b647ee64ed7022ecb5775df6371f12ea8cd7c6730cd95228a750acbdd9af35	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/gasp.rs	4177	file	9b8d69117a781cac2918a56410f3185b257627b9bd1495f6b8a547f3ba047e53	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/glyf.rs	34522	file	ee5c08833037c873817175a69c3e30311bfe17c0f3bd35360c8887e1f17eefd9	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/gvar.rs	16829	file	1c8fb0e8d586d622c91bee2130ac02a45b04c3113cfac0124b827402c6ae6a94	-	keep-runtime	R01	Published pure-Rust runtime source.
@@ -2371,7 +2371,7 @@ tests/manifest.yaml	1520325	file	229edde3775e0f74a9f36f9a2537795c8814c4cfc6dc032
 tests/pipe_trace.rs	6312	file	2871e8fb783d748516c5542d70125ff3d9186ee63f88ab66124acd44caf422fa	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/support/generated_constant_lookup.rs	89931	file	3309eebd6fa4af72d165481e216c9a1dfcb574b3643a506e9221a8eec81f9d74	-	keep-generated-source	R10	Generated lookup required by the public constant parity test.
 tests/unified_fixture_parity.rs	3272066	file	55d4e2951badc216734613f02e7001fd4ecf42a2e0776b4b83231a227c57fc08	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
-tests/unit/casts.rs	878	file	665b6ca875fe3308bc62c07e052e9558bcb02c9176cdb3ea786dcb57f7665ef5	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
+tests/unit/casts.rs	1579	file	041e3468d107f0e061e012f72768decf3286dcbab893df37a2c0409c97711af2	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/unit/ffi/handles.rs	25856	file	5128d705e221e78eb9547d10f0f06fb1a572af2042f87c8bad26f75ecda9b5a3	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/unit/pfr.rs	14117	file	f0799ba4a730a523fb2b35fb65f8d56bfaca6f8b1793d82bfb8659922fec2fa9	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/unit/tt/gvar.rs	7613	file	7b1e47ea2cd33e0c21d7826dca01a3ab3f6a031bc0cb06dc0db91001b4ea8689	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
