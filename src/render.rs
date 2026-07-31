@@ -3104,3 +3104,667 @@ fn outline_cbox_26_6(outline: &Outline) -> PixelBox {
         y_max,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::outline::{OUTLINE_OVERLAP, Outline, OutlinePoint};
+
+    fn square_outline() -> Outline {
+        Outline {
+            n_contours: 1,
+            contours: vec![3],
+            points: vec![
+                OutlinePoint {
+                    x: 0,
+                    y: 0,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 0,
+                    y: 128,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 128,
+                    y: 128,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 128,
+                    y: 0,
+                    on_curve: true,
+                },
+            ],
+            tags: Vec::new(),
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 128,
+            cbox_y_max: 128,
+        }
+    }
+
+    fn diagonal_points() -> Vec<OutlinePoint> {
+        vec![
+            OutlinePoint {
+                x: 0,
+                y: 0,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 32,
+                y: 0,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 160,
+                y: 256,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 128,
+                y: 256,
+                on_curve: true,
+            },
+        ]
+    }
+
+    #[test]
+    fn overlap_outlines_render_with_subpixel_downsampling() {
+        let mut outline = square_outline();
+        outline.flags |= OUTLINE_OVERLAP;
+        let mut scratch = crate::grays::RasterScratch::new();
+        let bitmap = match render_loaded_outline(outline, 0, 0, 0, RenderMode::Normal, &mut scratch)
+        {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("overlap outline should render: {err}"),
+        };
+        assert!(bitmap.width > 0 && bitmap.rows > 0);
+        assert_eq!(bitmap.pixel_mode, PixelMode::Gray);
+        assert!(!bitmap.buffer.is_empty());
+    }
+
+    #[test]
+    fn bitmap_sdf_handles_every_source_pixel_mode() {
+        // 8-bit gray source: padded by the spread and distance-converted.
+        let gray = RenderedBitmap {
+            width: 4,
+            rows: 4,
+            pitch: 4,
+            pixel_mode: PixelMode::Gray,
+            num_grays: 255,
+            left: 0,
+            top: 0,
+            buffer: vec![0, 0, 0, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 0, 0, 0],
+        };
+        let sdf = match render_bitmap_sdf(gray) {
+            Ok(sdf) => sdf,
+            Err(err) => panic!("gray bitmap SDF should convert: {err}"),
+        };
+        assert!(sdf.width > 4 && sdf.rows > 4);
+        assert!(!sdf.buffer.is_empty());
+
+        // Monochrome source: bit unpacking plus the same 8SED passes.
+        let mono = RenderedBitmap {
+            width: 8,
+            rows: 2,
+            pitch: 1,
+            pixel_mode: PixelMode::Mono,
+            num_grays: 2,
+            left: 0,
+            top: 0,
+            buffer: vec![0b1111_0000, 0b1111_0000],
+        };
+        let mono_sdf = match render_bitmap_sdf(mono) {
+            Ok(sdf) => sdf,
+            Err(err) => panic!("mono bitmap SDF should convert: {err}"),
+        };
+        assert!(!mono_sdf.buffer.is_empty());
+
+        // Packed/color sources are rejected by the pinned C path.
+        let lcd = RenderedBitmap {
+            width: 3,
+            rows: 1,
+            pitch: 9,
+            pixel_mode: PixelMode::Lcd,
+            num_grays: 256,
+            left: 0,
+            top: 0,
+            buffer: vec![0; 9],
+        };
+        match render_bitmap_sdf(lcd) {
+            Err(FontError::UnimplementedFeature(_)) => {}
+            Err(err) => panic!("LCD bitmap SDF must reject with UnimplementedFeature: {err}"),
+            Ok(_) => panic!("LCD bitmap SDF must be rejected"),
+        }
+
+        // Empty bitmaps pass through unchanged.
+        let empty = RenderedBitmap {
+            width: 0,
+            rows: 0,
+            pitch: 0,
+            pixel_mode: PixelMode::Gray,
+            num_grays: 255,
+            left: 0,
+            top: 0,
+            buffer: Vec::new(),
+        };
+        let passthrough = match render_bitmap_sdf(empty) {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("empty bitmap SDF should pass through: {err}"),
+        };
+        assert_eq!(passthrough.rows, 0);
+    }
+
+    #[test]
+    fn mono_raster_dropout_profiles_complete() {
+        // A half-pixel-wide vertical bar creates sub-pixel spans whose
+        // pixel centers miss the outline; the mono raster's dropout rules
+        // decide whether to light those pixels (`ftraster.c` dropouts).
+        let outline = Outline {
+            n_contours: 1,
+            contours: vec![3],
+            points: vec![
+                OutlinePoint {
+                    x: 100,
+                    y: 0,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 140,
+                    y: 0,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 140,
+                    y: 256,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 100,
+                    y: 256,
+                    on_curve: true,
+                },
+            ],
+            tags: Vec::new(),
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 100,
+            cbox_y_min: 0,
+            cbox_x_max: 140,
+            cbox_y_max: 256,
+        };
+        let bitmap = match render_mono(outline, 100, 0) {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("mono bar should rasterize: {err}"),
+        };
+        assert!(bitmap.width > 0 && bitmap.rows > 0);
+        assert_eq!(bitmap.pixel_mode, PixelMode::Mono);
+        assert!(!bitmap.buffer.is_empty());
+
+        // The mirror case for the horizontal sweep: a half-pixel-tall bar.
+        let horizontal = Outline {
+            n_contours: 1,
+            contours: vec![3],
+            points: vec![
+                OutlinePoint {
+                    x: 0,
+                    y: 100,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 256,
+                    y: 100,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 256,
+                    y: 140,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 0,
+                    y: 140,
+                    on_curve: true,
+                },
+            ],
+            tags: Vec::new(),
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 100,
+            cbox_x_max: 256,
+            cbox_y_max: 140,
+        };
+        let bitmap = match render_mono(horizontal, 0, 100) {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("mono horizontal bar should rasterize: {err}"),
+        };
+        assert!(bitmap.width > 0 && bitmap.rows > 0);
+
+        // A two-pixel-tall bar produces spans wide enough for the horizontal
+        // span-edge setter (instead of the dropout branch).
+        let wide = Outline {
+            n_contours: 1,
+            contours: vec![3],
+            points: vec![
+                OutlinePoint {
+                    x: 0,
+                    y: 128,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 256,
+                    y: 128,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 256,
+                    y: 256,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 0,
+                    y: 256,
+                    on_curve: true,
+                },
+            ],
+            tags: Vec::new(),
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 128,
+            cbox_x_max: 256,
+            cbox_y_max: 256,
+        };
+        let bitmap = match render_mono(wide, 0, 128) {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("mono wide bar should rasterize: {err}"),
+        };
+        assert!(bitmap.width > 0 && bitmap.rows > 0);
+
+        // A half-pixel-wide diagonal is a non-stub sub-pixel span: the
+        // dropout rule must light its pixel.
+        let diagonal = Outline {
+            n_contours: 1,
+            contours: vec![3],
+            points: vec![
+                OutlinePoint {
+                    x: 0,
+                    y: 0,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 32,
+                    y: 0,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 160,
+                    y: 256,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 128,
+                    y: 256,
+                    on_curve: true,
+                },
+            ],
+            tags: Vec::new(),
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 160,
+            cbox_y_max: 256,
+        };
+        let bitmap = match render_mono(diagonal, 0, 0) {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("mono diagonal should rasterize: {err}"),
+        };
+        assert!(bitmap.width > 0 && bitmap.rows > 0);
+
+        // SMART dropout mode selects the nearest pixel center instead of the
+        // plain floor/ceil rule for the same thin diagonal.
+        let smart = Outline {
+            n_contours: 1,
+            contours: vec![3],
+            points: diagonal_points(),
+            tags: Vec::new(),
+            contour_dropouts: Vec::new(),
+            flags: crate::outline::OUTLINE_SMART_DROPOUTS,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 160,
+            cbox_y_max: 256,
+        };
+        let bitmap = match render_mono(smart, 0, 0) {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("smart-dropout mono should rasterize: {err}"),
+        };
+        assert!(bitmap.width > 0 && bitmap.rows > 0);
+
+        // A quadratic contour feeds the mono bezier-arc samplers.
+        let curved = Outline {
+            n_contours: 1,
+            contours: vec![2],
+            points: vec![
+                OutlinePoint {
+                    x: 0,
+                    y: 0,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 64,
+                    y: 256,
+                    on_curve: false,
+                },
+                OutlinePoint {
+                    x: 128,
+                    y: 0,
+                    on_curve: true,
+                },
+            ],
+            tags: Vec::new(),
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 128,
+            cbox_y_max: 256,
+        };
+        let bitmap = match render_mono(curved, 0, 0) {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("mono curve should rasterize: {err}"),
+        };
+        assert!(bitmap.width > 0 && bitmap.rows > 0);
+
+        // A cubic contour exercises the cubic bezier samplers in both
+        // ascending and descending directions.
+        let cubic = Outline {
+            n_contours: 1,
+            contours: vec![3],
+            points: vec![
+                OutlinePoint {
+                    x: 0,
+                    y: 0,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 32,
+                    y: 256,
+                    on_curve: false,
+                },
+                OutlinePoint {
+                    x: 96,
+                    y: 256,
+                    on_curve: false,
+                },
+                OutlinePoint {
+                    x: 128,
+                    y: 0,
+                    on_curve: true,
+                },
+            ],
+            tags: vec![1, 2, 2, 1],
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 128,
+            cbox_y_max: 256,
+        };
+        let bitmap = match render_mono(cubic, 0, 0) {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("mono cubic should rasterize: {err}"),
+        };
+        assert!(bitmap.width > 0 && bitmap.rows > 0);
+    }
+
+    #[test]
+    fn normal_render_handles_empty_and_zero_size_outlines() {
+        let mut scratch = crate::grays::RasterScratch::new();
+        let empty = Outline {
+            n_contours: 0,
+            contours: Vec::new(),
+            points: Vec::new(),
+            tags: Vec::new(),
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 0,
+            cbox_y_max: 0,
+        };
+        let bitmap = match render_loaded_outline(empty, 0, 0, 0, RenderMode::Normal, &mut scratch) {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("empty outline should render empty: {err}"),
+        };
+        assert_eq!(bitmap.width, 0);
+
+        // Degenerate single-point outline collapses to a zero-size box.
+        let degenerate = Outline {
+            n_contours: 1,
+            contours: vec![0],
+            points: vec![OutlinePoint {
+                x: 100,
+                y: 100,
+                on_curve: true,
+            }],
+            tags: Vec::new(),
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 100,
+            cbox_y_min: 100,
+            cbox_x_max: 100,
+            cbox_y_max: 100,
+        };
+        let bitmap = match render_loaded_outline(
+            degenerate,
+            100,
+            100,
+            100,
+            RenderMode::Normal,
+            &mut scratch,
+        ) {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("degenerate outline should render empty: {err}"),
+        };
+        assert_eq!(bitmap.width, 0);
+    }
+
+    #[test]
+    fn empty_outlines_preserve_non_normal_mode_shapes() {
+        let empty = Outline {
+            n_contours: 0,
+            contours: Vec::new(),
+            points: Vec::new(),
+            tags: Vec::new(),
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 0,
+            cbox_y_max: 0,
+        };
+        let mut scratch = crate::grays::RasterScratch::new();
+        let lcd = match render_loaded_outline(empty.clone(), 0, 0, 0, RenderMode::Lcd, &mut scratch)
+        {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("empty LCD outline should render empty: {err}"),
+        };
+        assert_eq!(lcd.pixel_mode, PixelMode::Lcd);
+        let lcd_v =
+            match render_loaded_outline(empty.clone(), 0, 0, 0, RenderMode::LcdV, &mut scratch) {
+                Ok(bitmap) => bitmap,
+                Err(err) => panic!("empty LCD_V outline should render empty: {err}"),
+            };
+        assert_eq!(lcd_v.pixel_mode, PixelMode::LcdV);
+        let sdf = match render_loaded_outline(empty, 0, 0, 0, RenderMode::Sdf, &mut scratch) {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("empty SDF outline should render empty: {err}"),
+        };
+        assert_eq!(sdf.pixel_mode, PixelMode::Gray);
+
+        // Mono preserves its one-pixel preset shape for empty outlines.
+        let mono = match render_loaded_outline(
+            Outline {
+                n_contours: 0,
+                contours: Vec::new(),
+                points: Vec::new(),
+                tags: Vec::new(),
+                contour_dropouts: Vec::new(),
+                flags: 0,
+                cbox_x_min: 0,
+                cbox_y_min: 0,
+                cbox_x_max: 0,
+                cbox_y_max: 0,
+            },
+            0,
+            0,
+            0,
+            RenderMode::Mono,
+            &mut scratch,
+        ) {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("empty mono outline should render its preset: {err}"),
+        };
+        assert_eq!(mono.pixel_mode, PixelMode::Mono);
+        assert_eq!(mono.width, 1);
+    }
+
+    #[test]
+    fn font_render_mode_handles_empty_text() {
+        let data = include_bytes!("../tests/fixtures/input/fonts/DejaVuSans.ttf");
+        let font = match crate::Font::truetype(data, 16.0) {
+            Ok(font) => font,
+            Err(err) => panic!("DejaVuSans should load: {err}"),
+        };
+        let bitmap = match font.render_mode("", RenderMode::Normal) {
+            Ok(bitmap) => bitmap,
+            Err(err) => panic!("empty text should render empty: {err}"),
+        };
+        assert_eq!(bitmap.width, 0);
+    }
+
+    #[test]
+    fn sdf_render_flattens_conic_and_cubic_segments() {
+        // TrueType-style quadratic contour: on, conic control, on.
+        let conic = Outline {
+            n_contours: 1,
+            contours: vec![2],
+            points: vec![
+                OutlinePoint {
+                    x: 0,
+                    y: 0,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 64,
+                    y: 160,
+                    on_curve: false,
+                },
+                OutlinePoint {
+                    x: 128,
+                    y: 0,
+                    on_curve: true,
+                },
+            ],
+            tags: Vec::new(),
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 128,
+            cbox_y_max: 160,
+        };
+        let mut scratch = crate::grays::RasterScratch::new();
+        let sdf = match render_loaded_outline(conic, 0, 0, 0, RenderMode::Sdf, &mut scratch) {
+            Ok(sdf) => sdf,
+            Err(err) => panic!("conic SDF should render: {err}"),
+        };
+        assert!(!sdf.buffer.is_empty());
+
+        // PostScript-style cubic contour with explicit tag bytes.
+        let cubic = Outline {
+            n_contours: 1,
+            contours: vec![3],
+            points: vec![
+                OutlinePoint {
+                    x: 0,
+                    y: 0,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 32,
+                    y: 160,
+                    on_curve: false,
+                },
+                OutlinePoint {
+                    x: 96,
+                    y: 160,
+                    on_curve: false,
+                },
+                OutlinePoint {
+                    x: 128,
+                    y: 0,
+                    on_curve: true,
+                },
+            ],
+            tags: vec![1, 2, 2, 1],
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 128,
+            cbox_y_max: 160,
+        };
+        let sdf = match render_loaded_outline(cubic, 0, 0, 0, RenderMode::Sdf, &mut scratch) {
+            Ok(sdf) => sdf,
+            Err(err) => panic!("cubic SDF should render: {err}"),
+        };
+        assert!(!sdf.buffer.is_empty());
+
+        // A contour that starts with a cubic control is rejected.
+        let bad_start = Outline {
+            n_contours: 1,
+            contours: vec![3],
+            points: vec![
+                OutlinePoint {
+                    x: 0,
+                    y: 0,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 32,
+                    y: 160,
+                    on_curve: false,
+                },
+                OutlinePoint {
+                    x: 96,
+                    y: 160,
+                    on_curve: false,
+                },
+                OutlinePoint {
+                    x: 128,
+                    y: 0,
+                    on_curve: true,
+                },
+            ],
+            tags: vec![2, 1, 1, 1],
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 128,
+            cbox_y_max: 160,
+        };
+        match render_loaded_outline(bad_start, 0, 0, 0, RenderMode::Sdf, &mut scratch) {
+            Err(FontError::InvalidOutline(_)) => {}
+            Err(err) => panic!("cubic-start contour must reject: {err}"),
+            Ok(_) => panic!("cubic-start contour must be rejected"),
+        }
+    }
+}
