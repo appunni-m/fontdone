@@ -17591,6 +17591,64 @@ static int open_oracle_face(
     return 0;
 }
 
+static int emit_svg_feature_probe(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
+    FT_Library library = NULL;
+    FT_Glyph glyph = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{");
+        print_status(init_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+
+    /* FT_New_Glyph selects the built-in SVG class only when the pinned build
+     * has FT_CONFIG_OPTION_SVG.  Invalid_Glyph_Format therefore represents a
+     * disabled build and is intentionally reported as probe output, not as a
+     * failure of the probe itself. */
+    FT_Error glyph_error = FT_New_Glyph(library, FT_GLYPH_FORMAT_SVG, &glyph);
+    int enabled = glyph_error == FT_Err_Ok;
+    if (glyph) {
+        FT_Done_Glyph(glyph);
+    }
+    FT_Done_FreeType(library);
+
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"build_feature_enabled\":%s,\"supported_operations\":[",
+           enabled ? "true" : "false");
+    if (enabled) {
+        printf("\"FT_New_Glyph with FT_GLYPH_FORMAT_SVG\",");
+        printf("\"FT_Get_Glyph from SVG slot when fixture asset exists\",");
+        printf("\"FT_Glyph_Transform on SVG glyph when enabled\"");
+    }
+    printf("] ,\"unsupported_classification\":%s}}\n",
+           enabled ? "null" : "\"unsupported\"");
+    return 0;
+}
+
+static int emit_svg_feature_face_probe(int argc, char** argv) {
+    if (argc != 5) {
+        fprintf(stderr, "--svg-feature-face-probe requires SOURCE_KIND SOURCE_VALUE FACE_INDEX\n");
+        return 2;
+    }
+    OracleFace face;
+    int opened = open_oracle_face(argv[2], argv[3], atol(argv[4]), &face);
+    if (opened != 0) {
+        return opened;
+    }
+    int available = (face.face->face_flags & FT_FACE_FLAG_SVG) != 0;
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"feature_available\":%s,\"classification\":\"%s\"}}\n",
+           available ? "true" : "false",
+           available ? "enabled" : "unsupported");
+    close_oracle_face(&face);
+    return 0;
+}
+
 static int emit_active_size_handle(int argc, char** argv) {
     if (argc != 7) {
         return 1;
@@ -34451,6 +34509,12 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 5 && streq(argv[1], "--module-interface-probe")) {
         return emit_module_interface_probe(argc, argv);
+    }
+    if (argc == 2 && streq(argv[1], "--svg-feature-probe")) {
+        return emit_svg_feature_probe(argc, argv);
+    }
+    if (argc == 5 && streq(argv[1], "--svg-feature-face-probe")) {
+        return emit_svg_feature_face_probe(argc, argv);
     }
     // Generic null-source handler: intercept commands with "null" in handle-level
     // parameters (source kind, source value, or face).

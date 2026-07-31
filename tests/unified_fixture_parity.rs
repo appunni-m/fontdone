@@ -42247,6 +42247,19 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(load_flags_param(params)?.to_string());
             Ok(args)
         }
+        "ftglyph.svg_feature_probe"
+            if case.case_id == "ftglyph.FT_SvgGlyph.feature_availability_recorded" =>
+        {
+            Ok(vec!["--svg-feature-probe".to_string()])
+        }
+        "ftglyph.svg_feature_probe"
+            if case.case_id == "ftglyph.FT_SvgGlyphRec.svg_feature_disabled_classification" =>
+        {
+            let mut args = vec!["--svg-feature-face-probe".to_string()];
+            push_named_font_source(case, "svg_font", &mut args)?;
+            args.push(face_index_param(params)?.to_string());
+            Ok(args)
+        }
         "load_glyph" => {
             if params.get("glyph_index").is_none() && params.get("glyph_selector").is_none() {
                 return oracle_fallback_args(case);
@@ -44094,6 +44107,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "load_char" => rust_load_char_public_api(case),
         "freetype.load_svg_glyph" => rust_svg_glyph_load(case),
+        "ftglyph.svg_feature_probe" => rust_svg_feature_probe(case),
         "load_glyph" => {
             if lifecycle_handle_param_is_null(&case.inputs.params, "face") {
                 return Ok(error(FT_Err_Invalid_Face_Handle as FT_Error));
@@ -45461,6 +45475,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             output
         }
         "freetype.load_svg_glyph" => c_svg_glyph_load(case),
+        "ftglyph.svg_feature_probe" => c_svg_feature_probe(case),
         "load_glyph" => {
             if lifecycle_handle_param_is_null(&case.inputs.params, "face") {
                 return c_load_glyph_output(std::ptr::null_mut(), &case.inputs.params);
@@ -46694,6 +46709,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             output
         }
         "freetype.load_svg_glyph" => wasm_svg_glyph_load(case),
+        "ftglyph.svg_feature_probe" => wasm_svg_feature_probe(case),
         "load_glyph" => {
             if lifecycle_handle_param_is_null(&case.inputs.params, "face") {
                 return wasm_load_glyph_output(0, &case.inputs.params);
@@ -52042,6 +52058,109 @@ fn svg_glyph_load_index(params: &Value) -> Result<u32, String> {
         return Ok(1);
     }
     u32_value(raw, "glyph_index")
+}
+
+const SVG_FEATURE_PROBE_OPERATIONS: [&str; 3] = [
+    "FT_New_Glyph with FT_GLYPH_FORMAT_SVG",
+    "FT_Get_Glyph from SVG slot when fixture asset exists",
+    "FT_Glyph_Transform on SVG glyph when enabled",
+];
+
+fn svg_feature_probe_output(enabled: bool) -> RunOutput {
+    let supported_operations = enabled
+        .then_some(SVG_FEATURE_PROBE_OPERATIONS)
+        .map_or_else(|| json!([]), |operations| json!(operations));
+    let unsupported_classification = if enabled {
+        Value::Null
+    } else {
+        json!("unsupported")
+    };
+    ok(json!({
+        "build_feature_enabled": enabled,
+        "supported_operations": supported_operations,
+        "unsupported_classification": unsupported_classification
+    }))
+}
+
+fn svg_feature_face_output(feature_available: bool) -> RunOutput {
+    ok(json!({
+        "feature_available": feature_available,
+        "classification": if feature_available { "enabled" } else { "unsupported" }
+    }))
+}
+
+fn rust_svg_feature_probe(case: &InputCase) -> Result<RunOutput, String> {
+    match case.case_id.as_str() {
+        "ftglyph.FT_SvgGlyph.feature_availability_recorded" => {
+            // The safe core exposes the registered OT-SVG renderer rather
+            // than a public detached-glyph allocator.  Its presence is the
+            // same build-feature gate used by FT_New_Glyph in the C ABI.
+            let library = FT_Init_FreeType();
+            Ok(svg_feature_probe_output(
+                FT_Library_Renderer_Class(Some(&library), FT_GLYPH_FORMAT_SVG).is_some(),
+            ))
+        }
+        "ftglyph.FT_SvgGlyphRec.svg_feature_disabled_classification" => {
+            let bytes = named_font_bytes(case, "svg_font")?;
+            let face =
+                rust_new_face_from_bytes(bytes.as_ref(), face_index_param(&case.inputs.params)?)?;
+            Ok(svg_feature_face_output(
+                (face.face_flags & FT_FACE_FLAG_SVG) != 0,
+            ))
+        }
+        other => Err(format!("unsupported SVG feature probe case {other}")),
+    }
+}
+
+fn c_svg_feature_probe(case: &InputCase) -> Result<RunOutput, String> {
+    match case.case_id.as_str() {
+        "ftglyph.FT_SvgGlyph.feature_availability_recorded" => {
+            let mut library = ptr::null_mut();
+            let init_error = c_abi::FT_Init_FreeType(&mut library);
+            if init_error != FT_Err_Ok {
+                return Ok(error(init_error));
+            }
+            let mut glyph = ptr::null_mut();
+            let glyph_error = c_abi::FT_New_Glyph(library, FT_GLYPH_FORMAT_SVG, &mut glyph);
+            let enabled = glyph_error == FT_Err_Ok;
+            if !glyph.is_null() {
+                c_abi::FT_Done_Glyph(glyph);
+            }
+            c_done_library(library);
+            Ok(svg_feature_probe_output(enabled))
+        }
+        "ftglyph.FT_SvgGlyphRec.svg_feature_disabled_classification" => {
+            let bytes = named_font_bytes(case, "svg_font")?;
+            let (library, face) =
+                c_new_face_from_bytes(bytes.as_ref(), face_index_param(&case.inputs.params)?)?;
+            let info = c_abi::abi_face_info(face)
+                .ok_or_else(|| "missing c SVG feature face info".to_string())?;
+            let output = svg_feature_face_output((info.face_flags & FT_FACE_FLAG_SVG) != 0);
+            c_done_face(face);
+            c_done_library(library);
+            Ok(output)
+        }
+        other => Err(format!("unsupported SVG feature probe case {other}")),
+    }
+}
+
+fn wasm_svg_feature_probe(case: &InputCase) -> Result<RunOutput, String> {
+    match case.case_id.as_str() {
+        "ftglyph.FT_SvgGlyph.feature_availability_recorded" => Ok(svg_feature_probe_output(
+            wasm_abi::abi_support_default_renderer_class(FT_GLYPH_FORMAT_SVG).is_some(),
+        )),
+        "ftglyph.FT_SvgGlyphRec.svg_feature_disabled_classification" => {
+            let bytes = named_font_bytes(case, "svg_font")?;
+            let handle =
+                wasm_new_face_from_bytes(bytes.as_ref(), face_index_param(&case.inputs.params)?)?;
+            let info = wasm_abi::abi_face_info(handle)
+                .ok_or_else(|| "missing wasm SVG feature face info".to_string())?;
+            let output = svg_feature_face_output((info.face_flags & FT_FACE_FLAG_SVG) != 0);
+            wasm_done_face(handle);
+            Ok(output)
+        }
+        other => Err(format!("unsupported SVG feature probe case {other}")),
+    }
 }
 
 fn rust_svg_glyph_load(case: &InputCase) -> Result<RunOutput, String> {
@@ -76938,6 +77057,7 @@ fn comparison_schema(case: &InputCase) -> &str {
         "freetype.get_transform" => return "api_object",
         "freetype.slot_format_probe" => return "api_object",
         "freetype.load_svg_glyph" => return "svg_slot_load",
+        "ftglyph.svg_feature_probe" => return "api_object",
         "freetype.reference_face" => return "api_object",
         "freetype.ceil_fix"
         | "freetype.floor_fix"

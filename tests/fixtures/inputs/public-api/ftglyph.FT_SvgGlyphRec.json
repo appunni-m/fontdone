@@ -160,7 +160,8 @@
           }
         },
         "params": {
-          "probe": "compile/runtime svg glyph class availability"
+          "probe": "compile/runtime svg glyph class availability",
+          "runtime_route": "actual_svg_feature_probe"
         }
       },
       "classifiers": [
@@ -168,13 +169,13 @@
         "header:ftglyph"
       ],
       "expectation": {
-        "status": "build_dependent",
+        "status": "ok",
         "output_shape": {
           "feature": "FT_CONFIG_OPTION_SVG",
           "classification": "unsupported when disabled"
         },
         "compare": {
-          "mode": "unsupported_until_runner_added",
+          "mode": "exact",
           "paths": [
             "feature_available",
             "classification"

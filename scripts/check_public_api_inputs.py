@@ -499,6 +499,7 @@ REAL_PARITY_OPERATIONS = {
     "ftglyph.glyph_copy",
     "ftglyph.record_inspect",
     "ftglyph.type_runtime",
+    "ftglyph.svg_feature_probe",
     "ftbitmap.bitmap_blend",
     "ftbitmap.bitmap_convert",
     "ftbitmap.bitmap_copy",
@@ -3699,6 +3700,17 @@ def glyph_type_contract_real_parity_reason(row: ConcreteInput) -> str | None:
 
 def ftglyph_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     """Rows for glyph object behavior that do not have a maintained route."""
+    if (
+        row.case_id
+        in {
+            "ftglyph.FT_SvgGlyph.feature_availability_recorded",
+            "ftglyph.FT_SvgGlyphRec.svg_feature_disabled_classification",
+        }
+        and row.operation == "ftglyph.svg_feature_probe"
+        and row.params.get("runtime_route") == "actual_svg_feature_probe"
+        and unresolved_assets_reason(row) is None
+    ):
+        return None
     if (
         row.case_id == "ftglyph.FT_New_Glyph.success_renderer_supported_custom_format"
         and row.operation == "ftglyph.custom_glyph_lifecycle"

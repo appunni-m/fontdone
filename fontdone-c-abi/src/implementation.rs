@@ -9473,6 +9473,25 @@ pub extern "C" fn FT_New_Glyph(
             };
             Box::into_raw(Box::new(OwnedBitmapGlyph::new(core))).cast::<FT_GlyphRec>()
         }
+        rust_ffi::FT_GLYPH_FORMAT_SVG => {
+            // FreeType has a built-in SVG glyph class when
+            // `FT_CONFIG_OPTION_SVG` is enabled.  It is not a renderer
+            // fallback: `FT_New_Glyph` selects this class directly, so the
+            // C ABI must do the same instead of asking the synthetic
+            // renderer facade for a zero-sized custom class.
+            let core = rust_ffi::FT_SvgGlyphOwned {
+                root,
+                svg_document: Vec::new(),
+                glyph_index: 0,
+                metrics: rust_ffi::FT_Size_Metrics::default(),
+                units_per_EM: 0,
+                start_glyph_id: 0,
+                end_glyph_id: 0,
+                transform: rust_ffi::FT_Matrix::default(),
+                delta: rust_ffi::FT_Vector::default(),
+            };
+            Box::into_raw(Box::new(OwnedSvgGlyph::new(core))).cast::<FT_GlyphRec>()
+        }
         _ => {
             let renderer = FT_Get_Renderer(library, format);
             let Some(renderer) = non_null_mut(renderer) else {

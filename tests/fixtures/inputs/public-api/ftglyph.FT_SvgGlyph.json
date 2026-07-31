@@ -134,6 +134,7 @@
         "assets": {},
         "params": {
           "build_feature": "FT_CONFIG_OPTION_SVG",
+          "runtime_route": "actual_svg_feature_probe",
           "probes": [
             "FT_New_Glyph with FT_GLYPH_FORMAT_SVG",
             "FT_Get_Glyph from SVG slot when fixture asset exists",
@@ -147,14 +148,14 @@
         "header:ftglyph"
       ],
       "expectation": {
-        "status": "build_dependent",
+        "status": "ok",
         "output_shape": {
           "build_feature_enabled": "bool",
           "supported_operations": "list",
           "unsupported_classification": "recorded when SVG support is absent"
         },
         "compare": {
-          "mode": "unsupported_until_runner_added",
+          "mode": "exact",
           "paths": [
             "build_feature_enabled",
             "supported_operations",
