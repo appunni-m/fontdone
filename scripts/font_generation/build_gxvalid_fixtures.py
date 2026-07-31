@@ -71,6 +71,26 @@ def main() -> None:
         {tag: GX_TABLES[tag] for tag in ("feat", "opbd", "trak", "prop")},
     )
     save_sfnt(aat_dir / "full-gx-valid.ttf", GX_TABLES)
+    # The public-api matrix names these focused inputs separately so each
+    # validator's output-slot index can be exercised without silently
+    # substituting a different table family.  They all derive from the same
+    # project-authored minimal table bytes above.
+    generated_aat_dir = ROOT / "tests" / "fixtures" / "input" / "generated" / "fonts" / "aat-gx"
+    save_sfnt(generated_aat_dir / "all-validation-tables.ttf", GX_TABLES)
+    save_sfnt(
+        generated_aat_dir / "valid-feat-morx-kern-lcar.ttf",
+        {tag: GX_TABLES[tag] for tag in ("feat", "morx", "kern", "lcar")},
+    )
+    for tag, filename in (
+        ("bsln", "valid-bsln.ttf"),
+        ("feat", "valid-feat.ttf"),
+        ("just", "valid-just.ttf"),
+        ("kern", "valid-gx-kern.ttf"),
+        ("lcar", "valid-lcar.ttf"),
+        ("mort", "valid-mort.ttf"),
+        ("morx", "valid-morx.ttf"),
+    ):
+        save_sfnt(generated_aat_dir / filename, {tag: GX_TABLES[tag]})
     save_sfnt(aat_dir / "opbd-valid.ttf", {"opbd": GX_TABLES["opbd"]})
     save_sfnt(aat_dir / "trak-valid.ttf", {"trak": GX_TABLES["trak"]})
     save_sfnt(aat_dir / "prop-valid.ttf", {"prop": GX_TABLES["prop"]})

@@ -111,6 +111,13 @@ gate compares all maintained selection, table-length, dialect, exact-error, and
 face-memory ownership behavior against pinned FreeType, then repeats the
 function contract through an independently linked external-C consumer.
 
+The same generator writes the focused `tests/fixtures/input/generated/fonts/aat-gx/`
+inputs used by the public-contract matrix (`all-validation-tables.ttf`, the
+short `valid-feat-morx-kern-lcar.ttf` control, and one project-authored valid
+fixture per validator). These are deterministic test inputs, not imported font
+assets: the only base material is the repository's generated hinter control
+font and the table bytes above, so no third-party font license is introduced.
+
 The SFNT-BDF strike used by `FT_Get_BDF_Property` and
 `FT_Get_BDF_Charset_ID` is regenerated through:
 

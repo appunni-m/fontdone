@@ -58,8 +58,7 @@
           "valid_mort_font": {
             "kind": "ref",
             "role": "font",
-            "id": "input/generated/fonts/aat-gx/valid-mort.ttf",
-            "status": "required_future_asset"
+            "id": "input/generated/fonts/aat-gx/valid-mort.ttf"
           }
         },
         "params": {
@@ -94,7 +93,7 @@
           "slot_state": "absent_or_null_or_table_bytes"
         },
         "compare": {
-          "mode": "unsupported_until_runner_added",
+          "mode": "exact",
           "paths": [
             "error",
             "table_length",

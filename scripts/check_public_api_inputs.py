@@ -500,6 +500,7 @@ REAL_PARITY_OPERATIONS = {
     "ftglyph.record_inspect",
     "ftglyph.type_runtime",
     "ftglyph.svg_feature_probe",
+    "FT_TrueTypeGX_Validate",
     "ftbitmap.bitmap_blend",
     "ftbitmap.bitmap_convert",
     "ftbitmap.bitmap_copy",
@@ -5007,7 +5008,7 @@ def focused_success_real_parity_reason(row: ConcreteInput) -> str | None:
         "ftgxval.FT_VALIDATE_trak_INDEX.indexes_gx_validate_output_slot",
     }
     if (
-        row.operation.startswith("ftgxval.")
+        (row.operation.startswith("ftgxval.") or row.operation == "FT_TrueTypeGX_Validate")
         and row.case_id in gxvalid_success_cases
         and unresolved_assets_reason(row) is None
     ):
@@ -8246,22 +8247,14 @@ def shape_fallback_reason(row: ConcreteInput) -> str | None:
 def unresolved_runtime_asset_pending_reason(row: ConcreteInput) -> str | None:
     runtime_skipped_needs_input_cases = {
         "ftgxval.FT_VALIDATE_GX.validates_all_requested_tables",
-        "ftgxval.FT_VALIDATE_GX_LENGTH.controls_output_slot_initialization",
         "ftgxval.FT_VALIDATE_MS.validates_ms_classic_kern",
         "ftgxval.FT_VALIDATE_bsln.validates_bsln_table_slot",
-        "ftgxval.FT_VALIDATE_bsln_INDEX.indexes_bsln_output_slot",
         "ftgxval.FT_VALIDATE_feat.validates_feat_table_slot",
-        "ftgxval.FT_VALIDATE_feat_INDEX.indexes_feat_output_slot",
         "ftgxval.FT_VALIDATE_just.validates_just_table_slot",
-        "ftgxval.FT_VALIDATE_just_INDEX.indexes_just_output_slot",
         "ftgxval.FT_VALIDATE_kern.validates_gx_kern_table_slot",
-        "ftgxval.FT_VALIDATE_kern_INDEX.indexes_kern_output_slot",
         "ftgxval.FT_VALIDATE_lcar.validates_lcar_table_slot",
-        "ftgxval.FT_VALIDATE_lcar_INDEX.indexes_lcar_output_slot",
         "ftgxval.FT_VALIDATE_mort.validates_mort_table_slot",
-        "ftgxval.FT_VALIDATE_mort_INDEX.indexes_mort_output_slot",
         "ftgxval.FT_VALIDATE_morx.validates_morx_table_slot",
-        "ftgxval.FT_VALIDATE_morx_INDEX.indexes_morx_output_slot",
     }
     if row.case_id in runtime_skipped_needs_input_cases:
         return (

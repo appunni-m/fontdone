@@ -58,9 +58,7 @@
           "partial_gx_font": {
             "kind": "ref",
             "role": "font",
-            "id": "input/generated/fonts/aat-gx/valid-feat-morx-kern-lcar.ttf",
-            "status": "required_future_asset",
-            "requires": "sfnt with valid feat, morx, kern, and lcar tables"
+            "id": "input/generated/fonts/aat-gx/valid-feat-morx-kern-lcar.ttf"
           }
         },
         "params": {
@@ -96,7 +94,7 @@
           "observed_slots": "array[table_count] of null_or_table_bytes"
         },
         "compare": {
-          "mode": "unsupported_until_runner_added",
+          "mode": "exact",
           "paths": [
             "error",
             "table_count",

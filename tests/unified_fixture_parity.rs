@@ -2845,6 +2845,7 @@ impl BackendComparisonWorker {
                     | "freetype.get_subglyph_info"
                     | "ftotval.open_type_validate"
                     | "ftgxval.truetype_gx_validate"
+                    | "FT_TrueTypeGX_Validate"
                     | "ftgxval.classic_kern_validate"
                     | "ftgxval.truetype_gx_validate_then_free"
                     | "ftgxval.classic_kern_validate_then_free"
@@ -3244,7 +3245,7 @@ impl BackendComparisonWorker {
             "ftotval.open_type_free" | "ftotval.open_type_validate_then_free" => {
                 rust_open_type_free(case)
             }
-            "ftgxval.truetype_gx_validate" => rust_gx_validation(case),
+            "ftgxval.truetype_gx_validate" | "FT_TrueTypeGX_Validate" => rust_gx_validation(case),
             "ftgxval.classic_kern_validate" => rust_classic_kern_validation(case),
             "ftgxval.truetype_gx_validate_then_free"
             | "ftgxval.classic_kern_validate_then_free" => rust_gx_owned_free(case),
@@ -3643,7 +3644,7 @@ impl BackendComparisonWorker {
             "ftotval.open_type_free" | "ftotval.open_type_validate_then_free" => {
                 c_open_type_free(case)
             }
-            "ftgxval.truetype_gx_validate" => c_gx_validation(case),
+            "ftgxval.truetype_gx_validate" | "FT_TrueTypeGX_Validate" => c_gx_validation(case),
             "ftgxval.classic_kern_validate" => c_classic_kern_validation(case),
             "ftgxval.truetype_gx_validate_then_free"
             | "ftgxval.classic_kern_validate_then_free" => c_gx_owned_free(case),
@@ -4043,7 +4044,7 @@ impl BackendComparisonWorker {
             "ftotval.open_type_free" | "ftotval.open_type_validate_then_free" => {
                 wasm_open_type_free(case)
             }
-            "ftgxval.truetype_gx_validate" => wasm_gx_validation(case),
+            "ftgxval.truetype_gx_validate" | "FT_TrueTypeGX_Validate" => wasm_gx_validation(case),
             "ftgxval.classic_kern_validate" => wasm_classic_kern_validation(case),
             "ftgxval.truetype_gx_validate_then_free"
             | "ftgxval.classic_kern_validate_then_free" => wasm_gx_owned_free(case),
@@ -11915,8 +11916,9 @@ enum ClassicKernCall {
 fn gx_table_lengths_param(params: &Value) -> Result<Vec<usize>, String> {
     params
         .get("table_lengths")
+        .or_else(|| params.get("table_length_values"))
         .and_then(Value::as_array)
-        .ok_or_else(|| "missing GX table_lengths".to_string())?
+        .ok_or_else(|| "missing GX table_lengths/table_length_values".to_string())?
         .iter()
         .map(|value| match value {
             Value::String(name) if name == "FT_VALIDATE_GX_LENGTH" => {
@@ -11983,6 +11985,48 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
                 .map(|table_length| GxValidationCall::Font {
                     label: format!("length_{table_length}"),
                     asset: "aat_gx_font".to_string(),
+                    asset_index: None,
+                    flags,
+                    table_length,
+                })
+                .collect())
+        }
+        "ftgxval.FT_VALIDATE_GX_LENGTH.controls_output_slot_initialization" => {
+            let flags = validation_flags_param(params)?;
+            Ok(gx_table_lengths_param(params)?
+                .into_iter()
+                .map(|table_length| GxValidationCall::Font {
+                    label: format!("length_{table_length}"),
+                    asset: "partial_gx_font".to_string(),
+                    asset_index: None,
+                    flags,
+                    table_length,
+                })
+                .collect())
+        }
+        case_id @ ("ftgxval.FT_VALIDATE_bsln_INDEX.indexes_bsln_output_slot"
+        | "ftgxval.FT_VALIDATE_feat_INDEX.indexes_feat_output_slot"
+        | "ftgxval.FT_VALIDATE_just_INDEX.indexes_just_output_slot"
+        | "ftgxval.FT_VALIDATE_kern_INDEX.indexes_kern_output_slot"
+        | "ftgxval.FT_VALIDATE_lcar_INDEX.indexes_lcar_output_slot"
+        | "ftgxval.FT_VALIDATE_mort_INDEX.indexes_mort_output_slot"
+        | "ftgxval.FT_VALIDATE_morx_INDEX.indexes_morx_output_slot") => {
+            let asset = match case_id {
+                "ftgxval.FT_VALIDATE_bsln_INDEX.indexes_bsln_output_slot" => "valid_bsln_font",
+                "ftgxval.FT_VALIDATE_feat_INDEX.indexes_feat_output_slot" => "valid_feat_font",
+                "ftgxval.FT_VALIDATE_just_INDEX.indexes_just_output_slot" => "valid_just_font",
+                "ftgxval.FT_VALIDATE_kern_INDEX.indexes_kern_output_slot" => "valid_kern_font",
+                "ftgxval.FT_VALIDATE_lcar_INDEX.indexes_lcar_output_slot" => "valid_lcar_font",
+                "ftgxval.FT_VALIDATE_mort_INDEX.indexes_mort_output_slot" => "valid_mort_font",
+                "ftgxval.FT_VALIDATE_morx_INDEX.indexes_morx_output_slot" => "valid_morx_font",
+                _ => unreachable!(),
+            };
+            let flags = validation_flags_param(params)?;
+            Ok(gx_table_lengths_param(params)?
+                .into_iter()
+                .map(|table_length| GxValidationCall::Font {
+                    label: format!("length_{table_length}"),
+                    asset: asset.to_string(),
                     asset_index: None,
                     flags,
                     table_length,
@@ -40628,7 +40672,7 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             }
             oracle_fallback_args(case)
         }
-        "ftgxval.truetype_gx_validate" => {
+        "ftgxval.truetype_gx_validate" | "FT_TrueTypeGX_Validate" => {
             let calls = gx_validation_calls(case)?;
             let mut args = vec!["--gxval-gx-matrix".to_string(), calls.len().to_string()];
             for call in calls {
@@ -43471,6 +43515,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
                 | "freetype.get_subglyph_info"
                 | "ftotval.open_type_validate"
                 | "ftgxval.truetype_gx_validate"
+                | "FT_TrueTypeGX_Validate"
                 | "ftgxval.classic_kern_validate"
                 | "ftgxval.truetype_gx_validate_then_free"
                 | "ftgxval.classic_kern_validate_then_free"
@@ -44518,7 +44563,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftotval.open_type_free" | "ftotval.open_type_validate_then_free" => {
             rust_open_type_free(case)
         }
-        "ftgxval.truetype_gx_validate" => rust_gx_validation(case),
+        "ftgxval.truetype_gx_validate" | "FT_TrueTypeGX_Validate" => rust_gx_validation(case),
         "ftgxval.classic_kern_validate" => rust_classic_kern_validation(case),
         "ftgxval.truetype_gx_validate_then_free" | "ftgxval.classic_kern_validate_then_free" => {
             rust_gx_owned_free(case)
@@ -44717,7 +44762,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "freetype.face_properties" => c_face_properties(case),
         "ftotval.open_type_validate" => c_open_type_validate(case),
         "ftotval.open_type_free" | "ftotval.open_type_validate_then_free" => c_open_type_free(case),
-        "ftgxval.truetype_gx_validate" => c_gx_validation(case),
+        "ftgxval.truetype_gx_validate" | "FT_TrueTypeGX_Validate" => c_gx_validation(case),
         "ftgxval.classic_kern_validate" => c_classic_kern_validation(case),
         "ftgxval.truetype_gx_validate_then_free" | "ftgxval.classic_kern_validate_then_free" => {
             c_gx_owned_free(case)
@@ -46000,7 +46045,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftotval.open_type_free" | "ftotval.open_type_validate_then_free" => {
             wasm_open_type_free(case)
         }
-        "ftgxval.truetype_gx_validate" => wasm_gx_validation(case),
+        "ftgxval.truetype_gx_validate" | "FT_TrueTypeGX_Validate" => wasm_gx_validation(case),
         "ftgxval.classic_kern_validate" => wasm_classic_kern_validation(case),
         "ftgxval.truetype_gx_validate_then_free" | "ftgxval.classic_kern_validate_then_free" => {
             wasm_gx_owned_free(case)
