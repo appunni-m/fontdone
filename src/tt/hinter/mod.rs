@@ -482,3 +482,80 @@ fn dropout_control_from_outline_flags(flags: u32) -> u8 {
     }
     control
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::outline::{OUTLINE_IGNORE_DROPOUTS, OUTLINE_INCLUDE_STUBS, OUTLINE_SMART_DROPOUTS};
+
+    fn point(on_curve: bool) -> OutlinePoint {
+        OutlinePoint {
+            x: 0,
+            y: 0,
+            on_curve,
+        }
+    }
+
+    #[test]
+    fn public_base_tags_preserve_and_clear_touch() {
+        let raw = vec![point(true), point(false)];
+        let raw_tags = [0x19u8, 0x00]; // touch bits set
+        let tags = public_base_tags(&raw, &raw_tags, false, false);
+        assert_eq!(tags, vec![0x19, 0x00]);
+
+        let tags = public_base_tags(&raw, &raw_tags, true, true);
+        // Touch bits 0x08|0x10 cleared for composite parents.
+        assert_eq!(tags, vec![0x01, 0x00]);
+
+        // Fallback to on_curve when no raw tags are present.
+        let tags = public_base_tags(&raw, &[], false, false);
+        assert_eq!(tags, vec![0x01, 0x00]);
+    }
+
+    #[test]
+    fn touch_tag_conversion() {
+        assert_eq!(public_tag_to_internal_touch_tag(0x00), 0);
+        assert_eq!(public_tag_to_internal_touch_tag(0x08), 0x01);
+        assert_eq!(public_tag_to_internal_touch_tag(0x10), 0x02);
+        assert_eq!(public_tag_to_internal_touch_tag(0x18), 0x03);
+    }
+
+    #[test]
+    fn scan_control_and_type_flags() {
+        assert_eq!(
+            outline_flags_from_scan_control(false, 1),
+            OUTLINE_IGNORE_DROPOUTS
+        );
+        assert_eq!(
+            outline_flags_from_scan_control(true, 0),
+            OUTLINE_INCLUDE_STUBS
+        );
+        assert_eq!(outline_flags_from_scan_control(true, 1), 0);
+        assert_eq!(
+            outline_flags_from_scan_control(true, 4),
+            OUTLINE_SMART_DROPOUTS | OUTLINE_INCLUDE_STUBS
+        );
+        assert_eq!(
+            outline_flags_from_scan_control(true, 5),
+            OUTLINE_SMART_DROPOUTS
+        );
+        assert_eq!(
+            outline_flags_from_scan_control(true, 9),
+            OUTLINE_IGNORE_DROPOUTS
+        );
+    }
+
+    #[test]
+    fn dropout_control_round_trip() {
+        assert_eq!(
+            dropout_control_from_outline_flags(OUTLINE_IGNORE_DROPOUTS),
+            3
+        );
+        assert_eq!(dropout_control_from_outline_flags(OUTLINE_INCLUDE_STUBS), 0);
+        assert_eq!(
+            dropout_control_from_outline_flags(OUTLINE_SMART_DROPOUTS),
+            5
+        );
+        assert_eq!(dropout_control_from_outline_flags(0), 1);
+    }
+}
