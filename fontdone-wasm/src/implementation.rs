@@ -2269,6 +2269,185 @@ pub fn abi_svg_glyph_snapshot(glyph_handle: usize) -> Option<AbiSvgGlyphSnapshot
     })
 }
 
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+pub struct WasmSvgRendererCallbackCapture {
+    pub hooks_status: FT_Error,
+    pub render_status: FT_Error,
+    pub glyph_index: FT_UInt,
+    pub svg_document_length: FT_ULong,
+    pub units_per_EM: FT_UShort,
+    pub start_glyph_id: FT_UShort,
+    pub end_glyph_id: FT_UShort,
+    pub transform_xx: FT_Fixed,
+    pub transform_xy: FT_Fixed,
+    pub transform_yx: FT_Fixed,
+    pub transform_yy: FT_Fixed,
+    pub delta_x: FT_Pos,
+    pub delta_y: FT_Pos,
+}
+
+static mut WASM_SVG_CALLBACK_CAPTURE: WasmSvgRendererCallbackCapture =
+    WasmSvgRendererCallbackCapture {
+        hooks_status: 0,
+        render_status: 0,
+        glyph_index: 0,
+        svg_document_length: 0,
+        units_per_EM: 0,
+        start_glyph_id: 0,
+        end_glyph_id: 0,
+        transform_xx: 0,
+        transform_xy: 0,
+        transform_yx: 0,
+        transform_yy: 0,
+        delta_x: 0,
+        delta_y: 0,
+    };
+
+unsafe extern "C" fn wasm_svg_probe_init(_state: *mut rust_ffi::FT_Pointer) -> rust_ffi::FT_Error {
+    rust_ffi::FT_Err_Ok
+}
+
+unsafe extern "C" fn wasm_svg_probe_free(_state: *mut rust_ffi::FT_Pointer) {}
+
+unsafe extern "C" fn wasm_svg_probe_preset(
+    slot: *mut c_void,
+    _cache: rust_ffi::FT_Bool,
+    _state: *mut rust_ffi::FT_Pointer,
+) -> rust_ffi::FT_Error {
+    let Some(probe) = (unsafe {
+        (*_state.cast::<*mut rust_ffi::FT_Pointer>())
+            .cast::<rust_ffi::SvgCallbackProbe>()
+            .as_ref()
+    }) else {
+        return rust_ffi::FT_Err_Invalid_Slot_Handle as rust_ffi::FT_Error;
+    };
+    if probe.document_ptr == 0 {
+        return rust_ffi::FT_Err_Invalid_Slot_Handle as rust_ffi::FT_Error;
+    }
+    let document = probe.document_ptr as *const rust_ffi::FT_SVG_DocumentRec;
+    // SAFETY: the core hands hooks a live `FT_SVG_DocumentRec` view during
+    // the synchronous render call.
+    let document = unsafe { &*document };
+    unsafe {
+        WASM_SVG_CALLBACK_CAPTURE = WasmSvgRendererCallbackCapture {
+            hooks_status: 0,
+            render_status: 0,
+            glyph_index: probe.glyph_index,
+            svg_document_length: document.svg_document_length,
+            units_per_EM: document.units_per_EM,
+            start_glyph_id: document.start_glyph_id,
+            end_glyph_id: document.end_glyph_id,
+            transform_xx: document.transform.xx,
+            transform_xy: document.transform.xy,
+            transform_yx: document.transform.yx,
+            transform_yy: document.transform.yy,
+            delta_x: document.delta.x,
+            delta_y: document.delta.y,
+        };
+    }
+    let _ = slot;
+    rust_ffi::FT_Err_Ok
+}
+
+unsafe extern "C" fn wasm_svg_probe_render(
+    slot: *mut c_void,
+    _state: *mut rust_ffi::FT_Pointer,
+) -> rust_ffi::FT_Error {
+    let Some(probe) = (unsafe {
+        (*_state.cast::<*mut rust_ffi::FT_Pointer>())
+            .cast::<rust_ffi::SvgCallbackProbe>()
+            .as_ref()
+    }) else {
+        return rust_ffi::FT_Err_Invalid_Slot_Handle as rust_ffi::FT_Error;
+    };
+    if probe.document_ptr == 0 {
+        return rust_ffi::FT_Err_Invalid_Slot_Handle as rust_ffi::FT_Error;
+    }
+    let document = probe.document_ptr as *const rust_ffi::FT_SVG_DocumentRec;
+    // SAFETY: see `wasm_svg_probe_preset`.
+    let document = unsafe { &*document };
+    unsafe {
+        WASM_SVG_CALLBACK_CAPTURE = WasmSvgRendererCallbackCapture {
+            hooks_status: 0,
+            render_status: 0,
+            glyph_index: probe.glyph_index,
+            svg_document_length: document.svg_document_length,
+            units_per_EM: document.units_per_EM,
+            start_glyph_id: document.start_glyph_id,
+            end_glyph_id: document.end_glyph_id,
+            transform_xx: document.transform.xx,
+            transform_xy: document.transform.xy,
+            transform_yx: document.transform.yx,
+            transform_yy: document.transform.yy,
+            delta_x: document.delta.x,
+            delta_y: document.delta.y,
+        };
+    }
+    let _ = slot;
+    rust_ffi::FT_Err_Ok
+}
+
+/// Runs the pinned `ftsvg.c` hook flow over one SVG glyph and returns the
+/// document fields the renderer callback observed.
+#[unsafe(no_mangle)]
+pub extern "C" fn fontdone_wasm_svg_renderer_capture(
+    file_base: *const c_uchar,
+    file_size: usize,
+    glyph_index: rust_ffi::FT_UInt,
+    out_capture: *mut WasmSvgRendererCallbackCapture,
+) -> rust_ffi::FT_Error {
+    if out_capture.is_null() {
+        return rust_ffi::FT_Err_Invalid_Argument;
+    }
+    if file_base.is_null() {
+        return rust_ffi::FT_Err_Invalid_Argument;
+    }
+    // SAFETY: the caller promises `file_size` readable bytes at `file_base`.
+    let data = unsafe { slice::from_raw_parts(file_base, file_size) };
+    let hooks = rust_ffi::SVG_RendererHooks {
+        init_svg: Some(wasm_svg_probe_init),
+        free_svg: Some(wasm_svg_probe_free),
+        render_svg: Some(wasm_svg_probe_render),
+        preset_slot: Some(wasm_svg_probe_preset),
+    };
+    let mut library = rust_ffi::FT_Init_FreeType();
+    let set_error = rust_ffi::FT_Set_SVG_Renderer_Hooks(Some(&mut library), Some(hooks));
+    if set_error != rust_ffi::FT_Err_Ok {
+        unsafe {
+            *out_capture = WasmSvgRendererCallbackCapture {
+                hooks_status: set_error,
+                render_status: set_error,
+                ..WasmSvgRendererCallbackCapture::default()
+            };
+        }
+        return set_error;
+    }
+    let face = match rust_ffi::FT_New_Memory_Face(&library, data, 0, 20.0) {
+        Ok(face) => face,
+        Err(error) => return error,
+    };
+    let mut capture = WasmSvgRendererCallbackCapture {
+        hooks_status: set_error,
+        render_status: rust_ffi::FT_Err_Ok,
+        ..WasmSvgRendererCallbackCapture::default()
+    };
+    if let Ok(slot) = rust_ffi::FT_Load_Glyph(&face, glyph_index, rust_ffi::FT_LOAD_COLOR) {
+        match rust_ffi::FT_Render_Glyph(slot, rust_ffi::FT_RENDER_MODE_NORMAL) {
+            Ok(_) => {
+                capture = unsafe { WASM_SVG_CALLBACK_CAPTURE };
+                capture.hooks_status = set_error;
+                capture.render_status = rust_ffi::FT_Err_Ok;
+            }
+            Err(error) => capture.render_status = error,
+        }
+    }
+    // SAFETY: `out_capture` is non-null and the caller provides one writable
+    // capture record in exported linear memory.
+    unsafe { *out_capture = capture };
+    capture.render_status
+}
+
 #[cfg(feature = "abi-test-support")]
 pub fn abi_face_info(handle: usize) -> Option<rust_ffi::FT_FaceRecPublic> {
     let face = face_ref(handle)?;

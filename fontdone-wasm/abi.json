@@ -556,6 +556,29 @@
       "supported_host_contract": false
     },
     {
+      "name": "fontdone_wasm_svg_renderer_capture",
+      "parameters": [
+        {
+          "name": "file_base",
+          "type": "*const c_uchar"
+        },
+        {
+          "name": "file_size",
+          "type": "usize"
+        },
+        {
+          "name": "glyph_index",
+          "type": "rust_ffi::FT_UInt"
+        },
+        {
+          "name": "out_capture",
+          "type": "*mut WasmSvgRendererCallbackCapture"
+        }
+      ],
+      "return": "rust_ffi::FT_Error",
+      "supported_host_contract": false
+    },
+    {
       "name": "fontdone_wasm_malloc",
       "parameters": [
         {
@@ -6069,6 +6092,131 @@
           "offset": 28,
           "width": 1,
           "alignment": 1,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        }
+      ]
+    },
+    {
+      "name": "WasmSvgRendererCallbackCapture",
+      "representation": "C",
+      "size": 80,
+      "alignment": 8,
+      "fields": [
+        {
+          "name": "hooks_status",
+          "type": "FT_Error",
+          "offset": 0,
+          "width": 4,
+          "alignment": 4,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "render_status",
+          "type": "FT_Error",
+          "offset": 4,
+          "width": 4,
+          "alignment": 4,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "glyph_index",
+          "type": "FT_UInt",
+          "offset": 8,
+          "width": 4,
+          "alignment": 4,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "svg_document_length",
+          "type": "FT_ULong",
+          "offset": 16,
+          "width": 8,
+          "alignment": 8,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "units_per_EM",
+          "type": "FT_UShort",
+          "offset": 24,
+          "width": 2,
+          "alignment": 2,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "start_glyph_id",
+          "type": "FT_UShort",
+          "offset": 26,
+          "width": 2,
+          "alignment": 2,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "end_glyph_id",
+          "type": "FT_UShort",
+          "offset": 28,
+          "width": 2,
+          "alignment": 2,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "transform_xx",
+          "type": "FT_Fixed",
+          "offset": 32,
+          "width": 8,
+          "alignment": 8,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "transform_xy",
+          "type": "FT_Fixed",
+          "offset": 40,
+          "width": 8,
+          "alignment": 8,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "transform_yx",
+          "type": "FT_Fixed",
+          "offset": 48,
+          "width": 8,
+          "alignment": 8,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "transform_yy",
+          "type": "FT_Fixed",
+          "offset": 56,
+          "width": 8,
+          "alignment": 8,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "delta_x",
+          "type": "FT_Pos",
+          "offset": 64,
+          "width": 8,
+          "alignment": 8,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "delta_y",
+          "type": "FT_Pos",
+          "offset": 72,
+          "width": 8,
+          "alignment": 8,
           "pointer_interpretation": null,
           "ownership": "value"
         }

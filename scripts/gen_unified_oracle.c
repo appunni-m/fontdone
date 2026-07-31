@@ -17820,6 +17820,136 @@ static int emit_otsvg_document_probe(int argc, char** argv) {
     return 0;
 }
 
+/* OT-SVG renderer hook capture.  `ftsvg.c` hands the application hooks the
+ * slot after the loader stored the document in `slot->other`; the probe below
+ * mirrors a real renderer by retaining that document and the slot glyph index
+ * through the init/preset/render sequence so the emitted record proves the
+ * callback observed the same document pointer class and fields as C. */
+typedef struct {
+    FT_UInt glyph_index;
+    FT_SVG_Document document;
+} SvgRendererCallbackCapture;
+
+static SvgRendererCallbackCapture svg_callback_capture;
+
+static FT_Error svg_probe_init_hook(FT_Pointer* state) {
+    (void)state;
+    return FT_Err_Ok;
+}
+
+static void svg_probe_free_hook(FT_Pointer* state) {
+    (void)state;
+}
+
+static FT_Error svg_probe_preset_hook(FT_GlyphSlot slot, FT_Bool cache, FT_Pointer* state) {
+    (void)cache;
+    (void)state;
+    if (!slot) {
+        return (FT_Error)FT_Err_Invalid_Slot_Handle;
+    }
+    svg_callback_capture.glyph_index = slot->glyph_index;
+    svg_callback_capture.document = (FT_SVG_Document)slot->other;
+    if (slot->bitmap.rows == 0 || slot->bitmap.pitch == 0) {
+        slot->bitmap.rows = 1;
+        slot->bitmap.width = 1;
+        slot->bitmap.pitch = 1;
+        slot->bitmap.pixel_mode = FT_PIXEL_MODE_GRAY;
+        slot->bitmap.num_grays = 256;
+        slot->bitmap_left = 0;
+        slot->bitmap_top = 0;
+    }
+    return FT_Err_Ok;
+}
+
+static FT_Error svg_probe_render_hook(FT_GlyphSlot slot, FT_Pointer* state) {
+    (void)state;
+    if (!slot) {
+        return (FT_Error)FT_Err_Invalid_Slot_Handle;
+    }
+    svg_callback_capture.glyph_index = slot->glyph_index;
+    svg_callback_capture.document = (FT_SVG_Document)slot->other;
+    slot->format = FT_GLYPH_FORMAT_BITMAP;
+    return FT_Err_Ok;
+}
+
+static int emit_otsvg_renderer_callback_probe(int argc, char** argv) {
+    if (argc != 9) {
+        fprintf(stderr,
+                "--otsvg-renderer-callback-probe requires SOURCE_KIND SOURCE_VALUE FACE_INDEX X Y GLYPH_INDEX HOOKS\n");
+        return 2;
+    }
+    OracleFace face;
+    int opened = open_oracle_face(argv[2], argv[3], atol(argv[4]), &face);
+    if (opened != 0) {
+        return opened;
+    }
+    FT_Error size_error = FT_Set_Pixel_Sizes(
+        face.face,
+        (FT_UInt)strtoul(argv[5], NULL, 10),
+        (FT_UInt)strtoul(argv[6], NULL, 10));
+    if (size_error) {
+        printf("{");
+        print_status(size_error);
+        printf(",\"output\":null}\n");
+        close_oracle_face(&face);
+        return 0;
+    }
+    SVG_RendererHooks hooks = {0};
+    FT_Error hook_error = FT_Err_Ok;
+    if (streq(argv[8], "installed")) {
+        hooks.init_svg = svg_probe_init_hook;
+        hooks.free_svg = svg_probe_free_hook;
+        hooks.render_svg = svg_probe_render_hook;
+        hooks.preset_slot = svg_probe_preset_hook;
+        hook_error = FT_Property_Set(face.library, "ot-svg", "svg-hooks", &hooks);
+    } else if (streq(argv[8], "missing")) {
+        /* Pinned `ftsvg.c` without application hooks reports
+         * Missing_SVG_Hooks from both the preset and render entry points. */
+        hook_error = (FT_Error)FT_Err_Missing_SVG_Hooks;
+    }
+    memset(&svg_callback_capture, 0, sizeof(svg_callback_capture));
+    FT_UInt glyph_index = (FT_UInt)strtoul(argv[7], NULL, 10);
+    FT_Error load_error = FT_Load_Glyph(face.face, glyph_index, FT_LOAD_COLOR);
+    FT_Error render_error = FT_Err_Ok;
+    if (!load_error && hook_error == FT_Err_Ok) {
+        render_error = FT_Render_Glyph(face.face->glyph, FT_RENDER_MODE_NORMAL);
+    }
+    if (hook_error != FT_Err_Ok) {
+        render_error = hook_error;
+    }
+    FT_SVG_Document document = svg_callback_capture.document;
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"status\":%ld,\"callback_document_fields\":{\"svg_document_length\":%lu,",
+           (long)render_error,
+           document ? (unsigned long)document->svg_document_length : 0UL);
+    printf("\"units_per_EM\":%u,\"start_glyph_id\":%u,\"end_glyph_id\":%u,\"transform\":",
+           document ? document->units_per_EM : 0U,
+           document ? document->start_glyph_id : 0U,
+           document ? document->end_glyph_id : 0U);
+    if (document) {
+        printf("{\"xx\":%ld,\"xy\":%ld,\"yx\":%ld,\"yy\":%ld}",
+               document->transform.xx,
+               document->transform.xy,
+               document->transform.yx,
+               document->transform.yy);
+    } else {
+        printf("null");
+    }
+    printf(",\"delta\":");
+    if (document) {
+        printf("{\"x\":%ld,\"y\":%ld}", document->delta.x, document->delta.y);
+    } else {
+        printf("null");
+    }
+    printf("},\"callback_glyph_index\":%lu,\"hooks_status\":%d,\"unsupported_status\":\"%s\"}}\n",
+           (unsigned long)svg_callback_capture.glyph_index,
+           hook_error,
+           hook_error == FT_Err_Ok ? "enabled" : "unsupported");
+    close_oracle_face(&face);
+    return 0;
+}
+
 static int emit_active_size_handle(int argc, char** argv) {
     if (argc != 7) {
         return 1;
@@ -36163,6 +36293,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 15 && streq(argv[1], "--otsvg-document-probe")) {
         return emit_otsvg_document_probe(argc, argv);
+    }
+    if (argc == 9 && streq(argv[1], "--otsvg-renderer-callback-probe")) {
+        return emit_otsvg_renderer_callback_probe(argc, argv);
     }
     // Generic null-source handler: intercept commands with "null" in handle-level
     // parameters (source kind, source value, or face).

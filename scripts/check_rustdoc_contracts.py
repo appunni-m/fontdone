@@ -151,6 +151,7 @@ def main() -> int:
         macros=("export_freetype_routes", "export_parity_helpers"),
         individually_documented={
             "FT_Init_FreeType",
+            "FT_Set_SVG_Renderer_Hooks",
             "FT_LOAD_TARGET_MODE",
             "glyph_format_from_core",
             "load_flags_to_core",

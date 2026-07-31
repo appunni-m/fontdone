@@ -21,17 +21,17 @@
     "c_enums": 20,
     "c_enum_variants": 158,
     "c_error_codes": 119,
-    "fontdone_pub_functions": 696,
+    "fontdone_pub_functions": 697,
     "fontdone_pub_consts": 1329,
-    "fontdone_pub_structs": 230,
+    "fontdone_pub_structs": 233,
     "fontdone_pub_enums": 18
   },
   "runtime_parity": {
-    "runnable": 7295,
-    "passed": 7295,
+    "runnable": 7296,
+    "passed": 7296,
     "failed": 0,
-    "pending": 13,
-    "covered_manifest": 4165,
+    "pending": 12,
+    "covered_manifest": 4166,
     "validated_input_subjects": 1543,
     "validated_input_files": 1537,
     "logical_input_cases": 4259,
@@ -40,12 +40,12 @@
     "function_total": 218
   },
   "c_contract": {
-    "categories_complete": 9,
+    "categories_complete": 8,
     "categories_total": 12,
     "is_complete": false,
-    "runtime_contract_rows_complete": 5034,
+    "runtime_contract_rows_complete": 5040,
     "runtime_contract_rows_total": 5048,
-    "runtime_contract_rows_pending": 14,
+    "runtime_contract_rows_pending": 8,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
     "platform_lanes_complete": 1,
@@ -614,9 +614,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "a33cc6cc38648902ad61e52b1a5481f21e6ce6f4c8e1cf7da81566f70fae4fd5",
-    "parity_tree_sha256": "07e7b35ea4bfab0aa92b1ae7c05cf66840e964cd72d2e724c473c1d11bc95af2",
-    "log_sha256": "63c05d622a45f47014b594b6a70e293831f47833f20be39ae8302f709e4fb59a",
+    "sha256": "4608a30865e969008a05720a261726c0f649fb9b9157b646c37d218dc61fb3ca",
+    "parity_tree_sha256": "40f571eb271529f08ef4e4fde7f39c7e6cb40a23f85e8395a472f97f823a6e13",
+    "log_sha256": "3242ece312a01da231d0db04878028dbfe7cf32d39c757e25dca512b51a3ca4e",
     "command": "make test-parity"
   }
 }

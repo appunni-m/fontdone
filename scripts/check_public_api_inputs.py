@@ -147,6 +147,7 @@ WASM_EXPORTS = {
     "fontdone_wasm_open_external_stream_face",
     "fontdone_wasm_open_face_with_name_options",
     "fontdone_wasm_interpreter_version_open",
+    "fontdone_wasm_svg_renderer_capture",
     "fontdone_wasm_ps_hinting_engine_open",
     "fontdone_wasm_done_face",
     "fontdone_wasm_new_size",
@@ -4517,11 +4518,23 @@ def otsvg_document_real_parity_reason(row: ConcreteInput) -> str | None:
         in {
             "otsvg.FT_SVG_DocumentRec.document_range_and_payload_fields",
             "otsvg.FT_SVG_DocumentRec.transform_and_metrics_fields",
+            "otsvg.FT_SVG_Document.renderer_callback_observes_document",
         }
         and row.operation
-        in {"otsvg.svg_document_capture", "otsvg.svg_document_transform_capture"}
+        in {
+            "otsvg.svg_document_capture",
+            "otsvg.svg_document_transform_capture",
+            "otsvg.svg_renderer_callback_capture",
+        }
         and unresolved_assets_reason(row) is None
     ):
+        if row.case_id == "otsvg.FT_SVG_Document.renderer_callback_observes_document":
+            return (
+                "FT_SVG_Document renderer-callback parity installs the same "
+                "four-hook SVG renderer through pinned C, Rust FFI, C ABI, and "
+                "WASM and proves the callback observes the document pointer "
+                "class, glyph ID, and lifetime fields exactly like pinned C"
+            )
         return (
             "FT_SVG_DocumentRec compares the same-input pinned C, Rust FFI, "
             "C ABI, and WASM slot-document record: payload hash/range fields, "
@@ -4533,11 +4546,6 @@ def otsvg_document_real_parity_reason(row: ConcreteInput) -> str | None:
 def specialized_record_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     """Rows for specialized public records without a maintained route."""
     specialized_rows_without_maintained_route = {
-        "otsvg.FT_SVG_Document.renderer_callback_observes_document": (
-            "FT_SVG_Document renderer-callback parity needs a maintained "
-            "OT-SVG glyph route proving the renderer callback receives the "
-            "same document pointer class, glyph ID, and lifetime as pinned C"
-        ),
         "otsvg.FT_SVG_DocumentRec.document_range_and_payload_fields": (
             "FT_SVG_DocumentRec range parity needs a maintained OT-SVG route "
             "proving document start/end offsets, payload byte range, and "

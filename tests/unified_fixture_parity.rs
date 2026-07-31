@@ -42993,6 +42993,20 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             }
             Ok(args)
         }
+        "otsvg.svg_renderer_callback_capture" => {
+            let mut args = vec!["--otsvg-renderer-callback-probe".to_string()];
+            push_named_font_source(case, "otsvg_font", &mut args)?;
+            push_face_size(params, &mut args)?;
+            args.push(svg_document_glyph_index(params)?.to_string());
+            args.push(
+                params
+                    .get("hooks")
+                    .and_then(Value::as_str)
+                    .unwrap_or("installed")
+                    .to_string(),
+            );
+            Ok(args)
+        }
         "freetype.load_glyph_pair" => {
             let mut args = vec!["--load-svg-only-pair".to_string()];
             push_font_source(case, &mut args)?;
@@ -44902,6 +44916,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "otsvg.svg_document_capture" | "otsvg.svg_document_transform_capture" => {
             rust_otsvg_document_probe(case)
         }
+        "otsvg.svg_renderer_callback_capture" => rust_otsvg_renderer_callback_probe(case),
         "freetype.load_glyph_pair" => rust_svg_only_pair(case),
         "ftglyph.svg_feature_probe" => rust_svg_feature_probe(case),
         "load_glyph" => {
@@ -46329,6 +46344,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "otsvg.svg_document_capture" | "otsvg.svg_document_transform_capture" => {
             c_otsvg_document_probe(case)
         }
+        "otsvg.svg_renderer_callback_capture" => c_otsvg_renderer_callback_probe(case),
         "freetype.load_glyph_pair" => c_svg_only_pair(case),
         "ftglyph.svg_feature_probe" => c_svg_feature_probe(case),
         "load_glyph" => {
@@ -47611,6 +47627,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         "otsvg.svg_document_capture" | "otsvg.svg_document_transform_capture" => {
             wasm_otsvg_document_probe(case)
         }
+        "otsvg.svg_renderer_callback_capture" => wasm_otsvg_renderer_callback_probe(case),
         "freetype.load_glyph_pair" => wasm_svg_only_pair(case),
         "ftglyph.svg_feature_probe" => wasm_svg_feature_probe(case),
         "load_glyph" => {
@@ -53643,6 +53660,322 @@ fn wasm_otsvg_document_probe(case: &InputCase) -> Result<RunOutput, String> {
     }
     wasm_done_face(handle);
     Ok(output)
+}
+
+fn wasm_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, String> {
+    let params = &case.inputs.params;
+    let bytes = named_font_bytes(case, "otsvg_font")?;
+    let glyph_index = svg_document_glyph_index(params)?;
+    let mut capture = wasm_abi::WasmSvgRendererCallbackCapture::default();
+    wasm_abi::fontdone_wasm_svg_renderer_capture(
+        bytes.as_ptr(),
+        bytes.len(),
+        glyph_index,
+        &mut capture,
+    );
+    let fields = SvgRendererCallbackFields {
+        glyph_index: capture.glyph_index,
+        svg_document_length: capture.svg_document_length,
+        units_per_em: capture.units_per_EM,
+        start_glyph_id: capture.start_glyph_id,
+        end_glyph_id: capture.end_glyph_id,
+        transform: (
+            capture.transform_xx,
+            capture.transform_xy,
+            capture.transform_yx,
+            capture.transform_yy,
+        ),
+        delta: (capture.delta_x, capture.delta_y),
+    };
+    Ok(svg_callback_output(
+        capture.render_status,
+        fields,
+        capture.hooks_status,
+        capture.hooks_status != FT_Err_Ok,
+    ))
+}
+
+#[derive(Clone, Copy, Default)]
+struct SvgRendererCallbackFields {
+    glyph_index: u32,
+    svg_document_length: u64,
+    units_per_em: u16,
+    start_glyph_id: u16,
+    end_glyph_id: u16,
+    transform: (i64, i64, i64, i64),
+    delta: (i64, i64),
+}
+
+static mut RUST_SVG_CALLBACK_FIELDS: SvgRendererCallbackFields = SvgRendererCallbackFields {
+    glyph_index: 0,
+    svg_document_length: 0,
+    units_per_em: 0,
+    start_glyph_id: 0,
+    end_glyph_id: 0,
+    transform: (0, 0, 0, 0),
+    delta: (0, 0),
+};
+
+unsafe extern "C" fn rust_svg_probe_init(_state: *mut FT_Pointer) -> FT_Error {
+    FT_Err_Ok
+}
+
+unsafe extern "C" fn rust_svg_probe_free(_state: *mut FT_Pointer) {}
+
+unsafe extern "C" fn rust_svg_probe_preset(
+    _slot: *mut c_void,
+    _cache: FT_Bool,
+    state: *mut FT_Pointer,
+) -> FT_Error {
+    let Some(probe) = (unsafe {
+        (*state.cast::<*mut FT_Pointer>())
+            .cast::<SvgCallbackProbe>()
+            .as_ref()
+    }) else {
+        return FT_Err_Invalid_Slot_Handle as FT_Error;
+    };
+    if probe.document_ptr == 0 {
+        return FT_Err_Invalid_Slot_Handle as FT_Error;
+    }
+    let document = unsafe { &*(probe.document_ptr as *const FT_SVG_DocumentRec) };
+    unsafe {
+        RUST_SVG_CALLBACK_FIELDS = SvgRendererCallbackFields {
+            glyph_index: probe.glyph_index,
+            svg_document_length: document.svg_document_length,
+            units_per_em: document.units_per_EM,
+            start_glyph_id: document.start_glyph_id,
+            end_glyph_id: document.end_glyph_id,
+            transform: (
+                document.transform.xx,
+                document.transform.xy,
+                document.transform.yx,
+                document.transform.yy,
+            ),
+            delta: (document.delta.x, document.delta.y),
+        };
+    }
+    FT_Err_Ok
+}
+
+unsafe extern "C" fn rust_svg_probe_render(_slot: *mut c_void, state: *mut FT_Pointer) -> FT_Error {
+    unsafe { rust_svg_probe_preset(std::ptr::null_mut(), 1, state) }
+}
+
+fn svg_callback_fields_json(fields: &SvgRendererCallbackFields) -> Value {
+    json!({
+        "svg_document_length": fields.svg_document_length,
+        "units_per_EM": fields.units_per_em,
+        "start_glyph_id": fields.start_glyph_id,
+        "end_glyph_id": fields.end_glyph_id,
+        "transform": {
+            "xx": fields.transform.0,
+            "xy": fields.transform.1,
+            "yx": fields.transform.2,
+            "yy": fields.transform.3,
+        },
+        "delta": {"x": fields.delta.0, "y": fields.delta.1},
+    })
+}
+
+fn svg_callback_output(
+    status: FT_Error,
+    fields: SvgRendererCallbackFields,
+    hooks_status: FT_Error,
+    unsupported: bool,
+) -> RunOutput {
+    ok(json!({
+        "status": status,
+        "callback_document_fields": if fields.svg_document_length == 0 {
+            json!({
+                "svg_document_length": 0,
+                "units_per_EM": 0,
+                "start_glyph_id": 0,
+                "end_glyph_id": 0,
+                "transform": Value::Null,
+                "delta": Value::Null,
+            })
+        } else {
+            svg_callback_fields_json(&fields)
+        },
+        "callback_glyph_index": fields.glyph_index,
+        "hooks_status": hooks_status,
+        "unsupported_status": if unsupported { "unsupported" } else { "enabled" },
+    }))
+}
+
+fn rust_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, String> {
+    let params = &case.inputs.params;
+    let data = named_font_bytes(case, "otsvg_font")?;
+    let glyph_index = svg_document_glyph_index(params)?;
+    let mut library = FT_Init_FreeType();
+    let hooks = SVG_RendererHooks {
+        init_svg: Some(rust_svg_probe_init),
+        free_svg: Some(rust_svg_probe_free),
+        render_svg: Some(rust_svg_probe_render),
+        preset_slot: Some(rust_svg_probe_preset),
+    };
+    let hooks_status = if params.get("hooks").and_then(Value::as_str) == Some("missing") {
+        FT_Err_Missing_SVG_Hooks as FT_Error
+    } else {
+        FT_Set_SVG_Renderer_Hooks(Some(&mut library), Some(hooks))
+    };
+    let face = FT_New_Memory_Face(&library, &data, 0, 20.0)
+        .map_err(|err| format!("FT_New_Memory_Face returned {err}"))?;
+    let mut status = FT_Err_Ok;
+    let loaded = match FT_Load_Glyph(&face, glyph_index, FT_LOAD_COLOR) {
+        Ok(slot) => slot,
+        Err(error) => {
+            return Ok(svg_callback_output(
+                error,
+                unsafe { RUST_SVG_CALLBACK_FIELDS },
+                hooks_status,
+                hooks_status != FT_Err_Ok,
+            ));
+        }
+    };
+    let mut fields = unsafe { RUST_SVG_CALLBACK_FIELDS };
+    if hooks_status == FT_Err_Ok {
+        match FT_Render_Glyph(loaded, FT_RENDER_MODE_NORMAL) {
+            Ok(_) => {
+                fields = unsafe { RUST_SVG_CALLBACK_FIELDS };
+            }
+            Err(error) => status = error,
+        }
+    } else {
+        status = hooks_status;
+    }
+    let _ = face;
+    Ok(svg_callback_output(
+        status,
+        fields,
+        hooks_status,
+        hooks_status != FT_Err_Ok,
+    ))
+}
+
+static mut C_SVG_CALLBACK_FIELDS: SvgRendererCallbackFields = SvgRendererCallbackFields {
+    glyph_index: 0,
+    svg_document_length: 0,
+    units_per_em: 0,
+    start_glyph_id: 0,
+    end_glyph_id: 0,
+    transform: (0, 0, 0, 0),
+    delta: (0, 0),
+};
+
+unsafe extern "C" fn c_svg_probe_init(_state: *mut c_abi::FT_Pointer) -> FT_Error {
+    FT_Err_Ok
+}
+
+unsafe extern "C" fn c_svg_probe_free(_state: *mut c_abi::FT_Pointer) {}
+
+fn c_svg_probe_capture(state: *mut c_abi::FT_Pointer) -> Result<(), FT_Error> {
+    let Some(probe) = (unsafe {
+        (*state.cast::<*mut FT_Pointer>())
+            .cast::<SvgCallbackProbe>()
+            .as_ref()
+    }) else {
+        return Err(FT_Err_Invalid_Slot_Handle as FT_Error);
+    };
+    if probe.document_ptr == 0 {
+        return Err(FT_Err_Invalid_Slot_Handle as FT_Error);
+    }
+    let document = unsafe { &*(probe.document_ptr as *const FT_SVG_DocumentRec) };
+    unsafe {
+        C_SVG_CALLBACK_FIELDS = SvgRendererCallbackFields {
+            glyph_index: probe.glyph_index,
+            svg_document_length: document.svg_document_length,
+            units_per_em: document.units_per_EM,
+            start_glyph_id: document.start_glyph_id,
+            end_glyph_id: document.end_glyph_id,
+            transform: (
+                document.transform.xx,
+                document.transform.xy,
+                document.transform.yx,
+                document.transform.yy,
+            ),
+            delta: (document.delta.x, document.delta.y),
+        };
+    }
+    Ok(())
+}
+
+unsafe extern "C" fn c_svg_probe_preset(
+    _slot: c_abi::FT_GlyphSlot,
+    _cache: c_abi::FT_Bool,
+    state: *mut c_abi::FT_Pointer,
+) -> FT_Error {
+    match c_svg_probe_capture(state) {
+        Ok(()) => FT_Err_Ok,
+        Err(error) => error,
+    }
+}
+
+unsafe extern "C" fn c_svg_probe_render(
+    _slot: c_abi::FT_GlyphSlot,
+    state: *mut c_abi::FT_Pointer,
+) -> FT_Error {
+    match c_svg_probe_capture(state) {
+        Ok(()) => FT_Err_Ok,
+        Err(error) => error,
+    }
+}
+
+fn c_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, String> {
+    let params = &case.inputs.params;
+    let bytes = named_font_bytes(case, "otsvg_font")?;
+    let glyph_index = svg_document_glyph_index(params)?;
+    let mut library = std::ptr::null_mut();
+    let init_error = c_abi::FT_Init_FreeType(&mut library);
+    if init_error != FT_Err_Ok {
+        return Err(format!("FT_Init_FreeType returned {init_error}"));
+    }
+    let hooks = c_abi::SVG_RendererHooks {
+        init_svg: Some(c_svg_probe_init),
+        free_svg: Some(c_svg_probe_free),
+        render_svg: Some(c_svg_probe_render),
+        preset_slot: Some(c_svg_probe_preset),
+    };
+    let hooks_status = if params.get("hooks").and_then(Value::as_str) == Some("missing") {
+        FT_Err_Missing_SVG_Hooks as FT_Error
+    } else {
+        let module_name = c"ot-svg";
+        let property_name = c"svg-hooks";
+        c_abi::FT_Property_Set(
+            library,
+            module_name.as_ptr().cast(),
+            property_name.as_ptr().cast(),
+            (&hooks as *const c_abi::SVG_RendererHooks).cast(),
+        )
+    };
+    let mut face = std::ptr::null_mut();
+    let file_size = i64::try_from(bytes.len()).map_err(|err| err.to_string())?;
+    let open_error = c_abi::FT_New_Memory_Face(library, bytes.as_ptr(), file_size, 0, &mut face);
+    if open_error != FT_Err_Ok {
+        c_done_library(library);
+        return Err(format!("FT_New_Memory_Face returned {open_error}"));
+    }
+    let load_status = c_abi::FT_Load_Glyph(face, glyph_index, FT_LOAD_COLOR);
+    let status = if load_status == FT_Err_Ok {
+        if hooks_status == FT_Err_Ok {
+            let slot = c_abi::abi_glyph_slot_pointer(face)
+                .ok_or_else(|| "missing c SVG callback slot pointer".to_string())?;
+            c_abi::FT_Render_Glyph(slot, FT_RENDER_MODE_NORMAL)
+        } else {
+            hooks_status
+        }
+    } else {
+        load_status
+    };
+    let fields = unsafe { C_SVG_CALLBACK_FIELDS };
+    c_done_face(face);
+    c_done_library(library);
+    Ok(svg_callback_output(
+        status,
+        fields,
+        hooks_status,
+        hooks_status != FT_Err_Ok,
+    ))
 }
 
 fn rust_svg_glyph_record(face: &FT_Face, case: &InputCase) -> Result<RunOutput, String> {

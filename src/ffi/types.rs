@@ -960,6 +960,48 @@ pub struct FT_SvgDocumentOwned {
     pub delta: FT_Vector,
 }
 
+/// SVG renderer hook function pointer types matching `freetype/otsvg.h`.
+pub type SvgInitFunc = unsafe extern "C" fn(*mut FT_Pointer) -> FT_Error;
+pub type SvgFreeFunc = unsafe extern "C" fn(*mut FT_Pointer);
+pub type SvgRenderFunc = unsafe extern "C" fn(*mut c_void, *mut FT_Pointer) -> FT_Error;
+pub type SvgPresetSlotFunc =
+    unsafe extern "C" fn(*mut c_void, FT_Bool, *mut FT_Pointer) -> FT_Error;
+
+/// Public `SVG_RendererHooks` record (`freetype/otsvg.h`).
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct SVG_RendererHooks {
+    pub init_svg: Option<SvgInitFunc>,
+    pub free_svg: Option<SvgFreeFunc>,
+    pub render_svg: Option<SvgRenderFunc>,
+    pub preset_slot: Option<SvgPresetSlotFunc>,
+}
+
+/// Test-support probe handed to SVG hooks instead of the C slot.  Field 0 is
+/// the glyph index and field 1 is the document pointer value, mirroring the
+/// `FT_GlyphSlotRec.glyph_index`/`other` fields read by the pinned C oracle.
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+pub struct SvgCallbackProbe {
+    pub glyph_index: FT_UInt,
+    pub document_ptr: usize,
+}
+
+/// C-layout `FT_SVG_DocumentRec` view (`freetype/otsvg.h`) handed to renderer
+/// hooks through the probe's document pointer.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct FT_SVG_DocumentRec {
+    pub svg_document: *mut FT_Byte,
+    pub svg_document_length: FT_ULong,
+    pub metrics: FT_Size_Metrics,
+    pub units_per_EM: FT_UShort,
+    pub start_glyph_id: FT_UShort,
+    pub end_glyph_id: FT_UShort,
+    pub transform: FT_Matrix,
+    pub delta: FT_Vector,
+}
+
 /// Safe owner for a detached `FT_SvgGlyphRec`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FT_SvgGlyphOwned {

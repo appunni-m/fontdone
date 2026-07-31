@@ -327,6 +327,10 @@ pub use handles::FT_Init_FreeType;
 export_parity_helpers!(FT_ColrV1_Paint_Layer_Iterator_Copy);
 #[cfg(feature = "abi-test-support")]
 export_parity_helpers!(FT_Outline_GlyphSlot_With_Advance);
+
+/// Installs the four public OT-SVG renderer hooks on a library, mirroring
+/// FreeType's `ot-svg:svg-hooks` driver property.
+pub use handles::FT_Set_SVG_Renderer_Hooks;
 #[cfg(any(test, feature = "abi-test-support"))]
 pub use handles::{
     FT_ColrV1_PaintGraph_Snapshot, FT_ColrV1_PaintNode_Snapshot, FT_ColrV1_PaintRecord_Snapshot,

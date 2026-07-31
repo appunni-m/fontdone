@@ -304,6 +304,27 @@ pub type FT_StreamDesc = rust_ffi::FT_StreamDesc;
 pub type FT_StreamRec = rust_ffi::FT_StreamRec;
 pub type FT_Stream = *mut FT_StreamRec;
 pub type FT_Stream_CloseFunc = Option<extern "C" fn(stream: FT_Stream)>;
+pub type SvgInitFunc = Option<unsafe extern "C" fn(data_pointer: *mut FT_Pointer) -> FT_Error>;
+pub type SvgFreeFunc = Option<unsafe extern "C" fn(data_pointer: *mut FT_Pointer)>;
+pub type SvgRenderFunc =
+    Option<unsafe extern "C" fn(slot: FT_GlyphSlot, data_pointer: *mut FT_Pointer) -> FT_Error>;
+pub type SvgPresetSlotFunc = Option<
+    unsafe extern "C" fn(
+        slot: FT_GlyphSlot,
+        cache: FT_Bool,
+        data_pointer: *mut FT_Pointer,
+    ) -> FT_Error,
+>;
+
+/// Public `SVG_RendererHooks` record (`freetype/otsvg.h`).
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct SVG_RendererHooks {
+    pub init_svg: SvgInitFunc,
+    pub free_svg: SvgFreeFunc,
+    pub render_svg: SvgRenderFunc,
+    pub preset_slot: SvgPresetSlotFunc,
+}
 pub type FT_Alloc_Func = Option<extern "C" fn(memory: FT_Memory, size: c_long) -> FT_Pointer>;
 pub type FT_Free_Func = Option<extern "C" fn(memory: FT_Memory, block: FT_Pointer)>;
 pub type FT_Realloc_Func = Option<
@@ -8062,6 +8083,28 @@ pub extern "C" fn FT_Property_Set(
 ) -> FT_Error {
     let module_name = property_name_arg(module_name);
     let property_name = property_name_arg(property_name);
+    if module_name.as_deref() == Some("ot-svg") && property_name.as_deref() == Some("svg-hooks") {
+        let Some(rust_library) = library_mut(library) else {
+            return rust_ffi::FT_Err_Invalid_Library_Handle as FT_Error;
+        };
+        if value.is_null() {
+            return rust_ffi::FT_Err_Invalid_Argument;
+        }
+        // SAFETY: the `svg-hooks` property payload is the public
+        // `SVG_RendererHooks` record (`freetype/otsvg.h`).
+        let hooks = unsafe { &*value.cast::<SVG_RendererHooks>() };
+        if hooks.init_svg.is_none()
+            || hooks.free_svg.is_none()
+            || hooks.render_svg.is_none()
+            || hooks.preset_slot.is_none()
+        {
+            return rust_ffi::FT_Err_Invalid_Argument;
+        }
+        return rust_ffi::FT_Set_SVG_Renderer_Hooks(
+            Some(rust_library),
+            Some(core_svg_hooks_from_abi(hooks)),
+        );
+    }
     if is_increase_x_height_property(module_name.as_deref(), property_name.as_deref()) {
         let prop = unsafe { value.cast::<rust_ffi::FT_Prop_IncreaseXHeight>().as_ref() };
         let face = prop.and_then(|prop| face_state_mut(prop.face.cast::<FT_FaceRec>()));
@@ -8086,6 +8129,35 @@ pub extern "C" fn FT_Property_Set(
         property_name.as_deref(),
         value,
     )
+}
+
+#[allow(unsafe_code)]
+fn core_svg_hooks_from_abi(hooks: &SVG_RendererHooks) -> rust_ffi::SVG_RendererHooks {
+    // The public hooks record is `repr(C)` with four `extern "C"` function
+    // pointers; the slot argument is `FT_GlyphSlot` (a typedef for
+    // `FT_GlyphSlotRec*`) on the ABI layer and `*mut c_void` on the core
+    // layer, so converting the pointer type is layout-preserving.
+    let convert_render = |callback: SvgRenderFunc| -> Option<rust_ffi::SvgRenderFunc> {
+        callback.map(|callback| {
+            // SAFETY: both types are `unsafe extern "C" fn` with the same
+            // argument/return layout; only the first argument's pointee name
+            // differs between the public typedef and the core record.
+            unsafe { std::mem::transmute::<_, rust_ffi::SvgRenderFunc>(Some(callback)) }
+        })
+    };
+    let convert_preset = |callback: SvgPresetSlotFunc| -> Option<rust_ffi::SvgPresetSlotFunc> {
+        callback.map(|callback| {
+            // SAFETY: see `convert_render`; the preset hook keeps the same
+            // `FT_Bool` cache argument and state pointer on both layers.
+            unsafe { std::mem::transmute::<_, rust_ffi::SvgPresetSlotFunc>(Some(callback)) }
+        })
+    };
+    rust_ffi::SVG_RendererHooks {
+        init_svg: hooks.init_svg,
+        free_svg: hooks.free_svg,
+        render_svg: convert_render(hooks.render_svg),
+        preset_slot: convert_preset(hooks.preset_slot),
+    }
 }
 
 #[unsafe(no_mangle)]

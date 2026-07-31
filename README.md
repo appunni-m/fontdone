@@ -96,21 +96,22 @@ The last committed full parity snapshot was recorded on **2026-07-31**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,295 |
-| Passed cases | 7,295 |
+| Runnable exact-comparison cases | 7,296 |
+| Passed cases | 7,296 |
 | Failed cases | 0 |
-| Explicitly pending cases | 13 |
-| Covered manifest cases | 4,165 |
+| Explicitly pending cases | 12 |
+| Covered manifest cases | 4,166 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,259 |
 | Concrete expanded cases | 7,308 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,281 / 7,281` means every runnable case in that execution matched. It does
-not turn the 27 pending cases into passes. Likewise, 218/218 function-route
-evidence can be satisfied by a narrow success or null-validation route; it is
-not equivalent to complete behavior for every input, state, or platform.
+`7,296 / 7,296` means every runnable case in that execution matched; the 12
+explicitly pending concrete cases remain pending and the route audit still
+reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
+can be satisfied by a narrow success or null-validation route; it is not
+equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP run
 `0bb09385-d685-4cb6-8a70-6ab98e106967` from clean commit
@@ -158,11 +159,11 @@ measurement provenance is retained in the compatibility snapshot.
 
 ### 3.4 C ABI completion contract
 
-The latest committed scorecard has **9 / 12 categories complete**:
+The latest committed scorecard has **8 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 names, signatures, and traced function routes; 5,034 / 5,048 pinned-C runtime contract rows exact, with 14 pending |
+| Functions | 218 / 218 names, signatures, and traced function routes; 5,040 / 5,048 pinned-C runtime contract rows exact, with 8 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership, state, errors, modules, headers | Complete under their blocking scorecard measurements |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |

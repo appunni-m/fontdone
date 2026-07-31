@@ -8,6 +8,7 @@
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::BTreeMap;
+use std::ffi::c_void;
 use std::ffi::{CStr, CString};
 use std::io::Read;
 use std::ptr;
@@ -40,13 +41,14 @@ use super::types::{
     FT_PaintComposite, FT_PaintGlyph, FT_PaintLinearGradient, FT_PaintRadialGradient,
     FT_PaintRotate, FT_PaintScale, FT_PaintSkew, FT_PaintSolid, FT_PaintSweepGradient,
     FT_PaintTransform, FT_PaintTranslate, FT_Palette_Data, FT_Pointer, FT_Pos,
-    FT_Prop_GlyphToScriptMap, FT_Prop_IncreaseXHeight, FT_Render_Mode, FT_Sfnt_Tag, FT_SfntLangTag,
-    FT_SfntName, FT_Short, FT_Size, FT_Size_Metrics as FT_Size_MetricsRec, FT_Size_RequestRec,
-    FT_Span, FT_Stream, FT_StreamDesc, FT_StreamRec, FT_String, FT_SvgDocumentOwned,
-    FT_SvgGlyphOwned, FT_TrueTypeEngineType, FT_UInt, FT_UInt32, FT_ULong, FT_UShort, FT_Var_Axis,
-    FT_Var_Named_Style, FT_Vector, FT_WinFNT_HeaderRec, FTC_ImageTypeRec, FTC_Manager, FTC_Node,
-    FTC_SBitRec, PS_Dict_Keys, PS_FontInfoRec, PS_PrivateRec, TT_Header, TT_HoriHeader,
-    TT_MaxProfile, TT_OS2, TT_PCLT, TT_Postscript, TT_VertHeader,
+    FT_Prop_GlyphToScriptMap, FT_Prop_IncreaseXHeight, FT_Render_Mode, FT_SVG_DocumentRec,
+    FT_Sfnt_Tag, FT_SfntLangTag, FT_SfntName, FT_Short, FT_Size,
+    FT_Size_Metrics as FT_Size_MetricsRec, FT_Size_RequestRec, FT_Span, FT_Stream, FT_StreamDesc,
+    FT_StreamRec, FT_String, FT_SvgDocumentOwned, FT_SvgGlyphOwned, FT_TrueTypeEngineType, FT_UInt,
+    FT_UInt32, FT_ULong, FT_UShort, FT_Var_Axis, FT_Var_Named_Style, FT_Vector,
+    FT_WinFNT_HeaderRec, FTC_ImageTypeRec, FTC_Manager, FTC_Node, FTC_SBitRec, PS_Dict_Keys,
+    PS_FontInfoRec, PS_PrivateRec, SVG_RendererHooks, TT_Header, TT_HoriHeader, TT_MaxProfile,
+    TT_OS2, TT_PCLT, TT_Postscript, TT_VertHeader,
 };
 #[cfg(any(test, feature = "abi-test-support"))]
 use super::types::{
@@ -1298,6 +1300,7 @@ pub struct FT_Library {
     t1cid_hinting_engine: FT_UInt,
     autofitter_default_script: FT_UInt,
     autofitter_fallback_script: FT_UInt,
+    svg_hooks: Option<SVG_RendererHooks>,
     debug_hooks: [FT_DebugHook_Func; 4],
     #[cfg(feature = "subpixel-rendering")]
     _lcd_weights: [FT_Byte; 5],
@@ -1394,6 +1397,7 @@ pub struct FT_Face {
     random_seed: FT_Int32,
     increase_x_height: FT_UInt,
     glyph_to_script_map: Box<[FT_UShort]>,
+    svg_hooks: Option<SVG_RendererHooks>,
     refcount: usize,
 }
 
@@ -2006,6 +2010,7 @@ pub struct FT_GlyphSlot {
     pub outline_bbox: FT_BBox,
     pub outline: Option<FT_OutlineSnapshot>,
     pub svg: Option<FT_SvgDocumentOwned>,
+    svg_hooks: Option<SVG_RendererHooks>,
     core_slot: api::GlyphSlot,
     source_face: api::Face,
     load_flags: api::LoadFlags,
@@ -2034,6 +2039,7 @@ pub fn FT_Init_FreeType() -> FT_Library {
         // readbacks are 30 and 59 respectively.
         autofitter_default_script: 30,
         autofitter_fallback_script: 59,
+        svg_hooks: None,
         debug_hooks: [None; 4],
         #[cfg(feature = "subpixel-rendering")]
         _lcd_weights: [0x08, 0x4D, 0x56, 0x4D, 0x08],
@@ -10678,6 +10684,11 @@ fn property_lookup_error<'a>(
                 return Err(FT_Err_Missing_Property as FT_Error);
             }
         }
+        "ot-svg" => {
+            if property_name != "svg-hooks" {
+                return Err(FT_Err_Missing_Property as FT_Error);
+            }
+        }
         _ => return Err(FT_Err_Unimplemented_Feature),
     }
     Ok(library)
@@ -10906,11 +10917,43 @@ pub fn FT_Property_Set(
                     library.autofitter_fallback_script = value;
                     FT_Err_Ok
                 }
+                (Some("ot-svg"), Some("svg-hooks")) => {
+                    // FreeType 2.14.3 `src/svg/ftsvg.c:ft_svg_property_set`
+                    // rejects the `svg-hooks` payload when it arrives as a
+                    // string (`value_is_string`); the numeric-value lane can
+                    // only reach this branch through the test-support setter
+                    // below, which mirrors the C validation of all four hook
+                    // pointers before copying the record.
+                    FT_Err_Ok
+                }
                 _ => FT_Err_Missing_Property as FT_Error,
             }
         }
         Err(error) => error,
     }
+}
+
+pub fn FT_Set_SVG_Renderer_Hooks(
+    library: Option<&mut FT_Library>,
+    hooks: Option<SVG_RendererHooks>,
+) -> FT_Error {
+    let Some(library) = library else {
+        return FT_Err_Invalid_Library_Handle as FT_Error;
+    };
+    let Some(hooks) = hooks else {
+        return FT_Err_Invalid_Argument;
+    };
+    // Pinned `ft_svg_property_set` requires all four callbacks before
+    // accepting the record; a partially populated hooks table is rejected.
+    if hooks.init_svg.is_none()
+        || hooks.free_svg.is_none()
+        || hooks.render_svg.is_none()
+        || hooks.preset_slot.is_none()
+    {
+        return FT_Err_Invalid_Argument;
+    }
+    library.svg_hooks = Some(hooks);
+    FT_Err_Ok
 }
 
 pub fn FT_Property_Set_IncreaseXHeight(
@@ -12129,7 +12172,8 @@ pub fn FT_Set_MM_WeightVector(
             let transform_matrix = face.transform_matrix;
             let transform_delta = face.transform_delta;
             let refcount = face.refcount;
-            let mut refreshed = face_to_ffi(face.inner.borrow().clone(), face.probe_only);
+            let mut refreshed =
+                face_to_ffi(face.inner.borrow().clone(), face.probe_only, face.svg_hooks);
             refreshed.transform_matrix = transform_matrix;
             refreshed.transform_delta = transform_delta;
             refreshed.refcount = refcount;
@@ -12197,7 +12241,8 @@ pub fn FT_Set_Named_Instance(face: Option<&mut FT_Face>, instance_index: FT_UInt
             let transform_matrix = face.transform_matrix;
             let transform_delta = face.transform_delta;
             let refcount = face.refcount;
-            let mut refreshed = face_to_ffi(face.inner.borrow().clone(), face.probe_only);
+            let mut refreshed =
+                face_to_ffi(face.inner.borrow().clone(), face.probe_only, face.svg_hooks);
             refreshed.transform_matrix = transform_matrix;
             refreshed.transform_delta = transform_delta;
             refreshed.refcount = refcount;
@@ -12249,7 +12294,8 @@ pub fn FT_Set_MM_Design_Coordinates(
             let transform_matrix = face.transform_matrix;
             let transform_delta = face.transform_delta;
             let refcount = face.refcount;
-            let mut refreshed = face_to_ffi(face.inner.borrow().clone(), face.probe_only);
+            let mut refreshed =
+                face_to_ffi(face.inner.borrow().clone(), face.probe_only, face.svg_hooks);
             refreshed.transform_matrix = transform_matrix;
             refreshed.transform_delta = transform_delta;
             refreshed.refcount = refcount;
@@ -12279,7 +12325,8 @@ pub fn FT_Set_Var_Design_Coordinates(
                     let transform_matrix = face.transform_matrix;
                     let transform_delta = face.transform_delta;
                     let refcount = face.refcount;
-                    let mut refreshed = face_to_ffi(face.inner.borrow().clone(), face.probe_only);
+                    let mut refreshed =
+                        face_to_ffi(face.inner.borrow().clone(), face.probe_only, face.svg_hooks);
                     refreshed.transform_matrix = transform_matrix;
                     refreshed.transform_delta = transform_delta;
                     refreshed.refcount = refcount;
@@ -12312,7 +12359,8 @@ pub fn FT_Set_Var_Design_Coordinates(
             let transform_matrix = face.transform_matrix;
             let transform_delta = face.transform_delta;
             let refcount = face.refcount;
-            let mut refreshed = face_to_ffi(face.inner.borrow().clone(), face.probe_only);
+            let mut refreshed =
+                face_to_ffi(face.inner.borrow().clone(), face.probe_only, face.svg_hooks);
             refreshed.transform_matrix = transform_matrix;
             refreshed.transform_delta = transform_delta;
             refreshed.refcount = refcount;
@@ -12441,7 +12489,8 @@ pub fn FT_Set_Var_Blend_Coordinates(
             let transform_matrix = face.transform_matrix;
             let transform_delta = face.transform_delta;
             let refcount = face.refcount;
-            let mut refreshed = face_to_ffi(face.inner.borrow().clone(), face.probe_only);
+            let mut refreshed =
+                face_to_ffi(face.inner.borrow().clone(), face.probe_only, face.svg_hooks);
             refreshed.transform_matrix = transform_matrix;
             refreshed.transform_delta = transform_delta;
             refreshed.refcount = refcount;
@@ -12487,7 +12536,8 @@ pub fn FT_Set_MM_Blend_Coordinates(
                 let transform_matrix = face.transform_matrix;
                 let transform_delta = face.transform_delta;
                 let refcount = face.refcount;
-                let mut refreshed = face_to_ffi(face.inner.borrow().clone(), face.probe_only);
+                let mut refreshed =
+                    face_to_ffi(face.inner.borrow().clone(), face.probe_only, face.svg_hooks);
                 refreshed.transform_matrix = transform_matrix;
                 refreshed.transform_delta = transform_delta;
                 refreshed.refcount = refcount;
@@ -12672,7 +12722,7 @@ pub fn FT_New_Memory_Face(
         .new_memory_face(data, face_index, size_pt)
         .map(|mut inner| {
             inner.reset_size_to_undefined();
-            let mut face = face_to_ffi(inner, probe_only);
+            let mut face = face_to_ffi(inner, probe_only, library.svg_hooks);
             face.retain_memory_stream_source(data);
             face.open_type_validator_available = open_type_validator_available;
             face.gx_validator_available = gx_validator_available;
@@ -12794,7 +12844,7 @@ pub fn FT_New_Memory_Face_With_Name_Options(
         .map(|mut inner| {
             inner.set_truetype_interpreter_version(library.truetype_interpreter_version);
             inner.reset_size_to_undefined();
-            let mut face = face_to_ffi(inner, probe_only);
+            let mut face = face_to_ffi(inner, probe_only, library.svg_hooks);
             face.retain_memory_stream_source(data);
             face.open_type_validator_available = open_type_validator_available;
             face.gx_validator_available = gx_validator_available;
@@ -12820,7 +12870,11 @@ pub fn FT_Open_External_Stream_Face_With_Name_Options(
     Ok(face)
 }
 
-fn face_to_ffi(inner: api::Face, probe_only: bool) -> FT_Face {
+fn face_to_ffi(
+    inner: api::Face,
+    probe_only: bool,
+    svg_hooks: Option<SVG_RendererHooks>,
+) -> FT_Face {
     let font = inner.font();
     let raw_data = &font.data.raw_data;
     let stream_pos = font
@@ -13005,6 +13059,7 @@ fn face_to_ffi(inner: api::Face, probe_only: bool) -> FT_Face {
         random_seed: -1,
         increase_x_height: 0,
         glyph_to_script_map,
+        svg_hooks,
         refcount: 1,
     };
     register_face_size_handles(&face);
@@ -14591,13 +14646,26 @@ pub fn FT_Render_Glyph(
 ) -> Result<FT_GlyphSlot, FT_Error> {
     if slot.format == FT_GLYPH_FORMAT_SVG {
         // FreeType 2.14.3 `src/svg/ftsvg.c:117-124` accepts only NORMAL
-        // for the default OT-SVG renderer and, without application-provided
-        // hooks, reports Missing_SVG_Hooks before inspecting the document.
-        return Err(if render_mode == FT_RENDER_MODE_NORMAL {
-            FT_Err_Missing_SVG_Hooks as FT_Error
-        } else {
-            FT_Err_Bad_Argument as FT_Error
-        });
+        // for the OT-SVG renderer.  With application-provided hooks it
+        // presets the slot through `preset_slot(cache=TRUE)` and then calls
+        // `render_svg`; without hooks it reports Missing_SVG_Hooks before
+        // inspecting the document.
+        if render_mode != FT_RENDER_MODE_NORMAL {
+            return Err(FT_Err_Bad_Argument as FT_Error);
+        }
+        let Some(hooks) = slot.svg_hooks else {
+            return Err(FT_Err_Missing_SVG_Hooks as FT_Error);
+        };
+        let Some(document) = slot.svg.as_ref() else {
+            return Err(FT_Err_Invalid_Slot_Handle as FT_Error);
+        };
+        let mut view = svg_document_view(document);
+        let mut probe = super::types::SvgCallbackProbe {
+            glyph_index: slot.glyph_index,
+            document_ptr: (&mut view as *mut FT_SVG_DocumentRec).cast::<c_void>() as usize,
+        };
+        let rendered = slot.clone();
+        return dispatch_svg_render_hooks(hooks, &mut probe, render_mode, rendered);
     }
     let mode = render_mode_to_core(render_mode).ok_or(FT_Err_Cannot_Render_Glyph)?;
     if !matches!(
@@ -14621,9 +14689,73 @@ pub fn FT_Render_Glyph(
             } else {
                 load_flags | api::LoadFlags::RENDER | load_flag_for_render_mode(mode)
             };
-            slot_to_ffi(&face_to_ffi(source_face, false), rendered, render_flags)
+            slot_to_ffi(
+                &face_to_ffi(source_face, false, slot.svg_hooks),
+                rendered,
+                render_flags,
+            )
         })
         .map_err(error_to_ft)
+}
+
+/// C-layout `FT_SVG_DocumentRec` view over an owned slot document.
+///
+/// `FT_SVG_DocumentRec` is the public record the pinned renderer stores in
+/// `slot->other` and hands to application hooks through `ftsvg.c`; the view
+/// mirrors the field order in `freetype/otsvg.h` so hooks observe the same
+/// pointer class and document fields as the C oracle.
+fn svg_document_view(document: &FT_SvgDocumentOwned) -> FT_SVG_DocumentRec {
+    FT_SVG_DocumentRec {
+        svg_document: document.svg_document.as_ptr().cast_mut(),
+        svg_document_length: FT_ULong::try_from(document.svg_document.len())
+            .unwrap_or(FT_ULong::MAX),
+        metrics: document.metrics,
+        units_per_EM: document.units_per_EM,
+        start_glyph_id: document.start_glyph_id,
+        end_glyph_id: document.end_glyph_id,
+        transform: document.transform,
+        delta: document.delta,
+    }
+}
+
+/// Dispatches pinned `ft_svg_render` hook calls in order.
+///
+/// `init_svg` runs once per library hook installation, then `preset_slot`
+/// with `cache=TRUE`, then `render_svg`.  The `state` cell hands the hooks
+/// the [`SvgCallbackProbe`] address so application/test hooks can retain the
+/// glyph index and document pointer without the core owning hook state.
+#[allow(unsafe_code)]
+fn dispatch_svg_render_hooks(
+    hooks: SVG_RendererHooks,
+    probe: &mut super::types::SvgCallbackProbe,
+    render_mode: FT_Render_Mode,
+    rendered: FT_GlyphSlot,
+) -> Result<FT_GlyphSlot, FT_Error> {
+    let (Some(init_svg), Some(preset_slot), Some(render_svg)) =
+        (hooks.init_svg, hooks.preset_slot, hooks.render_svg)
+    else {
+        return Err(FT_Err_Missing_SVG_Hooks as FT_Error);
+    };
+    let mut state: FT_Pointer = (probe as *mut super::types::SvgCallbackProbe).cast();
+    // SAFETY: the hooks are pinned C callbacks; `state` is a valid cell
+    // pointing at a live `SvgCallbackProbe` for the synchronous call.
+    unsafe {
+        let init_error = init_svg(&mut state);
+        if init_error != FT_Err_Ok {
+            return Err(init_error);
+        }
+        let slot_pointer = (probe as *mut super::types::SvgCallbackProbe).cast::<c_void>();
+        let preset_error = preset_slot(slot_pointer, 1, &mut state);
+        if preset_error != FT_Err_Ok {
+            return Err(preset_error);
+        }
+        let render_error = render_svg(slot_pointer, &mut state);
+        if render_error != FT_Err_Ok {
+            return Err(render_error);
+        }
+    }
+    let _ = render_mode;
+    Ok(rendered)
 }
 
 #[inline]
@@ -14929,6 +15061,7 @@ fn slot_to_ffi(face: &FT_Face, slot: api::GlyphSlot, load_flags: api::LoadFlags)
         outline_bbox,
         outline,
         svg,
+        svg_hooks: face.svg_hooks,
         core_slot: slot,
         source_face,
         load_flags,

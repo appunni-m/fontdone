@@ -387,19 +387,17 @@ increase is claimed until the next full all-lane measurement**:
 | 23 | `abb16646c6bbb93be42b4b967037a38ad90fbb07` | Routed `FT_LOAD_SVG_ONLY.svg_only_behavior` with the project-authored SVG/non-SVG pair fixture through a same-input pinned-C oracle and exact Rust FFI, C ABI, and WASM observations: SVG glyph success includes slot format/document hash, while the non-SVG glyph preserves the public rejection error. Clean full parity run `3f342b8e-f106-4054-a33e-6fab40d29ce6` passed 7,257 / 7,257 runnable comparisons with 50 explicitly pending concrete cases; clean C-ABI scorecard run `e54a80df-e416-46d2-ac15-9eb4374f9c23` reports C01 runtime rows 5,009 / 5,047 with 38 pending. |
 | 24 | `74f6e87388b5cb31f397449db4d17d0b276b2772` | Routed both `FT_SVG_DocumentRec` payload/metrics rows through the project-authored OT-SVG fixture and exact pinned-C, Rust FFI, C ABI, and WASM observations; the follow-up Clippy fix keeps the parity harness warning-free. Focused run `0277b598-09cc-4413-b62c-5f8c5acc6ad5` passed all three selected cases; clean full parity run `0fae0ab3-1df2-4aa8-aaa6-cc5a09945209` passed 7,259 / 7,259 runnable comparisons with 48 explicitly pending concrete cases; clean C-ABI scorecard run `1ea13e0e-c422-4c53-a2ab-1e10192322e0` reports C01 runtime rows 5,011 / 5,047 with 36 pending. |
 | 25 | `25846d907293f04d4337a60a5ddf28a824065baa` | Promoted the nine GX/classic-kern semantic rows (`FT_VALIDATE_GX`, `FT_VALIDATE_MS`, and the seven table-slot validators) with deterministic valid, absent, truncated, and invalid-header SFNT controls. Focused GX and external-C gates passed; clean full parity run `660ffb48-3bc8-4995-ace8-525dbb51c468` passed 7,269 / 7,269 runnable comparisons with 38 explicitly pending concrete cases; clean C-ABI scorecard run `c5c5ccf7-79cc-4b62-8bfb-312012e8f281` reports C01 runtime rows 5,021 / 5,047 with 26 pending. |
+| 26 | SVG renderer hooks | Routed `otsvg.FT_SVG_Document.renderer_callback_observes_document` through the pinned-C four-hook `ot-svg:svg-hooks` flow and exact Rust FFI, C ABI, and WASM observations: the renderer callback receives the same document pointer class, glyph ID, and lifetime fields (`svg_document_length`, units, glyph range, transform, delta) as pinned C, with the missing-hooks state classified explicitly as unsupported. The route closes the last pending parity route: route audit reports 0 pending routes, clean full parity run `d217ea7be88f6bfd4367b752999520ed6b785a76fb10cd1f6d6da573bc7ebaf7` passed 7,296 / 7,296 runnable comparisons with 12 explicitly pending concrete cases (safety extensions and unresolved stroker assets); C-ABI scorecard is 8 / 12 categories complete (C01.7 5,040 / 5,048, C08.3 7,297 / 7,305). |
 
-The latest source-bound parity verification is Coverage MCP run
-`660ffb48-3bc8-4995-ace8-525dbb51c468` on clean commit `25846d9`:
-the nine GX/classic-kern semantic rows now run through deterministic valid,
-absent, truncated, and invalid-header controls across pinned C, Rust FFI, C
-ABI, and WASM. It passed 7,269 / 7,269 runnable comparisons, 0 failed, and 38
-remain explicitly pending. The same run reported 4,140 covered manifest cases,
-4,258 logical cases, and 7,307 concrete cases; all 218 function routes were
-present in each ABI surface. The committed source-digest attestation is
-`doc/runtime_parity_evidence.json` and records digest
-`0de603adb9683ffbf800ce101fb6091dedd41d406ec49ca84fb29395ae6c90a2`.
-The companion C-ABI scorecard run `c5c5ccf7-79cc-4b62-8bfb-312012e8f281`
-reports 5,021 / 5,047 exact runtime rows, with 26 pending. Full coverage is
+The latest source-bound parity verification is the maintained all-lane run
+`d217ea7be88f6bfd4367b752999520ed6b785a76fb10cd1f6d6da573bc7ebaf7` on the SVG
+renderer-hook milestone: it passed 7,296 / 7,296 runnable comparisons, 0
+failed, 12 explicitly pending concrete cases (safety extensions and
+unresolved stroker assets), and the route audit reports **0 pending routes**
+with 218 / 218 function routes present in each ABI surface. The committed
+source-digest attestation is `doc/runtime_parity_evidence.json`. The companion
+C-ABI scorecard reports 8 / 12 categories complete; C01/C08 runtime rows,
+binary artifacts, and platform bundles remain the tracked gaps. Full coverage is
 intentionally deferred until a larger set of focused batches is ready, because
 the maintained all-lane pass takes roughly 50 minutes.
 

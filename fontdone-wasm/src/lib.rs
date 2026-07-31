@@ -360,4 +360,5 @@ document_wasm_test_support!(
     abi_set_outline_glyph_slot_advance,
     abi_glyphslot_own_bitmap_copy_allocation_failure,
     abi_fvar_namedstyle_coords,
+    fontdone_wasm_svg_renderer_capture,
 );
