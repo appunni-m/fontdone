@@ -65,22 +65,16 @@
           "valid_just_font": {
             "kind": "ref",
             "role": "font",
-            "id": "input/generated/fonts/aat-gx/valid-just.ttf",
-            "status": "required_future_asset",
-            "requires": "AAT sfnt with valid just horizontal and vertical data"
+            "id": "input/generated/fonts/aat-gx/valid-just.ttf"
           },
-          "malformed_just_fonts": {
-            "kind": "ref",
-            "role": "font_set",
-            "id": "input/generated/fonts/aat-gx/malformed-just/",
-            "status": "required_future_asset",
-            "requires": "just class table, width delta cluster, postcomp action, range, glyph index, and action class failures"
-          },
+          "malformed_just_fonts": [
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-just-truncated.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-just-header.ttf"}
+          ],
           "missing_just_font": {
             "kind": "ref",
             "role": "font",
-            "id": "input/generated/fonts/aat-gx/no-just.ttf",
-            "status": "required_future_asset"
+            "id": "input/generated/fonts/aat-gx/no-just.ttf"
           }
         },
         "params": {
@@ -100,7 +94,7 @@
         "kind:flag",
         "header:ftgxval",
         "area:gx-validation",
-        "coverage:future-runtime",
+        "coverage:runtime",
         "requires:fixture"
       ],
       "expectation": {
@@ -112,7 +106,7 @@
           "unrequested_slots": "nullness_by_slot"
         },
         "compare": {
-          "mode": "unsupported_until_runner_added",
+          "mode": "bytes",
           "paths": [
             "error",
             "tables[4].nullness",

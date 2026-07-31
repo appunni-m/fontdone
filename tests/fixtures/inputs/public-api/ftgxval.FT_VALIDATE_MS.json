@@ -60,17 +60,13 @@
           "ms_kern_font": {
             "kind": "ref",
             "role": "font",
-            "id": "input/generated/fonts/kern/classic-ms-kern.ttf",
-            "status": "required_future_asset",
-            "requires": "sfnt with valid Microsoft-style classic kern table"
+            "id": "input/fonts/kern/classic-ms-kern.ttf"
           },
-          "malformed_ms_kern_fonts": {
-            "kind": "ref",
-            "role": "font_set",
-            "id": "input/generated/fonts/kern/malformed-classic-ms-kern/",
-            "status": "required_future_asset",
-            "requires": "classic kern fixtures with malformed Microsoft subtable length and coverage data"
-          }
+          "malformed_ms_kern_fonts": [
+            {"kind": "ref", "role": "font", "id": "input/fonts/kern/malformed-classic-kern-length.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/fonts/kern/malformed-classic-kern-offset.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/fonts/kern/malformed-classic-kern-pair-order.ttf"}
+          ]
         },
         "params": {
           "validation_flags": [
@@ -88,7 +84,7 @@
         "kind:flag",
         "header:ftgxval",
         "area:classic-kern-validation",
-        "coverage:future-runtime",
+        "coverage:runtime",
         "requires:fixture"
       ],
       "expectation": {
@@ -100,7 +96,7 @@
           "cleanup": "FT_ClassicKern_Free completion"
         },
         "compare": {
-          "mode": "unsupported_until_runner_added",
+          "mode": "bytes",
           "paths": [
             "error",
             "ckern_table.nullness",

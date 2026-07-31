@@ -91,6 +91,24 @@ def main() -> None:
         ("morx", "valid-morx.ttf"),
     ):
         save_sfnt(generated_aat_dir / filename, {tag: GX_TABLES[tag]})
+
+    # The public-contract matrix exercises both the selected table output and
+    # the validator's absent/malformed controls.  Keep those controls as
+    # deterministic SFNTs rather than pointing at ad-hoc files or silently
+    # reusing a different table family.  The truncated and invalid-header
+    # variants are intentionally small: every pinned validator rejects them
+    # before table-specific payload interpretation, which lets the parity
+    # route compare the exact public error and sentinel state in all lanes.
+    for tag in GX_TABLES:
+        save_sfnt(generated_aat_dir / f"no-{tag}.ttf", {})
+        save_sfnt(
+            generated_aat_dir / f"malformed-{tag}-truncated.ttf",
+            {tag: b"\x00"},
+        )
+        save_sfnt(
+            generated_aat_dir / f"malformed-{tag}-header.ttf",
+            {tag: b"\xff\xff\xff\xff\xff\xff\xff\xff"},
+        )
     save_sfnt(aat_dir / "opbd-valid.ttf", {"opbd": GX_TABLES["opbd"]})
     save_sfnt(aat_dir / "trak-valid.ttf", {"trak": GX_TABLES["trak"]})
     save_sfnt(aat_dir / "prop-valid.ttf", {"prop": GX_TABLES["prop"]})

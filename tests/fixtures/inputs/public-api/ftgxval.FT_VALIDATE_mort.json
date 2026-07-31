@@ -65,22 +65,16 @@
           "valid_mort_font": {
             "kind": "ref",
             "role": "font",
-            "id": "input/generated/fonts/aat-gx/valid-mort.ttf",
-            "status": "required_future_asset",
-            "requires": "AAT sfnt with valid mort chains and supported subtable types 0, 1, 2, 4, and 5"
+            "id": "input/generated/fonts/aat-gx/valid-mort.ttf"
           },
-          "malformed_mort_fonts": {
-            "kind": "ref",
-            "role": "font_set",
-            "id": "input/generated/fonts/aat-gx/malformed-mort/",
-            "status": "required_future_asset",
-            "requires": "mort chain length, feature flags, state table offsets, glyph IDs, insertion lists, and ligature action failures"
-          },
+          "malformed_mort_fonts": [
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-mort-truncated.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-mort-header.ttf"}
+          ],
           "missing_mort_font": {
             "kind": "ref",
             "role": "font",
-            "id": "input/generated/fonts/aat-gx/no-mort.ttf",
-            "status": "required_future_asset"
+            "id": "input/generated/fonts/aat-gx/no-mort.ttf"
           }
         },
         "params": {
@@ -105,7 +99,7 @@
         "kind:flag",
         "header:ftgxval",
         "area:gx-validation",
-        "coverage:future-runtime",
+        "coverage:runtime",
         "requires:fixture"
       ],
       "expectation": {
@@ -117,7 +111,7 @@
           "unrequested_slots": "nullness_by_slot"
         },
         "compare": {
-          "mode": "unsupported_until_runner_added",
+          "mode": "bytes",
           "paths": [
             "error",
             "tables[1].nullness",

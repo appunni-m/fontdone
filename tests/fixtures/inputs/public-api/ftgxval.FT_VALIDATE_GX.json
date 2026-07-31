@@ -65,24 +65,42 @@
           "all_tables_font": {
             "kind": "ref",
             "role": "font",
-            "id": "input/generated/fonts/aat-gx/all-validation-tables.ttf",
-            "status": "required_future_asset",
-            "requires": "sfnt with valid feat, mort, morx, bsln, just, kern, opbd, trak, prop, and lcar tables"
+            "id": "input/generated/fonts/aat-gx/all-validation-tables.ttf"
           },
-          "missing_table_fonts": {
-            "kind": "ref",
-            "role": "font_set",
-            "id": "input/generated/fonts/aat-gx/missing-each-validation-table/",
-            "status": "required_future_asset",
-            "requires": "paired sfnt fixtures with one GX/AAT table absent per case"
-          },
-          "malformed_table_fonts": {
-            "kind": "ref",
-            "role": "font_set",
-            "id": "input/generated/fonts/aat-gx/malformed-validation-tables/",
-            "status": "required_future_asset",
-            "requires": "truncated headers, invalid offsets, invalid glyph indices, overlapping ranges, and malformed state tables across all GX/AAT validators"
-          }
+          "missing_table_fonts": [
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/no-feat.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/no-mort.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/no-morx.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/no-bsln.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/no-just.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/no-kern.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/no-opbd.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/no-trak.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/no-prop.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/no-lcar.ttf"}
+          ],
+          "malformed_table_fonts": [
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-feat-truncated.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-feat-header.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-mort-truncated.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-mort-header.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-morx-truncated.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-morx-header.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-bsln-truncated.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-bsln-header.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-just-truncated.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-just-header.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-kern-truncated.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-kern-header.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-opbd-truncated.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-opbd-header.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-trak-truncated.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-trak-header.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-prop-truncated.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-prop-header.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-lcar-truncated.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-lcar-header.ttf"}
+          ]
         },
         "params": {
           "validation_flags": "FT_VALIDATE_GX",
@@ -111,7 +129,7 @@
         "kind:flag",
         "header:ftgxval",
         "area:gx-validation",
-        "coverage:future-runtime",
+        "coverage:runtime",
         "requires:fixture"
       ],
       "expectation": {
@@ -124,7 +142,7 @@
           "cleanup": "FT_TrueTypeGX_Free completion"
         },
         "compare": {
-          "mode": "unsupported_until_runner_added",
+          "mode": "bytes",
           "paths": [
             "error",
             "tables[].nullness",

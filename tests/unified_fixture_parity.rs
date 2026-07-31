@@ -2847,6 +2847,7 @@ impl BackendComparisonWorker {
                     | "ftgxval.truetype_gx_validate"
                     | "FT_TrueTypeGX_Validate"
                     | "ftgxval.classic_kern_validate"
+                    | "FT_ClassicKern_Validate"
                     | "ftgxval.truetype_gx_validate_then_free"
                     | "ftgxval.classic_kern_validate_then_free"
                     | "ftgxval.classic_kern_lifetime"
@@ -3252,7 +3253,9 @@ impl BackendComparisonWorker {
                 rust_open_type_free(case)
             }
             "ftgxval.truetype_gx_validate" | "FT_TrueTypeGX_Validate" => rust_gx_validation(case),
-            "ftgxval.classic_kern_validate" => rust_classic_kern_validation(case),
+            "ftgxval.classic_kern_validate" | "FT_ClassicKern_Validate" => {
+                rust_classic_kern_validation(case)
+            }
             "ftgxval.truetype_gx_validate_then_free"
             | "ftgxval.classic_kern_validate_then_free" => rust_gx_owned_free(case),
             "ftgxval.classic_kern_lifetime" => rust_gx_owned_free(&gx_classic_lifetime_case(case)?),
@@ -3657,7 +3660,9 @@ impl BackendComparisonWorker {
                 c_open_type_free(case)
             }
             "ftgxval.truetype_gx_validate" | "FT_TrueTypeGX_Validate" => c_gx_validation(case),
-            "ftgxval.classic_kern_validate" => c_classic_kern_validation(case),
+            "ftgxval.classic_kern_validate" | "FT_ClassicKern_Validate" => {
+                c_classic_kern_validation(case)
+            }
             "ftgxval.truetype_gx_validate_then_free"
             | "ftgxval.classic_kern_validate_then_free" => c_gx_owned_free(case),
             "ftgxval.classic_kern_lifetime" => c_gx_owned_free(&gx_classic_lifetime_case(case)?),
@@ -4063,7 +4068,9 @@ impl BackendComparisonWorker {
                 wasm_open_type_free(case)
             }
             "ftgxval.truetype_gx_validate" | "FT_TrueTypeGX_Validate" => wasm_gx_validation(case),
-            "ftgxval.classic_kern_validate" => wasm_classic_kern_validation(case),
+            "ftgxval.classic_kern_validate" | "FT_ClassicKern_Validate" => {
+                wasm_classic_kern_validation(case)
+            }
             "ftgxval.truetype_gx_validate_then_free"
             | "ftgxval.classic_kern_validate_then_free" => wasm_gx_owned_free(case),
             "ftgxval.classic_kern_lifetime" => wasm_gx_owned_free(&gx_classic_lifetime_case(case)?),
@@ -11980,6 +11987,34 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
             table_length: full_length,
         })
         .collect()),
+        "ftgxval.FT_VALIDATE_GX.validates_all_requested_tables" => {
+            let flags = validation_flags_param(params).unwrap_or(FT_VALIDATE_GX as FT_UInt);
+            let mut calls = vec![GxValidationCall::Font {
+                label: "all_tables".to_string(),
+                asset: "all_tables_font".to_string(),
+                asset_index: None,
+                flags,
+                table_length: full_length,
+            }];
+            for (label, asset) in [
+                ("missing_table", "missing_table_fonts"),
+                ("malformed_table", "malformed_table_fonts"),
+            ] {
+                let count = match case.inputs.assets.get(asset) {
+                    Some(Asset::List(items)) => items.len(),
+                    Some(_) => return Err(format!("{asset} must be an asset list")),
+                    None => return Err(format!("missing GX validation asset {asset}")),
+                };
+                calls.extend((0..count).map(|asset_index| GxValidationCall::Font {
+                    label: format!("{label}_{asset_index}"),
+                    asset: asset.to_string(),
+                    asset_index: Some(asset_index),
+                    flags,
+                    table_length: full_length,
+                }));
+            }
+            Ok(calls)
+        }
         "ftgxval.FT_TrueTypeGX_Validate.rejects_invalid_arguments" => {
             let flags = validation_flags_param(params)?;
             Ok(vec![
@@ -12051,6 +12086,82 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
                 })
                 .collect())
         }
+        case_id @ ("ftgxval.FT_VALIDATE_bsln.validates_bsln_table_slot"
+        | "ftgxval.FT_VALIDATE_feat.validates_feat_table_slot"
+        | "ftgxval.FT_VALIDATE_just.validates_just_table_slot"
+        | "ftgxval.FT_VALIDATE_kern.validates_gx_kern_table_slot"
+        | "ftgxval.FT_VALIDATE_lcar.validates_lcar_table_slot"
+        | "ftgxval.FT_VALIDATE_mort.validates_mort_table_slot"
+        | "ftgxval.FT_VALIDATE_morx.validates_morx_table_slot") => {
+            let (valid_asset, malformed_asset, missing_asset) = match case_id {
+                "ftgxval.FT_VALIDATE_bsln.validates_bsln_table_slot" => (
+                    "valid_bsln_font",
+                    "malformed_bsln_fonts",
+                    "missing_bsln_font",
+                ),
+                "ftgxval.FT_VALIDATE_feat.validates_feat_table_slot" => (
+                    "valid_feat_font",
+                    "malformed_feat_fonts",
+                    "missing_feat_font",
+                ),
+                "ftgxval.FT_VALIDATE_just.validates_just_table_slot" => (
+                    "valid_just_font",
+                    "malformed_just_fonts",
+                    "missing_just_font",
+                ),
+                "ftgxval.FT_VALIDATE_kern.validates_gx_kern_table_slot" => (
+                    "valid_kern_font",
+                    "malformed_kern_fonts",
+                    "missing_kern_font",
+                ),
+                "ftgxval.FT_VALIDATE_lcar.validates_lcar_table_slot" => (
+                    "valid_lcar_font",
+                    "malformed_lcar_fonts",
+                    "missing_lcar_font",
+                ),
+                "ftgxval.FT_VALIDATE_mort.validates_mort_table_slot" => (
+                    "valid_mort_font",
+                    "malformed_mort_fonts",
+                    "missing_mort_font",
+                ),
+                "ftgxval.FT_VALIDATE_morx.validates_morx_table_slot" => (
+                    "valid_morx_font",
+                    "malformed_morx_fonts",
+                    "missing_morx_font",
+                ),
+                _ => unreachable!(),
+            };
+            let flags = validation_flags_param(params)?;
+            let mut calls = vec![GxValidationCall::Font {
+                label: "valid".to_string(),
+                asset: valid_asset.to_string(),
+                asset_index: None,
+                flags,
+                table_length: full_length,
+            }];
+            let malformed_count = match case.inputs.assets.get(malformed_asset) {
+                Some(Asset::List(items)) => items.len(),
+                Some(_) => return Err(format!("{malformed_asset} must be an asset list")),
+                None => return Err(format!("missing GX validation asset {malformed_asset}")),
+            };
+            calls.extend(
+                (0..malformed_count).map(|asset_index| GxValidationCall::Font {
+                    label: format!("malformed_{asset_index}"),
+                    asset: malformed_asset.to_string(),
+                    asset_index: Some(asset_index),
+                    flags,
+                    table_length: full_length,
+                }),
+            );
+            calls.push(GxValidationCall::Font {
+                label: "missing".to_string(),
+                asset: missing_asset.to_string(),
+                asset_index: None,
+                flags,
+                table_length: full_length,
+            });
+            Ok(calls)
+        }
         "ftgxval.FT_TrueTypeGX_Validate.reports_unimplemented_or_invalid_table" => {
             let flags = validation_flags_param(params)?;
             Ok([
@@ -12110,6 +12221,27 @@ fn classic_kern_calls(case: &InputCase) -> Result<Vec<ClassicKernCall>, String> 
                 asset_index: None,
                 flags: validation_flags_param(params)?,
             }])
+        }
+        "ftgxval.FT_VALIDATE_MS.validates_ms_classic_kern" => {
+            let flags = validation_flags_param(params)?;
+            let mut calls = vec![ClassicKernCall::Font {
+                label: "microsoft".to_string(),
+                asset: "ms_kern_font".to_string(),
+                asset_index: None,
+                flags,
+            }];
+            let count = match case.inputs.assets.get("malformed_ms_kern_fonts") {
+                Some(Asset::List(items)) => items.len(),
+                Some(_) => return Err("malformed_ms_kern_fonts must be an asset list".to_string()),
+                None => return Err("missing malformed_ms_kern_fonts asset".to_string()),
+            };
+            calls.extend((0..count).map(|asset_index| ClassicKernCall::Font {
+                label: format!("malformed_{asset_index}"),
+                asset: "malformed_ms_kern_fonts".to_string(),
+                asset_index: Some(asset_index),
+                flags,
+            }));
+            Ok(calls)
         }
         "ftgxval.FT_ClassicKern_Validate.validates_apple_classic_kern" => {
             Ok(vec![ClassicKernCall::Font {
@@ -40954,7 +41086,7 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             }
             Ok(args)
         }
-        "ftgxval.classic_kern_validate" => {
+        "ftgxval.classic_kern_validate" | "FT_ClassicKern_Validate" => {
             let calls = classic_kern_calls(case)?;
             let mut args = vec![
                 "--gxval-classic-matrix".to_string(),
@@ -43790,6 +43922,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
                 | "ftgxval.truetype_gx_validate"
                 | "FT_TrueTypeGX_Validate"
                 | "ftgxval.classic_kern_validate"
+                | "FT_ClassicKern_Validate"
                 | "ftgxval.truetype_gx_validate_then_free"
                 | "ftgxval.classic_kern_validate_then_free"
                 | "ftgxval.classic_kern_lifetime"
@@ -44841,7 +44974,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             rust_open_type_free(case)
         }
         "ftgxval.truetype_gx_validate" | "FT_TrueTypeGX_Validate" => rust_gx_validation(case),
-        "ftgxval.classic_kern_validate" => rust_classic_kern_validation(case),
+        "ftgxval.classic_kern_validate" | "FT_ClassicKern_Validate" => {
+            rust_classic_kern_validation(case)
+        }
         "ftgxval.truetype_gx_validate_then_free" | "ftgxval.classic_kern_validate_then_free" => {
             rust_gx_owned_free(case)
         }
@@ -45040,7 +45175,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftotval.open_type_validate" => c_open_type_validate(case),
         "ftotval.open_type_free" | "ftotval.open_type_validate_then_free" => c_open_type_free(case),
         "ftgxval.truetype_gx_validate" | "FT_TrueTypeGX_Validate" => c_gx_validation(case),
-        "ftgxval.classic_kern_validate" => c_classic_kern_validation(case),
+        "ftgxval.classic_kern_validate" | "FT_ClassicKern_Validate" => {
+            c_classic_kern_validation(case)
+        }
         "ftgxval.truetype_gx_validate_then_free" | "ftgxval.classic_kern_validate_then_free" => {
             c_gx_owned_free(case)
         }
@@ -46327,7 +46464,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             wasm_open_type_free(case)
         }
         "ftgxval.truetype_gx_validate" | "FT_TrueTypeGX_Validate" => wasm_gx_validation(case),
-        "ftgxval.classic_kern_validate" => wasm_classic_kern_validation(case),
+        "ftgxval.classic_kern_validate" | "FT_ClassicKern_Validate" => {
+            wasm_classic_kern_validation(case)
+        }
         "ftgxval.truetype_gx_validate_then_free" | "ftgxval.classic_kern_validate_then_free" => {
             wasm_gx_owned_free(case)
         }

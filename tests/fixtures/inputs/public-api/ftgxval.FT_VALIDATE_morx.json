@@ -65,22 +65,16 @@
           "valid_morx_font": {
             "kind": "ref",
             "role": "font",
-            "id": "input/generated/fonts/aat-gx/valid-morx.ttf",
-            "status": "required_future_asset",
-            "requires": "AAT sfnt with valid morx chains and supported subtable types 0, 1, 2, 4, and 5"
+            "id": "input/generated/fonts/aat-gx/valid-morx.ttf"
           },
-          "malformed_morx_fonts": {
-            "kind": "ref",
-            "role": "font_set",
-            "id": "input/generated/fonts/aat-gx/malformed-morx/",
-            "status": "required_future_asset",
-            "requires": "morx 32-bit chain length, feature flags, xstate offsets, glyph IDs, insertion lists, and ligature action failures"
-          },
+          "malformed_morx_fonts": [
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-morx-truncated.ttf"},
+            {"kind": "ref", "role": "font", "id": "input/generated/fonts/aat-gx/malformed-morx-header.ttf"}
+          ],
           "missing_morx_font": {
             "kind": "ref",
             "role": "font",
-            "id": "input/generated/fonts/aat-gx/no-morx.ttf",
-            "status": "required_future_asset"
+            "id": "input/generated/fonts/aat-gx/no-morx.ttf"
           }
         },
         "params": {
@@ -105,7 +99,7 @@
         "kind:flag",
         "header:ftgxval",
         "area:gx-validation",
-        "coverage:future-runtime",
+        "coverage:runtime",
         "requires:fixture"
       ],
       "expectation": {
@@ -117,7 +111,7 @@
           "unrequested_slots": "nullness_by_slot"
         },
         "compare": {
-          "mode": "unsupported_until_runner_added",
+          "mode": "bytes",
           "paths": [
             "error",
             "tables[2].nullness",

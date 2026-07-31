@@ -504,6 +504,7 @@ REAL_PARITY_OPERATIONS = {
     "ftglyph.type_runtime",
     "ftglyph.svg_feature_probe",
     "FT_TrueTypeGX_Validate",
+    "FT_ClassicKern_Validate",
     "ftbitmap.bitmap_blend",
     "ftbitmap.bitmap_convert",
     "ftbitmap.bitmap_copy",
@@ -5059,10 +5060,12 @@ def focused_success_real_parity_reason(row: ConcreteInput) -> str | None:
     gxvalid_success_cases = {
         "ftgxval.FT_ClassicKern_Free.frees_classic_kern_validation_buffer",
         "ftgxval.FT_ClassicKern_Validate.validates_ms_classic_kern",
+        "ftgxval.FT_VALIDATE_MS.validates_ms_classic_kern",
         "ftgxval.FT_ClassicKern_Validate.validates_apple_classic_kern",
         "ftgxval.FT_TrueTypeGX_Free.frees_gx_validation_buffer",
         "ftgxval.FT_TrueTypeGX_Validate.validates_selected_gx_tables",
         "ftgxval.FT_TrueTypeGX_Validate.validates_all_gx_tables",
+        "ftgxval.FT_VALIDATE_GX.validates_all_requested_tables",
         "ftgxval.FT_TrueTypeGX_Validate.respects_table_length",
         "ftgxval.FT_VALIDATE_APPLE.runtime_selects_apple_classic_kern",
         "ftgxval.FT_VALIDATE_CKERN.runtime_accepts_ms_or_apple",
@@ -5073,9 +5076,19 @@ def focused_success_real_parity_reason(row: ConcreteInput) -> str | None:
         "ftgxval.FT_VALIDATE_prop_INDEX.indexes_gx_validate_output_slot",
         "ftgxval.FT_VALIDATE_trak.gx_validate_selects_trak_table",
         "ftgxval.FT_VALIDATE_trak_INDEX.indexes_gx_validate_output_slot",
+        "ftgxval.FT_VALIDATE_bsln.validates_bsln_table_slot",
+        "ftgxval.FT_VALIDATE_feat.validates_feat_table_slot",
+        "ftgxval.FT_VALIDATE_just.validates_just_table_slot",
+        "ftgxval.FT_VALIDATE_kern.validates_gx_kern_table_slot",
+        "ftgxval.FT_VALIDATE_lcar.validates_lcar_table_slot",
+        "ftgxval.FT_VALIDATE_mort.validates_mort_table_slot",
+        "ftgxval.FT_VALIDATE_morx.validates_morx_table_slot",
     }
     if (
-        (row.operation.startswith("ftgxval.") or row.operation == "FT_TrueTypeGX_Validate")
+        (
+            row.operation.startswith("ftgxval.")
+            or row.operation in {"FT_TrueTypeGX_Validate", "FT_ClassicKern_Validate"}
+        )
         and row.case_id in gxvalid_success_cases
         and unresolved_assets_reason(row) is None
     ):
@@ -8323,7 +8336,7 @@ def unresolved_runtime_asset_pending_reason(row: ConcreteInput) -> str | None:
         "ftgxval.FT_VALIDATE_mort.validates_mort_table_slot",
         "ftgxval.FT_VALIDATE_morx.validates_morx_table_slot",
     }
-    if row.case_id in runtime_skipped_needs_input_cases:
+    if row.case_id in runtime_skipped_needs_input_cases and unresolved_assets_reason(row):
         return (
             "declared semantic row has no maintained runtime-resolved input; "
             "exact runtime parity requires the declared same input to execute "
