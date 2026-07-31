@@ -59,6 +59,7 @@ jobs:
           name: parity-smoke-diagnostics
           path: |
             target/api-abi-audit/
+            target/external-consumers/c/
             tests/fixtures/outputs/
           if-no-files-found: ignore
           retention-days: 7

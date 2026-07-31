@@ -275,7 +275,7 @@ bounded Ubuntu fast gate plus a separate MSRV check:
 
 | Job | Evidence |
 |---|---|
-| Fast gate | The exact `make ci-fast PYTHON=target/font-generation-venv/bin/python` command used by CI: generated contracts, reproducible fixtures, docs, versions, format, Clippy, strict rustdoc, examples, fast workspace tests, external Rust consumer, FFI purity, eight-case parity smoke, and benchmark-harness self-test |
+| Fast gate | The exact `make ci-fast PYTHON=target/font-generation-venv/bin/python` command used by CI: generated contracts, reproducible fixtures, docs, versions, format, Clippy, strict rustdoc, examples, fast workspace tests, external Rust and C consumers, FFI purity, eight-case parity smoke, and benchmark-harness self-test |
 | MSRV | the same fast workspace contract on Rust 1.87.0 |
 
 The stable `Commit gate` succeeds only when both jobs succeed. It is the single
