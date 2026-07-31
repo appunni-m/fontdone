@@ -2266,6 +2266,10 @@ fn type1_font_data(
     metadata: &Type1Metadata,
     glyph_count: u16,
 ) -> Arc<FontData> {
+    // Pinned FreeType's Type 1 face loader leaves the public
+    // `max_advance_width` field at zero for a PFB face.  The synthetic hmtx
+    // advance remains populated so glyph loading still uses the charstring
+    // width; only the public hhea summary is zero.
     non_sfnt_outline_font_data(
         data,
         size_pt,
@@ -2273,6 +2277,7 @@ fn type1_font_data(
         glyph_count,
         1000,
         metadata.bbox.x_max.max(0),
+        0,
     )
 }
 
@@ -2283,6 +2288,7 @@ fn non_sfnt_outline_font_data(
     glyph_count: u16,
     units_per_em: u16,
     max_advance: i32,
+    public_max_advance: i32,
 ) -> Arc<FontData> {
     let mac_style = u16::from(metadata.italic_angle != 0) << 1
         | if matches!(metadata.style_name.as_str(), "Bold" | "Black") {
@@ -2325,7 +2331,7 @@ fn non_sfnt_outline_font_data(
             line_gap: i16_from_i32(
                 nominal_height.saturating_sub(metadata.bbox.y_max - metadata.bbox.y_min),
             ),
-            advance_width_max: u16::try_from(max_advance.max(0)).unwrap_or(u16::MAX),
+            advance_width_max: u16::try_from(public_max_advance.max(0)).unwrap_or(u16::MAX),
             num_hmetrics: 1,
         },
         hvar: None,
@@ -3258,6 +3264,7 @@ impl Font {
             glyph_count,
             pfr.outline_resolution,
             pfr.max_advance(),
+            pfr.max_advance(),
         );
         let face_globals = crate::autohint::globals::FaceGlobals::new(font_data.clone(), false);
         let size_metrics = SizeMetrics::from_char_size(
@@ -3767,6 +3774,10 @@ impl Font {
             let mm_coords = coords.iter().map(|coord| coord >> 16).collect::<Vec<_>>();
             return self.set_type1_mm_design_coordinates(&mm_coords, !coords.is_empty());
         }
+        let size_was_undefined = self.size_metrics.x_ppem == 0
+            && self.size_metrics.y_ppem == 0
+            && self.size_metrics.x_scale == 0
+            && self.size_metrics.y_scale == 0;
         let base_face_index = self.data.face_index & 0xFFFF;
         // C parity: src/base/ftmm.c:281-360 clears FT_FACE_FLAG_VARIATION after
         // a successful zero-count FT_Set_Var_Design_Coordinates reset while the
@@ -3788,6 +3799,9 @@ impl Font {
             .len()
             .checked_sub(1)
             .map_or(0, |last| self.selected_charmap.min(last));
+        if size_was_undefined {
+            next.reset_size_to_undefined();
+        }
         *self = next;
         Ok(())
     }
@@ -4136,6 +4150,31 @@ impl Font {
     pub fn face_info(&self) -> FaceInfo {
         let (ascender, descender, height) = face_metric_values(&self.data);
         let (family_name, style_name) = self.getname_with_options();
+        let (underline_position, underline_thickness) = self
+            .type1_font_info
+            .as_ref()
+            .filter(|_| {
+                matches!(
+                    self.face_kind,
+                    FaceKind::Type1 { .. } | FaceKind::CidType1 { .. } | FaceKind::Type42 { .. }
+                )
+            })
+            .map_or_else(
+                || {
+                    (
+                        self.data.post.as_ref().map_or(0, |post| {
+                            // FreeType converts TrueType `post.underlinePosition`
+                            // from the top edge to the stroke center.
+                            post.underline_position - post.underline_thickness / 2
+                        }),
+                        self.data
+                            .post
+                            .as_ref()
+                            .map_or(0, |post| post.underline_thickness),
+                    )
+                },
+                |info| (info.underline_position, info.underline_thickness as i16),
+            );
         FaceInfo {
             num_faces: self.num_faces(),
             face_index: self.face_index(),
@@ -4164,21 +4203,8 @@ impl Font {
                 // falls back to the face height for scalable faces without
                 // vertical info (`src/sfnt/sfobjs.c`, max_advance_height).
                 .map_or(height, |vhea| i32::from(vhea.advance_height_max)),
-            underline_position: self
-                .data
-                .post
-                .as_ref()
-                // FreeType converts TrueType `post.underlinePosition` from
-                // top edge to stroke center by subtracting half the underline
-                // thickness (`src/sfnt/sfobjs.c`, underline_position).
-                .map_or(0, |post| {
-                    post.underline_position - post.underline_thickness / 2
-                }),
-            underline_thickness: self
-                .data
-                .post
-                .as_ref()
-                .map_or(0, |post| post.underline_thickness),
+            underline_position,
+            underline_thickness,
             face_flags: self.face_flags(),
             style_flags: self.style_flags(),
             fs_type_flags: self.get_fstype_flags(),
@@ -4537,7 +4563,26 @@ impl Font {
         const FT_STYLE_FLAG_ITALIC: u32 = 1 << 0;
         const FT_STYLE_FLAG_BOLD: u32 = 1 << 1;
 
-        let mut flags = 0;
+        // `sfnt_init_face` stores the number of named variation instances in
+        // the high half of `FT_FaceRec.style_flags`; it synthesizes one
+        // default instance when the fvar records do not contain the default
+        // coordinate tuple (`src/sfnt/sfobjs.c`).
+        let mut flags = self.data.fvar.as_ref().map_or(0, |fvar| {
+            let has_default = fvar.instances.iter().any(|instance| {
+                instance.coords.len() == fvar.axes.len()
+                    && instance
+                        .coords
+                        .iter()
+                        .zip(&fvar.axes)
+                        .all(|(coord, axis)| *coord == axis.default_value)
+            });
+            let instance_count = fvar
+                .instances
+                .len()
+                .saturating_add(usize::from(!has_default))
+                .min(usize::from(u16::MAX));
+            u32::try_from(instance_count).unwrap_or(u32::from(u16::MAX)) << 16
+        });
         if self.data.head.mac_style & 2 != 0 {
             flags |= FT_STYLE_FLAG_ITALIC;
         }
@@ -5065,6 +5110,9 @@ impl Font {
         ignore_typographic_family: bool,
         ignore_typographic_subfamily: bool,
     ) {
+        if !self.is_sfnt() {
+            return;
+        }
         // `sfnt_init_face` applies these `FT_Open_Face` parameters while
         // choosing `face->family_name` and `face->style_name`
         // (freetype/src/sfnt/sfobjs.c:829-843).  The parsed SFNT name table

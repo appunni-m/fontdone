@@ -4390,14 +4390,19 @@ def freetype_core_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     if row.case_id == "freetype.FT_FaceRec.populated_public_fields_match_c":
         if exact_error_public_route(row.operation, row.case_id, row.expect_error):
             return None
+        if (
+            row.operation == "freetype.inspect_face_rec"
+            and row.params.get("runtime_route")
+            == "actual_face_rec_populated_stages"
+            and unresolved_assets_reason(row) is None
+        ):
+            return None
         return (
-            "FT_FaceRec populated-field parity requires splitting the current "
-            "broad snapshot into concrete C-openable operation stages: initial "
-            "face fields, size mutation, glyph load, charmap selection, "
-            "auxiliary attachment, and variation mutation. The row still names "
-            "missing bitmap and Type1 auxiliary assets, so treating a partial "
-            "inspect_face_rec route as full public-record parity would be a "
-            "green placeholder"
+            "FT_FaceRec populated-field parity requires a maintained exact "
+            "stage matrix for initial fields, size mutation, glyph load, "
+            "charmap selection, bitmap-strike records, Type1/AFM attachment, "
+            "and variable-coordinate mutation across pinned C, Rust FFI, "
+            "C ABI, and WASM"
         )
     if row.case_id == "freetype.FT_Get_Track_Kerning.type1_afm_track_kerning_success":
         if exact_error_public_route(row.operation, row.case_id, row.expect_error):

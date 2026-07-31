@@ -5787,6 +5787,10 @@ impl LibraryState {
 struct FaceState {
     inner: rust_ffi::FT_Face,
     library: FT_Library,
+    // `FT_FaceRec.driver` is a live opaque driver handle in pinned FreeType.
+    // The façade has no native driver object, so retain a stable sentinel
+    // allocation whose address provides the same non-null public identity.
+    driver_sentinel: Box<u8>,
     refcount: usize,
     size_records: Vec<FT_Size>,
     charmaps: Box<[FT_CharMapRec]>,
@@ -5873,6 +5877,7 @@ impl FaceState {
         Self {
             inner,
             library,
+            driver_sentinel: Box::new(0),
             refcount: 1,
             size_records: Vec::new(),
             charmaps: Box::new([]),
@@ -9653,6 +9658,15 @@ fn ft_store_opened_face(
                 .ok()
                 .and_then(|index| state.charmap_by_index(index))
                 .unwrap_or(ptr::null_mut());
+            // A memory face still exposes a live `FT_StreamRec` through the
+            // public record.  External callback-backed streams replace this
+            // pointer above; ordinary memory faces retain the parser-owned
+            // stream record for the face lifetime.
+            if !options.external_stream {
+                state.stream = state.inner.memory_stream();
+            }
+            face.driver = state.driver_sentinel.as_mut() as *mut u8 as *mut c_void;
+            face.stream = state.stream;
             face.internal =
                 Box::into_raw(Box::new(FT_Face_InternalRecCompat::new(state))).cast::<c_void>();
             face.glyph = Box::into_raw(Box::new(rust_slot_to_abi(

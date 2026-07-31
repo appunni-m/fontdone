@@ -32232,6 +32232,171 @@ static void print_bitmap_sizes(FT_Face face) {
     printf("]");
 }
 
+static void print_face_rec_populated_snapshot(FT_Face face) {
+    printf("{\"num_faces\":%ld", face->num_faces);
+    printf(",\"face_index\":%ld", face->face_index);
+    printf(",\"face_flags\":%ld", face->face_flags);
+    printf(",\"style_flags\":%ld", face->style_flags);
+    printf(",\"num_glyphs\":%ld", face->num_glyphs);
+    printf(",\"family_name\":");
+    print_nullable_c_string_result(face->family_name);
+    printf(",\"style_name\":");
+    print_nullable_c_string_result(face->style_name);
+    printf(",\"num_fixed_sizes\":%d,\"available_sizes\":",
+           face->num_fixed_sizes);
+    print_bitmap_sizes(face);
+    printf(",\"num_charmaps\":%d,\"charmaps\":", face->num_charmaps);
+    print_charmap_inventory_records(face);
+    printf(",\"bbox\":{\"xMin\":%ld,\"yMin\":%ld,\"xMax\":%ld,\"yMax\":%ld}",
+           face->bbox.xMin,
+           face->bbox.yMin,
+           face->bbox.xMax,
+           face->bbox.yMax);
+    printf(",\"units_per_EM\":%u", face->units_per_EM);
+    printf(",\"ascender\":%d", face->ascender);
+    printf(",\"descender\":%d", face->descender);
+    printf(",\"height\":%d", face->height);
+    printf(",\"max_advance_width\":%d", face->max_advance_width);
+    printf(",\"max_advance_height\":%d", face->max_advance_height);
+    printf(",\"underline_position\":%d", face->underline_position);
+    printf(",\"underline_thickness\":%d", face->underline_thickness);
+    printf(",\"glyph_identity\":\"same_face\"");
+    printf(",\"size_identity\":\"%s\"",
+           face->size ? "same_face" : "none");
+    printf(",\"charmap_identity\":\"%s\"",
+           face->charmap ? "same_face" : "none");
+    printf(",\"active_charmap_index\":");
+    FT_Int active_index = active_charmap_index(face);
+    if (active_index >= 0) {
+        printf("%d", active_index);
+    } else {
+        printf("null");
+    }
+    printf(",\"private_handle_nullness\":{\"driver\":\"%s\",\"memory\":\"%s\",\"stream\":\"%s\",\"internal\":\"%s\",\"extensions\":\"%s\",\"autohint_data\":\"%s\",\"autohint_finalizer\":\"%s\"}}",
+           face->driver ? "non-null" : "null",
+           face->memory ? "non-null" : "null",
+           face->stream ? "non-null" : "null",
+           face->internal ? "non-null" : "null",
+           face->extensions ? "non-null" : "null",
+           face->autohint.data ? "non-null" : "null",
+           face->autohint.finalizer ? "non-null" : "null");
+}
+
+static void print_face_rec_populated_glyph_metrics(FT_Glyph_Metrics metrics) {
+    printf("{\"width\":%ld,\"height\":%ld,\"horiBearingX\":%ld,\"horiBearingY\":%ld,\"horiAdvance\":%ld,\"vertBearingX\":%ld,\"vertBearingY\":%ld,\"vertAdvance\":%ld}",
+           metrics.width,
+           metrics.height,
+           metrics.horiBearingX,
+           metrics.horiBearingY,
+           metrics.horiAdvance,
+           metrics.vertBearingX,
+           metrics.vertBearingY,
+           metrics.vertAdvance);
+}
+
+static void print_face_rec_populated_stage(const char* name,
+                                           FT_Error operation_status,
+                                           FT_Face face,
+                                           int has_attachment_status,
+                                           FT_Error attachment_status,
+                                           const FT_Fixed* coordinates,
+                                           FT_UInt coordinate_count,
+                                           int has_glyph_metrics) {
+    printf("{\"name\":\"");
+    print_json_string_content(name);
+    printf("\",\"operation_status\":%d,\"attachment_status\":",
+           operation_status);
+    if (has_attachment_status) {
+        printf("%d", attachment_status);
+    } else {
+        printf("null");
+    }
+    printf(",\"variation_coordinates\":");
+    if (coordinates) {
+        printf("[");
+        for (FT_UInt index = 0; index < coordinate_count; index++) {
+            if (index) {
+                printf(",");
+            }
+            printf("%ld", (long)coordinates[index]);
+        }
+        printf("]");
+    } else {
+        printf("null");
+    }
+    printf(",\"face\":");
+    print_face_rec_populated_snapshot(face);
+    printf(",\"size_metrics\":");
+    if (face->size) {
+        printf("{");
+        print_size_metrics_object(face->size->metrics);
+        printf("}");
+    } else {
+        printf("null");
+    }
+    printf(",\"glyph_metrics\":");
+    if (has_glyph_metrics && face->glyph) {
+        print_face_rec_populated_glyph_metrics(face->glyph->metrics);
+    } else {
+        printf("null");
+    }
+    printf("}");
+}
+
+static int parse_face_rec_populated_coordinates(const char* value,
+                                                FT_Fixed** coordinates,
+                                                FT_UInt* coordinate_count) {
+    *coordinates = NULL;
+    *coordinate_count = 0;
+    size_t value_length = strlen(value);
+    char* copy = (char*)malloc(value_length + 1);
+    if (!copy) {
+        return 2;
+    }
+    memcpy(copy, value, value_length + 1);
+    FT_UInt count = 0;
+    char* token = strtok(copy, ",");
+    while (token) {
+        count++;
+        token = strtok(NULL, ",");
+    }
+    free(copy);
+    if (!count) {
+        return 2;
+    }
+    FT_Fixed* parsed = (FT_Fixed*)malloc(sizeof(FT_Fixed) * count);
+    if (!parsed) {
+        return 2;
+    }
+    copy = (char*)malloc(value_length + 1);
+    if (!copy) {
+        free(parsed);
+        return 2;
+    }
+    memcpy(copy, value, value_length + 1);
+    token = strtok(copy, ",");
+    FT_UInt index = 0;
+    while (token && index < count) {
+        char* end = NULL;
+        long parsed_value = strtol(token, &end, 10);
+        if (end == token || *end != '\0') {
+            free(copy);
+            free(parsed);
+            return 2;
+        }
+        parsed[index++] = (FT_Fixed)parsed_value;
+        token = strtok(NULL, ",");
+    }
+    free(copy);
+    if (index != count) {
+        free(parsed);
+        return 2;
+    }
+    *coordinates = parsed;
+    *coordinate_count = count;
+    return 0;
+}
+
 static int load_memory_face_arg(
     FT_Library library,
     const char* source_kind,
@@ -32423,6 +32588,154 @@ static int emit_face_rec_post_size_snapshot(int argc, char** argv) {
     FT_Done_Face(face);
     FT_Done_FreeType(library);
     free(data);
+    return 0;
+}
+
+static int emit_face_rec_populated_snapshot(int argc, char** argv) {
+    if (argc != 15) {
+        fprintf(stderr,
+                "--inspect-face-rec-populated requires five source pairs, FACE_INDEX, GLYPH_INDEX, and COORDINATES\n");
+        return 2;
+    }
+
+    OracleFace main_face;
+    OracleFace bitmap_face;
+    OracleFace variable_face;
+    OracleFace type1_face;
+    int opened = open_oracle_face(argv[2], argv[3], atol(argv[12]), &main_face);
+    if (opened != 0) {
+        return opened;
+    }
+    opened = open_oracle_face(argv[4], argv[5], 0, &bitmap_face);
+    if (opened != 0) {
+        close_oracle_face(&main_face);
+        return opened;
+    }
+    opened = open_oracle_face(argv[6], argv[7], 0, &variable_face);
+    if (opened != 0) {
+        close_oracle_face(&bitmap_face);
+        close_oracle_face(&main_face);
+        return opened;
+    }
+    opened = open_oracle_face(argv[8], argv[9], 0, &type1_face);
+    if (opened != 0) {
+        close_oracle_face(&variable_face);
+        close_oracle_face(&bitmap_face);
+        close_oracle_face(&main_face);
+        return opened;
+    }
+
+    unsigned char* attachment = NULL;
+    long attachment_len = 0;
+    if (load_oracle_source_bytes(argv[10], argv[11], &attachment, &attachment_len) != 0) {
+        close_oracle_face(&type1_face);
+        close_oracle_face(&variable_face);
+        close_oracle_face(&bitmap_face);
+        close_oracle_face(&main_face);
+        return 2;
+    }
+
+    FT_Fixed* coordinates = NULL;
+    FT_UInt coordinate_count = 0;
+    if (parse_face_rec_populated_coordinates(argv[14], &coordinates, &coordinate_count) != 0) {
+        free(attachment);
+        close_oracle_face(&type1_face);
+        close_oracle_face(&variable_face);
+        close_oracle_face(&bitmap_face);
+        close_oracle_face(&main_face);
+        return 2;
+    }
+
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"stages\":[");
+    print_face_rec_populated_stage("main_initial",
+                                   FT_Err_Ok,
+                                   main_face.face,
+                                   0,
+                                   FT_Err_Ok,
+                                   NULL,
+                                   0,
+                                   0);
+
+    FT_Error size_status = FT_Set_Char_Size(main_face.face, 0, 1536, 72, 72);
+    printf(",");
+    print_face_rec_populated_stage("main_after_char_size",
+                                   size_status,
+                                   main_face.face,
+                                   0,
+                                   FT_Err_Ok,
+                                   NULL,
+                                   0,
+                                   0);
+
+    FT_Error load_status = FT_Load_Glyph(main_face.face, (FT_UInt)strtoul(argv[13], NULL, 10), FT_LOAD_DEFAULT);
+    printf(",");
+    print_face_rec_populated_stage("main_after_load_glyph",
+                                   load_status,
+                                   main_face.face,
+                                   0,
+                                   FT_Err_Ok,
+                                   NULL,
+                                   0,
+                                   load_status == FT_Err_Ok);
+
+    FT_Error charmap_status = FT_Select_Charmap(main_face.face, FT_ENCODING_UNICODE);
+    printf(",");
+    print_face_rec_populated_stage("main_after_select_charmap",
+                                   charmap_status,
+                                   main_face.face,
+                                   0,
+                                   FT_Err_Ok,
+                                   NULL,
+                                   0,
+                                   0);
+
+    printf(",");
+    print_face_rec_populated_stage("bitmap_face_initial",
+                                   FT_Err_Ok,
+                                   bitmap_face.face,
+                                   0,
+                                   FT_Err_Ok,
+                                   NULL,
+                                   0,
+                                   0);
+
+    FT_Open_Args open_args;
+    memset(&open_args, 0, sizeof(open_args));
+    open_args.flags = FT_OPEN_MEMORY;
+    open_args.memory_base = attachment;
+    open_args.memory_size = attachment_len;
+    FT_Error attach_status = FT_Attach_Stream(type1_face.face, &open_args);
+    printf(",");
+    print_face_rec_populated_stage("type1_after_attach_stream",
+                                   attach_status,
+                                   type1_face.face,
+                                   1,
+                                   attach_status,
+                                   NULL,
+                                   0,
+                                   0);
+
+    FT_Error variation_status = FT_Set_Var_Design_Coordinates(
+        variable_face.face, coordinate_count, coordinates);
+    printf(",");
+    print_face_rec_populated_stage("variable_after_design_coordinates",
+                                   variation_status,
+                                   variable_face.face,
+                                   0,
+                                   FT_Err_Ok,
+                                   coordinates,
+                                   coordinate_count,
+                                   0);
+    printf("]}}\n");
+
+    free(coordinates);
+    free(attachment);
+    close_oracle_face(&type1_face);
+    close_oracle_face(&variable_face);
+    close_oracle_face(&bitmap_face);
+    close_oracle_face(&main_face);
     return 0;
 }
 
@@ -36192,6 +36505,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 9 && streq(argv[1], "--inspect-face-rec-post-size")) {
         return emit_face_rec_post_size_snapshot(argc, argv);
+    }
+    if (argc == 15 && streq(argv[1], "--inspect-face-rec-populated")) {
+        return emit_face_rec_populated_snapshot(argc, argv);
     }
     if (argc == 9 && streq(argv[1], "--get-sfnt-vhea-mvar-sequence")) {
         return emit_face_or_slot(argc, argv);

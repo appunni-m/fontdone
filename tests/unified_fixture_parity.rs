@@ -2994,6 +2994,9 @@ impl BackendComparisonWorker {
             "freetype.inspect_face_rec" if face_rec_post_size_snapshot_case(case) => {
                 rust_inspect_face_rec_post_size_snapshot(case)
             }
+            "freetype.inspect_face_rec" if face_rec_populated_snapshot_case(case) => {
+                rust_inspect_face_rec_populated_snapshot(case)
+            }
             "freetype.inspect_available_sizes" => rust_inspect_available_sizes(case),
             "size_metrics" => {
                 let face = self.rust_face(case)?;
@@ -3413,6 +3416,9 @@ impl BackendComparisonWorker {
             "freetype.inspect_face_rec" if face_rec_post_size_snapshot_case(case) => {
                 c_inspect_face_rec_post_size_snapshot(case)
             }
+            "freetype.inspect_face_rec" if face_rec_populated_snapshot_case(case) => {
+                c_inspect_face_rec_populated_snapshot(case)
+            }
             "freetype.inspect_available_sizes" => c_inspect_available_sizes(case),
             "ftlist.list_iterate"
                 if case.case_id == "ftlist.FT_List_Iterate.iterates_all_nodes_success" =>
@@ -3827,6 +3833,9 @@ impl BackendComparisonWorker {
             }
             "freetype.inspect_face_rec" if face_rec_post_size_snapshot_case(case) => {
                 wasm_inspect_face_rec_post_size_snapshot(case)
+            }
+            "freetype.inspect_face_rec" if face_rec_populated_snapshot_case(case) => {
+                wasm_inspect_face_rec_populated_snapshot(case)
             }
             "freetype.inspect_available_sizes" => wasm_inspect_available_sizes(case),
             "ftlist.list_iterate"
@@ -40485,6 +40494,22 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(row.vert_resolution.to_string());
             Ok(args)
         }
+        "freetype.inspect_face_rec" if face_rec_populated_snapshot_case(case) => {
+            let mut args = vec!["--inspect-face-rec-populated".to_string()];
+            for asset in [
+                "font",
+                "bitmap_font",
+                "variable_font",
+                "type1_font",
+                "attachment",
+            ] {
+                push_required_asset_source(case, asset, &mut args)?;
+            }
+            args.push(face_index_param(params)?.to_string());
+            args.push(glyph_index_param(params)?.to_string());
+            args.push(ftmm_coords_csv(&variation_design_coords(params)?));
+            Ok(args)
+        }
         "freetype.inspect_available_sizes" => {
             let mut args = vec!["--inspect-available-sizes".to_string()];
             push_font_source(case, &mut args)?;
@@ -61697,6 +61722,93 @@ fn face_rec_post_size_snapshot_case(case: &InputCase) -> bool {
     case.case_id == "freetype.FT_FaceRec.post_size_public_fields_match_c"
 }
 
+fn face_rec_populated_snapshot_case(case: &InputCase) -> bool {
+    case.case_id == "freetype.FT_FaceRec.populated_public_fields_match_c"
+}
+
+fn face_rec_private_handle_nullness() -> Value {
+    json!({
+        "driver": "non-null",
+        "memory": "non-null",
+        "stream": "non-null",
+        "internal": "non-null",
+        "extensions": "null",
+        "autohint_data": "null",
+        "autohint_finalizer": "null"
+    })
+}
+
+fn face_rec_populated_snapshot_json(
+    info: &FT_FaceRecPublic,
+    family_name: Option<&str>,
+    style_name: Option<&str>,
+    available_sizes: &[FT_Bitmap_Size],
+    charmaps: Vec<Value>,
+    active_charmap_index: FT_Int,
+    glyph_identity: &str,
+    size_identity: &str,
+    charmap_identity: &str,
+) -> Value {
+    json!({
+        "num_faces": info.num_faces,
+        "face_index": info.face_index,
+        "face_flags": info.face_flags,
+        "style_flags": info.style_flags,
+        "num_glyphs": info.num_glyphs,
+        "family_name": nullable_c_string_json(family_name),
+        "style_name": nullable_c_string_json(style_name),
+        "num_fixed_sizes": info.num_fixed_sizes,
+        "available_sizes": bitmap_sizes_json(available_sizes),
+        "num_charmaps": charmaps.len(),
+        "charmaps": charmaps,
+        "bbox": bbox_json(bbox_from_rust_bbox(info.bbox)),
+        "units_per_EM": info.units_per_EM,
+        "ascender": info.ascender,
+        "descender": info.descender,
+        "height": info.height,
+        "max_advance_width": info.max_advance_width,
+        "max_advance_height": info.max_advance_height,
+        "underline_position": info.underline_position,
+        "underline_thickness": info.underline_thickness,
+        "glyph_identity": glyph_identity,
+        "size_identity": size_identity,
+        "charmap_identity": charmap_identity,
+        "active_charmap_index": if active_charmap_index >= 0 {
+            Value::from(active_charmap_index)
+        } else {
+            Value::Null
+        },
+        "private_handle_nullness": face_rec_private_handle_nullness(),
+    })
+}
+
+fn face_rec_populated_stage_json(
+    name: &str,
+    operation_status: FT_Error,
+    face: Value,
+    size_metrics: Value,
+    glyph_metrics: Value,
+    attachment_status: Option<FT_Error>,
+    variation_coordinates: Option<&[FT_Fixed]>,
+) -> Value {
+    json!({
+        "name": name,
+        "operation_status": operation_status,
+        "attachment_status": attachment_status.map_or(Value::Null, |status| json!(status)),
+        "variation_coordinates": variation_coordinates.map_or_else(
+            || Value::Null,
+            |coords| json!(coords),
+        ),
+        "face": face,
+        "size_metrics": size_metrics,
+        "glyph_metrics": glyph_metrics,
+    })
+}
+
+fn face_rec_populated_output(stages: Vec<Value>) -> RunOutput {
+    ok(json!({"stages": stages}))
+}
+
 fn pointer_nullness(is_null: bool) -> &'static str {
     if is_null { "null" } else { "non-null" }
 }
@@ -61839,6 +61951,405 @@ fn wasm_inspect_face_rec_post_size_snapshot(case: &InputCase) -> Result<RunOutpu
     } else {
         Ok(error(err))
     }
+}
+
+fn rust_face_rec_populated_snapshot(face: &FT_Face) -> Result<Value, String> {
+    let info = rust_face_info(face);
+    Ok(face_rec_populated_snapshot_json(
+        &info,
+        face.family_name.as_deref(),
+        face.style_name.as_deref(),
+        &face.available_sizes,
+        rust_charmap_inventory_json(face)?,
+        face.active_charmap_index,
+        "same_face",
+        if face.size.is_null() {
+            "none"
+        } else {
+            "same_face"
+        },
+        if face.active_charmap_index >= 0 {
+            "same_face"
+        } else {
+            "none"
+        },
+    ))
+}
+
+fn c_face_rec_populated_snapshot(face: c_abi::FT_Face) -> Result<Value, String> {
+    let info = c_abi::abi_face_info(face).ok_or_else(|| "missing c face info".to_string())?;
+    let names = unsafe {
+        (
+            c_string_option((*face).family_name.cast_const()),
+            c_string_option((*face).style_name.cast_const()),
+        )
+    };
+    let sizes = c_abi::abi_face_available_sizes(face)
+        .ok_or_else(|| "missing c available sizes".to_string())?;
+    let active = c_abi::abi_active_charmap_index(face).unwrap_or(-1);
+    Ok(face_rec_populated_snapshot_json(
+        &info,
+        names.0.as_deref(),
+        names.1.as_deref(),
+        &sizes,
+        c_charmap_inventory_json(face)?,
+        active,
+        "same_face",
+        if c_active_size(face).is_null() {
+            "none"
+        } else {
+            "same_face"
+        },
+        if active >= 0 { "same_face" } else { "none" },
+    ))
+}
+
+fn wasm_face_rec_populated_snapshot(handle: usize) -> Result<Value, String> {
+    let info =
+        wasm_abi::abi_face_info(handle).ok_or_else(|| "missing wasm face info".to_string())?;
+    let names =
+        wasm_abi::abi_face_names(handle).ok_or_else(|| "missing wasm face names".to_string())?;
+    let sizes = wasm_abi::abi_face_available_sizes(handle)
+        .ok_or_else(|| "missing wasm available sizes".to_string())?;
+    let active = wasm_abi::fontdone_wasm_get_active_charmap_index(handle);
+    Ok(face_rec_populated_snapshot_json(
+        &info,
+        names.0.as_deref(),
+        names.1.as_deref(),
+        &sizes,
+        wasm_charmap_inventory_json(handle)?,
+        active,
+        "same_face",
+        if wasm_abi::fontdone_wasm_active_size(handle) == 0 {
+            "none"
+        } else {
+            "same_face"
+        },
+        if active >= 0 { "same_face" } else { "none" },
+    ))
+}
+
+fn rust_inspect_face_rec_populated_snapshot(case: &InputCase) -> Result<RunOutput, String> {
+    let params = &case.inputs.params;
+    let face_index = face_index_param(params)?;
+    let glyph_index = glyph_index_param(params)?;
+    let coords = variation_design_coords(params)?;
+    let main_bytes = required_asset_bytes(case, "font")?;
+    let mut main = rust_new_face_from_bytes(main_bytes.as_ref(), face_index)?;
+    let mut stages = vec![face_rec_populated_stage_json(
+        "main_initial",
+        FT_Err_Ok,
+        rust_face_rec_populated_snapshot(&main)?,
+        size_metrics_json(&main.size_metrics),
+        Value::Null,
+        None,
+        None,
+    )];
+    let size_status = FT_Set_Char_Size(&mut main, 0, 1536, 72, 72);
+    stages.push(face_rec_populated_stage_json(
+        "main_after_char_size",
+        size_status,
+        rust_face_rec_populated_snapshot(&main)?,
+        size_metrics_json(&main.size_metrics),
+        Value::Null,
+        None,
+        None,
+    ));
+    let (load_status, glyph_metrics) = match FT_Load_Glyph(&main, glyph_index, FT_LOAD_DEFAULT) {
+        Ok(slot) => (
+            FT_Err_Ok,
+            glyph_metrics_fields_json(rust_metrics_fields(&slot.metrics)),
+        ),
+        Err(error) => (error, Value::Null),
+    };
+    stages.push(face_rec_populated_stage_json(
+        "main_after_load_glyph",
+        load_status,
+        rust_face_rec_populated_snapshot(&main)?,
+        size_metrics_json(&main.size_metrics),
+        glyph_metrics,
+        None,
+        None,
+    ));
+    let charmap_status = FT_Select_Charmap(Some(&mut main), FT_ENCODING_UNICODE as FT_Encoding);
+    stages.push(face_rec_populated_stage_json(
+        "main_after_select_charmap",
+        charmap_status,
+        rust_face_rec_populated_snapshot(&main)?,
+        size_metrics_json(&main.size_metrics),
+        Value::Null,
+        None,
+        None,
+    ));
+
+    let bitmap_bytes = required_asset_bytes(case, "bitmap_font")?;
+    let bitmap = rust_new_face_from_bytes(bitmap_bytes.as_ref(), 0)?;
+    stages.push(face_rec_populated_stage_json(
+        "bitmap_face_initial",
+        FT_Err_Ok,
+        rust_face_rec_populated_snapshot(&bitmap)?,
+        size_metrics_json(&bitmap.size_metrics),
+        Value::Null,
+        None,
+        None,
+    ));
+
+    let type1_bytes = required_asset_bytes(case, "type1_font")?;
+    let attachment = required_asset_bytes(case, "attachment")?;
+    let mut type1 = rust_new_face_from_bytes(type1_bytes.as_ref(), 0)?;
+    let attach_status = FT_Attach_Stream(Some(&mut type1), Some(attachment.as_ref()));
+    stages.push(face_rec_populated_stage_json(
+        "type1_after_attach_stream",
+        attach_status,
+        rust_face_rec_populated_snapshot(&type1)?,
+        size_metrics_json(&type1.size_metrics),
+        Value::Null,
+        Some(attach_status),
+        None,
+    ));
+
+    let variable_bytes = required_asset_bytes(case, "variable_font")?;
+    let mut variable = rust_new_face_from_bytes(variable_bytes.as_ref(), 0)?;
+    let variation_status = FT_Set_Var_Design_Coordinates(
+        Some(&mut variable),
+        FT_UInt::try_from(coords.len()).map_err(|err| err.to_string())?,
+        Some(&coords),
+    );
+    stages.push(face_rec_populated_stage_json(
+        "variable_after_design_coordinates",
+        variation_status,
+        rust_face_rec_populated_snapshot(&variable)?,
+        size_metrics_json(&variable.size_metrics),
+        Value::Null,
+        None,
+        Some(&coords),
+    ));
+    Ok(face_rec_populated_output(stages))
+}
+
+fn c_inspect_face_rec_populated_snapshot(case: &InputCase) -> Result<RunOutput, String> {
+    let params = &case.inputs.params;
+    let face_index = face_index_param(params)?;
+    let glyph_index = glyph_index_param(params)?;
+    let coords = variation_design_coords(params)?;
+    let main_bytes = required_asset_bytes(case, "font")?;
+    let (main_library, main) = c_new_face_from_bytes(main_bytes.as_ref(), face_index)?;
+    let mut stages = vec![face_rec_populated_stage_json(
+        "main_initial",
+        FT_Err_Ok,
+        c_face_rec_populated_snapshot(main)?,
+        c_size_metrics_json(main)?,
+        Value::Null,
+        None,
+        None,
+    )];
+    let size_status = c_abi::FT_Set_Char_Size(main, 0, 1536, 72, 72);
+    stages.push(face_rec_populated_stage_json(
+        "main_after_char_size",
+        size_status,
+        c_face_rec_populated_snapshot(main)?,
+        c_size_metrics_json(main)?,
+        Value::Null,
+        None,
+        None,
+    ));
+    let load_status = c_abi::FT_Load_Glyph(main, glyph_index, FT_LOAD_DEFAULT);
+    let glyph_metrics = if load_status == FT_Err_Ok {
+        c_abi::abi_slot_snapshot(main)
+            .map(|slot| glyph_metrics_fields_json(c_metrics_fields(&slot.metrics)))
+            .ok_or_else(|| "missing c glyph slot snapshot".to_string())?
+    } else {
+        Value::Null
+    };
+    stages.push(face_rec_populated_stage_json(
+        "main_after_load_glyph",
+        load_status,
+        c_face_rec_populated_snapshot(main)?,
+        c_size_metrics_json(main)?,
+        glyph_metrics,
+        None,
+        None,
+    ));
+    let charmap_status = c_abi::FT_Select_Charmap(main, FT_ENCODING_UNICODE as FT_Encoding);
+    stages.push(face_rec_populated_stage_json(
+        "main_after_select_charmap",
+        charmap_status,
+        c_face_rec_populated_snapshot(main)?,
+        c_size_metrics_json(main)?,
+        Value::Null,
+        None,
+        None,
+    ));
+
+    let bitmap_bytes = required_asset_bytes(case, "bitmap_font")?;
+    let (bitmap_library, bitmap) = c_new_face_from_bytes(bitmap_bytes.as_ref(), 0)?;
+    stages.push(face_rec_populated_stage_json(
+        "bitmap_face_initial",
+        FT_Err_Ok,
+        c_face_rec_populated_snapshot(bitmap)?,
+        c_size_metrics_json(bitmap)?,
+        Value::Null,
+        None,
+        None,
+    ));
+
+    let type1_bytes = required_asset_bytes(case, "type1_font")?;
+    let attachment = required_asset_bytes(case, "attachment")?;
+    let (type1_library, type1) = c_new_face_from_bytes(type1_bytes.as_ref(), 0)?;
+    let open_args = c_abi::FT_Open_Args {
+        flags: FT_OPEN_MEMORY as c_abi::FT_UInt,
+        memory_base: attachment.as_ptr(),
+        memory_size: attachment
+            .len()
+            .try_into()
+            .map_err(|err| format!("attachment length does not fit FT_Long: {err}"))?,
+        pathname: ptr::null_mut(),
+        stream: ptr::null_mut(),
+        driver: ptr::null_mut(),
+        num_params: 0,
+        params: ptr::null_mut(),
+    };
+    let attach_status = c_abi::FT_Attach_Stream(type1, &open_args);
+    stages.push(face_rec_populated_stage_json(
+        "type1_after_attach_stream",
+        attach_status,
+        c_face_rec_populated_snapshot(type1)?,
+        c_size_metrics_json(type1)?,
+        Value::Null,
+        Some(attach_status),
+        None,
+    ));
+
+    let variable_bytes = required_asset_bytes(case, "variable_font")?;
+    let (variable_library, variable) = c_new_face_from_bytes(variable_bytes.as_ref(), 0)?;
+    let variation_status = c_abi::FT_Set_Var_Design_Coordinates(
+        variable,
+        coords.len() as c_abi::FT_UInt,
+        coords.as_ptr(),
+    );
+    stages.push(face_rec_populated_stage_json(
+        "variable_after_design_coordinates",
+        variation_status,
+        c_face_rec_populated_snapshot(variable)?,
+        c_size_metrics_json(variable)?,
+        Value::Null,
+        None,
+        Some(&coords),
+    ));
+    c_done_face(variable);
+    c_done_library(variable_library);
+    c_done_face(type1);
+    c_done_library(type1_library);
+    c_done_face(bitmap);
+    c_done_library(bitmap_library);
+    c_done_face(main);
+    c_done_library(main_library);
+    Ok(face_rec_populated_output(stages))
+}
+
+fn wasm_inspect_face_rec_populated_snapshot(case: &InputCase) -> Result<RunOutput, String> {
+    let params = &case.inputs.params;
+    let face_index = face_index_param(params)?;
+    let glyph_index = glyph_index_param(params)?;
+    let coords = variation_design_coords(params)?;
+    let main_bytes = required_asset_bytes(case, "font")?;
+    let main = wasm_new_face_from_bytes(main_bytes.as_ref(), face_index)?;
+    let mut stages = vec![face_rec_populated_stage_json(
+        "main_initial",
+        FT_Err_Ok,
+        wasm_face_rec_populated_snapshot(main)?,
+        wasm_size_metrics_value(main)?,
+        Value::Null,
+        None,
+        None,
+    )];
+    let size_status = wasm_abi::fontdone_wasm_set_char_size(main, 0, 1536, 72, 72);
+    stages.push(face_rec_populated_stage_json(
+        "main_after_char_size",
+        size_status,
+        wasm_face_rec_populated_snapshot(main)?,
+        wasm_size_metrics_value(main)?,
+        Value::Null,
+        None,
+        None,
+    ));
+    let load_status = wasm_abi::fontdone_wasm_load_glyph(main, glyph_index, FT_LOAD_DEFAULT);
+    let glyph_metrics = if load_status == FT_Err_Ok {
+        wasm_abi::abi_slot_snapshot(main)
+            .map(|slot| glyph_metrics_fields_json(wasm_metrics_fields(&slot.metrics)))
+            .ok_or_else(|| "missing wasm glyph slot snapshot".to_string())?
+    } else {
+        Value::Null
+    };
+    stages.push(face_rec_populated_stage_json(
+        "main_after_load_glyph",
+        load_status,
+        wasm_face_rec_populated_snapshot(main)?,
+        wasm_size_metrics_value(main)?,
+        glyph_metrics,
+        None,
+        None,
+    ));
+    let charmap_status =
+        wasm_abi::fontdone_wasm_select_charmap(main, FT_ENCODING_UNICODE as FT_Encoding);
+    stages.push(face_rec_populated_stage_json(
+        "main_after_select_charmap",
+        charmap_status,
+        wasm_face_rec_populated_snapshot(main)?,
+        wasm_size_metrics_value(main)?,
+        Value::Null,
+        None,
+        None,
+    ));
+
+    let bitmap_bytes = required_asset_bytes(case, "bitmap_font")?;
+    let bitmap = wasm_new_face_from_bytes(bitmap_bytes.as_ref(), 0)?;
+    stages.push(face_rec_populated_stage_json(
+        "bitmap_face_initial",
+        FT_Err_Ok,
+        wasm_face_rec_populated_snapshot(bitmap)?,
+        wasm_size_metrics_value(bitmap)?,
+        Value::Null,
+        None,
+        None,
+    ));
+
+    let type1_bytes = required_asset_bytes(case, "type1_font")?;
+    let attachment = required_asset_bytes(case, "attachment")?;
+    let type1 = wasm_new_face_from_bytes(type1_bytes.as_ref(), 0)?;
+    let attach_status =
+        wasm_abi::fontdone_wasm_attach_stream(type1, attachment.as_ptr(), attachment.len());
+    stages.push(face_rec_populated_stage_json(
+        "type1_after_attach_stream",
+        attach_status,
+        wasm_face_rec_populated_snapshot(type1)?,
+        wasm_size_metrics_value(type1)?,
+        Value::Null,
+        Some(attach_status),
+        None,
+    ));
+
+    let variable_bytes = required_asset_bytes(case, "variable_font")?;
+    let variable = wasm_new_face_from_bytes(variable_bytes.as_ref(), 0)?;
+    let variation_status = wasm_abi::fontdone_wasm_set_var_design_coordinates(
+        variable,
+        coords.len() as wasm_abi::FT_UInt,
+        coords.as_ptr(),
+    );
+    stages.push(face_rec_populated_stage_json(
+        "variable_after_design_coordinates",
+        variation_status,
+        wasm_face_rec_populated_snapshot(variable)?,
+        wasm_size_metrics_value(variable)?,
+        Value::Null,
+        None,
+        Some(&coords),
+    ));
+    wasm_done_face(variable);
+    wasm_done_face(type1);
+    wasm_done_face(bitmap);
+    wasm_done_face(main);
+    Ok(face_rec_populated_output(stages))
 }
 
 fn bitmap_sizes_json(sizes: &[FT_Bitmap_Size]) -> Vec<Value> {
