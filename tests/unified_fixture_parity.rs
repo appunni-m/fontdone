@@ -2388,7 +2388,10 @@ fn compare_backend_outputs_with_oracle_cache(
     let oracle_outputs = cases
         .iter()
         .zip(expanded_oracle_outputs.iter())
-        .map(|(case, output)| project_incremental_metrics_nullness(case, output.clone()))
+        .map(|(case, output)| {
+            let output = project_incremental_metrics_nullness(case, output.clone())?;
+            project_incremental_metrics_seed(case, output)
+        })
         .collect::<Result<Arc<[_]>, _>>()?;
     let result = {
         let _profile = ProfileStage::new("runtime.compare_backend_outputs");
@@ -43375,7 +43378,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(load_flags_param(params)?.to_string());
             Ok(args)
         }
-        "ftincrem.incremental_state_lifecycle" | "ftincrem.incremental_metrics_nullness"
+        "ftincrem.incremental_state_lifecycle"
+        | "ftincrem.incremental_metrics_nullness"
+        | "ftincrem.incremental_metrics_seed"
             if !case.expect_error =>
         {
             let mut args = vec!["--incremental-state-lifecycle".to_string()];
@@ -44807,6 +44812,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftincrem.incremental_metrics_nullness" if !case.expect_error => {
             project_incremental_metrics_nullness(case, rust_incremental_state_lifecycle(case)?)
+        }
+        "ftincrem.incremental_metrics_seed" if !case.expect_error => {
+            project_incremental_metrics_seed(case, rust_incremental_state_lifecycle(case)?)
         }
         "ftcache.manager_remove_face_id" if !case.expect_error => rust_manager_remove_face_id(case),
         "ftcache.manager_done" if !case.expect_error => rust_manager_done(case),
@@ -46240,6 +46248,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftincrem.incremental_metrics_nullness" if !case.expect_error => {
             project_incremental_metrics_nullness(case, c_incremental_state_lifecycle(case)?)
         }
+        "ftincrem.incremental_metrics_seed" if !case.expect_error => {
+            project_incremental_metrics_seed(case, c_incremental_state_lifecycle(case)?)
+        }
         "ftcache.manager_remove_face_id" if !case.expect_error => c_manager_remove_face_id(case),
         "ftcache.manager_done" if !case.expect_error => c_manager_done(case),
         "ftcache.manager_lifecycle" if !case.expect_error => {
@@ -47474,6 +47485,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftincrem.incremental_metrics_nullness" if !case.expect_error => {
             project_incremental_metrics_nullness(case, wasm_incremental_state_lifecycle(case)?)
+        }
+        "ftincrem.incremental_metrics_seed" if !case.expect_error => {
+            project_incremental_metrics_seed(case, wasm_incremental_state_lifecycle(case)?)
         }
         "ftcache.manager_remove_face_id" if !case.expect_error => wasm_manager_remove_face_id(case),
         "ftcache.manager_done" if !case.expect_error => wasm_manager_done(case),
@@ -64543,6 +64557,53 @@ fn project_incremental_metrics_nullness(
     })
 }
 
+/// Projects the maintained incremental lifecycle trace into the exact
+/// pre-mutation `FT_Incremental_MetricsRec` seed contract.  The route requires
+/// the horizontal callback event for the requested glyph; a missing event,
+/// mismatched glyph, or vertical callback cannot be counted as seed evidence.
+fn project_incremental_metrics_seed(
+    case: &InputCase,
+    state: RunOutput,
+) -> Result<RunOutput, String> {
+    if case.case_id != "ftincrem.FT_Incremental_MetricsRec.input_metrics_seed_matches_c" {
+        return Ok(state);
+    }
+    if state.status.kind != StatusKind::Ok {
+        return Ok(state);
+    }
+    let glyph_index = glyph_index_param(&case.inputs.params)?;
+    let callback_log = state
+        .output
+        .get("callback_log")
+        .and_then(Value::as_array)
+        .ok_or_else(|| "incremental metrics seed trace has no callback_log".to_string())?;
+    let metric_event = callback_log
+        .iter()
+        .find(|event| {
+            event.get("event").and_then(Value::as_str) == Some("get_glyph_metrics")
+                && event.get("vertical").and_then(Value::as_bool) == Some(false)
+        })
+        .ok_or_else(|| {
+            "incremental metrics seed trace did not observe a horizontal get_glyph_metrics "
+                .to_string()
+        })?;
+    if metric_event.get("glyph_index") != Some(&json!(glyph_index)) {
+        return Err("incremental metrics seed callback glyph does not match request".to_string());
+    }
+    let snapshot = metric_event
+        .get("input")
+        .cloned()
+        .ok_or_else(|| "incremental metrics seed event has no input snapshot".to_string())?;
+    Ok(RunOutput {
+        status: state.status,
+        output: json!({
+            "seed_metrics": snapshot,
+            "vertical_arg": false,
+            "glyph_index": glyph_index,
+        }),
+    })
+}
+
 fn incremental_state_lifecycle_output(
     observed: IncrementalStateObserved,
 ) -> Result<RunOutput, String> {
@@ -64577,11 +64638,13 @@ fn incremental_state_lifecycle_output(
                     "bearing_x": metric.input.bearing_x,
                     "bearing_y": metric.input.bearing_y,
                     "advance": metric.input.advance,
+                    "advance_v": metric.input.advance_v,
                 },
                 "output": {
                     "bearing_x": metric.output.bearing_x,
                     "bearing_y": metric.output.bearing_y,
                     "advance": metric.output.advance,
+                    "advance_v": metric.output.advance_v,
                 },
             }))
         })

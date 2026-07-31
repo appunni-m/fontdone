@@ -3494,6 +3494,13 @@ def ftincrem_subsystem_pending_reason(row: ConcreteInput) -> str | None:
         and unresolved_assets_reason(row) is None
     ):
         return None
+    if (
+        row.case_id == "ftincrem.FT_Incremental_MetricsRec.input_metrics_seed_matches_c"
+        and row.operation == "ftincrem.incremental_metrics_seed"
+        and row.params.get("runtime_route") == "actual_incremental_metrics_seed"
+        and unresolved_assets_reason(row) is None
+    ):
+        return None
     ftincrem_rows_without_maintained_route = {
         "ftincrem.FT_Incremental.handle_passed_without_deref": (
             "FT_Incremental handle identity parity needs a maintained "
@@ -3594,6 +3601,18 @@ def ftincrem_real_parity_reason(row: ConcreteInput) -> str | None:
             "FT_Incremental_MetricsRec through the maintained incremental "
             "glyph-load lifecycle; pinned C, Rust FFI, C ABI, and WASM compare "
             "callback-seen, nullness, and the pre-mutation metrics snapshot"
+        )
+    if (
+        row.case_id == "ftincrem.FT_Incremental_MetricsRec.input_metrics_seed_matches_c"
+        and row.operation == "ftincrem.incremental_metrics_seed"
+        and row.params.get("runtime_route") == "actual_incremental_metrics_seed"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_Incremental_GetGlyphMetricsFunc receives the pinned-C seeded "
+            "horizontal FT_Incremental_MetricsRec before callback mutation; "
+            "pinned C, Rust FFI, C ABI, and WASM compare the exact seed fields, "
+            "vertical flag, and glyph index"
         )
     return None
 

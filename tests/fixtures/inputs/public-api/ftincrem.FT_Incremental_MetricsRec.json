@@ -74,19 +74,27 @@
       "case_id": "ftincrem.FT_Incremental_MetricsRec.input_metrics_seed_matches_c",
       "subject": "ftincrem.FT_Incremental_MetricsRec",
       "case": "input_metrics_seed_matches_c",
-      "operation": "ftincrem.inspect_metrics_callback_seed",
+      "operation": "ftincrem.incremental_metrics_seed",
       "schema": "api_result",
       "expect_error": false,
       "inputs": {
         "assets": {
           "font": {
             "kind": "ref",
-            "id": "input/fonts/incremental/minimal-glyf-incremental.ttf"
+            "role": "font",
+            "path": "input/fonts/DejaVuSans.ttf"
           }
         },
         "params": {
-          "glyph_index": 1,
+          "face_index": 0,
+          "glyph_index": 36,
+          "load_flags": "FT_LOAD_NO_SCALE",
+          "horizontal_bearing_delta": 7,
+          "horizontal_advance_delta": 11,
+          "vertical_bearing_delta": 13,
+          "vertical_advance_delta": 17,
           "vertical": false,
+          "runtime_route": "actual_incremental_metrics_seed",
           "source_seed_fields": {
             "truetype": [
               "loader->left_bearing",
@@ -108,7 +116,7 @@
         "source:ttgload"
       ],
       "expectation": {
-        "status": "build_dependent",
+        "status": "supported",
         "output_shape": {
           "seed_metrics": "FT_Incremental_MetricsRec",
           "vertical_arg": "FT_Bool",
@@ -129,7 +137,8 @@
           "freetype/src/cid/cidgload.c"
         ],
         "fixture_requirements": [
-          "Requires an incremental font and callback logger that records the ametrics contents before mutating them."
+          "The tracked DejaVuSans.ttf input reaches FT_Incremental_GetGlyphMetricsFunc through the maintained incremental state lifecycle route.",
+          "The callback event records the horizontal FT_Incremental_MetricsRec before mutation, proving the pinned C seed fields are compared exactly across all ABI lanes."
         ]
       }
     },
