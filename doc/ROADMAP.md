@@ -363,15 +363,16 @@ increase is claimed until the next full all-lane measurement**:
 | 19 | `a51f6c4a8fcd7ac60120d793fc13c0111a98bbff` | Refreshed the exact C-ABI scorecard in run `a1472533-552d-43de-b9ca-a0c3f5adbfe0`: 9 / 12 categories complete; C01 runtime rows 4,997 / 5,047 with 50 pending; C11 binary artifacts 7 / 8; C12 platform bundles 1 / 5; all other blocking categories complete. |
 | 20 | `c7d6b3758d0229011c39c170c95719fa0502bc04` | Promoted the two SVG build-feature classification rows through an actual pinned-C oracle, Rust FFI, C ABI, and WASM route. Clean full parity run `3369e0ab-624f-4e46-8539-b862a9cc97b4` passed 7,247 / 7,247 runnable comparisons with 60 explicitly pending concrete cases; the refreshed C-ABI scorecard run `66bc46c3-185a-469c-8573-f28a53f85920` reports C01 runtime rows 4,999 / 5,047 with 48 pending. |
 | 21 | `a7db2c44a60c581298601697b536b976284c7d61` | Added project-authored deterministic AAT/GX inputs and routed eight `FT_TrueTypeGX_Validate` table-length/index rows through pinned C, Rust FFI, C ABI, and WASM. Clean full parity run `a5b5421a-ad05-4d3f-9082-bcccda2cc1c8` passed 7,255 / 7,255 runnable comparisons with 52 explicitly pending concrete cases; clean C-ABI scorecard run `7f7133e5-4cf2-4c9c-b238-4beb5a9ba5b8` reports C01 runtime rows 5,007 / 5,047 with 40 pending. |
+| 22 | `2f05af7f3f3fd767ecc04679fce58abc9781af2b` | Routed `FT_GLYPH_FORMAT_SVG.unsupported_svg_build_classification` through a same-input pinned-C SVG feature/load probe and exact Rust FFI, C ABI, and WASM observations. Clean full parity run `ef1090a4-3ed3-493f-aaa5-0d83d9853078` passed 7,256 / 7,256 runnable comparisons with 51 explicitly pending concrete cases; clean C-ABI scorecard run `90455200-661a-4be1-b6f3-994b5a70724e` reports C01 runtime rows 5,008 / 5,047 with 39 pending. |
 
 The latest clean parity-only verification is Coverage MCP run
-`87cdb8e3-ee97-416e-8a90-5247a47b456f` after the GX index/length route:
-7,255 / 7,255 runnable comparisons passed, 0 failed, and 52 remain explicitly
-pending. The same run reported 4,126 covered manifest cases, 4,258 logical
+`ef1090a4-3ed3-493f-aaa5-0d83d9853078` after the SVG build-classification route:
+7,256 / 7,256 runnable comparisons passed, 0 failed, and 51 remain explicitly
+pending. The same run reported 4,127 covered manifest cases, 4,258 logical
 cases, and 7,307 concrete cases; all 218 function routes were present in each
 of Rust, C ABI, and WASM. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json` and records a clean worktree at
-`68066aa35fb62c152c5e0757184c7bfcdc4bdc7c`. Full coverage is intentionally deferred
+`2f05af7f3f3fd767ecc04679fce58abc9781af2b`. Full coverage is intentionally deferred
 until a larger set of focused batches is ready, because the maintained
 all-lane pass takes roughly 50 minutes.
 
