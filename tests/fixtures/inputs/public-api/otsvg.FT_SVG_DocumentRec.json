@@ -88,9 +88,8 @@
         "assets": {
           "otsvg_font": {
             "kind": "ref",
-            "id": "input/fonts/svg/otsvg-document-ranges.otf",
-            "asset_kind": "font",
-            "status": "required_future_asset"
+            "id": "input/fonts/svg/otsvg-glyph.ttf",
+            "asset_kind": "font"
           }
         },
         "params": {
@@ -133,7 +132,7 @@
           "freetype/include/freetype/otsvg.h:300-314"
         ],
         "fixture_requirements": [
-          "input/fonts/svg/otsvg-document-ranges.otf must contain an SVG table with at least one document range covering the selected glyph."
+          "input/fonts/svg/otsvg-glyph.ttf is the project-authored SVG fixture with a document range covering glyph 1."
         ]
       }
     },
@@ -157,15 +156,18 @@
         "assets": {
           "otsvg_font": {
             "kind": "ref",
-            "id": "input/fonts/svg/otsvg-document-ranges.otf",
-            "asset_kind": "font",
-            "status": "required_future_asset"
+            "id": "input/fonts/svg/otsvg-glyph.ttf",
+            "asset_kind": "font"
           }
         },
         "params": {
           "face_source": "otsvg_font",
           "glyph_index": "first_svg_glyph",
           "ppem": 32,
+          "pixel_size": {
+            "x": 0,
+            "y": 32
+          },
           "transform": {
             "xx": 65536,
             "xy": 8192,
@@ -207,7 +209,7 @@
           "freetype/include/freetype/otsvg.h:305-312"
         ],
         "fixture_requirements": [
-          "Runner must install SVG renderer hooks or classify the pinned build as unsupported until SVG hook capture exists."
+          "The project-authored SVG fixture must expose the document record during the declared transformed glyph load."
         ]
       }
     }

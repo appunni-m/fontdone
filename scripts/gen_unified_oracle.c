@@ -66,6 +66,7 @@ static FT_Error cache_no_lookup_requester(FTC_FaceID face_id,
                                           FT_Library library,
                                           FT_Pointer req_data,
                                           FT_Face* aface);
+static void print_size_metrics_object(FT_Size_Metrics metrics);
 
 static int streq(const char* a, const char* b) {
     return strcmp(a, b) == 0;
@@ -8284,6 +8285,47 @@ static void print_svg_slot_load_payload(FT_GlyphSlot slot, FT_Error status) {
     print_byte_hash_or_null(
         document ? document->svg_document : NULL,
         document ? (size_t)document->svg_document_length : 0U);
+    printf("}}\n");
+}
+
+static void print_svg_document_probe_payload(FT_GlyphSlot slot, FT_Error status) {
+    FT_SVG_Document document = NULL;
+    if (!status && slot && slot->format == FT_GLYPH_FORMAT_SVG && slot->other) {
+        document = (FT_SVG_Document)slot->other;
+    }
+    printf(",\"output\":{\"status\":%ld,\"document_length\":%lu,\"document_bytes_hash\":",
+           (long)status,
+           document ? (unsigned long)document->svg_document_length : 0UL);
+    print_byte_hash_or_null(
+        document ? document->svg_document : NULL,
+        document ? (size_t)document->svg_document_length : 0U);
+    printf(",\"metrics\":");
+    if (document) {
+        printf("{");
+        print_size_metrics_object(document->metrics);
+        printf("}");
+    } else {
+        printf("null");
+    }
+    printf(",\"units_per_EM\":%u,\"start_glyph_id\":%u,\"end_glyph_id\":%u,\"transform\":",
+           document ? document->units_per_EM : 0U,
+           document ? document->start_glyph_id : 0U,
+           document ? document->end_glyph_id : 0U);
+    if (document) {
+        printf("{\"xx\":%ld,\"xy\":%ld,\"yx\":%ld,\"yy\":%ld}",
+               document->transform.xx,
+               document->transform.xy,
+               document->transform.yx,
+               document->transform.yy);
+    } else {
+        printf("null");
+    }
+    printf(",\"delta\":");
+    if (document) {
+        printf("{\"x\":%ld,\"y\":%ld}", document->delta.x, document->delta.y);
+    } else {
+        printf("null");
+    }
     printf("}}\n");
 }
 
@@ -17732,6 +17774,48 @@ static int emit_svg_only_pair(int argc, char** argv) {
     print_svg_only_pair_error_row(non_svg_status);
     printf("}}\n");
 
+    close_oracle_face(&face);
+    return 0;
+}
+
+static int emit_otsvg_document_probe(int argc, char** argv) {
+    if (argc != 15) {
+        fprintf(stderr,
+                "--otsvg-document-probe requires SOURCE_KIND SOURCE_VALUE FACE_INDEX X Y GLYPH_INDEX MODE XX XY YX YY DX DY\n");
+        return 2;
+    }
+    OracleFace face;
+    int opened = open_oracle_face(argv[2], argv[3], atol(argv[4]), &face);
+    if (opened != 0) {
+        return opened;
+    }
+    FT_Error size_error = FT_Set_Pixel_Sizes(
+        face.face,
+        (FT_UInt)strtoul(argv[5], NULL, 10),
+        (FT_UInt)strtoul(argv[6], NULL, 10));
+    if (size_error) {
+        printf("{");
+        print_status(size_error);
+        printf(",\"output\":null}\n");
+        close_oracle_face(&face);
+        return 0;
+    }
+    if (streq(argv[8], "transform")) {
+        FT_Matrix matrix;
+        matrix.xx = (FT_Fixed)strtol(argv[9], NULL, 10);
+        matrix.xy = (FT_Fixed)strtol(argv[10], NULL, 10);
+        matrix.yx = (FT_Fixed)strtol(argv[11], NULL, 10);
+        matrix.yy = (FT_Fixed)strtol(argv[12], NULL, 10);
+        FT_Vector delta;
+        delta.x = (FT_Pos)strtol(argv[13], NULL, 10);
+        delta.y = (FT_Pos)strtol(argv[14], NULL, 10);
+        FT_Set_Transform(face.face, &matrix, &delta);
+    }
+    FT_UInt glyph_index = (FT_UInt)strtoul(argv[7], NULL, 10);
+    FT_Error load_error = FT_Load_Glyph(face.face, glyph_index, FT_LOAD_COLOR);
+    printf("{");
+    print_status(FT_Err_Ok);
+    print_svg_document_probe_payload(face.face->glyph, load_error);
     close_oracle_face(&face);
     return 0;
 }
@@ -34605,6 +34689,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 10 && streq(argv[1], "--load-svg-only-pair")) {
         return emit_svg_only_pair(argc, argv);
+    }
+    if (argc == 15 && streq(argv[1], "--otsvg-document-probe")) {
+        return emit_otsvg_document_probe(argc, argv);
     }
     // Generic null-source handler: intercept commands with "null" in handle-level
     // parameters (source kind, source value, or face).

@@ -42298,6 +42298,23 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(load_flags_param(params)?.to_string());
             Ok(args)
         }
+        "otsvg.svg_document_capture" | "otsvg.svg_document_transform_capture" => {
+            let mut args = vec!["--otsvg-document-probe".to_string()];
+            push_named_font_source(case, "otsvg_font", &mut args)?;
+            push_face_size(params, &mut args)?;
+            args.push(svg_document_glyph_index(params)?.to_string());
+            let transformed = case.operation == "otsvg.svg_document_transform_capture";
+            args.push(if transformed { "transform" } else { "capture" }.to_string());
+            let (xx, xy, yx, yy, dx, dy) = if transformed {
+                svg_document_transform_params(params)?
+            } else {
+                (0x1_0000, 0, 0, 0x1_0000, 0, 0)
+            };
+            for value in [xx, xy, yx, yy, dx, dy] {
+                args.push(value.to_string());
+            }
+            Ok(args)
+        }
         "freetype.load_glyph_pair" => {
             let mut args = vec!["--load-svg-only-pair".to_string()];
             push_font_source(case, &mut args)?;
@@ -44168,6 +44185,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "load_char" => rust_load_char_public_api(case),
         "freetype.load_svg_glyph" => rust_svg_glyph_load(case),
+        "otsvg.svg_document_capture" | "otsvg.svg_document_transform_capture" => {
+            rust_otsvg_document_probe(case)
+        }
         "freetype.load_glyph_pair" => rust_svg_only_pair(case),
         "ftglyph.svg_feature_probe" => rust_svg_feature_probe(case),
         "load_glyph" => {
@@ -45537,6 +45557,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             output
         }
         "freetype.load_svg_glyph" => c_svg_glyph_load(case),
+        "otsvg.svg_document_capture" | "otsvg.svg_document_transform_capture" => {
+            c_otsvg_document_probe(case)
+        }
         "freetype.load_glyph_pair" => c_svg_only_pair(case),
         "ftglyph.svg_feature_probe" => c_svg_feature_probe(case),
         "load_glyph" => {
@@ -46772,6 +46795,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             output
         }
         "freetype.load_svg_glyph" => wasm_svg_glyph_load(case),
+        "otsvg.svg_document_capture" | "otsvg.svg_document_transform_capture" => {
+            wasm_otsvg_document_probe(case)
+        }
         "freetype.load_glyph_pair" => wasm_svg_only_pair(case),
         "ftglyph.svg_feature_probe" => wasm_svg_feature_probe(case),
         "load_glyph" => {
@@ -52124,6 +52150,108 @@ fn svg_glyph_load_index(params: &Value) -> Result<u32, String> {
     u32_value(raw, "glyph_index")
 }
 
+fn svg_document_glyph_index(params: &Value) -> Result<u32, String> {
+    let raw = params
+        .get("glyph_index")
+        .ok_or_else(|| "missing SVG document glyph_index".to_string())?;
+    if matches!(raw.as_str(), Some("first_svg_glyph" | "svg_document_glyph")) {
+        return Ok(1);
+    }
+    u32_value(raw, "glyph_index")
+}
+
+fn svg_document_transform_params(params: &Value) -> Result<(i32, i32, i32, i32, i32, i32), String> {
+    let transform = params
+        .get("transform")
+        .ok_or_else(|| "missing SVG document transform".to_string())?;
+    let matrix = transform.get("matrix").unwrap_or(transform);
+    let component = |key: &str| {
+        i32::try_from(i64_value(
+            matrix
+                .get(key)
+                .ok_or_else(|| format!("missing SVG document transform {key}"))?,
+            key,
+        )?)
+        .map_err(|err| format!("SVG document transform {key} does not fit i32: {err}"))
+    };
+    let xx = component("xx")?;
+    let xy = component("xy")?;
+    let yx = component("yx")?;
+    let yy = component("yy")?;
+
+    let delta = params
+        .get("delta")
+        .or_else(|| transform.get("delta"))
+        .ok_or_else(|| "missing SVG document delta".to_string())?;
+    let (dx, dy) = if let Some(delta) = delta.as_array() {
+        let dx = delta
+            .first()
+            .ok_or_else(|| "missing SVG document delta x".to_string())?;
+        let dy = delta
+            .get(1)
+            .ok_or_else(|| "missing SVG document delta y".to_string())?;
+        (i64_value(dx, "delta.x")?, i64_value(dy, "delta.y")?)
+    } else {
+        (
+            i64_value(
+                delta
+                    .get("x")
+                    .ok_or_else(|| "missing SVG document delta x".to_string())?,
+                "delta.x",
+            )?,
+            i64_value(
+                delta
+                    .get("y")
+                    .ok_or_else(|| "missing SVG document delta y".to_string())?,
+                "delta.y",
+            )?,
+        )
+    };
+    let dx =
+        i32::try_from(dx).map_err(|err| format!("SVG document delta x does not fit i32: {err}"))?;
+    let dy =
+        i32::try_from(dy).map_err(|err| format!("SVG document delta y does not fit i32: {err}"))?;
+    Ok((xx, xy, yx, yy, dx, dy))
+}
+
+fn svg_document_record_output(
+    status: FT_Error,
+    document_length: usize,
+    document_hash: Option<String>,
+    metrics: Value,
+    units_per_em: u16,
+    start_glyph_id: u16,
+    end_glyph_id: u16,
+    transform: Value,
+    delta: Value,
+) -> RunOutput {
+    ok(json!({
+        "status": status,
+        "document_length": document_length,
+        "document_bytes_hash": document_hash,
+        "metrics": metrics,
+        "units_per_EM": units_per_em,
+        "start_glyph_id": start_glyph_id,
+        "end_glyph_id": end_glyph_id,
+        "transform": transform,
+        "delta": delta
+    }))
+}
+
+fn svg_document_missing_output(status: FT_Error) -> RunOutput {
+    svg_document_record_output(
+        status,
+        0,
+        None,
+        Value::Null,
+        0,
+        0,
+        0,
+        Value::Null,
+        Value::Null,
+    )
+}
+
 fn svg_only_pair_glyph_index(params: &Value, selector: &str) -> Result<u32, String> {
     params
         .get(selector)
@@ -52498,6 +52626,189 @@ fn wasm_svg_only_pair(case: &InputCase) -> Result<RunOutput, String> {
     }
     wasm_done_face(handle);
     Ok(svg_only_pair_output(svg_row, non_svg_row))
+}
+
+fn rust_otsvg_document_probe(case: &InputCase) -> Result<RunOutput, String> {
+    let params = &case.inputs.params;
+    let mut face = open_named_face(case, "otsvg_font")?;
+    if case.operation == "otsvg.svg_document_transform_capture" {
+        let (xx, xy, yx, yy, dx, dy) = svg_document_transform_params(params)?;
+        let matrix = FT_Matrix {
+            xx: xx as FT_Fixed,
+            xy: xy as FT_Fixed,
+            yx: yx as FT_Fixed,
+            yy: yy as FT_Fixed,
+        };
+        let delta = FT_Vector {
+            x: dx as FT_Pos,
+            y: dy as FT_Pos,
+        };
+        FT_Set_Transform(Some(&mut face), Some(&matrix), Some(&delta));
+    }
+    let load_flags = params
+        .get("load_flags")
+        .map_or(Ok(FT_LOAD_COLOR), |value| load_flags_param_value(value));
+    let glyph_index = svg_document_glyph_index(params)?;
+    let slot = match FT_Load_Glyph(&face, glyph_index, load_flags?) {
+        Ok(slot) => slot,
+        Err(status) => return Ok(svg_document_missing_output(status)),
+    };
+    let Some(document) = slot.svg.as_ref() else {
+        return Ok(svg_document_missing_output(
+            FT_Err_Invalid_Slot_Handle as FT_Error,
+        ));
+    };
+    Ok(svg_document_record_output(
+        FT_Err_Ok,
+        document.svg_document.len(),
+        Some(djb2_hash(&document.svg_document)),
+        size_metrics_json(&document.metrics),
+        document.units_per_EM,
+        document.start_glyph_id,
+        document.end_glyph_id,
+        json!({
+            "xx": document.transform.xx,
+            "xy": document.transform.xy,
+            "yx": document.transform.yx,
+            "yy": document.transform.yy
+        }),
+        json!({"x": document.delta.x, "y": document.delta.y}),
+    ))
+}
+
+fn load_flags_param_value(value: &Value) -> Result<FT_Int32, String> {
+    flag_value(value, "load_flags")
+}
+
+fn c_otsvg_document_probe(case: &InputCase) -> Result<RunOutput, String> {
+    let (library, face) = c_open_named_face(case, "otsvg_font")?;
+    let params = &case.inputs.params;
+    if case.operation == "otsvg.svg_document_transform_capture" {
+        let (xx, xy, yx, yy, dx, dy) = svg_document_transform_params(params)?;
+        let matrix = c_abi::FT_Matrix {
+            xx: i64::from(xx),
+            xy: i64::from(xy),
+            yx: i64::from(yx),
+            yy: i64::from(yy),
+        };
+        let delta = c_abi::FT_Vector {
+            x: i64::from(dx),
+            y: i64::from(dy),
+        };
+        c_abi::FT_Set_Transform(face, &matrix, &delta);
+    }
+    let load_flags = params
+        .get("load_flags")
+        .map_or(Ok(FT_LOAD_COLOR), |value| load_flags_param_value(value));
+    let glyph_index = svg_document_glyph_index(params)?;
+    let mut status = c_abi::FT_Load_Glyph(face, glyph_index, load_flags?);
+    let mut glyph = ptr::null_mut();
+    let output = if status == FT_Err_Ok {
+        let slot = c_abi::abi_glyph_slot_pointer(face)
+            .ok_or_else(|| "missing c SVG document slot pointer".to_string())?;
+        status = c_abi::FT_Get_Glyph(slot, &mut glyph);
+        if status == FT_Err_Ok {
+            let snapshot = c_abi::abi_svg_glyph_snapshot(glyph)
+                .ok_or_else(|| "missing c SVG document glyph snapshot".to_string())?;
+            svg_document_record_output(
+                status,
+                snapshot.svg_document.len(),
+                Some(djb2_hash(&snapshot.svg_document)),
+                c_size_metrics_value(&snapshot.metrics),
+                snapshot.units_per_EM,
+                snapshot.start_glyph_id,
+                snapshot.end_glyph_id,
+                json!({
+                    "xx": snapshot.transform.xx,
+                    "xy": snapshot.transform.xy,
+                    "yx": snapshot.transform.yx,
+                    "yy": snapshot.transform.yy
+                }),
+                json!({"x": snapshot.delta.x, "y": snapshot.delta.y}),
+            )
+        } else {
+            svg_document_missing_output(status)
+        }
+    } else {
+        svg_document_missing_output(status)
+    };
+    if !glyph.is_null() {
+        c_abi::FT_Done_Glyph(glyph);
+    }
+    c_done_face(face);
+    c_done_library(library);
+    Ok(output)
+}
+
+fn c_size_metrics_value(metrics: &c_abi::FT_Size_Metrics) -> Value {
+    json!({
+        "x_ppem": metrics.x_ppem,
+        "y_ppem": metrics.y_ppem,
+        "x_scale": metrics.x_scale,
+        "y_scale": metrics.y_scale,
+        "ascender": metrics.ascender,
+        "descender": metrics.descender,
+        "height": metrics.height,
+        "max_advance": metrics.max_advance
+    })
+}
+
+fn wasm_otsvg_document_probe(case: &InputCase) -> Result<RunOutput, String> {
+    let handle = wasm_open_named_face(case, "otsvg_font")?;
+    let params = &case.inputs.params;
+    if case.operation == "otsvg.svg_document_transform_capture" {
+        let (xx, xy, yx, yy, dx, dy) = svg_document_transform_params(params)?;
+        let matrix = FT_Matrix {
+            xx: i64::from(xx),
+            xy: i64::from(xy),
+            yx: i64::from(yx),
+            yy: i64::from(yy),
+        };
+        let delta = FT_Vector {
+            x: i64::from(dx),
+            y: i64::from(dy),
+        };
+        wasm_abi::fontdone_wasm_set_transform(handle, &matrix, &delta);
+    }
+    let load_flags = params
+        .get("load_flags")
+        .map_or(Ok(FT_LOAD_COLOR), |value| load_flags_param_value(value));
+    let glyph_index = svg_document_glyph_index(params)?;
+    let mut status = wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, load_flags?);
+    let mut glyph_handle = 0usize;
+    let output = if status == FT_Err_Ok {
+        status = wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut glyph_handle);
+        if status == FT_Err_Ok {
+            let snapshot = wasm_abi::abi_svg_glyph_snapshot(glyph_handle)
+                .ok_or_else(|| "missing wasm SVG document glyph snapshot".to_string())?;
+            svg_document_record_output(
+                status,
+                snapshot.svg_document.len(),
+                Some(djb2_hash(&snapshot.svg_document)),
+                wasm_size_metrics_json(&snapshot.metrics),
+                snapshot.units_per_EM,
+                snapshot.start_glyph_id,
+                snapshot.end_glyph_id,
+                json!({
+                    "xx": snapshot.transform.xx,
+                    "xy": snapshot.transform.xy,
+                    "yx": snapshot.transform.yx,
+                    "yy": snapshot.transform.yy
+                }),
+                json!({"x": snapshot.delta.x, "y": snapshot.delta.y}),
+            )
+        } else {
+            svg_document_missing_output(status)
+        }
+    } else {
+        svg_document_missing_output(status)
+    };
+    if glyph_handle != 0 {
+        let glyph = ptr::with_exposed_provenance_mut::<wasm_abi::FontdoneWasmGlyph>(glyph_handle);
+        wasm_abi::fontdone_wasm_done_glyph_handle(glyph);
+    }
+    wasm_done_face(handle);
+    Ok(output)
 }
 
 fn rust_svg_glyph_record(face: &FT_Face, case: &InputCase) -> Result<RunOutput, String> {

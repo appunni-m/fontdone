@@ -468,6 +468,8 @@ REAL_PARITY_OPERATIONS = {
     "load_char",
     "load_glyph",
     "freetype.load_glyph_pair",
+    "otsvg.svg_document_capture",
+    "otsvg.svg_document_transform_capture",
     "freetype.inspect_glyph_metrics",
     "freetype.inspect_glyph_slot",
     "freetype.get_subglyph_info",
@@ -4199,6 +4201,25 @@ def freetype_svg_only_real_parity_reason(row: ConcreteInput) -> str | None:
             "FT_LOAD_SVG_ONLY compares the same-input pinned C, Rust FFI, C ABI, "
             "and WASM pair probe: SVG glyph success with slot format/document "
             "hash, and non-SVG glyph rejection with the public error code"
+        )
+    return None
+
+
+def otsvg_document_real_parity_reason(row: ConcreteInput) -> str | None:
+    if (
+        row.case_id
+        in {
+            "otsvg.FT_SVG_DocumentRec.document_range_and_payload_fields",
+            "otsvg.FT_SVG_DocumentRec.transform_and_metrics_fields",
+        }
+        and row.operation
+        in {"otsvg.svg_document_capture", "otsvg.svg_document_transform_capture"}
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_SVG_DocumentRec compares the same-input pinned C, Rust FFI, "
+            "C ABI, and WASM slot-document record: payload hash/range fields, "
+            "size metrics, and the declared transform/delta state"
         )
     return None
 
@@ -8534,6 +8555,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     freetype_svg_only_real = freetype_svg_only_real_parity_reason(row)
     if freetype_svg_only_real:
         return ("real-parity", freetype_svg_only_real)
+    otsvg_document_real = otsvg_document_real_parity_reason(row)
+    if otsvg_document_real:
+        return ("real-parity", otsvg_document_real)
     freetype_core_pending = freetype_core_subsystem_pending_reason(row)
     if freetype_core_pending:
         return ("pending-route", freetype_core_pending)
