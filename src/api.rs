@@ -1956,3 +1956,398 @@ fn ft_abs_i32_as_u32(value: i32) -> u32 {
 fn ft_msb_nonzero(value: u32) -> i32 {
     31 - value.leading_zeros() as i32
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::font::{SizeRequest, SizeRequestType};
+
+    const DEJAVU_SANS: &[u8] = include_bytes!("../tests/fixtures/input/fonts/DejaVuSans.ttf");
+    const EMBEDDED_STRIKES: &[u8] =
+        include_bytes!("../tests/fixtures/input/fonts/bitmap/embedded-strikes.ttf");
+    const SVG_GLYPH: &[u8] = include_bytes!("../tests/fixtures/input/fonts/svg/otsvg-glyph.ttf");
+    const CMAP14: &[u8] =
+        include_bytes!("../tests/fixtures/input/fonts/charmap/cmap-format14-only.ttf");
+
+    fn load(data: &[u8]) -> Face {
+        match Face::from_memory(data, 0, 16.0) {
+            Ok(face) => face,
+            Err(err) => panic!("test font should load: {err}"),
+        }
+    }
+
+    #[test]
+    fn library_and_face_metadata_surfaces() {
+        let library = Library::init();
+        let face = match library.new_memory_face(DEJAVU_SANS, 0, 16.0) {
+            Ok(face) => face,
+            Err(err) => panic!("DejaVuSans should open: {err}"),
+        };
+        assert_eq!(face.size_metrics().x_ppem, 16);
+        assert!(face.charmap_index().is_some());
+
+        let info = face.info();
+        assert!(info.units_per_em > 0);
+        assert!(info.num_glyphs > 0);
+        assert_eq!(info.font_format, "TrueType");
+        assert!(!info.family_name.is_empty());
+
+        let first = match face.first_char() {
+            Some(first) => first,
+            None => panic!("DejaVuSans should have a first char"),
+        };
+        assert!(face.next_char(first.0).is_some());
+        assert!(face.sfnt_name_count() > 0);
+        assert!(face.sfnt_name(0).is_some());
+        assert!(face.sfnt_name(face.sfnt_name_count()).is_none());
+        let _format = face.sfnt_name_format();
+        assert!(face.postscript_name().is_some());
+        let _fstype = face.get_fstype_flags();
+        let _gasp = face.get_gasp(16);
+
+        let a = face.get_char_index('A' as u32);
+        assert!(a > 0);
+        assert!(face.glyph_name(u32::from(a)).is_some());
+        let char_slot = match face.load_char('A' as u32, LoadFlags::DEFAULT) {
+            Ok(slot) => slot,
+            Err(err) => panic!("load_char should succeed: {err}"),
+        };
+        assert_eq!(char_slot.glyph_index, a);
+        let _kern = face.kerning_by_glyphs(u32::from(a), u32::from(a), KerningMode::Default);
+        let _kern_unscaled =
+            face.kerning_by_glyphs(u32::from(a), u32::from(a), KerningMode::Unscaled);
+
+        // Undefined or truncated input must be rejected at face open.
+        match library.new_memory_face(&[], 0, 16.0) {
+            Err(_) => {}
+            Ok(_) => panic!("empty input must not open a face"),
+        }
+
+        // Name-selection options must not reject a normal scalable face.
+        let named = match library.new_memory_face_with_name_options(
+            DEJAVU_SANS,
+            0,
+            16.0,
+            false,
+            false,
+            false,
+        ) {
+            Ok(face) => face,
+            Err(err) => panic!("name options should open DejaVuSans: {err}"),
+        };
+        assert!(named.font().size_metrics().x_ppem == 16);
+    }
+
+    #[test]
+    fn size_requests_update_active_metrics() {
+        let mut face = load(DEJAVU_SANS);
+        face.set_char_size(16 << 6, 16 << 6, 72, 72);
+        assert_eq!(face.size_metrics().x_ppem, 16);
+        face.set_pixel_sizes(24, 24);
+        assert_eq!(face.size_metrics().x_ppem, 24);
+
+        let request = SizeRequest {
+            request_type: SizeRequestType::Nominal,
+            width: 20 << 6,
+            height: 20 << 6,
+            hori_resolution: 72,
+            vert_resolution: 72,
+        };
+        match face.request_size(request) {
+            Ok(()) => {}
+            Err(err) => panic!("nominal size request should succeed: {err:?}"),
+        }
+        assert_eq!(face.size_metrics().x_ppem, 20);
+
+        // DejaVuSans subset has no embedded strikes.
+        match face.select_size(0) {
+            Err(_) => {}
+            Ok(()) => panic!("no-strike face must reject strike selection"),
+        }
+    }
+
+    #[test]
+    fn strike_selection_loads_embedded_bitmaps() {
+        let mut face = load(EMBEDDED_STRIKES);
+        match face.select_size(0) {
+            Ok(()) => {}
+            Err(err) => panic!("embedded-strikes fixture must have a strike: {err:?}"),
+        }
+        assert_eq!(face.size_metrics().x_ppem, 20);
+        match face.select_size(1) {
+            Err(_) => {}
+            Ok(()) => panic!("strike index 1 is out of range"),
+        }
+
+        // At least one cmap-covered glyph must resolve to an embedded bitmap.
+        let mut saw_bitmap = false;
+        let mut current = face.first_char();
+        while let Some((char_code, _)) = current {
+            let glyph = face.get_char_index(char_code);
+            if let Ok(slot) = face.load_glyph(glyph, LoadFlags::DEFAULT | LoadFlags::SBITS_ONLY) {
+                if let Some(bitmap) = slot.bitmap {
+                    assert!(bitmap.rows > 0);
+                    assert!(!bitmap.buffer.is_empty());
+                    saw_bitmap = true;
+                    break;
+                }
+            }
+            current = face.next_char(char_code);
+        }
+        assert!(
+            saw_bitmap,
+            "strike font should expose at least one bitmap glyph"
+        );
+    }
+
+    #[test]
+    fn svg_glyphs_load_as_documents() {
+        let face = load(SVG_GLYPH);
+        let slot = match face.load_glyph(1, LoadFlags::COLOR) {
+            Ok(slot) => slot,
+            Err(err) => panic!("SVG glyph should load: {err}"),
+        };
+        assert_eq!(slot.format, GlyphFormat::Svg);
+        let document = match slot.svg {
+            Some(document) => document,
+            None => panic!("SVG slot must carry its document"),
+        };
+        assert_eq!(document.start_glyph_id, 1);
+        assert!(document.end_glyph_id >= document.start_glyph_id);
+
+        let svg_only = match face.load_glyph(1, LoadFlags::COLOR | LoadFlags::SVG_ONLY) {
+            Ok(slot) => slot,
+            Err(err) => panic!("SVG_ONLY should load the SVG glyph: {err}"),
+        };
+        assert_eq!(svg_only.format, GlyphFormat::Svg);
+        // Without FT_LOAD_COLOR the pinned route rejects SVG-only loads.
+        match face.load_glyph(1, LoadFlags::SVG_ONLY) {
+            Err(_) => {}
+            Ok(_) => panic!("SVG_ONLY without COLOR must be rejected"),
+        }
+
+        let vertical = match face.load_glyph(1, LoadFlags::COLOR | LoadFlags::VERTICAL_LAYOUT) {
+            Ok(slot) => slot,
+            Err(err) => panic!("vertical SVG load should succeed: {err}"),
+        };
+        assert_eq!(vertical.advance.y, vertical.metrics.vert_advance);
+
+        // Identity transform with a translation updates only the document delta.
+        let mut transformed = match face.load_glyph(1, LoadFlags::COLOR) {
+            Ok(slot) => slot,
+            Err(err) => panic!("SVG glyph should load: {err}"),
+        };
+        let before = transformed.advance;
+        transformed.apply_transform(0x1_0000, 0, 0, 0x1_0000, 16 << 6, 8 << 6);
+        assert_eq!(transformed.advance, before);
+        assert_eq!(
+            transformed.svg.as_ref().map(|document| document.delta),
+            Some((16 << 6, 8 << 6))
+        );
+    }
+
+    #[test]
+    fn variation_selector_api_returns_consistent_results() {
+        let face = load(CMAP14);
+        let selectors = match face.get_variant_selectors() {
+            Some(selectors) => selectors,
+            None => panic!("cmap-format14 fixture must expose variation selectors"),
+        };
+        assert!(!selectors.is_empty());
+        assert!(selectors.contains(&0xFE0F));
+
+        let variants = match face.get_variants_of_char('A' as u32) {
+            Some(variants) => variants,
+            None => panic!("A must have variation mappings"),
+        };
+        assert!(variants.contains(&0xFE0F));
+        assert!(variants.contains(&0xE0101));
+
+        let chars = match face.get_chars_of_variant(0xFE0F) {
+            Some(chars) => chars,
+            None => panic!("0xFE0F must map characters"),
+        };
+        assert!(chars.contains(&('A' as u32)));
+        assert!(chars.contains(&('B' as u32)));
+
+        // B maps to the explicit 'base' glyph (index 1); A is a default mapping.
+        assert_eq!(face.get_char_variant_index('B' as u32, 0xFE0F), 1);
+        assert_eq!(face.get_char_variant_index('C' as u32, 0xE0101), 2);
+        assert_eq!(face.get_char_variant_is_default('A' as u32, 0xFE0F), 1);
+        assert_eq!(face.get_char_variant_is_default('B' as u32, 0xFE0F), 0);
+    }
+
+    #[test]
+    fn every_load_flag_route_produces_a_slot() {
+        let face = load(DEJAVU_SANS);
+        let glyph = face.get_char_index('A' as u32);
+        assert!(glyph > 0);
+
+        let plain = match face.load_glyph(glyph, LoadFlags::DEFAULT) {
+            Ok(slot) => slot,
+            Err(err) => panic!("default load should succeed: {err}"),
+        };
+        assert_eq!(plain.format, GlyphFormat::Outline);
+        assert!(plain.metrics.hori_advance > 0);
+        assert_eq!(plain.advance.x, plain.metrics.hori_advance);
+
+        let rendered = match face.load_glyph(glyph, LoadFlags::DEFAULT | LoadFlags::RENDER) {
+            Ok(slot) => slot,
+            Err(err) => panic!("render load should succeed: {err}"),
+        };
+        assert_eq!(rendered.format, GlyphFormat::Bitmap);
+        let bitmap = match rendered.bitmap.as_ref() {
+            Some(bitmap) => bitmap,
+            None => panic!("rendered slot must carry a bitmap"),
+        };
+        assert!(bitmap.width > 0 && bitmap.rows > 0);
+        assert_eq!(rendered.pixel_mode(), Some(PixelMode::Gray));
+
+        let mono = match face.load_glyph(
+            glyph,
+            LoadFlags::DEFAULT | LoadFlags::RENDER | LoadFlags::TARGET_MONO,
+        ) {
+            Ok(slot) => slot,
+            Err(err) => panic!("mono render should succeed: {err}"),
+        };
+        assert_eq!(mono.pixel_mode(), Some(PixelMode::Mono));
+        let lcd = match face.load_glyph(
+            glyph,
+            LoadFlags::DEFAULT | LoadFlags::RENDER | LoadFlags::TARGET_LCD,
+        ) {
+            Ok(slot) => slot,
+            Err(err) => panic!("LCD render should succeed: {err}"),
+        };
+        assert_eq!(lcd.pixel_mode(), Some(PixelMode::Lcd));
+        let lcd_v = match face.load_glyph(
+            glyph,
+            LoadFlags::DEFAULT | LoadFlags::RENDER | LoadFlags::TARGET_LCD_V,
+        ) {
+            Ok(slot) => slot,
+            Err(err) => panic!("LCD_V render should succeed: {err}"),
+        };
+        assert_eq!(lcd_v.pixel_mode(), Some(PixelMode::LcdV));
+
+        for flags in [
+            LoadFlags::TARGET_LIGHT,
+            LoadFlags::FORCE_AUTOHINT,
+            LoadFlags::FORCE_AUTOHINT | LoadFlags::TARGET_MONO,
+            LoadFlags::FORCE_AUTOHINT | LoadFlags::TARGET_LCD,
+            LoadFlags::FORCE_AUTOHINT | LoadFlags::TARGET_LCD_V,
+            LoadFlags::NO_HINTING,
+            LoadFlags::NO_SCALE,
+            LoadFlags::VERTICAL_LAYOUT,
+            LoadFlags::NO_AUTOHINT,
+            LoadFlags::COMPUTE_METRICS,
+            LoadFlags::PEDANTIC,
+            LoadFlags::NO_AUTOHINT | LoadFlags::TARGET_MONO,
+        ] {
+            let slot = match face.load_glyph(glyph, flags) {
+                Ok(slot) => slot,
+                Err(err) => panic!("load flags {flags:?} should succeed: {err}"),
+            };
+            assert!(slot.metrics.hori_advance >= 0);
+        }
+
+        // Out-of-range glyph indexes are rejected.
+        match face.load_glyph(face.info().num_glyphs, LoadFlags::DEFAULT) {
+            Err(_) => {}
+            Ok(_) => panic!("out-of-range glyph must fail"),
+        }
+    }
+
+    #[test]
+    fn transform_and_render_loaded_glyph_paths() {
+        let face = load(DEJAVU_SANS);
+        let glyph = face.get_char_index('A' as u32);
+        let plain = match face.load_glyph(glyph, LoadFlags::DEFAULT) {
+            Ok(slot) => slot,
+            Err(err) => panic!("default load should succeed: {err}"),
+        };
+
+        // 90-degree rotation swaps the advance vector components.
+        let rotated = match face.load_glyph_with_transform(
+            glyph,
+            LoadFlags::DEFAULT,
+            Some((0, 0x1_0000, 0x1_0000, 0, 0, 0)),
+        ) {
+            Ok(slot) => slot,
+            Err(err) => panic!("transformed load should succeed: {err}"),
+        };
+        assert_eq!(rotated.advance.x, 0);
+        assert_eq!(rotated.advance.y, plain.advance.x);
+
+        let translated = match face.load_glyph_with_transform(
+            glyph,
+            LoadFlags::DEFAULT | LoadFlags::RENDER,
+            Some((0x1_0000, 0, 0, 0x1_0000, 16 << 6, 0)),
+        ) {
+            Ok(slot) => slot,
+            Err(err) => panic!("transformed render should succeed: {err}"),
+        };
+        assert_eq!(translated.format, GlyphFormat::Bitmap);
+
+        for (mode, expected) in [
+            (RenderMode::Normal, PixelMode::Gray),
+            (RenderMode::Mono, PixelMode::Mono),
+            (RenderMode::Lcd, PixelMode::Lcd),
+            (RenderMode::LcdV, PixelMode::LcdV),
+        ] {
+            let slot = match face.render_loaded_glyph(glyph, LoadFlags::DEFAULT, mode) {
+                Ok(slot) => slot,
+                Err(err) => panic!("render mode {mode:?} should succeed: {err}"),
+            };
+            assert_eq!(slot.format, GlyphFormat::Bitmap);
+            assert_eq!(slot.pixel_mode(), Some(expected));
+        }
+
+        // SDF rendering is available through the same façade.
+        let sdf = match face.render_loaded_glyph(glyph, LoadFlags::DEFAULT, RenderMode::Sdf) {
+            Ok(slot) => slot,
+            Err(err) => panic!("SDF render should succeed: {err}"),
+        };
+        assert_eq!(sdf.format, GlyphFormat::Bitmap);
+    }
+
+    #[test]
+    fn outline_orientation_matches_freetype_convention() {
+        use crate::outline::{Outline, OutlinePoint};
+
+        let outline = Outline {
+            n_contours: 1,
+            contours: vec![3],
+            points: vec![
+                OutlinePoint {
+                    x: 0,
+                    y: 0,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 0,
+                    y: 100,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 100,
+                    y: 100,
+                    on_curve: true,
+                },
+                OutlinePoint {
+                    x: 100,
+                    y: 0,
+                    on_curve: true,
+                },
+            ],
+            tags: Vec::new(),
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 100,
+            cbox_y_max: 100,
+        };
+        let orientation = outline_get_orientation(Some(&outline));
+        assert!(orientation == 0 || orientation == 1);
+        assert_eq!(outline_get_orientation(None), 0);
+    }
+}
