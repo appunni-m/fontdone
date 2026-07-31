@@ -40,12 +40,12 @@
     "function_total": 218
   },
   "c_contract": {
-    "categories_complete": 8,
+  "categories_complete": 10,
     "categories_total": 12,
     "is_complete": false,
-    "runtime_contract_rows_complete": 5040,
-    "runtime_contract_rows_total": 5048,
-    "runtime_contract_rows_pending": 8,
+  "runtime_contract_rows_complete": 5048,
+  "runtime_contract_rows_total": 5048,
+  "runtime_contract_rows_pending": 0,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
     "platform_lanes_complete": 1,
@@ -614,9 +614,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "4608a30865e969008a05720a261726c0f649fb9b9157b646c37d218dc61fb3ca",
-    "parity_tree_sha256": "40f571eb271529f08ef4e4fde7f39c7e6cb40a23f85e8395a472f97f823a6e13",
-    "log_sha256": "3242ece312a01da231d0db04878028dbfe7cf32d39c757e25dca512b51a3ca4e",
+    "sha256": "97f7979fddc6094243b06ad1b1c64b2034afd30e779401a08cef62a57195bcef",
+    "parity_tree_sha256": "520493d45969ed7271c73f01c3e87a7fa4cfa8a38559313e58ef5eaf9f6faa91",
+    "log_sha256": "78625d0dff2012adc025de44cd818ae0829ad6c1c510fa1239f472601c4f8d46",
     "command": "make test-parity"
   }
 }

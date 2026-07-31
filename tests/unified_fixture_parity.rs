@@ -40856,6 +40856,19 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             );
             Ok(args)
         }
+        "freetype.parameter_dispatch" if sbix_params_runtime_supported(case) => {
+            let mut args = vec!["--sbix-params-case".to_string()];
+            push_required_asset_source(case, "sbix_font", &mut args)?;
+            args.push(face_index_param(params)?.to_string());
+            args.push(
+                sbix_params_variant_labels()
+                    .iter()
+                    .map(|(label, mode)| format!("{label}:{mode}"))
+                    .collect::<Vec<_>>()
+                    .join(","),
+            );
+            Ok(args)
+        }
         "freetype.open_face_with_params" if open_face_ignored_params_runtime_supported(case) => {
             let mut args = vec!["--open-face-ignored-params".to_string()];
             push_font_source(case, &mut args)?;
@@ -44406,6 +44419,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "freetype.open_face_with_params" if sbix_params_runtime_supported(case) => {
             rust_sbix_params_case(case)
         }
+        "freetype.parameter_dispatch" if sbix_params_runtime_supported(case) => {
+            rust_sbix_params_case(case)
+        }
         "freetype.open_face_with_params" if open_face_ignored_params_runtime_supported(case) => {
             rust_open_face_ignored_params(case)
         }
@@ -45654,6 +45670,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_open_face_name_options(case)
         }
         "freetype.open_face_with_params" if sbix_params_runtime_supported(case) => {
+            c_sbix_params_case(case)
+        }
+        "freetype.parameter_dispatch" if sbix_params_runtime_supported(case) => {
             c_sbix_params_case(case)
         }
         "freetype.open_face_with_params" if open_face_ignored_params_runtime_supported(case) => {
@@ -46986,6 +47005,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             wasm_open_face_name_options(case)
         }
         "freetype.open_face_with_params" if sbix_params_runtime_supported(case) => {
+            wasm_sbix_params_case(case)
+        }
+        "freetype.parameter_dispatch" if sbix_params_runtime_supported(case) => {
             wasm_sbix_params_case(case)
         }
         "freetype.open_face_with_params" if open_face_ignored_params_runtime_supported(case) => {

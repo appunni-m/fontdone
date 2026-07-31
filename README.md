@@ -159,11 +159,11 @@ measurement provenance is retained in the compatibility snapshot.
 
 ### 3.4 C ABI completion contract
 
-The latest committed scorecard has **8 / 12 categories complete**:
+The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 names, signatures, and traced function routes; 5,040 / 5,048 pinned-C runtime contract rows exact, with 8 pending |
+| Functions | 218 / 218 names, signatures, and traced function routes; 5,048 / 5,048 pinned-C runtime contract rows exact, with 0 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership, state, errors, modules, headers | Complete under their blocking scorecard measurements |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |

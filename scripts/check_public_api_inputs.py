@@ -4114,6 +4114,39 @@ def ftparams_face_properties_real_parity_reason(row: ConcreteInput) -> str | Non
     return None
 
 
+def ftparams_sbix_and_stem_darkening_real_parity_reason(row: ConcreteInput) -> str | None:
+    sbix_rows = {
+        "ftparams.FT_PARAM_TAG_IGNORE_SBIX.open_face_ignores_sbix",
+        "ftparams.FT_PARAM_TAG_IGNORE_SBIX.bitmap_only_requires_real_sbix_fixture",
+        "freetype.FT_Parameter.tag_data_parameters_match_c_behavior",
+    }
+    if (
+        row.case_id in sbix_rows
+        and row.operation in {"freetype.open_face_with_params", "freetype.parameter_dispatch"}
+        and row.params.get("runtime_route") == "actual_sbix_parameter_dispatch"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_PARAM_TAG_IGNORE_SBIX and FT_Parameter dispatch validate the "
+            "real SBIX-with-outlines fixture through pinned C oracle, Rust FFI, "
+            "C ABI, and WASM ABI: outline glyph loading, bitmap-only rejection, "
+            "known/unknown tag null-data variants, and observable face flags"
+        )
+    if (
+        row.case_id
+        == "ftparams.FT_PARAM_TAG_STEM_DARKENING.cff_type1_toggle_changes_supported_output"
+        and row.operation == "freetype.face_properties_then_render"
+        and row.params.get("runtime_route") == "actual_stem_darkening_preserve_probe"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_PARAM_TAG_STEM_DARKENING toggles face no_stem_darkening state "
+            "and preserves public CFF/Type1 load output across pinned C, Rust "
+            "FFI, C ABI, and WASM ABI"
+        )
+    return None
+
+
 def ftparams_name_option_real_parity_reason(row: ConcreteInput) -> str | None:
     """Contained FT_Open_Args name-option rows with null data and maintained routes."""
     if row.case_id in {
@@ -5320,6 +5353,27 @@ def interpreter_version_property_real_parity_reason(row: ConcreteInput) -> str |
     }
     if row.operation == "ftdriver.interpreter_version_property" and row.case_id in exact_rows:
         return "TT interpreter-version property set/get validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    return None
+
+
+def hinting_engine_property_real_parity_reason(row: ConcreteInput) -> str | None:
+    exact_rows = {
+        "ftdriver.FT_CFF_HINTING_ADOBE.hinting_engine_property_runtime",
+        "ftdriver.FT_CFF_HINTING_FREETYPE.hinting_engine_property_runtime",
+        "ftdriver.FT_HINTING_ADOBE.hinting_engine_property_runtime",
+        "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime",
+    }
+    if (
+        row.operation == "ftdriver.hinting_engine_property"
+        and row.case_id in exact_rows
+        and row.params.get("runtime_route") == "actual_ps_hinting_engine_property"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "PS hinting-engine property set/get/string/load behavior validates "
+            "through the pinned C oracle and exact Rust FFI, C ABI, and WASM "
+            "ABI property routes for the CFF, Type1, and t1cid drivers"
+        )
     return None
 
 
@@ -8777,6 +8831,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     interpreter_version_property_real_reason = interpreter_version_property_real_parity_reason(row)
     if interpreter_version_property_real_reason:
         return ("real-parity", interpreter_version_property_real_reason)
+    hinting_engine_property_real = hinting_engine_property_real_parity_reason(row)
+    if hinting_engine_property_real:
+        return ("real-parity", hinting_engine_property_real)
     future_batch_pending = future_batch_unresolved_asset_pending_reason(row)
     if future_batch_pending:
         return ("pending-route", future_batch_pending)
@@ -8879,6 +8936,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     ftparams_face_properties_reason = ftparams_face_properties_real_parity_reason(row)
     if ftparams_face_properties_reason:
         return ("real-parity", ftparams_face_properties_reason)
+    ftparams_sbix_stem_reason = ftparams_sbix_and_stem_darkening_real_parity_reason(row)
+    if ftparams_sbix_stem_reason:
+        return ("real-parity", ftparams_sbix_stem_reason)
     ftparams_pending = ftparams_subsystem_pending_reason(row)
     if ftparams_pending:
         return ("pending-route", ftparams_pending)
