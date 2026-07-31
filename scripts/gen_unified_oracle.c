@@ -34014,7 +34014,7 @@ static int emit_new_face_variants(int argc, char** argv) {
 }
 
 static int emit_open_face_variants(int argc, char** argv) {
-    (void)argc;
+    int mixed_error_status = argc == 6 && streq(argv[5], "mixed");
     const char* source_kind = argv[2];
     const char* source_value = argv[3];
     char* rows_arg = (char*)malloc(strlen(argv[4]) + 1);
@@ -34119,7 +34119,7 @@ static int emit_open_face_variants(int argc, char** argv) {
     }
 
     printf("{");
-    print_status(first_error);
+    print_status(mixed_error_status ? FT_Err_Ok : first_error);
     printf(",\"output\":{\"outputs\":[");
     for (size_t i = 0; i < row_count; i++) {
         if (i) {
@@ -35292,7 +35292,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 4 && streq(argv[1], "--new-face-variants")) {
         return emit_new_face_variants(argc, argv);
     }
-    if (argc == 5 && streq(argv[1], "--open-face-variants")) {
+    if ((argc == 5 || argc == 6) && streq(argv[1], "--open-face-variants")) {
         return emit_open_face_variants(argc, argv);
     }
     if (argc == 6 && streq(argv[1], "--open-face-name-options")) {

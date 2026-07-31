@@ -40821,6 +40821,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             let mut args = vec!["--open-face-variants".to_string()];
             push_font_source(case, &mut args)?;
             args.push(memory_face_rows_arg(params)?);
+            if case.case_id == "freetype.FT_Open_Args.open_face_consumes_args_like_c" {
+                args.push("mixed".to_string());
+            }
             Ok(args)
         }
         "new_memory_face" => {
@@ -66248,40 +66251,50 @@ fn rust_new_memory_face_variants(case: &InputCase) -> Result<RunOutput, String> 
     let data = font_bytes(case)?;
     let library = FT_Init_FreeType();
     let rows = memory_face_rows(&case.inputs.params)?;
-    memory_face_outputs(rows, |row| {
-        if row.library_is_null {
-            return Ok((FT_Err_Invalid_Library_Handle as FT_Error, true));
-        }
-        if row.open_args_is_null {
-            return Ok((FT_Err_Invalid_Argument, true));
-        }
-        if row.aface_is_null {
-            return Ok((FT_Err_Invalid_Argument, true));
-        }
-        if open_face_args_dispatch_case(case) {
-            let source_flags =
-                row.open_flags & (FT_OPEN_MEMORY | FT_OPEN_STREAM | FT_OPEN_PATHNAME);
-            if source_flags != FT_OPEN_MEMORY {
-                // C `FT_Open_Face` rejects calls unless exactly one source flag
-                // is selected before any driver probing (ftobjs.c:2524-2547).
+    memory_face_outputs(
+        rows,
+        case.case_id == "freetype.FT_Open_Args.open_face_consumes_args_like_c",
+        |row| {
+            if row.library_is_null {
+                return Ok((FT_Err_Invalid_Library_Handle as FT_Error, true));
+            }
+            if row.open_args_is_null {
                 return Ok((FT_Err_Invalid_Argument, true));
             }
-        }
-        let Some(bytes) = memory_face_row_bytes(data.as_ref(), row)? else {
-            return Ok((FT_Err_Invalid_Argument, true));
-        };
-        match FT_New_Memory_Face(&library, bytes, row.face_index, 20.0) {
-            Ok(_face) => Ok((FT_Err_Ok, false)),
-            Err(err) => Ok((err, true)),
-        }
-    })
+            if row.aface_is_null {
+                return Ok((FT_Err_Invalid_Argument, true));
+            }
+            if open_face_args_dispatch_case(case) {
+                let source_flags =
+                    row.open_flags & (FT_OPEN_MEMORY | FT_OPEN_STREAM | FT_OPEN_PATHNAME);
+                if source_flags == FT_OPEN_PATHNAME {
+                    // Pinned Unix FreeType reaches FT_Stream_Open for a null
+                    // pathname and reports Cannot_Open_Resource (ftobjs.c:
+                    // 231-240; builds/unix/ftsystem.c:247-264).
+                    return Ok((FT_Err_Cannot_Open_Resource as FT_Error, true));
+                }
+                if source_flags != FT_OPEN_MEMORY {
+                    // C `FT_Open_Face` rejects calls unless exactly one source flag
+                    // is selected before any driver probing (ftobjs.c:2524-2547).
+                    return Ok((FT_Err_Invalid_Argument, true));
+                }
+            }
+            let Some(bytes) = memory_face_row_bytes(data.as_ref(), row)? else {
+                return Ok((FT_Err_Invalid_Argument, true));
+            };
+            match FT_New_Memory_Face(&library, bytes, row.face_index, 20.0) {
+                Ok(_face) => Ok((FT_Err_Ok, false)),
+                Err(err) => Ok((err, true)),
+            }
+        },
+    )
 }
 
 fn rust_new_face_variants(case: &InputCase) -> Result<RunOutput, String> {
     let pathname = font_pathname(case)?;
     let library = FT_Init_FreeType();
     let rows = memory_face_rows(&case.inputs.params)?;
-    memory_face_outputs(rows, |row| {
+    memory_face_outputs(rows, false, |row| {
         if row.library_is_null {
             return Ok((FT_Err_Invalid_Library_Handle as FT_Error, true));
         }
@@ -66303,52 +66316,57 @@ fn c_new_memory_face_variants(case: &InputCase) -> Result<RunOutput, String> {
     if err != FT_Err_Ok {
         return Ok(error(err));
     }
-    let output = memory_face_outputs(rows, |row| {
-        let file_size = memory_face_file_size(bytes.len(), row)?;
-        let library_arg = if row.library_is_null {
-            std::ptr::null_mut()
-        } else {
-            library
-        };
-        let mut face = std::ptr::null_mut();
-        let face_ptr = if row.aface_is_null {
-            std::ptr::null_mut()
-        } else {
-            &mut face
-        };
-        let open_args = c_abi::FT_Open_Args {
-            flags: row.open_flags as c_abi::FT_UInt,
-            memory_base: bytes.as_ptr(),
-            memory_size: file_size,
-            pathname: std::ptr::null_mut(),
-            stream: std::ptr::null_mut(),
-            driver: std::ptr::null_mut(),
-            num_params: 0,
-            params: std::ptr::null_mut(),
-        };
-        let err =
-            if open_face_args_dispatch_case(case) || row.has_open_args || row.open_args_is_null {
-                let args_ptr = if row.open_args_is_null {
-                    std::ptr::null()
-                } else {
-                    &open_args
-                };
-                c_abi::FT_Open_Face(library_arg, args_ptr, row.face_index, face_ptr)
+    let output = memory_face_outputs(
+        rows,
+        case.case_id == "freetype.FT_Open_Args.open_face_consumes_args_like_c",
+        |row| {
+            let file_size = memory_face_file_size(bytes.len(), row)?;
+            let library_arg = if row.library_is_null {
+                std::ptr::null_mut()
             } else {
-                c_abi::FT_New_Memory_Face(
-                    library_arg,
-                    bytes.as_ptr(),
-                    file_size,
-                    row.face_index,
-                    face_ptr,
-                )
+                library
             };
-        let face_is_null = face.is_null();
-        if err == FT_Err_Ok {
-            c_done_face(face);
-        }
-        Ok((err, face_is_null))
-    });
+            let mut face = std::ptr::null_mut();
+            let face_ptr = if row.aface_is_null {
+                std::ptr::null_mut()
+            } else {
+                &mut face
+            };
+            let open_args = c_abi::FT_Open_Args {
+                flags: row.open_flags as c_abi::FT_UInt,
+                memory_base: bytes.as_ptr(),
+                memory_size: file_size,
+                pathname: std::ptr::null_mut(),
+                stream: std::ptr::null_mut(),
+                driver: std::ptr::null_mut(),
+                num_params: 0,
+                params: std::ptr::null_mut(),
+            };
+            let err =
+                if open_face_args_dispatch_case(case) || row.has_open_args || row.open_args_is_null
+                {
+                    let args_ptr = if row.open_args_is_null {
+                        std::ptr::null()
+                    } else {
+                        &open_args
+                    };
+                    c_abi::FT_Open_Face(library_arg, args_ptr, row.face_index, face_ptr)
+                } else {
+                    c_abi::FT_New_Memory_Face(
+                        library_arg,
+                        bytes.as_ptr(),
+                        file_size,
+                        row.face_index,
+                        face_ptr,
+                    )
+                };
+            let face_is_null = face.is_null();
+            if err == FT_Err_Ok {
+                c_done_face(face);
+            }
+            Ok((err, face_is_null))
+        },
+    );
     c_done_library(library);
     output
 }
@@ -66381,37 +66399,45 @@ fn c_new_memory_face_null_base(case: &InputCase) -> Result<RunOutput, String> {
 fn wasm_new_memory_face_variants(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
     let rows = memory_face_rows(&case.inputs.params)?;
-    memory_face_outputs(rows, |row| {
-        if row.library_is_null {
-            return Ok((FT_Err_Invalid_Library_Handle as FT_Error, true));
-        }
-        if row.open_args_is_null {
-            return Ok((FT_Err_Invalid_Argument, true));
-        }
-        if row.aface_is_null {
-            return Ok((FT_Err_Invalid_Argument, true));
-        }
-        if open_face_args_dispatch_case(case) {
-            let source_flags =
-                row.open_flags & (FT_OPEN_MEMORY | FT_OPEN_STREAM | FT_OPEN_PATHNAME);
-            if source_flags != FT_OPEN_MEMORY {
+    memory_face_outputs(
+        rows,
+        case.case_id == "freetype.FT_Open_Args.open_face_consumes_args_like_c",
+        |row| {
+            if row.library_is_null {
+                return Ok((FT_Err_Invalid_Library_Handle as FT_Error, true));
+            }
+            if row.open_args_is_null {
                 return Ok((FT_Err_Invalid_Argument, true));
             }
-        }
-        let file_size = memory_face_file_size(bytes.len(), row)?;
-        let Ok(file_size) = usize::try_from(file_size) else {
-            return Ok((FT_Err_Invalid_Argument, true));
-        };
-        let status =
-            wasm_abi::fontdone_wasm_open_face(bytes.as_ptr(), file_size, row.face_index, 20.0);
-        let face_is_null = status.handle == 0;
-        wasm_done_face(status.handle);
-        Ok((status.error, face_is_null))
-    })
+            if row.aface_is_null {
+                return Ok((FT_Err_Invalid_Argument, true));
+            }
+            if open_face_args_dispatch_case(case) {
+                let source_flags =
+                    row.open_flags & (FT_OPEN_MEMORY | FT_OPEN_STREAM | FT_OPEN_PATHNAME);
+                if source_flags == FT_OPEN_PATHNAME {
+                    return Ok((FT_Err_Cannot_Open_Resource as FT_Error, true));
+                }
+                if source_flags != FT_OPEN_MEMORY {
+                    return Ok((FT_Err_Invalid_Argument, true));
+                }
+            }
+            let file_size = memory_face_file_size(bytes.len(), row)?;
+            let Ok(file_size) = usize::try_from(file_size) else {
+                return Ok((FT_Err_Invalid_Argument, true));
+            };
+            let status =
+                wasm_abi::fontdone_wasm_open_face(bytes.as_ptr(), file_size, row.face_index, 20.0);
+            let face_is_null = status.handle == 0;
+            wasm_done_face(status.handle);
+            Ok((status.error, face_is_null))
+        },
+    )
 }
 
 fn memory_face_outputs(
     rows: Vec<MemoryFaceRow>,
+    mixed_error_status: bool,
     mut call: impl FnMut(MemoryFaceRow) -> Result<(FT_Error, bool), String>,
 ) -> Result<RunOutput, String> {
     let mut first_error = FT_Err_Ok;
@@ -66431,7 +66457,7 @@ fn memory_face_outputs(
         }));
     }
     let output = json!({ "outputs": outputs });
-    if first_error == FT_Err_Ok {
+    if first_error == FT_Err_Ok || mixed_error_status {
         Ok(ok(output))
     } else {
         Ok(error_with_output(first_error, output))

@@ -562,24 +562,13 @@
       "expect_error": false,
       "inputs": {
         "assets": {
-          "memory_font": {
+          "font": {
             "kind": "ref",
             "id": "input/fonts/LiberationSerif-Regular.ttf"
-          },
-          "path_font": {
-            "kind": "ref",
-            "id": "input/fonts/LiberationSerif-Regular.ttf"
-          },
-          "sbix_font": {
-            "kind": "ref",
-            "id": "input/fonts/DejaVuSans.ttf"
-          },
-          "missing_font": {
-            "kind": "ref",
-            "id": "input/fonts/missing/no-such.ttf"
           }
         },
         "params": {
+          "runtime_route": "actual_open_face_argument_variants",
           "arg_variants": [
             "FT_OPEN_MEMORY",
             "FT_OPEN_PATHNAME",
@@ -593,11 +582,84 @@
             "FT_PARAM_TAG_IGNORE_SBIX"
           ],
           "face_index": 0,
+          "variants": [
+            {
+              "id": "memory-success",
+              "flags": [
+                "FT_OPEN_MEMORY"
+              ]
+            },
+            {
+              "id": "memory-negative-face-index",
+              "face_index": -1,
+              "flags": [
+                "FT_OPEN_MEMORY"
+              ]
+            },
+            {
+              "id": "pathname-without-pathname",
+              "flags": [
+                "FT_OPEN_PATHNAME"
+              ]
+            },
+            {
+              "id": "stream-without-stream",
+              "flags": [
+                "FT_OPEN_STREAM"
+              ]
+            },
+            {
+              "id": "driver-without-driver",
+              "flags": [
+                "FT_OPEN_DRIVER"
+              ]
+            },
+            {
+              "id": "params-without-parameter-array",
+              "flags": [
+                "FT_OPEN_MEMORY",
+                "FT_OPEN_PARAMS"
+              ]
+            },
+            {
+              "id": "no-source-flag",
+              "flags": []
+            },
+            {
+              "id": "multiple-source-flags",
+              "flags": [
+                "FT_OPEN_MEMORY",
+                "FT_OPEN_PATHNAME"
+              ]
+            },
+            {
+              "id": "null-open-args",
+              "flags": [
+                "FT_OPEN_MEMORY"
+              ],
+              "args": "null"
+            },
+            {
+              "id": "null-library",
+              "flags": [
+                "FT_OPEN_MEMORY"
+              ],
+              "library": "null"
+            },
+            {
+              "id": "null-face-output",
+              "flags": [
+                "FT_OPEN_MEMORY"
+              ],
+              "aface": "null"
+            }
+          ],
           "probe": [
             "FT_Error",
             "face pointer nullness",
-            "face_flags",
-            "source ownership"
+            "source flag dispatch",
+            "negative face-index probe",
+            "null argument validation"
           ]
         }
       },
@@ -609,25 +671,16 @@
       "expectation": {
         "status": "ok",
         "output_shape": {
-          "return": "FT_Error",
-          "face": "pointer_nullness_and_public_snapshot",
-          "source_selection": "enum",
-          "ownership": "caller_buffer_unchanged"
+          "outputs": "array<face_index,file_size,status,error,opened,face_nullness>"
         },
         "compare": {
           "mode": "exact",
           "paths": [
-            "status",
-            "error",
-            "face_nullness",
-            "face_flags",
-            "source_selection",
-            "memory_buffer_unchanged",
-            "params_effect"
+            "outputs"
           ]
         },
         "fixture_requirements": [
-          "Custom stream fixture and sbix font for FT_OPEN_PARAMS ignore-sbix behavior"
+          "Concrete FT_OPEN_MEMORY, FT_OPEN_STREAM, FT_OPEN_PATHNAME, FT_OPEN_DRIVER, FT_OPEN_PARAMS, negative-index, and null-pointer variants are maintained in params.variants; stream/path payload ownership remains covered by their dedicated routes."
         ]
       }
     }

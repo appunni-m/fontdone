@@ -8860,6 +8860,7 @@ pub extern "C" fn FT_Open_Face(
             as FT_UInt);
     if source_flags != rust_ffi::FT_OPEN_MEMORY as FT_UInt
         && source_flags != rust_ffi::FT_OPEN_STREAM as FT_UInt
+        && source_flags != rust_ffi::FT_OPEN_PATHNAME as FT_UInt
     {
         return rust_ffi::FT_Err_Invalid_Argument;
     }
@@ -8872,7 +8873,31 @@ pub extern "C" fn FT_Open_Face(
     }
     let name_options = open_face_name_options(args);
     let incremental_interface = open_face_incremental_interface(args);
-    let error = if source_flags == rust_ffi::FT_OPEN_STREAM as FT_UInt {
+    let error = if source_flags == rust_ffi::FT_OPEN_PATHNAME as FT_UInt {
+        // Pinned Unix FreeType checks the library before delegating a null
+        // pathname to FT_Stream_Open, which reports Cannot_Open_Resource
+        // rather than Invalid_Argument.
+        let Some(rust_library) = library_ref(library) else {
+            return rust_ffi::FT_Err_Invalid_Library_Handle as FT_Error;
+        };
+        if args.pathname.is_null() {
+            rust_ffi::FT_Err_Cannot_Open_Resource as FT_Error
+        } else {
+            // SAFETY: the public contract requires a readable NUL-terminated
+            // pathname for FT_OPEN_PATHNAME and the call is synchronous.
+            let pathname = unsafe { CStr::from_ptr(args.pathname.cast_const()).to_bytes() };
+            let opened = rust_ffi::FT_New_Face(rust_library, pathname, face_index, 20.0);
+            ft_store_opened_face(
+                library,
+                opened,
+                aface,
+                OpenFaceByteOptions {
+                    name_options,
+                    ..OpenFaceByteOptions::default()
+                },
+            )
+        }
+    } else if source_flags == rust_ffi::FT_OPEN_STREAM as FT_UInt {
         ft_open_external_stream_face_with_name_options(
             library,
             args.stream,

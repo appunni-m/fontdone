@@ -4296,6 +4296,13 @@ def freetype_core_subsystem_pending_reason(row: ConcreteInput) -> str | None:
             "not success parity"
         )
     if row.case_id == "freetype.FT_Open_Args.open_face_consumes_args_like_c":
+        if (
+            row.params.get("runtime_route") == "actual_open_face_argument_variants"
+            and isinstance(row.params.get("variants"), list)
+            and row.params.get("variants")
+            and unresolved_assets_reason(row) is None
+        ):
+            return None
         if exact_error_public_route(row.operation, row.case_id, row.expect_error):
             return None
         return (
@@ -4305,6 +4312,26 @@ def freetype_core_subsystem_pending_reason(row: ConcreteInput) -> str | None:
             "negative face-index probe, stream, and pathname behavior across "
             "pinned C, Rust FFI, C ABI, and WASM; current memory helpers alone "
             "do not prove the full argument-dispatch contract"
+        )
+    return None
+
+
+def open_face_args_real_parity_reason(row: ConcreteInput) -> str | None:
+    if (
+        row.case_id == "freetype.FT_Open_Args.open_face_consumes_args_like_c"
+        and row.operation == "freetype.open_face_args"
+        and row.params.get("runtime_route") == "actual_open_face_argument_variants"
+        and isinstance(row.params.get("variants"), list)
+        and row.params.get("variants")
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_Open_Args compares the maintained explicit variant matrix for "
+            "memory success, negative face-index probing, source-flag dispatch, "
+            "FT_OPEN_PARAMS with an empty parameter array, and null args, "
+            "library, and output-face pointers through pinned C, Rust FFI, "
+            "C ABI, and WASM ABI; external stream/path payload ownership stays "
+            "on the dedicated stream and pathname routes"
         )
     return None
 
@@ -8613,6 +8640,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
         return ("explicit-unsupported", "explicit Rust stub returns Unimplemented_Feature")
     if operation_is_compile_contract(row.operation):
         return ("compile-contract", "header, layout, macro, or scalar contract")
+    open_face_args_real = open_face_args_real_parity_reason(row)
+    if open_face_args_real:
+        return ("real-parity", open_face_args_real)
     route_pending = pending_route_reason(row)
     if route_pending:
         return ("pending-route", route_pending)
