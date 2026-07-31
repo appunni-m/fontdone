@@ -358,12 +358,15 @@ increase is claimed until the next full all-lane measurement**:
 | 14 | `e29819f5812ac521fd78b1e90e52f080cd17124a` | Routed the maintained `FT_Raster_Set_Mode_Func` matrix through pinned-C callbacks; mode tags, null/non-null payloads, callback status propagation, and callback invocation now agree across Rust FFI, C ABI, and WASM. |
 | 15 | `8eed8f2f22288e53429503bed169d2b8608cc10e` | Routed the maintained `FT_Raster_Funcs` callback-slot matrix through live pinned-C class tables and Rust FFI, C ABI, and WASM observations for standard, grays, SDF, and bitmap-SDF renderers. |
 | 16 | `bc4513a6e712d53b047e4fdc21f0814f8f83d0be` | Routed the maintained `FT_GLYPH_FORMAT_PLOTTER` source-emitter inventory through pinned-C, Rust FFI, C ABI, and WASM renderer lookup; the pinned module set has no runtime plotter emitter. |
+| 17 | `514cca075fc5181b9bbd1005e4d53f6c3462381c` | Routed the maintained SVG glyph-load contract through pinned-C, Rust FFI, C ABI, and WASM observations for enabled SVG document success and `FT_LOAD_SVG_ONLY` error behavior; removed two pending runtime rows. |
 
 The latest clean parity-only verification is Coverage MCP run
-`ece66f53-4a8e-4349-9867-e50f6d86b782` against source commit
-`bc4513a6e712d53b047e4fdc21f0814f8f83d0be`: 7,239 / 7,239 runnable
-comparisons passed, 0 failed, and 68 remain explicitly pending. The committed
-source-digest attestation is
+`6c380900-bdb3-4e47-b588-fa91d8da3d83` against source commit
+`514cca075fc5181b9bbd1005e4d53f6c3462381c`: 7,241 / 7,241 runnable
+comparisons passed, 0 failed, and 66 remain explicitly pending. The same run
+reported 4,112 covered manifest cases, 4,258 logical cases, and 7,307
+concrete cases; all 218 function routes were present in each of Rust, C ABI,
+and WASM. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. Full coverage is intentionally deferred
 until a larger set of focused batches is ready, because the maintained
 all-lane pass takes roughly 50 minutes.
