@@ -382,3 +382,78 @@ impl GraphicsState {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn vector_setters_and_move_vector() {
+        let mut gs = GraphicsState::default();
+        assert_eq!(gs.proj_vector, (0x4000, 0));
+        gs.set_vectors_to_y();
+        assert_eq!(gs.proj_vector, (0, 0x4000));
+        assert_eq!(gs.freedom_vector, (0, 0x4000));
+        assert_eq!(gs.move_vector, (0, 0x1_0000));
+        gs.set_vectors_to_x();
+        assert_eq!(gs.proj_vector, (0x4000, 0));
+        gs.set_proj_to_y();
+        assert_eq!(gs.proj_vector, (0, 0x4000));
+        assert_eq!(gs.freedom_vector, (0x4000, 0));
+        gs.set_free_to_y();
+        assert_eq!(gs.freedom_vector, (0, 0x4000));
+        gs.set_free_to_x();
+        assert_eq!(gs.freedom_vector, (0x4000, 0));
+        gs.set_proj_to_x();
+        assert_eq!(gs.proj_vector, (0x4000, 0));
+    }
+
+    #[test]
+    fn perpendicular_vectors_zero_the_move_vector() {
+        let mut gs = GraphicsState {
+            proj_vector: (0x4000, 0),
+            freedom_vector: (0, 0x4000),
+            ..GraphicsState::default()
+        };
+        gs.compute_move_vector();
+        assert_eq!(gs.move_vector, (0, 0));
+    }
+
+    #[test]
+    fn projection_and_movement() {
+        let gs = GraphicsState::default();
+        // Projecting (10, 20) onto X axis yields 10 in 26.6.
+        assert_eq!(gs.project(10, 20), 10);
+        assert_eq!(gs.dual_project(10, 20), 10);
+        // Moving 10 units along X yields (10, 0).
+        assert_eq!(gs.move_along_free(10), (10, 0));
+        assert_eq!(gs.move_along_raw_free(10), (10, 0));
+
+        let mut y = GraphicsState::default();
+        y.set_vectors_to_y();
+        assert_eq!(y.project(10, 20), 20);
+        assert_eq!(y.move_along_free(5), (0, 5));
+        assert_eq!(y.move_along_raw_free(5), (0, 5));
+    }
+
+    #[test]
+    fn dot_fix14_rounding() {
+        // (0x4000, 0) dot (10, 20) = 10 after the 2.14 shift.
+        assert_eq!(dot_fix14(10, 20, 0x4000, 0), 10);
+        assert_eq!(dot_fix14(0, 20, 0, 0x4000), 20);
+        // Negative projection.
+        assert_eq!(dot_fix14(-10, 0, 0x4000, 0), -10);
+        assert_eq!(dot_fix14(0, 0, 0x4000, 0), 0);
+    }
+
+    #[test]
+    fn super_round_configuration() {
+        let mut gs = GraphicsState::default();
+        gs.set_super_round(0x4000, 0x40);
+        assert_eq!(gs.period, 0x40); // 0x4000 >> 8
+        gs.set_super_round(0x4000, 0x00);
+        assert_eq!(gs.period, 0x20);
+        gs.set_super_round(0x4000, 0x80);
+        assert_eq!(gs.period, 0x80);
+    }
+}
