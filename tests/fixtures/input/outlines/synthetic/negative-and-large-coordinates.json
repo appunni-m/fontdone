@@ -1,0 +1,18 @@
+{
+  "kind": "outline_model",
+  "points": [
+    {"x": -131071, "y": -196609, "on_curve": true},
+    {"x": 524289, "y": -196609, "on_curve": true},
+    {"x": 524289, "y": 458849, "on_curve": true},
+    {"x": -131071, "y": 458849, "on_curve": true}
+  ],
+  "tags": [1, 1, 1, 1],
+  "contours": [3],
+  "flags": 0,
+  "cbox": {
+    "x_min": -2048,
+    "y_min": -3073,
+    "x_max": 8193,
+    "y_max": 7170
+  }
+}

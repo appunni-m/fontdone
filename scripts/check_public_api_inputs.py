@@ -3881,9 +3881,11 @@ def ftimage_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     if row.case_id == "ftimage.FT_Pos.coordinate_outputs_use_ft_pos":
         if exact_error_public_route(row.operation, row.case_id, row.expect_error):
             return None
+        if row.operation == "coordinate_endpoint_parity":
+            return None
         return (
             "FT_Pos coordinate endpoint parity declares synthetic outline "
-            "outlines/synthetic/negative-and-large-coordinates.json, but that "
+            "input/outlines/synthetic/negative-and-large-coordinates.json, but that "
             "maintained outline asset is absent; exact same-input parity also "
             "requires a coordinate endpoint route for FT_Load_Glyph outline "
             "points, FT_Outline_Get_CBox, FT_Vector_Transform, and "
@@ -3985,6 +3987,20 @@ def ftimage_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     if exact_error_public_route(row.operation, row.case_id, row.expect_error):
         return None
     return reason
+
+
+def ftimage_coordinate_endpoint_real_parity_reason(row: ConcreteInput) -> str | None:
+    if (
+        row.case_id == "ftimage.FT_Pos.coordinate_outputs_use_ft_pos"
+        and row.operation == "coordinate_endpoint_parity"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_Pos endpoint parity compares loaded glyph coordinates, synthetic "
+            "outline CBox, transformed FT_Vector values, and decomposed callback "
+            "coordinates through pinned C, Rust FFI, C ABI, and WASM ABI"
+        )
+    return None
 
 
 def ftimage_raster_set_mode_real_parity_reason(row: ConcreteInput) -> str | None:
@@ -8459,6 +8475,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     ftimage_pending = ftimage_subsystem_pending_reason(row)
     if ftimage_pending:
         return ("pending-route", ftimage_pending)
+    ftimage_coordinate_endpoint_real = ftimage_coordinate_endpoint_real_parity_reason(row)
+    if ftimage_coordinate_endpoint_real:
+        return ("real-parity", ftimage_coordinate_endpoint_real)
     ftimage_raster_set_mode_real = ftimage_raster_set_mode_real_parity_reason(row)
     if ftimage_raster_set_mode_real:
         return ("real-parity", ftimage_raster_set_mode_real)

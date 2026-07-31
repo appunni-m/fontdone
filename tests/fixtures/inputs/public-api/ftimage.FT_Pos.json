@@ -83,11 +83,30 @@
           },
           "synthetic_outline": {
             "kind": "ref",
-            "id": "outlines/synthetic/negative-and-large-coordinates.json",
+            "id": "input/outlines/synthetic/negative-and-large-coordinates.json",
             "asset_kind": "outline"
           }
         },
         "params": {
+          "face_index": 0,
+          "pixel_width": 32,
+          "pixel_height": 32,
+          "glyph_index": 36,
+          "load_flags": [
+            8
+          ],
+          "transform_matrix": {
+            "xx": 65536,
+            "xy": 16384,
+            "yx": -8192,
+            "yy": 65536
+          },
+          "transform_vector": {
+            "x": 123456,
+            "y": -654321
+          },
+          "decompose_shift": 1,
+          "decompose_delta": 32,
           "endpoints": [
             "FT_Load_Glyph outline points",
             "FT_Outline_Get_CBox",
@@ -122,7 +141,7 @@
           ]
         },
         "fixture_requirements": [
-          "Future synthetic outline with negative and large coordinates."
+          "input/outlines/synthetic/negative-and-large-coordinates.json provides negative and large FT_Pos coordinates."
         ],
         "source_refs": [
           "freetype/include/freetype/ftimage.h:52-57",

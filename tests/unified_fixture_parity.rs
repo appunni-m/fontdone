@@ -43022,6 +43022,7 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             .to_string(),
             case.case_id.clone(),
         ]),
+        "coordinate_endpoint_parity" => coordinate_endpoint_oracle_args(case),
         "ftoutln.outline_decompose" if outline_decompose_runtime_case_supported(&case.case_id) => {
             Ok(vec![
                 "--outline-decompose".to_string(),
@@ -44361,6 +44362,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftoutln.outline_translate" => rust_outline_translate_runtime_output(case),
         "ftoutln.outline_render" => rust_outline_render_runtime_output(case),
         "ftoutln.outline_render_direct" => outline_render_direct_fallback_runtime_output(case),
+        "coordinate_endpoint_parity" => rust_coordinate_endpoint_parity(case),
         "ftoutln.outline_decompose" => rust_outline_decompose_runtime_output(case),
         "ftstroke.outline_get_inside_border"
         | "ftstroke.outline_get_outside_border"
@@ -45777,6 +45779,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftoutln.outline_translate" => c_outline_translate_runtime_output(case),
         "ftoutln.outline_render" => c_outline_render_runtime_output(case),
         "ftoutln.outline_render_direct" => outline_render_direct_fallback_runtime_output(case),
+        "coordinate_endpoint_parity" => c_coordinate_endpoint_parity(case),
         "ftoutln.outline_decompose" => c_outline_decompose_runtime_output(case),
         "ftstroke.outline_get_inside_border"
         | "ftstroke.outline_get_outside_border"
@@ -47002,6 +47005,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftoutln.outline_translate" => wasm_outline_translate_runtime_output(case),
         "ftoutln.outline_render" => wasm_outline_render_runtime_output(case),
         "ftoutln.outline_render_direct" => outline_render_direct_fallback_runtime_output(case),
+        "coordinate_endpoint_parity" => wasm_coordinate_endpoint_parity(case),
         "ftoutln.outline_decompose" => wasm_outline_decompose_runtime_output(case),
         "ftstroke.outline_get_inside_border"
         | "ftstroke.outline_get_outside_border"
@@ -69972,6 +69976,210 @@ fn wasm_outline_translate_runtime_output(case: &InputCase) -> Result<RunOutput, 
     )
 }
 
+fn coordinate_endpoint_matrix(case: &InputCase) -> Result<FT_Matrix, String> {
+    let value = case
+        .inputs
+        .params
+        .get("transform_matrix")
+        .ok_or_else(|| "coordinate endpoint transform_matrix is required".to_string())?;
+    let matrix = matrix_value_from_value(value)?;
+    Ok(FT_Matrix {
+        xx: matrix.xx,
+        xy: matrix.xy,
+        yx: matrix.yx,
+        yy: matrix.yy,
+    })
+}
+
+fn coordinate_endpoint_vector(case: &InputCase) -> Result<FT_Vector, String> {
+    let value = case
+        .inputs
+        .params
+        .get("transform_vector")
+        .ok_or_else(|| "coordinate endpoint transform_vector is required".to_string())?;
+    Ok(ffi_vector(vector_value_from_value(value)?))
+}
+
+fn coordinate_endpoint_decompose_transform(case: &InputCase) -> Result<(FT_Int, FT_Pos), String> {
+    let shift = i32::try_from(i64_param(&case.inputs.params, "decompose_shift")?)
+        .map_err(|err| err.to_string())?;
+    let delta = i64_param(&case.inputs.params, "decompose_delta")?;
+    Ok((shift, delta))
+}
+
+fn coordinate_endpoint_synthetic_outline(
+    case: &InputCase,
+) -> Result<fontdone::outline::Outline, String> {
+    outline_from_asset_key(case, "synthetic_outline")
+}
+
+fn coordinate_endpoint_payload(
+    glyph_points: &[FT_Vector],
+    cbox: [FT_Pos; 4],
+    transformed_vector: FT_Vector,
+    runs: &[FTOutlineDecomposeRun],
+) -> RunOutput {
+    let mut coordinates = Vec::new();
+    coordinates.reserve(
+        glyph_points
+            .len()
+            .saturating_mul(2)
+            .saturating_add(6)
+            .saturating_add(
+                runs.iter()
+                    .flat_map(|run| run.events.iter())
+                    .map(|event| event.points.len().saturating_mul(2))
+                    .sum::<usize>(),
+            ),
+    );
+    for point in glyph_points {
+        coordinates.extend([point.x, point.y]);
+    }
+    coordinates.extend(cbox);
+    coordinates.extend([transformed_vector.x, transformed_vector.y]);
+    for run in runs {
+        for event in &run.events {
+            for point in &event.points {
+                coordinates.extend([point.x, point.y]);
+            }
+        }
+    }
+    ok(json!({
+        "status": FT_Err_Ok,
+        "coordinates": coordinates
+    }))
+}
+
+fn rust_coordinate_endpoint_parity(case: &InputCase) -> Result<RunOutput, String> {
+    let face = open_face(case)?;
+    let glyph_index = glyph_index_param(&case.inputs.params)?;
+    let load_flags = load_flags_param(&case.inputs.params)?;
+    let slot = match FT_Load_Glyph(&face, glyph_index, load_flags) {
+        Ok(slot) => slot,
+        Err(err) => return Ok(error(err)),
+    };
+    let glyph_outline = slot
+        .outline
+        .as_ref()
+        .ok_or_else(|| "coordinate endpoint glyph did not produce an outline".to_string())?;
+    let synthetic = outline_render_snapshot(&coordinate_endpoint_synthetic_outline(case)?);
+    let mut cbox = FT_BBox::default();
+    FT_Outline_Get_CBox(Some(&synthetic), Some(&mut cbox));
+    let mut vector = coordinate_endpoint_vector(case)?;
+    let matrix = coordinate_endpoint_matrix(case)?;
+    FT_Vector_Transform(Some(&mut vector), Some(&matrix));
+    let transforms = [coordinate_endpoint_decompose_transform(case)?];
+    let runs = FT_Outline_Decompose_Trace(Some(&synthetic), &transforms)
+        .map_err(|err| format!("coordinate endpoint decompose failed: {err}"))?;
+    Ok(coordinate_endpoint_payload(
+        &glyph_outline.points,
+        [cbox.xMin, cbox.yMin, cbox.xMax, cbox.yMax],
+        vector,
+        &runs,
+    ))
+}
+
+fn c_coordinate_endpoint_parity(case: &InputCase) -> Result<RunOutput, String> {
+    let (library, face) = c_open_face(case)?;
+    let result = (|| -> Result<RunOutput, String> {
+        let glyph_index = glyph_index_param(&case.inputs.params)?;
+        let load_flags = load_flags_param(&case.inputs.params)?;
+        let status = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
+        if status != FT_Err_Ok {
+            return Ok(error(status));
+        }
+        let glyph_outline = c_abi::abi_slot_snapshot(face)
+            .and_then(|snapshot| snapshot.outline)
+            .ok_or_else(|| {
+                "coordinate endpoint C ABI glyph did not produce an outline".to_string()
+            })?;
+        let synthetic_model = coordinate_endpoint_synthetic_outline(case)?;
+        let mut outline = CRenderOutlineStorage::new(&synthetic_model);
+        let outline_ptr = outline.as_ptr();
+        let mut cbox = c_abi::FT_BBox::default();
+        c_abi::FT_Outline_Get_CBox(outline_ptr, &mut cbox);
+        let mut vector = {
+            let vector = coordinate_endpoint_vector(case)?;
+            c_abi::FT_Vector {
+                x: vector.x,
+                y: vector.y,
+            }
+        };
+        let matrix = coordinate_endpoint_matrix(case)?;
+        let matrix = c_abi::FT_Matrix {
+            xx: matrix.xx,
+            xy: matrix.xy,
+            yx: matrix.yx,
+            yy: matrix.yy,
+        };
+        c_abi::FT_Vector_Transform(&mut vector, &matrix);
+        let transforms = [coordinate_endpoint_decompose_transform(case)?];
+        let runs = c_abi::abi_support_outline_decompose_trace(outline_ptr, &transforms)
+            .map_err(|err| format!("coordinate endpoint C ABI decompose failed: {err}"))?;
+        Ok(coordinate_endpoint_payload(
+            &glyph_outline.points,
+            [cbox.xMin, cbox.yMin, cbox.xMax, cbox.yMax],
+            FT_Vector {
+                x: vector.x,
+                y: vector.y,
+            },
+            &runs,
+        ))
+    })();
+    c_done_face(face);
+    c_done_library(library);
+    result
+}
+
+fn wasm_coordinate_endpoint_parity(case: &InputCase) -> Result<RunOutput, String> {
+    let handle = wasm_open_face(case)?;
+    let result = (|| -> Result<RunOutput, String> {
+        let glyph_index = glyph_index_param(&case.inputs.params)?;
+        let load_flags = load_flags_param(&case.inputs.params)?;
+        let status = wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, load_flags);
+        if status != FT_Err_Ok {
+            return Ok(error(status));
+        }
+        let glyph_outline = wasm_abi::abi_slot_snapshot(handle)
+            .and_then(|snapshot| snapshot.outline)
+            .ok_or_else(|| {
+                "coordinate endpoint WASM ABI glyph did not produce an outline".to_string()
+            })?;
+        let synthetic_model = coordinate_endpoint_synthetic_outline(case)?;
+        let mut outline = WasmRenderOutlineStorage::new(&synthetic_model);
+        let outline_ptr = outline.as_ptr();
+        let mut cbox = wasm_abi::FontdoneWasmBBox::default();
+        wasm_abi::fontdone_wasm_outline_get_cbox(outline_ptr, &mut cbox);
+        let vector = coordinate_endpoint_vector(case)?;
+        let matrix = coordinate_endpoint_matrix(case)?;
+        let mut vector = wasm_abi::FontdoneWasmVector {
+            x: vector.x,
+            y: vector.y,
+        };
+        let matrix = wasm_abi::FontdoneWasmMatrix {
+            xx: matrix.xx,
+            xy: matrix.xy,
+            yx: matrix.yx,
+            yy: matrix.yy,
+        };
+        wasm_abi::fontdone_wasm_vector_transform(&mut vector, &matrix);
+        let transforms = [coordinate_endpoint_decompose_transform(case)?];
+        let runs = wasm_abi::abi_support_outline_decompose_trace(outline_ptr, &transforms)
+            .map_err(|err| format!("coordinate endpoint WASM ABI decompose failed: {err}"))?;
+        Ok(coordinate_endpoint_payload(
+            &glyph_outline.points,
+            [cbox.xMin, cbox.yMin, cbox.xMax, cbox.yMax],
+            FT_Vector {
+                x: vector.x,
+                y: vector.y,
+            },
+            &runs,
+        ))
+    })();
+    wasm_done_face(handle);
+    result
+}
+
 fn rust_outline_decompose_runtime_output(case: &InputCase) -> Result<RunOutput, String> {
     if matches!(
         case.case_id.as_str(),
@@ -73013,6 +73221,61 @@ fn outline_from_asset_key(
         return Err(format!("{path} must be an outline_model fixture"));
     }
     parse_outline_model_fixture(path, &value)
+}
+
+fn coordinate_endpoint_oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
+    let outline = coordinate_endpoint_synthetic_outline(case)?;
+    let matrix = coordinate_endpoint_matrix(case)?;
+    let vector = coordinate_endpoint_vector(case)?;
+    let (shift, delta) = coordinate_endpoint_decompose_transform(case)?;
+    let mut args = vec!["--coordinate-endpoints".to_string()];
+    push_font_source(case, &mut args)?;
+    args.push(face_index_param(&case.inputs.params)?.to_string());
+    let (pixel_width, pixel_height) = pixel_size_param(&case.inputs.params)?;
+    args.push(pixel_width.to_string());
+    args.push(pixel_height.to_string());
+    args.push(glyph_index_param(&case.inputs.params)?.to_string());
+    args.push(load_flags_param(&case.inputs.params)?.to_string());
+    args.push(
+        outline
+            .points
+            .iter()
+            .map(|point| format!("{}:{}", point.x, point.y))
+            .collect::<Vec<_>>()
+            .join(","),
+    );
+    let tags = if outline.tags.len() == outline.points.len() {
+        outline.tags
+    } else {
+        outline
+            .points
+            .iter()
+            .map(|point| u8::from(point.on_curve))
+            .collect()
+    };
+    args.push(
+        tags.into_iter()
+            .map(|tag| tag.to_string())
+            .collect::<Vec<_>>()
+            .join(","),
+    );
+    args.push(
+        outline
+            .contours
+            .iter()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>()
+            .join(","),
+    );
+    args.push(outline.flags.to_string());
+    args.push(format!(
+        "{},{},{},{}",
+        matrix.xx, matrix.xy, matrix.yx, matrix.yy
+    ));
+    args.push(format!("{},{}", vector.x, vector.y));
+    args.push(shift.to_string());
+    args.push(delta.to_string());
+    Ok(args)
 }
 
 fn outline_model_set_from_asset_key(
@@ -76548,6 +76811,10 @@ fn validate_schema_output(case: &InputCase, output: &Value, label: &str) -> Resu
         "glyph_render_sequence" => require_path(output, "/rows", label, case),
         "cache_sbit_result" => validate_cache_sbit_output(output, label, case),
         "math_rows" => require_path(output, "/rows", label, case),
+        "coordinate_endpoints" => {
+            require_path(output, "/status", label, case)?;
+            require_path(output, "/coordinates", label, case)
+        }
         "cache_node_lifecycle" => {
             validate_cache_sbit_output(output, label, case)?;
             require_path(output, "/node/locked", label, case)
@@ -76694,6 +76961,7 @@ fn comparison_schema(case: &InputCase) -> &str {
         | "ftglyph.matrix_multiply"
         | "ftglyph.matrix_invert" => return "math_rows",
         "ftoutln.outline_render" | "ftoutln.outline_render_direct" => return "outline_render",
+        "coordinate_endpoint_parity" => return "coordinate_endpoints",
         "ftoutln.outline_decompose" => return "outline_decompose",
         "ftoutln.outline_reverse"
         | "ftoutln.outline_reverse_orientation"

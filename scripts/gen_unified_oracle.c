@@ -13640,6 +13640,288 @@ static void print_recorded_outline_event_points(void) {
     printf("]");
 }
 
+static int parse_coordinate_points_arg(
+    const char* text,
+    FT_Vector* points,
+    int capacity
+) {
+    size_t length = strlen(text);
+    char* copy = (char*)malloc(length + 1);
+    if (!copy) {
+        return -1;
+    }
+    memcpy(copy, text, length + 1);
+    int count = 0;
+    char* token = strtok(copy, ",");
+    while (token) {
+        long x = 0;
+        long y = 0;
+        if (count >= capacity || sscanf(token, "%ld:%ld", &x, &y) != 2) {
+            free(copy);
+            return -1;
+        }
+        points[count].x = (FT_Pos)x;
+        points[count].y = (FT_Pos)y;
+        count++;
+        token = strtok(NULL, ",");
+    }
+    free(copy);
+    return count;
+}
+
+static int parse_coordinate_tags_arg(
+    const char* text,
+    unsigned char* tags,
+    int capacity
+) {
+    size_t length = strlen(text);
+    char* copy = (char*)malloc(length + 1);
+    if (!copy) {
+        return -1;
+    }
+    memcpy(copy, text, length + 1);
+    int count = 0;
+    char* token = strtok(copy, ",");
+    while (token) {
+        long value = 0;
+        if (count >= capacity || sscanf(token, "%ld", &value) != 1 || value < 0 || value > 255) {
+            free(copy);
+            return -1;
+        }
+        tags[count++] = (unsigned char)value;
+        token = strtok(NULL, ",");
+    }
+    free(copy);
+    return count;
+}
+
+static int parse_coordinate_contours_arg(
+    const char* text,
+    short* contours,
+    int capacity
+) {
+    size_t length = strlen(text);
+    char* copy = (char*)malloc(length + 1);
+    if (!copy) {
+        return -1;
+    }
+    memcpy(copy, text, length + 1);
+    int count = 0;
+    char* token = strtok(copy, ",");
+    while (token) {
+        long value = 0;
+        if (count >= capacity || sscanf(token, "%ld", &value) != 1 ||
+            value < -32768 || value > 32767) {
+            free(copy);
+            return -1;
+        }
+        contours[count++] = (short)value;
+        token = strtok(NULL, ",");
+    }
+    free(copy);
+    return count;
+}
+
+static int parse_coordinate_matrix_arg(const char* text, FT_Matrix* matrix) {
+    long values[4] = {0, 0, 0, 0};
+    size_t length = strlen(text);
+    char* copy = (char*)malloc(length + 1);
+    if (!copy) {
+        return -1;
+    }
+    memcpy(copy, text, length + 1);
+    int count = 0;
+    char* token = strtok(copy, ",");
+    while (token) {
+        if (count >= 4 || sscanf(token, "%ld", &values[count]) != 1) {
+            free(copy);
+            return -1;
+        }
+        count++;
+        token = strtok(NULL, ",");
+    }
+    free(copy);
+    if (count != 4) {
+        return -1;
+    }
+    matrix->xx = (FT_Fixed)values[0];
+    matrix->xy = (FT_Fixed)values[1];
+    matrix->yx = (FT_Fixed)values[2];
+    matrix->yy = (FT_Fixed)values[3];
+    return 0;
+}
+
+static int parse_coordinate_vector_arg(const char* text, FT_Vector* vector) {
+    long values[2] = {0, 0};
+    size_t length = strlen(text);
+    char* copy = (char*)malloc(length + 1);
+    if (!copy) {
+        return -1;
+    }
+    memcpy(copy, text, length + 1);
+    int count = 0;
+    char* token = strtok(copy, ",");
+    while (token) {
+        if (count >= 2 || sscanf(token, "%ld", &values[count]) != 1) {
+            free(copy);
+            return -1;
+        }
+        count++;
+        token = strtok(NULL, ",");
+    }
+    free(copy);
+    if (count != 2) {
+        return -1;
+    }
+    vector->x = (FT_Pos)values[0];
+    vector->y = (FT_Pos)values[1];
+    return 0;
+}
+
+static void coordinate_append_value(FT_Pos value, int* first) {
+    if (!*first) {
+        printf(",");
+    }
+    printf("%ld", value);
+    *first = 0;
+}
+
+static int emit_coordinate_endpoints(int argc, char** argv) {
+    if (argc != 17) {
+        fprintf(stderr,
+                "--coordinate-endpoints requires source face size glyph flags outline matrix vector shift delta\n");
+        return 2;
+    }
+    const char* source_kind = argv[2];
+    const char* source_value = argv[3];
+    FT_Long face_index = atol(argv[4]);
+    FT_UInt pixel_width = (FT_UInt)strtoul(argv[5], NULL, 10);
+    FT_UInt pixel_height = (FT_UInt)strtoul(argv[6], NULL, 10);
+    FT_UInt glyph_index = (FT_UInt)strtoul(argv[7], NULL, 10);
+    FT_Int32 load_flags = (FT_Int32)strtol(argv[8], NULL, 10);
+    FT_Vector points[256];
+    unsigned char tags[256];
+    short contours[64];
+    int point_count = parse_coordinate_points_arg(argv[9], points, 256);
+    int tag_count = parse_coordinate_tags_arg(argv[10], tags, 256);
+    int contour_count = parse_coordinate_contours_arg(argv[11], contours, 64);
+    int outline_flags = (int)strtol(argv[12], NULL, 10);
+    FT_Matrix matrix;
+    FT_Vector vector;
+    int shift = (int)strtol(argv[15], NULL, 10);
+    FT_Pos delta = (FT_Pos)strtol(argv[16], NULL, 10);
+    if (point_count <= 0 || tag_count != point_count || contour_count <= 0 ||
+        parse_coordinate_matrix_arg(argv[13], &matrix) != 0 ||
+        parse_coordinate_vector_arg(argv[14], &vector) != 0) {
+        fprintf(stderr, "invalid coordinate endpoint arguments\n");
+        return 2;
+    }
+
+    unsigned char* data = NULL;
+    long data_len = 0;
+    if (streq(source_kind, "file")) {
+        if (load_file(source_value, &data, &data_len) != 0) {
+            fprintf(stderr, "failed to read coordinate endpoint font: %s\n", source_value);
+            return 2;
+        }
+    } else if (streq(source_kind, "hex")) {
+        if (decode_hex(source_value, &data, &data_len) != 0) {
+            fprintf(stderr, "failed to decode coordinate endpoint font\n");
+            return 2;
+        }
+    } else {
+        fprintf(stderr, "unsupported coordinate endpoint source: %s\n", source_kind);
+        return 2;
+    }
+
+    FT_Library library = NULL;
+    FT_Face face = NULL;
+    FT_Error err = FT_Init_FreeType(&library);
+    if (!err) {
+        err = FT_New_Memory_Face(library, data, data_len, face_index, &face);
+    }
+    if (!err) {
+        err = FT_Set_Pixel_Sizes(face, pixel_width, pixel_height);
+    }
+    if (!err) {
+        err = FT_Load_Glyph(face, glyph_index, load_flags);
+    }
+    if (err || !face || face->glyph->format != FT_GLYPH_FORMAT_OUTLINE) {
+        if (!err) {
+            err = FT_Err_Invalid_Glyph_Format;
+        }
+        printf("{");
+        print_status(err);
+        printf(",\"output\":null}\n");
+        if (face) FT_Done_Face(face);
+        if (library) FT_Done_FreeType(library);
+        free(data);
+        return 0;
+    }
+
+    FT_Outline outline;
+    outline.n_contours = (short)contour_count;
+    outline.n_points = (short)point_count;
+    outline.points = points;
+    outline.tags = tags;
+    outline.contours = (unsigned short*)contours;
+    outline.flags = outline_flags;
+    FT_BBox cbox;
+    FT_Outline_Get_CBox(&outline, &cbox);
+    FT_Vector_Transform(&vector, &matrix);
+
+    FT_Outline_Funcs funcs;
+    funcs.move_to = record_outline_move_to;
+    funcs.line_to = record_outline_line_to;
+    funcs.conic_to = record_outline_conic_to;
+    funcs.cubic_to = record_outline_cubic_to;
+    funcs.shift = shift;
+    funcs.delta = delta;
+    reset_recorded_outline_events();
+    err = FT_Outline_Decompose(&outline, &funcs, recorded_outline_decompose_user_token);
+    if (err) {
+        printf("{");
+        print_status(err);
+        printf(",\"output\":null}\n");
+        FT_Done_Face(face);
+        FT_Done_FreeType(library);
+        free(data);
+        return 0;
+    }
+
+    printf("{");
+    print_status(0);
+    printf(",\"output\":{\"status\":0,\"coordinates\":[");
+    int first = 1;
+    for (short index = 0; index < face->glyph->outline.n_points; index++) {
+        coordinate_append_value(face->glyph->outline.points[index].x, &first);
+        coordinate_append_value(face->glyph->outline.points[index].y, &first);
+    }
+    coordinate_append_value(cbox.xMin, &first);
+    coordinate_append_value(cbox.yMin, &first);
+    coordinate_append_value(cbox.xMax, &first);
+    coordinate_append_value(cbox.yMax, &first);
+    coordinate_append_value(vector.x, &first);
+    coordinate_append_value(vector.y, &first);
+    for (int event_index = 0; event_index < recorded_outline_event_count; event_index++) {
+        for (int point_index = 0;
+             point_index < recorded_outline_events[event_index].count;
+             point_index++) {
+            coordinate_append_value(
+                recorded_outline_events[event_index].points[point_index].x,
+                &first);
+            coordinate_append_value(
+                recorded_outline_events[event_index].points[point_index].y,
+                &first);
+        }
+    }
+    printf("]}}\n");
+    FT_Done_Face(face);
+    FT_Done_FreeType(library);
+    free(data);
+    return 0;
+}
+
 static void setup_outline_get_bitmap_square(FT_Outline* outline, FT_Vector* points, unsigned char* tags, unsigned short* contours, int oversized) {
     long lo = oversized ? 0x1000001L * 64L : 8L * 64L;
     long hi = oversized ? 0x1000011L * 64L : 24L * 64L;
@@ -34324,6 +34606,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 4 && streq(argv[1], "--outline-render")) {
         return emit_outline_render(argc, argv);
+    }
+    if (argc == 17 && streq(argv[1], "--coordinate-endpoints")) {
+        return emit_coordinate_endpoints(argc, argv);
     }
     if (argc == 3 && streq(argv[1], "--outline-decompose")) {
         return emit_outline_decompose(argc, argv);
