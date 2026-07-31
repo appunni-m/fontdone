@@ -1175,6 +1175,79 @@ mod tests {
     }
 
     #[test]
+    fn scaled_composite_resolution_scales_points_and_offsets() -> Result<(), FontError> {
+        let mut simple = simple_glyph_bytes(0, 0, 100, 100);
+        // Second point is (100, 0): dx2 lands at byte 17.
+        simple[17] = 100;
+        // Composite with two components: the first places a scaled XY copy,
+        // the second attaches by point indices (no ARGS_ARE_XY_VALUES) with
+        // an explicit x/y scale pair.
+        let mut composite = Vec::new();
+        composite.extend_from_slice(&(-1i16).to_be_bytes());
+        composite.extend_from_slice(&0i16.to_be_bytes());
+        composite.extend_from_slice(&0i16.to_be_bytes());
+        composite.extend_from_slice(&100i16.to_be_bytes());
+        composite.extend_from_slice(&100i16.to_be_bytes());
+        composite.extend_from_slice(
+            &(ARG_1_AND_2_ARE_WORDS | ARGS_ARE_XY_VALUES | MORE_COMPONENTS).to_be_bytes(),
+        );
+        composite.extend_from_slice(&0u16.to_be_bytes()); // component glyph 0
+        composite.extend_from_slice(&10i16.to_be_bytes()); // dx
+        composite.extend_from_slice(&20i16.to_be_bytes()); // dy
+        composite.extend_from_slice(&(ARG_1_AND_2_ARE_WORDS | WE_HAVE_AN_X_Y_SCALE).to_be_bytes());
+        composite.extend_from_slice(&0u16.to_be_bytes()); // component glyph 0
+        composite.extend_from_slice(&1i16.to_be_bytes()); // parent point
+        composite.extend_from_slice(&0i16.to_be_bytes()); // component point
+        composite.extend_from_slice(&0x4000i16.to_be_bytes()); // x scale 1.0
+        composite.extend_from_slice(&0x4000i16.to_be_bytes()); // y scale 1.0
+
+        let mut glyf = simple.clone();
+        glyf.extend_from_slice(&composite);
+        let offsets = [
+            0u32,
+            simple.len() as u32,
+            glyf.len() as u32,
+            glyf.len() as u32,
+        ];
+        let loca = offsets
+            .iter()
+            .flat_map(|value| value.to_be_bytes())
+            .collect::<Vec<_>>();
+        let hmtx = crate::tt::hmtx::HmtxTable {
+            h_metrics: vec![crate::tt::hmtx::LongHorMetric {
+                advance_width: 500,
+                lsb: 0,
+            }],
+            left_side_bearings: Vec::new(),
+        };
+
+        // Composite glyph: simple points plus transformed component points.
+        let outline =
+            load_glyph_with_scaled_component_offsets(&glyf, &loca, 1, 1, &hmtx, 2 << 16, 1 << 16)?;
+        assert!(outline.is_composite);
+        assert_eq!(outline.points.len(), 4);
+        assert_eq!(outline.components.len(), 2);
+
+        // Component-offset scaling keeps top-level simple points unscaled;
+        // the fully scaled no-hinting loader applies (2, 1) to every point.
+        let outline =
+            load_glyph_with_scaled_component_offsets(&glyf, &loca, 1, 0, &hmtx, 2 << 16, 1 << 16)?;
+        assert!(!outline.is_composite);
+        assert_eq!(outline.points.len(), 2);
+        assert_eq!(outline.points[1].x, 100);
+        assert_eq!(outline.points[1].y, 0);
+
+        let scaled = load_glyph_scaled_no_hinting(&glyf, &loca, 1, 0, &hmtx, 2 << 16, 1 << 16)?;
+        assert_eq!(scaled.points[1].x, 200);
+        assert_eq!(scaled.points[1].y, 0);
+        let scaled_composite =
+            load_glyph_scaled_no_hinting(&glyf, &loca, 1, 1, &hmtx, 2 << 16, 1 << 16)?;
+        assert!(scaled_composite.is_composite);
+        assert_eq!(scaled_composite.points.len(), 4);
+        Ok(())
+    }
+
+    #[test]
     fn load_glyph_recursion_and_missing_glyph_errors() -> Result<(), FontError> {
         let simple = simple_glyph_bytes(0, 0, 100, 100);
         let mut glyf = simple.clone();
