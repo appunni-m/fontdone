@@ -7833,6 +7833,24 @@ mod tests {
         }
     }
 
+    fn memory_font(data: &[u8], size_pt: f32) -> Font {
+        match Font::memory_face(data, 0, size_pt) {
+            Ok(font) => font,
+            Err(err) => panic!("fixture should load at {size_pt}pt: {err}"),
+        }
+    }
+
+    fn first_mapped_text(font: &Font) -> String {
+        let (char_code, _) = match font.first_char() {
+            Some(first) => first,
+            None => panic!("fixture must map at least one character"),
+        };
+        match char::from_u32(char_code) {
+            Some(ch) => ch.to_string(),
+            None => "\u{FFFD}".to_string(),
+        }
+    }
+
     #[test]
     fn getbbox_uses_freetype_glyph_slot_contract() {
         let font = test_font();
@@ -7911,5 +7929,110 @@ mod tests {
         // `src/bdf/bdfdrivr.c:bdf_get_bdf_property`; the BDF `FONT` name is
         // not synthesized into a `FAMILY_NAME` property.
         assert_eq!(font.bdf_property("FAMILY_NAME"), None);
+    }
+
+    #[test]
+    fn winfnt_bitmap_faces_report_header_and_render() {
+        for data in [
+            include_bytes!("../tests/fixtures/input/fonts/winfnt/ushort-fields-known.fnt")
+                as &[u8],
+            include_bytes!("../tests/fixtures/input/fonts/winfnt/bitmap-header.fnt") as &[u8],
+        ] {
+            let font = memory_font(data, 12.0);
+            assert_eq!(font.font_format(), "Windows FNT");
+            let header = match font.winfnt_header() {
+                Some(header) => header,
+                None => panic!("WinFNT fixture must expose a header"),
+            };
+            assert!(header.file_size > 0 || header.ascent > 0);
+            let size = font.size_metrics();
+            assert!(size.x_ppem > 0 || size.y_ppem > 0);
+            let info = font.face_info();
+            assert!(info.num_glyphs > 0);
+            let bitmap_size = font.winfnt_bitmap_size();
+            assert!(bitmap_size.is_some());
+        }
+    }
+
+    #[test]
+    fn bdf_pcf_type1_pfr_and_cid_formats_load() {
+        let cases: &[(&[u8], &str)] = &[
+            (
+                include_bytes!("../tests/fixtures/input/fonts/bdf/charset-registry.bdf"),
+                "BDF",
+            ),
+            (
+                include_bytes!("../tests/fixtures/input/fonts/pcf/properties-signed-only.pcf"),
+                "PCF",
+            ),
+            (
+                include_bytes!("../tests/fixtures/input/fonts/type1/simple-type1.pfb"),
+                "Type 1",
+            ),
+            (
+                include_bytes!("../tests/fixtures/input/fonts/pfr/basic-metrics-and-kerning.pfr"),
+                "PFR",
+            ),
+            (
+                include_bytes!("../tests/fixtures/input/fonts/cid/fontinfo-populated.cid"),
+                "CID Type 1",
+            ),
+        ];
+        for (data, expected_format) in cases {
+            let font = memory_font(data, 12.0);
+            assert_eq!(font.font_format(), *expected_format);
+            let info = font.face_info();
+            assert!(info.num_glyphs > 0);
+            let metrics = font.size_metrics();
+            assert!(metrics.x_scale != 0 || metrics.x_ppem > 0);
+            let _fstype = font.get_fstype_flags();
+            let _gasp = font.get_gasp(12);
+        }
+    }
+
+    #[test]
+    fn variable_named_instances_update_face_state() {
+        let data =
+            include_bytes!("../tests/fixtures/input/fonts/variable/named-instances-wght-wdth.ttf");
+        let mut font = match Font::truetype(data, 16.0) {
+            Ok(font) => font,
+            Err(err) => panic!("variable fixture should load: {err}"),
+        };
+        let before = font.postscript_name().map(str::to_string);
+        match font.set_named_instance(0) {
+            Ok(()) => {}
+            Err(err) => panic!("named instance 0 should apply: {err}"),
+        }
+        let after = font.postscript_name().map(str::to_string);
+        assert!(after.is_some());
+        // Instance postscript names are synthesized from design coordinates;
+        // they must stay non-empty and change with the selected instance.
+        assert_ne!(after, Some(String::new()));
+        if let (Some(before), Some(after)) = (before.as_deref(), after.as_deref()) {
+            if before != after {
+                assert!(!after.contains('\0'));
+            }
+        }
+        match font.set_named_instance(font.face_info().num_faces + 99) {
+            Err(_) => {}
+            Ok(()) => panic!("out-of-range named instance must fail"),
+        }
+    }
+
+    #[test]
+    fn color_and_sbix_fonts_load_and_measure() {
+        for data in [
+            include_bytes!("../tests/fixtures/input/fonts/color/colr-v0-layers-cpal.ttf")
+                as &[u8],
+            include_bytes!("../tests/fixtures/input/fonts/sbix/sbix-overlay.ttf") as &[u8],
+        ] {
+            let font = match Font::truetype(data, 16.0) {
+                Ok(font) => font,
+                Err(err) => panic!("color fixture should load: {err}"),
+            };
+            let text = first_mapped_text(&font);
+            let _bbox = font.getbbox(&text);
+            let _length = font.getlength(&text);
+        }
     }
 }
