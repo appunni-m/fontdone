@@ -5525,6 +5525,7 @@ struct FaceState {
     variant_list: Vec<FT_UInt32>,
     stream: FT_Stream,
     stream_close: FT_Stream_CloseFunc,
+    external_stream_frame: Option<Box<[FT_Byte]>>,
     allocation_memory: FT_Memory,
     allocation_block: FT_Pointer,
 }
@@ -5598,6 +5599,7 @@ impl FaceState {
             variant_list: Vec::new(),
             stream: ptr::null_mut(),
             stream_close: None,
+            external_stream_frame: None,
             allocation_memory: ptr::null_mut(),
             allocation_block: ptr::null_mut(),
         }
@@ -6234,6 +6236,257 @@ pub fn abi_external_stream_runtime(bytes: &[u8], face_index: FT_Long) -> Vec<Abi
     }
     let _ = FT_Done_FreeType(library);
     rows
+}
+
+#[cfg(feature = "abi-test-support")]
+pub struct AbiCallbackStreamFields {
+    pub base_is_null: bool,
+    pub size: u64,
+    pub pos: u64,
+    pub descriptor_is_null: bool,
+    pub pathname_is_null: bool,
+    pub read_is_null: bool,
+    pub close_is_null: bool,
+    pub memory_is_null: bool,
+    pub cursor_is_null: bool,
+    pub limit_is_null: bool,
+    pub stream_pointer_identity: bool,
+}
+
+#[cfg(feature = "abi-test-support")]
+pub struct AbiCallbackStreamEvent {
+    pub kind: &'static str,
+    pub offset: u64,
+    pub count: u64,
+    pub returned: u64,
+    pub bytes: Vec<u8>,
+    pub observed: bool,
+}
+
+#[cfg(feature = "abi-test-support")]
+pub struct AbiCallbackStreamContract {
+    pub face_load_status: FT_Error,
+    pub stream_after: AbiCallbackStreamFields,
+    pub callback_events: Vec<AbiCallbackStreamEvent>,
+    pub close_called_by_face_done: bool,
+}
+
+#[cfg(feature = "abi-test-support")]
+#[allow(clippy::useless_conversion)]
+fn abi_callback_stream_u64(value: FT_ULong) -> u64 {
+    u64::try_from(value).unwrap_or(u64::MAX)
+}
+
+#[cfg(feature = "abi-test-support")]
+struct AbiCallbackStreamState {
+    bytes: Box<[FT_Byte]>,
+    expected_stream: usize,
+    recording: bool,
+    close_calls: usize,
+    callback_stream_identity: bool,
+    events: Vec<AbiCallbackStreamEvent>,
+}
+
+#[cfg(feature = "abi-test-support")]
+extern "C" fn abi_callback_stream_io(
+    stream: FT_Stream,
+    offset: FT_ULong,
+    buffer: *mut FT_Byte,
+    count: FT_ULong,
+) -> FT_ULong {
+    let Some(stream) = (unsafe { stream.as_mut() }) else {
+        return 0;
+    };
+    let Some(state) = (unsafe {
+        stream
+            .descriptor
+            .pointer
+            .cast::<AbiCallbackStreamState>()
+            .as_mut()
+    }) else {
+        return 0;
+    };
+    state.callback_stream_identity &= ptr::from_mut(stream).addr() == state.expected_stream;
+    let offset_usize = usize::try_from(offset).unwrap_or(usize::MAX);
+    let requested = usize::try_from(count).unwrap_or(usize::MAX);
+    let available = state.bytes.len().saturating_sub(offset_usize);
+    let copied = requested.min(available);
+    if copied != 0 && !buffer.is_null() {
+        // SAFETY: the callback caller provides `count` writable bytes and the
+        // state owns `copied` readable bytes beginning at `offset`.
+        unsafe {
+            ptr::copy_nonoverlapping(state.bytes.as_ptr().add(offset_usize), buffer, copied);
+        }
+    }
+    let returned = FT_ULong::try_from(copied).unwrap_or(FT_ULong::MAX);
+    if state.recording {
+        state.events.push(AbiCallbackStreamEvent {
+            kind: "read",
+            offset: abi_callback_stream_u64(offset),
+            count: abi_callback_stream_u64(count),
+            returned: abi_callback_stream_u64(returned),
+            bytes: state
+                .bytes
+                .get(offset_usize..)
+                .and_then(|tail| tail.get(..copied))
+                .unwrap_or_default()
+                .to_vec(),
+            observed: true,
+        });
+    }
+    returned
+}
+
+#[cfg(feature = "abi-test-support")]
+extern "C" fn abi_callback_stream_close(stream: FT_Stream) {
+    let Some(stream) = (unsafe { stream.as_mut() }) else {
+        return;
+    };
+    let Some(state) = (unsafe {
+        stream
+            .descriptor
+            .pointer
+            .cast::<AbiCallbackStreamState>()
+            .as_mut()
+    }) else {
+        return;
+    };
+    state.callback_stream_identity &= ptr::from_mut(stream).addr() == state.expected_stream;
+    state.close_calls = state.close_calls.saturating_add(1);
+    if state.recording {
+        state.events.push(AbiCallbackStreamEvent {
+            kind: "close",
+            offset: 0,
+            count: 0,
+            returned: 0,
+            bytes: Vec::new(),
+            observed: true,
+        });
+    }
+}
+
+#[cfg(feature = "abi-test-support")]
+fn abi_callback_stream_fields(
+    stream: &FT_StreamRec,
+    stream_pointer_identity: bool,
+) -> AbiCallbackStreamFields {
+    // SAFETY: the callback harness initializes both descriptor unions through
+    // their pointer view before the snapshot is taken.
+    let descriptor_is_null = unsafe { stream.descriptor.pointer.is_null() };
+    let pathname_is_null = unsafe { stream.pathname.pointer.is_null() };
+    AbiCallbackStreamFields {
+        base_is_null: stream.base.is_null(),
+        size: abi_callback_stream_u64(stream.size),
+        pos: abi_callback_stream_u64(stream.pos),
+        descriptor_is_null,
+        pathname_is_null,
+        read_is_null: stream.read.is_null(),
+        close_is_null: stream.close.is_null(),
+        memory_is_null: stream.memory.is_null(),
+        cursor_is_null: stream.cursor.is_null(),
+        limit_is_null: stream.limit.is_null(),
+        stream_pointer_identity,
+    }
+}
+
+/// Runs a caller-owned callback stream through `FT_Open_Face` and records the
+/// public `FT_StreamRec` fields plus deterministic read and close probes.
+#[cfg(feature = "abi-test-support")]
+pub fn abi_callback_stream_contract(
+    bytes: &[u8],
+    face_index: FT_Long,
+) -> AbiCallbackStreamContract {
+    let mut library = ptr::null_mut();
+    let init_error = FT_Init_FreeType(&mut library);
+    if init_error != rust_ffi::FT_Err_Ok {
+        return AbiCallbackStreamContract {
+            face_load_status: init_error,
+            stream_after: AbiCallbackStreamFields {
+                base_is_null: true,
+                size: u64::try_from(bytes.len()).unwrap_or(u64::MAX),
+                pos: 0,
+                descriptor_is_null: true,
+                pathname_is_null: true,
+                read_is_null: true,
+                close_is_null: true,
+                memory_is_null: true,
+                cursor_is_null: true,
+                limit_is_null: true,
+                stream_pointer_identity: false,
+            },
+            callback_events: Vec::new(),
+            close_called_by_face_done: false,
+        };
+    }
+
+    let mut state = Box::new(AbiCallbackStreamState {
+        bytes: bytes.to_vec().into_boxed_slice(),
+        expected_stream: 0,
+        recording: false,
+        close_calls: 0,
+        callback_stream_identity: true,
+        events: Vec::new(),
+    });
+    let mut stream = FT_StreamRec {
+        base: ptr::null_mut(),
+        size: FT_ULong::try_from(bytes.len()).unwrap_or(FT_ULong::MAX),
+        pos: 0,
+        descriptor: FT_StreamDesc {
+            pointer: ptr::from_mut(state.as_mut()).cast(),
+        },
+        pathname: FT_StreamDesc::default(),
+        read: abi_callback_stream_io as *const () as FT_Pointer,
+        close: abi_callback_stream_close as *const () as FT_Pointer,
+        memory: ptr::null_mut(),
+        cursor: ptr::null_mut(),
+        limit: ptr::null_mut(),
+    };
+    state.expected_stream = ptr::from_mut(&mut stream).addr();
+    let args = FT_Open_Args {
+        flags: rust_ffi::FT_OPEN_STREAM as FT_UInt,
+        memory_base: ptr::null(),
+        memory_size: 0,
+        pathname: ptr::null_mut(),
+        stream: ptr::from_mut(&mut stream),
+        driver: ptr::null_mut(),
+        num_params: 0,
+        params: ptr::null_mut(),
+    };
+    let mut face = ptr::null_mut();
+    let face_load_status = FT_Open_Face(library, &args, face_index, &mut face);
+    let stream_pointer_identity = face_load_status == rust_ffi::FT_Err_Ok
+        && abi_face_uses_stream(face, ptr::from_mut(&mut stream));
+    if face_load_status == rust_ffi::FT_Err_Ok {
+        state.recording = true;
+        let read = abi_callback_stream_io(ptr::from_mut(&mut stream), 0, ptr::null_mut(), 0);
+        debug_assert_eq!(read, 0);
+        let mut first = [0; 4];
+        let _ = abi_callback_stream_io(
+            ptr::from_mut(&mut stream),
+            0,
+            first.as_mut_ptr(),
+            FT_ULong::from(4_u8),
+        );
+        let _ = abi_callback_stream_io(
+            ptr::from_mut(&mut stream),
+            FT_ULong::try_from(bytes.len()).unwrap_or(FT_ULong::MAX),
+            ptr::null_mut(),
+            FT_ULong::from(8_u8),
+        );
+        let _ = FT_Done_Face(face);
+    }
+    let stream_after = abi_callback_stream_fields(&stream, stream_pointer_identity);
+    let close_called_by_face_done = face_load_status == rust_ffi::FT_Err_Ok
+        && state.close_calls == 1
+        && state.callback_stream_identity;
+    let callback_events = std::mem::take(&mut state.events);
+    let _ = FT_Done_FreeType(library);
+    AbiCallbackStreamContract {
+        face_load_status,
+        stream_after,
+        callback_events,
+        close_called_by_face_done,
+    }
 }
 
 #[cfg(feature = "abi-test-support")]
@@ -8817,6 +9070,7 @@ fn ft_new_memory_face_with_name_options(
             external_stream: false,
             stream: ptr::null_mut(),
             stream_close: None,
+            stream_frame: None,
         },
     )
 }
@@ -8852,7 +9106,7 @@ fn ft_open_external_stream_face_with_name_options(
     let Ok(file_len) = usize::try_from(stream.size) else {
         return rust_ffi::FT_Err_Invalid_Argument;
     };
-    let callback_bytes;
+    let mut callback_frame = None;
     let data = if stream.base.is_null() {
         if stream.read.is_null() {
             if let Some(close) = close {
@@ -8892,8 +9146,14 @@ fn ft_open_external_stream_face_with_name_options(
             return rust_ffi::FT_Err_Invalid_Stream_Operation as FT_Error;
         }
         stream.pos = read_count;
-        callback_bytes = bytes;
-        callback_bytes.as_slice()
+        callback_frame = Some(bytes.into_boxed_slice());
+        let Some(frame) = callback_frame.as_deref() else {
+            if let Some(close) = close {
+                close(stream_pointer);
+            }
+            return rust_ffi::FT_Err_Out_Of_Memory;
+        };
+        frame
     } else {
         // SAFETY: memory-backed FT_OPEN_STREAM callers provide `size`
         // readable bytes at `base`; the stream record remains caller-owned.
@@ -8909,6 +9169,7 @@ fn ft_open_external_stream_face_with_name_options(
             external_stream: true,
             stream: stream_pointer,
             stream_close: close,
+            stream_frame: callback_frame.clone(),
         },
     );
     if error != rust_ffi::FT_Err_Ok
@@ -8925,6 +9186,7 @@ struct OpenFaceByteOptions {
     external_stream: bool,
     stream: FT_Stream,
     stream_close: FT_Stream_CloseFunc,
+    stream_frame: Option<Box<[FT_Byte]>>,
 }
 
 fn ft_open_face_from_bytes_with_name_options(
@@ -8984,6 +9246,20 @@ fn ft_store_opened_face(
             if options.external_stream {
                 state.stream = options.stream;
                 state.stream_close = options.stream_close;
+                if let Some(frame) = options.stream_frame {
+                    let stream_pos = state.inner.memory_stream_record().pos;
+                    // C FreeType's callback-backed frame path leaves the
+                    // caller stream with a live frame pointer and the library
+                    // memory owner after face loading.  Keep an owned frame
+                    // alive through the face close callback and mirror those
+                    // public fields without invoking any native runtime.
+                    if let Some(stream) = unsafe { state.stream.as_mut() } {
+                        stream.base = frame.as_ptr().cast_mut();
+                        stream.memory = face_memory.cast();
+                        stream.pos = stream_pos;
+                    }
+                    state.external_stream_frame = Some(frame);
+                }
             }
             let metrics = rust_size_metrics_to_abi(state.inner.size_metrics);
             let rust_size = state.inner.size;

@@ -32647,6 +32647,197 @@ static int emit_external_stream_runtime(int argc, char** argv) {
     return 0;
 }
 
+typedef struct CallbackStreamContractEvent_ {
+    const char* kind;
+    unsigned long offset;
+    unsigned long count;
+    unsigned long returned;
+    unsigned char bytes[8];
+    size_t bytes_len;
+    int observed;
+} CallbackStreamContractEvent;
+
+typedef struct CallbackStreamContractState_ {
+    const unsigned char* data;
+    size_t data_len;
+    FT_Stream expected_stream;
+    int recording;
+    int close_calls;
+    int callback_stream_identity;
+    int open_read_observed;
+    int event_count;
+    CallbackStreamContractEvent events[4];
+} CallbackStreamContractState;
+
+static void callback_stream_contract_record_read(CallbackStreamContractState* state,
+                                                 unsigned long offset,
+                                                 unsigned long count,
+                                                 unsigned long returned,
+                                                 const unsigned char* bytes,
+                                                 size_t bytes_len) {
+    if (!state || !state->recording || state->event_count >= 4) return;
+    CallbackStreamContractEvent* event = &state->events[state->event_count++];
+    event->kind = "read";
+    event->offset = offset;
+    event->count = count;
+    event->returned = returned;
+    event->bytes_len = bytes_len > sizeof(event->bytes) ? sizeof(event->bytes) : bytes_len;
+    if (event->bytes_len && bytes) {
+        memcpy(event->bytes, bytes, event->bytes_len);
+    }
+    event->observed = 1;
+}
+
+static unsigned long callback_stream_contract_read(FT_Stream stream,
+                                                   unsigned long offset,
+                                                   unsigned char* buffer,
+                                                   unsigned long count) {
+    CallbackStreamContractState* state =
+        stream ? (CallbackStreamContractState*)stream->descriptor.pointer : NULL;
+    if (!state) return 0;
+    state->callback_stream_identity =
+        state->callback_stream_identity && stream == state->expected_stream;
+    if (!state->recording) state->open_read_observed = 1;
+    size_t available = offset <= state->data_len ? state->data_len - (size_t)offset : 0;
+    size_t requested = (size_t)count;
+    size_t copied = requested < available ? requested : available;
+    if (copied && buffer) memcpy(buffer, state->data + offset, copied);
+    callback_stream_contract_record_read(state, offset, count, (unsigned long)copied,
+                                         copied ? state->data + offset : NULL, copied);
+    return (unsigned long)copied;
+}
+
+static void callback_stream_contract_close(FT_Stream stream) {
+    CallbackStreamContractState* state =
+        stream ? (CallbackStreamContractState*)stream->descriptor.pointer : NULL;
+    if (!state) return;
+    state->callback_stream_identity =
+        state->callback_stream_identity && stream == state->expected_stream;
+    state->close_calls++;
+    if (state->recording && state->event_count < 4) {
+        CallbackStreamContractEvent* event = &state->events[state->event_count++];
+        memset(event, 0, sizeof(*event));
+        event->kind = "close";
+        event->observed = 1;
+    }
+}
+
+static int callback_stream_contract_harness_is_valid(const unsigned char* bytes, long length) {
+    if (!bytes || length <= 0) return 0;
+    char* text = (char*)malloc((size_t)length + 1);
+    if (!text) return 0;
+    memcpy(text, bytes, (size_t)length);
+    text[length] = '\0';
+    int valid = strstr(text, "external_stream_callback_harness") != NULL
+        && strstr(text, "\"probes\"") != NULL
+        && strstr(text, "\"past_end\"") != NULL;
+    free(text);
+    return valid;
+}
+
+static int emit_callback_stream_contract(int argc, char** argv) {
+    if (argc != 7) return 2;
+    unsigned char* data = NULL;
+    long data_len_long = 0;
+    unsigned char* harness = NULL;
+    long harness_len = 0;
+    if (load_oracle_source_bytes(argv[2], argv[3], &data, &data_len_long) != 0
+        || load_oracle_source_bytes(argv[4], argv[5], &harness, &harness_len) != 0) {
+        fprintf(stderr, "failed to load callback stream source or harness\n");
+        free(data);
+        free(harness);
+        return 1;
+    }
+    if (!callback_stream_contract_harness_is_valid(harness, harness_len)) {
+        fprintf(stderr, "invalid callback stream harness\n");
+        free(data);
+        free(harness);
+        return 1;
+    }
+    size_t data_len = data_len_long < 0 ? 0 : (size_t)data_len_long;
+    FT_Long face_index = (FT_Long)strtol(argv[6], NULL, 10);
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{");
+        print_status(init_error);
+        printf(",\"output\":null}\n");
+        free(data);
+        free(harness);
+        return 0;
+    }
+
+    CallbackStreamContractState state;
+    memset(&state, 0, sizeof(state));
+    state.data = data;
+    state.data_len = data_len;
+    state.callback_stream_identity = 1;
+    FT_StreamRec stream;
+    memset(&stream, 0, sizeof(stream));
+    stream.size = (FT_ULong)data_len;
+    stream.descriptor.pointer = &state;
+    stream.read = callback_stream_contract_read;
+    stream.close = callback_stream_contract_close;
+    state.expected_stream = &stream;
+
+    FT_Open_Args args;
+    memset(&args, 0, sizeof(args));
+    args.flags = FT_OPEN_STREAM;
+    args.stream = &stream;
+    FT_Face face = NULL;
+    FT_Error face_load_status = FT_Open_Face(library, &args, face_index, &face);
+    int stream_pointer_identity = face && face->stream == &stream;
+    if (!face_load_status) {
+        state.recording = 1;
+        unsigned char first[4] = {0, 0, 0, 0};
+        (void)callback_stream_contract_read(&stream, 0, NULL, 0);
+        (void)callback_stream_contract_read(&stream, 0, first, 4);
+        (void)callback_stream_contract_read(&stream, (unsigned long)data_len, NULL, 8);
+        FT_Done_Face(face);
+    }
+
+    printf("{");
+    print_status(face_load_status);
+    printf(",\"output\":{\"face_load_status\":%d,\"stream_after\":{", face_load_status);
+    printf("\"base_is_null\":");
+    print_json_bool(stream.base == NULL);
+    printf(",\"size\":%lu,\"pos\":%lu,\"descriptor_is_null\":", stream.size, stream.pos);
+    print_json_bool(stream.descriptor.pointer == NULL);
+    printf(",\"pathname_is_null\":");
+    print_json_bool(stream.pathname.pointer == NULL);
+    printf(",\"read_is_null\":");
+    print_json_bool(stream.read == NULL);
+    printf(",\"close_is_null\":");
+    print_json_bool(stream.close == NULL);
+    printf(",\"memory_is_null\":");
+    print_json_bool(stream.memory == NULL);
+    printf(",\"cursor_is_null\":");
+    print_json_bool(stream.cursor == NULL);
+    printf(",\"limit_is_null\":");
+    print_json_bool(stream.limit == NULL);
+    printf(",\"stream_pointer_identity\":");
+    print_json_bool(stream_pointer_identity);
+    printf("},\"callback_events\":[");
+    for (int index = 0; index < state.event_count; index++) {
+        CallbackStreamContractEvent* event = &state.events[index];
+        if (index) printf(",");
+        printf("{\"kind\":\"%s\",\"offset\":%lu,\"count\":%lu,\"returned\":%lu,\"bytes\":\"",
+               event->kind, event->offset, event->count, event->returned);
+        if (event->bytes_len) print_hex_bytes(event->bytes, (long)event->bytes_len);
+        printf("\",\"observed\":");
+        print_json_bool(event->observed);
+        printf("}");
+    }
+    printf("],\"close_called_by_face_done\":");
+    print_json_bool(!face_load_status && state.close_calls == 1 && state.callback_stream_identity);
+    printf("}}\n");
+
+    FT_Done_FreeType(library);
+    free(data);
+    free(harness);
+    return 0;
+}
+
 static void print_memory_stream_frame_read(FT_Stream stream, unsigned long offset, unsigned long count) {
     unsigned long size = stream ? stream->size : 0;
     int in_bounds = stream && offset <= size && count <= size - offset;
@@ -35648,6 +35839,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 5 && streq(argv[1], "--external-stream-runtime")) {
         return emit_external_stream_runtime(argc, argv);
+    }
+    if (argc == 7 && streq(argv[1], "--callback-stream-contract")) {
+        return emit_callback_stream_contract(argc, argv);
     }
     if (argc == 5 && streq(argv[1], "--memory-stream-probe")) {
         return emit_memory_stream_probe(argc, argv);

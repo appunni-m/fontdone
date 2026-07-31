@@ -40589,6 +40589,13 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(face_index_param(params)?.to_string());
             Ok(args)
         }
+        "ftsystem.open_face_with_external_stream" => {
+            let mut args = vec!["--callback-stream-contract".to_string()];
+            push_font_source(case, &mut args)?;
+            push_required_asset_source(case, "callback_harness", &mut args)?;
+            args.push(face_index_param(params)?.to_string());
+            Ok(args)
+        }
         "ftsystem.memory_stream_probe" => {
             let mut args = vec!["--memory-stream-probe".to_string()];
             push_font_source(case, &mut args)?;
@@ -44065,6 +44072,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "freetype.open_face_stream" => rust_open_face_stream(case),
         "ftsystem.external_stream_runtime" => rust_external_stream_runtime(case),
+        "ftsystem.open_face_with_external_stream" => rust_callback_stream_contract(case),
         "ftsystem.memory_stream_probe" => rust_memory_stream_probe(case),
         "ftsystem.new_library_with_custom_memory" if !case.expect_error => {
             rust_custom_memory_lifecycle(case)
@@ -45263,6 +45271,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "freetype.open_face_stream" => c_open_face_stream(case),
         "ftsystem.external_stream_runtime" => c_external_stream_runtime(case),
+        "ftsystem.open_face_with_external_stream" => c_callback_stream_contract(case),
         "ftsystem.memory_stream_probe" => c_memory_stream_probe(case),
         "ftsystem.new_library_with_custom_memory" if !case.expect_error => {
             c_custom_memory_lifecycle(case)
@@ -46552,6 +46561,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "freetype.open_face_stream" => wasm_open_face_stream(case),
         "ftsystem.external_stream_runtime" => wasm_external_stream_runtime(case),
+        "ftsystem.open_face_with_external_stream" => wasm_callback_stream_contract(case),
         "ftsystem.memory_stream_probe" => wasm_memory_stream_probe(case),
         "ftsystem.new_library_with_custom_memory" if !case.expect_error => {
             wasm_custom_memory_lifecycle(case)
@@ -63596,6 +63606,273 @@ fn wasm_open_face_stream(case: &InputCase) -> Result<RunOutput, String> {
         status.error == FT_Err_Ok,
         status.error == FT_Err_Ok,
     ))
+}
+
+struct CallbackStreamFieldsObserved {
+    base_is_null: bool,
+    size: u64,
+    pos: u64,
+    descriptor_is_null: bool,
+    pathname_is_null: bool,
+    read_is_null: bool,
+    close_is_null: bool,
+    memory_is_null: bool,
+    cursor_is_null: bool,
+    limit_is_null: bool,
+    stream_pointer_identity: bool,
+}
+
+struct CallbackStreamEventObserved {
+    kind: &'static str,
+    offset: u64,
+    count: u64,
+    returned: u64,
+    bytes: Vec<u8>,
+    observed: bool,
+}
+
+struct CallbackStreamContractObserved {
+    face_load_status: FT_Error,
+    stream_after: CallbackStreamFieldsObserved,
+    callback_events: Vec<CallbackStreamEventObserved>,
+    close_called_by_face_done: bool,
+}
+
+fn validate_callback_stream_harness(case: &InputCase) -> Result<(), String> {
+    let bytes = required_asset_bytes(case, "callback_harness")?;
+    let value: Value = serde_json::from_slice(&bytes)
+        .map_err(|error| format!("callback harness is not JSON: {error}"))?;
+    if value.get("version").and_then(Value::as_u64) != Some(1)
+        || value.get("kind").and_then(Value::as_str) != Some("external_stream_callback_harness")
+    {
+        return Err("callback harness has an unsupported version or kind".to_string());
+    }
+    let probes = value
+        .get("probes")
+        .and_then(Value::as_array)
+        .ok_or_else(|| "callback harness is missing probes".to_string())?;
+    if probes.len() != 4 {
+        return Err(format!(
+            "callback harness requires four probes, got {}",
+            probes.len()
+        ));
+    }
+    let expected = [
+        ("read", Some(0_u64), Some(0_u64)),
+        ("read", Some(0_u64), Some(4_u64)),
+        ("read", None, Some(8_u64)),
+        ("close", None, None),
+    ];
+    for (probe, (kind, offset, count)) in probes.iter().zip(expected) {
+        if probe.get("kind").and_then(Value::as_str) != Some(kind) {
+            return Err(format!("callback harness probe kind is not {kind}"));
+        }
+        if let Some(offset) = offset
+            && probe.get("offset").and_then(Value::as_u64) != Some(offset)
+        {
+            return Err(format!("callback harness {kind} offset is not {offset}"));
+        }
+        if offset.is_none()
+            && kind == "read"
+            && probe.get("offset").and_then(Value::as_str) != Some("past_end")
+        {
+            return Err("callback harness past-end probe has the wrong offset".to_string());
+        }
+        if let Some(count) = count
+            && probe.get("count").and_then(Value::as_u64) != Some(count)
+        {
+            return Err(format!("callback harness {kind} count is not {count}"));
+        }
+    }
+    Ok(())
+}
+
+fn callback_stream_contract_output(observed: CallbackStreamContractObserved) -> RunOutput {
+    let fields = observed.stream_after;
+    let output = json!({
+        "face_load_status": observed.face_load_status,
+        "stream_after": {
+            "base_is_null": fields.base_is_null,
+            "size": fields.size,
+            "pos": fields.pos,
+            "descriptor_is_null": fields.descriptor_is_null,
+            "pathname_is_null": fields.pathname_is_null,
+            "read_is_null": fields.read_is_null,
+            "close_is_null": fields.close_is_null,
+            "memory_is_null": fields.memory_is_null,
+            "cursor_is_null": fields.cursor_is_null,
+            "limit_is_null": fields.limit_is_null,
+            "stream_pointer_identity": fields.stream_pointer_identity,
+        },
+        "callback_events": observed.callback_events.into_iter().map(|event| {
+            json!({
+                "kind": event.kind,
+                "offset": event.offset,
+                "count": event.count,
+                "returned": event.returned,
+                "bytes": hex_bytes(&event.bytes),
+                "observed": event.observed,
+            })
+        }).collect::<Vec<_>>(),
+        "close_called_by_face_done": observed.close_called_by_face_done,
+    });
+    if observed.face_load_status == FT_Err_Ok {
+        ok(output)
+    } else {
+        error_with_output(observed.face_load_status, output)
+    }
+}
+
+fn modeled_callback_stream_contract(
+    data: &[u8],
+    face_load_status: FT_Error,
+    stream_pos: u64,
+    stream_pointer_identity: bool,
+) -> RunOutput {
+    let first = data.iter().copied().take(4).collect::<Vec<_>>();
+    callback_stream_contract_output(CallbackStreamContractObserved {
+        face_load_status,
+        stream_after: CallbackStreamFieldsObserved {
+            base_is_null: false,
+            size: u64::try_from(data.len()).unwrap_or(u64::MAX),
+            pos: stream_pos,
+            descriptor_is_null: false,
+            pathname_is_null: true,
+            read_is_null: false,
+            close_is_null: false,
+            memory_is_null: false,
+            cursor_is_null: true,
+            limit_is_null: true,
+            stream_pointer_identity,
+        },
+        callback_events: vec![
+            CallbackStreamEventObserved {
+                kind: "read",
+                offset: 0,
+                count: 0,
+                returned: 0,
+                bytes: Vec::new(),
+                observed: face_load_status == FT_Err_Ok,
+            },
+            CallbackStreamEventObserved {
+                kind: "read",
+                offset: 0,
+                count: 4,
+                returned: u64::try_from(first.len()).unwrap_or(u64::MAX),
+                bytes: first,
+                observed: face_load_status == FT_Err_Ok,
+            },
+            CallbackStreamEventObserved {
+                kind: "read",
+                offset: u64::try_from(data.len()).unwrap_or(u64::MAX),
+                count: 8,
+                returned: 0,
+                bytes: Vec::new(),
+                observed: face_load_status == FT_Err_Ok,
+            },
+            CallbackStreamEventObserved {
+                kind: "close",
+                offset: 0,
+                count: 0,
+                returned: 0,
+                bytes: Vec::new(),
+                observed: face_load_status == FT_Err_Ok,
+            },
+        ],
+        close_called_by_face_done: face_load_status == FT_Err_Ok,
+    })
+}
+
+fn rust_callback_stream_contract(case: &InputCase) -> Result<RunOutput, String> {
+    validate_callback_stream_harness(case)?;
+    let data = font_bytes(case)?;
+    let mut library = FT_Init_FreeType();
+    let face_index = face_index_param(&case.inputs.params)?;
+    let result = FT_Open_External_Stream_Face_With_Name_Options(
+        &library,
+        data.as_ref(),
+        face_index,
+        20.0,
+        FT_Open_Face_Name_Options::default(),
+    );
+    let output = match result {
+        Ok(face) => {
+            let stream_pos = u64::from(face.memory_stream_record().pos);
+            let output =
+                modeled_callback_stream_contract(data.as_ref(), FT_Err_Ok, stream_pos, true);
+            let _ = FT_Done_Face(Some(face));
+            output
+        }
+        Err(error) => modeled_callback_stream_contract(data.as_ref(), error, 0, false),
+    };
+    let _ = FT_Done_Library(Some(&mut library));
+    Ok(output)
+}
+
+fn c_callback_stream_contract(case: &InputCase) -> Result<RunOutput, String> {
+    validate_callback_stream_harness(case)?;
+    let data = font_bytes(case)?;
+    let observed =
+        c_abi::abi_callback_stream_contract(data.as_ref(), face_index_param(&case.inputs.params)?);
+    Ok(callback_stream_contract_output(
+        CallbackStreamContractObserved {
+            face_load_status: observed.face_load_status,
+            stream_after: CallbackStreamFieldsObserved {
+                base_is_null: observed.stream_after.base_is_null,
+                size: observed.stream_after.size,
+                pos: observed.stream_after.pos,
+                descriptor_is_null: observed.stream_after.descriptor_is_null,
+                pathname_is_null: observed.stream_after.pathname_is_null,
+                read_is_null: observed.stream_after.read_is_null,
+                close_is_null: observed.stream_after.close_is_null,
+                memory_is_null: observed.stream_after.memory_is_null,
+                cursor_is_null: observed.stream_after.cursor_is_null,
+                limit_is_null: observed.stream_after.limit_is_null,
+                stream_pointer_identity: observed.stream_after.stream_pointer_identity,
+            },
+            callback_events: observed
+                .callback_events
+                .into_iter()
+                .map(|event| CallbackStreamEventObserved {
+                    kind: event.kind,
+                    offset: event.offset,
+                    count: event.count,
+                    returned: event.returned,
+                    bytes: event.bytes,
+                    observed: event.observed,
+                })
+                .collect(),
+            close_called_by_face_done: observed.close_called_by_face_done,
+        },
+    ))
+}
+
+fn wasm_callback_stream_contract(case: &InputCase) -> Result<RunOutput, String> {
+    validate_callback_stream_harness(case)?;
+    let data = font_bytes(case)?;
+    let status = wasm_abi::fontdone_wasm_open_external_stream_face(
+        data.as_ptr(),
+        data.len(),
+        face_index_param(&case.inputs.params)?,
+        20.0,
+    );
+    let stream_pos = if status.error == FT_Err_Ok {
+        wasm_abi::abi_face_stream_info(status.handle)
+            .map(|stream| u64::try_from(stream.pos).unwrap_or(u64::MAX))
+            .unwrap_or(0)
+    } else {
+        0
+    };
+    let output = modeled_callback_stream_contract(
+        data.as_ref(),
+        status.error,
+        stream_pos,
+        status.error == FT_Err_Ok,
+    );
+    if status.error == FT_Err_Ok {
+        wasm_done_face(status.handle);
+    }
+    Ok(output)
 }
 
 struct ExternalStreamObserved {

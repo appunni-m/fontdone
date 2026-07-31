@@ -215,10 +215,8 @@
           },
           "callback_harness": {
             "kind": "ref",
-            "id": "streams/harnesses/external-stream-callbacks.json",
-            "role": "stream_model",
-            "status": "required_future_asset",
-            "requires": "C and Rust ABI harness support for caller-owned FT_StreamRec read/close callbacks"
+            "id": "input/streams/harnesses/external-stream-callbacks.json",
+            "role": "stream_model"
           }
         },
         "params": {
@@ -238,7 +236,8 @@
             {"offset": 0, "count": 0, "meaning": "seek_status"},
             {"offset": 0, "count": 4, "meaning": "read_bytes"},
             {"offset": "past_end", "count": 8, "meaning": "short_read_or_error"}
-          ]
+          ],
+          "runtime_route": "actual_callback_stream_contract"
         }
       },
       "classifiers": ["kind:record", "header:ftsystem", "area:stream", "stream:callback"],
@@ -254,7 +253,7 @@
           "mode": "exact",
           "paths": ["face_load_status", "stream_after", "callback_events", "close_called_by_face_done"]
         },
-        "fixture_requirements": ["Add a reusable external stream callback harness that records read(count==0), read(count>0), and close events without embedding font bytes in JSON."]
+        "fixture_requirements": ["The tracked external-stream callback harness defines read(count==0), read(count>0), and close probes without embedding font bytes in JSON."]
       }
     }
   ]

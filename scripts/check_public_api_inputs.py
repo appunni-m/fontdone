@@ -521,6 +521,7 @@ REAL_PARITY_OPERATIONS = {
     "ftlist.list_up",
     "ftcache.sbit_cache_lookup",
     "ftcache.manager_reset",
+    "ftsystem.open_face_with_external_stream",
     "ftoutln.outline_render",
     "ftoutln.outline_render_direct",
     "ftadvanc.get_advance",
@@ -4358,11 +4359,17 @@ def stream_subsystem_pending_reason(row: ConcreteInput) -> str | None:
             "read/close callback events from freetype/src/base/ftobjs.c:2514"
         )
     if row.case_id == "ftsystem.FT_StreamRec.callback_stream_field_contract":
+        if (
+            row.operation == "ftsystem.open_face_with_external_stream"
+            and row.params.get("runtime_route") == "actual_callback_stream_contract"
+            and unresolved_assets_reason(row) is None
+        ):
+            return None
         if exact_error_public_route(row.operation, row.case_id, row.expect_error):
             return None
         return (
             "FT_StreamRec callback-stream parity declares "
-            "streams/harnesses/external-stream-callbacks.json, but that "
+            "input/streams/harnesses/external-stream-callbacks.json, but that "
             "maintained callback-event harness is absent; exact same-input "
             "C/Rust/C-ABI/WASM parity also requires public FT_StreamRec field "
             "copying and read(count==0), read(count>0), and close-event "

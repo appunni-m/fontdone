@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "kind": "external_stream_callback_harness",
+  "description": "Deterministic FT_StreamRec callback probes; font bytes remain a separate fixture input.",
+  "stream": {
+    "base": null,
+    "size": "font_bytes.length",
+    "pos": 0,
+    "descriptor": "callback_harness",
+    "pathname": null,
+    "read": "callback_harness.read",
+    "close": "callback_harness.close",
+    "memory": null,
+    "cursor": null,
+    "limit": null
+  },
+  "probes": [
+    {
+      "kind": "read",
+      "offset": 0,
+      "count": 0,
+      "meaning": "seek_status"
+    },
+    {
+      "kind": "read",
+      "offset": 0,
+      "count": 4,
+      "meaning": "read_bytes"
+    },
+    {
+      "kind": "read",
+      "offset": "past_end",
+      "count": 8,
+      "meaning": "short_read_or_error"
+    },
+    {
+      "kind": "close",
+      "meaning": "face_done"
+    }
+  ]
+}

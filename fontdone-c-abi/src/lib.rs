@@ -320,6 +320,7 @@ document_abi_test_support!(
     abi_face_stream_info,
     abi_face_uses_stream,
     abi_external_stream_runtime,
+    abi_callback_stream_contract,
     abi_face_available_sizes,
     abi_mm_var_descriptor,
     abi_charmap_count,
