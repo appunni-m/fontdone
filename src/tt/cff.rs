@@ -1208,4 +1208,131 @@ mod tests {
         assert_eq!(cid.glyph_cids, vec![0]);
         Ok(())
     }
+
+    #[test]
+    fn adobe_rlineto_and_alternating_curves_with_deltas() -> Result<(), FontError> {
+        // rlineto with one complete (dx, dy) pair.
+        let line = Type2Decoder::new(&[149, 159, 5, 14]).decode()?;
+        assert_eq!(line.points.len(), 2);
+        assert_eq!((line.points[1].x, line.points[1].y), (10, 20));
+        // hvcurveto (opcode 31) with 8n+5 operands: the fifth value closes
+        // the curve as a delta on the leading axis.
+        let hv = Type2Decoder::new(&[149, 159, 169, 179, 189, 31, 14]).decode()?;
+        assert_eq!(hv.points.len(), 4);
+        // vhcurveto (opcode 30) with the same shape.
+        let vh = Type2Decoder::new(&[149, 159, 169, 179, 189, 30, 14]).decode()?;
+        assert_eq!(vh.points.len(), 4);
+        Ok(())
+    }
+
+    #[test]
+    fn cff_dict_underline_thickness_and_number_overflows() {
+        // Top DICT with escaped operator 12 4 (underlineThickness) plus
+        // CharStrings must parse.
+        let mut table = Vec::new();
+        table.extend_from_slice(&[1, 0, 4, 4]);
+        table.extend_from_slice(&empty_index());
+        let top_dict_bytes = [141u8, 12, 4, 156, 17];
+        table.extend_from_slice(&index_with(&[&top_dict_bytes]));
+        table.extend_from_slice(&empty_index());
+        table.extend_from_slice(&empty_index());
+        table.extend_from_slice(&index_with(&[&[14u8]]));
+        match parse_cff(&table) {
+            Ok(cff) => assert_eq!(cff.font_info().underline_thickness, 2),
+            Err(error) => panic!("underlineThickness dict should parse: {error}"),
+        }
+
+        // A truncated longint operand (29) is a face-open failure.
+        let mut bad = Vec::new();
+        bad.extend_from_slice(&[1, 0, 4, 4]);
+        bad.extend_from_slice(&empty_index());
+        bad.extend_from_slice(&index_with(&[&[29u8]]));
+        bad.extend_from_slice(&empty_index());
+        bad.extend_from_slice(&empty_index());
+        bad.extend_from_slice(&index_with(&[&[14u8]]));
+        assert!(parse_cff(&bad).is_err());
+
+        // The dict number reader itself reports the truncated longint.
+        assert!(read_dict_number(&[29], 0).is_err());
+
+        // A valid 4-byte longint operand (256) parses in a top dict.
+        let mut long = Vec::new();
+        long.extend_from_slice(&[1, 0, 4, 4]);
+        long.extend_from_slice(&empty_index());
+        // longint 256 + CharStrings at table offset 22 (operand 161).
+        let top_dict_bytes = [29u8, 0, 0, 1, 0, 161, 17];
+        long.extend_from_slice(&index_with(&[&top_dict_bytes]));
+        long.extend_from_slice(&empty_index());
+        long.extend_from_slice(&empty_index());
+        long.extend_from_slice(&index_with(&[&[14u8]]));
+        match parse_cff(&long) {
+            Ok(_) => {}
+            Err(error) => panic!("longint dict should parse: {error}"),
+        }
+    }
+
+    #[test]
+    fn cff_charset_formats_1_and_2_expand_ranges() -> Result<(), FontError> {
+        for (format, n_left_bytes) in [(1u8, 1usize), (2, 2)] {
+            let mut table = Vec::new();
+            table.extend_from_slice(&[1, 0, 4, 4]);
+            table.extend_from_slice(&empty_index());
+            let strings = index_with(&[b"Adobe", b"Identity"]);
+            let top_index = index_with(&[&[0u8; 11]]);
+            let charset_offset = 4 + 2 + top_index.len() + strings.len() + 2;
+            let mut charset = vec![format];
+            charset.extend_from_slice(&10u16.to_be_bytes()); // first CID
+            if n_left_bytes == 1 {
+                charset.push(1); // one extra CID
+            } else {
+                charset.extend_from_slice(&1u16.to_be_bytes());
+            }
+            let charstrings_offset = charset_offset + charset.len();
+            let mut top_dict = Vec::new();
+            top_dict.extend_from_slice(&[248, 27, 248, 28, 139, 12, 30]);
+            top_dict.push((charset_offset + 139) as u8);
+            top_dict.push(15);
+            top_dict.push((charstrings_offset + 139) as u8);
+            top_dict.push(17);
+            table.extend_from_slice(&index_with(&[&top_dict]));
+            table.extend_from_slice(&strings);
+            table.extend_from_slice(&empty_index());
+            table.extend_from_slice(&charset);
+            table.extend_from_slice(&index_with(&[&[14u8], &[14u8]]));
+
+            let cff = parse_cff(&table)?;
+            let cid = match cff.cid_info() {
+                Some(cid) => cid,
+                None => panic!("format-{format} charset must expose CID info"),
+            };
+            assert_eq!(cid.glyph_cids, vec![0, 10]);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn cff_charset_format0_truncation_fails() {
+        let mut table = Vec::new();
+        table.extend_from_slice(&[1, 0, 4, 4]);
+        table.extend_from_slice(&empty_index());
+        let strings = index_with(&[b"Adobe", b"Identity"]);
+        let top_index = index_with(&[&[0u8; 11]]);
+        let charstrings = index_with(&[&[14u8], &[14u8]]);
+        // Charset sits after the CharStrings INDEX so its truncated CID
+        // read hits end-of-table.
+        let charstrings_offset = 4 + 2 + top_index.len() + strings.len() + 2;
+        let charset_offset = charstrings_offset + charstrings.len();
+        let mut top_dict = Vec::new();
+        top_dict.extend_from_slice(&[248, 27, 248, 28, 139, 12, 30]);
+        top_dict.push((charset_offset + 139) as u8);
+        top_dict.push(15);
+        top_dict.push((charstrings_offset + 139) as u8);
+        top_dict.push(17);
+        table.extend_from_slice(&index_with(&[&top_dict]));
+        table.extend_from_slice(&strings);
+        table.extend_from_slice(&empty_index());
+        table.extend_from_slice(&charstrings);
+        table.push(0); // charset format 0 with no CID bytes after it
+        assert!(parse_cff(&table).is_err());
+    }
 }
