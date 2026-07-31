@@ -62,6 +62,9 @@ pub struct FontData {
     pub sbit: Option<SbitTable>,
     pub sbix: Option<SbixTable>,
     pub svg: Option<SvgTable>,
+    /// TrueType interpreter version selected through the `truetype`
+    /// `interpreter-version` driver property.
+    pub interpreter_version: i32,
     pub cff: Option<CffTable>,
     pub cff2: Option<Cff2Table>,
     pub loca_data: Vec<u8>,

@@ -788,6 +788,7 @@ fn winfnt_font_data(data: &[u8], size_pt: f32, header: &WinFntHeader) -> Arc<Fon
         sbit: None,
         sbix: None,
         svg: None,
+        interpreter_version: 40,
         cff: None,
         cff2: None,
         loca_data: Vec::new(),
@@ -1353,6 +1354,7 @@ fn bdf_font_data(data: &[u8], size_pt: f32, metadata: &BdfMetadata) -> Arc<FontD
         sbit: None,
         sbix: None,
         svg: None,
+        interpreter_version: 40,
         cff: None,
         cff2: None,
         loca_data: Vec::new(),
@@ -2369,6 +2371,7 @@ fn non_sfnt_outline_font_data(
         sbit: None,
         sbix: None,
         svg: None,
+        interpreter_version: 40,
         cff: None,
         cff2: None,
         loca_data: Vec::new(),
@@ -3100,6 +3103,14 @@ impl Font {
         self.ignore_sbix = ignore;
     }
 
+    /// Apply the TrueType `interpreter-version` driver property to the
+    /// face's shared table data so GETINFO reports the selected version.
+    pub fn set_truetype_interpreter_version(&mut self, version: u32) {
+        if let Some(data) = Arc::get_mut(&mut self.data) {
+            data.interpreter_version = i32::try_from(version).unwrap_or(i32::MAX);
+        }
+    }
+
     /// True when the SFNT face has outline data (`glyf`, CFF, or CFF2).
     pub(crate) fn has_outlines(&self) -> bool {
         !self.data.glyf_data.is_empty() || self.data.cff.is_some() || self.data.cff2.is_some()
@@ -3726,6 +3737,7 @@ impl Font {
             sbit,
             sbix,
             svg,
+            interpreter_version: 40,
             cff,
             cff2,
             loca_data,

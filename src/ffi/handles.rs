@@ -12792,6 +12792,7 @@ pub fn FT_New_Memory_Face_With_Name_Options(
             options.ignore_sbix,
         )
         .map(|mut inner| {
+            inner.set_truetype_interpreter_version(library.truetype_interpreter_version);
             inner.reset_size_to_undefined();
             let mut face = face_to_ffi(inner, probe_only);
             face.retain_memory_stream_source(data);

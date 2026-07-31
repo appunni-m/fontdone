@@ -118,6 +118,7 @@ pub(crate) fn prepare_native_bytecode_context(
         pedantic_hinting,
         native_hint_mode,
         phantom_x_override: None,
+        interpreter_version: data.interpreter_version,
     };
     let prep = data.prep.as_deref().unwrap_or(&[]);
     crate::tt::hinter::prepare_context(cvt, fpgm, prep, &context_scale)
@@ -1182,6 +1183,7 @@ fn scale_glyph_impl_with_scale(
                 pedantic_hinting: bytecode_context.pedantic_hinting,
                 native_hint_mode,
                 phantom_x_override: composite_use_my_metrics_phantoms,
+                interpreter_version: data.interpreter_version,
             };
             let hint_result = crate::tt::hinter::hint_glyph(
                 &mut scaled,

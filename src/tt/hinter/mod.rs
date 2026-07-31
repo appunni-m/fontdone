@@ -73,6 +73,9 @@ pub struct HintScale {
     pub pedantic_hinting: bool,
     pub native_hint_mode: NativeHintMode,
     pub phantom_x_override: Option<(i32, i32)>,
+    /// TrueType interpreter version (35 or 40) used by GETINFO and
+    /// version-gated hinting behavior.
+    pub interpreter_version: i32,
 }
 
 /// Metrics side effects produced by glyph bytecode hinting.

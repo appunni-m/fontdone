@@ -531,6 +531,11 @@ impl Face {
         Ok(())
     }
 
+    pub(crate) fn set_truetype_interpreter_version(&mut self, version: u32) {
+        self.font.set_truetype_interpreter_version(version);
+        self.render_fonts.clear();
+    }
+
     /// Return active OpenType design coordinates, equivalent to
     /// `FT_Get_Var_Design_Coordinates`.
     pub(crate) fn var_design_coordinates(&self) -> Result<&[i32], FontError> {

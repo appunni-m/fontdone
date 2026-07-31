@@ -190,6 +190,8 @@ pub struct ExecContext {
 
     /// FreeType TrueType render mode for bytecode GETINFO.
     pub native_hint_mode: NativeHintMode,
+    /// TrueType interpreter version (35 or 40) reported by GETINFO.
+    pub interpreter_version: i32,
 }
 
 impl ExecContext {
@@ -261,6 +263,7 @@ impl ExecContext {
             twilight: Self::new_twilight_zone(scale.twilight_points),
             backward_compatibility: 0,
             native_hint_mode: scale.native_hint_mode,
+            interpreter_version: scale.interpreter_version,
         })
     }
 
@@ -287,6 +290,7 @@ impl ExecContext {
             pedantic_hinting: false,
             native_hint_mode: NativeHintMode::Normal,
             phantom_x_override: None,
+            interpreter_version: 40,
         };
         Self::new_with_context_allocation(&[], &[], &scale, true).map(|_| ())
     }
@@ -1029,7 +1033,7 @@ impl ExecContext {
     fn get_info(&self, selector: i32) -> i32 {
         let mut result = 0;
         if selector & 1 != 0 {
-            result = 40;
+            result = self.interpreter_version;
         }
         // FreeType v40 sets `exec->grayscale = FALSE` in
         // `tt_loader_init`, so selector bit 5 does not return legacy
