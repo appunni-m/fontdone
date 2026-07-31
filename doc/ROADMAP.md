@@ -26,7 +26,8 @@ check, or a route that silently executes another frontend.
 > case, `api-abi-check`, `c-abi-contract`, `fmt`, `clippy`, and `check-docs`,
 > commit the milestone, then rerun full `make test-parity`. After pending
 > routes reach zero, run `make test-coverage-all` and raise lines, branches,
-> functions, and regions to 100%; record and enforce the performance baseline.
+> functions, and regions to 100%; run `make record-performance-baseline` and
+> `make bench-regression` to record and enforce the performance baseline.
 > Finish only when all runnable parity cases pass, all 218 functions have
 > four-lane evidence, all 12 C-contract categories are exact,
 > `make c-abi-contract-complete` passes, evidence is source-bound, and the
