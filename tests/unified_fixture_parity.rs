@@ -42214,6 +42214,14 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(load_flags_param(params)?.to_string());
             Ok(args)
         }
+        "freetype.load_svg_glyph" => {
+            let mut args = vec!["--load-svg-glyph".to_string()];
+            push_named_font_source(case, "svg_font", &mut args)?;
+            push_face_size(params, &mut args)?;
+            args.push(svg_glyph_load_index(params)?.to_string());
+            args.push(load_flags_param(params)?.to_string());
+            Ok(args)
+        }
         "load_glyph" => {
             if params.get("glyph_index").is_none() && params.get("glyph_selector").is_none() {
                 return oracle_fallback_args(case);
@@ -44025,6 +44033,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             rust_stroker_done_after_export(case)
         }
         "load_char" => rust_load_char_public_api(case),
+        "freetype.load_svg_glyph" => rust_svg_glyph_load(case),
         "load_glyph" => {
             if lifecycle_handle_param_is_null(&case.inputs.params, "face") {
                 return Ok(error(FT_Err_Invalid_Face_Handle as FT_Error));
@@ -45386,6 +45395,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_done_library(library);
             output
         }
+        "freetype.load_svg_glyph" => c_svg_glyph_load(case),
         "load_glyph" => {
             if lifecycle_handle_param_is_null(&case.inputs.params, "face") {
                 return c_load_glyph_output(std::ptr::null_mut(), &case.inputs.params);
@@ -46615,6 +46625,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             wasm_done_face(handle);
             output
         }
+        "freetype.load_svg_glyph" => wasm_svg_glyph_load(case),
         "load_glyph" => {
             if lifecycle_handle_param_is_null(&case.inputs.params, "face") {
                 return wasm_load_glyph_output(0, &case.inputs.params);
@@ -51458,6 +51469,103 @@ fn svg_glyph_record_output(
             }
         }
     })
+}
+
+fn svg_slot_load_output(status: FT_Error, slot_format: i32, document: Option<&[u8]>) -> RunOutput {
+    ok(json!({
+        "status": status,
+        "slot_format": slot_format,
+        "svg_document_length": document.map_or(0, |bytes| bytes.len()),
+        "svg_document_hash": document.map(djb2_hash)
+    }))
+}
+
+fn svg_glyph_load_index(params: &Value) -> Result<u32, String> {
+    let raw = params
+        .get("glyph_index")
+        .ok_or_else(|| "missing SVG glyph_index".to_string())?;
+    if raw.as_str() == Some("svg_document_glyph") {
+        return Ok(1);
+    }
+    u32_value(raw, "glyph_index")
+}
+
+fn rust_svg_glyph_load(case: &InputCase) -> Result<RunOutput, String> {
+    let face = open_face(case)?;
+    let glyph_index = svg_glyph_load_index(&case.inputs.params)?;
+    let load_flags = load_flags_param(&case.inputs.params)?;
+    match FT_Load_Glyph(&face, glyph_index, load_flags) {
+        Ok(slot) => {
+            let document = slot
+                .svg
+                .as_ref()
+                .ok_or_else(|| "SVG load succeeded without a slot document".to_string())?;
+            Ok(svg_slot_load_output(
+                FT_Err_Ok,
+                slot.format,
+                Some(&document.svg_document),
+            ))
+        }
+        Err(error_code) => Ok(error(error_code)),
+    }
+}
+
+fn c_svg_glyph_load(case: &InputCase) -> Result<RunOutput, String> {
+    let (library, face) = c_open_face(case)?;
+    let glyph_index = svg_glyph_load_index(&case.inputs.params)?;
+    let load_flags = load_flags_param(&case.inputs.params)?;
+    let mut error_code = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
+    let mut glyph = ptr::null_mut();
+    if error_code == FT_Err_Ok {
+        let slot = c_abi::abi_glyph_slot_pointer(face)
+            .ok_or_else(|| "missing c SVG load slot pointer".to_string())?;
+        error_code = c_abi::FT_Get_Glyph(slot, &mut glyph);
+    }
+    let output = if error_code == FT_Err_Ok {
+        let snapshot = c_abi::abi_svg_glyph_snapshot(glyph)
+            .ok_or_else(|| "missing c SVG load glyph snapshot".to_string())?;
+        svg_slot_load_output(
+            error_code,
+            snapshot.root.format,
+            Some(&snapshot.svg_document),
+        )
+    } else {
+        error(error_code)
+    };
+    if !glyph.is_null() {
+        c_abi::FT_Done_Glyph(glyph);
+    }
+    c_done_face(face);
+    c_done_library(library);
+    Ok(output)
+}
+
+fn wasm_svg_glyph_load(case: &InputCase) -> Result<RunOutput, String> {
+    let handle = wasm_open_face(case)?;
+    let glyph_index = svg_glyph_load_index(&case.inputs.params)?;
+    let load_flags = load_flags_param(&case.inputs.params)?;
+    let mut error_code = wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, load_flags);
+    let mut glyph_handle = 0usize;
+    if error_code == FT_Err_Ok {
+        error_code = wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut glyph_handle);
+    }
+    let output = if error_code == FT_Err_Ok {
+        let snapshot = wasm_abi::abi_svg_glyph_snapshot(glyph_handle)
+            .ok_or_else(|| "missing wasm SVG load glyph snapshot".to_string())?;
+        svg_slot_load_output(
+            error_code,
+            snapshot.root.format,
+            Some(&snapshot.svg_document),
+        )
+    } else {
+        error(error_code)
+    };
+    if glyph_handle != 0 {
+        let glyph = ptr::with_exposed_provenance_mut::<wasm_abi::FontdoneWasmGlyph>(glyph_handle);
+        wasm_abi::fontdone_wasm_done_glyph_handle(glyph);
+    }
+    wasm_done_face(handle);
+    Ok(output)
 }
 
 fn rust_svg_glyph_record(face: &FT_Face, case: &InputCase) -> Result<RunOutput, String> {
@@ -75815,6 +75923,12 @@ fn validate_schema_output(case: &InputCase, output: &Value, label: &str) -> Resu
             }
             Ok(())
         }
+        "svg_slot_load" => {
+            require_path(output, "/status", label, case)?;
+            require_path(output, "/slot_format", label, case)?;
+            require_path(output, "/svg_document_length", label, case)?;
+            require_path(output, "/svg_document_hash", label, case)
+        }
         "glyph_metrics" => {
             require_path(output, "/metrics/width", label, case)?;
             require_path(output, "/metrics/height", label, case)?;
@@ -76006,6 +76120,7 @@ fn comparison_schema(case: &InputCase) -> &str {
         }
         "freetype.get_transform" => return "api_object",
         "freetype.slot_format_probe" => return "api_object",
+        "freetype.load_svg_glyph" => return "svg_slot_load",
         "freetype.reference_face" => return "api_object",
         "freetype.ceil_fix"
         | "freetype.floor_fix"

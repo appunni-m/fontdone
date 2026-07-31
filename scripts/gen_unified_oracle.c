@@ -8268,6 +8268,25 @@ static void print_svg_glyph_record(FT_SvgGlyph glyph,
            glyph->delta.y);
 }
 
+/* Keep the load-only SVG contract separate from FT_Get_Glyph's detached
+ * record contract.  FT_Load_Glyph publishes the document through the slot's
+ * other field; callers of this probe must be able to verify that exact
+ * slot state without depending on a private glyph-class pointer. */
+static void print_svg_slot_load_payload(FT_GlyphSlot slot, FT_Error status) {
+    FT_SVG_Document document = NULL;
+    if (slot && slot->format == FT_GLYPH_FORMAT_SVG && slot->other) {
+        document = (FT_SVG_Document)slot->other;
+    }
+    printf(",\"output\":{\"status\":%ld,\"slot_format\":%ld,\"svg_document_length\":%lu,\"svg_document_hash\":",
+           (long)status,
+           slot ? (long)slot->format : 0L,
+           document ? (unsigned long)document->svg_document_length : 0UL);
+    print_byte_hash_or_null(
+        document ? document->svg_document : NULL,
+        document ? (size_t)document->svg_document_length : 0U);
+    printf("}}\n");
+}
+
 static void print_glyph_record_payload(FT_Glyph glyph,
                                        int document_pointer_independent,
                                        int source_destroyed_before_target) {
@@ -31069,7 +31088,7 @@ static int emit_face_or_slot(int argc, char** argv) {
     } else if (streq(command, "--load-glyph-num-glyphs")) {
         glyph_index = (FT_UInt)face->num_glyphs;
         load_flags = (FT_Int32)strtol(argv[7], NULL, 10);
-    } else if (streq(command, "--load-glyph") || streq(command, "--render-glyph-index") || streq(command, "--inspect-glyph-metrics") || streq(command, "--inspect-glyph-slot") || streq(command, "--load-glyph-outline") || streq(command, "--outline-get-bbox") || streq(command, "--outline-get-cbox") || streq(command, "--glyph-get-cbox") || streq(command, "--glyph-transform") || streq(command, "--svg-glyph-transform") || streq(command, "--glyph-to-bitmap") || streq(command, "--glyph-to-bitmap-origins") || streq(command, "--glyph-to-bitmap-render-failure") || streq(command, "--glyph-record") || streq(command, "--get-glyph-unsupported-format") || streq(command, "--done-glyph-outline") || streq(command, "--done-glyph-bitmap") || streq(command, "--get-glyph-advance-boundaries") || streq(command, "--sbit-cache-lookup") || streq(command, "--get-subglyph-info") || streq(command, "--get-subglyph-info-null-outputs")) {
+    } else if (streq(command, "--load-glyph") || streq(command, "--load-svg-glyph") || streq(command, "--render-glyph-index") || streq(command, "--inspect-glyph-metrics") || streq(command, "--inspect-glyph-slot") || streq(command, "--load-glyph-outline") || streq(command, "--outline-get-bbox") || streq(command, "--outline-get-cbox") || streq(command, "--glyph-get-cbox") || streq(command, "--glyph-transform") || streq(command, "--svg-glyph-transform") || streq(command, "--glyph-to-bitmap") || streq(command, "--glyph-to-bitmap-origins") || streq(command, "--glyph-to-bitmap-render-failure") || streq(command, "--glyph-record") || streq(command, "--get-glyph-unsupported-format") || streq(command, "--done-glyph-outline") || streq(command, "--done-glyph-bitmap") || streq(command, "--get-glyph-advance-boundaries") || streq(command, "--sbit-cache-lookup") || streq(command, "--get-subglyph-info") || streq(command, "--get-subglyph-info-null-outputs")) {
         glyph_index = (FT_UInt)strtoul(argv[7], NULL, 10);
         load_flags = (FT_Int32)strtol(argv[8], NULL, 10);
     } else {
@@ -31103,6 +31122,18 @@ static int emit_face_or_slot(int argc, char** argv) {
     if (!err && (streq(command, "--render-glyph") || streq(command, "--render-glyph-index") || (streq(command, "--inspect-glyph-slot") && argc == 10))) {
         FT_Render_Mode render_mode = (FT_Render_Mode)strtol(argv[9], NULL, 10);
         err = FT_Render_Glyph(face->glyph, render_mode);
+    }
+    if (streq(command, "--load-svg-glyph")) {
+        print_status(err);
+        if (err) {
+            printf(",\"output\":null}\n");
+        } else {
+            print_svg_slot_load_payload(face->glyph, err);
+        }
+        FT_Done_Face(face);
+        FT_Done_FreeType(library);
+        free(data);
+        return 0;
     }
     if (!err && streq(command, "--glyph-get-cbox")) {
         print_glyph_cbox_payload(face->glyph, argv[9]);
@@ -34742,7 +34773,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 8 && (streq(argv[1], "--get-next-char-sequence") || streq(argv[1], "--get-next-char-sequence-null-agindex") || streq(argv[1], "--get-next-char-starts") || streq(argv[1], "--get-next-char-starts-null-agindex"))) {
         return emit_face_or_slot(argc, argv);
     }
-    if (argc == 9 && (streq(argv[1], "--load-char") || streq(argv[1], "--load-glyph") || streq(argv[1], "--load-glyph-from-char") || streq(argv[1], "--inspect-glyph-metrics") || streq(argv[1], "--inspect-glyph-slot") || streq(argv[1], "--load-glyph-outline") || streq(argv[1], "--outline-get-bbox") || streq(argv[1], "--outline-get-cbox") || streq(argv[1], "--get-glyph-unsupported-format"))) {
+    if (argc == 9 && (streq(argv[1], "--load-char") || streq(argv[1], "--load-glyph") || streq(argv[1], "--load-svg-glyph") || streq(argv[1], "--load-glyph-from-char") || streq(argv[1], "--inspect-glyph-metrics") || streq(argv[1], "--inspect-glyph-slot") || streq(argv[1], "--load-glyph-outline") || streq(argv[1], "--outline-get-bbox") || streq(argv[1], "--outline-get-cbox") || streq(argv[1], "--get-glyph-unsupported-format"))) {
         return emit_face_or_slot(argc, argv);
     }
     if (argc == 7 && streq(argv[1], "--active-size-handle")) {

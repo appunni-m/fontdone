@@ -3896,6 +3896,14 @@ def ftimage_subsystem_pending_reason(row: ConcreteInput) -> str | None:
         and row.operation == "ftimage.glyph_format_emitter_inventory"
     ):
         return None
+    if (
+        row.case_id
+        == "ftimage.FT_GLYPH_FORMAT_SVG.produced_by_svg_glyph_load_when_enabled"
+        and row.variant_id in {"f1", "f2"}
+        and row.operation == "freetype.load_svg_glyph"
+        and unresolved_assets_reason(row) is None
+    ):
+        return None
 
     ftimage_rows_without_maintained_route = {
         "ftimage.FT_GLYPH_FORMAT_PLOTTER.source_emitter_inventory": (
@@ -4004,6 +4012,23 @@ def ftimage_glyph_format_emitter_real_parity_reason(row: ConcreteInput) -> str |
             "FT_GLYPH_FORMAT_PLOTTER emitter inventory compares the pinned C, Rust "
             "FFI, C ABI, and WASM renderer lookup; the current FreeType module set "
             "has no renderer registered for the plotter format"
+        )
+    return None
+
+
+def ftimage_svg_glyph_load_real_parity_reason(row: ConcreteInput) -> str | None:
+    if (
+        row.case_id
+        == "ftimage.FT_GLYPH_FORMAT_SVG.produced_by_svg_glyph_load_when_enabled"
+        and row.variant_id in {"f1", "f2"}
+        and row.operation == "freetype.load_svg_glyph"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_GLYPH_FORMAT_SVG load parity compares FT_Load_Glyph status, "
+            "slot format, SVG document length, and document hash through the "
+            "maintained OT-SVG fixture across pinned C, Rust FFI, C ABI, and "
+            "WASM ABI"
         )
     return None
 
@@ -8440,6 +8465,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     ftimage_glyph_format_emitter_real = ftimage_glyph_format_emitter_real_parity_reason(row)
     if ftimage_glyph_format_emitter_real:
         return ("real-parity", ftimage_glyph_format_emitter_real)
+    ftimage_svg_glyph_load_real = ftimage_svg_glyph_load_real_parity_reason(row)
+    if ftimage_svg_glyph_load_real:
+        return ("real-parity", ftimage_svg_glyph_load_real)
     ftimage_outline_owner_real = ftimage_outline_owner_real_parity_reason(row)
     if ftimage_outline_owner_real:
         return ("real-parity", ftimage_outline_owner_real)
