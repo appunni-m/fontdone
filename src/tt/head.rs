@@ -98,4 +98,38 @@ mod tests {
             ));
         }
     }
+
+    #[test]
+    fn parses_all_public_fields() -> Result<(), FontError> {
+        let mut head = [0_u8; 54];
+        head[16..18].copy_from_slice(&0x0003u16.to_be_bytes()); // flags
+        head[18..20].copy_from_slice(&1000u16.to_be_bytes()); // units_per_em
+        head[36..38].copy_from_slice(&(-100i16).to_be_bytes());
+        head[38..40].copy_from_slice(&(-200i16).to_be_bytes());
+        head[40..42].copy_from_slice(&1500i16.to_be_bytes());
+        head[42..44].copy_from_slice(&1700i16.to_be_bytes());
+        head[44..46].copy_from_slice(&1u16.to_be_bytes()); // mac_style
+        head[46..48].copy_from_slice(&8u16.to_be_bytes()); // lowest_rec_ppem
+        head[50..52].copy_from_slice(&1i16.to_be_bytes()); // long loca
+        let table = parse_head(&head)?;
+        assert_eq!(table.units_per_em, 1000);
+        assert_eq!(table.flags, 3);
+        assert_eq!(table.x_min, -100);
+        assert_eq!(table.y_min, -200);
+        assert_eq!(table.x_max, 1500);
+        assert_eq!(table.y_max, 1700);
+        assert_eq!(table.mac_style, 1);
+        assert_eq!(table.lowest_rec_ppem, 8);
+        assert_eq!(table.index_to_loc_format, 1);
+        Ok(())
+    }
+
+    #[test]
+    fn rejects_short_head() {
+        let error = match parse_head(&[0u8; 53]) {
+            Err(error) => error,
+            Ok(_) => panic!("short head should be rejected"),
+        };
+        assert!(error.to_string().contains("head table too short"));
+    }
 }
