@@ -43577,15 +43577,11 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(face_index_param(params)?.to_string());
             args.push(glyph_index_param(params)?.to_string());
             args.push(load_flags_param(params)?.to_string());
-            args.push(
-                if params.get("runtime_route").and_then(Value::as_str)
-                    == Some("actual_incremental_client_lifetime")
-                {
-                    "1".to_string()
-                } else {
-                    "0".to_string()
-                },
-            );
+            args.push(match params.get("runtime_route").and_then(Value::as_str) {
+                Some("actual_incremental_client_lifetime") => "1".to_string(),
+                Some("actual_incremental_parameter_cast") => "2".to_string(),
+                _ => "0".to_string(),
+            });
             Ok(args)
         }
         "ftincrem.incremental_glyph_lifecycle" if !case.expect_error => {
@@ -64637,6 +64633,11 @@ struct IncrementalLifetimeObserved {
     client_object_still_valid: bool,
 }
 
+#[derive(Clone, Copy)]
+struct IncrementalParameterCastObserved {
+    stored_interface_identity: bool,
+}
+
 fn opaque_incremental_output(
     open_error: FT_Error,
     load_error: FT_Error,
@@ -64648,6 +64649,7 @@ fn opaque_incremental_output(
     release_matches_acquisition: bool,
     sentinel_survived: bool,
     lifetime: Option<IncrementalLifetimeObserved>,
+    parameter_cast: Option<IncrementalParameterCastObserved>,
 ) -> RunOutput {
     let status = [open_error, load_error, done_face_error, done_library_error]
         .into_iter()
@@ -64686,6 +64688,18 @@ fn opaque_incremental_output(
         output["callbacks_after_face_done"] = json!(lifetime.callbacks_after_face_done);
         output["client_object_still_valid"] = json!(lifetime.client_object_still_valid);
     }
+    if let Some(parameter_cast) = parameter_cast {
+        output["stored_interface_identity"] = json!(if parameter_cast.stored_interface_identity {
+            "same_parameter_interface"
+        } else {
+            "not_stored"
+        });
+        output["cast_shape"] = json!(if parameter_cast.stored_interface_identity {
+            "FT_Incremental_InterfaceRec*"
+        } else {
+            "not_stored"
+        });
+    }
     if status == FT_Err_Ok {
         ok(output)
     } else {
@@ -64704,6 +64718,12 @@ fn rust_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String>
         .get("runtime_route")
         .and_then(Value::as_str)
         == Some("actual_incremental_client_lifetime");
+    let parameter_cast_route = case
+        .inputs
+        .params
+        .get("runtime_route")
+        .and_then(Value::as_str)
+        == Some("actual_incremental_parameter_cast");
     let mut library = FT_Init_FreeType();
     let glyph_bytes = FT_New_Memory_Face(&library, bytes.as_ref(), face_index, 20.0)
         .ok()
@@ -64732,14 +64752,34 @@ fn rust_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String>
         funcs: ptr::from_ref(&funcs),
         object,
     };
-    let (open_error, load_error, done_face_error) = match FT_Open_Face_With_Incremental(
-        &library,
-        bytes.as_ref(),
-        face_index,
-        20.0,
-        ptr::from_ref(&interface).cast_mut(),
-    ) {
+    let open_result = if parameter_cast_route {
+        let parameter = FT_Parameter {
+            tag: FT_PARAM_TAG_INCREMENTAL as FT_ULong,
+            data: ptr::from_ref(&interface).cast_mut().cast(),
+        };
+        FT_Open_Face_With_Incremental_Parameter(
+            &library,
+            bytes.as_ref(),
+            face_index,
+            20.0,
+            &parameter,
+        )
+    } else {
+        FT_Open_Face_With_Incremental(
+            &library,
+            bytes.as_ref(),
+            face_index,
+            20.0,
+            ptr::from_ref(&interface).cast_mut(),
+        )
+    };
+    let mut stored_interface_identity = false;
+    let (open_error, load_error, done_face_error) = match open_result {
         Ok(face) => {
+            if parameter_cast_route {
+                stored_interface_identity =
+                    FT_Face_Incremental_Interface(&face) == ptr::from_ref(&interface).cast_mut();
+            }
             let load_error = match FT_Load_Glyph(&face, glyph_index, load_flags) {
                 Ok(_) => FT_Err_Ok,
                 Err(error) => error,
@@ -64791,23 +64831,32 @@ fn rust_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String>
         release_matches_acquisition,
         lifetime.is_none_or(|lifetime| lifetime.client_object_still_valid),
         lifetime,
+        parameter_cast_route.then_some(IncrementalParameterCastObserved {
+            stored_interface_identity,
+        }),
     ))
 }
 
 fn c_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
-    let lifetime_route = case
+    let route_kind = match case
         .inputs
         .params
         .get("runtime_route")
         .and_then(Value::as_str)
-        == Some("actual_incremental_client_lifetime");
+    {
+        Some("actual_incremental_client_lifetime") => 1,
+        Some("actual_incremental_parameter_cast") => 2,
+        _ => 0,
+    };
+    let lifetime_route = route_kind == 1;
+    let parameter_cast_route = route_kind == 2;
     let snapshot = c_abi::abi_incremental_opaque_handle(
         bytes.as_ref(),
         face_index_param(&case.inputs.params)?,
         glyph_index_param(&case.inputs.params)?,
         load_flags_param(&case.inputs.params)?,
-        lifetime_route,
+        route_kind,
     );
     let lifetime = lifetime_route.then_some(IncrementalLifetimeObserved {
         object_freed_by_freetype: snapshot.object_freed_by_freetype,
@@ -64825,23 +64874,32 @@ fn c_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String> {
         snapshot.release_matches_acquisition,
         lifetime.is_none_or(|lifetime| lifetime.client_object_still_valid),
         lifetime,
+        parameter_cast_route.then_some(IncrementalParameterCastObserved {
+            stored_interface_identity: snapshot.stored_interface_identity,
+        }),
     ))
 }
 
 fn wasm_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
-    let lifetime_route = case
+    let route_kind = match case
         .inputs
         .params
         .get("runtime_route")
         .and_then(Value::as_str)
-        == Some("actual_incremental_client_lifetime");
+    {
+        Some("actual_incremental_client_lifetime") => 1,
+        Some("actual_incremental_parameter_cast") => 2,
+        _ => 0,
+    };
+    let lifetime_route = route_kind == 1;
+    let parameter_cast_route = route_kind == 2;
     let snapshot = wasm_abi::abi_support_incremental_opaque_handle(
         bytes.as_ref(),
         face_index_param(&case.inputs.params)?,
         glyph_index_param(&case.inputs.params)?,
         load_flags_param(&case.inputs.params)?,
-        lifetime_route,
+        route_kind,
     );
     let lifetime = lifetime_route.then_some(IncrementalLifetimeObserved {
         object_freed_by_freetype: snapshot.object_freed_by_freetype,
@@ -64859,6 +64917,9 @@ fn wasm_incremental_opaque_handle(case: &InputCase) -> Result<RunOutput, String>
         snapshot.release_matches_acquisition,
         lifetime.is_none_or(|lifetime| lifetime.client_object_still_valid),
         lifetime,
+        parameter_cast_route.then_some(IncrementalParameterCastObserved {
+            stored_interface_identity: snapshot.stored_interface_identity,
+        }),
     ))
 }
 

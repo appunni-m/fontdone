@@ -6048,6 +6048,7 @@ pub struct AbiIncrementalOpaqueSnapshot {
     pub object_freed_by_freetype: bool,
     pub callbacks_after_face_done: usize,
     pub client_object_still_valid: bool,
+    pub stored_interface_identity: bool,
 }
 
 /// Opens a pure-Rust Wasm-facade face through the incremental parameter path
@@ -6058,7 +6059,7 @@ pub fn abi_support_incremental_opaque_handle(
     face_index: FT_Long,
     glyph_index: FT_UInt,
     load_flags: FT_Int32,
-    lifetime_route: bool,
+    route_kind: u8,
 ) -> AbiIncrementalOpaqueSnapshot {
     let mut library = rust_ffi::FT_Init_FreeType();
     let glyph_bytes = rust_ffi::FT_New_Memory_Face(&library, bytes, face_index, 20.0)
@@ -6066,6 +6067,8 @@ pub fn abi_support_incremental_opaque_handle(
         .and_then(|face| rust_ffi::FT_Face_Incremental_Glyph_Data(&face, glyph_index))
         .unwrap_or_default()
         .into_boxed_slice();
+    let lifetime_route = route_kind == 1;
+    let parameter_cast_route = route_kind == 2;
     let mut client_object = lifetime_route.then(|| Box::new(INCREMENTAL_CLIENT_OBJECT_MAGIC));
     let object: FT_Incremental = client_object.as_mut().map_or_else(
         || ptr::without_provenance_mut(1),
@@ -6095,14 +6098,30 @@ pub fn abi_support_incremental_opaque_handle(
         funcs: ptr::from_ref(&funcs),
         object,
     };
-    let (open_error, load_error, done_face_error) = match rust_ffi::FT_Open_Face_With_Incremental(
-        &library,
-        bytes,
-        face_index,
-        20.0,
-        ptr::from_ref(&interface).cast_mut(),
-    ) {
+    let open_result = if parameter_cast_route {
+        let parameter = rust_ffi::FT_Parameter {
+            tag: rust_ffi::FT_PARAM_TAG_INCREMENTAL as FT_ULong,
+            data: ptr::from_ref(&interface).cast_mut().cast(),
+        };
+        rust_ffi::FT_Open_Face_With_Incremental_Parameter(
+            &library, bytes, face_index, 20.0, &parameter,
+        )
+    } else {
+        rust_ffi::FT_Open_Face_With_Incremental(
+            &library,
+            bytes,
+            face_index,
+            20.0,
+            ptr::from_ref(&interface).cast_mut(),
+        )
+    };
+    let mut stored_interface_identity = false;
+    let (open_error, load_error, done_face_error) = match open_result {
         Ok(face) => {
+            if parameter_cast_route {
+                stored_interface_identity = rust_ffi::FT_Face_Incremental_Interface(&face)
+                    == ptr::from_ref(&interface).cast_mut();
+            }
             let load_error = match rust_ffi::FT_Load_Glyph(&face, glyph_index, load_flags) {
                 Ok(_) => rust_ffi::FT_Err_Ok,
                 Err(error) => error,
@@ -6161,6 +6180,7 @@ pub fn abi_support_incremental_opaque_handle(
             0
         },
         client_object_still_valid: lifetime_route && client_object_still_valid,
+        stored_interface_identity,
     }
 }
 

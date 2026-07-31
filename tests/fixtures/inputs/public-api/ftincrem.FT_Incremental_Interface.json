@@ -60,21 +60,34 @@
       "case_id": "ftincrem.FT_Incremental_Interface.parameter_data_cast_shape",
       "subject": "ftincrem.FT_Incremental_Interface",
       "case": "parameter_data_cast_shape",
-      "operation": "ftincrem.open_face_parameter_cast",
+      "operation": "ftincrem.opaque_handle_lifecycle",
       "schema": "api_result",
       "expect_error": false,
       "inputs": {
         "assets": {
           "font": {
             "kind": "ref",
-            "id": "input/fonts/incremental/minimal-glyf-incremental.ttf"
+            "id": "input/fonts/DejaVuSans.ttf"
           }
         },
         "params": {
           "open": "FT_Open_Face",
           "parameter_tag": "FT_PARAM_TAG_INCREMENTAL",
           "parameter_data_type": "void* pointing to FT_Incremental_InterfaceRec",
-          "source_cast": "(FT_Incremental_Interface)params[i].data"
+          "source_cast": "(FT_Incremental_Interface)params[i].data",
+          "object_cookie": "inaccessible_opaque_sentinel",
+          "callbacks": [
+            "get_glyph_data",
+            "free_glyph_data"
+          ],
+          "open_args_flags": [
+            "FT_OPEN_MEMORY",
+            "FT_OPEN_PARAMS"
+          ],
+          "face_index": 0,
+          "glyph_index": 36,
+          "load_flags": "FT_LOAD_NO_SCALE",
+          "runtime_route": "actual_incremental_parameter_cast"
         }
       },
       "classifiers": [
@@ -101,7 +114,7 @@
           "freetype/src/base/ftobjs.c"
         ],
         "fixture_requirements": [
-          "Requires a harness row able to inspect or proxy the stored incremental interface identity."
+          "The tracked DejaVuSans.ttf is opened through FT_OPEN_MEMORY|FT_OPEN_PARAMS with FT_PARAM_TAG_INCREMENTAL. Each lane compares the stored face-internal pointer directly with the parameter's FT_Incremental_InterfaceRec address and reports the exact cast class."
         ]
       }
     },

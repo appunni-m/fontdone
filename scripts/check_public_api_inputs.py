@@ -3518,6 +3518,13 @@ def ftincrem_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     ):
         return None
     if (
+        row.case_id == "ftincrem.FT_Incremental_Interface.parameter_data_cast_shape"
+        and row.operation == "ftincrem.opaque_handle_lifecycle"
+        and row.params.get("runtime_route") == "actual_incremental_parameter_cast"
+        and unresolved_assets_reason(row) is None
+    ):
+        return None
+    if (
         row.case_id == "ftincrem.FT_Incremental_Metrics.null_not_passed_by_c"
         and row.operation == "ftincrem.incremental_metrics_nullness"
         and row.params.get("runtime_route") == "actual_incremental_metrics_nullness"
@@ -3670,6 +3677,18 @@ def ftincrem_real_parity_reason(row: ConcreteInput) -> str | None:
     ):
         return (
             "FT_Incremental stores the client-owned interface/object without taking ownership: pinned C, Rust FFI, C ABI, and WASM compare the canary after FT_Done_Face, the zero post-destruction callback count, and the non-freed client object exactly"
+        )
+    if (
+        row.case_id == "ftincrem.FT_Incremental_Interface.parameter_data_cast_shape"
+        and row.operation == "ftincrem.opaque_handle_lifecycle"
+        and row.params.get("runtime_route") == "actual_incremental_parameter_cast"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_Open_Face casts FT_Parameter.data to FT_Incremental_InterfaceRec* "
+            "and stores that exact interface pointer: pinned C, Rust FFI, C ABI, "
+            "and WASM compare the face-internal pointer identity and cast class "
+            "on the same DejaVuSans input"
         )
     if (
         row.case_id

@@ -49,7 +49,9 @@ use super::types::{
     TT_MaxProfile, TT_OS2, TT_PCLT, TT_Postscript, TT_VertHeader,
 };
 #[cfg(any(test, feature = "abi-test-support"))]
-use super::types::{FT_Data, FT_Glyph_Class, FT_PaintFormat};
+use super::types::{
+    FT_Data, FT_Glyph_Class, FT_Incremental_InterfaceRec, FT_PaintFormat, FT_Parameter,
+};
 
 const FT_ADVANCE_FLAG_FAST_ONLY_I32: FT_Int32 = 0x2000_0000;
 
@@ -12651,6 +12653,47 @@ pub fn FT_Open_Face_With_Incremental(
     let mut face = FT_New_Memory_Face(library, data, face_index, size_pt)?;
     face.incremental_interface = interface;
     Ok(face)
+}
+
+/// Opens the test-only `FT_PARAM_TAG_INCREMENTAL` parameter path.
+///
+/// The parameter's `void*` payload is interpreted as an
+/// [`FT_Incremental_InterfaceRec`] pointer exactly once, then retained as a
+/// borrowed interface on the returned face.  This keeps the parameter-data
+/// cast observable without introducing a second runtime ownership model.
+#[cfg(any(test, feature = "abi-test-support"))]
+#[allow(
+    unsafe_code,
+    reason = "the parity helper validates and borrows the public void* parameter payload"
+)]
+pub fn FT_Open_Face_With_Incremental_Parameter(
+    library: &FT_Library,
+    data: &[u8],
+    face_index: FT_Long,
+    size_pt: f32,
+    parameter: &FT_Parameter,
+) -> Result<FT_Face, FT_Error> {
+    if parameter.tag != FT_PARAM_TAG_INCREMENTAL as FT_ULong {
+        return Err(FT_Err_Invalid_Argument as FT_Error);
+    }
+    // SAFETY: the public parameter contract supplies `data` as a pointer to
+    // a live FT_Incremental_InterfaceRec for this route.  The record remains
+    // borrowed by the face until FT_Done_Face returns.
+    let Some(interface) = (unsafe {
+        parameter
+            .data
+            .cast::<FT_Incremental_InterfaceRec>()
+            .as_mut()
+    }) else {
+        return Err(FT_Err_Invalid_Argument as FT_Error);
+    };
+    FT_Open_Face_With_Incremental(library, data, face_index, size_pt, ptr::from_mut(interface))
+}
+
+/// Returns the borrowed incremental interface retained by a live face.
+#[cfg(any(test, feature = "abi-test-support"))]
+pub fn FT_Face_Incremental_Interface(face: &FT_Face) -> FT_Incremental_Interface {
+    face.incremental_interface
 }
 
 fn sfnt_required_table_exceeds_stream(data: &[u8], face_index: usize) -> bool {

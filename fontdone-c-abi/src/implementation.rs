@@ -3415,6 +3415,7 @@ pub struct AbiIncrementalOpaqueSnapshot {
     pub object_freed_by_freetype: bool,
     pub callbacks_after_face_done: usize,
     pub client_object_still_valid: bool,
+    pub stored_interface_identity: bool,
 }
 
 /// Opens an actual C-ABI `FT_Open_Face` parameter route with an inaccessible
@@ -3425,7 +3426,7 @@ pub fn abi_incremental_opaque_handle(
     face_index: FT_Long,
     glyph_index: FT_UInt,
     load_flags: FT_Int32,
-    lifetime_route: bool,
+    route_kind: u8,
 ) -> AbiIncrementalOpaqueSnapshot {
     let mut core_library = rust_ffi::FT_Init_FreeType();
     let glyph_bytes = rust_ffi::FT_New_Memory_Face(&core_library, bytes, face_index, 20.0)
@@ -3434,6 +3435,8 @@ pub fn abi_incremental_opaque_handle(
         .unwrap_or_default()
         .into_boxed_slice();
     let _ = rust_ffi::FT_Done_Library(Some(&mut core_library));
+    let lifetime_route = route_kind == 1;
+    let parameter_cast_route = route_kind == 2;
     let mut client_object = lifetime_route.then(|| Box::new(INCREMENTAL_CLIENT_OBJECT_MAGIC));
     let object: FT_Incremental = client_object.as_mut().map_or_else(
         || ptr::without_provenance_mut(1),
@@ -3470,6 +3473,7 @@ pub fn abi_incremental_opaque_handle(
     let mut load_error = init_error;
     let mut done_face_error = rust_ffi::FT_Err_Invalid_Face_Handle as FT_Error;
     let mut done_library_error = rust_ffi::FT_Err_Invalid_Library_Handle as FT_Error;
+    let mut stored_interface_identity = false;
     if init_error == rust_ffi::FT_Err_Ok {
         let mut parameter = FT_Parameter {
             tag: rust_ffi::FT_PARAM_TAG_INCREMENTAL as FT_ULong,
@@ -3487,6 +3491,11 @@ pub fn abi_incremental_opaque_handle(
         };
         open_error = FT_Open_Face(library, &args, face_index, &mut face);
         if open_error == rust_ffi::FT_Err_Ok {
+            if parameter_cast_route {
+                let expected_interface = ptr::from_ref(&interface).cast_mut().cast();
+                stored_interface_identity = face_internal(face)
+                    .is_some_and(|internal| internal.incremental_interface == expected_interface);
+            }
             load_error = FT_Load_Glyph(face, glyph_index, load_flags);
             done_face_error = FT_Done_Face(face);
             ABI_INCREMENTAL_OPAQUE_TRACE.with_borrow_mut(|trace| {
@@ -3536,6 +3545,7 @@ pub fn abi_incremental_opaque_handle(
             0
         },
         client_object_still_valid: lifetime_route && client_object_still_valid,
+        stored_interface_identity,
     }
 }
 

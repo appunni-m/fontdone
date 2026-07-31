@@ -34004,7 +34004,9 @@ static int emit_incremental_opaque_handle(int argc, char** argv) {
     FT_Long face_index = (FT_Long)atol(argv[4]);
     FT_UInt glyph_index = (FT_UInt)strtoul(argv[5], NULL, 10);
     FT_Int32 load_flags = (FT_Int32)strtol(argv[6], NULL, 10);
-    int lifetime_route = argc == 8 && streq(argv[7], "1");
+    int route_kind = argc == 8 ? atoi(argv[7]) : 0;
+    int lifetime_route = route_kind == 1;
+    int parameter_cast_route = route_kind == 2;
     IncrementalGlyphLifecycleState state;
     if (!incremental_prepare_glyph_source(&state,
                                           data,
@@ -34048,10 +34050,16 @@ static int emit_incremental_opaque_handle(int argc, char** argv) {
     FT_Error load_error = open_error;
     FT_Error done_face_error = FT_Err_Invalid_Face_Handle;
     FT_Error done_library_error = FT_Err_Invalid_Library_Handle;
+    int stored_interface_identity = 0;
     if (!open_error) {
         open_error = FT_Open_Face(library, &args, face_index, &face);
         load_error = open_error;
         if (!open_error) {
+            if (parameter_cast_route) {
+                stored_interface_identity =
+                    face && face->internal &&
+                    face->internal->incremental_interface == &interface;
+            }
             load_error = FT_Load_Glyph(face, glyph_index, load_flags);
             done_face_error = FT_Done_Face(face);
             state.face_done = 1;
@@ -34099,6 +34107,13 @@ static int emit_incremental_opaque_handle(int argc, char** argv) {
         printf(",\"callbacks_after_face_done\":%lu,\"client_object_still_valid\":",
                (unsigned long)state.callbacks_after_face_done);
         print_json_bool(client_object_still_valid);
+    }
+    if (parameter_cast_route) {
+        printf(",\"stored_interface_identity\":\"");
+        printf(stored_interface_identity ? "same_parameter_interface" : "not_stored");
+        printf("\",\"cast_shape\":\"");
+        printf(stored_interface_identity ? "FT_Incremental_InterfaceRec*" : "not_stored");
+        printf("\"");
     }
     printf("}}\n");
     incremental_opaque_active_state = NULL;
