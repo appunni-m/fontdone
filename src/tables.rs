@@ -273,6 +273,8 @@ mod tests {
     const GLYF_FONT: &[u8] = include_bytes!("../tests/fixtures/input/fonts/DejaVuSans.ttf");
     const GVAR_FONT: &[u8] =
         include_bytes!("../tests/fixtures/input/fonts/variable/gvar-hvar-wght.ttf");
+    const MVAR_FONT: &[u8] =
+        include_bytes!("../tests/fixtures/input/fonts/variable/mvar-hvar-vvar.ttf");
 
     #[test]
     fn cff_outline_loaders_cover_cache_and_no_hinting_routes() -> Result<(), crate::FontError> {
@@ -359,6 +361,41 @@ mod tests {
         assert_eq!(cff.data.gvar_hori_advance_delta(1, 0)?, 0);
         let unchanged = cff.data.apply_gvar_deltas(1, &GlyphOutline::default())?;
         assert!(unchanged.points.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn load_errors_and_advance_fallbacks() -> Result<(), crate::FontError> {
+        let font = Font::truetype(GLYF_FONT, 16.0)?;
+        // Out-of-range glyph index reaches the glyf loader error branch.
+        assert!(font.data.load_glyph_outline(u16::MAX).is_err());
+        assert!(font.data.load_glyph_outline_no_hinting(u16::MAX).is_err());
+
+        // Fallback advance helper tolerates gvar errors.
+        let advance = font.data.hmtx_hori_advance_with_gvar_delta_or_hmtx(36, 0);
+        assert_eq!(advance, i32::from(font.data.hmtx.get(36).advance_width));
+
+        let cff = Font::truetype(CFF1_FONT, 16.0)?;
+        assert!(cff.data.load_glyph_outline(u16::MAX).is_err());
+        assert!(cff.data.load_glyph_outline_no_hinting(u16::MAX).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn hvar_advance_and_mvar_vertical_deltas() -> Result<(), crate::FontError> {
+        let mut font = Font::truetype(MVAR_FONT, 16.0)?;
+        let data = std::sync::Arc::make_mut(&mut font.data);
+        data.normalized_variation_coords = vec![0x2000];
+        assert!(data.hvar.is_some());
+        assert!(data.mvar.is_some());
+        let _ = data.hmtx_hori_advance_with_gvar_delta(1, 0)?;
+        let deltas = data.mvar_vertical_header_deltas();
+        assert!(deltas.is_some());
+
+        data.hvar = None;
+        data.mvar = None;
+        assert!(data.mvar_vertical_header_deltas().is_none());
+        assert_eq!(data.gvar_hori_advance_delta(1, 0)?, 0);
         Ok(())
     }
 }
