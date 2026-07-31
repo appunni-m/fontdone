@@ -2598,7 +2598,9 @@ fn read_oracle_cache_outputs(
         .zip(reader.lines())
         .map(|(case, line)| {
             let line = line.map_err(|err| format!("{} oracle read error: {err}", case.case_id))?;
-            parse_run_output(&line).map_err(|err| format!("{} oracle failed: {err}", case.case_id))
+            let output = parse_run_output(&line)
+                .map_err(|err| format!("{} oracle failed: {err}", case.case_id))?;
+            project_incremental_metrics_nullness(case, output)
         })
         .collect::<Result<Vec<_>, _>>()?;
     let outputs = Arc::<[RunOutput]>::from(outputs);
@@ -43370,7 +43372,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(load_flags_param(params)?.to_string());
             Ok(args)
         }
-        "ftincrem.incremental_state_lifecycle" if !case.expect_error => {
+        "ftincrem.incremental_state_lifecycle" | "ftincrem.incremental_metrics_nullness"
+            if !case.expect_error =>
+        {
             let mut args = vec!["--incremental-state-lifecycle".to_string()];
             push_font_source(case, &mut args)?;
             args.push(face_index_param(params)?.to_string());
@@ -44797,6 +44801,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftincrem.incremental_state_lifecycle" if !case.expect_error => {
             rust_incremental_state_lifecycle(case)
+        }
+        "ftincrem.incremental_metrics_nullness" if !case.expect_error => {
+            project_incremental_metrics_nullness(case, rust_incremental_state_lifecycle(case)?)
         }
         "ftcache.manager_remove_face_id" if !case.expect_error => rust_manager_remove_face_id(case),
         "ftcache.manager_done" if !case.expect_error => rust_manager_done(case),
@@ -46227,6 +46234,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftincrem.incremental_state_lifecycle" if !case.expect_error => {
             c_incremental_state_lifecycle(case)
         }
+        "ftincrem.incremental_metrics_nullness" if !case.expect_error => {
+            project_incremental_metrics_nullness(case, c_incremental_state_lifecycle(case)?)
+        }
         "ftcache.manager_remove_face_id" if !case.expect_error => c_manager_remove_face_id(case),
         "ftcache.manager_done" if !case.expect_error => c_manager_done(case),
         "ftcache.manager_lifecycle" if !case.expect_error => {
@@ -47458,6 +47468,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftincrem.incremental_state_lifecycle" if !case.expect_error => {
             wasm_incremental_state_lifecycle(case)
+        }
+        "ftincrem.incremental_metrics_nullness" if !case.expect_error => {
+            project_incremental_metrics_nullness(case, wasm_incremental_state_lifecycle(case)?)
         }
         "ftcache.manager_remove_face_id" if !case.expect_error => wasm_manager_remove_face_id(case),
         "ftcache.manager_done" if !case.expect_error => wasm_manager_done(case),
@@ -64484,6 +64497,47 @@ fn incremental_metric_deltas(params: &Value) -> Result<[FT_Long; 4], String> {
         value("vertical_bearing_delta")?,
         value("vertical_advance_delta")?,
     ])
+}
+
+/// Projects the maintained incremental lifecycle trace into the narrow
+/// `FT_Incremental_Metrics` nullness contract.  The lifecycle callbacks record
+/// a metric event only after receiving a valid writable `FT_Incremental_MetricsRec`
+/// pointer; a missing event is therefore rejected rather than counted as a
+/// successful nullness observation.
+fn project_incremental_metrics_nullness(
+    case: &InputCase,
+    state: RunOutput,
+) -> Result<RunOutput, String> {
+    if case.case_id != "ftincrem.FT_Incremental_Metrics.null_not_passed_by_c" {
+        return Ok(state);
+    }
+    if state.status.kind != StatusKind::Ok {
+        return Ok(state);
+    }
+    let callback_log = state
+        .output
+        .get("callback_log")
+        .and_then(Value::as_array)
+        .ok_or_else(|| "incremental metrics trace has no callback_log".to_string())?;
+    let metric_event = callback_log
+        .iter()
+        .find(|event| event.get("event").and_then(Value::as_str) == Some("get_glyph_metrics"))
+        .ok_or_else(|| {
+            "incremental metrics trace did not observe get_glyph_metrics; refusing nullness "
+                .to_string()
+        })?;
+    let snapshot = metric_event
+        .get("input")
+        .cloned()
+        .ok_or_else(|| "incremental metrics event has no input snapshot".to_string())?;
+    Ok(RunOutput {
+        status: state.status,
+        output: json!({
+            "callback_seen": true,
+            "ametrics_null": false,
+            "ametrics_snapshot": snapshot,
+        }),
+    })
 }
 
 fn incremental_state_lifecycle_output(

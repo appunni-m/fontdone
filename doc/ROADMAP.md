@@ -15,6 +15,26 @@ This is the repository's one active implementation plan. It does not claim
 completion from source-code coverage, a familiar function name, a passing null
 check, or a route that silently executes another frontend.
 
+## 0. Copy/paste execution prompt
+
+> Complete fontdone's pinned FreeType 2.14.3 contract in this repository. Work
+> through `target/api-abi-audit/route_audit.json` one pending route at a time.
+> For each route, identify the missing evidence, add only reviewed and licensed
+> inputs when necessary, implement the pure-Rust behavior, and compare the same
+> input through pinned C, Rust, `fontdone-c-abi`, and WASM. Keep the route
+> executable through Make, run the focused case plus `api-abi-check`,
+> `c-abi-contract`, `fmt`, `clippy`, and `check-docs`, then commit the
+> milestone and rerun the full `make test-parity` gate. Run
+> `make test-coverage-all` only after parity routes are complete and drive
+> lines, branches, functions, and regions to 100%. Do not use native C at
+> runtime, weaken expectations, hide failures in fixtures, publish packages,
+> or create issues. Finish only when pending routes are zero, every parity
+> case passes, all 218 functions have four-lane evidence, all 12 C-contract
+> categories are complete, `make c-abi-contract-complete` passes, the evidence
+> and documentation are source-bound, and the worktree is clean. Report the
+> exact command, commit, evidence artifact, and remaining count after every
+> milestone.
+
 ## 1. Goal G01: complete the pinned C contract
 
 State: `OPEN`
