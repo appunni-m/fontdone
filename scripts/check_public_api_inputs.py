@@ -3503,6 +3503,14 @@ def ftincrem_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     ):
         return None
     if (
+        row.case_id
+        == "ftincrem.FT_Incremental_InterfaceRec.object_round_trips_to_callbacks"
+        and row.operation == "ftincrem.opaque_handle_lifecycle"
+        and row.params.get("runtime_route") == "actual_incremental_callback_identity"
+        and unresolved_assets_reason(row) is None
+    ):
+        return None
+    if (
         row.case_id == "ftincrem.FT_Incremental_Metrics.null_not_passed_by_c"
         and row.operation == "ftincrem.incremental_metrics_nullness"
         and row.params.get("runtime_route") == "actual_incremental_metrics_nullness"
@@ -3633,6 +3641,19 @@ def ftincrem_real_parity_reason(row: ConcreteInput) -> str | None:
             "Rust FFI, C ABI, and WASM compare callback order, opaque-object "
             "identity, and successful face/load completion without dereferencing "
             "the client object"
+        )
+    if (
+        row.case_id
+        == "ftincrem.FT_Incremental_InterfaceRec.object_round_trips_to_callbacks"
+        and row.operation == "ftincrem.opaque_handle_lifecycle"
+        and row.params.get("runtime_route") == "actual_incremental_callback_identity"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_Incremental_InterfaceRec forwards the client object identity "
+            "through the real glyph-data and release callbacks; pinned C, Rust "
+            "FFI, C ABI, and WASM compare callback order, opaque identity, and "
+            "sentinel non-dereference behavior exactly"
         )
     if (
         row.case_id

@@ -128,25 +128,30 @@
       "case_id": "ftincrem.FT_Incremental_InterfaceRec.object_round_trips_to_callbacks",
       "subject": "ftincrem.FT_Incremental_InterfaceRec",
       "case": "object_round_trips_to_callbacks",
-      "operation": "ftincrem.callback_object_identity",
+      "operation": "ftincrem.opaque_handle_lifecycle",
       "schema": "api_result",
       "expect_error": false,
       "inputs": {
         "assets": {
           "font": {
             "kind": "ref",
-            "id": "input/fonts/incremental/minimal-glyf-incremental.ttf"
+            "id": "input/fonts/DejaVuSans.ttf"
           }
         },
         "params": {
-          "object_cookie": "opaque_client_pointer",
+          "object_cookie": "inaccessible_opaque_sentinel",
           "callbacks": [
             "get_glyph_data",
-            "free_glyph_data",
-            "get_glyph_metrics"
+            "free_glyph_data"
           ],
-          "glyph_index": 1,
-          "assert_each_callback_receives_object_cookie": true
+          "open_args_flags": [
+            "FT_OPEN_MEMORY",
+            "FT_OPEN_PARAMS"
+          ],
+          "face_index": 0,
+          "glyph_index": 36,
+          "load_flags": "FT_LOAD_NO_SCALE",
+          "runtime_route": "actual_incremental_callback_identity"
         }
       },
       "classifiers": [
@@ -158,13 +163,15 @@
         "status": "build_dependent",
         "output_shape": {
           "callback_events": "array<callback_event>",
-          "object_identity": "pointer_identity"
+          "object_identity": "pointer_identity",
+          "dereferenced_by_freetype": "bool"
         },
         "compare": {
           "mode": "identity_class",
           "paths": [
-            "callback_events.callback_name",
-            "callback_events.object_identity"
+            "callback_events.object_identity",
+            "object_identity",
+            "dereferenced_by_freetype"
           ]
         },
         "source_refs": [
@@ -172,7 +179,7 @@
           "freetype/src/truetype/ttgload.c"
         ],
         "fixture_requirements": [
-          "Requires a runtime row that causes at least get_glyph_data and free_glyph_data to fire; metrics callback may be skipped for formats that do not request it."
+          "The tracked DejaVuSans.ttf route causes get_glyph_data and free_glyph_data to fire through the stored interface. The client object remains an inaccessible sentinel; callback identity and non-dereference behavior are compared exactly across all lanes."
         ]
       }
     },
