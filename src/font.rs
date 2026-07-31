@@ -4600,6 +4600,21 @@ impl Font {
         {
             flags |= FT_FACE_FLAG_FIXED_SIZES;
         }
+        let has_cblc = self
+            .data
+            .sbit
+            .as_ref()
+            .is_some_and(|sbit| sbit.kind() == tt::sbit::SbitTableKind::Cblc);
+        if has_cblc {
+            // `sfnt/sfobjs.c` deliberately ignores outlines for CBLC/CBDT
+            // fonts: `has_outline` is forced FALSE, so `FT_FACE_FLAG_SCALABLE`
+            // is never set and `FT_FACE_FLAG_COLOR` is set.  The TrueType
+            // driver then loads the embedded strike even under
+            // `FT_LOAD_NO_BITMAP`, because `TT_Load_Glyph` only honors that
+            // flag for scalable faces (`truetype/ttgload.c:2401-2404`).
+            flags &= !FT_FACE_FLAG_SCALABLE;
+            flags |= FT_FACE_FLAG_COLOR;
+        }
         let has_sbix = !self.ignore_sbix && self.data.sbix.is_some();
         if has_sbix {
             // `sfnt/sfobjs.c` exposes a font with an `sbix` table as a
@@ -4686,6 +4701,17 @@ impl Font {
             flags |= FT_FACE_FLAG_HINTER;
         }
         flags
+    }
+
+    /// True when the face exposes scalable outlines, equivalent to
+    /// `FT_IS_SCALABLE(face)` (`FT_FACE_FLAG_SCALABLE`).
+    ///
+    /// FreeType keeps this clear for bitmap-only faces such as CBLC/CBDT
+    /// color-bitmap fonts and `sbix` fonts without outlines
+    /// (`sfnt/sfobjs.c:1103-1110`, `sfobjs.c:1316-1330`).
+    pub fn is_scalable(&self) -> bool {
+        const FT_FACE_FLAG_SCALABLE: u32 = 1 << 0;
+        self.face_flags() & FT_FACE_FLAG_SCALABLE != 0
     }
 
     /// Approximate `FT_FaceRec::style_flags` from `head.macStyle`.
@@ -5470,7 +5496,69 @@ impl Font {
             FontError::InvalidArgument("embedded bitmap strike not selected".into())
         })?;
         let metrics = self.size_metrics();
-        let mut sbit_glyph = sbit.load_glyph(glyph_index, metrics.x_ppem, metrics.y_ppem, 0)?;
+        let mut sbit_glyph = match sbit.load_glyph(glyph_index, metrics.x_ppem, metrics.y_ppem, 0) {
+            Ok(sbit_glyph) => sbit_glyph,
+            Err(_) if sbit.kind() == tt::sbit::SbitTableKind::Cblc => {
+                // C `truetype/ttgload.c:2134-2184`: a glyph missing from a
+                // bitmap-only (non-scalable) font is assumed whitespace,
+                // constructed as an empty MONO bitmap glyph from
+                // `hmtx`/`vmtx` (or OS/2/hhea fallback) metrics.
+                let h = self.data.hmtx.get(glyph_index);
+                let (advance_height, top_bearing) = match &self.data.vmtx {
+                    Some(vmtx) => {
+                        let v = vmtx.get(glyph_index);
+                        (i32::from(v.advance_height), i32::from(v.tsb))
+                    }
+                    None => self
+                        .data
+                        .os2
+                        .as_ref()
+                        .filter(|os2| os2.version != 0xFFFF)
+                        .map_or_else(
+                            || {
+                                (
+                                    (i32::from(self.data.hhea.ascent)
+                                        - i32::from(self.data.hhea.descent))
+                                    .abs(),
+                                    i32::from(self.data.hhea.ascent),
+                                )
+                            },
+                            |os2| {
+                                (
+                                    (i32::from(os2.s_typo_ascender)
+                                        - i32::from(os2.s_typo_descender))
+                                    .abs(),
+                                    i32::from(os2.s_typo_ascender),
+                                )
+                            },
+                        ),
+                };
+                return Ok(tt::sbit::SbitGlyph {
+                    metrics: tt::sbit::SbitMetrics {
+                        width: 0,
+                        height: 0,
+                        hori_bearing_x: crate::fixed::ft_mul_fix(i32::from(h.lsb), metrics.x_scale),
+                        hori_bearing_y: 0,
+                        hori_advance: crate::fixed::ft_mul_fix(
+                            i32::from(h.advance_width),
+                            metrics.x_scale,
+                        ),
+                        vert_bearing_x: 0,
+                        vert_bearing_y: crate::fixed::ft_mul_fix(top_bearing, metrics.y_scale),
+                        vert_advance: crate::fixed::ft_mul_fix(advance_height, metrics.y_scale),
+                    },
+                    bitmap: tt::sbit::SbitBitmap {
+                        width: 0,
+                        rows: 0,
+                        pitch: 0,
+                        pixel_mode: tt::sbit::SbitPixelMode::Mono,
+                        num_grays: 0,
+                        buffer: Vec::new(),
+                    },
+                });
+            }
+            Err(error) => return Err(error),
+        };
         if sbit.kind() == tt::sbit::SbitTableKind::Eblc {
             // FreeType `truetype/ttgload.c:2401-2469` fills missing scalable
             // EBLC/bloc SBIT advances from the glyph's linear TrueType advances

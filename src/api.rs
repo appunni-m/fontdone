@@ -704,8 +704,12 @@ impl Face {
         } else if svg_only {
             return Err(FontError::InvalidArgument("SVG glyph not available".into()));
         }
-        let sbit_allowed =
-            !flags.contains(LoadFlags::NO_SCALE) && !flags.contains(LoadFlags::NO_BITMAP);
+        // C `truetype/ttgload.c:TT_Load_Glyph` only honors `FT_LOAD_NO_BITMAP`
+        // for scalable faces: `!(NO_BITMAP && FT_IS_SCALABLE(face))`.  For
+        // bitmap-only CBLC/CBDT faces, `sfobjs.c` clears SCALABLE and the
+        // embedded strike is therefore loaded even with `FT_LOAD_NO_BITMAP`.
+        let sbit_allowed = !(flags.contains(LoadFlags::NO_SCALE)
+            || flags.contains(LoadFlags::NO_BITMAP) && font.is_scalable());
         if sbits_only && !sbit_allowed {
             return Err(FontError::InvalidArgument(
                 "embedded bitmap strike not selected".into(),
