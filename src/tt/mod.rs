@@ -211,3 +211,87 @@ pub(crate) fn read_u32(data: &[u8], offset: usize) -> u32 {
         data[offset + 3],
     ])
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn ttf_with_tables(tables: &[(&[u8; 4], &[u8])]) -> Vec<u8> {
+        let mut data = Vec::new();
+        data.extend_from_slice(&TRUE_MAGIC.to_be_bytes());
+        data.extend_from_slice(&(tables.len() as u16).to_be_bytes());
+        data.extend_from_slice(&[0; 6]); // search fields
+        let mut offset = 12 + tables.len() * 16;
+        for (tag_bytes, bytes) in tables {
+            data.extend_from_slice(*tag_bytes);
+            data.extend_from_slice(&0u32.to_be_bytes()); // checksum
+            data.extend_from_slice(&(offset as u32).to_be_bytes());
+            data.extend_from_slice(&(bytes.len() as u32).to_be_bytes());
+            offset += bytes.len();
+        }
+        for (_, bytes) in tables {
+            data.extend_from_slice(bytes);
+        }
+        data
+    }
+
+    #[test]
+    fn parses_table_directory_and_lookup() -> Result<(), FontError> {
+        let data = ttf_with_tables(&[(b"cmap", &[1, 2, 3]), (b"glyf", &[4, 5, 6, 7])]);
+        let directory = parse_table_directory(&data)?;
+        assert_eq!(directory.records.len(), 2);
+        assert_eq!(directory.find(&data, tag(b"cmap")), Some(&[1, 2, 3][..]));
+        assert_eq!(directory.find(&data, tag(b"glyf")), Some(&[4, 5, 6, 7][..]));
+        assert!(directory.find(&data, tag(b"head")).is_none());
+        assert_eq!(
+            directory.record(tag(b"cmap")).map(|r| r.tag),
+            Some(tag(b"cmap"))
+        );
+        assert!(directory.record(tag(b"head")).is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn rejects_bad_directories() {
+        assert!(parse_table_directory(&[0u8; 11]).is_err());
+        let mut data = ttf_with_tables(&[(b"cmap", &[1])]);
+        data[0..4].copy_from_slice(&0xDEAD_BEEFu32.to_be_bytes());
+        assert!(parse_table_directory(&data).is_err());
+        let mut data = ttf_with_tables(&[(b"cmap", &[1])]);
+        data[4..6].copy_from_slice(&0u16.to_be_bytes());
+        assert!(parse_table_directory(&data).is_err());
+    }
+
+    #[test]
+    fn face_offsets_handles_single_and_collection() -> Result<(), FontError> {
+        let single = ttf_with_tables(&[(b"cmap", &[1])]);
+        assert_eq!(face_offsets(&single)?, vec![0]);
+
+        let mut ttc = b"ttcf".to_vec();
+        ttc.extend_from_slice(&0x0001_0000u32.to_be_bytes());
+        ttc.extend_from_slice(&2u32.to_be_bytes());
+        ttc.extend_from_slice(&0x100u32.to_be_bytes());
+        ttc.extend_from_slice(&0x200u32.to_be_bytes());
+        assert_eq!(face_offsets(&ttc)?, vec![0x100, 0x200]);
+        Ok(())
+    }
+
+    #[test]
+    fn resolve_face_index_and_errors() -> Result<(), FontError> {
+        let single = ttf_with_tables(&[(b"cmap", &[1])]);
+        assert_eq!(resolve_face_index(&single, 0)?, (1, 0));
+        let error = match resolve_face_index(&single, 1) {
+            Err(error) => error,
+            Ok(_) => panic!("out-of-range face index should fail"),
+        };
+        assert!(error.to_string().contains("out of range"));
+        Ok(())
+    }
+
+    #[test]
+    fn primitives_read_big_endian() {
+        assert_eq!(read_u16(&[0x12, 0x34], 0), 0x1234);
+        assert_eq!(read_i16(&[0xFF, 0x9C], 0), -100);
+        assert_eq!(read_u32(&[0xDE, 0xAD, 0xBE, 0xEF], 0), 0xDEAD_BEEF);
+    }
+}

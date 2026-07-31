@@ -5,7 +5,7 @@
 use crate::error::FontError;
 
 /// Horizontal metrics for a single glyph.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct LongHorMetric {
     /// Advance width in font design units.
     pub advance_width: u16,
@@ -84,4 +84,65 @@ pub fn parse_hmtx(data: &[u8], num_hmetrics: u16, num_glyphs: u16) -> Result<Hmt
         h_metrics,
         left_side_bearings,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn metric(advance: u16, lsb: i16) -> Vec<u8> {
+        let mut bytes = advance.to_be_bytes().to_vec();
+        bytes.extend_from_slice(&lsb.to_be_bytes());
+        bytes
+    }
+
+    #[test]
+    fn parses_explicit_and_fallback_metrics() -> Result<(), FontError> {
+        let mut data = metric(500, -2);
+        data.extend_from_slice(&metric(600, 4));
+        for lsb in [1i16, -3] {
+            data.extend_from_slice(&lsb.to_be_bytes());
+        }
+        let table = parse_hmtx(&data, 2, 4)?;
+        assert_eq!(table.h_metrics.len(), 2);
+        assert_eq!(
+            table.h_metrics[0],
+            LongHorMetric {
+                advance_width: 500,
+                lsb: -2
+            }
+        );
+        assert_eq!(
+            table.h_metrics[1],
+            LongHorMetric {
+                advance_width: 600,
+                lsb: 4
+            }
+        );
+        assert_eq!(table.left_side_bearings, vec![1, -3]);
+
+        let first = table.get(0);
+        assert_eq!(first.advance_width, 500);
+        let past = table.get(2);
+        assert_eq!(past.advance_width, 600);
+        assert_eq!(past.lsb, 1);
+        let out_of_range = table.get(9);
+        assert_eq!(out_of_range.advance_width, 600);
+        assert_eq!(out_of_range.lsb, 0);
+        Ok(())
+    }
+
+    #[test]
+    fn rejects_bad_metric_counts_and_short_data() {
+        assert!(parse_hmtx(&[0u8; 8], 3, 2).is_err());
+        assert!(parse_hmtx(&[], 0, 5).is_err());
+        assert!(parse_hmtx(&[0u8; 4], 2, 2).is_err());
+    }
+
+    #[test]
+    fn empty_table_defaults_to_zero() {
+        let table = HmtxTable::default();
+        assert_eq!(table.get(0).advance_width, 0);
+        assert_eq!(table.get(0).lsb, 0);
+    }
 }
