@@ -622,4 +622,62 @@ mod tests {
         assert!(outcome.advance_width > 0);
         Ok(())
     }
+
+    #[test]
+    fn glyph_bytecode_executes_arithmetic_and_storage() -> Result<(), FontError> {
+        let scale = HintScale {
+            x_scale: 1 << 16,
+            y_scale: 1 << 16,
+            tt_scale: 1 << 16,
+            ppem: 16,
+            x_ratio: 1 << 16,
+            y_ratio: 1 << 16,
+            point_size: 16 << 6,
+            storage_size: 8,
+            max_function_defs: 64,
+            max_instruction_defs: 64,
+            max_stack_elements: 64,
+            num_glyphs: 10,
+            twilight_points: 8,
+            is_composite: false,
+            reset_vectors_at_glyph_entry: false,
+            metrics_legacy_phantoms: false,
+            pedantic_hinting: false,
+            native_hint_mode: NativeHintMode::Normal,
+            phantom_x_override: None,
+            interpreter_version: 40,
+        };
+        let context = prepare_context(&[], &[], &[], &scale)?;
+
+        let raw = [OutlinePoint {
+            x: 0,
+            y: 0,
+            on_curve: true,
+        }];
+        let mut scaled = vec![crate::outline::OutlinePoint {
+            x: 0,
+            y: 0,
+            on_curve: true,
+        }];
+        // PUSHB 42; PUSHB 7; ADD (sum on top); PUSHB 0 (index);
+        // SWAP (value on top); WS (value=49, index=0); MPPEM.
+        let program = [0xB0, 42, 0xB0, 7, 0x60, 0xB0, 0, 0x23, 0x42, 0x4B];
+        let outcome = hint_glyph(
+            &mut scaled,
+            &raw,
+            &[1],
+            &[0],
+            500,
+            500,
+            0,
+            0,
+            0,
+            0,
+            &scale,
+            &program,
+            &context,
+        )?;
+        assert_eq!(outcome.context.storage[0], 49);
+        Ok(())
+    }
 }
