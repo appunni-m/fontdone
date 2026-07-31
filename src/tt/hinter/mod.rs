@@ -649,11 +649,18 @@ mod tests {
         };
         let context = prepare_context(&[], &[], &[], &scale)?;
 
-        let raw = [OutlinePoint {
-            x: 0,
-            y: 0,
-            on_curve: true,
-        }];
+        let raw = [
+            OutlinePoint {
+                x: 0,
+                y: 0,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 100,
+                y: 0,
+                on_curve: true,
+            },
+        ];
         let mut scaled = vec![crate::outline::OutlinePoint {
             x: 0,
             y: 0,
@@ -678,6 +685,132 @@ mod tests {
             &context,
         )?;
         assert_eq!(outcome.context.storage[0], 49);
+        Ok(())
+    }
+
+    #[test]
+    fn glyph_bytecode_executes_point_and_stack_opcodes() -> Result<(), FontError> {
+        let scale = HintScale {
+            x_scale: 1 << 16,
+            y_scale: 1 << 16,
+            tt_scale: 1 << 16,
+            ppem: 16,
+            x_ratio: 1 << 16,
+            y_ratio: 1 << 16,
+            point_size: 16 << 6,
+            storage_size: 8,
+            max_function_defs: 64,
+            max_instruction_defs: 64,
+            max_stack_elements: 64,
+            num_glyphs: 10,
+            twilight_points: 8,
+            is_composite: false,
+            reset_vectors_at_glyph_entry: false,
+            metrics_legacy_phantoms: false,
+            pedantic_hinting: false,
+            native_hint_mode: NativeHintMode::Normal,
+            phantom_x_override: None,
+            interpreter_version: 40,
+        };
+        let context = prepare_context(&[], &[], &[], &scale)?;
+
+        // Five glyph points: two crossing lines and a movable target point.
+        let raw = [
+            OutlinePoint {
+                x: 0,
+                y: 0,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 100,
+                y: 100,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 0,
+                y: 100,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 100,
+                y: 0,
+                on_curve: true,
+            },
+            OutlinePoint {
+                x: 999,
+                y: 999,
+                on_curve: true,
+            },
+        ];
+        let mut scaled = raw
+            .iter()
+            .map(|point| crate::outline::OutlinePoint {
+                x: point.x,
+                y: point.y,
+                on_curve: point.on_curve,
+            })
+            .collect::<Vec<_>>();
+
+        // ISECT(point=4, a0=0, a1=1, b0=2, b1=3) intersects the diagonal
+        // lines at (50,50); ALIGNPTS then aligns points 0 and 3; CINDEX and
+        // MINDEX copy/move stack slots into storage; SMD/SDB/SDS set
+        // graphics-state fields; AND folds the logical result into storage;
+        // SDPVTL rebuilds the dual projection vector along the first edge.
+        // INSTCTRL[3]=4 disables v40 backward compatibility so point moves
+        // apply, matching real v40 font programs that opt out of the
+        // compatibility pattern.
+        let program = [
+            0xB0, 4, 0xB0, 3, 0x8E, // INSTCTRL[3]=4
+            0xB0, 4, 0xB0, 0, 0xB0, 1, 0xB0, 2, 0xB0, 3, 0x0F, // ISECT
+            0xB0, 0, 0xB0, 3, 0x27, // ALIGNPTS
+            0xB0, 10, 0xB0, 20, 0xB0, 2, 0x25, 0xB0, 1, 0x23, 0x42, // CINDEX + SWAP + WS
+            0xB0, 10, 0xB0, 20, 0xB0, 30, 0xB0, 2, 0x26, 0xB0, 2, 0x23,
+            0x42, // MINDEX + SWAP + WS
+            0xB0, 64, 0x1A, // SMD
+            0xB0, 11, 0x5E, // SDB
+            0xB0, 7, 0x5F, // SDS
+            0xB0, 1, 0xB0, 1, 0x5A, 0xB0, 3, 0x23, 0x42, // AND + SWAP + WS
+            0xB0, 0, 0xB0, 1, 0x86, // SDPVTL[0]
+        ];
+        let outcome = hint_glyph(
+            &mut scaled,
+            &raw,
+            &[0x01; 5],
+            &[4],
+            500,
+            500,
+            0,
+            0,
+            0,
+            0,
+            &scale,
+            &program,
+            &context,
+        )?;
+
+        // ISECT places the target point at the crossing of the two lines.
+        assert!(
+            (scaled[4].x - 50).abs() <= 1 && (scaled[4].y - 50).abs() <= 1,
+            "ISECT target should land at (50,50), got ({}, {})",
+            scaled[4].x,
+            scaled[4].y
+        );
+        // ALIGNPTS merges the projected coordinates of the two points.
+        assert_eq!(scaled[0].x, scaled[3].x);
+        // CINDEX copies the element at depth 2 (10); MINDEX moves the
+        // element at depth 2 (20) to the top before storing.
+        assert_eq!(outcome.context.storage[1], 10);
+        assert_eq!(outcome.context.storage[2], 20);
+        assert_eq!(outcome.context.storage[3], 1);
+        assert_eq!(outcome.context.gs.minimum_distance, 64);
+        assert_eq!(outcome.context.gs.delta_base, 11);
+        assert_eq!(outcome.context.gs.delta_shift, 7);
+        assert_ne!(
+            outcome.context.gs.dual_proj_vector,
+            (0x4000, 0),
+            "SDPVTL must replace the default X projection vector"
+        );
+        assert!(outcome.advance_width > 0);
         Ok(())
     }
 }

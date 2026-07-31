@@ -1785,7 +1785,11 @@ impl ExecContext {
                     let p2 = self.pop()? as usize;
                     let (p1x, p1y) = self.cur_in(zone, self.gs.zp1, p1);
                     let (p2x, p2y) = self.cur_in(zone, self.gs.zp0, p2);
-                    let distance = self.gs.project(p1x - p2x, p1y - p2y) / 2;
+                    // C `Ins_ALIGNPTS` computes PROJECT(zp0.cur+p2,
+                    // zp1.cur+p1)/2 (ttinterp.c:5843), i.e. p2 minus p1;
+                    // p1 then moves by +distance and p2 by -distance, so
+                    // both points meet at their projected midpoint.
+                    let distance = self.gs.project(p2x - p1x, p2y - p1y) / 2;
                     let (dx1, dy1) = self.gs.move_along_free(distance);
                     let (dx2, dy2) = self.gs.move_along_free(-distance);
                     self.set_cur_in(zone, self.gs.zp1, p1, p1x + dx1, p1y + dy1);
