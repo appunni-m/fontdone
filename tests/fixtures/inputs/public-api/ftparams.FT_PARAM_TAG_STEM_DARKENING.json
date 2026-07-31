@@ -67,8 +67,8 @@
             "kind": "ref",
             "role": "font",
             "path": "input/fonts/cff/stem-darkening-sensitive.otf",
-            "status": "required_future_asset",
-            "requires": "CFF, Type1, or CID face where stem darkening changes public metrics, outline, or bitmap"
+            "requires": "CFF, Type1, or CID face where stem darkening changes public metrics, outline, or bitmap",
+            "id": "input/fonts/cff/pure-cff-cubic.otf"
           }
         },
         "params": {
@@ -87,12 +87,12 @@
           ],
           "probe": {
             "glyph_index": 1,
-            "size_ppem": 18,
+            "size_ppem": 24,
             "load_flags": [
-              "FT_LOAD_DEFAULT"
-            ],
-            "render_mode": "FT_RENDER_MODE_NORMAL"
-          }
+              "FT_LOAD_NO_SCALE"
+            ]
+          },
+          "runtime_route": "actual_stem_darkening_preserve_probe"
         }
       },
       "classifiers": [
@@ -103,18 +103,26 @@
       "expectation": {
         "status": "ok",
         "output_shape": {
-          "return": "FT_Error",
-          "face_no_stem_darkening": "internal snapshot if available",
-          "glyph_slot": "metrics and outline",
-          "bitmap": "descriptor and bytes/hash"
+          "rows": [
+            {
+              "label": "string",
+              "property_error": "FT_Error",
+              "load_error": "FT_Error",
+              "face_properties": "no_stem_darkening/random_seed snapshot",
+              "slot": "FT_GlyphSlot public fields or {load_error}"
+            }
+          ],
+          "preserved_across_toggle": "bool"
         },
         "compare": {
           "mode": "exact",
           "paths": [
-            "return",
-            "face_no_stem_darkening",
-            "glyph_slot",
-            "bitmap"
+            "rows[*].label",
+            "rows[*].property_error",
+            "rows[*].load_error",
+            "rows[*].face_properties",
+            "rows[*].slot",
+            "preserved_across_toggle"
           ]
         },
         "fixture_requirements": [

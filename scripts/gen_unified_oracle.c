@@ -33050,6 +33050,91 @@ static int emit_ps_hinting_engine_case(int argc, char** argv) {
     return 0;
 }
 
+static void print_stem_darkening_row(const char* label,
+                                     FT_Error property_error,
+                                     FT_Face face,
+                                     FT_Error load_error,
+                                     FT_UInt glyph_index,
+                                     FT_Int32 load_flags) {
+    printf("{\"label\":\"%s\",\"property_error\":%d,\"load_error\":%d,"
+           "\"face_properties\":",
+           label, property_error, load_error);
+    print_face_properties_state(face);
+    printf(",\"slot\":");
+    if (load_error == FT_Err_Ok && face) {
+        printf("{");
+        print_slot_body(face->glyph, glyph_index);
+        printf("}");
+    } else {
+        printf("{\"load_error\":%d}", load_error);
+    }
+    printf("}");
+}
+
+static int emit_stem_darkening_case(int argc, char** argv) {
+    if (argc != 6) {
+        fprintf(stderr,
+                "--stem-darkening-case requires SOURCE_KIND SOURCE_VALUE GLYPH_INDEX LOAD_FLAGS\n");
+        return 2;
+    }
+    OracleFace holder;
+    int opened = open_oracle_face(argv[2], argv[3], 0, &holder);
+    if (opened != 0) {
+        close_oracle_face(&holder);
+        return opened;
+    }
+    FT_UInt glyph_index = (FT_UInt)strtoul(argv[4], NULL, 10);
+    FT_Int32 load_flags = (FT_Int32)strtol(argv[5], NULL, 10);
+    FT_Error before_error = FT_Load_Glyph(holder.face, glyph_index, load_flags);
+    FT_Glyph_Metrics before_metrics = holder.face->glyph->metrics;
+    FT_Bitmap before_bitmap = holder.face->glyph->bitmap;
+    unsigned char* before_buffer = NULL;
+    long before_len = 0;
+    if (before_error == FT_Err_Ok && before_bitmap.buffer && before_bitmap.rows > 0) {
+        before_len = labs(before_bitmap.pitch) * before_bitmap.rows;
+        before_buffer = malloc((size_t)before_len);
+        if (before_buffer) {
+            memcpy(before_buffer, before_bitmap.buffer, (size_t)before_len);
+        } else {
+            before_len = 0;
+        }
+    }
+
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"rows\":[");
+    print_stem_darkening_row("before", 0, holder.face, before_error, glyph_index, load_flags);
+
+    FT_Bool darkening = 1;
+    FT_Parameter property = {FT_PARAM_TAG_STEM_DARKENING, &darkening};
+    FT_Error true_error = FT_Face_Properties(holder.face, 1, &property);
+    FT_Error true_load = FT_Load_Glyph(holder.face, glyph_index, load_flags);
+    printf(",");
+    print_stem_darkening_row("darkening_true", true_error, holder.face, true_load, glyph_index, load_flags);
+
+    darkening = 0;
+    FT_Error false_error = FT_Face_Properties(holder.face, 1, &property);
+    FT_Error false_load = FT_Load_Glyph(holder.face, glyph_index, load_flags);
+    printf(",");
+    print_stem_darkening_row("darkening_false", false_error, holder.face, false_load, glyph_index, load_flags);
+
+    property.data = NULL;
+    FT_Error null_error = FT_Face_Properties(holder.face, 1, &property);
+    FT_Error null_load = FT_Load_Glyph(holder.face, glyph_index, load_flags);
+    printf(",");
+    print_stem_darkening_row("darkening_null", null_error, holder.face, null_load, glyph_index, load_flags);
+
+    int preserved = true_load == false_load &&
+                    (true_load != FT_Err_Ok ||
+                     slot_outputs_equal_captured(
+                         before_metrics, before_bitmap, before_buffer,
+                         before_len, holder.face->glyph));
+    printf("],\"preserved_across_toggle\":%s}}\n", preserved ? "true" : "false");
+    free(before_buffer);
+    close_oracle_face(&holder);
+    return 0;
+}
+
 typedef struct MemoryFaceRow_ {
     FT_Long face_index;
     int has_file_size;
@@ -36831,6 +36916,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 12 && streq(argv[1], "--ps-hinting-engine-case")) {
         return emit_ps_hinting_engine_case(argc, argv);
+    }
+    if (argc == 6 && streq(argv[1], "--stem-darkening-case")) {
+        return emit_stem_darkening_case(argc, argv);
     }
     if (argc == 9 && streq(argv[1], "--get-sfnt-vhea-mvar-sequence")) {
         return emit_face_or_slot(argc, argv);

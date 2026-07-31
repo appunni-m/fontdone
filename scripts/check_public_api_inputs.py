@@ -3998,6 +3998,14 @@ def ftparams_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     """Rows for FT_Open_Args parameters that do not have a maintained route."""
     if (
         row.case_id
+        == "ftparams.FT_PARAM_TAG_STEM_DARKENING.cff_type1_toggle_changes_supported_output"
+        and row.operation == "freetype.face_properties_then_render"
+        and row.params.get("runtime_route") == "actual_stem_darkening_preserve_probe"
+        and unresolved_assets_reason(row) is None
+    ):
+        return None
+    if (
+        row.case_id
         in {
             "ftparams.FT_PARAM_TAG_IGNORE_SBIX.open_face_ignores_sbix",
             "ftparams.FT_PARAM_TAG_IGNORE_SBIX.bitmap_only_requires_real_sbix_fixture",

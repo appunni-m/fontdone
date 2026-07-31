@@ -40667,6 +40667,13 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             }
             Ok(args)
         }
+        "freetype.face_properties_then_render" if stem_darkening_runtime_supported(case) => {
+            let mut args = vec!["--stem-darkening-case".to_string()];
+            push_required_asset_source(case, "cff_font", &mut args)?;
+            args.push(glyph_index_param(params)?.to_string());
+            args.push(load_flags_param(params)?.to_string());
+            Ok(args)
+        }
         "freetype.face_properties_then_render"
             if case.case_id
                 == "ftparams.FT_PARAM_TAG_RANDOM_SEED.valid_seed_sets_face_property" =>
@@ -45297,6 +45304,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             }
         }
         "freetype.face_properties" => rust_face_properties(case),
+        "freetype.face_properties_then_render" if stem_darkening_runtime_supported(case) => {
+            rust_stem_darkening_case(case)
+        }
         "freetype.face_properties_then_render"
             if case.case_id
                 == "ftparams.FT_PARAM_TAG_RANDOM_SEED.valid_seed_sets_face_property" =>
@@ -45506,6 +45516,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_face_owned_handles(case)
         }
         "freetype.face_properties" => c_face_properties(case),
+        "freetype.face_properties_then_render" if stem_darkening_runtime_supported(case) => {
+            c_stem_darkening_case(case)
+        }
         "freetype.face_properties_then_render"
             if case.case_id
                 == "ftparams.FT_PARAM_TAG_RANDOM_SEED.valid_seed_sets_face_property" =>
@@ -46827,6 +46840,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             wasm_face_owned_handles(case)
         }
         "freetype.face_properties" => wasm_face_properties(case),
+        "freetype.face_properties_then_render" if stem_darkening_runtime_supported(case) => {
+            wasm_stem_darkening_case(case)
+        }
         "freetype.face_properties_then_render"
             if case.case_id
                 == "ftparams.FT_PARAM_TAG_RANDOM_SEED.valid_seed_sets_face_property" =>
@@ -68065,6 +68081,279 @@ fn wasm_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
         wasm_done_face(status.handle);
     }
     Ok(ok(json!({"modules": modules})))
+}
+
+fn stem_darkening_runtime_supported(case: &InputCase) -> bool {
+    case.case_id == "ftparams.FT_PARAM_TAG_STEM_DARKENING.cff_type1_toggle_changes_supported_output"
+        && assets_are_runtime_resolved(case)
+}
+
+fn stem_darkening_row(
+    label: &str,
+    property_error: FT_Error,
+    load_error: FT_Error,
+    face_properties: Value,
+    slot: Value,
+) -> Value {
+    json!({
+        "label": label,
+        "property_error": property_error,
+        "load_error": load_error,
+        "face_properties": face_properties,
+        "slot": slot
+    })
+}
+
+fn rust_stem_darkening_case(case: &InputCase) -> Result<RunOutput, String> {
+    let bytes = required_asset_bytes(case, "cff_font")?;
+    let glyph_index = glyph_index_param(&case.inputs.params)?;
+    let load_flags = load_flags_param(&case.inputs.params)?;
+    let library = FT_Init_FreeType();
+    let mut face = FT_New_Memory_Face(&library, bytes.as_ref(), 0, 20.0)
+        .map_err(|err| format!("open stem-darkening face: {err}"))?;
+    let mut rows = Vec::new();
+    let before = FT_Load_Glyph(&face, glyph_index, load_flags);
+    let before_slot = before.as_ref().ok().map(slot_json);
+    let before_error = before.map_or_else(|error| error, |_| FT_Err_Ok);
+    rows.push(stem_darkening_row(
+        "before",
+        0,
+        before_error,
+        face_properties_state_json(&face),
+        before_slot
+            .clone()
+            .unwrap_or_else(|| json!({"load_error": before_error})),
+    ));
+    let mut property = FT_Face_Property {
+        tag: FT_PARAM_TAG_STEM_DARKENING as FT_ULong,
+        value: Some(FT_Face_Property_Value::Bool(1)),
+    };
+    let true_error = FT_Face_Properties(Some(&mut face), Some(std::slice::from_ref(&property)));
+    let true_load = FT_Load_Glyph(&face, glyph_index, load_flags);
+    let true_slot = true_load.as_ref().ok().map(slot_json);
+    let true_load_error = true_load.map_or_else(|error| error, |_| FT_Err_Ok);
+    rows.push(stem_darkening_row(
+        "darkening_true",
+        true_error,
+        true_load_error,
+        face_properties_state_json(&face),
+        true_slot
+            .clone()
+            .unwrap_or_else(|| json!({"load_error": true_load_error})),
+    ));
+    property.value = Some(FT_Face_Property_Value::Bool(0));
+    let false_error = FT_Face_Properties(Some(&mut face), Some(std::slice::from_ref(&property)));
+    let false_load = FT_Load_Glyph(&face, glyph_index, load_flags);
+    let false_slot = false_load.as_ref().ok().map(slot_json);
+    let false_load_error = false_load.map_or_else(|error| error, |_| FT_Err_Ok);
+    rows.push(stem_darkening_row(
+        "darkening_false",
+        false_error,
+        false_load_error,
+        face_properties_state_json(&face),
+        false_slot
+            .clone()
+            .unwrap_or_else(|| json!({"load_error": false_load_error})),
+    ));
+    property.value = None;
+    let null_error = FT_Face_Properties(Some(&mut face), Some(std::slice::from_ref(&property)));
+    let null_load = FT_Load_Glyph(&face, glyph_index, load_flags);
+    let null_slot = null_load.as_ref().ok().map(slot_json);
+    let null_load_error = null_load.map_or_else(|error| error, |_| FT_Err_Ok);
+    rows.push(stem_darkening_row(
+        "darkening_null",
+        null_error,
+        null_load_error,
+        face_properties_state_json(&face),
+        null_slot.unwrap_or_else(|| json!({"load_error": null_load_error})),
+    ));
+    let preserved = before_slot.is_some() && true_slot == false_slot;
+    Ok(ok(
+        json!({"rows": rows, "preserved_across_toggle": preserved}),
+    ))
+}
+
+fn c_stem_darkening_case(case: &InputCase) -> Result<RunOutput, String> {
+    let bytes = required_asset_bytes(case, "cff_font")?;
+    let glyph_index = glyph_index_param(&case.inputs.params)?;
+    let load_flags = load_flags_param(&case.inputs.params)?;
+    let mut library = std::ptr::null_mut();
+    let init_error = c_abi::FT_Init_FreeType(&mut library);
+    if init_error != FT_Err_Ok {
+        return Ok(error(init_error));
+    }
+    let file_size = i64::try_from(bytes.len()).map_err(|err| err.to_string())?;
+    let mut face = std::ptr::null_mut();
+    let open_error = c_abi::FT_New_Memory_Face(library, bytes.as_ptr(), file_size, 0, &mut face);
+    if open_error != FT_Err_Ok {
+        c_done_library(library);
+        return Ok(error(open_error));
+    }
+    let mut rows = Vec::new();
+    let before = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
+    let before_slot = if before == FT_Err_Ok {
+        Some(c_slot_json(face)?)
+    } else {
+        None
+    };
+    rows.push(stem_darkening_row(
+        "before",
+        0,
+        before,
+        c_face_properties_state_json(face)?,
+        before_slot
+            .clone()
+            .unwrap_or_else(|| json!({"load_error": before})),
+    ));
+    let mut darkening_true: c_abi::FT_Bool = 1;
+    let mut property = c_abi::FT_Parameter {
+        tag: FT_PARAM_TAG_STEM_DARKENING as c_abi::FT_ULong,
+        data: (&mut darkening_true as *mut c_abi::FT_Bool).cast(),
+    };
+    let true_error = c_abi::FT_Face_Properties(face, 1, &mut property);
+    let true_load = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
+    let true_slot = if true_load == FT_Err_Ok {
+        Some(c_slot_json(face)?)
+    } else {
+        None
+    };
+    rows.push(stem_darkening_row(
+        "darkening_true",
+        true_error,
+        true_load,
+        c_face_properties_state_json(face)?,
+        true_slot
+            .clone()
+            .unwrap_or_else(|| json!({"load_error": true_load})),
+    ));
+    let mut darkening_false: c_abi::FT_Bool = 0;
+    let mut false_property = c_abi::FT_Parameter {
+        tag: FT_PARAM_TAG_STEM_DARKENING as c_abi::FT_ULong,
+        data: (&mut darkening_false as *mut c_abi::FT_Bool).cast(),
+    };
+    let false_error = c_abi::FT_Face_Properties(face, 1, &mut false_property);
+    let false_load = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
+    let false_slot = if false_load == FT_Err_Ok {
+        Some(c_slot_json(face)?)
+    } else {
+        None
+    };
+    rows.push(stem_darkening_row(
+        "darkening_false",
+        false_error,
+        false_load,
+        c_face_properties_state_json(face)?,
+        false_slot
+            .clone()
+            .unwrap_or_else(|| json!({"load_error": false_load})),
+    ));
+    property.data = std::ptr::null_mut();
+    let null_error = c_abi::FT_Face_Properties(face, 1, &mut property);
+    let null_load = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
+    let null_slot = if null_load == FT_Err_Ok {
+        c_slot_json(face)?
+    } else {
+        json!({"load_error": null_load})
+    };
+    rows.push(stem_darkening_row(
+        "darkening_null",
+        null_error,
+        null_load,
+        c_face_properties_state_json(face)?,
+        null_slot,
+    ));
+    let preserved = before_slot.is_some() && true_slot == false_slot;
+    c_done_face(face);
+    c_done_library(library);
+    Ok(ok(
+        json!({"rows": rows, "preserved_across_toggle": preserved}),
+    ))
+}
+
+fn wasm_stem_darkening_case(case: &InputCase) -> Result<RunOutput, String> {
+    let bytes = required_asset_bytes(case, "cff_font")?;
+    let glyph_index = glyph_index_param(&case.inputs.params)?;
+    let load_flags = load_flags_param(&case.inputs.params)?;
+    let handle = wasm_new_face_from_bytes(bytes.as_ref(), 0)?;
+    let mut rows = Vec::new();
+    let before = wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, load_flags);
+    let before_slot = if before == FT_Err_Ok {
+        Some(wasm_slot_json(handle)?)
+    } else {
+        None
+    };
+    let before_state = wasm_abi::abi_face_properties_state(handle)
+        .map(face_properties_state_record_json)
+        .unwrap_or(Value::Null);
+    rows.push(stem_darkening_row(
+        "before",
+        0,
+        before,
+        before_state,
+        before_slot
+            .clone()
+            .unwrap_or_else(|| json!({"load_error": before})),
+    ));
+    let true_error = wasm_abi::fontdone_wasm_face_properties_one(handle, 1, 1, 1);
+    let true_load = wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, load_flags);
+    let true_slot = if true_load == FT_Err_Ok {
+        Some(wasm_slot_json(handle)?)
+    } else {
+        None
+    };
+    let true_state = wasm_abi::abi_face_properties_state(handle)
+        .map(face_properties_state_record_json)
+        .unwrap_or(Value::Null);
+    rows.push(stem_darkening_row(
+        "darkening_true",
+        true_error,
+        true_load,
+        true_state,
+        true_slot
+            .clone()
+            .unwrap_or_else(|| json!({"load_error": true_load})),
+    ));
+    let false_error = wasm_abi::fontdone_wasm_face_properties_one(handle, 1, 1, 0);
+    let false_load = wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, load_flags);
+    let false_slot = if false_load == FT_Err_Ok {
+        Some(wasm_slot_json(handle)?)
+    } else {
+        None
+    };
+    let false_state = wasm_abi::abi_face_properties_state(handle)
+        .map(face_properties_state_record_json)
+        .unwrap_or(Value::Null);
+    rows.push(stem_darkening_row(
+        "darkening_false",
+        false_error,
+        false_load,
+        false_state,
+        false_slot
+            .clone()
+            .unwrap_or_else(|| json!({"load_error": false_load})),
+    ));
+    let null_error = wasm_abi::fontdone_wasm_face_properties_one(handle, 1, 0, 0);
+    let null_load = wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, load_flags);
+    let null_slot = if null_load == FT_Err_Ok {
+        wasm_slot_json(handle)?
+    } else {
+        json!({"load_error": null_load})
+    };
+    let null_state = wasm_abi::abi_face_properties_state(handle)
+        .map(face_properties_state_record_json)
+        .unwrap_or(Value::Null);
+    rows.push(stem_darkening_row(
+        "darkening_null",
+        null_error,
+        null_load,
+        null_state,
+        null_slot,
+    ));
+    let preserved = before_slot.is_some() && true_slot == false_slot;
+    wasm_done_face(handle);
+    Ok(ok(
+        json!({"rows": rows, "preserved_across_toggle": preserved}),
+    ))
 }
 
 fn rust_new_memory_face_variants(case: &InputCase) -> Result<RunOutput, String> {
