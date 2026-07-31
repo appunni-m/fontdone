@@ -603,4 +603,41 @@ mod tests {
         // negate((a<0)^(b<0)^(c<0)) = negate(true) = -8
         assert_eq!(ft_mul_div(-3, 5, 2), -8);
     }
+
+    #[test]
+    fn long_math_variants() {
+        assert_eq!(ft_add_long(3, 4), 7);
+        assert_eq!(ft_neg_long(7), -7);
+        assert_eq!(ft_neg_long(-7), 7);
+        assert_eq!(ft_mul_div_long(3, 5, 2), 8);
+        assert_eq!(ft_mul_div_no_round_long(3, 5, 2), 7);
+        assert_eq!(ft_mul_fix_long(0x1_0000, 0x1_0000), 0x1_0000);
+        assert_eq!(ft_div_fix_long(16 << 6, 2048), 0x8000);
+        assert_eq!(ft_round_fix_long(0x8000), 0x1_0000);
+        assert_eq!(ft_ceil_fix_long(0x1), 0x1_0000);
+        assert_eq!(ft_floor_fix_long(0x_FFFF), 0);
+        assert_eq!(ft_msb(0), -1);
+        assert_eq!(ft_msb(1), 0);
+        assert_eq!(ft_msb(0x8000_0000), 31);
+        assert_eq!(ft_abs_long(-5), 5);
+        assert_eq!(ft_abs_long(5), 5);
+        assert_eq!(ft_abs_long(0), 0);
+    }
+
+    #[test]
+    fn trig_functions() {
+        // FT_ANGLE_PI4 = 2_949_120; sin(PI/4) = cos(PI/4) ~ 0.7071 * 2^16.
+        let expected = 46_340;
+        let sin = ft_sin_long(FT_ANGLE_PI4);
+        let cos = ft_cos_long(FT_ANGLE_PI4);
+        assert!((sin - expected).abs() < 100);
+        assert!((cos - expected).abs() < 100);
+        assert!((ft_tan_long(FT_ANGLE_PI4) - 0x1_0000).abs() < 100);
+        assert_eq!(ft_atan2_long(0, 0), 0);
+        assert_eq!(ft_atan2_long(0x1_000000, 0), 0);
+        assert_eq!(ft_atan2_long(0, 0x1_000000), FT_ANGLE_PI2);
+        assert_eq!(ft_sin_long(0), 0);
+        assert_eq!(ft_cos_long(0), 0x1_0000);
+        assert_eq!(ft_sin_long(FT_ANGLE_2PI), 0);
+    }
 }
