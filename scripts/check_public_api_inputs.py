@@ -146,6 +146,7 @@ WASM_EXPORTS = {
     "fontdone_wasm_open_face_handle",
     "fontdone_wasm_open_external_stream_face",
     "fontdone_wasm_open_face_with_name_options",
+    "fontdone_wasm_ps_hinting_engine_open",
     "fontdone_wasm_done_face",
     "fontdone_wasm_new_size",
     "fontdone_wasm_new_size_out",
@@ -3406,6 +3407,19 @@ def ftmodapi_subsystem_pending_reason(row: ConcreteInput) -> str | None:
 
 def ftdriver_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     """Rows for driver/autohinter properties that do not have a maintained route."""
+    if (
+        row.case_id
+        in {
+            "ftdriver.FT_CFF_HINTING_ADOBE.hinting_engine_property_runtime",
+            "ftdriver.FT_CFF_HINTING_FREETYPE.hinting_engine_property_runtime",
+            "ftdriver.FT_HINTING_ADOBE.hinting_engine_property_runtime",
+            "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime",
+        }
+        and row.operation == "ftdriver.hinting_engine_property"
+        and row.params.get("runtime_route") == "actual_ps_hinting_engine_property"
+        and unresolved_assets_reason(row) is None
+    ):
+        return None
     ftdriver_rows_without_maintained_route = {
         "ftdriver.FT_CFF_HINTING_ADOBE.hinting_engine_property_runtime": (
             "CFF Adobe hinting-engine runtime parity needs maintained "

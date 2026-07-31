@@ -3018,6 +3018,42 @@ enum MetricsGridFit {
     Vertical,
 }
 
+fn empty_outline_glyph_slot() -> GlyphSlotLoad {
+    GlyphSlotLoad {
+        metrics: GlyphSlotMetrics {
+            width: 0,
+            height: 0,
+            hori_bearing_x: 0,
+            hori_bearing_y: 0,
+            hori_advance: 0,
+            vert_bearing_x: 0,
+            vert_bearing_y: 0,
+            vert_advance: 0,
+        },
+        format: GlyphSlotLoadFormat::Outline,
+        outline_cbox: BBox {
+            x_min: 0,
+            y_min: 0,
+            x_max: 0,
+            y_max: 0,
+        },
+        outline_bbox: BBox {
+            x_min: 0,
+            y_min: 0,
+            x_max: 0,
+            y_max: 0,
+        },
+        subglyphs: Vec::new(),
+        slot_outline: Some(Outline::default()),
+        render_outline: Some(LoadedOutline {
+            outline: Outline::default(),
+            left: 0,
+            bottom: 0,
+            top: 0,
+        }),
+    }
+}
+
 impl Font {
     /// Load a FreeType-style memory face from raw bytes.
     ///
@@ -5530,6 +5566,12 @@ impl Font {
     ) -> Result<GlyphSlotLoad, FontError> {
         if self.is_type1_face() {
             return self.glyph_slot_load_type1_no_scale(glyph, vertical_layout);
+        }
+        if matches!(self.face_kind, FaceKind::CidType1 { .. }) && self.type1_charstrings.is_empty()
+        {
+            // `t1cid` loads an empty CID CharString as an empty outline slot
+            // with zero metrics and advance (`src/cid/cidgload.c`).
+            return Ok(empty_outline_glyph_slot());
         }
         if self.data.has_cff_outlines() {
             return self.glyph_slot_load_cff_no_scale(glyph, vertical_layout);

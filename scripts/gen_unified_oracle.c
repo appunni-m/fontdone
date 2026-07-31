@@ -32877,6 +32877,179 @@ static int emit_sbix_params_case(int argc, char** argv) {
     return 0;
 }
 
+static int slot_outputs_equal_captured(
+    FT_Glyph_Metrics first_metrics,
+    FT_Bitmap first_bitmap,
+    const unsigned char* first_buffer,
+    long first_buffer_len,
+    FT_GlyphSlot second) {
+    if (second->metrics.width != first_metrics.width ||
+        second->metrics.height != first_metrics.height ||
+        second->metrics.horiBearingX != first_metrics.horiBearingX ||
+        second->metrics.horiBearingY != first_metrics.horiBearingY ||
+        second->metrics.horiAdvance != first_metrics.horiAdvance ||
+        second->metrics.vertBearingX != first_metrics.vertBearingX ||
+        second->metrics.vertBearingY != first_metrics.vertBearingY ||
+        second->metrics.vertAdvance != first_metrics.vertAdvance) {
+        return 0;
+    }
+    if (second->bitmap.width != first_bitmap.width ||
+        second->bitmap.rows != first_bitmap.rows ||
+        second->bitmap.pitch != first_bitmap.pitch ||
+        second->bitmap.pixel_mode != first_bitmap.pixel_mode) {
+        return 0;
+    }
+    if (first_buffer && second->bitmap.buffer) {
+        long second_len = labs(second->bitmap.pitch) * second->bitmap.rows;
+        if (second_len != first_buffer_len ||
+            memcmp(first_buffer, second->bitmap.buffer,
+                   (size_t)first_buffer_len) != 0) {
+            return 0;
+        }
+    } else if (first_buffer || second->bitmap.buffer) {
+        return 0;
+    }
+    return 1;
+}
+
+static int emit_ps_hinting_engine_case(int argc, char** argv) {
+    if (argc != 12) {
+        fprintf(stderr,
+                "--ps-hinting-engine-case requires three source pairs, "
+                "GLYPH_INDEX, LOAD_FLAGS, VALUE, STRING\n");
+        return 2;
+    }
+    FT_UInt glyph_index = (FT_UInt)strtoul(argv[8], NULL, 10);
+    FT_Int32 load_flags = (FT_Int32)strtol(argv[9], NULL, 10);
+    FT_UInt property_value = (FT_UInt)strtoul(argv[10], NULL, 10);
+    const char* string_value = argv[11];
+
+    struct ModuleFontPair_ {
+        const char* module;
+        const char* kind;
+        const char* source;
+    } pairs[3] = {
+        {"cff", argv[2], argv[3]},
+        {"type1", argv[4], argv[5]},
+        {"t1cid", argv[6], argv[7]},
+    };
+
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"modules\":[");
+    int first_module = 1;
+    for (int index = 0; index < 3; index++) {
+        FT_Library library = NULL;
+        FT_Error init_error = FT_Init_FreeType(&library);
+        if (!first_module) {
+            printf(",");
+        }
+        first_module = 0;
+        printf("{\"module_name\":\"%s\",", pairs[index].module);
+        if (init_error) {
+            printf("\"set_error\":%d,\"get_error\":%d,\"readback_value\":null,"
+                   "\"string_value_behavior\":null,\"glyph\":null,"
+                   "\"post_error_output_preservation\":null}",
+                   init_error, init_error);
+            continue;
+        }
+        unsigned char* data = NULL;
+        long data_len = 0;
+        if (load_oracle_source_bytes(pairs[index].kind, pairs[index].source,
+                                     &data, &data_len) != 0) {
+            FT_Done_FreeType(library);
+            printf("\"set_error\":-1,\"get_error\":-1,\"readback_value\":null,"
+                   "\"string_value_behavior\":null,\"glyph\":null,"
+                   "\"post_error_output_preservation\":null}");
+            continue;
+        }
+        FT_Face face = NULL;
+        FT_Error open_error = FT_New_Memory_Face(library, data, data_len, 0, &face);
+        FT_Error set_error = -1;
+        FT_Error get_error = -1;
+        FT_UInt readback = 0;
+        if (!open_error) {
+            set_error = FT_Property_Set(
+                library, pairs[index].module, "hinting-engine", &property_value);
+            get_error = FT_Property_Get(
+                library, pairs[index].module, "hinting-engine", &readback);
+        }
+        printf("\"set_error\":%d,\"get_error\":%d,\"readback_value\":%u,",
+               set_error, get_error, readback);
+
+        /* Environment-string property path; errors are ignored by ftinit.c. */
+        char env_token[512];
+        snprintf(env_token, sizeof(env_token), "%s:hinting-engine=%s",
+                 pairs[index].module, string_value);
+        setenv("FREETYPE_PROPERTIES", env_token, 1);
+        FT_Set_Default_Properties(library);
+        FT_UInt string_readback = 0;
+        FT_Error string_get_error = FT_Property_Get(
+            library, pairs[index].module, "hinting-engine", &string_readback);
+        unsetenv("FREETYPE_PROPERTIES");
+        printf("\"string_value_behavior\":{\"string\":\"%s\","
+               "\"readback_after_string\":%u,\"error_ignored\":true},"
+               "\"string_get_error\":%d,",
+               string_value, string_readback, string_get_error);
+
+        FT_Error first_load = -1;
+        FT_Error second_load = -1;
+        int preserved = 0;
+        FT_Glyph_Metrics first_metrics;
+        FT_Bitmap first_bitmap;
+        unsigned char* first_buffer = NULL;
+        long first_buffer_len = 0;
+        printf("\"glyph\":");
+        if (!open_error) {
+            first_load = FT_Load_Glyph(face, glyph_index, load_flags);
+            if (first_load == FT_Err_Ok) {
+                first_metrics = face->glyph->metrics;
+                first_bitmap = face->glyph->bitmap;
+                first_buffer_len =
+                    first_bitmap.buffer && first_bitmap.rows > 0
+                        ? labs(first_bitmap.pitch) * first_bitmap.rows
+                        : 0;
+                if (first_buffer_len > 0 && first_bitmap.buffer) {
+                    first_buffer = malloc((size_t)first_buffer_len);
+                    if (first_buffer) {
+                        memcpy(first_buffer, first_bitmap.buffer,
+                               (size_t)first_buffer_len);
+                    } else {
+                        first_buffer_len = 0;
+                    }
+                }
+                printf("{");
+                print_slot_body(face->glyph, glyph_index);
+                printf("}");
+            } else {
+                printf("{\"load_error\":%d}", first_load);
+            }
+            printf(",\"post_error_output_preservation\":");
+            FT_UInt invalid_value = 2;
+            (void)FT_Property_Set(
+                library, pairs[index].module, "hinting-engine", &invalid_value);
+            second_load = FT_Load_Glyph(face, glyph_index, load_flags);
+            preserved = first_load == second_load &&
+                        (first_load != FT_Err_Ok ||
+                         slot_outputs_equal_captured(
+                             first_metrics, first_bitmap, first_buffer,
+                             first_buffer_len, face->glyph));
+            printf("%s", preserved ? "true" : "false");
+        } else {
+            printf("null,\"post_error_output_preservation\":null");
+        }
+        printf("}");
+        free(first_buffer);
+        if (face) {
+            FT_Done_Face(face);
+        }
+        FT_Done_FreeType(library);
+        free(data);
+    }
+    printf("]}}\n");
+    return 0;
+}
+
 typedef struct MemoryFaceRow_ {
     FT_Long face_index;
     int has_file_size;
@@ -36655,6 +36828,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 6 && streq(argv[1], "--sbix-params-case")) {
         return emit_sbix_params_case(argc, argv);
+    }
+    if (argc == 12 && streq(argv[1], "--ps-hinting-engine-case")) {
+        return emit_ps_hinting_engine_case(argc, argv);
     }
     if (argc == 9 && streq(argv[1], "--get-sfnt-vhea-mvar-sequence")) {
         return emit_face_or_slot(argc, argv);

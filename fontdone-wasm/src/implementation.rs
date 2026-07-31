@@ -1751,6 +1751,172 @@ fn make_wasm_face_state(face: rust_ffi::FT_Face) -> Box<WasmFaceState> {
     })
 }
 
+#[repr(C)]
+#[derive(Default)]
+pub struct FontdoneWasmPsHintingResult {
+    pub set_error: FT_Error,
+    pub get_error: FT_Error,
+    pub readback: FT_UInt,
+    pub string_get_error: FT_Error,
+    pub string_readback: FT_UInt,
+    pub load_error: FT_Error,
+    pub invalid_set_error: FT_Error,
+    pub post_error_preserved: FT_Bool,
+}
+
+fn wasm_ps_module_name(selector: i32) -> Option<&'static str> {
+    match selector {
+        5 => Some("cff"),
+        6 => Some("type1"),
+        7 => Some("t1cid"),
+        _ => None,
+    }
+}
+
+fn wasm_slot_outputs_equal(
+    first: &rust_ffi::FT_GlyphSlot,
+    second: &rust_ffi::FT_GlyphSlot,
+) -> bool {
+    if first.format != second.format
+        || first.metrics != second.metrics
+        || first.advance != second.advance
+        || first.bitmap_left != second.bitmap_left
+        || first.bitmap_top != second.bitmap_top
+    {
+        return false;
+    }
+    match (first.bitmap.as_ref(), second.bitmap.as_ref()) {
+        (Some(first_bitmap), Some(second_bitmap)) => first_bitmap == second_bitmap,
+        (None, None) => true,
+        _ => false,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn fontdone_wasm_ps_hinting_engine_open(
+    module_selector: i32,
+    file_base: *const c_uchar,
+    file_size: usize,
+    glyph_index: FT_UInt,
+    load_flags: FT_Int32,
+    value: FT_UInt,
+    string_value: *const std::ffi::c_char,
+    out: *mut FontdoneWasmPsHintingResult,
+) -> FontdoneWasmStatus {
+    let Some(module_name) = wasm_ps_module_name(module_selector) else {
+        return FontdoneWasmStatus {
+            error: rust_ffi::FT_Err_Invalid_Argument,
+            handle: 0,
+        };
+    };
+    if file_base.is_null() {
+        return FontdoneWasmStatus {
+            error: rust_ffi::FT_Err_Invalid_Argument,
+            handle: 0,
+        };
+    }
+    let Some(out) = (unsafe { out.as_mut() }) else {
+        return FontdoneWasmStatus {
+            error: rust_ffi::FT_Err_Invalid_Argument,
+            handle: 0,
+        };
+    };
+    *out = FontdoneWasmPsHintingResult::default();
+    // SAFETY: the caller promises `file_size` readable bytes at `file_base`.
+    let data = unsafe { slice::from_raw_parts(file_base, file_size) };
+    let string = if string_value.is_null() {
+        None
+    } else {
+        // SAFETY: the caller passes a NUL-terminated ASCII property string.
+        Some(
+            unsafe { CStr::from_ptr(string_value.cast()) }
+                .to_string_lossy()
+                .into_owned(),
+        )
+    };
+    let mut library = rust_ffi::FT_Init_FreeType();
+    out.set_error = rust_ffi::FT_Property_Set(
+        Some(&mut library),
+        Some(module_name),
+        Some("hinting-engine"),
+        Some(value),
+    );
+    let mut readback = 0;
+    out.get_error = rust_ffi::FT_Property_Get(
+        Some(&library),
+        Some(module_name),
+        Some("hinting-engine"),
+        Some(&mut readback),
+    );
+    out.readback = readback;
+    if let Some(string) = string {
+        rust_ffi::FT_Set_Default_Properties_From_Env(
+            Some(&mut library),
+            Some(&format!("{module_name}:hinting-engine={string}")),
+        );
+        let mut string_readback = 0;
+        out.string_get_error = rust_ffi::FT_Property_Get(
+            Some(&library),
+            Some(module_name),
+            Some("hinting-engine"),
+            Some(&mut string_readback),
+        );
+        out.string_readback = string_readback;
+    }
+    let opened = rust_ffi::FT_New_Memory_Face(&library, data, 0, 20.0);
+    let face = match opened {
+        Ok(face) => face,
+        Err(error) => {
+            out.load_error = error;
+            return FontdoneWasmStatus {
+                error: rust_ffi::FT_Err_Ok,
+                handle: 0,
+            };
+        }
+    };
+    let first_load = rust_ffi::FT_Load_Glyph(&face, glyph_index, load_flags);
+    out.load_error = first_load
+        .as_ref()
+        .map_or_else(|error| *error, |_| rust_ffi::FT_Err_Ok);
+    let first_slot = first_load.ok();
+    out.invalid_set_error = rust_ffi::FT_Property_Set(
+        Some(&mut library),
+        Some(module_name),
+        Some("hinting-engine"),
+        Some(2),
+    );
+    let second_load = rust_ffi::FT_Load_Glyph(&face, glyph_index, load_flags);
+    out.post_error_preserved = if let Some(first_slot) = first_slot {
+        if second_load
+            .as_ref()
+            .is_ok_and(|slot| wasm_slot_outputs_equal(&first_slot, slot))
+        {
+            1
+        } else {
+            0
+        }
+    } else {
+        if second_load.is_err() { 1 } else { 0 }
+    };
+    // Re-load so the registered face exposes the final slot for the lane.
+    let final_load = rust_ffi::FT_Load_Glyph(&face, glyph_index, load_flags);
+    if out.load_error == rust_ffi::FT_Err_Ok {
+        out.load_error = final_load
+            .as_ref()
+            .map_or_else(|error| *error, |_| rust_ffi::FT_Err_Ok);
+    }
+    let final_slot = final_load.ok();
+    let mut state = make_wasm_face_state(face);
+    state.slot = final_slot;
+    let active_size = state.active_size;
+    let handle = Box::into_raw(state).addr();
+    register_wasm_size_handle(handle, active_size);
+    FontdoneWasmStatus {
+        error: rust_ffi::FT_Err_Ok,
+        handle,
+    }
+}
+
 fn update_wasm_active_size_metrics(face: &mut WasmFaceState) {
     if face.active_size != 0 {
         face.size_metrics
@@ -5042,6 +5208,9 @@ fn wasm_property_module(selector: i32) -> Option<&'static str> {
         2 => Some("sfnt"),
         3 => Some("fixture_missing"),
         4 => Some("autofitter"),
+        5 => Some("cff"),
+        6 => Some("type1"),
+        7 => Some("t1cid"),
         _ => Some("fixture_missing"),
     }
 }
@@ -5053,6 +5222,7 @@ fn wasm_property_name(selector: i32) -> Option<&'static str> {
         2 => Some("fixture-missing-property"),
         3 => Some("default-script"),
         4 => Some("fallback-script"),
+        5 => Some("hinting-engine"),
         _ => Some("fixture-missing-property"),
     }
 }

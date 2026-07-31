@@ -1293,6 +1293,9 @@ pub struct FT_Library {
     closed_face_count: usize,
     current_outline_renderer: &'static str,
     truetype_interpreter_version: FT_UInt,
+    cff_hinting_engine: FT_UInt,
+    type1_hinting_engine: FT_UInt,
+    t1cid_hinting_engine: FT_UInt,
     autofitter_default_script: FT_UInt,
     autofitter_fallback_script: FT_UInt,
     debug_hooks: [FT_DebugHook_Func; 4],
@@ -2020,6 +2023,11 @@ pub fn FT_Init_FreeType() -> FT_Library {
         closed_face_count: 0,
         current_outline_renderer: "smooth",
         truetype_interpreter_version: TT_INTERPRETER_VERSION_40 as FT_UInt,
+        // `src/cff/cffobjs.c`, `src/type1/t1objs.c`, and `src/cid/cidobjs.c`
+        // initialize each PS driver to the Adobe hinting engine.
+        cff_hinting_engine: 1,
+        type1_hinting_engine: 1,
+        t1cid_hinting_engine: 1,
         // FreeType 2.14.3 `src/autofit/afmodule.c:af_autofitter_init`
         // initializes these to internal AF_SCRIPT_DEFAULT and
         // AF_STYLE_FALLBACK values.  In the pinned build those public
@@ -10660,6 +10668,11 @@ fn property_lookup_error<'a>(
                 return Err(FT_Err_Missing_Property as FT_Error);
             }
         }
+        "cff" | "type1" | "t1cid" => {
+            if property_name != "hinting-engine" {
+                return Err(FT_Err_Missing_Property as FT_Error);
+            }
+        }
         "autofitter" => {
             if !matches!(property_name, "default-script" | "fallback-script") {
                 return Err(FT_Err_Missing_Property as FT_Error);
@@ -10788,6 +10801,9 @@ pub fn FT_Property_Get(
                 (Some("truetype"), Some("interpreter-version")) => {
                     library.truetype_interpreter_version
                 }
+                (Some("cff"), Some("hinting-engine")) => library.cff_hinting_engine,
+                (Some("type1"), Some("hinting-engine")) => library.type1_hinting_engine,
+                (Some("t1cid"), Some("hinting-engine")) => library.t1cid_hinting_engine,
                 (Some("autofitter"), Some("default-script")) => library.autofitter_default_script,
                 (Some("autofitter"), Some("fallback-script")) => library.autofitter_fallback_script,
                 _ => return FT_Err_Missing_Property as FT_Error,
@@ -10860,6 +10876,23 @@ pub fn FT_Property_Set(
                     }
                     _ => FT_Err_Unimplemented_Feature,
                 },
+                (Some("cff"), Some("hinting-engine"))
+                | (Some("type1"), Some("hinting-engine"))
+                | (Some("t1cid"), Some("hinting-engine")) => {
+                    // `src/base/ftpsprop.c` accepts only the Adobe engine in
+                    // the pinned build; the old FreeType engines are disabled.
+                    if value == 1 {
+                        let target = match module_name {
+                            Some("cff") => &mut library.cff_hinting_engine,
+                            Some("type1") => &mut library.type1_hinting_engine,
+                            _ => &mut library.t1cid_hinting_engine,
+                        };
+                        *target = 1;
+                        FT_Err_Ok
+                    } else {
+                        FT_Err_Unimplemented_Feature
+                    }
+                }
                 (Some("autofitter"), Some("default-script")) => {
                     // FreeType `af_property_set` assigns default-script
                     // directly without range validation.
@@ -10961,6 +10994,19 @@ pub fn FT_Set_Default_Properties_From_Env(library: Option<&mut FT_Library>, env:
         let Some((property_name, property_value)) = property_tail.split_once('=') else {
             break;
         };
+        if property_name == "hinting-engine" && matches!(property_value, "adobe" | "freetype") {
+            if property_value == "adobe" {
+                let _ = FT_Property_Set(
+                    library.as_deref_mut(),
+                    Some(module_name),
+                    Some(property_name),
+                    Some(1),
+                );
+            }
+            // `freetype` is rejected in the pinned build; environment
+            // property errors are intentionally ignored by `ftinit.c`.
+            continue;
+        }
         if property_name.is_empty()
             || property_name.len() > 128
             || property_value.is_empty()

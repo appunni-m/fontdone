@@ -27758,6 +27758,9 @@ fn property_module_selector(selector: i32) -> Option<&'static str> {
         2 => Some("sfnt"),
         3 => Some("fixture_missing"),
         4 => Some("autofitter"),
+        5 => Some("cff"),
+        6 => Some("type1"),
+        7 => Some("t1cid"),
         _ => Some("fixture_missing"),
     }
 }
@@ -27769,6 +27772,7 @@ fn property_name_selector(selector: i32) -> Option<&'static str> {
         2 => Some("fixture-missing-property"),
         3 => Some("default-script"),
         4 => Some("fallback-script"),
+        5 => Some("hinting-engine"),
         _ => Some("fixture-missing-property"),
     }
 }
@@ -27857,6 +27861,9 @@ fn property_module_cstr(selector: i32) -> *const std::ffi::c_char {
         2 => c"sfnt".as_ptr(),
         3 => c"fixture_missing".as_ptr(),
         4 => c"autofitter".as_ptr(),
+        5 => c"cff".as_ptr(),
+        6 => c"type1".as_ptr(),
+        7 => c"t1cid".as_ptr(),
         _ => c"fixture_missing".as_ptr(),
     }
 }
@@ -27868,6 +27875,7 @@ fn property_name_cstr(selector: i32) -> *const std::ffi::c_char {
         2 => c"fixture-missing-property".as_ptr(),
         3 => c"default-script".as_ptr(),
         4 => c"fallback-script".as_ptr(),
+        5 => c"hinting-engine".as_ptr(),
         _ => c"fixture-missing-property".as_ptr(),
     }
 }
@@ -40075,6 +40083,17 @@ fn error_status_success_slot_route_supported(case: &InputCase) -> bool {
 
 fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
     let params = &case.inputs.params;
+    if ps_hinting_engine_runtime_supported(case) {
+        let mut args = vec!["--ps-hinting-engine-case".to_string()];
+        for (_, asset) in ps_hinting_engine_assets() {
+            push_required_asset_source(case, asset, &mut args)?;
+        }
+        args.push(ps_hinting_engine_glyph(case)?.to_string());
+        args.push(ps_hinting_engine_load_flags(case)?.to_string());
+        args.push(ps_hinting_engine_value(case)?.to_string());
+        args.push(ps_hinting_engine_string(case)?);
+        return Ok(args);
+    }
     if property_service_route_pending(case.operation.as_str())
         && !property_scalar_route_supported(case)
     {
@@ -44554,6 +44573,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftmodapi.property_get" | "ftdriver.interpreter_version_default" | "FT_Property_Get" => {
             property_get_case_output(case, PropertyBackend::Rust)
         }
+        "ftdriver.hinting_engine_property" if ps_hinting_engine_runtime_supported(case) => {
+            rust_ps_hinting_engine_case(case)
+        }
         "ftdriver.glyph_to_script_map" => rust_property_glyph_to_script_runtime_output(case),
         "ftdriver.glyph_to_script_map_effect" => rust_property_glyph_map_effect(case),
         "ftdriver.increase_x_height_effect" => rust_property_increase_x_height_effect(case),
@@ -45959,6 +45981,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftmodapi.property_get" | "ftdriver.interpreter_version_default" | "FT_Property_Get" => {
             property_get_case_output(case, PropertyBackend::CAbi)
         }
+        "ftdriver.hinting_engine_property" if ps_hinting_engine_runtime_supported(case) => {
+            c_ps_hinting_engine_case(case)
+        }
         "ftdriver.glyph_to_script_map" => c_property_glyph_to_script_runtime_output(case),
         "ftdriver.glyph_to_script_map_effect" => c_property_glyph_map_effect(case),
         "ftdriver.increase_x_height_effect" => c_property_increase_x_height_effect(case),
@@ -47220,6 +47245,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftmodapi.property_get" | "ftdriver.interpreter_version_default" | "FT_Property_Get" => {
             property_get_case_output(case, PropertyBackend::Wasm)
+        }
+        "ftdriver.hinting_engine_property" if ps_hinting_engine_runtime_supported(case) => {
+            wasm_ps_hinting_engine_case(case)
         }
         "ftdriver.glyph_to_script_map" => wasm_property_glyph_to_script_runtime_output(case),
         "ftdriver.glyph_to_script_map_effect" => wasm_property_glyph_map_effect(case),
@@ -67695,6 +67723,348 @@ fn wasm_sbix_params_case(case: &InputCase) -> Result<RunOutput, String> {
         wasm_done_face(handle);
     }
     Ok(ok(json!({"variants": rows})))
+}
+
+fn ps_hinting_engine_runtime_supported(case: &InputCase) -> bool {
+    matches!(
+        case.case_id.as_str(),
+        "ftdriver.FT_CFF_HINTING_ADOBE.hinting_engine_property_runtime"
+            | "ftdriver.FT_CFF_HINTING_FREETYPE.hinting_engine_property_runtime"
+            | "ftdriver.FT_HINTING_ADOBE.hinting_engine_property_runtime"
+            | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime"
+    ) && assets_are_runtime_resolved(case)
+}
+
+fn ps_hinting_engine_assets() -> [(&'static str, &'static str); 3] {
+    [
+        ("cff", "cff_font"),
+        ("type1", "type1_font"),
+        ("t1cid", "cid_font"),
+    ]
+}
+
+fn ps_hinting_engine_value(case: &InputCase) -> Result<FT_UInt, String> {
+    case.inputs
+        .params
+        .get("value")
+        .and_then(Value::as_u64)
+        .and_then(|value| FT_UInt::try_from(value).ok())
+        .ok_or_else(|| "missing ps hinting-engine value".to_string())
+}
+
+fn ps_hinting_engine_string(case: &InputCase) -> Result<String, String> {
+    case.inputs
+        .params
+        .get("string_value")
+        .and_then(Value::as_str)
+        .map(str::to_owned)
+        .ok_or_else(|| "missing ps hinting-engine string value".to_string())
+}
+
+fn ps_hinting_engine_glyph(case: &InputCase) -> Result<FT_UInt, String> {
+    case.inputs
+        .params
+        .get("glyph_index")
+        .and_then(Value::as_u64)
+        .and_then(|value| FT_UInt::try_from(value).ok())
+        .ok_or_else(|| "missing ps hinting-engine glyph index".to_string())
+}
+
+fn ps_hinting_engine_load_flags(case: &InputCase) -> Result<i32, String> {
+    load_flags_param(&case.inputs.params)
+}
+
+fn ps_hinting_module_row(
+    module_name: &str,
+    set_error: FT_Error,
+    get_error: FT_Error,
+    readback: FT_UInt,
+    string_get_error: FT_Error,
+    string_readback: FT_UInt,
+    string: &str,
+    glyph: Value,
+    preserved: bool,
+) -> Value {
+    json!({
+        "module_name": module_name,
+        "set_error": set_error,
+        "get_error": get_error,
+        "readback_value": readback,
+        "string_value_behavior": {
+            "string": string,
+            "readback_after_string": string_readback,
+            "error_ignored": true
+        },
+        "string_get_error": string_get_error,
+        "glyph": glyph,
+        "post_error_output_preservation": preserved
+    })
+}
+
+fn c_bitmaps_equal(
+    first: Option<&c_abi::AbiBitmapSnapshot>,
+    second: Option<&c_abi::AbiBitmapSnapshot>,
+) -> bool {
+    match (first, second) {
+        (None, None) => true,
+        (Some(first), Some(second)) => {
+            first.width == second.width
+                && first.rows == second.rows
+                && first.pitch == second.pitch
+                && first.pixel_mode == second.pixel_mode
+                && first.num_grays == second.num_grays
+                && first.left == second.left
+                && first.top == second.top
+                && first.buffer == second.buffer
+        }
+        _ => false,
+    }
+}
+
+fn rust_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
+    let value = ps_hinting_engine_value(case)?;
+    let string = ps_hinting_engine_string(case)?;
+    let glyph_index = ps_hinting_engine_glyph(case)?;
+    let load_flags = ps_hinting_engine_load_flags(case)?;
+    let mut modules = Vec::new();
+    for (module, asset) in ps_hinting_engine_assets() {
+        let bytes = required_asset_bytes(case, asset)?;
+        let mut library = FT_Init_FreeType();
+        let set_error = FT_Property_Set(
+            Some(&mut library),
+            Some(module),
+            Some("hinting-engine"),
+            Some(value),
+        );
+        let mut readback = 0;
+        let get_error = FT_Property_Get(
+            Some(&library),
+            Some(module),
+            Some("hinting-engine"),
+            Some(&mut readback),
+        );
+        FT_Set_Default_Properties_From_Env(
+            Some(&mut library),
+            Some(&format!("{module}:hinting-engine={string}")),
+        );
+        let mut string_readback = 0;
+        let string_get_error = FT_Property_Get(
+            Some(&library),
+            Some(module),
+            Some("hinting-engine"),
+            Some(&mut string_readback),
+        );
+        let face = FT_New_Memory_Face(&library, bytes.as_ref(), 0, 20.0)
+            .map_err(|err| format!("open {module} face: {err}"))?;
+        let first = FT_Load_Glyph(&face, glyph_index, load_flags);
+        let first_slot = first.as_ref().ok().cloned();
+        let first_json = match first {
+            Ok(slot) => slot_json(&slot),
+            Err(err) => json!({"load_error": err}),
+        };
+        let _ = FT_Property_Set(
+            Some(&mut library),
+            Some(module),
+            Some("hinting-engine"),
+            Some(2),
+        );
+        let second = FT_Load_Glyph(&face, glyph_index, load_flags);
+        let preserved = match (first_slot, second) {
+            (Some(first_slot), Ok(second_slot)) => {
+                first_slot.format == second_slot.format
+                    && first_slot.metrics == second_slot.metrics
+                    && first_slot.advance == second_slot.advance
+                    && first_slot.bitmap == second_slot.bitmap
+                    && first_slot.bitmap_left == second_slot.bitmap_left
+                    && first_slot.bitmap_top == second_slot.bitmap_top
+            }
+            (None, Err(_)) => true,
+            _ => false,
+        };
+        modules.push(ps_hinting_module_row(
+            module,
+            set_error,
+            get_error,
+            readback,
+            string_get_error,
+            string_readback,
+            &string,
+            first_json,
+            preserved,
+        ));
+    }
+    Ok(ok(json!({"modules": modules})))
+}
+
+fn c_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
+    let value = ps_hinting_engine_value(case)?;
+    let string = ps_hinting_engine_string(case)?;
+    let glyph_index = ps_hinting_engine_glyph(case)?;
+    let load_flags = ps_hinting_engine_load_flags(case)?;
+    let mut modules = Vec::new();
+    for (module, asset) in ps_hinting_engine_assets() {
+        let bytes = required_asset_bytes(case, asset)?;
+        let mut library = std::ptr::null_mut();
+        let init_error = c_abi::FT_Init_FreeType(&mut library);
+        if init_error != FT_Err_Ok {
+            return Ok(error(init_error));
+        }
+        let module_cstr = property_module_cstr(ps_hinting_module_selector(module));
+        let property_cstr = property_name_cstr(5);
+        let value_storage = value;
+        let set_error = c_abi::FT_Property_Set(
+            library,
+            module_cstr,
+            property_cstr,
+            (&value_storage as *const FT_UInt).cast(),
+        );
+        let mut readback = PROPERTY_SENTINEL;
+        let get_error = c_abi::FT_Property_Get(
+            library,
+            module_cstr,
+            property_cstr,
+            (&mut readback as *mut FT_UInt).cast(),
+        );
+        // SAFETY: the parity harness is single-threaded for this case and
+        // restores the variable immediately after the synchronous call.
+        unsafe {
+            std::env::set_var(
+                "FREETYPE_PROPERTIES",
+                format!("{module}:hinting-engine={string}"),
+            );
+        }
+        c_abi::FT_Set_Default_Properties(library);
+        // SAFETY: same single-threaded harness guarantee as above.
+        unsafe {
+            std::env::remove_var("FREETYPE_PROPERTIES");
+        }
+        let mut string_readback = PROPERTY_SENTINEL;
+        let string_get_error = c_abi::FT_Property_Get(
+            library,
+            module_cstr,
+            property_cstr,
+            (&mut string_readback as *mut FT_UInt).cast(),
+        );
+        let file_size = i64::try_from(bytes.len()).map_err(|err| err.to_string())?;
+        let mut face = std::ptr::null_mut();
+        let open_error =
+            c_abi::FT_New_Memory_Face(library, bytes.as_ptr(), file_size, 0, &mut face);
+        if open_error != FT_Err_Ok {
+            modules.push(ps_hinting_module_row(
+                module,
+                set_error,
+                get_error,
+                readback,
+                string_get_error,
+                string_readback,
+                &string,
+                json!({"load_error": open_error}),
+                false,
+            ));
+            c_done_library(library);
+            continue;
+        }
+        let first = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
+        let first_json = if first == FT_Err_Ok {
+            c_slot_json(face)?
+        } else {
+            json!({"load_error": first})
+        };
+        let first_snapshot =
+            c_abi::abi_slot_snapshot(face).ok_or_else(|| "missing c slot snapshot".to_string())?;
+        let invalid_storage: FT_UInt = 2;
+        let _ = c_abi::FT_Property_Set(
+            library,
+            module_cstr,
+            property_cstr,
+            (&invalid_storage as *const FT_UInt).cast(),
+        );
+        let second = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
+        let preserved = if first == FT_Err_Ok && second == FT_Err_Ok {
+            let second_snapshot = c_abi::abi_slot_snapshot(face)
+                .ok_or_else(|| "missing c second slot snapshot".to_string())?;
+            first_snapshot.format == second_snapshot.format
+                && first_snapshot.metrics.width == second_snapshot.metrics.width
+                && first_snapshot.metrics.height == second_snapshot.metrics.height
+                && first_snapshot.metrics.horiBearingX == second_snapshot.metrics.horiBearingX
+                && first_snapshot.metrics.horiBearingY == second_snapshot.metrics.horiBearingY
+                && first_snapshot.metrics.horiAdvance == second_snapshot.metrics.horiAdvance
+                && first_snapshot.metrics.vertBearingX == second_snapshot.metrics.vertBearingX
+                && first_snapshot.metrics.vertBearingY == second_snapshot.metrics.vertBearingY
+                && first_snapshot.metrics.vertAdvance == second_snapshot.metrics.vertAdvance
+                && first_snapshot.advance.x == second_snapshot.advance.x
+                && first_snapshot.advance.y == second_snapshot.advance.y
+                && c_bitmaps_equal(
+                    first_snapshot.bitmap.as_ref(),
+                    second_snapshot.bitmap.as_ref(),
+                )
+        } else {
+            first != FT_Err_Ok && second != FT_Err_Ok
+        };
+        modules.push(ps_hinting_module_row(
+            module,
+            set_error,
+            get_error,
+            readback,
+            string_get_error,
+            string_readback,
+            &string,
+            first_json,
+            preserved,
+        ));
+        c_done_face(face);
+        c_done_library(library);
+    }
+    Ok(ok(json!({"modules": modules})))
+}
+
+fn ps_hinting_module_selector(module: &str) -> i32 {
+    match module {
+        "cff" => 5,
+        "type1" => 6,
+        _ => 7,
+    }
+}
+
+fn wasm_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
+    let value = ps_hinting_engine_value(case)?;
+    let string = ps_hinting_engine_string(case)?;
+    let glyph_index = ps_hinting_engine_glyph(case)?;
+    let load_flags = ps_hinting_engine_load_flags(case)?;
+    let mut modules = Vec::new();
+    for (module, asset) in ps_hinting_engine_assets() {
+        let bytes = required_asset_bytes(case, asset)?;
+        let mut result = wasm_abi::FontdoneWasmPsHintingResult::default();
+        let string_c = std::ffi::CString::new(string.as_str()).map_err(|err| err.to_string())?;
+        let status = wasm_abi::fontdone_wasm_ps_hinting_engine_open(
+            ps_hinting_module_selector(module),
+            bytes.as_ptr(),
+            bytes.len(),
+            glyph_index,
+            load_flags,
+            value,
+            string_c.as_ptr(),
+            &mut result,
+        );
+        let glyph = if status.handle != 0 && result.load_error == FT_Err_Ok {
+            wasm_slot_json(status.handle)?
+        } else {
+            json!({"load_error": result.load_error})
+        };
+        modules.push(ps_hinting_module_row(
+            module,
+            result.set_error,
+            result.get_error,
+            result.readback,
+            result.string_get_error,
+            result.string_readback,
+            &string,
+            glyph,
+            result.post_error_preserved != 0,
+        ));
+        wasm_done_face(status.handle);
+    }
+    Ok(ok(json!({"modules": modules})))
 }
 
 fn rust_new_memory_face_variants(case: &InputCase) -> Result<RunOutput, String> {

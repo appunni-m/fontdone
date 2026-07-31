@@ -517,6 +517,45 @@
       "supported_host_contract": false
     },
     {
+      "name": "fontdone_wasm_ps_hinting_engine_open",
+      "parameters": [
+        {
+          "name": "module_selector",
+          "type": "i32"
+        },
+        {
+          "name": "file_base",
+          "type": "*const c_uchar"
+        },
+        {
+          "name": "file_size",
+          "type": "usize"
+        },
+        {
+          "name": "glyph_index",
+          "type": "FT_UInt"
+        },
+        {
+          "name": "load_flags",
+          "type": "FT_Int32"
+        },
+        {
+          "name": "value",
+          "type": "FT_UInt"
+        },
+        {
+          "name": "string_value",
+          "type": "*const std::ffi::c_char"
+        },
+        {
+          "name": "out",
+          "type": "*mut FontdoneWasmPsHintingResult"
+        }
+      ],
+      "return": "FontdoneWasmStatus",
+      "supported_host_contract": false
+    },
+    {
       "name": "fontdone_wasm_malloc",
       "parameters": [
         {
@@ -727,6 +766,10 @@
         },
         {
           "name": "ignore_typographic_subfamily",
+          "type": "FT_Bool"
+        },
+        {
+          "name": "ignore_sbix",
           "type": "FT_Bool"
         }
       ],
@@ -5915,6 +5958,86 @@
           "offset": 28,
           "width": 4,
           "alignment": 4,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        }
+      ]
+    },
+    {
+      "name": "FontdoneWasmPsHintingResult",
+      "representation": "C",
+      "size": 32,
+      "alignment": 4,
+      "fields": [
+        {
+          "name": "set_error",
+          "type": "FT_Error",
+          "offset": 0,
+          "width": 4,
+          "alignment": 4,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "get_error",
+          "type": "FT_Error",
+          "offset": 4,
+          "width": 4,
+          "alignment": 4,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "readback",
+          "type": "FT_UInt",
+          "offset": 8,
+          "width": 4,
+          "alignment": 4,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "string_get_error",
+          "type": "FT_Error",
+          "offset": 12,
+          "width": 4,
+          "alignment": 4,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "string_readback",
+          "type": "FT_UInt",
+          "offset": 16,
+          "width": 4,
+          "alignment": 4,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "load_error",
+          "type": "FT_Error",
+          "offset": 20,
+          "width": 4,
+          "alignment": 4,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "invalid_set_error",
+          "type": "FT_Error",
+          "offset": 24,
+          "width": 4,
+          "alignment": 4,
+          "pointer_interpretation": null,
+          "ownership": "value"
+        },
+        {
+          "name": "post_error_preserved",
+          "type": "FT_Bool",
+          "offset": 28,
+          "width": 1,
+          "alignment": 1,
           "pointer_interpretation": null,
           "ownership": "value"
         }
