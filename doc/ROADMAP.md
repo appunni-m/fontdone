@@ -400,11 +400,14 @@ per-batch coverage increase is claimed:
 | 30 | Working tree (SVG glyph-copy zero-length source) | Added an input-only real SVG glyph case for `FT_Glyph_Copy` with a zero public document length, routed the pinned `FT_Err_Invalid_Slot_Handle` and partial-target cleanup through Rust FFI, C ABI, and WASM, and fixed WASM target clearing on class-copy errors. Focused run `9086a87e-aee1-4ef8-a479-276a357623c9` passed 1 / 1; full parity run `4cec1eda-461a-4e04-9009-f7109556e845` passed 7,475 / 7,475 runnable comparisons with 3 explicitly pending safety-extension cases. |
 | 31 | Working tree (SBIT transparent BGRA flattening) | Added the input-only `sbit-bgra-format1-grayscale-sbits-only` variant to exercise the transparent-pixel branch of the existing BGRA-to-grayscale load path. Focused parity passed 1 / 1; full parity run `09cd72c3-5638-4b1d-af11-ce3ac712e199` passed 7,476 / 7,476 runnable comparisons with 3 explicitly pending safety-extension cases, and the all-lane coverage snapshot moved to 49,341 / 54,104 lines, 9,688 / 12,512 branches, and 67,921 / 75,273 regions. |
 | 32 | `53995d32008605b8abe6a15db477c86881c929c9` | Fixed the dedicated null-face `FT_Load_Sfnt_Table` oracle dispatch and malformed JSON emission. The strict error ledger is now 647 / 647 exact; full parity remains 7,476 / 7,476 runnable cases with 3 safety-extension cases pending. |
+| 33 | `082e577a6147065d886ea45a316e244f75045ce3` | Split coverage execution into separate Rust FFI, C ABI, and host-WASM processes with process-local LLVM profiles, retaining the exact unified parity matrix. Validation run `b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 in every lane and measured 61.827 seconds versus the prior warm 113.998-second combined-lane run. |
+| 34 | `776e7d9eb325f09402c5e3f84955de03c5d242ac` | Corrected the split coverage report to name all three workspace packages explicitly, because `cargo llvm-cov report` does not accept `--workspace`; the C-ABI and WASM implementation source therefore remains in the measured denominator. |
+| 35 | `1a08537f6188cfc4631cee7204fc27663104ae62` | Regenerated the maintained leading/single-reference gvar fixture with the avar-mapped tuple peak (`5325` F2DOT14), activating the intended IUP interpolation path. Focused parity passed 33 / 33; full parity run `640b6f77-2758-423a-b6ca-deb42c86a2b9` passed 7,476 / 7,476, and coverage increased by 22 lines, 6 branches, and 32 regions. |
 
 The latest source-bound parity verification is Coverage MCP parity run
-`637ad827-5c8b-41ce-8008-797aee2d6a21`, recorded by run
-`7faa8303-f766-45ec-9307-c936fafd5308` against the worktree at commit
-`53995d32008605b8abe6a15db477c86881c929c9`: it passed 7,476 / 7,476 runnable
+`640b6f77-2758-423a-b6ca-deb42c86a2b9`, recorded by run
+`edd2fea1-64a3-4251-af1f-2775f1e3d0d3` against the clean worktree at commit
+`1a08537f6188cfc4631cee7204fc27663104ae62`: it passed 7,476 / 7,476 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The committed source-digest attestation is
@@ -414,13 +417,14 @@ complete**, with 5,219 / 5,219 runtime contract rows and 647 / 647 strict error
 routes exact; only the Windows import-library item and four fresh target-lane
 bundles remain in that scorecard.
 
-The source-bound warm all-lane baseline completed in 1 minute 53.998 seconds.
-Its runtime backend timings were about 39.52 seconds Rust FFI, 29.74 seconds C
-ABI, 30.00 seconds WASM, and 0.03 seconds comparison. A cold current-commit
-run took 2 minutes 20.153 seconds, including a 24.70-second instrumented
-rebuild. The separately measured removal of the duplicate ABI preflight from
-the default coverage path reduced the earlier 3:48.279 sample by 42.627
-seconds (18.7%). `make test-coverage-all` now defaults to
+The previous combined-lane warm all-lane baseline completed in 1 minute
+53.998 seconds. The split validation completed in 61.827 seconds, a 45.8%
+reduction, with all three backend lanes still passing the exact matrix. The
+latest source-bound full-scope run took 88.585 seconds on commit
+`1a08537f6188cfc4631cee7204fc27663104ae62`.
+Its latest instrumentation timers were about 48.37 seconds Rust FFI, 37.06
+seconds C ABI, 37.02 seconds WASM, and 0.02 seconds comparison. `make
+test-coverage-all` now defaults to
 `COVERAGE_UNIFIED_LANE_SPLIT=1`: it builds one instrumented parity binary and
 runs the Rust FFI, C ABI, and host-WASM lanes in separate processes, each with
 its own raw profile, then merges them with `cargo llvm-cov report`. LLVM
@@ -439,14 +443,13 @@ the ABI-only package preflight remains available separately as
 `make coverage-abi-preflight` and is already exercised by `make test-fast`.
 Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
-repeated. The current run measured 49,341 / 54,104 lines, 9,688 / 12,512
-branches, 3,371 / 3,828 functions, and 67,921 / 75,273 regions. It passed
+repeated. The current run measured 49,363 / 54,104 lines, 9,694 / 12,512
+branches, 3,371 / 3,828 functions, and 67,953 / 75,273 regions. It passed
 7,476 / 7,476 runnable parity comparisons with 0 failures. Its Coverage MCP run
-is `1a9ca419-0e1f-41a4-8c9f-eba21a2e385b`, with snapshot
-`a8ef34a9-b6f4-47ad-ad76-039d7ee9bce6`. The lane-split validation run
-`20c7831b-280d-4eab-8147-33eb9e3a4876` passed 7,476 / 7,476 in each backend
-process and completed in 62.027 seconds, a 45.6% reduction from the old warm
-wall time; its longest test process took 56.42 seconds. Each measurement clears
+is `1d9dd685-fc1e-4f8e-9cc6-2085f2899cf1`, with snapshot
+`7a698025-d61d-49bc-8a6b-cd9c8331693d`. The lane-split validation run
+`b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 in each backend
+process and completed in 61.827 seconds. Each measurement clears
 stale `.profraw` files first; use `make coverage-clean` after changing the
 coverage toolchain or instrumentation configuration.
 

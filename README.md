@@ -124,10 +124,10 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP parity run
-`637ad827-5c8b-41ce-8008-797aee2d6a21`, recorded by run
-`7faa8303-f766-45ec-9307-c936fafd5308` against the worktree at commit
-`53995d32008605b8abe6a15db477c86881c929c9`; its source-bound parity-tree
-digest is `7a5ebc1661978c5edc28367b9b23055c9c633634351eff7a74b1f195714c0eb4`.
+`640b6f77-2758-423a-b6ca-deb42c86a2b9`, recorded by run
+`edd2fea1-64a3-4251-af1f-2775f1e3d0d3` against the clean worktree at commit
+`1a08537f6188cfc4631cee7204fc27663104ae62`; its source-bound parity-tree
+digest is `26b70e2527db4a8145ffab920580e3bf6ad258671453dba5d2ed47cfbc14fc7e`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -140,14 +140,14 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The last all-lane coverage run was recorded on **2026-08-02** against
-`53995d32008605b8abe6a15db477c86881c929c9`:
+`1a08537f6188cfc4631cee7204fc27663104ae62`:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,341 / 54,104 | 91.20% |
-| Branches | 9,688 / 12,512 | 77.43% |
+| Lines | 49,363 / 54,104 | 91.24% |
+| Branches | 9,694 / 12,512 | 77.48% |
 | Functions | 3,371 / 3,828 | 88.06% |
-| Regions | 67,921 / 75,273 | 90.23% |
+| Regions | 67,953 / 75,273 | 90.28% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -171,16 +171,16 @@ already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
 The latest Coverage MCP run is
-`1a9ca419-0e1f-41a4-8c9f-eba21a2e385b`, with snapshot
-`a8ef34a9-b6f4-47ad-ad76-039d7ee9bce6`; the warm run completed in 1 minute
-53.998 seconds, with 7,476 exact parity comparisons. Its runtime backend
-timings were about 39.52 seconds Rust FFI, 29.74 seconds C ABI, 30.00
-seconds WASM, and 0.03 seconds comparison. The lane-split validation run
-`20c7831b-280d-4eab-8147-33eb9e3a4876` passed 7,476 / 7,476 cases in each
-backend process and completed in 62.027 seconds, a 45.6% reduction from the
-previous warm 113.998-second run. Its backend totals were about 50.75 seconds
-Rust FFI, 39.52 seconds C ABI, and 39.41 seconds WASM, executed in parallel;
-the longest test process took 56.42 seconds. The remaining wall-time tail is
+`1d9dd685-fc1e-4f8e-9cc6-2085f2899cf1`, with snapshot
+`7a698025-d61d-49bc-8a6b-cd9c8331693d`; the source-bound run completed in
+88.585 seconds, with 7,476 exact parity comparisons. Its instrumentation
+timers were about 48.37 seconds Rust FFI, 37.06 seconds C ABI, 37.02 seconds
+WASM, and 0.02 seconds comparison. The lane-split validation run
+`b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 cases in each
+backend process and completed in 61.827 seconds, a 45.8% reduction from the
+previous warm 113.998-second run. The report names all three workspace
+packages explicitly because `cargo llvm-cov report` does not accept the
+workspace flag, keeping C-ABI and WASM source in the denominator. The remaining wall-time tail is
 setup, process/report merging, and Coverage MCP ingestion. Coverage builds
 retain the
 instrumented target with `cargo llvm-cov --no-clean`, remove stale `.profraw`

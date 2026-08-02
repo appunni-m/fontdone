@@ -138,9 +138,13 @@ LLVM source-based coverage counters are process-local, so this removes the
 cross-backend counter contention without changing the input matrix or oracle
 comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the legacy
 single-process diagnostic path. The split path was validated through Coverage
-MCP run `20c7831b-280d-4eab-8147-33eb9e3a4876`: all three processes passed
-7,476 / 7,476 cases, and the end-to-end run took 62.027 seconds versus the
+MCP run `b0847bf1-9bce-4a79-8966-5115c88f43eb`: all three processes passed
+7,476 / 7,476 cases, and the end-to-end run took 61.827 seconds versus the
 previous warm 113.998-second measurement.
+
+The report names `fontdone`, `fontdone-c-abi`, and `fontdone-wasm` explicitly
+because `cargo llvm-cov report` does not accept the workspace flag; this keeps
+the C-ABI and WASM source in the measured denominator.
 
 `make test-parity` prints these values separately:
 
@@ -238,7 +242,7 @@ writes `target/coverage/unified-runtime-all-lanes.json`; test-harness paths are
 the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
-reuse the instrumented target. The split path measured 62.027 seconds
+reuse the instrumented target. The split path measured 61.827 seconds
 end-to-end on the current worktree with a warm oracle cache; allow roughly
 2 minutes for host variation and roughly 4–6 minutes after a cache reset.
 `COVERAGE_TEST_DEBUG=1` keeps line
@@ -249,29 +253,26 @@ read-only SFNT table-load/info routes reuse those content-bound handles while
 keeping variation-sequence cases isolated. Oracle
 preparation also preserves the mtime of unchanged generated constants and
 validator overlay sources, avoiding a needless helper rebuild and relink. It
-runs in requested thorough CI, not on every commit. The latest warm measured
-run took 1 minute 53.998 seconds end-to-end against the worktree at commit
-`53995d32008605b8abe6a15db477c86881c929c9`; single-run wall time varies with
-compilation and host load. Its runtime backend totals were approximately
-39.52 seconds Rust FFI, 29.74 seconds C ABI, 30.00 seconds WASM, and 0.03
-seconds comparison. The split validation's backend execution totals were about
-50.75 seconds Rust FFI, 39.52 seconds C ABI, and 39.41 seconds WASM, run in
-parallel; its longest test process took 56.42 seconds and the total run took
-62.027 seconds. The remaining wall-time tail is setup, process/report merging,
-and Coverage MCP ingestion rather than another parity route. Coverage MCP does
-not expose timestamps for those sub-phases yet:
+runs in requested thorough CI, not on every commit. The latest source-bound
+full-scope run took 88.585 seconds end-to-end against commit
+`1a08537f6188cfc4631cee7204fc27663104ae62`; single-run wall time varies with
+compilation and host load. Its instrumentation timers were approximately
+48.37 seconds Rust FFI, 37.06 seconds C ABI, 37.02 seconds WASM, and 0.02
+seconds comparison. The remaining wall-time tail is setup, process/report
+merging, and Coverage MCP ingestion rather than another parity route. Coverage
+MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,341 / 54,104 | 91.20% |
-| Branches | 9,688 / 12,512 | 77.43% |
+| Lines | 49,363 / 54,104 | 91.24% |
+| Branches | 9,694 / 12,512 | 77.48% |
 | Functions | 3,371 / 3,828 | 88.06% |
-| Regions | 67,921 / 75,273 | 90.23% |
+| Regions | 67,953 / 75,273 | 90.28% |
 
 That managed run passed all 7,476 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its Coverage MCP run ID is
-`1a9ca419-0e1f-41a4-8c9f-eba21a2e385b`, and its immutable snapshot ID is
-`a8ef34a9-b6f4-47ad-ad76-039d7ee9bce6`. That required three-surface
+`1d9dd685-fc1e-4f8e-9cc6-2085f2899cf1`, and its immutable snapshot ID is
+`7a698025-d61d-49bc-8a6b-cd9c8331693d`. That required three-surface
 instrumented execution remains the dominant measured test cost, while the
 latest wall-time tail is outside the test body. The percentages apply only to the named
 source commit, suite, and toolchain. They are not a FreeType-parity percentage,
