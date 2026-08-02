@@ -262,9 +262,10 @@ def leading_and_single_reference_iup_gvar_payload() -> bytes:
     glyph_data.extend(tuple_index.to_bytes(2, "big"))
     # Keep the width axis at its default and activate the wght axis at 500.
     # The compact variable font normalizes that design coordinate to 0.25,
-    # represented as 4096 in F2DOT14, so this tuple is active at full scalar.
+    # then its avar map changes it to 0.325 (5325 in F2DOT14), so this tuple
+    # is active at full scalar after avar normalization.
     glyph_data.extend((0).to_bytes(2, "big"))
-    glyph_data.extend((4096).to_bytes(2, "big", signed=True))
+    glyph_data.extend((5325).to_bytes(2, "big", signed=True))
     glyph_data.extend(tuple_data)
     if len(glyph_data) % 2:
         glyph_data.append(0)
