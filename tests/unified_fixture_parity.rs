@@ -2839,6 +2839,9 @@ impl BackendComparisonWorker {
             && !is_stroker_simple_line_counts_case(case)
         {
             let op = case.operation.as_str();
+            if op == "sfnt.load_sfnt_table" {
+                return rust_load_sfnt_table_null_face_output(&case.inputs.params);
+            }
             if !matches!(
                 op,
                 "freetype.done_freetype"
@@ -3348,6 +3351,7 @@ impl BackendComparisonWorker {
             return match case.operation.as_str() {
                 "set_pixel_sizes" => Ok(error(FT_Err_Invalid_Face_Handle as FT_Error)),
                 "set_char_size" => Ok(error(FT_Err_Invalid_Face_Handle as FT_Error)),
+                "sfnt.load_sfnt_table" => c_load_sfnt_table_null_face_output(&case.inputs.params),
                 "load_glyph" => c_load_glyph_output(std::ptr::null_mut(), &case.inputs.params),
                 "load_char" => c_load_char_output(std::ptr::null_mut(), &case.inputs.params),
                 "get_char_index" => Ok(ok(json!({"value": 0}))),
@@ -3780,6 +3784,9 @@ impl BackendComparisonWorker {
             return match case.operation.as_str() {
                 "set_pixel_sizes" => Ok(error(FT_Err_Invalid_Face_Handle as FT_Error)),
                 "set_char_size" => Ok(error(FT_Err_Invalid_Face_Handle as FT_Error)),
+                "sfnt.load_sfnt_table" => {
+                    wasm_load_sfnt_table_null_face_output(&case.inputs.params)
+                }
                 "load_glyph" => wasm_load_glyph_output(0, &case.inputs.params),
                 "load_char" => wasm_load_char_output(0, &case.inputs.params),
                 "get_char_index" => Ok(ok(json!({"value": 0}))),
@@ -18274,6 +18281,19 @@ fn rust_load_sfnt_table_output(
     }
 }
 
+fn rust_load_sfnt_table_null_face_output(params: &Value) -> Result<RunOutput, String> {
+    let _tag = load_sfnt_table_tag_value(params)?;
+    let _offset = load_sfnt_table_offset_arg(params)?;
+    let length_after =
+        load_sfnt_table_initial_length(params)?.map_or(Value::Null, |length| json!(length));
+    Ok(error_with_output(
+        FT_Err_Invalid_Face_Handle as FT_Error,
+        json!({
+            "length_after": length_after
+        }),
+    ))
+}
+
 fn c_load_sfnt_table_output(face: c_abi::FT_Face, params: &Value) -> Result<RunOutput, String> {
     let tag = load_sfnt_table_tag_value(params)?;
     let offset = load_sfnt_table_offset_arg(params)?
@@ -18309,6 +18329,33 @@ fn c_load_sfnt_table_output(face: c_abi::FT_Face, params: &Value) -> Result<RunO
     };
     let err = c_abi::FT_Load_Sfnt_Table(face, tag, offset, buffer_ptr, &mut length);
     sfnt_table_bytes_output(err, Some(length), &buffer, None, buffer_kind == "allocated")
+}
+
+fn c_load_sfnt_table_null_face_output(params: &Value) -> Result<RunOutput, String> {
+    let tag = load_sfnt_table_tag_value(params)?;
+    let offset = load_sfnt_table_offset_arg(params)?
+        .parse::<i64>()
+        .map_err(|e| e.to_string())? as c_abi::FT_Long;
+    let mut length_state = load_sfnt_table_initial_length(params)?;
+    let mut length = length_state.unwrap_or(0);
+    let buffer_kind = load_sfnt_table_buffer_kind_arg(params)?;
+    let mut buffer = [0_u8; 1];
+    let buffer_ptr = if buffer_kind == "allocated" {
+        buffer.as_mut_ptr()
+    } else {
+        ptr::null_mut()
+    };
+    let length_ptr = length_state
+        .as_mut()
+        .map_or(ptr::null_mut(), |_| &mut length as *mut c_abi::FT_ULong);
+    let err = c_abi::FT_Load_Sfnt_Table(ptr::null_mut(), tag, offset, buffer_ptr, length_ptr);
+    sfnt_table_bytes_output(
+        err,
+        length_state.map(|_| length),
+        &buffer,
+        None,
+        buffer_kind == "allocated",
+    )
 }
 
 fn wasm_load_sfnt_table_output(handle: usize, params: &Value) -> Result<RunOutput, String> {
@@ -18358,6 +18405,33 @@ fn wasm_load_sfnt_table_output(handle: usize, params: &Value) -> Result<RunOutpu
     };
     let err = wasm_abi::fontdone_wasm_load_sfnt_table(handle, tag, offset, buffer_ptr, &mut length);
     sfnt_table_bytes_output(err, Some(length), &buffer, None, buffer_kind == "allocated")
+}
+
+fn wasm_load_sfnt_table_null_face_output(params: &Value) -> Result<RunOutput, String> {
+    let tag = load_sfnt_table_tag_value(params)?;
+    let offset = load_sfnt_table_offset_arg(params)?
+        .parse::<i64>()
+        .map_err(|e| e.to_string())? as wasm_abi::FT_Long;
+    let mut length_state = load_sfnt_table_initial_length(params)?;
+    let mut length = length_state.unwrap_or(0);
+    let buffer_kind = load_sfnt_table_buffer_kind_arg(params)?;
+    let mut buffer = [0_u8; 1];
+    let buffer_ptr = if buffer_kind == "allocated" {
+        buffer.as_mut_ptr()
+    } else {
+        ptr::null_mut()
+    };
+    let length_ptr = length_state
+        .as_mut()
+        .map_or(ptr::null_mut(), |_| &mut length as *mut wasm_abi::FT_ULong);
+    let err = wasm_abi::fontdone_wasm_load_sfnt_table(0, tag, offset, buffer_ptr, length_ptr);
+    sfnt_table_bytes_output(
+        err,
+        length_state.map(|_| length),
+        &buffer,
+        None,
+        buffer_kind == "allocated",
+    )
 }
 
 fn sfnt_table_bytes_output(
@@ -42319,6 +42393,14 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             Ok(args)
         }
         "sfnt.load_sfnt_table" => {
+            if lifecycle_handle_param(params, "face") == Some("null") {
+                let mut args = vec!["--load-sfnt-table-null-face".to_string()];
+                args.push(load_sfnt_table_tag_hex_arg(params)?);
+                args.push(load_sfnt_table_offset_arg(params)?);
+                args.push(load_sfnt_table_buffer_kind_arg(params)?);
+                args.push(load_sfnt_table_length_state_arg(params)?);
+                return Ok(args);
+            }
             if params.get("offset").is_none()
                 && params.get("reads").is_none()
                 && params.get("tags").is_none()

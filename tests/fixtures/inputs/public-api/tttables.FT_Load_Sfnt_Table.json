@@ -6,6 +6,7 @@
     "length_probe_success",
     "byte_load_success",
     "missing_table_or_invalid_face_error",
+    "null_face_error",
     "offset_and_length_errors"
   ],
   "cases": [
@@ -356,6 +357,53 @@
         "source_refs": [
           "freetype/src/base/ftobjs.c:4384-4393",
           "freetype/src/sfnt/ttload.c:56-82"
+        ]
+      }
+    },
+    {
+      "case_id": "tttables.FT_Load_Sfnt_Table.null_face_error",
+      "subject": "tttables.FT_Load_Sfnt_Table",
+      "case": "null_face_error",
+      "operation": "sfnt.load_sfnt_table",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "face": "null",
+          "tag": "TTAG_head",
+          "tag_hex": "0x68656164",
+          "offset": 0,
+          "buffer_kind": "null",
+          "length_state": "zero"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:tttables",
+        "area:sfnt-table",
+        "runtime:sfnt-load-table",
+        "null_pointer"
+      ],
+      "metadata": {
+        "source_behavior": "FT_Load_Sfnt_Table returns FT_Err_Invalid_Face_Handle before touching the length output when face is null."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "error": "FT_Error",
+          "length_after": "FT_ULong"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "length_after"
+          ]
+        },
+        "error": "FT_Err_Invalid_Face_Handle",
+        "source_refs": [
+          "freetype/src/base/ftobjs.c:4375-4393"
         ]
       }
     },

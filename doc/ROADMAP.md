@@ -399,9 +399,9 @@ per-batch coverage increase is claimed:
 | 29 | Working tree (avar normalization) | Added an input-only variable-font case whose `gvar` interpolation exposed the missing `avar` normalization stage. Implemented pinned-compatible `avar` parsing and design/named-instance coordinate mapping; focused parity passed 33 / 33 and full parity run `61dddda3-5866-43ea-bd80-e84cd1d4c5b9` passed 7,469 / 7,469 runnable comparisons with 3 explicitly pending safety-extension cases. |
 
 The latest source-bound parity verification is Coverage MCP parity run
-`1daeba70-88e3-4e1e-a3c8-45472bc1219b`, recorded by run
-`0474aef0-a0ce-4c16-b3ca-8fde7a781bb7` against the worktree at commit
-`9cb128a1d1db14d4f1dd8341327a1912b4a933c6`: it passed 7,473 / 7,473 runnable
+`9d8f414b-f32d-44e3-a838-144373271cea`, recorded by run
+`c1780492-a9b8-436c-a14d-cc4e06fac491` against the worktree at commit
+`a1b0974f096546e40a8206724a353f26e488282a`: it passed 7,474 / 7,474 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The committed source-digest attestation is
@@ -410,13 +410,13 @@ MCP run `1766fdf5-8e70-4328-94e0-d5fab26845da`, reports 10 / 12 categories
 complete, with 5,195 / 5,195 runtime contract rows and 643 / 643 strict error
 routes exact; binary artifacts and platform bundles remain the tracked gaps.
 
-The latest all-lane coverage run completed in 3 minutes 5.652 seconds. Its
-test body finished in 126.17 seconds; backend timings were about 46.77 seconds
-Rust FFI, 33.66 seconds C ABI, 34.26 seconds WASM, and 0.06 seconds comparison.
-Removing the duplicate ABI preflight from the default coverage path reduced
-this sample by 42.627 seconds against the previous valid 3:48.279 run; the
-remaining wall-time tail is outside backend execution, in setup/reporting/ingestion
-and host contention. `make test-coverage-all`
+The latest all-lane coverage run completed in 2 minutes 41.636 seconds. Its
+runtime backend timings were about 42.22 seconds Rust FFI, 31.56 seconds C ABI,
+31.26 seconds WASM, and 0.03 seconds comparison. The separately measured
+removal of the duplicate ABI preflight from the default coverage path reduced
+the earlier 3:48.279 sample by 42.627 seconds (18.7%); the remaining wall-time
+tail is outside backend execution, in setup/build/reporting/ingestion and host
+contention. `make test-coverage-all`
 uses a single parity worker, `CARGO_PROFILE_TEST_OPT_LEVEL=1`,
 `COVERAGE_TEST_DEBUG=1`, and `cargo llvm-cov --no-clean` by default: LLVM
 instrumentation made parallel backend calls contend, the optimized test
@@ -429,11 +429,11 @@ the ABI-only package preflight remains available separately as
 `make coverage-abi-preflight` and is already exercised by `make test-fast`.
 Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
-repeated. The current run measured 49,273 / 54,038 lines, 9,671 / 12,498
-branches, 3,368 / 3,825 functions, and 67,852 / 75,205 regions. It passed
-7,473 / 7,473 runnable parity comparisons with 0 failures. Its Coverage MCP run
-is `1600748f-448c-4855-8be6-9149d1b1736a`, with snapshot
-`ade1e8cd-14c9-4082-8c65-2d50e6159f80`. Each measurement clears stale
+repeated. The current run measured 49,275 / 54,038 lines, 9,673 / 12,498
+branches, 3,368 / 3,825 functions, and 67,854 / 75,205 regions. It passed
+7,474 / 7,474 runnable parity comparisons with 0 failures. Its Coverage MCP run
+is `0302c168-2b77-473b-aafc-cbff631fcce3`, with snapshot
+`b84d528a-aa4e-43a7-b504-96e4e975dcd7`. Each measurement clears stale
 `.profraw` files first; use `make coverage-clean` after changing the coverage
 toolchain or instrumentation configuration.
 

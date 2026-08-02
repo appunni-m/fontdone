@@ -27,15 +27,15 @@
     "fontdone_pub_enums": 19
   },
   "runtime_parity": {
-    "runnable": 7473,
-    "passed": 7473,
+    "runnable": 7474,
+    "passed": 7474,
     "failed": 0,
     "pending": 3,
-    "covered_manifest": 4181,
+    "covered_manifest": 4182,
     "validated_input_subjects": 1543,
     "validated_input_files": 1537,
-    "logical_input_cases": 4266,
-    "concrete_input_cases": 7476,
+    "logical_input_cases": 4267,
+    "concrete_input_cases": 7477,
     "function_route_evidence": 218,
     "function_total": 218
   },
@@ -54,23 +54,23 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-08-02",
-    "source_commit": "9cb128a1d1db14d4f1dd8341327a1912b4a933c6",
+    "source_commit": "a1b0974f096546e40a8206724a353f26e488282a",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "1600748f-448c-4855-8be6-9149d1b1736a",
-    "snapshot_id": "ade1e8cd-14c9-4082-8c65-2d50e6159f80",
-    "duration_ms": 185652,
+    "run_id": "0302c168-2b77-473b-aafc-cbff631fcce3",
+    "snapshot_id": "b84d528a-aa4e-43a7-b504-96e4e975dcd7",
+    "duration_ms": 161636,
     "exit_code": 0,
     "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with line-table debuginfo=1; single-worker parity; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; test-harness source excluded",
     "lines": {
-      "covered": 49273,
+      "covered": 49275,
       "total": 54038,
-      "percent": 91.1821310929346
+      "percent": 91.18583219216108
     },
     "branches": {
-      "covered": 9671,
+      "covered": 9673,
       "total": 12498,
-      "percent": 77.38038086093775
+      "percent": 77.39638342134741
     },
     "functions": {
       "covered": 3368,
@@ -78,13 +78,13 @@
       "percent": 88.05228758169935
     },
     "regions": {
-      "covered": 67852,
+      "covered": 67854,
       "total": 75205,
-      "percent": 90.22272455288877
+      "percent": 90.2253839505352
     },
     "runtime_parity": {
-      "runnable": 7473,
-      "passed": 7473,
+      "runnable": 7474,
+      "passed": 7474,
       "failed": 0,
       "pending": 3
     },
@@ -614,9 +614,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "29a002d5b567435f8e0725655eef15377bb7cfb33205e5e5d395c24ffefc3529",
-    "parity_tree_sha256": "51231e8849f35e8956cfc490dafb9cc490e7d926663a55ed7348c5652514409b",
-    "log_sha256": "182a369d6d590447960475b50f4ea198cf59e9b123f0b3f38001568166d6338c",
+    "sha256": "38019a7db8ee8b21dedf8296e498a6a5931a65c06485d24cf6644fdd3d84bd5d",
+    "parity_tree_sha256": "ff1c964d328524da519991ffe1065b3304b77d7fbd969aa83884d389da1e6939",
+    "log_sha256": "229572aed2717d1ae218c6e23c07932fbc0585301270a0f8bf7254751142842b",
     "command": "make test-parity"
   }
 }

@@ -236,27 +236,27 @@ keeping variation-sequence cases isolated. Oracle
 preparation also preserves the mtime of unchanged generated constants and
 validator overlay sources, avoiding a needless helper rebuild and relink. It
 runs in requested thorough CI, not on every commit. The latest measured run
-took 3 minutes 5.652 seconds end-to-end against the worktree at commit
-`9cb128a1d1db14d4f1dd8341327a1912b4a933c6`; single-run wall time varies with
-compilation and host load. Its test body finished in 126.17 seconds, while the
-backend totals were approximately 46.77 seconds Rust FFI, 33.66 seconds C ABI,
-34.26 seconds WASM, and 0.06 seconds comparison. Removing the duplicate ABI
-preflight from the default coverage path reduced this sample by 42.627 seconds
-against the previous valid 3:48.279 run; the remaining wall-time tail is
-outside the test body, in setup/reporting/ingestion and host contention.
+took 2 minutes 41.636 seconds end-to-end against the worktree at commit
+`a1b0974f096546e40a8206724a353f26e488282a`; single-run wall time varies with
+compilation and host load. Its runtime backend totals were approximately
+42.22 seconds Rust FFI, 31.56 seconds C ABI, 31.26 seconds WASM, and 0.03
+seconds comparison. The separately measured removal of the duplicate ABI
+preflight from the default coverage path reduced the earlier 3:48.279 sample
+by 42.627 seconds (18.7%); the remaining wall-time tail is outside backend
+execution, in setup/build/reporting/ingestion and host contention.
 Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,273 / 54,038 | 91.18% |
-| Branches | 9,671 / 12,498 | 77.38% |
+| Lines | 49,275 / 54,038 | 91.19% |
+| Branches | 9,673 / 12,498 | 77.40% |
 | Functions | 3,368 / 3,825 | 88.05% |
-| Regions | 67,852 / 75,205 | 90.22% |
+| Regions | 67,854 / 75,205 | 90.23% |
 
-That managed run passed all 7,473 runnable parity comparisons with 0 failures;
+That managed run passed all 7,474 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its Coverage MCP run ID is
-`1600748f-448c-4855-8be6-9149d1b1736a`, and its immutable snapshot ID is
-`ade1e8cd-14c9-4082-8c65-2d50e6159f80`. That required three-surface
+`0302c168-2b77-473b-aafc-cbff631fcce3`, and its immutable snapshot ID is
+`b84d528a-aa4e-43a7-b504-96e4e975dcd7`. That required three-surface
 instrumented execution remains the dominant measured test cost, while the
 latest wall-time tail is outside the test body. The percentages apply only to the named
 source commit, suite, and toolchain. They are not a FreeType-parity percentage,

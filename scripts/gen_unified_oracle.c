@@ -30704,6 +30704,33 @@ static int emit_get_track_kerning_without_attachment(int argc, char** argv) {
     return 0;
 }
 
+static int emit_load_sfnt_table_null_face(int argc, char** argv) {
+    if (argc != 6) {
+        return 1;
+    }
+    FT_ULong tag = strtoul(argv[2], NULL, 16);
+    FT_Long offset = atol(argv[3]);
+    const char* buffer_kind = argv[4];
+    const char* length_state = argv[5];
+    FT_ULong length = 0;
+    FT_ULong* length_ptr = &length;
+    FT_Byte buffer[1];
+    FT_Byte* buffer_ptr = streq(buffer_kind, "allocated") ? buffer : NULL;
+    if (streq(length_state, "null")) {
+        length_ptr = NULL;
+    }
+    FT_Error ft_err = FT_Load_Sfnt_Table(NULL, tag, offset, buffer_ptr, length_ptr);
+    print_status(ft_err);
+    printf(",\"output\":{\"length_after\":");
+    if (length_ptr) {
+        printf("%lu", (unsigned long)length);
+    } else {
+        printf("null");
+    }
+    printf("}}\n");
+    return 0;
+}
+
 static int emit_face_or_slot(int argc, char** argv) {
     const char* command = argv[1];
     const char* source_kind = argv[2];
@@ -37637,6 +37664,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 11 && streq(argv[1], "--load-sfnt-table")) {
         return emit_face_or_slot(argc, argv);
+    }
+    if (argc == 6 && streq(argv[1], "--load-sfnt-table-null-face")) {
+        return emit_load_sfnt_table_null_face(argc, argv);
     }
     if (argc == 10 && streq(argv[1], "--sfnt-table-info")) {
         return emit_face_or_slot(argc, argv);

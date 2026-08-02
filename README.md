@@ -106,28 +106,28 @@ The last committed full parity snapshot was recorded on **2026-08-02**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,473 |
-| Passed cases | 7,473 |
+| Runnable exact-comparison cases | 7,474 |
+| Passed cases | 7,474 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
-| Covered manifest cases | 4,181 |
+| Covered manifest cases | 4,182 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,266 |
-| Concrete expanded cases | 7,476 |
+| Logical declared cases | 4,267 |
+| Concrete expanded cases | 7,477 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,473 / 7,473` means every runnable case in that execution matched; the 3
+`7,474 / 7,474` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP parity run
-`1daeba70-88e3-4e1e-a3c8-45472bc1219b`, recorded by run
-`0474aef0-a0ce-4c16-b3ca-8fde7a781bb7` against the worktree at commit
-`9cb128a1d1db14d4f1dd8341327a1912b4a933c6`; its source-bound digest is
-`51231e8849f35e8956cfc490dafb9cc490e7d926663a55ed7348c5652514409b`.
+`9d8f414b-f32d-44e3-a838-144373271cea`, recorded by run
+`c1780492-a9b8-436c-a14d-cc4e06fac491` against the worktree at commit
+`a1b0974f096546e40a8206724a353f26e488282a`; its source-bound digest is
+`ff1c964d328524da519991ffe1065b3304b77d7fbd969aa83884d389da1e6939`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -140,14 +140,14 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The last all-lane coverage run was recorded on **2026-08-02** against
-`9cb128a1d1db14d4f1dd8341327a1912b4a933c6`:
+`a1b0974f096546e40a8206724a353f26e488282a`:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,273 / 54,038 | 91.18% |
-| Branches | 9,671 / 12,498 | 77.38% |
+| Lines | 49,275 / 54,038 | 91.19% |
+| Branches | 9,673 / 12,498 | 77.40% |
 | Functions | 3,368 / 3,825 | 88.05% |
-| Regions | 67,852 / 75,205 | 90.22% |
+| Regions | 67,854 / 75,205 | 90.23% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -164,16 +164,16 @@ already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
 The latest Coverage MCP run is
-`1600748f-448c-4855-8be6-9149d1b1736a`, with snapshot
-`ade1e8cd-14c9-4082-8c65-2d50e6159f80`; it completed in 3 minutes 5.652
-seconds, with 7,473 exact parity comparisons. Its test body finished in
-126.17 seconds and the backend timings were about 46.77 seconds Rust FFI,
-33.66 seconds C ABI, 34.26 seconds WASM, and 0.06 seconds comparison. The
-previous valid run took 3 minutes 48.279 seconds, so removing the duplicate
-ABI preflight from the default coverage path reduced measured wall time by
-42.627 seconds (18.7%). The remaining wall-time tail is outside the parity
-body, in setup/reporting/ingestion and host contention. Coverage MCP does not
-currently expose timestamps for those sub-phases. Coverage builds retain the
+`0302c168-2b77-473b-aafc-cbff631fcce3`, with snapshot
+`b84d528a-aa4e-43a7-b504-96e4e975dcd7`; it completed in 2 minutes 41.636
+seconds, with 7,474 exact parity comparisons. Its runtime backend timings
+were about 42.22 seconds Rust FFI, 31.56 seconds C ABI, 31.26 seconds WASM,
+and 0.03 seconds comparison. The previous valid run took 3 minutes 48.279
+seconds; the separately measured removal of the duplicate ABI preflight from
+the default coverage path accounted for 42.627 seconds (18.7%) of that
+improvement. The remaining wall-time tail is setup/build/reporting/ingestion
+and host contention; Coverage MCP does not currently expose timestamps for
+those sub-phases. Coverage builds retain the
 instrumented target with `cargo llvm-cov --no-clean`, remove stale `.profraw`
 files before each measurement, and retain line tables while omitting full test
 debuginfo via `COVERAGE_TEST_DEBUG=1`. Face-cache keys now
@@ -183,7 +183,7 @@ content-bound handles; the variation-sequence route remains isolated. Oracle
 preparation now also preserves generated-file mtimes
 when contents are unchanged, so the C helper and FreeType validator overlay are
 not rebuilt on every run. The latest backend timings are about 42.2 seconds
-Rust FFI, 32.0 seconds C ABI, and 31.4 seconds WASM; the remaining dominant
+Rust FFI, 31.6 seconds C ABI, and 31.3 seconds WASM; the remaining dominant
 cost is the required instrumented three-surface parity execution. Run
 `make coverage-clean` after changing coverage instrumentation or profile
 configuration.
