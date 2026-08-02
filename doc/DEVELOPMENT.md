@@ -140,8 +140,8 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The clean committed validation was
-Coverage MCP run `6eb57e9e-4147-4663-b34a-d29227b0fdba`: all three processes
-passed 7,476 / 7,476 cases, and the end-to-end run took 54.054 seconds versus
+Coverage MCP run `cce7fb2b-ee6d-43cd-970f-e0dbe7a2b106`: all three processes
+passed 7,478 / 7,478 cases, and the end-to-end run took 57.821 seconds versus
 the previous warm 113.998-second measurement.
 
 The report names `fontdone`, `fontdone-c-abi`, and `fontdone-wasm` explicitly
@@ -244,7 +244,7 @@ writes `target/coverage/unified-runtime-all-lanes.json`; test-harness paths are
 the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
-reuse the instrumented target and binary. The split path measured 54.054
+reuse the instrumented target and binary. The split path measured 57.821
 seconds end-to-end on the current worktree with a warm oracle cache; allow
 roughly 2 minutes for host variation and roughly 4–6 minutes after a cache
 reset.
@@ -257,10 +257,10 @@ keeping variation-sequence cases isolated. Oracle
 preparation also preserves the mtime of unchanged generated constants and
 validator overlay sources, avoiding a needless helper rebuild and relink. It
 runs in requested thorough CI, not on every commit. The latest source-bound
-full-scope run took 54.054 seconds end-to-end against commit
-`f4eee93455458366c43af8770c574f50a29cb5ed`; single-run wall time varies with
+full-scope run took 57.821 seconds end-to-end against commit
+`e6bef8f9e180eeda5e606270e515314443ba6c44`; single-run wall time varies with
 compilation and host load. Its instrumentation timers were approximately
-43.26 seconds Rust FFI, 32.10 seconds C ABI, 32.02 seconds WASM, and 0.01
+44.89 seconds Rust FFI, 34.31 seconds C ABI, 34.08 seconds WASM, and 0.02
 seconds comparison. The remaining wall-time tail is setup, process/report
 merging, and Coverage MCP ingestion rather than another parity route. Coverage
 MCP does not expose timestamps for those sub-phases yet:
@@ -272,10 +272,10 @@ MCP does not expose timestamps for those sub-phases yet:
 | Functions | 3,371 / 3,828 | 88.06% |
 | Regions | 67,953 / 75,273 | 90.28% |
 
-That managed run passed all 7,476 runnable parity comparisons with 0 failures;
+That managed run passed all 7,478 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its Coverage MCP run ID is
-`6eb57e9e-4147-4663-b34a-d29227b0fdba`, and its immutable snapshot ID is
-`89f01e52-d1a2-4c66-83c1-9661ce87575c`. That required three-surface
+`cce7fb2b-ee6d-43cd-970f-e0dbe7a2b106`, and its immutable snapshot ID is
+`1fab8ecd-b4c0-491d-abcc-110f66101193`. That required three-surface
 instrumented execution remains the dominant measured test cost, while the
 latest wall-time tail is outside the test body. The percentages apply only to the named
 source commit, suite, and toolchain. They are not a FreeType-parity percentage,
@@ -479,10 +479,10 @@ or reason is stale.
 <!-- retention-counts:start -->
 | Reason | Paths | Retained context |
 |---|---:|---|
-| R01 | 57 | published pure-Rust runtime |
+| R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,638 | executable parity tests and public contracts |
-| R04 | 581 | licensed canonical fixture inputs |
+| R04 | 599 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -490,7 +490,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,440** | **all retained paths** |
+| **Total** | **2,459** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

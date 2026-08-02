@@ -106,28 +106,28 @@ The last committed full parity snapshot was recorded on **2026-08-02**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,476 |
-| Passed cases | 7,476 |
+| Runnable exact-comparison cases | 7,478 |
+| Passed cases | 7,478 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
 | Covered manifest cases | 4,183 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,268 |
-| Concrete expanded cases | 7,479 |
+| Concrete expanded cases | 7,481 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,476 / 7,476` means every runnable case in that execution matched; the 3
+`7,478 / 7,478` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP parity run
-`640b6f77-2758-423a-b6ca-deb42c86a2b9`, recorded by run
-`edd2fea1-64a3-4251-af1f-2775f1e3d0d3` against the clean worktree at commit
-`1a08537f6188cfc4631cee7204fc27663104ae62`; its source-bound parity-tree
-digest is `26b70e2527db4a8145ffab920580e3bf6ad258671453dba5d2ed47cfbc14fc7e`.
+`352d82a0-1a86-4a01-97b7-9235a1a66b5b`, recorded by run
+`c500e3d6-24da-491a-8f89-4c38826b3eda` against the source tree represented by
+commit `e6bef8f9e180eeda5e606270e515314443ba6c44`; its source-bound parity-tree
+digest is `ba481ed752d86d910cd7d5ad6d18d3f596d8e4bfa281a399710a71318a63a175`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -140,7 +140,7 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The last all-lane coverage run was recorded on **2026-08-02** against
-`f4eee93455458366c43af8770c574f50a29cb5ed`:
+`e6bef8f9e180eeda5e606270e515314443ba6c44`:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -174,14 +174,14 @@ already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
 The latest Coverage MCP run is
-`6eb57e9e-4147-4663-b34a-d29227b0fdba`, with snapshot
-`89f01e52-d1a2-4c66-83c1-9661ce87575c`; the clean source-bound run completed in
-54.054 seconds, with 7,476 exact parity comparisons in each backend lane. Its
-instrumentation timers were about 43.26 seconds Rust FFI, 32.10 seconds C ABI,
-32.02 seconds WASM, and 0.01 seconds comparison. Reusing the instrumented test
+`cce7fb2b-ee6d-43cd-970f-e0dbe7a2b106`, with snapshot
+`1fab8ecd-b4c0-491d-abcc-110f66101193`; the corrected-index source-bound run
+completed in 57.821 seconds, with 7,478 exact parity comparisons in each
+backend lane. Its instrumentation timers were about 44.89 seconds Rust FFI,
+34.31 seconds C ABI, 34.08 seconds WASM, and 0.02 seconds comparison. Reusing the instrumented test
 binary reduced the measured wall time from the previous 61.827-second split
 validation and from the 113.998-second warm combined-lane run; the new result is
-52.6% faster than the latter. The report names all three workspace packages
+49.3% faster than the latter. The report names all three workspace packages
 explicitly because `cargo llvm-cov report` does not accept the workspace flag,
 keeping C-ABI and WASM source in the denominator. The remaining wall-time tail is
 setup, process/report merging, and Coverage MCP ingestion. Coverage builds
@@ -208,10 +208,10 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,219 / 5,219 pinned-C runtime contract rows exact |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,221 / 5,221 pinned-C runtime contract rows exact |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership, state, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 647 / 647 expected-error routes compare exact error and output results; 7,476 / 7,476 routes have no generic fallback evidence |
+| Errors | 649 / 649 expected-error routes compare exact error and output results; 7,478 / 7,478 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 

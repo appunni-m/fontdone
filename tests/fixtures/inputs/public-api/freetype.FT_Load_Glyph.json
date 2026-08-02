@@ -1419,7 +1419,7 @@
                 "x": 0,
                 "y": 20
               },
-              "glyph_index": 40,
+              "glyph_index": 41,
               "load_flags": [
                 "FT_LOAD_NO_HINTING"
               ],
@@ -1445,7 +1445,7 @@
                 "x": 0,
                 "y": 20
               },
-              "glyph_index": 41,
+              "glyph_index": 42,
               "load_flags": [
                 "FT_LOAD_NO_HINTING"
               ],
