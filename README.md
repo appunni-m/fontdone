@@ -27,15 +27,25 @@ Pinned FreeType source is used only by ignored offline test tooling.
 | C or C-compatible host | `fontdone-c-abi` | Raw pointers, shipped headers, shared/static libraries | [C ABI guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-c-abi/README.md) |
 | Node.js host | `fontdone-wasm` | Low-level wasm32 linear-memory ABI | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
 
-The crates are not on crates.io yet. Evaluate from a local checkout:
+The crates are not on crates.io yet. Evaluate from a local checkout while
+keeping the version requirement that a publishable downstream package needs:
 
 ```toml
 [dependencies]
-fontdone = { path = "../fontdone" }
+fontdone = { version = "=2.14.3-alpha.1", path = "../fontdone" }
 ```
 
-After the repository and release tag are public, a reproducible Git dependency
-can use the exact tag:
+After `fontdone` is published, a registry consumer should request the exact
+prerelease:
+
+```toml
+[dependencies]
+fontdone = { version = "=2.14.3-alpha.1" }
+```
+
+Cargo requires a version requirement on dependencies of a crate that will be
+packaged or published. A Git dependency can be used instead when the exact
+release tag is public:
 
 ```toml
 [dependencies]

@@ -13,27 +13,29 @@ consumers should use the
 ## 1. Select and install the exact alpha
 
 All workspace packages use `2.14.3-alpha.1`. They have not been published to
-crates.io, so evaluate a checkout through an explicit path:
+crates.io, so evaluate a checkout through a versioned path dependency. Keeping
+the version requirement is important: Cargo rejects a path-only dependency
+when the downstream crate is packaged or published.
 
 ```toml
 [dependencies]
-fontdone = { path = "../fontdone" }
+fontdone = { version = "=2.14.3-alpha.1", path = "../fontdone" }
 ```
 
-After the repository and matching tag are public, pin the exact tag or an
-immutable 40-character revision:
+Once the root package is published, registry consumers should use the exact
+prerelease:
+
+```toml
+[dependencies]
+fontdone = { version = "=2.14.3-alpha.1" }
+```
+
+After the repository and matching tag are public, a Git consumer may pin the
+exact tag or an immutable 40-character revision:
 
 ```toml
 [dependencies]
 fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.1" }
-```
-
-Once published, request the prerelease exactly. Cargo does not select a
-prerelease from a broad requirement such as `"2"`:
-
-```toml
-[dependencies]
-fontdone = "=2.14.3-alpha.1"
 ```
 
 This alpha requires Rust 1.87 or newer. Different `alpha.N` releases are not

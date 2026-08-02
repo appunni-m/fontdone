@@ -98,15 +98,35 @@ def verify_metadata() -> str:
     if len(set(versions.values())) != 1:
         raise ValueError(f"package version drift: {versions}")
     version = versions["fontdone"]
+    root_manifest = (ROOT / "Cargo.toml").read_text(encoding="utf-8")
+    root_package = root_manifest.split("[package]", 1)[1]
+    if not re.search(r'(?m)^name\s*=\s*"fontdone"$', root_package):
+        raise ValueError("Cargo.toml: root package must be named fontdone")
+    if not re.search(r'(?m)^publish\s*=\s*\["crates-io"\]$', root_package):
+        raise ValueError("Cargo.toml: fontdone must publish to crates.io")
+    if 'members = ["fontdone-c-abi", "fontdone-wasm"]' not in root_manifest:
+        raise ValueError(
+            "Cargo.toml: workspace must retain both synchronized facade members"
+        )
     exact = f'version = "={version}"'
     for name, manifest in PACKAGES[1:]:
         if exact not in manifest.read_text(encoding="utf-8"):
             raise ValueError(f"{manifest}: {name} must require fontdone exactly at {version}")
-    cargo = (ROOT / "Cargo.toml").read_text(encoding="utf-8")
     for name in ("fontdone-c-abi", "fontdone-wasm"):
         pattern = rf'{re.escape(name)}\s*=\s*\{{[^}}]*path\s*=\s*"{re.escape(name)}"'
-        if re.search(pattern, cargo) is None:
+        if re.search(pattern, root_manifest) is None:
             raise ValueError(f"Cargo.toml: path-only dev dependency {name} is missing")
+    consumer_template = (
+        ROOT / "tests" / "external" / "rust-consumer" / "Cargo.toml.in"
+    ).read_text(encoding="utf-8")
+    expected_consumer = (
+        'fontdone = { version = "=@FONTDONE_VERSION@", '
+        'path = "@FONTDONE_PATH@" }'
+    )
+    if expected_consumer not in consumer_template:
+        raise ValueError(
+            "external Rust consumer must exercise a versioned path dependency"
+        )
     for path in (ROOT / "README.md", ROOT / "CHANGELOG.md"):
         if version not in path.read_text(encoding="utf-8"):
             raise ValueError(f"{path}: release version {version} is absent")

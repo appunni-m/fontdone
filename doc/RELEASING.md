@@ -4,6 +4,18 @@
 unit. All three currently use `2.14.3-alpha.1`; facade dependencies require
 that exact version.
 
+The root manifest is the publishable `fontdone` crate. A downstream crate may
+use a sibling checkout during development, but its dependency must retain the
+exact version requirement:
+
+```toml
+fontdone = { version = "=2.14.3-alpha.1", path = "../fontdone" }
+```
+
+After publication, a registry consumer such as `pillow-rs` must use
+`fontdone = { version = "=2.14.3-alpha.1" }`. A path-only declaration is valid
+for a local build but Cargo rejects it when packaging the downstream crate.
+
 Only the protected GitHub release workflow publishes. Local commands validate
 and assemble evidence but do not authorize publication.
 
@@ -45,7 +57,10 @@ generated evidence.
 `make package-verify` creates all three `.crate` archives, rejects fixture,
 font, oracle, test, and tooling leakage, compiles the extracted packages with
 exact local dependency substitutions, and writes inventories and SHA-256
-digests under `target/release-evidence/`.
+digests under `target/release-evidence/`. `make check-versions` also verifies
+the root package identity, synchronized workspace members, exact facade
+requirements, and the versioned path dependency used by the external Rust
+consumer.
 
 ## 3. Required CI evidence
 

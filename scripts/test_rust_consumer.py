@@ -15,12 +15,28 @@ OUTPUT = ROOT / "target" / "external-consumers" / "rust"
 FONT = ROOT / "tests" / "fixtures" / "input" / "fonts" / "DejaVuSans.ttf"
 
 
+def fontdone_version() -> str:
+    metadata = subprocess.run(
+        ["cargo", "metadata", "--format-version", "1", "--no-deps"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    packages = json.loads(metadata.stdout)["packages"]
+    for package in packages:
+        if package["name"] == "fontdone":
+            return package["version"]
+    raise RuntimeError("cargo metadata did not report the fontdone package")
+
+
 def main() -> None:
     if OUTPUT.exists():
         shutil.rmtree(OUTPUT)
     shutil.copytree(TEMPLATE, OUTPUT)
     template = (OUTPUT / "Cargo.toml.in").read_text(encoding="utf-8")
-    manifest = template.replace("@FONTDONE_PATH@", json.dumps(str(ROOT))[1:-1])
+    manifest = template.replace("@FONTDONE_VERSION@", fontdone_version())
+    manifest = manifest.replace("@FONTDONE_PATH@", json.dumps(str(ROOT))[1:-1])
     (OUTPUT / "Cargo.toml").write_text(manifest, encoding="utf-8")
     (OUTPUT / "Cargo.toml.in").unlink()
     subprocess.run(["cargo", "generate-lockfile", "--offline"], cwd=OUTPUT, check=True)

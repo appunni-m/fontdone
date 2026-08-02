@@ -7,4 +7,4 @@ publish = false
 [workspace]
 
 [dependencies]
-fontdone = { path = "@FONTDONE_PATH@" }
+fontdone = { version = "=@FONTDONE_VERSION@", path = "@FONTDONE_PATH@" }
