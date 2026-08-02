@@ -126,6 +126,12 @@ def emit(path: Path, content: str, *, check: bool) -> bool:
             return False
         return True
     path.parent.mkdir(parents=True, exist_ok=True)
+    # Keep the generated file's mtime stable when its contents are unchanged.
+    # The oracle build uses that mtime to decide whether its small C helper
+    # needs recompilation; rewriting identical constants made every parity or
+    # coverage invocation relink the helper unnecessarily.
+    if path.exists() and path.read_text(encoding="utf-8") == content:
+        return True
     path.write_text(content, encoding="utf-8")
     return True
 

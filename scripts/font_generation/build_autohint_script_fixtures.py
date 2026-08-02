@@ -762,6 +762,44 @@ def truncate_glyph_loca(path: Path, glyph_name: str, byte_len: int) -> None:
     path.write_bytes(data)
 
 
+def rewrite_loca_entry(path: Path, entry_index: int, offset: int) -> None:
+    """Replace one raw loca entry while preserving the generated SFNT."""
+    font = TTFont(path, recalcTimestamp=False)
+    loca_format = font["head"].indexToLocFormat
+    font.close()
+
+    tables = table_offsets(path)
+    loca_offset, _ = tables["loca"]
+    data = bytearray(path.read_bytes())
+    if loca_format == 0:
+        if offset % 2 != 0 or offset // 2 > 0xFFFF:
+            raise ValueError("short loca offsets must be representable as doubled uint16")
+        entry = loca_offset + entry_index * 2
+        data[entry : entry + 2] = struct.pack(">H", offset // 2)
+    else:
+        if offset > 0xFFFF_FFFF:
+            raise ValueError("long loca offsets must be representable as uint32")
+        entry = loca_offset + entry_index * 4
+        data[entry : entry + 4] = struct.pack(">L", offset)
+    path.write_bytes(data)
+
+
+def convert_loca_to_long_format(path: Path) -> None:
+    font = TTFont(path, recalcTimestamp=False)
+    locations = list(font["loca"].locations)
+    original_last = locations[-1]
+    # FontTools chooses short format whenever all offsets fit.  Temporarily
+    # force one long-format value so it serializes a genuine long `loca` table;
+    # restore the real final offset after serialization below.
+    locations[-1] = max(locations[-1], 0x20_000)
+    font["loca"].locations = locations
+    font["head"].indexToLocFormat = 1
+    font.recalcTimestamp = False
+    font.save(path)
+    font.close()
+    rewrite_loca_entry(path, len(locations) - 1, original_last)
+
+
 def glyph_name(tag: str) -> str:
     return f"script_{tag}"
 
@@ -2641,6 +2679,24 @@ def build_latin_malformed_standard() -> None:
     truncate_glyph_loca(path, "latin_o_malformed", 2)
 
 
+def build_latin_loca_boundary_variants() -> None:
+    """Exercise the public loader's malformed loca boundary behavior."""
+    base = OUT_DIR / "latin-malformed-standard.ttf"
+    variants = (
+        ("latin-loca-early-overflow.ttf", 2, 100),
+        ("latin-loca-final-overflow.ttf", 4, 100),
+        ("latin-loca-unordered.ttf", 3, 20),
+    )
+    for filename, entry_index, offset in variants:
+        path = OUT_DIR / filename
+        shutil.copyfile(base, path)
+        rewrite_loca_entry(path, entry_index, offset)
+
+    long_path = OUT_DIR / "latin-loca-long-format.ttf"
+    shutil.copyfile(base, long_path)
+    convert_loca_to_long_format(long_path)
+
+
 def build_latin_blue_delta() -> None:
     glyph_order = [".notdef", "space", "latin_flat_cap", "latin_round_cap"]
     glyphs = {
@@ -2857,6 +2913,7 @@ def main() -> None:
     build_out_of_range_cmap_coverage()
     build_latin_standard_fallbacks()
     build_latin_malformed_standard()
+    build_latin_loca_boundary_variants()
     build_latin_blue_delta()
     build_latin_blue_overlap()
     build_latin_low_upem()

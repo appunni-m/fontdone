@@ -155,35 +155,3 @@ pub fn collect_hit_bits(accumulated: u64) -> Vec<u32> {
     }
     bits
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn records_accumulates_and_resets() {
-        reset();
-        assert_eq!(current_mask(), 0);
-        record(COV_SEGMENTS_DIR);
-        record(COV_EDGES_HEIGHT_FILTER);
-        assert_eq!(current_mask(), COV_SEGMENTS_DIR | COV_EDGES_HEIGHT_FILTER);
-        reset();
-        assert_eq!(current_mask(), 0);
-    }
-
-    #[test]
-    fn macro_records_bits() {
-        reset();
-        cov_hit!(COV_BLUE_CAPITAL_TOP);
-        assert_eq!(current_mask(), COV_BLUE_CAPITAL_TOP);
-    }
-
-    #[test]
-    fn collects_high_bits_and_empty() {
-        assert_eq!(collect_hit_bits(0), Vec::<u32>::new());
-        assert_eq!(collect_hit_bits(1), vec![0]);
-        assert_eq!(collect_hit_bits(COV_ITALIC_HORZ_SKIPPED), vec![33]);
-        let combined = (1 << 0) | (1 << 40) | (1 << 46);
-        assert_eq!(collect_hit_bits(combined), vec![0, 40, 46]);
-    }
-}

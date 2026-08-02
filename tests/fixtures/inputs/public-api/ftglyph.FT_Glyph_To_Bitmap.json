@@ -99,6 +99,27 @@
             "coverage": [
               "ftglyph.glyph_to_bitmap:explicit-g43-m4"
             ]
+          },
+          {
+            "id": "empty-m1",
+            "assets": {
+              "outline_font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "source_creation": "FT_Get_Glyph outline",
+              "destroy": false,
+              "origin": null,
+              "glyph_index": 21,
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "ftglyph.glyph_to_bitmap:explicit-empty-m1"
+            ]
           }
         ]
       },

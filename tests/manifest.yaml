@@ -1750,6 +1750,8 @@ subjects:
         description: NO_SCALE, NO_HINTING, FORCE_AUTOHINT, VERTICAL_LAYOUT, and LINEAR_DESIGN alter units and slot fields exactly like C.
       - id: error_out_of_range_null_face_or_invalid_flags
         description: Invalid glyph indexes, null face, and unsupported flag combinations return the pinned C error and slot mutation behavior.
+      - id: sbix_bitmap_error_paths
+        description: Embedded sbix glyph records exercise missing, malformed, graphic-type, recursion, and glyph-range errors through FT_Load_Glyph.
 
   - id: freetype.FT_MulDiv
     kind: function
@@ -1816,7 +1818,7 @@ subjects:
         description: A variation font opened with named-instance bits in face_index exposes C-matching face_index, style_flags, and variation-related face_flags.
         # needs-input: concrete fixture input must be added before this case can declare font_variability coverage.
       - id: success_malformed_optional_tables_ignored
-        description: Malformed optional name or cmap tables do not make face creation fail; the face and output-pointer state match pinned FreeType while later table-specific access remains independently testable.
+        description: Malformed optional name, cmap, sbix, or SVG tables do not make face creation fail; the face and output-pointer state match pinned FreeType while later table-specific access remains independently testable.
       - id: error_null_file_base
         description: A null file_base returns the pinned C invalid-argument classification.
       - id: error_null_library_or_aface
@@ -2017,6 +2019,8 @@ subjects:
         description: Null face returns the pinned C invalid-face-handle classification through FT_Request_Size.
       - id: error_invalid_or_unscalable_face
         description: Bitmap-only, malformed, or unsupported size requests return the exact C error classification.
+      - id: error_cblc_strike_unavailable
+        description: A CBLC font requested at a ppem without a matching embedded strike returns the exact C invalid-pixel-size error and preserves the active size.
     # needs-input: operation=set_pixel_sizes; fixture_asset=input/fonts/DejaVuSans.ttf plus bitmap-only/non-scalable fixture; params pixel_width/pixel_height values 0, 1, 10, 20, asymmetric values, 0xFFFF, 0x10000, null face; expected output shape=FT_Error and active face->size->metrics x_ppem, y_ppem, x_scale, y_scale, ascender, descender, height, max_advance plus one loaded glyph metrics row; comparison=exact C oracle status and metric equality.
 
   - id: freetype.FT_Set_Transform
@@ -5568,6 +5572,12 @@ subjects:
         description: Numeric value is exactly 145, matching FT_ERRORDEF_(Name_Table_Missing, 0x91) in the pinned header.
       - id: sfnt_name_storage_out_of_bounds
         description: Loading an SFNT name table where 6 + 12*numNameRecords exceeds the table length returns FT_Err_Name_Table_Missing from ttload.c.
+      - id: sfnt_name_table_missing_diagnostic
+        description: The controlled SFNT name loader reports FT_Err_Table_Missing when a face-openable SFNT has no name table.
+      - id: sfnt_name_header_truncated_diagnostic
+        description: The controlled SFNT name loader reports FT_Err_Name_Table_Missing when a face-openable short name table crosses the stream frame but its declared table limit precedes the record array.
+      - id: sfnt_name_empty_table_success
+        description: The controlled SFNT name loader accepts a six-byte empty name table and reports FT_Err_Ok with zero names.
       - id: sfnt_without_name_table
         description: A face with the name table removed or inaccessible must match C's chosen public error exactly, including whether it is Table_Missing or Name_Table_Missing.
     # needs-input: operation=new_memory_face; fixture_asset=input/fixtures/assets/fonts/name_table_missing.ttf and input/fixtures/assets/fonts/name_table_bad_storage.ttf derived from a tiny TrueType font; params face_index=0; output shape=FT_Error, face family/style strings when creation succeeds, and table directory classification; comparison=exact C oracle error 0x91 for bad storage and exact C classification for absent table.
@@ -8499,6 +8509,8 @@ subjects:
         description: Nonzero num_coords with null coords returns Invalid_Argument before service dispatch.
       - id: output_changes_for_active_blend
         description: Non-default blend coordinates affect metrics, geometry, and render bytes exactly like the C oracle.
+      - id: output_changes_for_long_word_delta_set
+        description: An active HVAR item-variation store with long and short delta words affects glyph metrics and render bytes exactly like the C oracle.
     # needs-input: operation=FT_Set_Var_Blend_Coordinates followed by FT_Get_Var_Blend_Coordinates and glyph load/render; fixture_asset=single-axis and multi-axis variable fonts with avar/gvar/HVAR/MVAR-sensitive glyphs; params={blend_coords, num_coords, coords_null, glyph_index, size, load_flags}; output shape={FT_Error, normalized coordinates, face_flags variation bit, metrics, cbox/bbox, bitmap descriptor/bytes}; comparison=exact C oracle error code, alias coordinate behavior, variation flag, metrics, geometry, and render bytes.
 
   - id: ftmm.FT_Set_Var_Design_Coordinates

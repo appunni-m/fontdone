@@ -219,7 +219,7 @@
         "assets": {
           "allocation_failure_facade": {
             "kind": "ref",
-            "id": "facades/allocation/fail-ft-new-glyph.json"
+            "id": "facades/memory/allocation-failure.json"
           }
         },
         "params": {

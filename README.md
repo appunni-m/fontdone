@@ -102,31 +102,32 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The last committed full parity snapshot was recorded on **2026-07-31**:
+The last committed full parity snapshot was recorded on **2026-08-02**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,296 |
-| Passed cases | 7,296 |
+| Runnable exact-comparison cases | 7,469 |
+| Passed cases | 7,469 |
 | Failed cases | 0 |
-| Explicitly pending cases | 12 |
-| Covered manifest cases | 4,166 |
+| Explicitly pending cases | 3 |
+| Covered manifest cases | 4,181 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,259 |
-| Concrete expanded cases | 7,308 |
+| Logical declared cases | 4,266 |
+| Concrete expanded cases | 7,472 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,296 / 7,296` means every runnable case in that execution matched; the 12
-explicitly pending concrete cases remain pending and the route audit still
+`7,469 / 7,469` means every runnable case in that execution matched; the 3
+explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
-The latest source-matched verification is Coverage MCP run
-`0bb09385-d685-4cb6-8a70-6ab98e106967` from clean commit
-`f741a9da88867158ee92b4127862fe7eda9f6748`; its source-bound digest is
-`b7b7241032d2346baaebc6eb2066953f62a6da09f426e85d48acdfce4696a90f`.
+The latest source-matched verification is Coverage MCP parity run
+`61dddda3-5866-43ea-bd80-e84cd1d4c5b9`, recorded by run
+`b5861da0-4262-49ab-a7b3-5a6a7b27f4e9` against the dirty worktree at commit
+`ad6c489963b2797ab39e226efaa6a4690faa63ef`; its source-bound digest is
+`ff30d59c4eb4c0bbf12ba20caab957e17fef0f887c54f013bf9e3526de4dae9b`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -138,29 +139,55 @@ their exact worktree than the committed release snapshot.
 
 ### 3.3 Last measured combined coverage
 
-The last all-lane coverage run was recorded on **2026-07-30** against
-`09110a488bcc53c96def8ccf7e3d6c4e6418737f`:
+The last all-lane coverage run was recorded on **2026-08-02** against
+`ad6c489963b2797ab39e226efaa6a4690faa63ef`:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 46,028 / 51,219 | 89.87% |
-| Branches | 9,036 / 11,907 | 75.89% |
-| Functions | 3,189 / 3,639 | 87.63% |
-| Regions | 63,823 / 71,957 | 88.70% |
+| Lines | 49,267 / 54,039 | 91.17% |
+| Branches | 9,668 / 12,500 | 77.34% |
+| Functions | 3,368 / 3,825 | 88.05% |
+| Regions | 67,852 / 75,210 | 90.22% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
-ABI, and host-compiled WASM facade. The run completed in 48 minutes 58.668
-seconds while passing all 7,212 runnable parity comparisons with 0 failures;
-the 95 explicitly pending cases remain pending. Those parity counts belong to
-the historical coverage source commit above and are not a claim about the
-newer committed runtime snapshot. The maintained
-`make test-coverage-all` command runs every non-ignored
-workspace unit and integration target under the default feature profile,
-including full parity, while excluding test-harness paths from the report.
-Facade unit tests run separately before one coherent root-package coverage build
-links and measures all three surfaces; this prevents LLVM from attributing
-multiple feature builds to the same source path. Optional feature profiles are
+ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
+pending. The maintained `make test-coverage-all` command keeps all workspace
+packages in the report but executes only the `unified_fixture_parity`
+integration target, which already drives the Rust, C-ABI, and host-compiled
+WASM lanes. This avoids empty root-unit and pipe-trace binaries that can make
+LLVM count cfg-dependent FFI source twice without adding a parity input. The
+all-lane command uses a dedicated `COVERAGE_ALL_TARGET_DIR` cache, so its
+`--no-clean` reuse cannot mix stale binaries from another coverage target. The
+ABI-only package preflight still shares the two-job setup batch with the
+independent oracle/audit preparation, allowing those checks to overlap before
+one coherent coverage build links and measures all three surfaces. Optional
+feature profiles are
 verified separately by `make optional-feature-contract`.
+The latest Coverage MCP run is
+`e9b39b64-59aa-43e2-9864-9f6e018a6306`, with snapshot
+`a997c5b2-c045-491c-aae8-13b39271ac05`; it completed in 3 minutes 48.279
+seconds, with 7,469 exact parity comparisons. Its test body finished in
+115.99 seconds and the backend timings were about 42.14 seconds Rust FFI,
+30.78 seconds C ABI, 31.11 seconds WASM, and 0.04 seconds comparison. The
+previous warm baseline was 2 minutes 2.149 seconds; the extra wall time in this sample was outside the
+backend test body, in setup/reporting/ingestion and host contention. Coverage
+MCP does not currently expose timestamps for those sub-phases, so that split
+needs separate instrumentation before it can be optimized further.
+The setup change removes the duplicated Cargo launch and overlaps independent
+oracle/audit preparation; coverage builds
+now retain the instrumented target with `cargo llvm-cov --no-clean`, remove
+stale `.profraw` files before each measurement, and retain line tables while
+omitting full test debuginfo via `COVERAGE_TEST_DEBUG=1`. Face-cache keys now
+reuse the preload phase's content digests instead of hashing the same font for
+each expanded case, and read-only SFNT table-load/info routes reuse those
+content-bound handles; the variation-sequence route remains isolated. Oracle
+preparation now also preserves generated-file mtimes
+when contents are unchanged, so the C helper and FreeType validator overlay are
+not rebuilt on every run. The latest backend timings are about 42.2 seconds
+Rust FFI, 32.0 seconds C ABI, and 31.4 seconds WASM; the remaining dominant
+cost is the required instrumented three-surface parity execution. Run
+`make coverage-clean` after changing coverage instrumentation or profile
+configuration.
 
 Coverage is a code-execution signal, not a compatibility score. These
 percentages apply only to the named source commit, suite, and toolchain. Run
@@ -173,22 +200,23 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 names, signatures, and traced function routes; 5,048 / 5,048 pinned-C runtime contract rows exact, with 0 pending |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,195 / 5,195 pinned-C runtime contract rows exact |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
-| Ownership, state, errors, modules, headers | Complete under their blocking scorecard measurements |
+| Ownership, state, modules, headers | Complete under their blocking scorecard measurements |
+| Errors | 643 / 643 expected-error routes compare exact error and output results |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 
 Only `make c-abi-contract-complete` is the full-contract pass condition. The
 ordinary `make c-abi-contract` command intentionally succeeds while reporting
-remaining debt. Pending runtime rows now block the functions category, even
-when every bare function name has some traced route. The self-cleaning
+remaining debt. Unresolved function-subject routes and incomplete expected-error
+routes remain even when every bare function name has some traced route. The self-cleaning
 [completion roadmap](https://github.com/appunni-m/fontdone/blob/main/doc/ROADMAP.md) defines the exact 12-category goal.
 
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`64ef2417-f63a-4c6f-95ec-bd7d43c8228b`.
+`1766fdf5-8e70-4328-94e0-d5fab26845da`.
 
 ### 3.5 Performance baseline
 

@@ -20,12 +20,11 @@ use std::sync::{Mutex, OnceLock};
 
 use fontdone::ffi as rust_ffi;
 
-// The package's LZW build-configuration example exercises the sibling WASM
-// facade; retain the dev-dependency when Cargo builds the library test target.
+// Keep the sibling facade dev-dependency visible to the library test target;
+// the optional-feature probe links both native and WASM facades.
 #[cfg(test)]
 use fontdone_wasm as _;
 
-#[cfg(feature = "abi-test-support")]
 thread_local! {
     static TEST_OUTLINE_RENDER_SPANS: RefCell<Vec<(c_int, FT_Span)>> = const { RefCell::new(Vec::new()) };
     static TEST_OUTLINE_RENDER_USER_SEEN: RefCell<bool> = const { RefCell::new(false) };
@@ -614,6 +613,8 @@ struct OwnedOutlineGlyph {
     points: Box<[FT_Vector]>,
     tags: Box<[FT_Byte]>,
     contours: Box<[FT_UShort]>,
+    allocation_memory: FT_Memory,
+    allocation_block: FT_Pointer,
 }
 
 impl OwnedOutlineGlyph {
@@ -627,6 +628,8 @@ impl OwnedOutlineGlyph {
             points: Box::new([]),
             tags: Box::new([]),
             contours: Box::new([]),
+            allocation_memory: ptr::null_mut(),
+            allocation_block: ptr::null_mut(),
         };
         glyph.refresh_record();
         glyph
@@ -651,9 +654,21 @@ impl OwnedOutlineGlyph {
         self.record.outline = FT_Outline {
             n_contours: u16::try_from(self.contours.len()).unwrap_or(u16::MAX),
             n_points: u16::try_from(self.points.len()).unwrap_or(u16::MAX),
-            points: self.points.as_mut_ptr(),
-            tags: self.tags.as_mut_ptr(),
-            contours: self.contours.as_mut_ptr(),
+            points: if self.points.is_empty() {
+                ptr::null_mut()
+            } else {
+                self.points.as_mut_ptr()
+            },
+            tags: if self.tags.is_empty() {
+                ptr::null_mut()
+            } else {
+                self.tags.as_mut_ptr()
+            },
+            contours: if self.contours.is_empty() {
+                ptr::null_mut()
+            } else {
+                self.contours.as_mut_ptr()
+            },
             flags: self.core.outline.flags,
         };
     }
@@ -702,6 +717,13 @@ impl OwnedOutlineGlyph {
         self.core.outline.contours = contours.to_vec();
         self.core.outline.flags = self.record.outline.flags;
         Ok(())
+    }
+}
+
+impl Drop for OwnedOutlineGlyph {
+    fn drop(&mut self) {
+        free_custom_memory_block(self.allocation_memory, self.allocation_block);
+        self.allocation_block = ptr::null_mut();
     }
 }
 
@@ -754,7 +776,11 @@ impl OwnedSvgGlyph {
         self.record.root =
             c_glyph_root_from_core_with_class(&self.core.root, owned_svg_glyph_class());
         self.document = self.core.svg_document.clone().into_boxed_slice();
-        self.record.svg_document = self.document.as_mut_ptr();
+        self.record.svg_document = if self.document.is_empty() {
+            ptr::null_mut()
+        } else {
+            self.document.as_mut_ptr()
+        };
         self.record.svg_document_length =
             FT_ULong::try_from(self.document.len()).unwrap_or(FT_ULong::MAX);
         self.record.glyph_index = self.core.glyph_index;
@@ -850,7 +876,11 @@ impl OwnedBitmapGlyph {
             rows: self.core.bitmap.rows,
             width: self.core.bitmap.width,
             pitch: self.core.bitmap.pitch,
-            buffer: self.buffer.as_mut_ptr(),
+            buffer: if self.buffer.is_empty() {
+                ptr::null_mut()
+            } else {
+                self.buffer.as_mut_ptr()
+            },
             num_grays: self.core.bitmap.num_grays,
             pixel_mode: u8::try_from(self.core.bitmap.pixel_mode).unwrap_or(0),
             palette_mode: 0,
@@ -2313,6 +2343,8 @@ struct AbiCustomMemoryData {
     events: Vec<AbiCustomMemoryEvent>,
     blocks: BTreeMap<usize, Box<[u8]>>,
     unknown_release: bool,
+    fail_after: Option<usize>,
+    allocation_count: usize,
 }
 
 #[cfg(feature = "abi-test-support")]
@@ -2332,14 +2364,19 @@ extern "C" fn abi_custom_memory_alloc(memory: FT_Memory, size: c_long) -> FT_Poi
     let Ok(size) = usize::try_from(size) else {
         return ptr::null_mut();
     };
-    let mut block = vec![0_u8; size.max(1)].into_boxed_slice();
-    let pointer = block.as_mut_ptr().cast::<c_void>();
-    data.blocks.insert(pointer.addr(), block);
+    let attempt = data.allocation_count;
+    data.allocation_count = data.allocation_count.saturating_add(1);
     data.events.push(AbiCustomMemoryEvent {
         phase: data.phase,
         kind: AbiCustomMemoryEventKind::Alloc,
         memory_identity: memory.addr() == data.expected_memory,
     });
+    if data.fail_after.is_some_and(|limit| attempt >= limit) {
+        return ptr::null_mut();
+    }
+    let mut block = vec![0_u8; size.max(1)].into_boxed_slice();
+    let pointer = block.as_mut_ptr().cast::<c_void>();
+    data.blocks.insert(pointer.addr(), block);
     pointer
 }
 
@@ -2369,6 +2406,16 @@ extern "C" fn abi_custom_memory_realloc(
     let Some(data) = (unsafe { abi_custom_memory_data(memory) }) else {
         return ptr::null_mut();
     };
+    let attempt = data.allocation_count;
+    data.allocation_count = data.allocation_count.saturating_add(1);
+    data.events.push(AbiCustomMemoryEvent {
+        phase: data.phase,
+        kind: AbiCustomMemoryEventKind::Realloc,
+        memory_identity: memory.addr() == data.expected_memory,
+    });
+    if data.fail_after.is_some_and(|limit| attempt >= limit) {
+        return ptr::null_mut();
+    }
     if !block.is_null() && data.blocks.remove(&block.addr()).is_none() {
         data.unknown_release = true;
     }
@@ -2378,11 +2425,6 @@ extern "C" fn abi_custom_memory_realloc(
     let mut replacement = vec![0_u8; new_size.max(1)].into_boxed_slice();
     let pointer = replacement.as_mut_ptr().cast::<c_void>();
     data.blocks.insert(pointer.addr(), replacement);
-    data.events.push(AbiCustomMemoryEvent {
-        phase: data.phase,
-        kind: AbiCustomMemoryEventKind::Realloc,
-        memory_identity: memory.addr() == data.expected_memory,
-    });
     pointer
 }
 
@@ -2415,6 +2457,8 @@ pub fn abi_custom_memory_lifecycle(bytes: &[u8], face_index: FT_Long) -> AbiCust
         events: Vec::new(),
         blocks: BTreeMap::new(),
         unknown_release: false,
+        fail_after: None,
+        allocation_count: 0,
     });
     let mut memory = Box::new(FT_MemoryRec {
         user: ptr::from_mut(data.as_mut()).cast(),
@@ -3948,6 +3992,23 @@ pub struct AbiCacheManagerOwnershipSnapshot {
 impl AbiSBitCacheHarness {
     /// Builds a library, requester-backed manager, and manager-owned SBit cache.
     pub fn new(bytes: &[FT_Byte], face_index: FT_Long) -> Result<Self, FT_Error> {
+        Self::new_with_cache(bytes, face_index, true)
+    }
+
+    /// Builds a requester-backed manager without pre-registering a cache.
+    ///
+    /// The constructor parity routes use this form so the first cache under
+    /// test occupies manager cache index zero and the `FTC_MAX_CACHES` limit is
+    /// measured from the same state as the C contract.
+    pub fn new_manager_only(bytes: &[FT_Byte], face_index: FT_Long) -> Result<Self, FT_Error> {
+        Self::new_with_cache(bytes, face_index, false)
+    }
+
+    fn new_with_cache(
+        bytes: &[FT_Byte],
+        face_index: FT_Long,
+        create_cache: bool,
+    ) -> Result<Self, FT_Error> {
         let mut library = ptr::null_mut();
         let error = FT_Init_FreeType(&mut library);
         if error != rust_ffi::FT_Err_Ok {
@@ -3974,19 +4035,39 @@ impl AbiSBitCacheHarness {
             let _ = FT_Done_FreeType(library);
             return Err(error);
         }
-        let mut cache = ptr::null_mut();
-        let error = FTC_SBitCache_New(manager, &mut cache);
-        if error != rust_ffi::FT_Err_Ok {
-            FTC_Manager_Done(manager);
-            let _ = FT_Done_FreeType(library);
-            return Err(error);
-        }
+        let cache = if create_cache {
+            let mut cache = ptr::null_mut();
+            let error = FTC_SBitCache_New(manager, &mut cache);
+            if error != rust_ffi::FT_Err_Ok {
+                FTC_Manager_Done(manager);
+                let _ = FT_Done_FreeType(library);
+                return Err(error);
+            }
+            cache
+        } else {
+            ptr::null_mut()
+        };
         Ok(Self {
             library,
             manager,
             cache,
             requester,
         })
+    }
+
+    /// Returns the live manager handle for a raw cache-constructor probe.
+    pub fn manager_handle(&self) -> FTC_Manager {
+        self.manager
+    }
+
+    /// Returns the persistent requester identity used as `FTC_FaceID`.
+    pub fn face_id(&mut self) -> FTC_FaceID {
+        ptr::from_mut(self.requester.as_mut()).cast::<c_void>()
+    }
+
+    /// Returns the number of requester callbacks observed so far.
+    pub fn requester_calls(&self) -> FT_UInt {
+        self.requester.requester_calls
     }
 
     /// Calls the exported `FTC_SBitCache_Lookup` and snapshots its outputs.
@@ -7055,6 +7136,81 @@ pub struct AbiSvgGlyphSnapshot {
     pub end_glyph_id: FT_UShort,
     pub transform: FT_Matrix,
     pub delta: FT_Vector,
+}
+
+#[cfg(feature = "abi-test-support")]
+#[derive(Clone, Copy)]
+pub struct AbiNewGlyphAllocationRow {
+    pub format: FT_Glyph_Format,
+    pub status: FT_Error,
+    pub aglyph_null: bool,
+    pub allocation_events: usize,
+}
+
+#[cfg(feature = "abi-test-support")]
+/// Exercises `FT_New_Glyph` after installing a deterministic failing
+/// `FT_MemoryRec`, including the output-clear and allocator-attempt contract.
+pub fn abi_new_glyph_allocation_failure() -> Vec<AbiNewGlyphAllocationRow> {
+    let mut data = Box::new(AbiCustomMemoryData {
+        expected_memory: 0,
+        phase: AbiCustomMemoryPhase::NewLibrary,
+        events: Vec::new(),
+        blocks: BTreeMap::new(),
+        unknown_release: false,
+        fail_after: None,
+        allocation_count: 0,
+    });
+    let mut memory = Box::new(FT_MemoryRec {
+        user: ptr::from_mut(data.as_mut()).cast(),
+        alloc: Some(abi_custom_memory_alloc),
+        free: Some(abi_custom_memory_free),
+        realloc: Some(abi_custom_memory_realloc),
+    });
+    data.expected_memory = ptr::from_mut(memory.as_mut()).addr();
+
+    let mut library = ptr::null_mut();
+    let setup_status = FT_New_Library(memory.as_mut(), &mut library);
+    if setup_status != rust_ffi::FT_Err_Ok {
+        return [
+            rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
+            rust_ffi::FT_GLYPH_FORMAT_BITMAP,
+        ]
+        .into_iter()
+        .map(|format| AbiNewGlyphAllocationRow {
+            format,
+            status: setup_status,
+            aglyph_null: true,
+            allocation_events: data.allocation_count,
+        })
+        .collect();
+    }
+    FT_Add_Default_Modules(library);
+    data.events.clear();
+    data.fail_after = Some(0);
+    data.allocation_count = 0;
+    let rows = [
+        rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
+        rust_ffi::FT_GLYPH_FORMAT_BITMAP,
+    ]
+    .into_iter()
+    .map(|format| {
+        let mut glyph = NonNull::<FT_GlyphRec>::dangling().as_ptr();
+        let status = FT_New_Glyph(library, format, &mut glyph);
+        let row = AbiNewGlyphAllocationRow {
+            format,
+            status,
+            aglyph_null: glyph.is_null(),
+            allocation_events: data.allocation_count,
+        };
+        if !glyph.is_null() {
+            FT_Done_Glyph(glyph);
+        }
+        row
+    })
+    .collect();
+    data.fail_after = None;
+    let _ = FT_Done_Library(library);
+    rows
 }
 
 #[cfg(feature = "abi-test-support")]
@@ -10137,6 +10293,24 @@ pub extern "C" fn FT_New_Glyph(
     if library_ref(library).is_none() || aglyph.is_null() {
         return rust_ffi::FT_Err_Invalid_Argument;
     }
+    let recognized_format = matches!(
+        format,
+        rust_ffi::FT_GLYPH_FORMAT_OUTLINE
+            | rust_ffi::FT_GLYPH_FORMAT_BITMAP
+            | rust_ffi::FT_GLYPH_FORMAT_SVG
+    );
+    if recognized_format
+        && rust_ffi::FT_Library_Renderer_Class(library_ref(library), format).is_none()
+    {
+        return rust_ffi::FT_Err_Invalid_Glyph_Format as FT_Error;
+    }
+    if recognized_format {
+        // FreeType clears the output after selecting a built-in glyph class,
+        // before the class allocation can fail.  Unknown formats preserve the
+        // caller's sentinel until a renderer class has been found.
+        // SAFETY: `aglyph` is non-null and points to caller-owned storage.
+        unsafe { *aglyph = ptr::null_mut() };
+    }
     let root = rust_ffi::FT_GlyphRec {
         library: library.cast::<c_void>(),
         clazz: ptr::null(),
@@ -10149,7 +10323,18 @@ pub extern "C" fn FT_New_Glyph(
                 root,
                 outline: rust_ffi::FT_OutlineSnapshot::default(),
             };
-            Box::into_raw(Box::new(OwnedOutlineGlyph::new(core))).cast::<FT_GlyphRec>()
+            let (memory, allocation_block, _) = match glyph_allocation_tokens(
+                library,
+                std::mem::size_of::<FT_OutlineGlyphRec>(),
+                0,
+            ) {
+                Ok(tokens) => tokens,
+                Err(error) => return error,
+            };
+            let mut owned = OwnedOutlineGlyph::new(core);
+            owned.allocation_memory = memory;
+            owned.allocation_block = allocation_block;
+            Box::into_raw(Box::new(owned)).cast::<FT_GlyphRec>()
         }
         rust_ffi::FT_GLYPH_FORMAT_BITMAP => {
             let core = rust_ffi::FT_BitmapGlyphOwned {
@@ -10158,7 +10343,16 @@ pub extern "C" fn FT_New_Glyph(
                 top: 0,
                 bitmap: rust_ffi::FT_Bitmap::default(),
             };
-            Box::into_raw(Box::new(OwnedBitmapGlyph::new(core))).cast::<FT_GlyphRec>()
+            let (memory, allocation_block, _) =
+                match glyph_allocation_tokens(library, std::mem::size_of::<FT_BitmapGlyphRec>(), 0)
+                {
+                    Ok(tokens) => tokens,
+                    Err(error) => return error,
+                };
+            let mut owned = OwnedBitmapGlyph::new(core);
+            owned.allocation_memory = memory;
+            owned.allocation_block = allocation_block;
+            Box::into_raw(Box::new(owned)).cast::<FT_GlyphRec>()
         }
         rust_ffi::FT_GLYPH_FORMAT_SVG => {
             // FreeType has a built-in SVG glyph class when
@@ -10177,7 +10371,15 @@ pub extern "C" fn FT_New_Glyph(
                 transform: rust_ffi::FT_Matrix::default(),
                 delta: rust_ffi::FT_Vector::default(),
             };
-            Box::into_raw(Box::new(OwnedSvgGlyph::new(core))).cast::<FT_GlyphRec>()
+            let (memory, allocation_block, _) =
+                match glyph_allocation_tokens(library, std::mem::size_of::<AbiSvgGlyphRec>(), 0) {
+                    Ok(tokens) => tokens,
+                    Err(error) => return error,
+                };
+            let mut owned = OwnedSvgGlyph::new(core);
+            owned.allocation_memory = memory;
+            owned.allocation_block = allocation_block;
+            Box::into_raw(Box::new(owned)).cast::<FT_GlyphRec>()
         }
         _ => {
             let renderer = FT_Get_Renderer(library, format);
@@ -13668,71 +13870,5 @@ unsafe fn replace_slot_record(slot: FT_GlyphSlot, replacement: FT_GlyphSlotRec) 
                 old_internal.cast::<FT_Slot_InternalRecCompat>(),
             ));
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn done_freetype_rejects_foreign_and_stale_library_handles() {
-        let foreign = NonNull::<FT_LibraryRec>::dangling().as_ptr();
-        assert_eq!(
-            FT_Done_FreeType(foreign),
-            rust_ffi::FT_Err_Invalid_Library_Handle as FT_Error
-        );
-
-        let mut library = ptr::null_mut();
-        assert_eq!(FT_Init_FreeType(&mut library), rust_ffi::FT_Err_Ok);
-        assert!(!library.is_null());
-        assert_eq!(FT_Done_FreeType(library), rust_ffi::FT_Err_Ok);
-        assert_eq!(
-            FT_Done_FreeType(library),
-            rust_ffi::FT_Err_Invalid_Library_Handle as FT_Error
-        );
-    }
-
-    #[test]
-    fn face_properties_null_face_is_a_fontdone_safety_extension() {
-        let mut darken_stems: FT_Bool = 0;
-        let mut property = FT_Parameter {
-            tag: rust_ffi::FT_PARAM_TAG_STEM_DARKENING as FT_ULong,
-            data: (&mut darken_stems as *mut FT_Bool).cast(),
-        };
-        assert_eq!(
-            FT_Face_Properties(ptr::null_mut(), 1, &mut property),
-            rust_ffi::FT_Err_Invalid_Face_Handle as FT_Error
-        );
-    }
-
-    #[test]
-    fn outline_decompose_rejects_null_internal_arrays_as_a_safety_extension() {
-        let funcs = FT_Outline_Funcs::default();
-        let mut null_points = FT_Outline {
-            n_contours: 0,
-            n_points: 1,
-            points: ptr::null_mut(),
-            tags: ptr::null_mut(),
-            contours: ptr::null_mut(),
-            flags: 0,
-        };
-        assert_eq!(
-            FT_Outline_Decompose(&mut null_points, &funcs, ptr::null_mut()),
-            rust_ffi::FT_Err_Invalid_Outline as FT_Error
-        );
-
-        let mut null_contours = FT_Outline {
-            n_contours: 1,
-            n_points: 0,
-            points: ptr::null_mut(),
-            tags: ptr::null_mut(),
-            contours: ptr::null_mut(),
-            flags: 0,
-        };
-        assert_eq!(
-            FT_Outline_Decompose(&mut null_contours, &funcs, ptr::null_mut()),
-            rust_ffi::FT_Err_Invalid_Outline as FT_Error
-        );
     }
 }

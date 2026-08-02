@@ -948,6 +948,402 @@
             },
             "params": {"face_index": 0, "memory_source": "whole_file"},
             "coverage": ["tt/cmap:encoding-record-array-overflow-ignored-at-face-open"]
+          },
+          {
+            "id": "gvar-short-table",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-short.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-short.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/gvar:short-table-ignored-at-face-open"]
+          },
+          {
+            "id": "gvar-unsupported-version",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-version-2.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-version-2.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/gvar:unsupported-version-ignored-at-face-open"]
+          },
+          {
+            "id": "gvar-glyph-count-mismatch",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-glyph-count-mismatch.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-glyph-count-mismatch.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/gvar:glyph-count-mismatch-ignored-at-face-open"]
+          },
+          {
+            "id": "gvar-offset-array-short",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-offset-array-short.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-offset-array-short.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/gvar:offset-array-truncated-ignored-at-face-open"]
+          },
+          {
+            "id": "gvar-shared-tuple",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-shared-tuple.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-shared-tuple.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/gvar:shared-tuple-and-short-offsets"]
+          },
+          {
+            "id": "gvar-long-offsets",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-long-offsets.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-long-offsets.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/gvar:long-offsets"]
+          },
+          {
+            "id": "gvar-packed-edge",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-packed-edge.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-packed-edge.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/gvar:embedded-intermediate-packed-record"]
+          },
+          {
+            "id": "gvar-shared-points",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-shared-points.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-shared-points.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/gvar:shared-point-list"]
+          },
+          {
+            "id": "gvar-axis-count-mismatch",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-axis-count-mismatch.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-axis-count-mismatch.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/gvar:axis-count-mismatch-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-short-table",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-short.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-short.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/hvar:short-table-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-unsupported-version",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-version-2.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-version-2.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/hvar:unsupported-version-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-no-advance-map",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-no-advance-map.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-no-advance-map.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/hvar:default-advance-map"]
+          },
+          {
+            "id": "hvar-map-format-one",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-format-one.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-format-one.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:delta-set-map-format-one"]
+          },
+          {
+            "id": "hvar-map-sentinel",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-sentinel.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-sentinel.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:delta-set-map-sentinel"]
+          },
+          {
+            "id": "hvar-long-words",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-long-words.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-long-words.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:long-word-delta-set"]
+          },
+          {
+            "id": "hvar-store-format-2",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-format-2.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-format-2.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:unsupported-store-format-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-store-no-var-data",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-no-var-data.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-no-var-data.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:no-var-data-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-store-axis-count-mismatch",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-axis-count-mismatch.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-axis-count-mismatch.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:axis-count-mismatch-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-store-region-count-limit",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-region-count-limit.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-region-count-limit.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:region-count-limit-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-store-invalid-delta-counts",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-invalid-delta-counts.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-invalid-delta-counts.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:invalid-delta-counts-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-store-region-index-out-of-range",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-region-index-out-of-range.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-region-index-out-of-range.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:region-index-out-of-range-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-store-delta-set-truncated",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-delta-set-truncated.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-delta-set-truncated.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:delta-set-truncated-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-map-format-unsupported",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-format-unsupported.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-format-unsupported.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:unsupported-map-format-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-map-entry-format-invalid",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-entry-format-invalid.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-entry-format-invalid.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:invalid-map-entry-format-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-map-entry-truncated",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-entry-truncated.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-entry-truncated.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:map-entry-truncated-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-map-outer-index-out-of-range",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-outer-index-out-of-range.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-outer-index-out-of-range.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:map-outer-index-out-of-range-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-map-inner-index-out-of-range",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-inner-index-out-of-range.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-inner-index-out-of-range.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:map-inner-index-out-of-range-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-map-empty",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-empty.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-empty.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:empty-map-falls-back-to-direct-index"]
+          },
+          {
+            "id": "hvar-store-empty-region-indexes",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-empty-region-indexes.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-empty-region-indexes.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:empty-region-indexes-return-zero"]
+          },
+          {
+            "id": "mvar-short-table",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-short.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-short.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/mvar:short-table-ignored-at-face-open"]
+          },
+          {
+            "id": "mvar-unsupported-version",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-version-2.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-version-2.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/mvar:unsupported-version-ignored-at-face-open"]
+          },
+          {
+            "id": "mvar-record-size-small",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-record-size-small.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-record-size-small.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/mvar:record-size-too-small-ignored-at-face-open"]
+          },
+          {
+            "id": "mvar-record-array-short",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-record-array-short.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-record-array-short.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/mvar:record-array-truncated-ignored-at-face-open"]
+          },
+          {
+            "id": "mvar-unknown-record",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-unknown-record.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-unknown-record.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/mvar:unknown-record-ignored-at-face-open"]
+          },
+          {
+            "id": "sbix-short-table",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/sbix/sbix-short-table.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/sbix/sbix-short-table.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/sbix:short-table-ignored-at-face-open"]
+          },
+          {
+            "id": "sbix-version-zero",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/sbix/sbix-version-zero.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/sbix/sbix-version-zero.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/sbix:unsupported-version-ignored-at-face-open"]
+          },
+          {
+            "id": "sbix-invalid-flags",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/sbix/sbix-invalid-flags.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/sbix/sbix-invalid-flags.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/sbix:invalid-flags-ignored-at-face-open"]
+          },
+          {
+            "id": "sbix-strike-count-overflow",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/sbix/sbix-strike-count-overflow.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/sbix/sbix-strike-count-overflow.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/sbix:strike-count-overflow-ignored-at-face-open"]
+          },
+          {
+            "id": "svg-short-table",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/svg/svg-short-table.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/svg/svg-short-table.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/svg:short-table-ignored-at-face-open"]
+          },
+          {
+            "id": "svg-list-offset-before-header",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/svg/svg-list-offset-before-header.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/svg/svg-list-offset-before-header.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/svg:list-offset-before-header-ignored-at-face-open"]
+          },
+          {
+            "id": "svg-list-offset-out-of-range",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/svg/svg-list-offset-out-of-range.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/svg/svg-list-offset-out-of-range.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/svg:list-offset-out-of-range-ignored-at-face-open"]
+          },
+          {
+            "id": "svg-document-records-truncated",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/svg/svg-document-records-truncated.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/svg/svg-document-records-truncated.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/svg:document-records-truncated-ignored-at-face-open"]
+          },
+          {
+            "id": "svg-document-out-of-bounds",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/svg/svg-document-out-of-bounds.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/svg/svg-document-out-of-bounds.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/svg:document-out-of-bounds-ignored-at-face-open"]
+          },
+          {
+            "id": "svg-gzip-document",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/svg/svg-gzip-document.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/svg/svg-gzip-document.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/svg:gzip-document-ignored-at-face-open"]
           }
         ]
       },
@@ -960,7 +1356,7 @@
         "status": "ok",
         "output_shape": {
           "return": "FT_Error",
-          "opened": "true_even_when_optional_name_or_cmap_table_is_malformed"
+          "opened": "true_even_when_optional_name_cmap_sbix_or_svg_table_is_malformed"
         },
         "compare": {
           "mode": "exact",
@@ -972,7 +1368,8 @@
         "source_refs": [
           "freetype/src/sfnt/sfobjs.c:sfnt_open_font",
           "freetype/src/sfnt/ttload.c:tt_face_load_name",
-          "freetype/src/sfnt/ttcmap.c:tt_face_build_cmaps"
+          "freetype/src/sfnt/ttcmap.c:tt_face_build_cmaps",
+          "freetype/src/sfnt/ttsvg.c:tt_face_load_svg"
         ]
       }
     },
@@ -1452,6 +1849,24 @@
             "coverage": [ "tt/cff:top-dict-real-operand-missing-charstrings-error" ]
           },
           {
+            "id": "cff-top-dict-real-exponent-operand-missing-charstrings",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-real-exponent-operand-missing-charstrings.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-real-exponent-operand-missing-charstrings.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff:top-dict-real-exponent-operand-missing-charstrings-error" ]
+          },
+          {
+            "id": "cff-top-dict-real-negative-operand-missing-charstrings",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-real-negative-operand-missing-charstrings.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-real-negative-operand-missing-charstrings.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff:top-dict-real-negative-operand-missing-charstrings-error" ]
+          },
+          {
             "id": "cff-top-dict-positive-operand-missing-charstrings",
             "assets": {
               "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-positive-operand-missing-charstrings.otf" },
@@ -1477,6 +1892,105 @@
             },
             "params": { "variants": [ { "face_index": 0 } ] },
             "coverage": [ "tt/cff:top-dict-invalid-number-error" ]
+          },
+          {
+            "id": "cff2-short-header",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-short-header.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-short-header.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff2:face-open-short-header-error" ]
+          },
+          {
+            "id": "cff2-wrong-major-version",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-wrong-major-version.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-wrong-major-version.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff2:unsupported-major-version-error" ]
+          },
+          {
+            "id": "cff2-invalid-header-size",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-invalid-header-size.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-invalid-header-size.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff2:invalid-header-size-error" ]
+          },
+          {
+            "id": "cff2-top-dict-truncated",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-top-dict-truncated.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-top-dict-truncated.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff2:top-dict-truncated-error" ]
+          },
+          {
+            "id": "cff2-missing-charstrings",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-missing-charstrings.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-missing-charstrings.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff2:missing-charstrings-error" ]
+          },
+          {
+            "id": "cff2-global-index-count-truncated",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-global-index-count-truncated.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-global-index-count-truncated.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff2:global-index-count-truncated-error" ]
+          },
+          {
+            "id": "cff2-global-index-invalid-offsize",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-global-index-invalid-offsize.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-global-index-invalid-offsize.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff2:global-index-invalid-offsize-error" ]
+          },
+          {
+            "id": "cff2-global-index-offset-truncated",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-global-index-offset-truncated.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-global-index-offset-truncated.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff2:global-index-offset-truncated-error" ]
+          },
+          {
+            "id": "cff2-global-index-offset-underflow",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-global-index-offset-underflow.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-global-index-offset-underflow.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff2:global-index-offset-underflow-error" ]
+          },
+          {
+            "id": "cff2-global-index-offsets-out-of-order",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-global-index-offsets-out-of-order.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-global-index-offsets-out-of-order.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff2:global-index-offset-order-error" ]
+          },
+          {
+            "id": "cff2-global-index-object-overflow",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-global-index-object-overflow.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-global-index-object-overflow.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff2:global-index-object-overflow-error" ]
           }
         ]
       },

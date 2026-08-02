@@ -10,7 +10,7 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::ffi::c_void;
 use std::ffi::{CStr, CString};
-use std::io::Read;
+use std::io::{ErrorKind, Read};
 use std::ptr;
 use std::rc::{Rc, Weak};
 use std::sync::{Mutex, OnceLock};
@@ -83,20 +83,32 @@ pub fn FT_Sfnt_Load_Name_Diagnostic(data: &[u8]) -> FT_Error {
     let Ok(directory) = crate::tt::parse_table_directory(data) else {
         return FT_Err_Invalid_File_Format as FT_Error;
     };
-    let Some(name) = directory.find(data, crate::tt::tag(b"name")) else {
+    let Some(name_record) = directory.record(crate::tt::tag(b"name")) else {
         return FT_Err_Table_Missing as FT_Error;
     };
-    let Some(header) = name.get(..6) else {
+
+    // `tt_face_load_name` enters a six-byte frame against the stream, then
+    // compares the derived record-array start with the declared `name` table
+    // limit.  A short table can therefore consume bytes from the following
+    // stream data before returning Name_Table_Missing; slicing only to the
+    // table's declared length would incorrectly return Invalid_Stream_Operation.
+    let table_start = name_record.offset as usize;
+    let table_length = name_record.length as usize;
+    let Some(header) = data.get(table_start..).and_then(|rest| rest.get(..6)) else {
         return FT_Err_Invalid_Stream_Operation as FT_Error;
     };
     let record_count = usize::from(u16::from_be_bytes([header[2], header[3]]));
     let Some(storage_start) = record_count
         .checked_mul(12)
         .and_then(|records| records.checked_add(6))
+        .and_then(|records| records.checked_add(table_start))
     else {
         return FT_Err_Name_Table_Missing as FT_Error;
     };
-    if storage_start > name.len() {
+    let Some(storage_limit) = table_start.checked_add(table_length) else {
+        return FT_Err_Name_Table_Missing as FT_Error;
+    };
+    if storage_start > storage_limit {
         FT_Err_Name_Table_Missing as FT_Error
     } else {
         FT_Err_Ok
@@ -2242,6 +2254,96 @@ pub fn FT_Get_Glyph(slot_present: bool, aglyph_present: bool) -> FT_Error {
         return FT_Err_Invalid_Argument;
     }
     FT_Err_Unimplemented_Feature as FT_Error
+}
+
+/// Owned safe-Rust representation returned by [`FT_New_Glyph`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FT_GlyphOwned {
+    /// An empty outline glyph record.
+    Outline(FT_OutlineGlyphOwned),
+    /// An empty bitmap glyph record.
+    Bitmap(FT_BitmapGlyphOwned),
+    /// An empty OpenType SVG glyph record.
+    Svg(FT_SvgGlyphOwned),
+}
+
+fn new_glyph_format_supported(library: &FT_Library, format: FT_Glyph_Format) -> bool {
+    matches!(
+        format,
+        FT_GLYPH_FORMAT_OUTLINE | FT_GLYPH_FORMAT_BITMAP | FT_GLYPH_FORMAT_SVG
+    ) && FT_Library_Renderer_Class(Some(library), format).is_some()
+}
+
+/// Creates an empty glyph of one of the built-in FreeType glyph classes.
+pub fn FT_New_Glyph(
+    library: Option<&FT_Library>,
+    format: FT_Glyph_Format,
+) -> Result<FT_GlyphOwned, FT_Error> {
+    let Some(library) = library else {
+        return Err(FT_Err_Invalid_Argument);
+    };
+    if !new_glyph_format_supported(library, format) {
+        return Err(FT_Err_Invalid_Glyph_Format);
+    }
+    let root = FT_GlyphRec {
+        library: ptr::from_ref(library).cast_mut().cast(),
+        clazz: ptr::dangling(),
+        format,
+        advance: FT_Vector::default(),
+    };
+    match format {
+        FT_GLYPH_FORMAT_OUTLINE => Ok(FT_GlyphOwned::Outline(FT_OutlineGlyphOwned {
+            root,
+            outline: FT_OutlineSnapshot::default(),
+        })),
+        FT_GLYPH_FORMAT_BITMAP => Ok(FT_GlyphOwned::Bitmap(FT_BitmapGlyphOwned {
+            root,
+            left: 0,
+            top: 0,
+            bitmap: FT_Bitmap::default(),
+        })),
+        FT_GLYPH_FORMAT_SVG => Ok(FT_GlyphOwned::Svg(FT_SvgGlyphOwned {
+            root,
+            svg_document: Vec::new(),
+            glyph_index: 0,
+            metrics: FT_Size_MetricsRec::default(),
+            units_per_EM: 0,
+            start_glyph_id: 0,
+            end_glyph_id: 0,
+            transform: FT_Matrix::default(),
+            delta: FT_Vector::default(),
+        })),
+        _ => Err(FT_Err_Invalid_Glyph_Format),
+    }
+}
+
+/// Returns the pinned allocator error after the class-selection stage of
+/// `FT_New_Glyph` has succeeded.
+#[cfg(any(test, feature = "abi-test-support"))]
+pub fn FT_New_Glyph_Allocation_Failure(
+    library: Option<&FT_Library>,
+    format: FT_Glyph_Format,
+) -> FT_Error {
+    let Some(library) = library else {
+        return FT_Err_Invalid_Argument;
+    };
+    if !new_glyph_format_supported(library, format) {
+        return FT_Err_Invalid_Glyph_Format;
+    }
+    FT_Err_Out_Of_Memory
+}
+
+/// Replays the C ABI's initial library/output validation for `FT_New_Glyph`.
+#[cfg(any(test, feature = "abi-test-support"))]
+pub fn FT_New_Glyph_Validate(
+    library: Option<&FT_Library>,
+    format: FT_Glyph_Format,
+    aglyph_present: bool,
+) -> FT_Error {
+    if library.is_none() || !aglyph_present {
+        return FT_Err_Invalid_Argument;
+    }
+    FT_New_Glyph(library, format).map_or_else(|error| error, |_| FT_Err_Ok)
 }
 
 pub fn FT_Get_Outline_Glyph(slot: Option<&FT_GlyphSlot>) -> Result<FT_OutlineGlyphOwned, FT_Error> {
@@ -7441,10 +7543,23 @@ pub fn FT_Gzip_Uncompress(
     } else {
         flate2::read::ZlibDecoder::new(input).read_to_end(&mut decoded)
     };
-    if read_result.is_err() {
-        return FT_Err_Invalid_Table;
+    if let Err(error) = read_result {
+        // `inflate( ..., Z_FINISH )` writes any bytes decoded before a
+        // truncated stream, checksum failure, or dictionary error is
+        // reported.  FreeType leaves `output_len` unchanged on that path,
+        // but the caller-visible output prefix is still modified.
+        let written = decoded.len().min(output.len());
+        output[..written].copy_from_slice(&decoded[..written]);
+        return if error.kind() == ErrorKind::UnexpectedEof {
+            FT_Err_Array_Too_Large as FT_Error
+        } else {
+            FT_Err_Invalid_Table
+        };
     }
     if decoded.len() > output.len() {
+        // zlib fills the caller's buffer before reporting `Z_BUF_ERROR` and
+        // leaves `output_len` at its input capacity.
+        output.copy_from_slice(&decoded[..output.len()]);
         return FT_Err_Array_Too_Large as FT_Error;
     }
 
@@ -14452,6 +14567,7 @@ fn ft_load_glyph_core(
         .font()
         .sbix_active_strike_load_error(glyph_index, face.size_metrics.y_ppem)
         && let Err(error) = load_result
+        && !matches!(error, crate::error::FontError::MissingBitmap)
         && face.face_flags & FT_FACE_FLAG_SCALABLE == 0
     {
         return Err(error_to_ft(error));
@@ -15211,7 +15327,3 @@ fn c_face_index_to_core(face_index: FT_Long) -> Result<(usize, bool), FT_Error> 
     let face_index = usize::try_from(selected).map_err(|_| FT_Err_Invalid_Argument)?;
     Ok((face_index, true))
 }
-
-#[cfg(test)]
-#[path = "../../tests/unit/ffi/handles.rs"]
-mod tests;

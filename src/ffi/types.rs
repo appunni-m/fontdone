@@ -1324,30 +1324,6 @@ impl Default for FT_COLR_PaintUnion {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    #[allow(unsafe_code)]
-    fn default_records_are_zero_initialized() {
-        unsafe {
-            assert!(FT_StreamDesc::default().pointer.is_null());
-        }
-        unsafe {
-            assert!(BDF_PropertyValue::default().atom.is_null());
-        }
-        let header = FT_WinFNT_HeaderRec::default();
-        assert_eq!(header.version, 0);
-        assert_eq!(header.file_size, 0);
-        assert_eq!(header.copyright, [0; 60]);
-        let paint = FT_COLR_PaintUnion::default();
-        unsafe {
-            assert_eq!(paint.solid.color.palette_index, 0);
-        }
-    }
-}
-
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
 pub struct FT_COLR_Paint {

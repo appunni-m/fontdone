@@ -39,8 +39,8 @@ licenses are enforced by `make supply-chain`.
 
 | Generator | Classification | Input or provenance |
 |---|---|---|
-| `build_autohint_script_fixtures.py` | Synthetic | Project-authored outlines and tables; one internal copy remains within the generated synthetic family. |
-| `build_cff_fixtures.py` | Synthetic | Project-authored CFF1/CFF2, TrueType control, and malformed table data. |
+| `build_autohint_script_fixtures.py` | Synthetic | Project-authored outlines and tables; one internal copy remains within the generated synthetic family, including malformed `loca` boundary controls. |
+| `build_cff_fixtures.py` | Synthetic | Project-authored CFF1/CFF2, TrueType control, and malformed CFF1/CFF2 table and INDEX data. |
 | `build_render_fixtures.py` | Synthetic | Project-authored outlines and TrueType programs. |
 | `build_type1_fixtures.py` | Synthetic | Project-authored Type 1 charstrings, dictionaries, AFM data, notices, and a naked CID-keyed Type 1 resource. |
 | `build_type42_fixtures.py` | Synthetic | Project-authored embedded TrueType tables, outlines, names, and Type 42 wrapper. |
@@ -52,14 +52,14 @@ licenses are enforced by `make supply-chain`.
 | `build_hinter_edge_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
 | `build_metric_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
 | `build_post_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
-| `build_sbit_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; bitmap outputs add project-authored EBLC/EBDT records, including the maintained `embedded-strikes.ttf` face-record input and the SFNT-BDF derivative. |
-| `build_sbix_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; adds one project-authored `sbix` strike (24 ppem) with a minimal `png ` record. The pinned oracle build has PNG decoding disabled, so glyph loading observes the public `Unimplemented_Feature` path while face flags and fixed-size strikes remain comparable. |
+| `build_sbit_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; bitmap outputs add project-authored EBLC/EBDT records, including the maintained `embedded-strikes.ttf` face-record input, the SFNT-BDF derivative, and a CBLC/CBDT strike-metrics normalization matrix. |
+| `build_sbix_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; adds project-authored 24 ppem `sbix` controls for PNG/JPEG/TIFF/RGBL/unknown graphic types, `dupe`/`flip` recursion, missing and malformed glyph ranges, and malformed optional-table face-open guards. The pinned oracle build has PNG decoding disabled, so the public error paths remain deterministic. |
 | `build_interpreter_version_fixtures.py` | Synthetic | Project-authored off-grid TrueType outlines and GETINFO-branching glyph programs (`MDAP`), plus a no-instruction control font. Loaded with `FT_LOAD_RENDER`, the hinted outlines and advances differ between interpreter versions 35 and 40 exactly as pinned FreeType reports. |
 | `build_pcf_fixtures.py` | Synthetic | Project-authored PCF directory, properties, accelerators, metrics, bitmap, and encoding tables. |
-| `build_pfr_fixtures.py` | Synthetic | Project-authored PFR v4 logical/physical font records, character advances, and kerning pairs; no third-party font material. |
-| `build_svg_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; adds one project-authored plain-XML OpenType SVG document and deterministic vertical metrics. |
+| `build_pfr_fixtures.py` | Synthetic | Project-authored PFR v4 logical/physical font records, fixed and proportional character advances, all descriptor-width flags, optional logical fields, and narrow/wide kerning pairs; no third-party font material. |
+| `build_svg_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; adds one project-authored plain-XML OpenType SVG document, deterministic vertical metrics, and malformed optional-table controls for list offsets, records, document ranges, gzip rejection, and short tables. |
 | `build_sfnt_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; the seven valid OpenType fixtures contain only project-authored BASE/GDEF/GPOS/GSUB/JSTF/MATH data. Seven malformed variants replace selected tables with deterministic one-byte payloads; `partial-malformed-layout.otf` retains valid GDEF/GPOS/GSUB and fails on the later MATH validation step. No third-party font is used. |
-| `build_ftmm_future_variable_fixtures.py` | Synthetic derivative | Repository-generated compact variable and MVAR fixtures. |
+| `build_ftmm_future_variable_fixtures.py` | Synthetic derivative | Repository-generated compact variable, packed `gvar`, HVAR store/map and active mixed-width delta fixtures, and MVAR guard/record fixtures, including malformed optional-table face-open controls, private all-point and partial-point IUP runs, and empty-outline variation loads. |
 | `build_fvar_fixtures.py` | Synthetic derivative | Repository-generated `compact-variable.ttf`. |
 | `build_mvar_fixtures.py` | Synthetic derivative | Repository-generated `compact-variable.ttf`. |
 | `build_name_fixtures.py` | Synthetic derivative | Repository-generated static and variable base fixtures. |

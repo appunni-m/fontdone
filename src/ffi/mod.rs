@@ -43,10 +43,10 @@ pub use convert::pixel_mode_from_core;
 /// Converts a FreeType render-mode value into the core rasterization mode.
 pub use convert::render_mode_to_core;
 pub use handles::{
-    FT_Face, FT_Face_Properties_State, FT_Face_Property, FT_Face_Property_Value, FT_GlyphSlot,
-    FT_Installed_Module_Info, FT_Library, FT_Module_Callback_Behavior, FT_Module_Class_Info,
-    FT_Open_Face_Name_Options, FT_Stroker, FTCCacheManagerState, FTCSBitCacheLookup,
-    FTCSBitCacheState, FTOutlineDecomposeEvent, FTOutlineDecomposeRun,
+    FT_Face, FT_Face_Properties_State, FT_Face_Property, FT_Face_Property_Value, FT_GlyphOwned,
+    FT_GlyphSlot, FT_Installed_Module_Info, FT_Library, FT_Module_Callback_Behavior,
+    FT_Module_Class_Info, FT_Open_Face_Name_Options, FT_Stroker, FTCCacheManagerState,
+    FTCSBitCacheLookup, FTCSBitCacheState, FTOutlineDecomposeEvent, FTOutlineDecomposeRun,
 };
 
 macro_rules! export_freetype_routes {
@@ -143,6 +143,7 @@ export_freetype_routes!(
     FT_Get_Multi_Master,
     FT_Get_Name_Index,
     FT_Get_Next_Char,
+    FT_New_Glyph,
     FT_Get_Outline_Glyph,
     FT_Get_PFR_Advance,
     FT_Get_PFR_Kerning,
@@ -324,7 +325,11 @@ macro_rules! export_parity_helpers {
 pub use handles::FT_Init_FreeType;
 
 #[cfg(any(test, feature = "abi-test-support"))]
-export_parity_helpers!(FT_ColrV1_Paint_Layer_Iterator_Copy);
+export_parity_helpers!(
+    FT_ColrV1_Paint_Layer_Iterator_Copy,
+    FT_New_Glyph_Allocation_Failure,
+    FT_New_Glyph_Validate,
+);
 #[cfg(feature = "abi-test-support")]
 export_parity_helpers!(FT_Outline_GlyphSlot_With_Advance);
 

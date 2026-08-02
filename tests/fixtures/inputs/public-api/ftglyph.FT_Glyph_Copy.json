@@ -101,17 +101,44 @@
       "schema": "glyph_copy",
       "expect_error": false,
       "inputs": {
-        "assets": {
-          "bitmap_strike_font": {
-            "kind": "ref",
-            "id": "input/fixtures/assets/fonts/sbit_gray_format1.ttf",
-            "asset_kind": "font"
+        "variants": [
+          {
+            "id": "gray-g1",
+            "assets": {
+              "bitmap_strike_font": {
+                "kind": "ref",
+                "id": "input/fixtures/assets/fonts/sbit_gray_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "source_creation": "FT_Get_Glyph bitmap",
+              "destroy_source_before_target": true
+            },
+            "coverage": [
+              "ftglyph.glyph_copy:explicit-gray-g1"
+            ]
+          },
+          {
+            "id": "empty-outline-g21",
+            "assets": {
+              "outline_font": {
+                "kind": "ref",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "source_creation": "FT_Get_Glyph outline then FT_Glyph_To_Bitmap",
+              "convert_destroy": true,
+              "glyph_index": 21,
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "ftglyph.glyph_copy:empty-outline-bitmap-copy"
+            ]
           }
-        },
-        "params": {
-          "source_creation": "FT_Get_Glyph bitmap",
-          "destroy_source_before_target": true
-        }
+        ]
       },
       "classifiers": [
         "kind:function",

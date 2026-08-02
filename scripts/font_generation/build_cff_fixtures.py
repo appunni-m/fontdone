@@ -912,6 +912,14 @@ def malformed_cff_payload(kind: str) -> bytes:
         # the BCD real number and later rejects this minimal Top DICT for the
         # absent required CharStrings offset.
         return minimal_payload(b"\x1E\x1A\x5F\x0C\x03")
+    if kind == "top_dict_real_exponent_operand_missing_charstrings":
+        # Exercise the CFF real-number exponent-sign nibble while preserving
+        # the same missing-CharStrings face-open failure boundary.
+        return minimal_payload(b"\x1E\x1B\x5F\x0C\x03")
+    if kind == "top_dict_real_negative_operand_missing_charstrings":
+        # Exercise the CFF real-number negative-sign nibble while preserving
+        # the same missing-CharStrings face-open failure boundary.
+        return minimal_payload(b"\x1E\xE1\x5F\x0C\x03")
     if kind == "top_dict_positive_operand_missing_charstrings":
         return minimal_payload(b"\xF7\x00\x0C\x03")
     if kind == "top_dict_negative_operand_missing_charstrings":
@@ -921,7 +929,6 @@ def malformed_cff_payload(kind: str) -> bytes:
         # Pinned FreeType rejects it during Top DICT parsing.
         return minimal_payload(b"\x1F")
     raise ValueError(f"unknown malformed CFF fixture kind {kind}")
-
 
 def write_malformed_cff_faces() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -938,6 +945,8 @@ def write_malformed_cff_faces() -> None:
             "charstrings_operand_missing",
             "top_dict_longint_operand_missing_charstrings",
             "top_dict_real_operand_missing_charstrings",
+            "top_dict_real_exponent_operand_missing_charstrings",
+            "top_dict_real_negative_operand_missing_charstrings",
             "top_dict_positive_operand_missing_charstrings",
             "top_dict_negative_operand_missing_charstrings",
             "top_dict_invalid_number",
@@ -947,6 +956,68 @@ def write_malformed_cff_faces() -> None:
                 OUT_DIR / f"malformed-{kind.replace('_', '-')}.otf",
                 b"CFF ",
                 malformed_cff_payload(kind),
+            )
+def malformed_cff2_payload(kind: str) -> bytes:
+    """Return a compact CFF2 table that fails at one parser boundary."""
+
+    if kind == "short_header":
+        return b"\x02\x00\x05\x00"
+    if kind == "wrong_major_version":
+        return b"\x01\x00\x05\x00\x00"
+    if kind == "invalid_header_size":
+        return b"\x02\x00\x04\x00\x00"
+    if kind == "top_dict_truncated":
+        return b"\x02\x00\x05\x00\x04"
+    if kind == "missing_charstrings":
+        return b"\x02\x00\x05\x00\x00"
+
+    # CFF DICT integer 9 followed by CharStrings (operator 17).  The
+    # resulting top-dict end is byte 7, so the payload after it is the CFF2
+    # Global Subr INDEX probe.  Each malformed tail stops at a distinct
+    # read_cff2_index validation boundary before any glyph is loaded.
+    top_dict = b"\x94\x11"
+
+    def with_global_index(tail: bytes) -> bytes:
+        return b"\x02\x00\x05\x00\x02" + top_dict + tail
+
+    if kind == "global_index_count_truncated":
+        return with_global_index(b"")
+    if kind == "global_index_invalid_offsize":
+        return with_global_index(b"\x00\x00\x00\x01\x00")
+    if kind == "global_index_offset_truncated":
+        return with_global_index(b"\x00\x00\x00\x01\x01\x01")
+    if kind == "global_index_offset_underflow":
+        return with_global_index(b"\x00\x00\x00\x01\x01\x00\x00")
+    if kind == "global_index_offsets_out_of_order":
+        return with_global_index(b"\x00\x00\x00\x01\x01\x02\x01")
+    if kind == "global_index_object_overflow":
+        return with_global_index(b"\x00\x00\x00\x01\x01\x01\x03")
+    raise ValueError(f"unknown malformed CFF2 fixture kind {kind}")
+
+
+def write_malformed_cff2_faces() -> None:
+    CFF2_OUT_DIR.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory() as tmp:
+        base = Path(tmp) / "base-cff2.otf"
+        build_cff2(base)
+        for kind in [
+            "short_header",
+            "wrong_major_version",
+            "invalid_header_size",
+            "top_dict_truncated",
+            "missing_charstrings",
+            "global_index_count_truncated",
+            "global_index_invalid_offsize",
+            "global_index_offset_truncated",
+            "global_index_offset_underflow",
+            "global_index_offsets_out_of_order",
+            "global_index_object_overflow",
+        ]:
+            replace_sfnt_table(
+                base,
+                CFF2_OUT_DIR / f"malformed-{kind.replace('_', '-')}.otf",
+                b"CFF2",
+                malformed_cff2_payload(kind),
             )
 
 
@@ -959,6 +1030,7 @@ def main() -> None:
     write_pure_cff_cubic_vmtx()
     write_pure_cff_empty_tt_programs()
     write_malformed_cff_faces()
+    write_malformed_cff2_faces()
 
 
 if __name__ == "__main__":

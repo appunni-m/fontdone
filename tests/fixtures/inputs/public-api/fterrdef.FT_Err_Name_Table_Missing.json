@@ -4,6 +4,9 @@
   "manifest_cases": [
     "value_matches_header",
     "sfnt_name_storage_out_of_bounds",
+    "sfnt_name_table_missing_diagnostic",
+    "sfnt_name_header_truncated_diagnostic",
+    "sfnt_name_empty_table_success",
     "sfnt_without_name_table"
   ],
   "cases": [
@@ -53,6 +56,158 @@
             "error_string"
           ]
         }
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_table_missing_diagnostic",
+      "subject": "fterrdef.FT_Err_Name_Table_Missing",
+      "case": "sfnt_name_table_missing_diagnostic",
+      "operation": "fterrdef.sfnt_load_name_diagnostic",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "file",
+            "role": "font",
+            "path": "input/fixtures/assets/fonts/name_table_missing.ttf"
+          }
+        },
+        "params": {
+          "expected_error_symbol": "FT_Err_Table_Missing",
+          "expected_error_value_source": "pinned fterrdef.h",
+          "pinned_source": "freetype/src/sfnt/ttload.c",
+          "face_index": 0,
+          "runtime_route": "internal_sfnt_load_name_service",
+          "table": "name",
+          "condition": "name table absent from the SFNT directory"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "error-trigger",
+        "route:controlled-pinned-service"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "error": "FT_Error",
+          "error_symbol": "FT_Err_*",
+          "name_count": "zero after failed internal service load",
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "status",
+            "output.name_count"
+          ]
+        },
+        "error": "FT_Err_Table_Missing",
+        "fixture_requirements": "The project-authored face opens successfully with the optional name table removed, then the controlled internal name loader reports Table_Missing."
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_header_truncated_diagnostic",
+      "subject": "fterrdef.FT_Err_Name_Table_Missing",
+      "case": "sfnt_name_header_truncated_diagnostic",
+      "operation": "fterrdef.sfnt_load_name_diagnostic",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/names/name-short.ttf"
+          }
+        },
+        "params": {
+          "expected_error_symbol": "FT_Err_Name_Table_Missing",
+          "expected_error_value_source": "pinned fterrdef.h",
+          "pinned_source": "freetype/src/sfnt/ttload.c",
+          "face_index": 0,
+          "runtime_route": "internal_sfnt_load_name_service",
+          "table": "name",
+          "condition": "short name table crosses the stream frame but its declared table limit precedes the record array"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "error-trigger",
+        "route:controlled-pinned-service"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "error": "FT_Error",
+          "error_symbol": "FT_Err_*",
+          "name_count": "zero after failed internal service load",
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "status",
+            "output.name_count"
+          ]
+        },
+        "error": "FT_Err_Name_Table_Missing",
+        "fixture_requirements": "The project-authored face opens successfully with a five-byte name table; the pinned stream frame can read the following byte, then the declared table limit fails the record-array guard."
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_empty_table_success",
+      "subject": "fterrdef.FT_Err_Name_Table_Missing",
+      "case": "sfnt_name_empty_table_success",
+      "operation": "fterrdef.sfnt_load_name_diagnostic",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/names/name-empty.ttf"
+          }
+        },
+        "params": {
+          "expected_error_symbol": "FT_Err_Ok",
+          "expected_error_value_source": "pinned fterrdef.h",
+          "pinned_source": "freetype/src/sfnt/ttload.c",
+          "face_index": 0,
+          "runtime_route": "internal_sfnt_load_name_service",
+          "table": "name",
+          "condition": "six-byte header with zero records and storage at the table end"
+        }
+      },
+      "classifiers": [
+        "kind:success",
+        "header:fterrdef",
+        "area:error-code",
+        "success-control",
+        "route:controlled-pinned-service"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "name_count": 0,
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "output.name_count"
+          ]
+        },
+        "fixture_requirements": "The project-authored face opens successfully with an empty but structurally valid name table."
       }
     },
     {

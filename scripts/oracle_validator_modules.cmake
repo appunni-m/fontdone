@@ -10,7 +10,7 @@ endif()
 set(FONTDONE_ORACLE_VALIDATOR_HELPER
     "${CMAKE_CURRENT_BINARY_DIR}/fontdone_oracle_validator_helper.c")
 
-file(WRITE "${FONTDONE_ORACLE_VALIDATOR_HELPER}" [=[
+set(FONTDONE_ORACLE_VALIDATOR_HELPER_CONTENT [=[
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_MODULE_H
@@ -36,6 +36,22 @@ fontdone_oracle_add_gxvalid( FT_Library library )
   return FT_Add_Module( library, &gxv_module_class );
 }
 ]=])
+
+# CMake reconfigures the oracle on every managed parity/coverage invocation.
+# Avoid touching this generated source when the overlay is unchanged; a
+# needless mtime update otherwise recompiles and relinks the oracle library.
+if(NOT EXISTS "${FONTDONE_ORACLE_VALIDATOR_HELPER}")
+  file(WRITE "${FONTDONE_ORACLE_VALIDATOR_HELPER}"
+       "${FONTDONE_ORACLE_VALIDATOR_HELPER_CONTENT}")
+else()
+  file(READ "${FONTDONE_ORACLE_VALIDATOR_HELPER}"
+       FONTDONE_ORACLE_VALIDATOR_HELPER_EXISTING)
+  if(NOT FONTDONE_ORACLE_VALIDATOR_HELPER_EXISTING STREQUAL
+     FONTDONE_ORACLE_VALIDATOR_HELPER_CONTENT)
+    file(WRITE "${FONTDONE_ORACLE_VALIDATOR_HELPER}"
+         "${FONTDONE_ORACLE_VALIDATOR_HELPER_CONTENT}")
+  endif()
+endif()
 
 cmake_language(
   DEFER

@@ -9,6 +9,23 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = ROOT / "tests" / "fixtures" / "input" / "fonts" / "pfr"
 
+PFR_PHY_VERTICAL = 0x01
+PFR_PHY_2BYTE_CHARCODE = 0x02
+PFR_PHY_PROPORTIONAL = 0x04
+PFR_PHY_ASCII_CODE = 0x08
+PFR_PHY_2BYTE_GPS_SIZE = 0x10
+PFR_PHY_3BYTE_GPS_OFFSET = 0x20
+PFR_PHY_EXTRA_ITEMS = 0x80
+
+PFR_KERN_2BYTE_CHAR = 0x01
+PFR_KERN_2BYTE_ADJ = 0x02
+
+PFR_LOG_STROKE = 0x04
+PFR_LOG_2BYTE_STROKE = 0x08
+PFR_LOG_BOLD = 0x10
+PFR_LOG_2BYTE_BOLD = 0x20
+PFR_LOG_EXTRA_ITEMS = 0x40
+
 
 def u16(value: int) -> bytes:
     return value.to_bytes(2, "big", signed=False)
@@ -24,6 +41,170 @@ def u24(value: int) -> bytes:
 
 def i24(value: int) -> bytes:
     return (value & 0xFF_FFFF).to_bytes(3, "big", signed=False)
+
+
+def build_kerning_item(wide_characters: bool, wide_adjustment: bool) -> bytes:
+    item = bytearray([1])
+    item.extend(i16(-10))
+    item.append(
+        (PFR_KERN_2BYTE_CHAR if wide_characters else 0)
+        | (PFR_KERN_2BYTE_ADJ if wide_adjustment else 0)
+    )
+    if wide_characters:
+        item.extend(u16(65))
+        item.extend(u16(66))
+    else:
+        item.extend([65, 66])
+    item.extend(i16(-2) if wide_adjustment else bytes([2]))
+    return bytes(item)
+
+
+def build_physical(flags: int, wide_kerning: bool) -> bytes:
+    """Build a valid physical record covering the selected descriptor flags."""
+    physical = bytearray(15)
+    physical[2:4] = u16(1000)
+    physical[4:6] = u16(2000)
+    physical[6:8] = i16(-20)
+    physical[8:10] = i16(-30)
+    physical[10:12] = i16(800)
+    physical[12:14] = i16(900)
+    physical[14] = flags
+
+    if not flags & PFR_PHY_PROPORTIONAL:
+        physical.extend(i16(700))
+    if flags & PFR_PHY_EXTRA_ITEMS:
+        item = build_kerning_item(wide_kerning, wide_kerning)
+        physical.extend([1, len(item), 4])
+        physical.extend(item)
+
+    # No auxiliary records, no blue values, and zero vertical/horizontal
+    # standard values.  The character descriptors follow immediately.
+    physical.extend(u24(0))
+    physical.append(0)
+    physical.extend(bytes(6))
+    physical.extend(u16(2))
+
+    for code, advance, gps_size, gps_offset in ((65, 500, 1, 1), (66, 600, 2, 2)):
+        if flags & PFR_PHY_2BYTE_CHARCODE:
+            physical.extend(u16(code))
+        else:
+            physical.append(code)
+        if flags & PFR_PHY_PROPORTIONAL:
+            physical.extend(i16(advance))
+        if flags & PFR_PHY_ASCII_CODE:
+            physical.append(code)
+        physical.extend(
+            u16(gps_size) if flags & PFR_PHY_2BYTE_GPS_SIZE else bytes([gps_size])
+        )
+        physical.extend(
+            u24(gps_offset) if flags & PFR_PHY_3BYTE_GPS_OFFSET else u16(gps_offset)
+        )
+
+    return bytes(physical)
+
+
+def build_pfr_stream(logical_flags: int, physical: bytes, high_size: bool) -> bytes:
+    """Build a PFR0/PFR1 stream around one generated logical font."""
+    header_size = 58
+    logical_directory_offset = header_size
+    logical_offset = logical_directory_offset + 7
+
+    logical = bytearray(13)
+    logical[12] = logical_flags
+    if logical_flags & PFR_LOG_STROKE:
+        logical.append(1)
+        if logical_flags & PFR_LOG_2BYTE_STROKE:
+            logical.append(2)
+        if logical_flags & 0x03 == 0:
+            logical.extend(bytes(3))
+    if logical_flags & PFR_LOG_BOLD:
+        logical.append(1)
+        if logical_flags & PFR_LOG_2BYTE_BOLD:
+            logical.append(2)
+    if logical_flags & PFR_LOG_EXTRA_ITEMS:
+        logical.extend([1, 2, 9, 0xAA, 0xBB])
+
+    physical_size_offset = len(logical)
+    logical.extend(bytes(5))
+    if high_size:
+        logical.append((len(physical) >> 16) & 0xFF)
+    physical_offset = logical_offset + len(logical)
+    logical[physical_size_offset : physical_size_offset + 2] = u16(len(physical) & 0xFFFF)
+    logical[physical_size_offset + 2 : physical_size_offset + 5] = u24(physical_offset)
+
+    gps_section_offset = physical_offset + len(physical)
+    header = (
+        b"PFR0"
+        + u16(4)
+        + b"\r\n"
+        + u16(header_size)
+        + u16(7)
+        + u16(logical_directory_offset)
+        + u16(len(logical))
+        + u24(len(logical))
+        + u24(logical_offset)
+        + u16(len(physical) & 0xFFFF)
+        + u24(len(physical))
+        + u24(physical_offset)
+        + u16(1)
+        + u24(3)
+        + u24(gps_section_offset)
+        + bytes([0, 0, 0])
+        + bytes([(len(physical) >> 16) & 0xFF if high_size else 0, 0])
+        + u24(0)
+        + u24(0)
+        + u24(0)
+        + u16(1)
+        + bytes([0, 0])
+        + u16(2)
+    )
+    assert len(header) == header_size
+
+    logical_directory = u16(1) + u16(len(logical)) + u24(logical_offset)
+    gps_section = bytes(3)
+    trailer = b"PFR1\r\n\0\0"
+    data = header + logical_directory + bytes(logical) + physical + gps_section + trailer
+    assert len(data) == gps_section_offset + len(gps_section) + len(trailer)
+    return data
+
+
+def build_extended_fixtures() -> None:
+    """Write valid records for public PFR parser-flag parity coverage."""
+    fixed = build_physical(0, False)
+    (OUT_DIR / "fixed-advance.pfr").write_bytes(build_pfr_stream(0, fixed, False))
+
+    all_physical_flags = (
+        PFR_PHY_VERTICAL
+        | PFR_PHY_2BYTE_CHARCODE
+        | PFR_PHY_PROPORTIONAL
+        | PFR_PHY_ASCII_CODE
+        | PFR_PHY_2BYTE_GPS_SIZE
+        | PFR_PHY_3BYTE_GPS_OFFSET
+        | PFR_PHY_EXTRA_ITEMS
+    )
+    all_logical_flags = (
+        PFR_LOG_STROKE
+        | PFR_LOG_2BYTE_STROKE
+        | PFR_LOG_BOLD
+        | PFR_LOG_2BYTE_BOLD
+        | PFR_LOG_EXTRA_ITEMS
+    )
+    all_flags = build_physical(all_physical_flags, True)
+    (OUT_DIR / "all-descriptor-flags.pfr").write_bytes(
+        build_pfr_stream(all_logical_flags, all_flags, False)
+    )
+
+    # Exercise the false inner branches for the optional logical fields and a
+    # non-miter line join while retaining the outer stroke/bold paths.
+    logical_options = build_physical(0, False)
+    (OUT_DIR / "logical-options.pfr").write_bytes(
+        build_pfr_stream(PFR_LOG_STROKE | PFR_LOG_BOLD | 1, logical_options, False)
+    )
+
+    large_physical = build_physical(0, False) + bytes((1 << 16) - len(fixed))
+    (OUT_DIR / "high-physical-size.pfr").write_bytes(
+        build_pfr_stream(0, large_physical, True)
+    )
 
 
 def build_basic_metrics_and_kerning(path: Path) -> None:
@@ -125,6 +306,7 @@ def build_basic_metrics_and_kerning(path: Path) -> None:
 
 def main() -> None:
     build_basic_metrics_and_kerning(OUT_DIR / "basic-metrics-and-kerning.pfr")
+    build_extended_fixtures()
 
 
 if __name__ == "__main__":

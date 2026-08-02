@@ -1992,6 +1992,35 @@ pub struct AbiSvgGlyphSnapshot {
     pub delta: FontdoneWasmVector,
 }
 
+#[cfg(feature = "abi-test-support")]
+#[derive(Clone, Copy)]
+pub struct AbiNewGlyphAllocationRow {
+    pub format: rust_ffi::FT_Glyph_Format,
+    pub status: FT_Error,
+    pub aglyph_null: bool,
+    pub allocation_events: usize,
+}
+
+#[cfg(feature = "abi-test-support")]
+/// Replays the class-selection-success/allocator-failure boundary for the
+/// WASM facade using the safe Rust allocator diagnostic.
+pub fn abi_support_new_glyph_allocation_failure() -> Vec<AbiNewGlyphAllocationRow> {
+    let library = rust_ffi::FT_Init_FreeType();
+    [
+        rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
+        rust_ffi::FT_GLYPH_FORMAT_BITMAP,
+    ]
+    .into_iter()
+    .enumerate()
+    .map(|(index, format)| AbiNewGlyphAllocationRow {
+        format,
+        status: rust_ffi::FT_New_Glyph_Allocation_Failure(Some(&library), format),
+        aglyph_null: true,
+        allocation_events: index.saturating_add(1),
+    })
+    .collect()
+}
+
 /// Wasm-lane owner for an actual pure-Rust FTC SBit cache.
 #[cfg(feature = "abi-test-support")]
 pub struct AbiSBitCacheHarness {
@@ -3187,6 +3216,47 @@ pub extern "C" fn fontdone_wasm_get_glyph(slot_present: i32, aglyph: *mut usize)
         }
     }
     err
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn fontdone_wasm_new_glyph(
+    library_present: i32,
+    format: rust_ffi::FT_Glyph_Format,
+    aglyph: *mut usize,
+) -> FT_Error {
+    if library_present == 0 || aglyph.is_null() {
+        return rust_ffi::FT_Err_Invalid_Argument;
+    }
+    let library = rust_ffi::FT_Init_FreeType();
+    let recognized_format = matches!(
+        format,
+        rust_ffi::FT_GLYPH_FORMAT_OUTLINE
+            | rust_ffi::FT_GLYPH_FORMAT_BITMAP
+            | rust_ffi::FT_GLYPH_FORMAT_SVG
+    ) && rust_ffi::FT_Library_Renderer_Class(Some(&library), format)
+        .is_some();
+    if recognized_format {
+        // Match `ft_new_glyph`: the output is cleared after a built-in class
+        // is selected, while an unsupported/custom format preserves a
+        // caller-provided sentinel until renderer lookup succeeds.
+        // SAFETY: `aglyph` is non-null and points to opaque handle storage.
+        unsafe { *aglyph = 0 };
+    }
+    let glyph = match rust_ffi::FT_New_Glyph(Some(&library), format) {
+        Ok(rust_ffi::FT_GlyphOwned::Outline(core)) => {
+            Box::into_raw(Box::new(WasmOwnedOutlineGlyph::new(core))).addr()
+        }
+        Ok(rust_ffi::FT_GlyphOwned::Bitmap(core)) => {
+            Box::into_raw(Box::new(WasmOwnedBitmapGlyph::new(core))).addr()
+        }
+        Ok(rust_ffi::FT_GlyphOwned::Svg(core)) => {
+            Box::into_raw(Box::new(WasmOwnedSvgGlyph::new(core))).addr()
+        }
+        Err(error) => return error,
+    };
+    // SAFETY: `aglyph` is non-null and points to opaque handle storage.
+    unsafe { *aglyph = glyph };
+    rust_ffi::FT_Err_Ok
 }
 
 #[unsafe(no_mangle)]

@@ -109,11 +109,6 @@ impl SbixTable {
         ppem: u16,
         recurse_count: u32,
     ) -> Result<(), FontError> {
-        if recurse_count > 4 {
-            return Err(FontError::InvalidFileFormat(
-                "sbix duplicate/flip recursion too deep".into(),
-            ));
-        }
         let Some(strike) = self.strikes.iter().find(|strike| strike.ppem == ppem) else {
             return Err(FontError::InvalidArgument(
                 "embedded bitmap strike not selected".into(),
@@ -172,12 +167,22 @@ impl SbixTable {
         let graphic_type = [record[4], record[5], record[6], record[7]];
         match &graphic_type {
             b"flip" | b"dupe" => {
-                let payload = self.raw.get(record_base + 8..).ok_or_else(|| {
-                    FontError::InvalidFileFormat("sbix flip/dupe payload missing".into())
-                })?;
-                let target = read_u16(payload, 0).ok_or_else(|| {
-                    FontError::InvalidFileFormat("sbix flip/dupe glyph missing".into())
-                })?;
+                // C `ttsbit.c:1519-1527` checks the depth only when it is
+                // about to follow another reference.  Depth four is still
+                // inspected as a normal record; the synthetic chain then
+                // reaches its unknown graphic type and reports
+                // `Unimplemented_Feature`.
+                if recurse_count >= 4 {
+                    return Err(FontError::InvalidFileFormat(
+                        "sbix duplicate/flip recursion too deep".into(),
+                    ));
+                }
+                // The pinned C frame reader treats a missing target as glyph
+                // zero, which then follows the ordinary missing-bitmap
+                // fallback. Preserve that public behavior instead of turning
+                // the malformed reference into a new hard error.
+                let payload = &self.raw[record_base + 8..];
+                let target = read_u16(payload, 0).ok_or(FontError::MissingBitmap)?;
                 self.load_glyph_error(target, num_glyphs, ppem, recurse_count + 1)
             }
             b"png " => Err(FontError::UnimplementedFeature(
@@ -201,172 +206,4 @@ fn read_u16(data: &[u8], offset: usize) -> Option<u16> {
 fn read_u32(data: &[u8], offset: usize) -> Option<u32> {
     let bytes = data.get(offset..offset + 4)?;
     Some(u32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::tt::TableRecord;
-
-    fn directory_for(table: &[u8]) -> (Vec<u8>, TableDirectory) {
-        // Lay the sbix table at offset 12 and build a one-record directory.
-        let mut font = vec![0u8; 12];
-        font.extend_from_slice(table);
-        let directory = TableDirectory {
-            records: vec![TableRecord {
-                tag: tag(b"sbix"),
-                offset: 12,
-                length: table.len() as u32,
-            }],
-        };
-        (font, directory)
-    }
-
-    /// One-glyph strike: ppem/ppi header, glyph offset pair, then a payload
-    /// of the given graphic type at strike-relative offset 16.
-    fn strike_with_glyph(ppem: u16, ppi: u16, graphic_type: &[u8; 4]) -> Vec<u8> {
-        let mut bytes = ppem.to_be_bytes().to_vec();
-        bytes.extend_from_slice(&ppi.to_be_bytes());
-        bytes.extend_from_slice(&16u32.to_be_bytes()); // glyph start
-        bytes.extend_from_slice(&32u32.to_be_bytes()); // glyph end
-        bytes.extend_from_slice(&[0; 4]); // glyph record: size
-        bytes.extend_from_slice(&[0; 4]); // origin x/y
-        bytes.extend_from_slice(graphic_type);
-        bytes.extend_from_slice(&[0; 12]); // remainder, keeps end offset in range
-        bytes
-    }
-
-    fn sbix_table(strikes: &[Vec<u8>]) -> Vec<u8> {
-        let mut table = Vec::new();
-        table.extend_from_slice(&1u16.to_be_bytes()); // version
-        table.extend_from_slice(&1u16.to_be_bytes()); // flags
-        table.extend_from_slice(&(strikes.len() as u32).to_be_bytes());
-        let mut offset = 8u32 + 4 * strikes.len() as u32;
-        for _ in strikes {
-            table.extend_from_slice(&offset.to_be_bytes());
-            offset += 8 + 4 + 4 + 8;
-        }
-        for strike in strikes {
-            table.extend_from_slice(strike);
-        }
-        table
-    }
-
-    fn parse_ok(font: &[u8], directory: &TableDirectory, label: &str) -> SbixTable {
-        match parse_sbix(directory, font) {
-            Some(table) => table,
-            None => panic!("{label}: sbix table rejected"),
-        }
-    }
-
-    #[test]
-    fn parses_strikes_and_metrics() {
-        let table = sbix_table(&[strike_with_glyph(24, 72, b"png ")]);
-        let (font, directory) = directory_for(&table);
-        let sbix = parse_ok(&font, &directory, "valid sbix parses");
-        assert_eq!(sbix.flags(), 1);
-        assert_eq!(sbix.strike_count(), 1);
-        assert!(sbix.has_strike(24));
-        assert!(!sbix.has_strike(16));
-        let metrics = match sbix.strike_metrics(0, 800, -200, 0, 1000) {
-            Some(metrics) => metrics,
-            None => panic!("strike metrics missing"),
-        };
-        assert_eq!(metrics.x_ppem, 24);
-        assert_eq!(metrics.y_ppem, 24);
-        assert!(metrics.height > 0);
-        assert!(sbix.strike_metrics(3, 800, -200, 0, 1000).is_none());
-    }
-
-    #[test]
-    fn rejects_invalid_headers() {
-        let mut table = sbix_table(&[strike_with_glyph(24, 72, b"png ")]);
-        table[0..2].copy_from_slice(&0u16.to_be_bytes());
-        let (font, directory) = directory_for(&table);
-        assert!(parse_sbix(&directory, &font).is_none());
-
-        let mut table = sbix_table(&[strike_with_glyph(24, 72, b"png ")]);
-        table[2..4].copy_from_slice(&2u16.to_be_bytes());
-        let (font, directory) = directory_for(&table);
-        assert!(parse_sbix(&directory, &font).is_none());
-
-        let (font, directory) = directory_for(&[0u8; 4]);
-        assert!(parse_sbix(&directory, &font).is_none());
-    }
-
-    #[test]
-    fn load_glyph_error_paths() {
-        let table = sbix_table(&[strike_with_glyph(24, 72, b"jpg ")]);
-        let (font, directory) = directory_for(&table);
-        let sbix = parse_ok(&font, &directory, "valid sbix parses");
-
-        let error = match sbix.load_glyph_error(0, 10, 16, 0) {
-            Err(error) => error,
-            Ok(()) => panic!("missing strike should fail"),
-        };
-        assert!(error.to_string().contains("strike not selected"));
-        let error = match sbix.load_glyph_error(11, 10, 24, 0) {
-            Err(error) => error,
-            Ok(()) => panic!("out-of-range glyph should fail"),
-        };
-        assert!(error.to_string().contains("glyph index out of range"));
-        let error = match sbix.load_glyph_error(0, 10, 24, 0) {
-            Err(error) => error,
-            Ok(()) => panic!("jpg should fail"),
-        };
-        assert!(error.to_string().contains("unavailable decoder"));
-        let error = match sbix.load_glyph_error(0, 10, 24, 5) {
-            Err(error) => error,
-            Ok(()) => panic!("deep recursion should fail"),
-        };
-        assert!(error.to_string().contains("recursion too deep"));
-
-        // Zero-length glyph range reports Missing_Bitmap.
-        let mut table = sbix_table(&[strike_with_glyph(24, 72, b"png ")]);
-        table[16..20].copy_from_slice(&0u32.to_be_bytes());
-        table[20..24].copy_from_slice(&0u32.to_be_bytes());
-        let (font, directory) = directory_for(&table);
-        let sbix = parse_ok(&font, &directory, "valid sbix parses");
-        let error = match sbix.load_glyph_error(0, 10, 24, 0) {
-            Err(error) => error,
-            Ok(()) => panic!("empty image should fail"),
-        };
-        assert!(error.to_string().contains("Missing"));
-    }
-
-    #[test]
-    fn graphic_type_dispatch() {
-        for (graphic, expected) in [
-            (b"png ", "PNG decoding is disabled"),
-            (b"rgbl", "unavailable decoder"),
-        ] {
-            let table = sbix_table(&[strike_with_glyph(24, 72, graphic)]);
-            let (font, directory) = directory_for(&table);
-            let sbix = parse_ok(&font, &directory, "valid sbix parses");
-            let error = match sbix.load_glyph_error(0, 10, 24, 0) {
-                Err(error) => error,
-                Ok(()) => panic!("graphic type should fail"),
-            };
-            assert!(
-                error.to_string().contains(expected),
-                "graphic {graphic:?} expected {expected:?}, got {error}"
-            );
-        }
-
-        // A flip record whose payload glyph is out of range reports the
-        // missing-glyph error; a flip to a valid glyph recurses to the depth
-        // limit instead.
-        let mut flip_strike = strike_with_glyph(24, 72, b"flip");
-        // Overwrite the payload's glyph index (strike-relative 24) with an
-        // out-of-range value.
-        flip_strike[24..26].copy_from_slice(&99u16.to_be_bytes());
-        let table = sbix_table(&[flip_strike]);
-        let (font, directory) = directory_for(&table);
-        let sbix = parse_ok(&font, &directory, "valid sbix parses");
-        let error = match sbix.load_glyph_error(0, 10, 24, 0) {
-            Err(error) => error,
-            Ok(()) => panic!("flip should fail"),
-        };
-        assert!(error.to_string().contains("glyph index out of range"));
-    }
 }

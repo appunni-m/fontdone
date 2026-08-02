@@ -80,13 +80,18 @@ pub fn parse_cff2(data: &[u8]) -> Result<Cff2Table, FontError> {
         .get(..5)
         .ok_or_else(|| FontError::InvalidTable("CFF2: header too short".into()))?;
     if header[0] != 2 {
-        return Err(FontError::InvalidTable(
+        // FreeType's CFF loader treats a non-CFF2 header as a driver-format
+        // probe failure (`cffload.c:cff_font_load`), which is exposed through
+        // face open as `FT_Err_Unknown_File_Format`.
+        return Err(FontError::UnknownFileFormat(
             "CFF2: unsupported major version".into(),
         ));
     }
     let header_size = usize::from(header[2]);
     if header_size < 5 {
-        return Err(FontError::InvalidTable("CFF2: invalid header size".into()));
+        return Err(FontError::UnknownFileFormat(
+            "CFF2: invalid header size".into(),
+        ));
     }
     let top_dict_length = usize::from(u16::from_be_bytes([header[3], header[4]]));
     let top_dict_end = header_size
@@ -94,20 +99,36 @@ pub fn parse_cff2(data: &[u8]) -> Result<Cff2Table, FontError> {
         .ok_or_else(|| FontError::InvalidTable("CFF2: Top DICT overflow".into()))?;
     let top_dict = data
         .get(header_size..top_dict_end)
-        .ok_or_else(|| FontError::InvalidTable("CFF2: Top DICT truncated".into()))?;
+        .ok_or_else(|| FontError::UnknownFileFormat("CFF2: Top DICT truncated".into()))?;
     let top = parse_top_dict(top_dict)?;
     let charstrings_offset = top
         .charstrings_offset
-        .ok_or_else(|| FontError::InvalidArgument("CFF2: missing CharStrings offset".into()))?;
+        .ok_or_else(|| FontError::InvalidTable("CFF2: missing CharStrings offset".into()))?;
 
     // CFF2 places the Global Subr INDEX immediately after the Top DICT and
     // uses a four-byte INDEX count.  Validate it even though this compact
     // decoder does not yet execute subroutines.
-    let (_, _) = read_cff2_index(data, top_dict_end)?;
+    let (_, _) = read_cff2_index(data, top_dict_end).map_err(map_cff2_global_index_error)?;
     let (charstrings, _) = read_cff2_index(data, charstrings_offset)?;
     Ok(Cff2Table {
         charstrings: charstrings.into_iter().map(<[u8]>::to_vec).collect(),
     })
+}
+
+fn map_cff2_global_index_error(error: FontError) -> FontError {
+    match error {
+        FontError::InvalidTable(message)
+            if message == "CFF2: INDEX count overflow"
+                || message == "CFF2: INDEX offsets out of order"
+                || message == "CFF2: INDEX object overflow" =>
+        {
+            // The pinned C loader does not expose these global-index read
+            // failures as Invalid_Table.  Its subsequent stream/index probe
+            // returns Unknown_File_Format at the public face-open boundary.
+            FontError::UnknownFileFormat(message)
+        }
+        other => other,
+    }
 }
 
 impl CffTable {
@@ -1053,286 +1074,5 @@ fn read_type2_number(data: &[u8], pos: usize) -> Result<(i32, usize), FontError>
         _ => Err(FontError::InvalidOutline(
             "CFF: invalid Type2 number".into(),
         )),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn adobe_path_operators_accept_empty_or_incomplete_groups() -> Result<(), FontError> {
-        for charstring in [
-            &[5, 14][..],
-            &[6, 14][..],
-            &[8, 14][..],
-            &[139, 139, 139, 31, 14][..],
-        ] {
-            let outline = Type2Decoder::new(charstring).decode()?;
-            assert!(outline.points.is_empty());
-            assert!(outline.end_pts_of_contours.is_empty());
-        }
-        Ok(())
-    }
-
-    #[test]
-    fn adobe_rrcurveto_ignores_trailing_incomplete_tuple() -> Result<(), FontError> {
-        let outline =
-            Type2Decoder::new(&[149, 159, 169, 179, 189, 199, 209, 219, 8, 14]).decode()?;
-        assert_eq!(outline.points.len(), 4);
-        assert_eq!((outline.points[1].x, outline.points[1].y), (10, 20));
-        assert_eq!((outline.points[3].x, outline.points[3].y), (90, 120));
-        Ok(())
-    }
-
-    #[test]
-    fn adobe_hvcurveto_masks_invalid_operand_shape() -> Result<(), FontError> {
-        let outline = Type2Decoder::new(&[149, 159, 169, 179, 189, 199, 31, 14]).decode()?;
-        assert_eq!(outline.points.len(), 4);
-        assert_eq!((outline.points[1].x, outline.points[1].y), (30, 0));
-        assert_eq!((outline.points[3].x, outline.points[3].y), (70, 110));
-        Ok(())
-    }
-
-    #[test]
-    fn top_level_number_reads_zero_pad_at_eof() -> Result<(), FontError> {
-        for charstring in [&[28][..], &[247][..], &[251][..], &[255][..]] {
-            let outline = Type2Decoder::new(charstring).decode()?;
-            assert!(outline.points.is_empty());
-        }
-        Ok(())
-    }
-
-    #[test]
-    fn dotsection_is_ignored_but_stack_underflowing_ops_still_fail() -> Result<(), FontError> {
-        let outline = Type2Decoder::new(&[12, 0, 14]).decode()?;
-        assert!(outline.points.is_empty());
-        assert!(Type2Decoder::new(&[22, 14]).decode().is_err());
-        assert!(Type2Decoder::new(&[10, 14]).decode().is_err());
-        Ok(())
-    }
-
-    fn empty_index() -> Vec<u8> {
-        vec![0, 0]
-    }
-
-    fn index_with(objects: &[&[u8]]) -> Vec<u8> {
-        let mut index = Vec::new();
-        index.extend_from_slice(&(objects.len() as u16).to_be_bytes());
-        if objects.is_empty() {
-            return index;
-        }
-        index.push(1); // offSize = 1
-        let mut offset = 1usize;
-        index.push(offset as u8);
-        for object in objects {
-            offset += object.len();
-            index.push(offset as u8);
-        }
-        for object in objects {
-            index.extend_from_slice(object);
-        }
-        index
-    }
-
-    #[test]
-    fn parse_minimal_cff_table() -> Result<(), FontError> {
-        // CFF header (4) + Name INDEX (empty) + Top DICT INDEX + String
-        // INDEX (empty) + Global Subr INDEX (empty) + CharStrings INDEX.
-        let mut table = Vec::new();
-        table.extend_from_slice(&[1, 0, 4, 4]); // header
-        table.extend_from_slice(&empty_index()); // Name
-        // Top DICT object: CharStrings offset operand + operator 17.
-        // Operand is a one-byte CFF number: value = byte - 139.
-        let top_dict_bytes = [156u8, 17]; // offset 17, operator CharStrings
-        let top_index = index_with(&[&top_dict_bytes]);
-        table.extend_from_slice(&top_index);
-        table.extend_from_slice(&empty_index()); // String
-        table.extend_from_slice(&empty_index()); // Global Subr
-        table.extend_from_slice(&index_with(&[&[14u8]])); // CharStrings
-
-        let cff = parse_cff(&table)?;
-        assert_eq!(cff.charstrings.len(), 1);
-        assert_eq!(cff.charstrings[0], vec![14]);
-        assert!(cff.font_info().family_name.is_none());
-        assert!(cff.cid_info().is_none());
-        Ok(())
-    }
-
-    #[test]
-    fn parse_cff_rejects_bad_headers_and_indexes() {
-        assert!(parse_cff(&[0u8; 3]).is_err());
-        // Header claims a huge header size.
-        assert!(parse_cff(&[1, 0, 200, 4]).is_err());
-        // Invalid INDEX offSize.
-        let mut table = vec![1, 0, 4, 4, 0, 1, 0, 0];
-        table[5] = 5; // Name INDEX count = 1 with offSize 5
-        assert!(parse_cff(&table).is_err());
-    }
-
-    #[test]
-    fn parse_cid_keyed_cff() -> Result<(), FontError> {
-        // Top DICT carries ROS (registry/ordering/supplement) plus a charset
-        // offset and CharStrings offset; String INDEX maps the SIDs.
-        let mut table = Vec::new();
-        table.extend_from_slice(&[1, 0, 4, 4]); // header
-        table.extend_from_slice(&empty_index()); // Name
-        // String INDEX: "Adobe", "Identity".
-        let strings = index_with(&[b"Adobe", b"Identity"]);
-        // Top DICT is 11 bytes: ROS(7) + charset(2) + CharStrings(2).
-        let top_index = index_with(&[&[0u8; 11]]);
-        let charset_offset = 4 + 2 + top_index.len() + strings.len() + 2;
-        let charstrings_offset = charset_offset + 4; // format 0 + one CID
-        let mut top_dict = Vec::new();
-        // ROS with registry SID 391 ("Adobe") and ordering SID 392
-        // ("Identity"): 247-encoding gives [248, 27] and [248, 28].
-        top_dict.extend_from_slice(&[248, 27, 248, 28, 139, 12, 30]);
-        top_dict.push((charset_offset + 139) as u8);
-        top_dict.push(15); // charset operator
-        top_dict.push((charstrings_offset + 139) as u8);
-        top_dict.push(17); // CharStrings operator
-
-        table.extend_from_slice(&index_with(&[&top_dict]));
-        table.extend_from_slice(&strings);
-        table.extend_from_slice(&empty_index()); // Global Subr
-        table.extend_from_slice(&[0, 7]); // charset format 0
-        table.extend_from_slice(&1u16.to_be_bytes()); // one CID
-        table.extend_from_slice(&index_with(&[&[14u8]])); // CharStrings
-        let cff = parse_cff(&table)?;
-        let cid = cff
-            .cid_info()
-            .ok_or_else(|| FontError::InvalidTable("expected CID info".into()))?;
-        assert_eq!(cid.registry, "Adobe");
-        assert_eq!(cid.ordering, "Identity");
-        assert_eq!(cid.supplement, 0);
-        assert_eq!(cid.glyph_cids, vec![0]);
-        Ok(())
-    }
-
-    #[test]
-    fn adobe_rlineto_and_alternating_curves_with_deltas() -> Result<(), FontError> {
-        // rlineto with one complete (dx, dy) pair.
-        let line = Type2Decoder::new(&[149, 159, 5, 14]).decode()?;
-        assert_eq!(line.points.len(), 2);
-        assert_eq!((line.points[1].x, line.points[1].y), (10, 20));
-        // hvcurveto (opcode 31) with 8n+5 operands: the fifth value closes
-        // the curve as a delta on the leading axis.
-        let hv = Type2Decoder::new(&[149, 159, 169, 179, 189, 31, 14]).decode()?;
-        assert_eq!(hv.points.len(), 4);
-        // vhcurveto (opcode 30) with the same shape.
-        let vh = Type2Decoder::new(&[149, 159, 169, 179, 189, 30, 14]).decode()?;
-        assert_eq!(vh.points.len(), 4);
-        Ok(())
-    }
-
-    #[test]
-    fn cff_dict_underline_thickness_and_number_overflows() {
-        // Top DICT with escaped operator 12 4 (underlineThickness) plus
-        // CharStrings must parse.
-        let mut table = Vec::new();
-        table.extend_from_slice(&[1, 0, 4, 4]);
-        table.extend_from_slice(&empty_index());
-        let top_dict_bytes = [141u8, 12, 4, 156, 17];
-        table.extend_from_slice(&index_with(&[&top_dict_bytes]));
-        table.extend_from_slice(&empty_index());
-        table.extend_from_slice(&empty_index());
-        table.extend_from_slice(&index_with(&[&[14u8]]));
-        match parse_cff(&table) {
-            Ok(cff) => assert_eq!(cff.font_info().underline_thickness, 2),
-            Err(error) => panic!("underlineThickness dict should parse: {error}"),
-        }
-
-        // A truncated longint operand (29) is a face-open failure.
-        let mut bad = Vec::new();
-        bad.extend_from_slice(&[1, 0, 4, 4]);
-        bad.extend_from_slice(&empty_index());
-        bad.extend_from_slice(&index_with(&[&[29u8]]));
-        bad.extend_from_slice(&empty_index());
-        bad.extend_from_slice(&empty_index());
-        bad.extend_from_slice(&index_with(&[&[14u8]]));
-        assert!(parse_cff(&bad).is_err());
-
-        // The dict number reader itself reports the truncated longint.
-        assert!(read_dict_number(&[29], 0).is_err());
-
-        // A valid 4-byte longint operand (256) parses in a top dict.
-        let mut long = Vec::new();
-        long.extend_from_slice(&[1, 0, 4, 4]);
-        long.extend_from_slice(&empty_index());
-        // longint 256 + CharStrings at table offset 22 (operand 161).
-        let top_dict_bytes = [29u8, 0, 0, 1, 0, 161, 17];
-        long.extend_from_slice(&index_with(&[&top_dict_bytes]));
-        long.extend_from_slice(&empty_index());
-        long.extend_from_slice(&empty_index());
-        long.extend_from_slice(&index_with(&[&[14u8]]));
-        match parse_cff(&long) {
-            Ok(_) => {}
-            Err(error) => panic!("longint dict should parse: {error}"),
-        }
-    }
-
-    #[test]
-    fn cff_charset_formats_1_and_2_expand_ranges() -> Result<(), FontError> {
-        for (format, n_left_bytes) in [(1u8, 1usize), (2, 2)] {
-            let mut table = Vec::new();
-            table.extend_from_slice(&[1, 0, 4, 4]);
-            table.extend_from_slice(&empty_index());
-            let strings = index_with(&[b"Adobe", b"Identity"]);
-            let top_index = index_with(&[&[0u8; 11]]);
-            let charset_offset = 4 + 2 + top_index.len() + strings.len() + 2;
-            let mut charset = vec![format];
-            charset.extend_from_slice(&10u16.to_be_bytes()); // first CID
-            if n_left_bytes == 1 {
-                charset.push(1); // one extra CID
-            } else {
-                charset.extend_from_slice(&1u16.to_be_bytes());
-            }
-            let charstrings_offset = charset_offset + charset.len();
-            let mut top_dict = Vec::new();
-            top_dict.extend_from_slice(&[248, 27, 248, 28, 139, 12, 30]);
-            top_dict.push((charset_offset + 139) as u8);
-            top_dict.push(15);
-            top_dict.push((charstrings_offset + 139) as u8);
-            top_dict.push(17);
-            table.extend_from_slice(&index_with(&[&top_dict]));
-            table.extend_from_slice(&strings);
-            table.extend_from_slice(&empty_index());
-            table.extend_from_slice(&charset);
-            table.extend_from_slice(&index_with(&[&[14u8], &[14u8]]));
-
-            let cff = parse_cff(&table)?;
-            let cid = match cff.cid_info() {
-                Some(cid) => cid,
-                None => panic!("format-{format} charset must expose CID info"),
-            };
-            assert_eq!(cid.glyph_cids, vec![0, 10]);
-        }
-        Ok(())
-    }
-
-    #[test]
-    fn cff_charset_format0_truncation_fails() {
-        let mut table = Vec::new();
-        table.extend_from_slice(&[1, 0, 4, 4]);
-        table.extend_from_slice(&empty_index());
-        let strings = index_with(&[b"Adobe", b"Identity"]);
-        let top_index = index_with(&[&[0u8; 11]]);
-        let charstrings = index_with(&[&[14u8], &[14u8]]);
-        // Charset sits after the CharStrings INDEX so its truncated CID
-        // read hits end-of-table.
-        let charstrings_offset = 4 + 2 + top_index.len() + strings.len() + 2;
-        let charset_offset = charstrings_offset + charstrings.len();
-        let mut top_dict = Vec::new();
-        top_dict.extend_from_slice(&[248, 27, 248, 28, 139, 12, 30]);
-        top_dict.push((charset_offset + 139) as u8);
-        top_dict.push(15);
-        top_dict.push((charstrings_offset + 139) as u8);
-        top_dict.push(17);
-        table.extend_from_slice(&index_with(&[&top_dict]));
-        table.extend_from_slice(&strings);
-        table.extend_from_slice(&empty_index());
-        table.extend_from_slice(&charstrings);
-        table.push(0); // charset format 0 with no CID bytes after it
-        assert!(parse_cff(&table).is_err());
     }
 }

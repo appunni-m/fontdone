@@ -204,7 +204,7 @@
         "assets": {
           "paths": {
             "kind": "ref",
-            "id": "outlines/stroker/manual-paths.json",
+            "id": "input/outlines/stroker/manual-paths.json",
             "asset_kind": "outline_path_records",
             "status": "required_future_asset"
           }

@@ -181,6 +181,7 @@ WASM_EXPORTS = {
     "fontdone_wasm_glyph_get_cbox",
     "fontdone_wasm_get_glyph",
     "fontdone_wasm_get_glyph_from_face",
+    "fontdone_wasm_new_glyph",
     "fontdone_wasm_glyph_copy",
     "fontdone_wasm_done_glyph",
     "fontdone_wasm_done_glyph_handle",
@@ -1257,6 +1258,9 @@ def exact_error_public_route(operation: str, case_id: str, expect_error: bool) -
         "ftglyph.FT_New_Glyph.error_null_library_or_output",
         "ftglyph.FT_New_Glyph.error_unsupported_format",
         "ftglyph.FT_New_Glyph.error_allocation_failure",
+        "ftgzip.FT_Gzip_Uncompress.rejects_invalid_arguments",
+        "ftgzip.FT_Gzip_Uncompress.reports_buffer_too_small",
+        "ftgzip.FT_Gzip_Uncompress.reports_invalid_compressed_data",
         "ftglyph.FT_Get_Glyph.error_unsupported_format_or_bad_slot_payload",
         "ftglyph.FT_Glyph_Copy.error_copy_hook_failure_cleans_target",
         "ftglyph.FT_Glyph_Transform.error_null_or_bad_glyph",
@@ -6591,12 +6595,17 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
     if (
         row.operation == "fterrdef.sfnt_load_name_diagnostic"
         and row.case_id
-        == "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_storage_out_of_bounds"
+        in {
+            "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_storage_out_of_bounds",
+            "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_table_missing_diagnostic",
+            "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_header_truncated_diagnostic",
+            "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_empty_table_success",
+        }
     ):
         return (
-            "Pinned SFNT load_name service record-array overflow validates "
-            "exact Name_Table_Missing and post-call name count through the C "
-            "oracle, Rust FFI, C ABI, and WASM ABI diagnostics"
+            "Pinned SFNT load_name service status and post-call name count "
+            "validate through the C oracle, Rust FFI, C ABI, and WASM ABI "
+            "diagnostics"
         )
     if (
         row.operation == "ftglyph.get_glyph"
@@ -8584,6 +8593,7 @@ def null_error_real_parity_reason(row: ConcreteInput) -> str | None:
         "freetype.FT_Render_Glyph.error_null_or_unowned_slot": "FT_Render_Glyph null/unowned-slot error validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "freetype.FT_Set_Char_Size.error_invalid_or_unscalable_face": "FT_Set_Char_Size invalid/unscalable-face error validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "freetype.FT_Set_Pixel_Sizes.error_invalid_or_unscalable_face": "FT_Set_Pixel_Sizes invalid/unscalable-face error validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
+        "freetype.FT_Set_Pixel_Sizes.error_cblc_strike_unavailable": "FT_Set_Pixel_Sizes CBLC unavailable-strike error validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
     }
     return reasons.get(row.case_id)
 

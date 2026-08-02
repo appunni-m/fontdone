@@ -26,7 +26,7 @@
         "assets": {
           "synthetic_outlines": {
             "kind": "ref",
-            "id": "outlines/stroker/parse-line-conic-cubic.json",
+            "id": "input/outlines/stroker/parse-line-conic-cubic.json",
             "asset_kind": "outline_records"
           },
           "font": {
@@ -234,7 +234,7 @@
         "assets": {
           "outline": {
             "kind": "ref",
-            "id": "outlines/stroker/parse-line-conic-cubic.json",
+            "id": "input/outlines/stroker/parse-line-conic-cubic.json",
             "asset_kind": "outline_records"
           }
         },

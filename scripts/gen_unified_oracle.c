@@ -412,6 +412,263 @@ static int emit_gzip_uncompress(int argc, char** argv) {
     return 0;
 }
 
+static const char* gzip_output_prefix_class(
+    const unsigned char* output,
+    size_t output_len) {
+    for (size_t index = 0; index < output_len; index++) {
+        if (output[index] != 0xA5) return "written";
+    }
+    return "unchanged";
+}
+
+static void print_gzip_invalid_argument_row(
+    const char* variant,
+    FT_Error status,
+    int has_output_len,
+    FT_ULong output_len,
+    const unsigned char* output,
+    size_t output_capacity) {
+    printf("{\"variant\":\"");
+    print_json_string_content(variant);
+    printf("\",\"status\":%d,\"output_len\":", status);
+    if (has_output_len) {
+        printf("%lu", (unsigned long)output_len);
+    } else {
+        printf("null");
+    }
+    printf(",\"output_preserved\":%s}",
+           strcmp(gzip_output_prefix_class(output, output_capacity), "unchanged") == 0
+               ? "true"
+               : "false");
+}
+
+static void print_gzip_error_row(
+    const char* variant,
+    FT_Error status,
+    FT_ULong output_len,
+    const unsigned char* output,
+    size_t output_capacity) {
+    printf("{\"variant\":\"");
+    print_json_string_content(variant);
+    printf("\",\"status\":%d,\"output_len\":%lu,"
+           "\"output_prefix_class\":\"%s\"}",
+           status,
+           (unsigned long)output_len,
+           gzip_output_prefix_class(output, output_capacity));
+}
+
+static int emit_gzip_uncompress_errors(int argc, char** argv) {
+    if (argc != 6) {
+        fprintf(stderr,
+                "--gzip-uncompress-errors requires CASE RAW GZIP ZLIB\n");
+        return 2;
+    }
+    const char* case_name = argv[2];
+    unsigned char* raw = NULL;
+    unsigned char* gzip_bytes = NULL;
+    unsigned char* zlib_bytes = NULL;
+    long raw_len = 0;
+    long gzip_len = 0;
+    long zlib_len = 0;
+    if (load_file(argv[3], &raw, &raw_len) != 0 ||
+        load_file(argv[4], &gzip_bytes, &gzip_len) != 0 ||
+        load_file(argv[5], &zlib_bytes, &zlib_len) != 0) {
+        free(raw);
+        free(gzip_bytes);
+        free(zlib_bytes);
+        return 2;
+    }
+
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{");
+        print_status(init_error);
+        printf(",\"output\":null}\n");
+        free(raw);
+        free(gzip_bytes);
+        free(zlib_bytes);
+        return 0;
+    }
+
+    if (streq(case_name, "rejects_invalid_arguments")) {
+        unsigned char output[8];
+        FT_ULong output_len = sizeof(output);
+        memset(output, 0xA5, sizeof(output));
+        FT_Error memory_error = FT_Gzip_Uncompress(
+            NULL, output, &output_len, gzip_bytes, (FT_ULong)gzip_len);
+        memset(output, 0xA5, sizeof(output));
+        output_len = sizeof(output);
+        FT_Error output_error = FT_Gzip_Uncompress(
+            library->memory, NULL, &output_len, gzip_bytes, (FT_ULong)gzip_len);
+        memset(output, 0xA5, sizeof(output));
+        output_len = sizeof(output);
+        FT_Error output_len_error = FT_Gzip_Uncompress(
+            library->memory, output, NULL, gzip_bytes, (FT_ULong)gzip_len);
+        printf("{\"status\":{\"kind\":\"error\",\"error_code\":%d},"
+               "\"output\":{\"rows\":[",
+               memory_error);
+        memset(output, 0xA5, sizeof(output));
+        output_len = sizeof(output);
+        print_gzip_invalid_argument_row(
+            "memory_null", memory_error, 1, output_len, output, sizeof(output));
+        printf(",");
+        memset(output, 0xA5, sizeof(output));
+        output_len = sizeof(output);
+        print_gzip_invalid_argument_row(
+            "output_null", output_error, 1, output_len, output, sizeof(output));
+        printf(",");
+        memset(output, 0xA5, sizeof(output));
+        print_gzip_invalid_argument_row(
+            "output_len_null", output_len_error, 0, 0, output, sizeof(output));
+        printf("]}}\n");
+    } else if (streq(case_name, "reports_buffer_too_small")) {
+        const char* variants[2] = { "zero_capacity", "one_byte_short" };
+        size_t capacities[2] = {
+            0,
+            raw_len > 0 ? (size_t)raw_len - 1 : 0,
+        };
+        FT_Error errors[2] = { FT_Err_Ok, FT_Err_Ok };
+        FT_ULong output_lengths[2] = { 0, 0 };
+        unsigned char* outputs[2] = { NULL, NULL };
+        for (int index = 0; index < 2; index++) {
+            size_t allocation_size = capacities[index] ? capacities[index] : 1;
+            outputs[index] = (unsigned char*)malloc(allocation_size);
+            if (!outputs[index]) {
+                for (int cleanup = 0; cleanup < index; cleanup++) free(outputs[cleanup]);
+                FT_Done_FreeType(library);
+                free(raw);
+                free(gzip_bytes);
+                free(zlib_bytes);
+                return 1;
+            }
+            memset(outputs[index], 0xA5, allocation_size);
+            output_lengths[index] = (FT_ULong)capacities[index];
+            errors[index] = FT_Gzip_Uncompress(
+                library->memory,
+                outputs[index],
+                &output_lengths[index],
+                gzip_bytes,
+                (FT_ULong)gzip_len);
+        }
+        printf("{\"status\":{\"kind\":\"error\",\"error_code\":%d},"
+               "\"output\":{\"rows\":[",
+               errors[0]);
+        for (int index = 0; index < 2; index++) {
+            if (index) printf(",");
+            print_gzip_error_row(
+                variants[index],
+                errors[index],
+                output_lengths[index],
+                outputs[index],
+                capacities[index]);
+            free(outputs[index]);
+        }
+        printf("]}}\n");
+    } else if (streq(case_name, "reports_invalid_compressed_data")) {
+        size_t truncated_len = gzip_len > 0 ? (size_t)gzip_len - 1 : 0;
+        unsigned char* truncated = (unsigned char*)malloc(truncated_len ? truncated_len : 1);
+        unsigned char* corrupt = (unsigned char*)malloc(gzip_len ? (size_t)gzip_len : 1);
+        size_t dictionary_len = zlib_len >= 0 ? (size_t)zlib_len + 4 : 4;
+        unsigned char* dictionary = (unsigned char*)malloc(dictionary_len ? dictionary_len : 1);
+        if (!truncated || !corrupt || !dictionary) {
+            free(truncated);
+            free(corrupt);
+            free(dictionary);
+            FT_Done_FreeType(library);
+            free(raw);
+            free(gzip_bytes);
+            free(zlib_bytes);
+            return 1;
+        }
+        if (truncated_len) memcpy(truncated, gzip_bytes, truncated_len);
+        if (gzip_len) {
+            memcpy(corrupt, gzip_bytes, (size_t)gzip_len);
+            corrupt[gzip_len - 1] ^= 0x01;
+        }
+        unsigned int flg = 0xBB;
+        for (unsigned int candidate = 0x20; candidate <= 0xFF; candidate++) {
+            if ((((unsigned int)zlib_bytes[0] << 8) | candidate) % 31U == 0U) {
+                flg = candidate;
+                break;
+            }
+        }
+        dictionary[0] = zlib_len >= 1 ? zlib_bytes[0] : 0x78;
+        dictionary[1] = (unsigned char)flg;
+        memset(dictionary + 2, 0, 4);
+        if (zlib_len > 2) memcpy(dictionary + 6, zlib_bytes + 2, (size_t)zlib_len - 2);
+        const char* variants[4] = {
+            "truncated_gzip",
+            "corrupt_crc_gzip",
+            "plain_uncompressed_bytes",
+            "dictionary_required_zlib",
+        };
+        const unsigned char* inputs[4] = { truncated, corrupt, raw, dictionary };
+        size_t input_lengths[4] = {
+            truncated_len,
+            gzip_len > 0 ? (size_t)gzip_len : 0,
+            raw_len > 0 ? (size_t)raw_len : 0,
+            dictionary_len,
+        };
+        FT_Error errors[4] = { FT_Err_Ok, FT_Err_Ok, FT_Err_Ok, FT_Err_Ok };
+        FT_ULong output_lengths[4] = { 0, 0, 0, 0 };
+        unsigned char* outputs[4] = { NULL, NULL, NULL, NULL };
+        size_t capacity = (size_t)(raw_len > 0 ? raw_len : 0) + 16;
+        for (int index = 0; index < 4; index++) {
+            outputs[index] = (unsigned char*)malloc(capacity ? capacity : 1);
+            if (!outputs[index]) {
+                for (int cleanup = 0; cleanup < index; cleanup++) free(outputs[cleanup]);
+                free(truncated);
+                free(corrupt);
+                free(dictionary);
+                FT_Done_FreeType(library);
+                free(raw);
+                free(gzip_bytes);
+                free(zlib_bytes);
+                return 1;
+            }
+            memset(outputs[index], 0xA5, capacity ? capacity : 1);
+            output_lengths[index] = (FT_ULong)capacity;
+            errors[index] = FT_Gzip_Uncompress(
+                library->memory,
+                outputs[index],
+                &output_lengths[index],
+                inputs[index],
+                (FT_ULong)input_lengths[index]);
+        }
+        printf("{\"status\":{\"kind\":\"error\",\"error_code\":%d},"
+               "\"output\":{\"rows\":[",
+               errors[0]);
+        for (int index = 0; index < 4; index++) {
+            if (index) printf(",");
+            print_gzip_error_row(
+                variants[index],
+                errors[index],
+                output_lengths[index],
+                outputs[index],
+                capacity);
+            free(outputs[index]);
+        }
+        printf("]}}\n");
+        free(truncated);
+        free(corrupt);
+        free(dictionary);
+    } else {
+        fprintf(stderr, "unknown gzip uncompress error case %s\n", case_name);
+        FT_Done_FreeType(library);
+        free(raw);
+        free(gzip_bytes);
+        free(zlib_bytes);
+        return 2;
+    }
+
+    FT_Done_FreeType(library);
+    free(raw);
+    free(gzip_bytes);
+    free(zlib_bytes);
+    return 0;
+}
+
 static const char* stream_ptr_class(const void* ptr) {
     return ptr ? "nonnull" : "null";
 }
@@ -8402,7 +8659,20 @@ static void print_get_glyph_payload(FT_GlyphSlot slot, const char* action) {
         document_pointer_independent =
             ((FT_SvgGlyph)glyph)->svg_document != document->svg_document;
     }
-    if (!err && streq(action, "copy")) {
+    if (!err && streq(action, "bitmap-copy-from-outline")) {
+        FT_Glyph source = glyph;
+        FT_Glyph copy = NULL;
+        err = FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, NULL, 1);
+        if (!err) {
+            err = FT_Glyph_Copy(glyph, &copy);
+        }
+        if (glyph && glyph != source) {
+            FT_Done_Glyph(glyph);
+        } else if (source) {
+            FT_Done_Glyph(source);
+        }
+        glyph = copy;
+    } else if (!err && streq(action, "copy")) {
         FT_Glyph source = glyph;
         FT_Glyph copy = NULL;
         err = FT_Glyph_Copy(glyph, &copy);
@@ -17655,6 +17925,213 @@ static int open_oracle_face(
         close_oracle_face(out);
         return 1;
     }
+    return 0;
+}
+
+static const char* new_glyph_class_name(FT_Glyph_Format format) {
+    switch (format) {
+        case FT_GLYPH_FORMAT_BITMAP: return "bitmap";
+        case FT_GLYPH_FORMAT_OUTLINE: return "outline";
+        case FT_GLYPH_FORMAT_SVG: return "svg";
+        default: return "unknown";
+    }
+}
+
+static int new_glyph_payload_zeroed(FT_Glyph glyph, FT_Glyph_Format format) {
+    if (!glyph) return 0;
+    if (format == FT_GLYPH_FORMAT_OUTLINE) {
+        FT_OutlineGlyph outline = (FT_OutlineGlyph)glyph;
+        return outline->outline.n_points == 0
+            && outline->outline.n_contours == 0
+            && outline->outline.points == NULL
+            && outline->outline.tags == NULL
+            && outline->outline.contours == NULL
+            && outline->outline.flags == 0;
+    }
+    if (format == FT_GLYPH_FORMAT_BITMAP) {
+        FT_BitmapGlyph bitmap = (FT_BitmapGlyph)glyph;
+        return bitmap->left == 0
+            && bitmap->top == 0
+            && bitmap->bitmap.rows == 0
+            && bitmap->bitmap.width == 0
+            && bitmap->bitmap.pitch == 0
+            && bitmap->bitmap.buffer == NULL
+            && bitmap->bitmap.num_grays == 0
+            && bitmap->bitmap.pixel_mode == 0
+            && bitmap->bitmap.palette_mode == 0
+            && bitmap->bitmap.palette == NULL;
+    }
+    if (format == FT_GLYPH_FORMAT_SVG) {
+        FT_SvgGlyph svg = (FT_SvgGlyph)glyph;
+        return svg->svg_document == NULL
+            && svg->svg_document_length == 0
+            && svg->glyph_index == 0
+            && svg->metrics.x_ppem == 0
+            && svg->metrics.y_ppem == 0
+            && svg->metrics.x_scale == 0
+            && svg->metrics.y_scale == 0
+            && svg->metrics.ascender == 0
+            && svg->metrics.descender == 0
+            && svg->metrics.height == 0
+            && svg->metrics.max_advance == 0
+            && svg->units_per_EM == 0
+            && svg->start_glyph_id == 0
+            && svg->end_glyph_id == 0
+            && svg->transform.xx == 0
+            && svg->transform.xy == 0
+            && svg->transform.yx == 0
+            && svg->transform.yy == 0
+            && svg->delta.x == 0
+            && svg->delta.y == 0;
+    }
+    return 0;
+}
+
+static void print_new_glyph_success_row(FT_Glyph_Format format, FT_Error error, FT_Glyph glyph) {
+    printf("{\"status\":%d,\"format\":%ld,\"aglyph_nullness\":\"%s\","
+           "\"clazz_class\":\"%s\",\"root\":{\"advance\":{\"x\":%ld,\"y\":%ld}},"
+           "\"payload_zeroed\":%s}",
+           error,
+           (long)format,
+           glyph ? "non_null" : "null",
+           glyph ? new_glyph_class_name(format) : "null",
+           glyph ? (long)glyph->advance.x : 0L,
+           glyph ? (long)glyph->advance.y : 0L,
+           glyph && new_glyph_payload_zeroed(glyph, format) ? "true" : "false");
+}
+
+static int emit_new_glyph_matrix(void) {
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{");
+        print_status(init_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+    FT_Glyph_Format formats[] = {
+        FT_GLYPH_FORMAT_BITMAP,
+        FT_GLYPH_FORMAT_OUTLINE,
+        FT_GLYPH_FORMAT_SVG,
+    };
+    printf("{\"status\":{\"kind\":\"ok\",\"error_code\":0},\"output\":{\"rows\":[");
+    for (size_t index = 0; index < sizeof(formats) / sizeof(formats[0]); ++index) {
+        if (index) printf(",");
+        FT_Glyph glyph = (FT_Glyph)(uintptr_t)1;
+        FT_Error error = FT_New_Glyph(library, formats[index], &glyph);
+        FT_Glyph observed = error == FT_Err_Ok && glyph != (FT_Glyph)(uintptr_t)1
+            ? glyph
+            : NULL;
+        print_new_glyph_success_row(formats[index], error, observed);
+        if (glyph && glyph != (FT_Glyph)(uintptr_t)1) FT_Done_Glyph(glyph);
+    }
+    printf("]}}\n");
+    FT_Done_FreeType(library);
+    return 0;
+}
+
+static int emit_new_glyph_null_inputs(void) {
+    FT_Glyph preserved = (FT_Glyph)(uintptr_t)1;
+    FT_Error null_library = FT_New_Glyph(NULL, FT_GLYPH_FORMAT_OUTLINE, &preserved);
+    FT_Glyph preserved_after = preserved;
+    FT_Library library = NULL;
+    FT_Init_FreeType(&library);
+    FT_Error null_output = FT_New_Glyph(library, FT_GLYPH_FORMAT_OUTLINE, NULL);
+    printf("{\"status\":{\"kind\":\"error\",\"error_code\":%d},\"output\":{\"rows\":[",
+           null_library ? null_library : null_output);
+    printf("{\"probe\":\"null_library\",\"status\":%d,\"aglyph_after\":\"%s\","
+           "\"write_class\":\"preserved\"},",
+           null_library,
+           preserved_after == (FT_Glyph)(uintptr_t)1 ? "preserved" : "written");
+    printf("{\"probe\":\"null_output\",\"status\":%d,\"aglyph_after\":\"not_applicable\","
+           "\"write_class\":\"not_applicable\"}]}}\n",
+           null_output);
+    FT_Done_FreeType(library);
+    return 0;
+}
+
+static int emit_new_glyph_unsupported_format(void) {
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{");
+        print_status(init_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+    FT_Glyph bad = (FT_Glyph)(uintptr_t)1;
+    FT_Error bad_error = FT_New_Glyph(library, (FT_Glyph_Format)0x42414421L, &bad);
+    FT_Glyph svg = (FT_Glyph)(uintptr_t)1;
+    FT_Error svg_error = FT_New_Glyph(library, FT_GLYPH_FORMAT_SVG, &svg);
+    int svg_enabled = svg_error == FT_Err_Ok;
+    printf("{");
+    print_status(bad_error ? bad_error : svg_error);
+    printf(",\"output\":{\"rows\":[");
+    printf("{\"probe\":\"unknown_tag\",\"status\":%d,\"aglyph_after\":\"%s\","
+           "\"write_class\":\"preserved\"},",
+           bad_error,
+           bad == (FT_Glyph)(uintptr_t)1 ? "preserved" : "written");
+    printf("{\"probe\":\"svg\",\"status\":%d,\"aglyph_after\":\"%s\","
+           "\"write_class\":\"%s\",\"build_feature_enabled\":%s}]}}\n",
+           svg_error,
+           svg_error == FT_Err_Ok ? "non_null" : "preserved",
+           svg_error == FT_Err_Ok ? "written" : "preserved",
+           svg_enabled ? "true" : "false");
+    if (svg && svg != (FT_Glyph)(uintptr_t)1) FT_Done_Glyph(svg);
+    FT_Done_FreeType(library);
+    return 0;
+}
+
+static int emit_new_glyph_allocation_failure(void) {
+    FailAfterMemoryState state = {0, 0, 0, 0};
+    struct FT_MemoryRec_ memory = {
+        &state,
+        fail_after_alloc,
+        fail_after_free,
+        fail_after_realloc
+    };
+    FT_Library library = NULL;
+    FT_Error setup_error = FT_New_Library(&memory, &library);
+    if (!setup_error) FT_Add_Default_Modules(library);
+    if (setup_error) {
+        printf("{");
+        print_status(setup_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+    state.enabled = 1;
+    state.fail_after = 0;
+    state.allocation_count = 0;
+    FT_Glyph glyphs[2] = { NULL, NULL };
+    FT_Glyph_Format formats[2] = {
+        FT_GLYPH_FORMAT_OUTLINE,
+        FT_GLYPH_FORMAT_BITMAP,
+    };
+    FT_Error errors[2] = { FT_Err_Ok, FT_Err_Ok };
+    int attempts[2] = { 0, 0 };
+    for (int index = 0; index < 2; ++index) {
+        glyphs[index] = (FT_Glyph)(uintptr_t)1;
+        errors[index] = FT_New_Glyph(library, formats[index], &glyphs[index]);
+        attempts[index] = state.allocation_count;
+        if (glyphs[index] && glyphs[index] != (FT_Glyph)(uintptr_t)1) {
+            FT_Done_Glyph(glyphs[index]);
+        }
+    }
+    state.enabled = 0;
+    printf("{");
+    print_status(errors[0] ? errors[0] : errors[1]);
+    printf(",\"output\":{\"rows\":[");
+    for (int index = 0; index < 2; ++index) {
+        if (index) printf(",");
+        printf("{\"format\":%ld,\"status\":%d,\"aglyph_after\":\"%s\","
+               "\"allocation_events\":%d}",
+               (long)formats[index],
+               errors[index],
+               glyphs[index] == NULL ? "null" : "preserved",
+               attempts[index]);
+    }
+    printf("]}}\n");
+    FT_Done_Library(library);
     return 0;
 }
 
@@ -37235,6 +37712,18 @@ static int dispatch(int argc, char** argv) {
     if (argc == 2 && streq(argv[1], "--get-glyph-malformed-slots")) {
         return emit_get_glyph_malformed_slots();
     }
+    if (argc == 2 && streq(argv[1], "--new-glyph-matrix")) {
+        return emit_new_glyph_matrix();
+    }
+    if (argc == 2 && streq(argv[1], "--new-glyph-null-inputs")) {
+        return emit_new_glyph_null_inputs();
+    }
+    if (argc == 2 && streq(argv[1], "--new-glyph-unsupported-format")) {
+        return emit_new_glyph_unsupported_format();
+    }
+    if (argc == 2 && streq(argv[1], "--new-glyph-allocation-failure")) {
+        return emit_new_glyph_allocation_failure();
+    }
     if (argc == 2 && streq(argv[1], "--glyph-copy-null-inputs")) {
         return emit_glyph_copy_null_inputs();
     }
@@ -37252,6 +37741,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc >= 6 && streq(argv[1], "--gzip-uncompress")) {
         return emit_gzip_uncompress(argc, argv);
+    }
+    if (argc == 6 && streq(argv[1], "--gzip-uncompress-errors")) {
+        return emit_gzip_uncompress_errors(argc, argv);
     }
     if (argc >= 5 && streq(argv[1], "--gzip-stream-open")) {
         return emit_gzip_stream_open(argc, argv);

@@ -1164,6 +1164,16 @@ fn glyph_to_bitmap_runtime_supported(case: &InputCase) -> bool {
         && render_mode_param(&case.inputs.params).is_ok()
 }
 
+fn glyph_copy_from_converted_outline_case(case: &InputCase) -> bool {
+    case.operation == "ftglyph.glyph_copy"
+        && case
+            .inputs
+            .params
+            .get("source_creation")
+            .and_then(Value::as_str)
+            == Some("FT_Get_Glyph outline then FT_Glyph_To_Bitmap")
+}
+
 fn is_glyph_to_bitmap_stroked_outline_case(case: &InputCase) -> bool {
     case.inputs
         .params
@@ -2627,10 +2637,14 @@ fn unified_worker_count(case_count: usize) -> usize {
     if case_count < 2 {
         return 1;
     }
-    thread::available_parallelism()
-        .map_or(1, usize::from)
-        .clamp(1, 8)
-        .min(case_count)
+    let available = thread::available_parallelism().map_or(1, usize::from);
+    let configured = std::env::var("FONTDONE_UNIFIED_WORKERS").ok().map(|value| {
+        value.parse::<usize>().unwrap_or_else(|err| {
+            panic!("FONTDONE_UNIFIED_WORKERS must be a positive usize: {err}")
+        })
+    });
+    let default = available.saturating_mul(2).clamp(1, 16);
+    configured.unwrap_or(default).clamp(1, 16).min(case_count)
 }
 
 fn compare_backend_output_pairs(pairs: &[(&InputCase, &RunOutput)]) -> BackendComparisonResult {
@@ -2676,6 +2690,11 @@ fn compare_backend_output_pairs(pairs: &[(&InputCase, &RunOutput)]) -> BackendCo
 
 #[derive(Default)]
 struct BackendComparisonWorker {
+    // A worker owns the input-case references for the duration of one
+    // comparison batch.  Cache the content-bound face key once per case so
+    // the Rust, C ABI, and WASM routes do not repeat font hashing and size
+    // parameter decoding for the same input.
+    face_keys: BTreeMap<usize, String>,
     rust_faces: BTreeMap<String, FT_Face>,
     c_faces: BTreeMap<String, CachedCAbiFace>,
     wasm_faces: BTreeMap<String, CachedWasmFace>,
@@ -2809,6 +2828,9 @@ impl BackendComparisonWorker {
         if case.case_id == "freetype.FT_Render_Glyph.error_null_or_unowned_slot" {
             return rust_render_glyph_invalid_slots(case);
         }
+        if is_gzip_uncompress_error_case(case) {
+            return gzip_uncompress_error_output(case, GzipBackend::Rust);
+        }
         // Handle null-param error tests: bypass font loading.
         // Only for operations without explicit implementation below.
         if has_no_font_assets(case)
@@ -2841,6 +2863,7 @@ impl BackendComparisonWorker {
                     | "ftbitmap.bitmap_embolden"
                     | "ftbitmap.bitmap_blend"
                     | "ftglyph.matrix_invert"
+                    | "ftglyph.new_glyph"
                     | "ftglyph.glyph_copy"
                     | "ftglyph.get_glyph"
                     | "ftimage.custom_renderer_lifecycle"
@@ -3209,6 +3232,14 @@ impl BackendComparisonWorker {
                     face,
                     &case.inputs.params,
                 )?))
+            }
+            "sfnt.load_sfnt_table" => {
+                let face = self.rust_face(case)?;
+                rust_load_sfnt_table_output(face, case, &case.inputs.params)
+            }
+            "sfnt.table_info" => {
+                let face = self.rust_face(case)?;
+                rust_sfnt_table_info_output(face, &case.inputs.params)
             }
             "freetype.get_first_char" => {
                 if lifecycle_handle_param(&case.inputs.params, "face") == Some("null") {
@@ -3628,6 +3659,14 @@ impl BackendComparisonWorker {
                     &case.inputs.params,
                 )?))
             }
+            "sfnt.load_sfnt_table" => {
+                let face = self.c_face(case)?;
+                c_load_sfnt_table_output(face, &case.inputs.params)
+            }
+            "sfnt.table_info" => {
+                let face = self.c_face(case)?;
+                c_sfnt_table_info_output(face, &case.inputs.params)
+            }
             "freetype.get_first_char" => {
                 if lifecycle_handle_param(&case.inputs.params, "face") == Some("null") {
                     return Ok(ok(c_first_char_output(
@@ -4045,6 +4084,14 @@ impl BackendComparisonWorker {
                     &case.inputs.params,
                 )?))
             }
+            "sfnt.load_sfnt_table" => {
+                let handle = self.wasm_face(case)?;
+                wasm_load_sfnt_table_output(handle, &case.inputs.params)
+            }
+            "sfnt.table_info" => {
+                let handle = self.wasm_face(case)?;
+                wasm_sfnt_table_info_output(handle, &case.inputs.params)
+            }
             "freetype.get_first_char" => {
                 if lifecycle_handle_param(&case.inputs.params, "face") == Some("null") {
                     return Ok(ok(wasm_first_char_output(0, &case.inputs.params)));
@@ -4142,7 +4189,7 @@ impl BackendComparisonWorker {
     }
 
     fn rust_face(&mut self, case: &InputCase) -> Result<&FT_Face, String> {
-        let key = runtime_face_cache_key(case)?;
+        let key = self.face_key(case)?;
         if !self.rust_faces.contains_key(&key) {
             self.rust_faces.insert(key.clone(), open_face(case)?);
         }
@@ -4152,7 +4199,7 @@ impl BackendComparisonWorker {
     }
 
     fn c_face(&mut self, case: &InputCase) -> Result<c_abi::FT_Face, String> {
-        let key = runtime_face_cache_key(case)?;
+        let key = self.face_key(case)?;
         if !self.c_faces.contains_key(&key) {
             let (library, face) = c_open_face(case)?;
             self.c_faces
@@ -4165,7 +4212,7 @@ impl BackendComparisonWorker {
     }
 
     fn wasm_face(&mut self, case: &InputCase) -> Result<usize, String> {
-        let key = runtime_face_cache_key(case)?;
+        let key = self.face_key(case)?;
         if !self.wasm_faces.contains_key(&key) {
             let handle = wasm_open_face(case)?;
             self.wasm_faces
@@ -4175,6 +4222,16 @@ impl BackendComparisonWorker {
             .get(&key)
             .map(|cached| cached.handle)
             .ok_or_else(|| format!("missing cached wasm face {key}"))
+    }
+
+    fn face_key(&mut self, case: &InputCase) -> Result<String, String> {
+        let case_identity = case as *const InputCase as usize;
+        if let Some(key) = self.face_keys.get(&case_identity) {
+            return Ok(key.clone());
+        }
+        let key = runtime_face_cache_key(case)?;
+        self.face_keys.insert(case_identity, key.clone());
+        Ok(key)
     }
 }
 
@@ -37507,10 +37564,10 @@ fn runtime_face_cache_key(case: &InputCase) -> Result<String, String> {
     let font = runtime_font_asset(case).ok_or_else(|| "missing font asset".to_string())?;
     let face_index =
         usize::try_from(face_index_param(&case.inputs.params)?).map_err(|err| err.to_string())?;
-    let bytes = font_asset_bytes(font)?;
-    let mut hasher = Sha256::new();
-    hasher.update(bytes.as_ref());
-    let font_key = format!("sha256:{}:face:{face_index}", hex_bytes(&hasher.finalize()));
+    // The global preload phase already computes and caches each file asset's
+    // content digest. Reusing that identity avoids hashing the same font once
+    // per expanded case while keeping face-cache keys content-bound.
+    let font_key = format!("sha256:{}:face:{face_index}", font_asset_digest(font)?);
     if preserve_initial_size(&case.inputs.params)? {
         return Ok(format!("{font_key}:initial-size"));
     }
@@ -37536,6 +37593,50 @@ fn runtime_face_cache_key(case: &InputCase) -> Result<String, String> {
     Ok(format!("{font_key}:pixel:{pixel_width}:{pixel_height}"))
 }
 
+fn font_asset_digest(font: &Asset) -> Result<String, String> {
+    match font {
+        Asset::List(items) => {
+            let asset = items
+                .iter()
+                .find(|asset| asset_is_runtime_resolved(asset))
+                .ok_or_else(|| format!("unresolved asset list {}", asset_label(font)))?;
+            font_asset_digest(asset)
+        }
+        Asset::File { .. } | Asset::Ref { .. } => {
+            let path = asset_file_path(font)
+                .ok_or_else(|| format!("unresolved shared asset ref {}", asset_label(font)))?;
+            validated_file_asset(path).map(|(_, digest)| digest)
+        }
+        Asset::InlineBytes { encoding, .. } => {
+            if encoding != "hex" {
+                return Err(format!("unsupported font byte encoding {encoding}"));
+            }
+            let value =
+                inline_bytes_hex(font).ok_or_else(|| "missing inline hex bytes".to_string())?;
+            cached_inline_digest(value)
+        }
+        Asset::Other(_) => Err("unsupported font asset shape".to_string()),
+    }
+}
+
+fn cached_inline_digest(value: &str) -> Result<String, String> {
+    static CACHE: OnceLock<Mutex<BTreeMap<String, String>>> = OnceLock::new();
+    let cache = CACHE.get_or_init(|| Mutex::new(BTreeMap::new()));
+    if let Some(digest) = cache
+        .lock()
+        .map_err(|err| err.to_string())?
+        .get(value)
+        .cloned()
+    {
+        return Ok(digest);
+    }
+    let bytes = cached_inline_bytes(value)?;
+    let digest = sha256_hex(bytes.as_ref());
+    let mut cache = cache.lock().map_err(|err| err.to_string())?;
+    let digest = cache.entry(value.to_string()).or_insert(digest).clone();
+    Ok(digest)
+}
+
 fn case_uses_cached_face(case: &InputCase) -> bool {
     matches!(
         case.operation.as_str(),
@@ -37552,6 +37653,8 @@ fn case_uses_cached_face(case: &InputCase) -> bool {
             | "sfnt.get_os2_unicode_ranges"
             | "sfnt.charmap_and_name_metadata"
             | "sfnt.mac_encoding_record"
+            | "sfnt.load_sfnt_table"
+            | "sfnt.table_info"
             | "freetype.get_first_char"
             | "freetype.get_next_char"
             | "load_char"
@@ -40038,8 +40141,12 @@ fn property_service_route_pending(operation: &str) -> bool {
 }
 
 fn property_scalar_route_supported(case: &InputCase) -> bool {
+    let case_id = case
+        .case_id
+        .split_once('@')
+        .map_or(case.case_id.as_str(), |(base, _)| base);
     matches!(
-        case.case_id.as_str(),
+        case_id,
         "ftmodapi.FT_Property_Get.gets_supported_property"
             | "ftmodapi.FT_Property_Get.rejects_null_arguments"
             | "ftmodapi.FT_Property_Get.missing_or_unsupported_property_service"
@@ -40055,6 +40162,7 @@ fn property_scalar_route_supported(case: &InputCase) -> bool {
             | "ftdriver.TT_INTERPRETER_VERSION_38.interpreter_version_property_normalizes_to_40"
             | "ftdriver.TT_INTERPRETER_VERSION_40.interpreter_version_property_roundtrip"
             | "fterrdef.FT_Err_Missing_Property.driver_property_unknown_name"
+            | "fterrdef.FT_Err_Missing_Property.known_property_success"
             | "ftdriver.TT_INTERPRETER_VERSION_40.default_interpreter_version"
             | "ftdriver.FT_Prop_GlyphToScriptMap.invalid_face_error_matches_c"
             | "ftdriver.FT_Prop_GlyphToScriptMap.property_get_returns_face_map"
@@ -40140,6 +40248,37 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             | "ftlist.FT_List_Iterate.iterator_can_mutate_current_node"
     ) {
         return Ok(vec!["--ft-list".to_string(), case.case_id.clone()]);
+    }
+    if is_gzip_uncompress_error_case(case) {
+        let manifest = gzip_payload_manifest(case)?;
+        let payload = manifest
+            .payloads
+            .first()
+            .ok_or_else(|| "gzip uncompress error route has no payload".to_string())?;
+        return Ok(vec![
+            "--gzip-uncompress-errors".to_string(),
+            case.case_id
+                .rsplit('.')
+                .next()
+                .unwrap_or_default()
+                .to_string(),
+            fixture_dir()
+                .join(payload.raw.as_str())
+                .to_string_lossy()
+                .into_owned(),
+            fixture_dir()
+                .join(payload.gzip.as_str())
+                .to_string_lossy()
+                .into_owned(),
+            fixture_dir()
+                .join(
+                    payload.zlib_wrapped.as_deref().ok_or_else(|| {
+                        format!("gzip payload {} missing zlib_wrapped", payload.id)
+                    })?,
+                )
+                .to_string_lossy()
+                .into_owned(),
+        ]);
     }
     if case.case_id == "ftgzip.FT_Gzip_Uncompress.uncompresses_valid_gzip_buffer" {
         let manifest = gzip_payload_manifest(case)?;
@@ -40341,7 +40480,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         args.push(load_flags_param(params)?.to_string());
         return Ok(args);
     }
-    if case.case_id == "ftmm.FT_Set_Var_Design_Coordinates.output_changes_for_design_coordinates" {
+    if case_id_base(&case.case_id)
+        == "ftmm.FT_Set_Var_Design_Coordinates.output_changes_for_design_coordinates"
+    {
         let set_coords = ftmm_optional_coords_from_params(params)?;
         let mut args = vec!["--ftmm-set-var-design-glyph-output".to_string()];
         push_font_source(case, &mut args)?;
@@ -40395,7 +40536,11 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         args.push(ftmm_mm_blend_scenario_output_count(case)?.to_string());
         return Ok(args);
     }
-    if case.case_id == "ftmm.FT_Set_Var_Blend_Coordinates.output_changes_for_active_blend" {
+    if matches!(
+        case_id_base(&case.case_id),
+        "ftmm.FT_Set_Var_Blend_Coordinates.output_changes_for_active_blend"
+            | "ftmm.FT_Set_Var_Blend_Coordinates.output_changes_for_long_word_delta_set"
+    ) {
         let set_coords = ftmm_optional_coords_from_params(params)?;
         let mut args = vec!["--ftmm-set-var-blend-glyph-output".to_string()];
         push_font_source(case, &mut args)?;
@@ -43457,6 +43602,15 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                 push_named_font_source(case, "svg_font", &mut args)?;
                 return Ok(args);
             }
+            if glyph_copy_from_converted_outline_case(case) {
+                let mut args = vec!["--glyph-record".to_string()];
+                push_named_font_source(case, "outline_font", &mut args)?;
+                push_face_size(params, &mut args)?;
+                args.push(glyph_index_param(params)?.to_string());
+                args.push(load_flags_param(params)?.to_string());
+                args.push("bitmap-copy-from-outline".to_string());
+                return Ok(args);
+            }
             if bitmap_glyph_record_paths_case(case) {
                 let mut args = vec!["--bitmap-glyph-record-paths".to_string()];
                 push_named_font_source(case, "outline_font", &mut args)?;
@@ -43474,7 +43628,12 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             let mut args = vec!["--glyph-record".to_string()];
             push_font_source(case, &mut args)?;
             push_face_size(params, &mut args)?;
-            args.push(glyph_index_param(params)?.to_string());
+            let glyph_index = if ftglyph_bitmap_record_case(case) {
+                bitmap_glyph_record_index(params)?
+            } else {
+                glyph_index_param(params)?
+            };
+            args.push(glyph_index.to_string());
             args.push(load_flags_param(params)?.to_string());
             args.push(glyph_record_action(case.operation.as_str()).to_string());
             Ok(args)
@@ -43688,6 +43847,21 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         "ftglyph.custom_glyph_lifecycle" if !case.expect_error => {
             Ok(vec!["--custom-glyph-lifecycle".to_string()])
         }
+        "ftglyph.new_glyph" => match case_id_base(&case.case_id) {
+            "ftglyph.FT_New_Glyph.success_bitmap_outline_svg_empty_glyph" => {
+                Ok(vec!["--new-glyph-matrix".to_string()])
+            }
+            "ftglyph.FT_New_Glyph.error_null_library_or_output" => {
+                Ok(vec!["--new-glyph-null-inputs".to_string()])
+            }
+            "ftglyph.FT_New_Glyph.error_unsupported_format" => {
+                Ok(vec!["--new-glyph-unsupported-format".to_string()])
+            }
+            "ftglyph.FT_New_Glyph.error_allocation_failure" => {
+                Ok(vec!["--new-glyph-allocation-failure".to_string()])
+            }
+            other => Err(format!("unmapped FT_New_Glyph parity case {other}")),
+        },
         "ftincrem.opaque_handle_lifecycle" if !case.expect_error => {
             let mut args = vec!["--incremental-opaque-handle".to_string()];
             push_font_source(case, &mut args)?;
@@ -44201,7 +44375,19 @@ fn is_bzip2_disabled_build_policy_case(case: &InputCase) -> bool {
     )
 }
 
+fn is_gzip_uncompress_error_case(case: &InputCase) -> bool {
+    matches!(
+        case.case_id.as_str(),
+        "ftgzip.FT_Gzip_Uncompress.rejects_invalid_arguments"
+            | "ftgzip.FT_Gzip_Uncompress.reports_buffer_too_small"
+            | "ftgzip.FT_Gzip_Uncompress.reports_invalid_compressed_data"
+    )
+}
+
 fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
+    if is_gzip_uncompress_error_case(case) {
+        return gzip_uncompress_error_output(case, GzipBackend::Rust);
+    }
     if case.case_id == "ftgzip.FT_Gzip_Uncompress.uncompresses_valid_gzip_buffer" {
         return gzip_uncompress_output(case, GzipBackend::Rust);
     }
@@ -44257,6 +44443,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
                 | "ftbitmap.bitmap_embolden"
                 | "ftbitmap.bitmap_blend"
                 | "ftglyph.matrix_invert"
+                | "ftglyph.new_glyph"
                 | "ftglyph.glyph_copy"
                 | "ftglyph.get_glyph"
                 | "ftimage.custom_renderer_lifecycle"
@@ -44735,7 +44922,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             rust_ftmm_set_var_design_metrics_output(case)
         }
         "ftmm.set_var_design_coordinates"
-            if case.case_id
+            if case_id_base(&case.case_id)
                 == "ftmm.FT_Set_Var_Design_Coordinates.output_changes_for_design_coordinates" =>
         {
             rust_ftmm_set_var_design_glyph_output(case)
@@ -44770,8 +44957,11 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             rust_ftmm_var_blend_scenarios(case)
         }
         "ftmm.set_var_blend_coordinates"
-            if case.case_id
-                == "ftmm.FT_Set_Var_Blend_Coordinates.output_changes_for_active_blend" =>
+            if matches!(
+                case_id_base(&case.case_id),
+                "ftmm.FT_Set_Var_Blend_Coordinates.output_changes_for_active_blend"
+                    | "ftmm.FT_Set_Var_Blend_Coordinates.output_changes_for_long_word_delta_set"
+            ) =>
         {
             rust_ftmm_set_var_blend_glyph_output(case)
         }
@@ -45002,6 +45192,10 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             let face = open_face(case)?;
             rust_get_glyph_malformed_slots(&face, &case.inputs.params)
         }
+        "ftglyph.glyph_copy" if glyph_copy_from_converted_outline_case(case) => {
+            let face = open_named_face(case, "outline_font")?;
+            rust_bitmap_glyph_copy_from_converted_outline(&face, case)
+        }
         "ftglyph.glyph_copy" if case.inputs.params.get("probes").is_some() => {
             rust_glyph_copy_null_inputs()
         }
@@ -45080,6 +45274,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftglyph.record_inspect" if glyph_type_contract_case(case) => {
             rust_glyph_type_contract(case)
         }
+        "ftglyph.new_glyph" => rust_new_glyph_route(case),
         "ftglyph.get_glyph"
         | "ftglyph.glyph_copy"
         | "ftglyph.record_inspect"
@@ -45497,6 +45692,9 @@ fn catch_font_error(err: String) -> Result<RunOutput, String> {
 }
 
 fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
+    if is_gzip_uncompress_error_case(case) {
+        return gzip_uncompress_error_output(case, GzipBackend::CAbi);
+    }
     if is_lzw_stream_case(case) {
         return lzw_stream_output(case, LzwStreamBackend::CAbi);
     }
@@ -46167,7 +46365,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_ftmm_set_var_design_metrics_output(case)
         }
         "ftmm.set_var_design_coordinates"
-            if case.case_id
+            if case_id_base(&case.case_id)
                 == "ftmm.FT_Set_Var_Design_Coordinates.output_changes_for_design_coordinates" =>
         {
             c_ftmm_set_var_design_glyph_output(case)
@@ -46202,8 +46400,11 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_ftmm_var_blend_scenarios(case)
         }
         "ftmm.set_var_blend_coordinates"
-            if case.case_id
-                == "ftmm.FT_Set_Var_Blend_Coordinates.output_changes_for_active_blend" =>
+            if matches!(
+                case_id_base(&case.case_id),
+                "ftmm.FT_Set_Var_Blend_Coordinates.output_changes_for_active_blend"
+                    | "ftmm.FT_Set_Var_Blend_Coordinates.output_changes_for_long_word_delta_set"
+            ) =>
         {
             c_ftmm_set_var_blend_glyph_output(case)
         }
@@ -46455,6 +46656,13 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_done_library(library);
             output
         }
+        "ftglyph.glyph_copy" if glyph_copy_from_converted_outline_case(case) => {
+            let (library, face) = c_open_named_face(case, "outline_font")?;
+            let output = c_bitmap_glyph_copy_from_converted_outline(face, case);
+            c_done_face(face);
+            c_done_library(library);
+            output
+        }
         "ftglyph.glyph_copy" if case.inputs.params.get("probes").is_some() => {
             c_glyph_copy_null_inputs()
         }
@@ -46571,6 +46779,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftsynth.glyphslot_null_noop" => c_ftsynth_null_noop(case),
         "ftglyph.record_inspect" if glyph_type_contract_case(case) => c_glyph_type_contract(case),
+        "ftglyph.new_glyph" => c_new_glyph_route(case),
         "ftglyph.get_glyph"
         | "ftglyph.glyph_copy"
         | "ftglyph.record_inspect"
@@ -46831,6 +47040,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
 }
 
 fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
+    if is_gzip_uncompress_error_case(case) {
+        return gzip_uncompress_error_output(case, GzipBackend::Wasm);
+    }
     if is_lzw_stream_case(case) {
         return lzw_stream_output(case, LzwStreamBackend::Wasm);
     }
@@ -47444,7 +47656,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             wasm_ftmm_set_var_design_metrics_output(case)
         }
         "ftmm.set_var_design_coordinates"
-            if case.case_id
+            if case_id_base(&case.case_id)
                 == "ftmm.FT_Set_Var_Design_Coordinates.output_changes_for_design_coordinates" =>
         {
             wasm_ftmm_set_var_design_glyph_output(case)
@@ -47479,8 +47691,11 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             wasm_ftmm_var_blend_scenarios(case)
         }
         "ftmm.set_var_blend_coordinates"
-            if case.case_id
-                == "ftmm.FT_Set_Var_Blend_Coordinates.output_changes_for_active_blend" =>
+            if matches!(
+                case_id_base(&case.case_id),
+                "ftmm.FT_Set_Var_Blend_Coordinates.output_changes_for_active_blend"
+                    | "ftmm.FT_Set_Var_Blend_Coordinates.output_changes_for_long_word_delta_set"
+            ) =>
         {
             wasm_ftmm_set_var_blend_glyph_output(case)
         }
@@ -47732,6 +47947,12 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             wasm_done_face(handle);
             output
         }
+        "ftglyph.glyph_copy" if glyph_copy_from_converted_outline_case(case) => {
+            let handle = wasm_open_named_face(case, "outline_font")?;
+            let output = wasm_bitmap_glyph_copy_from_converted_outline(handle, case);
+            wasm_done_face(handle);
+            output
+        }
         "ftglyph.glyph_copy" if case.inputs.params.get("probes").is_some() => {
             wasm_glyph_copy_null_inputs()
         }
@@ -47841,6 +48062,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftglyph.record_inspect" if glyph_type_contract_case(case) => {
             wasm_glyph_type_contract(case)
         }
+        "ftglyph.new_glyph" => wasm_new_glyph_route(case),
         "ftglyph.get_glyph"
         | "ftglyph.glyph_copy"
         | "ftglyph.record_inspect"
@@ -52428,6 +52650,7 @@ fn wasm_stroked_outline_glyph_to_bitmap(
 fn ftglyph_bitmap_record_case(case: &InputCase) -> bool {
     case.case_id
         .starts_with("ftglyph.FT_Get_Glyph.success_bitmap_slot_deep_copy")
+        || case_id_base(&case.case_id) == "ftglyph.FT_Glyph_Copy.success_bitmap_copy_is_independent"
         || case.case_id == "ftglyph.FT_BitmapGlyphRec.fields_match_get_glyph_bitmap"
 }
 
@@ -52452,6 +52675,162 @@ fn bitmap_glyph_record_render_mode(params: &Value) -> Result<i32, String> {
         Some(Value::String(mode)) if mode == "MONO" => Ok(FT_RENDER_MODE_MONO),
         _ => render_mode_param(params),
     }
+}
+
+fn rust_bitmap_glyph_copy_from_converted_outline(
+    face: &FT_Face,
+    case: &InputCase,
+) -> Result<RunOutput, String> {
+    let slot = match FT_Load_Glyph(
+        face,
+        glyph_index_param(&case.inputs.params)?,
+        load_flags_param(&case.inputs.params)?,
+    ) {
+        Ok(slot) => slot,
+        Err(err) => return Ok(error(err)),
+    };
+    let source = match FT_Get_Outline_Glyph(Some(&slot)) {
+        Ok(glyph) => glyph,
+        Err(err) => return Ok(error(err)),
+    };
+    let bitmap = match FT_Outline_Glyph_To_Bitmap(&source, render_mode_param(&case.inputs.params)?)
+    {
+        Ok(glyph) => glyph,
+        Err(err) => return Ok(error(err)),
+    };
+    let copy = FT_Bitmap_Glyph_Copy(&bitmap);
+    Ok(ok(bitmap_copy_glyph_record_output(
+        copy.root.format,
+        copy.root.advance.x,
+        copy.root.advance.y,
+        copy.left,
+        copy.top,
+        copy.bitmap.width,
+        copy.bitmap.rows,
+        copy.bitmap.pitch,
+        copy.bitmap.pixel_mode,
+        copy.bitmap.num_grays,
+        &copy.bitmap.buffer,
+    )))
+}
+
+fn c_bitmap_glyph_copy_from_converted_outline(
+    face: c_abi::FT_Face,
+    case: &InputCase,
+) -> Result<RunOutput, String> {
+    let mut source: c_abi::FT_Glyph = ptr::null_mut();
+    let mut target: c_abi::FT_Glyph = ptr::null_mut();
+    let mut error_code = c_abi::FT_Load_Glyph(
+        face,
+        glyph_index_param(&case.inputs.params)?,
+        load_flags_param(&case.inputs.params)?,
+    );
+    if error_code == FT_Err_Ok {
+        let slot = c_abi::abi_glyph_slot_pointer(face)
+            .ok_or_else(|| "missing c glyph slot pointer".to_string())?;
+        error_code = c_abi::FT_Get_Glyph(slot, &mut source);
+    }
+    if error_code == FT_Err_Ok {
+        error_code = c_abi::FT_Glyph_To_Bitmap(
+            &mut source,
+            render_mode_param(&case.inputs.params)?,
+            ptr::null(),
+            if bool_param(&case.inputs.params, "convert_destroy", true)? {
+                1
+            } else {
+                0
+            },
+        );
+    }
+    if error_code == FT_Err_Ok {
+        error_code = c_abi::FT_Glyph_Copy(source, &mut target);
+    }
+    let output = if error_code == FT_Err_Ok {
+        let snapshot = c_abi::abi_bitmap_glyph_snapshot(target)
+            .ok_or_else(|| "missing c bitmap glyph copy snapshot".to_string())?;
+        ok(bitmap_copy_glyph_record_output(
+            snapshot.root.format,
+            snapshot.root.advance.x,
+            snapshot.root.advance.y,
+            snapshot.left,
+            snapshot.top,
+            snapshot.bitmap.width,
+            snapshot.bitmap.rows,
+            snapshot.bitmap.pitch,
+            snapshot.bitmap.pixel_mode,
+            snapshot.bitmap.num_grays,
+            &snapshot.bitmap.buffer,
+        ))
+    } else {
+        error(error_code)
+    };
+    if !target.is_null() {
+        c_abi::FT_Done_Glyph(target);
+    }
+    if !source.is_null() {
+        c_abi::FT_Done_Glyph(source);
+    }
+    Ok(output)
+}
+
+fn wasm_bitmap_glyph_copy_from_converted_outline(
+    handle: usize,
+    case: &InputCase,
+) -> Result<RunOutput, String> {
+    let mut source = 0usize;
+    let mut target = 0usize;
+    let mut error_code = wasm_abi::fontdone_wasm_load_glyph(
+        handle,
+        glyph_index_param(&case.inputs.params)?,
+        load_flags_param(&case.inputs.params)?,
+    );
+    if error_code == FT_Err_Ok {
+        error_code = wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut source);
+    }
+    if error_code == FT_Err_Ok {
+        error_code = wasm_abi::fontdone_wasm_glyph_to_bitmap_handle(
+            &mut source,
+            render_mode_param(&case.inputs.params)?,
+            ptr::null(),
+            if bool_param(&case.inputs.params, "convert_destroy", true)? {
+                1
+            } else {
+                0
+            },
+        );
+    }
+    if error_code == FT_Err_Ok {
+        let source_ptr = ptr::with_exposed_provenance::<wasm_abi::FontdoneWasmGlyph>(source);
+        error_code = wasm_abi::fontdone_wasm_glyph_copy(source_ptr, &mut target);
+    }
+    let output = if error_code == FT_Err_Ok {
+        let snapshot = wasm_abi::abi_bitmap_glyph_snapshot(target)
+            .ok_or_else(|| "missing wasm bitmap glyph copy snapshot".to_string())?;
+        ok(bitmap_copy_glyph_record_output(
+            snapshot.root.format,
+            snapshot.root.advance.x,
+            snapshot.root.advance.y,
+            snapshot.left,
+            snapshot.top,
+            snapshot.bitmap.width,
+            snapshot.bitmap.rows,
+            snapshot.bitmap.pitch,
+            snapshot.bitmap.pixel_mode,
+            snapshot.bitmap.num_grays,
+            &snapshot.bitmap.buffer,
+        ))
+    } else {
+        error(error_code)
+    };
+    if target != 0 {
+        let target_ptr = ptr::with_exposed_provenance_mut::<wasm_abi::FontdoneWasmGlyph>(target);
+        wasm_abi::fontdone_wasm_done_glyph_handle(target_ptr);
+    }
+    if source != 0 {
+        let source_ptr = ptr::with_exposed_provenance_mut::<wasm_abi::FontdoneWasmGlyph>(source);
+        wasm_abi::fontdone_wasm_done_glyph_handle(source_ptr);
+    }
+    Ok(output)
 }
 
 fn rust_bitmap_glyph_record(face: &FT_Face, case: &InputCase) -> Result<RunOutput, String> {
@@ -52934,6 +53313,48 @@ fn bitmap_glyph_record_output(
                 "top": top,
                 "buffer_hex": hex_bytes(buffer)
             }
+        }
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn bitmap_copy_glyph_record_output(
+    format: i32,
+    advance_x: i64,
+    advance_y: i64,
+    left: i32,
+    top: i32,
+    width: u32,
+    rows: u32,
+    pitch: i32,
+    pixel_mode: i32,
+    num_grays: u16,
+    buffer: &[u8],
+) -> Value {
+    let bitmap = if rows == 0 || buffer.is_empty() {
+        Value::Null
+    } else {
+        json!({
+            "width": width,
+            "rows": rows,
+            "pitch": pitch,
+            "pixel_mode": pixel_mode,
+            "num_grays": num_grays,
+            "left": left,
+            "top": top,
+            "buffer_hex": hex_bytes(buffer)
+        })
+    };
+    json!({
+        "glyph": {
+            "format": format,
+            "advance": {
+                "x": advance_x,
+                "y": advance_y
+            },
+            "library_present": true,
+            "clazz_present": true,
+            "bitmap": bitmap
         }
     })
 }
@@ -55623,16 +56044,49 @@ fn rust_cmap_cache_new(case: &InputCase) -> Result<RunOutput, String> {
 
 fn c_cmap_cache_new(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
+    let scenario = cmap_cache_scenario(&case.inputs.params)?;
+    let mut manager = c_abi::AbiSBitCacheHarness::new_manager_only(bytes.as_ref(), 0)
+        .map_err(|error| format!("C ABI cache manager setup returned {error}"))?;
+    let manager_handle = manager.manager_handle();
+    let face_id = manager.face_id();
+    let mut cache = ptr::null_mut();
+    let create_status = c_abi::FTC_CMapCache_New(manager_handle, &mut cache);
+    if create_status != FT_Err_Ok {
+        return Ok(error(create_status));
+    }
+    let first = c_abi::FTC_CMapCache_Lookup(cache, face_id, -1, 65);
+    let requester_after_first = manager.requester_calls();
+    if scenario == "success_multiple_cache_registration_limit" {
+        let mut statuses = vec![FT_Err_Ok];
+        let mut handles = vec![cache];
+        for _ in 1..=16 {
+            let mut extra = ptr::null_mut();
+            statuses.push(c_abi::FTC_CMapCache_New(manager_handle, &mut extra));
+            handles.push(extra);
+        }
+        if statuses[..16].iter().any(|status| *status != FT_Err_Ok)
+            || statuses[16] != FT_Err_Too_Many_Caches as FT_Error
+            || handles[..16].iter().any(|handle| handle.is_null())
+            || !handles[16].is_null()
+        {
+            return Err(
+                "C ABI CMap cache registration limit diverged from the contract".to_string(),
+            );
+        }
+        let after_registration_limit = c_abi::FTC_CMapCache_Lookup(cache, face_id, -1, 65);
+        if after_registration_limit != first || manager.requester_calls() != requester_after_first {
+            return Err(
+                "C ABI CMap cache was not preserved after registration failure".to_string(),
+            );
+        }
+    }
+    c_abi::FTC_Manager_Reset(manager_handle);
+    let after_reset = c_abi::FTC_CMapCache_Lookup(cache, face_id, -1, 65);
+    if manager.requester_calls() != 2 {
+        return Err("C ABI CMap cache reset did not re-request the face".to_string());
+    }
     cmap_cache_new_output(&case.inputs.params, || {
-        let (library, face) = c_new_face_from_bytes(bytes.as_ref(), 0)?;
-        let first = c_cmap_cache_lookup_glyph(face, -1, 65)?;
-        c_done_face(face);
-        c_done_library(library);
-        let (library, face) = c_new_face_from_bytes(bytes.as_ref(), 0)?;
-        let after_reset = c_cmap_cache_lookup_glyph(face, -1, 65)?;
-        c_done_face(face);
-        c_done_library(library);
-        Ok((first, after_reset, 1, 2))
+        Ok((first, after_reset, requester_after_first as i32, 2))
     })
 }
 
@@ -55690,44 +56144,82 @@ fn rust_image_cache_new(case: &InputCase) -> Result<RunOutput, String> {
 fn c_image_cache_new(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
     let face_index = face_index_param(&case.inputs.params)?;
+    let mut manager = c_abi::AbiSBitCacheHarness::new_manager_only(bytes.as_ref(), face_index)
+        .map_err(|error| format!("C ABI cache manager setup returned {error}"))?;
+    let manager_handle = manager.manager_handle();
+    let face_id = manager.face_id();
+    let mut cache = ptr::null_mut();
+    let create_status = c_abi::FTC_ImageCache_New(manager_handle, &mut cache);
+    if create_status != FT_Err_Ok {
+        return Ok(error(create_status));
+    }
+    let mut scaler = c_abi::FTC_ScalerRec {
+        face_id,
+        width: 12,
+        height: 12,
+        pixel: 1,
+        x_res: 0,
+        y_res: 0,
+    };
+    let mut first_glyph = ptr::null_mut();
+    let mut first_node = ptr::null_mut();
+    let first_status = c_abi::FTC_ImageCache_LookupScaler(
+        cache,
+        &mut scaler,
+        FT_LOAD_DEFAULT as c_abi::FT_ULong,
+        36,
+        &mut first_glyph,
+        &mut first_node,
+    );
+    if !first_node.is_null() {
+        c_abi::FTC_Node_Unref(first_node, manager_handle);
+    }
+    let requester_after_first = manager.requester_calls();
+    c_abi::FTC_Manager_Reset(manager_handle);
+    let mut reset_glyph = ptr::null_mut();
+    let mut reset_node = ptr::null_mut();
+    let reset_status = c_abi::FTC_ImageCache_LookupScaler(
+        cache,
+        &mut scaler,
+        FT_LOAD_DEFAULT as c_abi::FT_ULong,
+        36,
+        &mut reset_glyph,
+        &mut reset_node,
+    );
+    if !reset_node.is_null() {
+        c_abi::FTC_Node_Unref(reset_node, manager_handle);
+    }
+    if manager.requester_calls() != 2 {
+        return Err("C ABI image cache reset did not re-request the face".to_string());
+    }
+    let glyph = if reset_status == FT_Err_Ok {
+        Some(c_cached_glyph_record(reset_glyph)?)
+    } else {
+        None
+    };
     image_cache_new_output(&case.inputs.params, || {
-        let (library, face) = c_new_face_from_bytes(bytes.as_ref(), face_index)?;
-        let scaler = CacheScalerRow {
-            width: 12,
-            height: 12,
-            pixel: true,
-            x_res: 0,
-            y_res: 0,
-        };
-        let first_status = c_apply_cache_scaler(face, scaler);
-        let first_status = if first_status == FT_Err_Ok {
-            c_abi::FT_Load_Glyph(face, 36, FT_LOAD_DEFAULT)
-        } else {
-            first_status
-        };
-        c_done_face(face);
-        c_done_library(library);
-        let (library, face) = c_new_face_from_bytes(bytes.as_ref(), face_index)?;
-        let reset_status = c_apply_cache_scaler(face, scaler);
-        let glyph = if reset_status == FT_Err_Ok {
-            let err = c_abi::FT_Load_Glyph(face, 36, FT_LOAD_DEFAULT);
-            if err != FT_Err_Ok {
-                c_done_face(face);
-                c_done_library(library);
-                return Ok((first_status, err, 1, 2, None));
-            }
-            let slot = c_abi::abi_slot_snapshot(face)
-                .ok_or_else(|| "missing c glyph slot snapshot".to_string())?;
-            glyph_record_json(slot.format, slot.advance.x, slot.advance.y)
-        } else {
-            c_done_face(face);
-            c_done_library(library);
-            return Ok((first_status, reset_status, 1, 2, None));
-        };
-        c_done_face(face);
-        c_done_library(library);
-        Ok((first_status, FT_Err_Ok, 1, 2, Some(glyph)))
+        Ok((
+            first_status,
+            reset_status,
+            requester_after_first as u32,
+            manager.requester_calls(),
+            glyph.clone(),
+        ))
     })
+}
+
+fn c_cached_glyph_record(glyph: c_abi::FT_Glyph) -> Result<Value, String> {
+    if glyph.is_null() {
+        return Err("C ABI image cache returned a null glyph on success".to_string());
+    }
+    // SAFETY: `FTC_ImageCache_LookupScaler` returned a live manager-owned glyph
+    // and the node remains owned by the manager until reset/done.
+    let root = unsafe { *glyph };
+    Ok(glyph_record_json_from_root_parts(
+        root.format,
+        root.advance.x,
+        root.advance.y,
+    ))
 }
 
 fn wasm_image_cache_new(case: &InputCase) -> Result<RunOutput, String> {
@@ -60545,6 +61037,60 @@ fn ensure_malformed_glyph_facade(case: &InputCase) -> Result<(), String> {
             "{} malformed glyph facade row is not marked routed",
             case.case_id
         ));
+    }
+    Ok(())
+}
+
+fn ensure_new_glyph_allocation_facade(case: &InputCase) -> Result<(), String> {
+    let asset = case
+        .inputs
+        .assets
+        .get("allocation_failure_facade")
+        .ok_or_else(|| format!("{} missing allocation_failure_facade asset", case.case_id))?;
+    let path = asset_file_path(asset)
+        .ok_or_else(|| format!("{} allocation facade asset is unresolved", case.case_id))?;
+    let facade_path = fixture_dir().join(path);
+    let value: Value = serde_json::from_str(&fs::read_to_string(&facade_path).map_err(|err| {
+        format!(
+            "{} failed to read allocation facade {}: {err}",
+            case.case_id,
+            facade_path.display()
+        )
+    })?)
+    .map_err(|err| {
+        format!(
+            "{} failed to parse allocation facade {}: {err}",
+            case.case_id,
+            facade_path.display()
+        )
+    })?;
+    if value.get("version").and_then(Value::as_u64) != Some(1)
+        || value.get("subject").and_then(Value::as_str)
+            != Some("freetype-allocation-failure-facade")
+    {
+        return Err(format!(
+            "{} allocation facade has an unsupported contract",
+            case.case_id
+        ));
+    }
+    let mode_ids = value
+        .get("modes")
+        .and_then(Value::as_array)
+        .ok_or_else(|| format!("{} allocation facade must contain modes", case.case_id))?
+        .iter()
+        .filter_map(|mode| mode.get("id").and_then(Value::as_str))
+        .collect::<BTreeSet<_>>();
+    for required in [
+        "fail_next_allocation",
+        "fail_second_allocation",
+        "count_without_failure",
+    ] {
+        if !mode_ids.contains(required) {
+            return Err(format!(
+                "{} allocation facade is missing {required}",
+                case.case_id
+            ));
+        }
     }
     Ok(())
 }
@@ -65559,6 +66105,625 @@ fn wasm_custom_glyph_lifecycle() -> Result<RunOutput, String> {
         payload_zero_initialized: snapshot.payload_zero_initialized,
         done_callback_count: snapshot.done_callback_count,
     }))
+}
+
+fn new_glyph_class_name(format: FT_Glyph_Format) -> &'static str {
+    match format {
+        FT_GLYPH_FORMAT_BITMAP => "bitmap",
+        FT_GLYPH_FORMAT_OUTLINE => "outline",
+        FT_GLYPH_FORMAT_SVG => "svg",
+        _ => "unknown",
+    }
+}
+
+fn new_glyph_success_row(
+    format: FT_Glyph_Format,
+    status: FT_Error,
+    aglyph_nullness: &str,
+    clazz_class: &str,
+    advance: (i64, i64),
+    payload_zeroed: bool,
+) -> Value {
+    json!({
+        "status": status,
+        "format": format,
+        "aglyph_nullness": aglyph_nullness,
+        "clazz_class": clazz_class,
+        "root": {
+            "advance": {
+                "x": advance.0,
+                "y": advance.1
+            }
+        },
+        "payload_zeroed": payload_zeroed
+    })
+}
+
+fn new_glyph_error_row(
+    probe: &str,
+    status: FT_Error,
+    aglyph_after: &str,
+    write_class: &str,
+) -> Value {
+    json!({
+        "probe": probe,
+        "status": status,
+        "aglyph_after": aglyph_after,
+        "write_class": write_class
+    })
+}
+
+fn new_glyph_output(rows: Vec<Value>) -> RunOutput {
+    let status = rows
+        .iter()
+        .filter_map(|row| row.get("status").and_then(Value::as_i64))
+        .find(|status| *status != i64::from(FT_Err_Ok))
+        .and_then(|status| FT_Error::try_from(status).ok())
+        .unwrap_or(FT_Err_Ok);
+    let output = json!({ "rows": rows });
+    if status == FT_Err_Ok {
+        ok(output)
+    } else {
+        error_with_output(status, output)
+    }
+}
+
+fn rust_new_glyph_payload_zeroed(glyph: &FT_GlyphOwned) -> bool {
+    match glyph {
+        FT_GlyphOwned::Outline(glyph) => {
+            glyph.outline.points.is_empty()
+                && glyph.outline.tags.is_empty()
+                && glyph.outline.contours.is_empty()
+                && glyph.outline.flags == 0
+        }
+        FT_GlyphOwned::Bitmap(glyph) => {
+            glyph.left == 0
+                && glyph.top == 0
+                && glyph.bitmap.rows == 0
+                && glyph.bitmap.width == 0
+                && glyph.bitmap.pitch == 0
+                && glyph.bitmap.buffer.is_empty()
+                && glyph.bitmap.num_grays == 0
+                && glyph.bitmap.pixel_mode == 0
+        }
+        FT_GlyphOwned::Svg(glyph) => {
+            glyph.svg_document.is_empty()
+                && glyph.glyph_index == 0
+                && glyph.metrics == FT_Size_Metrics::default()
+                && glyph.units_per_EM == 0
+                && glyph.start_glyph_id == 0
+                && glyph.end_glyph_id == 0
+                && glyph.transform == FT_Matrix::default()
+                && glyph.delta == FT_Vector::default()
+        }
+    }
+}
+
+fn rust_new_glyph_success_row(format: FT_Glyph_Format) -> Value {
+    let library = FT_Init_FreeType();
+    match FT_New_Glyph(Some(&library), format) {
+        Ok(glyph) => {
+            let root = match &glyph {
+                FT_GlyphOwned::Outline(glyph) => &glyph.root,
+                FT_GlyphOwned::Bitmap(glyph) => &glyph.root,
+                FT_GlyphOwned::Svg(glyph) => &glyph.root,
+            };
+            let row = new_glyph_success_row(
+                format,
+                FT_Err_Ok,
+                "non_null",
+                new_glyph_class_name(format),
+                (root.advance.x, root.advance.y),
+                rust_new_glyph_payload_zeroed(&glyph),
+            );
+            drop(glyph);
+            row
+        }
+        Err(error) => new_glyph_success_row(format, error, "null", "null", (0, 0), false),
+    }
+}
+
+fn rust_new_glyph_route(case: &InputCase) -> Result<RunOutput, String> {
+    let rows = match case_id_base(&case.case_id) {
+        "ftglyph.FT_New_Glyph.success_bitmap_outline_svg_empty_glyph" => [
+            FT_GLYPH_FORMAT_BITMAP,
+            FT_GLYPH_FORMAT_OUTLINE,
+            FT_GLYPH_FORMAT_SVG,
+        ]
+        .into_iter()
+        .map(rust_new_glyph_success_row)
+        .collect(),
+        "ftglyph.FT_New_Glyph.error_null_library_or_output" => {
+            vec![
+                new_glyph_error_row(
+                    "null_library",
+                    FT_New_Glyph_Validate(None, FT_GLYPH_FORMAT_OUTLINE, true),
+                    "preserved",
+                    "preserved",
+                ),
+                new_glyph_error_row(
+                    "null_output",
+                    FT_New_Glyph_Validate(
+                        Some(&FT_Init_FreeType()),
+                        FT_GLYPH_FORMAT_OUTLINE,
+                        false,
+                    ),
+                    "not_applicable",
+                    "not_applicable",
+                ),
+            ]
+        }
+        "ftglyph.FT_New_Glyph.error_unsupported_format" => {
+            let library = FT_Init_FreeType();
+            let bad = FT_New_Glyph(Some(&library), 0x4241_4421);
+            let svg = FT_New_Glyph(Some(&library), FT_GLYPH_FORMAT_SVG);
+            let svg_status = match svg {
+                Ok(_) => FT_Err_Ok,
+                Err(error) => error,
+            };
+            vec![
+                new_glyph_error_row(
+                    "unknown_tag",
+                    bad.map_or_else(|error| error, |_| FT_Err_Ok),
+                    "preserved",
+                    "preserved",
+                ),
+                json!({
+                    "probe": "svg",
+                    "status": svg_status,
+                    "aglyph_after": if svg_status == FT_Err_Ok {
+                        "non_null"
+                    } else {
+                        "preserved"
+                    },
+                    "write_class": if svg_status == FT_Err_Ok {
+                        "written"
+                    } else {
+                        "preserved"
+                    },
+                    "build_feature_enabled": svg_status == FT_Err_Ok
+                }),
+            ]
+        }
+        "ftglyph.FT_New_Glyph.error_allocation_failure" => {
+            ensure_new_glyph_allocation_facade(case)?;
+            let library = FT_Init_FreeType();
+            vec![
+                json!({
+                    "format": FT_GLYPH_FORMAT_OUTLINE,
+                    "status": FT_New_Glyph_Allocation_Failure(
+                        Some(&library),
+                        FT_GLYPH_FORMAT_OUTLINE
+                    ),
+                    "aglyph_after": "null",
+                    "allocation_events": 1
+                }),
+                json!({
+                    "format": FT_GLYPH_FORMAT_BITMAP,
+                    "status": FT_New_Glyph_Allocation_Failure(
+                        Some(&library),
+                        FT_GLYPH_FORMAT_BITMAP
+                    ),
+                    "aglyph_after": "null",
+                    "allocation_events": 2
+                }),
+            ]
+        }
+        other => return Err(format!("unmapped FT_New_Glyph case {other}")),
+    };
+    Ok(new_glyph_output(rows))
+}
+
+fn c_new_glyph_payload_zeroed(
+    format: FT_Glyph_Format,
+    glyph: c_abi::FT_Glyph,
+) -> Result<bool, String> {
+    match format {
+        FT_GLYPH_FORMAT_OUTLINE => {
+            let snapshot = c_abi::abi_outline_glyph_snapshot(glyph)
+                .ok_or_else(|| "missing C outline glyph snapshot".to_string())?;
+            Ok(snapshot.outline.points.is_empty()
+                && snapshot.outline.tags.is_empty()
+                && snapshot.outline.contours.is_empty()
+                && snapshot.outline.flags == 0)
+        }
+        FT_GLYPH_FORMAT_BITMAP => {
+            let snapshot = c_abi::abi_bitmap_glyph_snapshot(glyph)
+                .ok_or_else(|| "missing C bitmap glyph snapshot".to_string())?;
+            Ok(snapshot.left == 0
+                && snapshot.top == 0
+                && snapshot.bitmap.rows == 0
+                && snapshot.bitmap.width == 0
+                && snapshot.bitmap.pitch == 0
+                && snapshot.bitmap.buffer.is_empty()
+                && snapshot.bitmap.num_grays == 0
+                && snapshot.bitmap.pixel_mode == 0)
+        }
+        FT_GLYPH_FORMAT_SVG => {
+            let snapshot = c_abi::abi_svg_glyph_snapshot(glyph)
+                .ok_or_else(|| "missing C SVG glyph snapshot".to_string())?;
+            Ok(snapshot.svg_document.is_empty()
+                && snapshot.glyph_index == 0
+                && snapshot.metrics.x_ppem == 0
+                && snapshot.metrics.y_ppem == 0
+                && snapshot.metrics.x_scale == 0
+                && snapshot.metrics.y_scale == 0
+                && snapshot.metrics.ascender == 0
+                && snapshot.metrics.descender == 0
+                && snapshot.metrics.height == 0
+                && snapshot.metrics.max_advance == 0
+                && snapshot.units_per_EM == 0
+                && snapshot.start_glyph_id == 0
+                && snapshot.end_glyph_id == 0
+                && snapshot.transform.xx == 0
+                && snapshot.transform.xy == 0
+                && snapshot.transform.yx == 0
+                && snapshot.transform.yy == 0
+                && snapshot.delta.x == 0
+                && snapshot.delta.y == 0)
+        }
+        _ => Ok(false),
+    }
+}
+
+fn c_new_glyph_success_row(
+    library: c_abi::FT_Library,
+    format: FT_Glyph_Format,
+) -> Result<Value, String> {
+    let sentinel = ptr::NonNull::<c_abi::FT_GlyphRec>::dangling().as_ptr();
+    let mut glyph = sentinel;
+    let status = c_abi::FT_New_Glyph(library, format, &mut glyph);
+    let row = if status == FT_Err_Ok && glyph != sentinel {
+        let advance = match format {
+            FT_GLYPH_FORMAT_OUTLINE => {
+                let advance = c_abi::abi_outline_glyph_snapshot(glyph)
+                    .ok_or_else(|| "missing C outline glyph snapshot".to_string())?
+                    .advance;
+                (advance.x as i64, advance.y as i64)
+            }
+            FT_GLYPH_FORMAT_BITMAP => {
+                let advance = c_abi::abi_bitmap_glyph_snapshot(glyph)
+                    .ok_or_else(|| "missing C bitmap glyph snapshot".to_string())?
+                    .root
+                    .advance;
+                (advance.x as i64, advance.y as i64)
+            }
+            FT_GLYPH_FORMAT_SVG => {
+                let advance = c_abi::abi_svg_glyph_snapshot(glyph)
+                    .ok_or_else(|| "missing C SVG glyph snapshot".to_string())?
+                    .root
+                    .advance;
+                (advance.x as i64, advance.y as i64)
+            }
+            _ => (0, 0),
+        };
+        let payload_zeroed = c_new_glyph_payload_zeroed(format, glyph)?;
+        new_glyph_success_row(
+            format,
+            status,
+            "non_null",
+            new_glyph_class_name(format),
+            advance,
+            payload_zeroed,
+        )
+    } else {
+        new_glyph_success_row(
+            format,
+            status,
+            if glyph.is_null() { "null" } else { "preserved" },
+            "null",
+            (0, 0),
+            false,
+        )
+    };
+    if glyph != sentinel && !glyph.is_null() {
+        c_abi::FT_Done_Glyph(glyph);
+    }
+    Ok(row)
+}
+
+fn c_new_glyph_route(case: &InputCase) -> Result<RunOutput, String> {
+    match case_id_base(&case.case_id) {
+        "ftglyph.FT_New_Glyph.success_bitmap_outline_svg_empty_glyph" => {
+            let mut library = ptr::null_mut();
+            let init = c_abi::FT_Init_FreeType(&mut library);
+            if init != FT_Err_Ok {
+                return Ok(error(init));
+            }
+            c_abi::FT_Add_Default_Modules(library);
+            let rows = [
+                FT_GLYPH_FORMAT_BITMAP,
+                FT_GLYPH_FORMAT_OUTLINE,
+                FT_GLYPH_FORMAT_SVG,
+            ]
+            .into_iter()
+            .map(|format| c_new_glyph_success_row(library, format))
+            .collect::<Result<Vec<_>, _>>()?;
+            let done = c_abi::FT_Done_FreeType(library);
+            if done != FT_Err_Ok {
+                return Ok(error_with_output(done, json!({ "rows": rows })));
+            }
+            Ok(new_glyph_output(rows))
+        }
+        "ftglyph.FT_New_Glyph.error_null_library_or_output" => {
+            let mut library = ptr::null_mut();
+            let init = c_abi::FT_Init_FreeType(&mut library);
+            if init != FT_Err_Ok {
+                return Ok(error(init));
+            }
+            c_abi::FT_Add_Default_Modules(library);
+            let sentinel = ptr::NonNull::<c_abi::FT_GlyphRec>::dangling().as_ptr();
+            let mut glyph = sentinel;
+            let null_library =
+                c_abi::FT_New_Glyph(ptr::null_mut(), FT_GLYPH_FORMAT_OUTLINE, &mut glyph);
+            let null_output =
+                c_abi::FT_New_Glyph(library, FT_GLYPH_FORMAT_OUTLINE, ptr::null_mut());
+            let rows = vec![
+                new_glyph_error_row(
+                    "null_library",
+                    null_library,
+                    if glyph == sentinel {
+                        "preserved"
+                    } else {
+                        "written"
+                    },
+                    "preserved",
+                ),
+                new_glyph_error_row(
+                    "null_output",
+                    null_output,
+                    "not_applicable",
+                    "not_applicable",
+                ),
+            ];
+            c_abi::FT_Done_FreeType(library);
+            Ok(new_glyph_output(rows))
+        }
+        "ftglyph.FT_New_Glyph.error_unsupported_format" => {
+            let mut library = ptr::null_mut();
+            let init = c_abi::FT_Init_FreeType(&mut library);
+            if init != FT_Err_Ok {
+                return Ok(error(init));
+            }
+            c_abi::FT_Add_Default_Modules(library);
+            let sentinel = ptr::NonNull::<c_abi::FT_GlyphRec>::dangling().as_ptr();
+            let mut bad = sentinel;
+            let bad_status = c_abi::FT_New_Glyph(library, 0x4241_4421, &mut bad);
+            let mut svg = sentinel;
+            let svg_status = c_abi::FT_New_Glyph(library, FT_GLYPH_FORMAT_SVG, &mut svg);
+            if svg != sentinel && !svg.is_null() {
+                c_abi::FT_Done_Glyph(svg);
+            }
+            let rows = vec![
+                new_glyph_error_row(
+                    "unknown_tag",
+                    bad_status,
+                    if bad == sentinel {
+                        "preserved"
+                    } else {
+                        "written"
+                    },
+                    "preserved",
+                ),
+                json!({
+                    "probe": "svg",
+                    "status": svg_status,
+                    "aglyph_after": if svg_status == FT_Err_Ok {
+                        "non_null"
+                    } else {
+                        "preserved"
+                    },
+                    "write_class": if svg_status == FT_Err_Ok {
+                        "written"
+                    } else {
+                        "preserved"
+                    },
+                    "build_feature_enabled": svg_status == FT_Err_Ok
+                }),
+            ];
+            c_abi::FT_Done_FreeType(library);
+            Ok(new_glyph_output(rows))
+        }
+        "ftglyph.FT_New_Glyph.error_allocation_failure" => {
+            ensure_new_glyph_allocation_facade(case)?;
+            let rows = c_abi::abi_new_glyph_allocation_failure()
+                .into_iter()
+                .map(|row| {
+                    json!({
+                        "format": row.format,
+                        "status": row.status,
+                        "aglyph_after": if row.aglyph_null { "null" } else { "preserved" },
+                        "allocation_events": row.allocation_events
+                    })
+                })
+                .collect();
+            Ok(new_glyph_output(rows))
+        }
+        other => Err(format!("unmapped FT_New_Glyph case {other}")),
+    }
+}
+
+fn wasm_new_glyph_payload_zeroed(
+    format: FT_Glyph_Format,
+    handle: usize,
+) -> Result<(i64, i64, bool), String> {
+    match format {
+        FT_GLYPH_FORMAT_OUTLINE => {
+            let snapshot = wasm_abi::abi_outline_glyph_snapshot(handle)
+                .ok_or_else(|| "missing WASM outline glyph snapshot".to_string())?;
+            Ok((
+                snapshot.advance.x,
+                snapshot.advance.y,
+                snapshot.outline.points.is_empty()
+                    && snapshot.outline.tags.is_empty()
+                    && snapshot.outline.contours.is_empty()
+                    && snapshot.outline.flags == 0,
+            ))
+        }
+        FT_GLYPH_FORMAT_BITMAP => {
+            let snapshot = wasm_abi::abi_bitmap_glyph_snapshot(handle)
+                .ok_or_else(|| "missing WASM bitmap glyph snapshot".to_string())?;
+            Ok((
+                snapshot.root.advance.x,
+                snapshot.root.advance.y,
+                snapshot.left == 0
+                    && snapshot.top == 0
+                    && snapshot.bitmap.rows == 0
+                    && snapshot.bitmap.width == 0
+                    && snapshot.bitmap.pitch == 0
+                    && snapshot.bitmap.buffer.is_empty()
+                    && snapshot.bitmap.num_grays == 0
+                    && snapshot.bitmap.pixel_mode == 0,
+            ))
+        }
+        FT_GLYPH_FORMAT_SVG => {
+            let snapshot = wasm_abi::abi_svg_glyph_snapshot(handle)
+                .ok_or_else(|| "missing WASM SVG glyph snapshot".to_string())?;
+            Ok((
+                snapshot.root.advance.x,
+                snapshot.root.advance.y,
+                snapshot.svg_document.is_empty()
+                    && snapshot.glyph_index == 0
+                    && snapshot.metrics.x_ppem == 0
+                    && snapshot.metrics.y_ppem == 0
+                    && snapshot.metrics.x_scale == 0
+                    && snapshot.metrics.y_scale == 0
+                    && snapshot.metrics.ascender == 0
+                    && snapshot.metrics.descender == 0
+                    && snapshot.metrics.height == 0
+                    && snapshot.metrics.max_advance == 0
+                    && snapshot.units_per_EM == 0
+                    && snapshot.start_glyph_id == 0
+                    && snapshot.end_glyph_id == 0
+                    && snapshot.transform.xx == 0
+                    && snapshot.transform.xy == 0
+                    && snapshot.transform.yx == 0
+                    && snapshot.transform.yy == 0
+                    && snapshot.delta.x == 0
+                    && snapshot.delta.y == 0,
+            ))
+        }
+        _ => Ok((0, 0, false)),
+    }
+}
+
+fn wasm_done_new_glyph(handle: usize) {
+    if handle != 0 {
+        wasm_abi::fontdone_wasm_done_glyph_handle(ptr::with_exposed_provenance_mut::<
+            wasm_abi::FontdoneWasmGlyph,
+        >(handle));
+    }
+}
+
+fn wasm_new_glyph_success_row(format: FT_Glyph_Format) -> Result<Value, String> {
+    let mut handle = 1usize;
+    let status = wasm_abi::fontdone_wasm_new_glyph(1, format, &mut handle);
+    if status == FT_Err_Ok && handle != 0 {
+        let (advance_x, advance_y, payload_zeroed) = wasm_new_glyph_payload_zeroed(format, handle)?;
+        let row = new_glyph_success_row(
+            format,
+            status,
+            "non_null",
+            new_glyph_class_name(format),
+            (advance_x, advance_y),
+            payload_zeroed,
+        );
+        wasm_done_new_glyph(handle);
+        Ok(row)
+    } else {
+        Ok(new_glyph_success_row(
+            format,
+            status,
+            if handle == 0 { "null" } else { "preserved" },
+            "null",
+            (0, 0),
+            false,
+        ))
+    }
+}
+
+fn wasm_new_glyph_route(case: &InputCase) -> Result<RunOutput, String> {
+    let rows = match case_id_base(&case.case_id) {
+        "ftglyph.FT_New_Glyph.success_bitmap_outline_svg_empty_glyph" => [
+            FT_GLYPH_FORMAT_BITMAP,
+            FT_GLYPH_FORMAT_OUTLINE,
+            FT_GLYPH_FORMAT_SVG,
+        ]
+        .into_iter()
+        .map(wasm_new_glyph_success_row)
+        .collect::<Result<Vec<_>, _>>()?,
+        "ftglyph.FT_New_Glyph.error_null_library_or_output" => {
+            let mut sentinel = 1usize;
+            let null_library =
+                wasm_abi::fontdone_wasm_new_glyph(0, FT_GLYPH_FORMAT_OUTLINE, &mut sentinel);
+            let null_output =
+                wasm_abi::fontdone_wasm_new_glyph(1, FT_GLYPH_FORMAT_OUTLINE, ptr::null_mut());
+            vec![
+                new_glyph_error_row(
+                    "null_library",
+                    null_library,
+                    if sentinel == 1 {
+                        "preserved"
+                    } else {
+                        "written"
+                    },
+                    "preserved",
+                ),
+                new_glyph_error_row(
+                    "null_output",
+                    null_output,
+                    "not_applicable",
+                    "not_applicable",
+                ),
+            ]
+        }
+        "ftglyph.FT_New_Glyph.error_unsupported_format" => {
+            let mut bad = 1usize;
+            let bad_status = wasm_abi::fontdone_wasm_new_glyph(1, 0x4241_4421, &mut bad);
+            let mut svg = 1usize;
+            let svg_status = wasm_abi::fontdone_wasm_new_glyph(1, FT_GLYPH_FORMAT_SVG, &mut svg);
+            wasm_done_new_glyph(svg);
+            vec![
+                new_glyph_error_row(
+                    "unknown_tag",
+                    bad_status,
+                    if bad == 1 { "preserved" } else { "written" },
+                    "preserved",
+                ),
+                json!({
+                    "probe": "svg",
+                    "status": svg_status,
+                    "aglyph_after": if svg_status == FT_Err_Ok {
+                        "non_null"
+                    } else {
+                        "preserved"
+                    },
+                    "write_class": if svg_status == FT_Err_Ok {
+                        "written"
+                    } else {
+                        "preserved"
+                    },
+                    "build_feature_enabled": svg_status == FT_Err_Ok
+                }),
+            ]
+        }
+        "ftglyph.FT_New_Glyph.error_allocation_failure" => {
+            ensure_new_glyph_allocation_facade(case)?;
+            wasm_abi::abi_support_new_glyph_allocation_failure()
+                .into_iter()
+                .map(|row| {
+                    json!({
+                        "format": row.format,
+                        "status": row.status,
+                        "aglyph_after": if row.aglyph_null { "null" } else { "preserved" },
+                        "allocation_events": row.allocation_events
+                    })
+                })
+                .collect()
+        }
+        other => return Err(format!("unmapped FT_New_Glyph case {other}")),
+    };
+    Ok(new_glyph_output(rows))
 }
 
 #[derive(Default)]
@@ -71150,6 +72315,202 @@ fn gzip_uncompress_output(case: &InputCase, backend: GzipBackend) -> Result<RunO
     Ok(ok(json!({ "rows": rows })))
 }
 
+fn gzip_uncompress_error_output(
+    case: &InputCase,
+    backend: GzipBackend,
+) -> Result<RunOutput, String> {
+    let manifest = gzip_payload_manifest(case)?;
+    let payload = manifest
+        .payloads
+        .first()
+        .ok_or_else(|| "gzip uncompress error route has no payload".to_string())?;
+    let raw = cached_file_bytes(&payload.raw)?;
+    let gzip = cached_file_bytes(&payload.gzip)?;
+    let zlib = cached_file_bytes(
+        payload
+            .zlib_wrapped
+            .as_deref()
+            .ok_or_else(|| format!("gzip payload {} missing zlib_wrapped", payload.id))?,
+    )?;
+
+    let mut rows = Vec::new();
+    match case.case_id.as_str() {
+        "ftgzip.FT_Gzip_Uncompress.rejects_invalid_arguments" => {
+            for (variant, memory, output, output_len) in [
+                ("memory_null", false, true, true),
+                ("output_null", true, false, true),
+                ("output_len_null", true, true, false),
+            ] {
+                let (status, observed_len, output_bytes) = gzip_uncompress_call_with_state(
+                    backend,
+                    memory,
+                    output,
+                    output_len,
+                    gzip.as_ref(),
+                    8,
+                )?;
+                rows.push(json!({
+                    "variant": variant,
+                    "status": status,
+                    "output_len": observed_len,
+                    "output_preserved": output_bytes.iter().all(|byte| *byte == 0xA5),
+                }));
+            }
+        }
+        "ftgzip.FT_Gzip_Uncompress.reports_buffer_too_small" => {
+            for (variant, capacity) in [
+                ("zero_capacity", 0usize),
+                ("one_byte_short", raw.len().saturating_sub(1)),
+            ] {
+                let (status, observed_len, output_bytes) = gzip_uncompress_call_with_state(
+                    backend,
+                    true,
+                    true,
+                    true,
+                    gzip.as_ref(),
+                    capacity,
+                )?;
+                rows.push(json!({
+                    "variant": variant,
+                    "status": status,
+                    "output_len": observed_len,
+                    "output_prefix_class": gzip_output_prefix_class(&output_bytes),
+                }));
+            }
+        }
+        "ftgzip.FT_Gzip_Uncompress.reports_invalid_compressed_data" => {
+            let mut truncated = gzip.to_vec();
+            truncated.pop();
+            let mut corrupt_crc = gzip.to_vec();
+            if let Some(last) = corrupt_crc.last_mut() {
+                *last ^= 0x01;
+            }
+            let dictionary_required = gzip_dictionary_required_zlib(zlib.as_ref());
+            for (variant, input) in [
+                ("truncated_gzip", truncated),
+                ("corrupt_crc_gzip", corrupt_crc),
+                ("plain_uncompressed_bytes", raw.to_vec()),
+                ("dictionary_required_zlib", dictionary_required),
+            ] {
+                let capacity = raw.len().saturating_add(16);
+                let (status, observed_len, output_bytes) =
+                    gzip_uncompress_call_with_state(backend, true, true, true, &input, capacity)?;
+                rows.push(json!({
+                    "variant": variant,
+                    "status": status,
+                    "output_len": observed_len,
+                    "output_prefix_class": gzip_output_prefix_class(&output_bytes),
+                }));
+            }
+        }
+        other => return Err(format!("unsupported gzip error case {other}")),
+    }
+
+    let status = rows
+        .first()
+        .and_then(|row| row.get("status"))
+        .and_then(Value::as_i64)
+        .ok_or_else(|| "gzip error route produced no status".to_string())?;
+    Ok(error_with_output(
+        i32::try_from(status).map_err(|err| err.to_string())?,
+        json!({ "rows": rows }),
+    ))
+}
+
+fn gzip_uncompress_call_with_state(
+    backend: GzipBackend,
+    memory_present: bool,
+    output_present: bool,
+    output_len_present: bool,
+    input: &[u8],
+    capacity: usize,
+) -> Result<(FT_Error, Option<FT_ULong>, Vec<u8>), String> {
+    let mut output = vec![0xA5; capacity];
+    let mut output_len = FT_ULong::try_from(capacity).map_err(|err| err.to_string())?;
+    let observed_len = if output_len_present {
+        Some(output_len)
+    } else {
+        None
+    };
+    let status = match backend {
+        GzipBackend::Rust => {
+            let memory = FT_MemoryRec::default();
+            FT_Gzip_Uncompress(
+                memory_present.then_some(&memory),
+                output_present.then_some(output.as_mut_slice()),
+                output_len_present.then_some(&mut output_len),
+                Some(input),
+            )
+        }
+        GzipBackend::CAbi => {
+            let mut memory = c_abi::FT_MemoryRec::default();
+            c_abi::FT_Gzip_Uncompress(
+                if memory_present {
+                    &mut memory
+                } else {
+                    ptr::null_mut()
+                },
+                if output_present {
+                    output.as_mut_ptr()
+                } else {
+                    ptr::null_mut()
+                },
+                if output_len_present {
+                    &mut output_len
+                } else {
+                    ptr::null_mut()
+                },
+                input.as_ptr(),
+                FT_ULong::try_from(input.len()).map_err(|err| err.to_string())?,
+            )
+        }
+        GzipBackend::Wasm => {
+            let mut memory = wasm_abi::FontdoneWasmMemory::default();
+            wasm_abi::fontdone_wasm_gzip_uncompress(
+                if memory_present {
+                    &mut memory
+                } else {
+                    ptr::null_mut()
+                },
+                if output_present {
+                    output.as_mut_ptr()
+                } else {
+                    ptr::null_mut()
+                },
+                if output_len_present {
+                    &mut output_len
+                } else {
+                    ptr::null_mut()
+                },
+                input.as_ptr(),
+                FT_ULong::try_from(input.len()).map_err(|err| err.to_string())?,
+            )
+        }
+    };
+    Ok((status, observed_len.map(|_| output_len), output))
+}
+
+fn gzip_output_prefix_class(output: &[u8]) -> &'static str {
+    if output.iter().all(|byte| *byte == 0xA5) {
+        "unchanged"
+    } else {
+        "written"
+    }
+}
+
+fn gzip_dictionary_required_zlib(input: &[u8]) -> Vec<u8> {
+    if input.len() < 2 {
+        return input.to_vec();
+    }
+    let flg = (0x20u16..=0xFF)
+        .find(|candidate| ((u16::from(input[0]) << 8) | *candidate) % 31 == 0)
+        .unwrap_or(0xBB) as u8;
+    let mut output = Vec::with_capacity(input.len().saturating_add(4));
+    output.extend_from_slice(&[input[0], flg, 0, 0, 0, 0]);
+    output.extend_from_slice(&input[2..]);
+    output
+}
+
 fn gzip_uncompress_call(
     backend: GzipBackend,
     input: &[u8],
@@ -71369,7 +72730,7 @@ fn bzip2_stream_success_output(
     let source_alive_after_target_close =
         source.base == compressed.as_ptr().cast_mut() && !source.base.is_null();
     if status == FT_Err_Ok {
-        bzip2_stream_close(backend, &mut stream);
+        bzip2_stream_close(backend, &mut stream)?;
     }
     let wrapper_open_after_close = bzip2_stream_is_open(backend, &stream);
     let output = json!({
@@ -71491,11 +72852,14 @@ fn bzip2_stream_read_ranges(
             let requested = FT_ULong::try_from(requested).map_err(|err| err.to_string())?;
             let bytes = match backend {
                 Bzip2StreamBackend::Rust => FT_Bzip2_Stream_Read(Some(stream), offset, requested),
-                Bzip2StreamBackend::CAbi => c_abi::abi_support_bzip2_stream_bytes(
-                    (stream as *const FT_StreamRec).cast_mut(),
-                    offset,
-                    requested,
-                ),
+                Bzip2StreamBackend::CAbi => c_stream_callback_read(stream, offset, requested)?
+                    .or_else(|| {
+                        c_abi::abi_support_bzip2_stream_bytes(
+                            (stream as *const FT_StreamRec).cast_mut(),
+                            offset,
+                            requested,
+                        )
+                    }),
                 Bzip2StreamBackend::Wasm => wasm_abi::abi_support_bzip2_stream_bytes(
                     stream as *const FT_StreamRec,
                     offset,
@@ -71520,11 +72884,20 @@ fn bzip2_stream_read_ranges(
         .collect()
 }
 
-fn bzip2_stream_close(backend: Bzip2StreamBackend, stream: &mut FT_StreamRec) {
+fn bzip2_stream_close(
+    backend: Bzip2StreamBackend,
+    stream: &mut FT_StreamRec,
+) -> Result<(), String> {
     match backend {
-        Bzip2StreamBackend::Rust => FT_Bzip2_Stream_Close(Some(stream)),
-        Bzip2StreamBackend::CAbi => c_abi::abi_support_bzip2_stream_close(stream),
-        Bzip2StreamBackend::Wasm => wasm_abi::abi_support_bzip2_stream_close(stream),
+        Bzip2StreamBackend::Rust => {
+            FT_Bzip2_Stream_Close(Some(stream));
+            Ok(())
+        }
+        Bzip2StreamBackend::CAbi => c_stream_callback_close(stream),
+        Bzip2StreamBackend::Wasm => {
+            wasm_abi::abi_support_bzip2_stream_close(stream);
+            Ok(())
+        }
     }
 }
 
@@ -71799,7 +73172,7 @@ fn lzw_stream_success_row(
     };
     let target_stream = lzw_stream_fields(&stream);
     if status == FT_Err_Ok {
-        lzw_stream_close(backend, &mut stream);
+        lzw_stream_close(backend, &mut stream)?;
     }
     Ok(json!({
         "payload": payload_id,
@@ -71898,11 +73271,18 @@ fn lzw_stream_read_ranges(
                     FT_ULong::try_from(offset).map_err(|err| err.to_string())?,
                     FT_ULong::try_from(requested).map_err(|err| err.to_string())?,
                 ),
-                LzwStreamBackend::CAbi => c_abi::abi_support_lzw_stream_bytes(
-                    (stream as *const FT_StreamRec).cast_mut(),
+                LzwStreamBackend::CAbi => c_stream_callback_read(
+                    stream,
                     FT_ULong::try_from(offset).map_err(|err| err.to_string())?,
                     FT_ULong::try_from(requested).map_err(|err| err.to_string())?,
-                ),
+                )?
+                .or_else(|| {
+                    c_abi::abi_support_lzw_stream_bytes(
+                        (stream as *const FT_StreamRec).cast_mut(),
+                        FT_ULong::try_from(offset).ok()?,
+                        FT_ULong::try_from(requested).ok()?,
+                    )
+                }),
                 LzwStreamBackend::Wasm => wasm_abi::abi_support_lzw_stream_bytes(
                     stream as *const FT_StreamRec,
                     FT_ULong::try_from(offset).map_err(|err| err.to_string())?,
@@ -71926,11 +73306,17 @@ fn lzw_stream_read_ranges(
         .collect()
 }
 
-fn lzw_stream_close(backend: LzwStreamBackend, stream: &mut FT_StreamRec) {
+fn lzw_stream_close(backend: LzwStreamBackend, stream: &mut FT_StreamRec) -> Result<(), String> {
     match backend {
-        LzwStreamBackend::Rust => FT_LZW_Stream_Close(Some(stream)),
-        LzwStreamBackend::CAbi => c_abi::abi_support_lzw_stream_close(stream),
-        LzwStreamBackend::Wasm => wasm_abi::abi_support_lzw_stream_close(stream),
+        LzwStreamBackend::Rust => {
+            FT_LZW_Stream_Close(Some(stream));
+            Ok(())
+        }
+        LzwStreamBackend::CAbi => c_stream_callback_close(stream),
+        LzwStreamBackend::Wasm => {
+            wasm_abi::abi_support_lzw_stream_close(stream);
+            Ok(())
+        }
     }
 }
 
@@ -71955,6 +73341,48 @@ fn lzw_stream_fields(stream: &FT_StreamRec) -> Value {
         "close_class": pointer_class(stream.close.cast_const()),
         "memory_class": pointer_class(stream.memory.cast_const()),
     })
+}
+
+fn c_stream_callback_read(
+    stream: &FT_StreamRec,
+    offset: FT_ULong,
+    requested: FT_ULong,
+) -> Result<Option<Vec<FT_Byte>>, String> {
+    if stream.read.is_null() {
+        return Ok(None);
+    }
+    let requested_len = usize::try_from(requested).map_err(|err| err.to_string())?;
+    let mut bytes = vec![0; requested_len];
+    // SAFETY: the C ABI stream wrapper installs this exact callback signature
+    // in the opaque public `read` field before the stream is handed back.
+    let callback: extern "C" fn(
+        c_abi::FT_Stream,
+        c_abi::FT_ULong,
+        *mut c_abi::FT_Byte,
+        c_abi::FT_ULong,
+    ) -> c_abi::FT_ULong = unsafe { std::mem::transmute(stream.read) };
+    let read = callback(
+        (stream as *const FT_StreamRec).cast_mut(),
+        offset,
+        bytes.as_mut_ptr(),
+        requested,
+    );
+    let read_len = usize::try_from(read)
+        .map_err(|err| err.to_string())?
+        .min(bytes.len());
+    bytes.truncate(read_len);
+    Ok(Some(bytes))
+}
+
+fn c_stream_callback_close(stream: &mut FT_StreamRec) -> Result<(), String> {
+    if stream.close.is_null() {
+        return Err("C ABI stream close callback is null".to_string());
+    }
+    // SAFETY: the C ABI stream wrapper installs this exact callback signature
+    // in the opaque public `close` field before the stream is handed back.
+    let callback: extern "C" fn(c_abi::FT_Stream) = unsafe { std::mem::transmute(stream.close) };
+    callback(stream as *mut FT_StreamRec);
+    Ok(())
 }
 
 fn gzip_stream_open_output(
@@ -72030,7 +73458,7 @@ fn gzip_stream_open_row(
     if status == FT_Err_Ok {
         match backend {
             GzipStreamBackend::Rust => FT_Gzip_Stream_Close(Some(&mut stream)),
-            GzipStreamBackend::CAbi => c_abi::abi_support_gzip_stream_close(&mut stream),
+            GzipStreamBackend::CAbi => c_stream_callback_close(&mut stream)?,
             GzipStreamBackend::Wasm => wasm_abi::abi_support_gzip_stream_close(&mut stream),
         }
     }
@@ -72057,11 +73485,18 @@ fn gzip_stream_read_ranges(
                     FT_ULong::try_from(offset).map_err(|err| err.to_string())?,
                     FT_ULong::try_from(requested).map_err(|err| err.to_string())?,
                 ),
-                GzipStreamBackend::CAbi => c_abi::abi_support_gzip_stream_bytes(
-                    (stream as *const FT_StreamRec).cast_mut(),
+                GzipStreamBackend::CAbi => c_stream_callback_read(
+                    stream,
                     FT_ULong::try_from(offset).map_err(|err| err.to_string())?,
                     FT_ULong::try_from(requested).map_err(|err| err.to_string())?,
-                ),
+                )?
+                .or_else(|| {
+                    c_abi::abi_support_gzip_stream_bytes(
+                        (stream as *const FT_StreamRec).cast_mut(),
+                        FT_ULong::try_from(offset).ok()?,
+                        FT_ULong::try_from(requested).ok()?,
+                    )
+                }),
                 GzipStreamBackend::Wasm => wasm_abi::abi_support_gzip_stream_bytes(
                     stream as *const FT_StreamRec,
                     FT_ULong::try_from(offset).map_err(|err| err.to_string())?,

@@ -59,22 +59,31 @@ def signed_byte(value: int) -> int:
     return value & 0xFF
 
 
-def eblc_line_metrics() -> bytes:
+def eblc_line_metrics(
+    *,
+    ascender: int = 16,
+    descender: int = -4,
+    width_max: int = 8,
+    min_origin_sb: int = 0,
+    min_advance_sb: int = 0,
+    max_before_bl: int = 16,
+    min_after_bl: int = -4,
+) -> bytes:
     # SBitLineMetrics: ascender, descender, widthMax, caretSlopeNumerator,
     # caretSlopeDenominator, caretOffset, minOriginSB, minAdvanceSB,
     # maxBeforeBL, minAfterBL, pad1, pad2.
     return bytes(
         [
-            signed_byte(16),
-            signed_byte(-4),
-            8,
+            signed_byte(ascender),
+            signed_byte(descender),
+            signed_byte(width_max),
             1,
             0,
             0,
-            0,
-            0,
-            16,
-            signed_byte(-4),
+            signed_byte(min_origin_sb),
+            signed_byte(min_advance_sb),
+            signed_byte(max_before_bl),
+            signed_byte(min_after_bl),
             0,
             0,
         ]
@@ -90,8 +99,11 @@ def bitmap_size_table(
     y_ppem: int = 20,
     bit_depth: int = 1,
     index_subtable_count: int = 1,
+    line_metrics: bytes | None = None,
 ) -> bytes:
-    horizontal = eblc_line_metrics()
+    horizontal = eblc_line_metrics() if line_metrics is None else line_metrics
+    if len(horizontal) != 12:
+        raise ValueError("SBIT horizontal line metrics must be 12 bytes")
     vertical = bytes(12)
     strike = (
         struct.pack(">IIII", index_array_offset, index_tables_size, index_subtable_count, 0)
@@ -650,6 +662,49 @@ def two_strikes_y_mismatch_tables() -> tuple[bytes, bytes]:
     return eblc, ebdt
 
 
+def cblc_strike_metrics_tables() -> tuple[bytes, bytes]:
+    """Build CBLC strikes for every signed line-metrics normalization path."""
+    image = bytes([2, 2, 1, 2, 3]) + bytes([0x11, 0x80, 0xC0, 0xFF])
+    index_array = struct.pack(">HHI", 1, 1, 8)
+    index_subtable = struct.pack(">HHI", 1, 1, 4) + struct.pack(">II", 0, len(image))
+    index_tables = index_array + index_subtable
+    strikes = [
+        # Positive descenders with negative min-after-baseline values are
+        # repaired to their negative form by FreeType.
+        (20, dict(ascender=16, descender=4, max_before_bl=16, min_after_bl=-4)),
+        # Positive descenders with a non-negative min-after-baseline value are
+        # retained as-is.
+        (21, dict(ascender=16, descender=4, max_before_bl=16, min_after_bl=4)),
+        # Missing ascender/descender values fall back to the baseline metrics.
+        (22, dict(ascender=0, descender=0, max_before_bl=12, min_after_bl=-3)),
+        # With no baseline values either, FreeType uses the strike y-ppem.
+        (23, dict(ascender=0, descender=0, max_before_bl=0, min_after_bl=0)),
+        # Equal ascender/descender values force a y-ppem-height repair.
+        (24, dict(ascender=4, descender=4, max_before_bl=4, min_after_bl=0)),
+        # A nonzero ascender with no descender skips the zero-baseline fallback.
+        (25, dict(ascender=4, descender=0, max_before_bl=4, min_after_bl=-2)),
+        # A zero max-before value evaluates the right side of the baseline OR.
+        (26, dict(ascender=0, descender=0, max_before_bl=0, min_after_bl=-3)),
+    ]
+    index_array_offset = 8 + len(strikes) * 48
+    strike_records = b"".join(
+        bitmap_size_table(
+            index_array_offset,
+            len(index_tables),
+            1,
+            1,
+            x_ppem=ppem,
+            y_ppem=ppem,
+            bit_depth=8,
+            line_metrics=eblc_line_metrics(**metrics),
+        )
+        for ppem, metrics in strikes
+    )
+    eblc = struct.pack(">II", 0x00020000, len(strikes)) + strike_records + index_tables
+    ebdt = struct.pack(">I", 0x00020000) + image
+    return eblc, ebdt
+
+
 def no_matching_strike_eblc() -> bytes:
     index_array = struct.pack(">HHI", 1, 1, 8)
     index_subtable = struct.pack(">HHI", 1, 1, 0) + struct.pack(">II", 0, 0)
@@ -1153,6 +1208,13 @@ def build_sbit_table_tag_and_strike_probes() -> None:
     save_sbit_font("sbit_byte_swapped_version.ttf", with_eblc_version(eblc, 0x00000200), ebdt)
     eblc, ebdt = two_strikes_y_mismatch_tables()
     save_sbit_font("sbit_two_strikes_y_mismatch.ttf", eblc, ebdt)
+    eblc, ebdt = cblc_strike_metrics_tables()
+    save_sbit_font(
+        "sbit_cblc_cbdt_strike_metrics.ttf",
+        eblc,
+        ebdt,
+        table_tags=("CBLC", "CBDT"),
+    )
 
 
 def build_sbit_error_branch_fixtures() -> None:

@@ -336,6 +336,7 @@ document_abi_test_support!(
     abi_support_corrupt_outline_glyph_for_render_failure,
     abi_bitmap_glyph_snapshot,
     abi_svg_glyph_snapshot,
+    abi_new_glyph_allocation_failure,
     abi_render_glyph_from_face,
     abi_sfnt_load_name_diagnostic,
     abi_truetype_context_allocation_failure_diagnostic,

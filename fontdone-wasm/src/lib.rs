@@ -114,6 +114,7 @@ document_wasm_entry_points!(
     fontdone_wasm_done_glyph,
     fontdone_wasm_done_glyph_handle,
     fontdone_wasm_glyph_transform,
+    fontdone_wasm_new_glyph,
     fontdone_wasm_glyph_to_bitmap,
     fontdone_wasm_glyph_to_bitmap_handle,
     fontdone_wasm_outline_get_bbox,
@@ -265,6 +266,7 @@ document_wasm_test_support!(
     abi_support_corrupt_outline_glyph_for_render_failure,
     abi_bitmap_glyph_snapshot,
     abi_svg_glyph_snapshot,
+    abi_support_new_glyph_allocation_failure,
     abi_face_info,
     abi_face_stream_info,
     abi_face_available_sizes,
@@ -362,3 +364,62 @@ document_wasm_test_support!(
     abi_fvar_namedstyle_coords,
     fontdone_wasm_svg_renderer_capture,
 );
+
+#[cfg(all(test, feature = "abi-test-support"))]
+mod abi_contract_tests {
+    //! ABI-only checks for raw helpers without a pinned-C parity analogue.
+    //!
+    //! These run in the package preflight and are excluded from the unified
+    //! coverage matrix; they protect the direct WASM handle and allocator
+    //! contract without counting unit-only execution as parity evidence.
+
+    use std::ptr;
+
+    use fontdone::ffi::{FT_Err_Invalid_Argument, FT_Err_Invalid_Face_Handle, FT_Err_Ok};
+
+    #[test]
+    fn raw_helper_lifecycle_and_null_contract() {
+        assert!(super::fontdone_wasm_bitmap_buffer(0).is_null());
+        assert_eq!(super::fontdone_wasm_bitmap_len(0), 0);
+        assert_eq!(super::fontdone_wasm_bitmap_width(0), 0);
+        assert_eq!(super::fontdone_wasm_bitmap_rows(0), 0);
+        assert_eq!(super::fontdone_wasm_bitmap_pitch(0), 0);
+        assert_eq!(
+            i64::from(super::fontdone_wasm_done_face(0)),
+            FT_Err_Invalid_Face_Handle
+        );
+
+        let zero_allocation = super::fontdone_wasm_malloc(0);
+        assert!(!zero_allocation.is_null());
+        super::fontdone_wasm_free(zero_allocation, 0);
+        super::fontdone_wasm_free(ptr::null_mut(), usize::MAX);
+
+        let mut wasm_error = FT_Err_Ok;
+        assert_eq!(
+            super::fontdone_wasm_open_face_handle(ptr::null(), 0, 0, 20.0, ptr::null_mut(),),
+            0
+        );
+        assert_eq!(
+            super::fontdone_wasm_open_face_handle(ptr::null(), 0, 0, 20.0, &mut wasm_error,),
+            0
+        );
+        assert_eq!(wasm_error, FT_Err_Invalid_Argument);
+
+        let font = include_bytes!("../../tests/fixtures/input/fonts/DejaVuSans.ttf");
+        let handle = super::fontdone_wasm_open_face_handle(
+            font.as_ptr(),
+            font.len(),
+            0,
+            20.0,
+            &mut wasm_error,
+        );
+        assert_ne!(handle, 0);
+        assert_eq!(wasm_error, FT_Err_Ok);
+        assert!(super::fontdone_wasm_bitmap_buffer(handle).is_null());
+        assert_eq!(super::fontdone_wasm_bitmap_len(handle), 0);
+        assert_eq!(super::fontdone_wasm_bitmap_width(handle), 0);
+        assert_eq!(super::fontdone_wasm_bitmap_rows(handle), 0);
+        assert_eq!(super::fontdone_wasm_bitmap_pitch(handle), 0);
+        assert_eq!(super::fontdone_wasm_done_face(handle), FT_Err_Ok);
+    }
+}

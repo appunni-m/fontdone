@@ -134,6 +134,331 @@
             "coverage": [
               "sbit:load-sbits-only-no-matching-strike-error"
             ]
+          },
+          {
+            "id": "embedded-gray-index-format2",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_index_format2.ttf",
+                "requirements": "Synthetic EBLC index-format-2 strike with constant image size and big metrics for glyph 1."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ]
+            },
+            "coverage": [
+              "sbit:load-sbits-only-index-format2-success"
+            ]
+          },
+          {
+            "id": "embedded-gray-index-format4",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_index_format4.ttf",
+                "requirements": "Synthetic EBLC index-format-4 sparse glyph-offset strike for glyph 1."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ]
+            },
+            "coverage": [
+              "sbit:load-sbits-only-index-format4-success"
+            ]
+          },
+          {
+            "id": "embedded-mono-index-format5",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_mono_index_format5.ttf",
+                "requirements": "Synthetic EBLC index-format-5 strike with constant bit-aligned metrics for glyph 1."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ]
+            },
+            "coverage": [
+              "sbit:load-sbits-only-index-format5-success"
+            ]
+          },
+          {
+            "id": "embedded-composite-gray-format8",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_composite_success_format8.ttf",
+                "requirements": "Synthetic EBLC strike with a gray format-8 compound glyph 2 referencing simple glyph 1 at zero offset."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ]
+            },
+            "coverage": [
+              "sbit:load-sbits-only-composite-gray-format8-success"
+            ]
+          },
+          {
+            "id": "embedded-composite-gray-format9",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_composite_success_format9.ttf",
+                "requirements": "Synthetic EBLC strike with a gray format-9 compound glyph 2 referencing simple glyph 1 at zero offset."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ]
+            },
+            "coverage": [
+              "sbit:load-sbits-only-composite-gray-format9-success"
+            ]
+          },
+          {
+            "id": "embedded-composite-mono-format8",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_composite_mono_success_format8.ttf",
+                "requirements": "Synthetic EBLC strike with a byte-aligned monochrome format-8 compound glyph 2."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ]
+            },
+            "coverage": [
+              "sbit:load-sbits-only-composite-mono-format8-success"
+            ]
+          },
+          {
+            "id": "embedded-composite-mono-shifted-format8",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_composite_mono_shifted_success_format8.ttf",
+                "requirements": "Synthetic EBLC strike with a monochrome format-8 compound glyph shifted one pixel horizontally."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ]
+            },
+            "coverage": [
+              "sbit:load-sbits-only-composite-mono-shifted-format8-success"
+            ]
+          },
+          {
+            "id": "embedded-composite-mono-carry-format8",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_composite_mono_carry_success_format8.ttf",
+                "requirements": "Synthetic EBLC strike with a monochrome format-8 compound glyph whose seven-pixel shift carries into a second target byte."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ]
+            },
+            "coverage": [
+              "sbit:load-sbits-only-composite-mono-carry-format8-success"
+            ]
+          },
+          {
+            "id": "embedded-composite-mono-aligned-format8",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_composite_mono_aligned_success_format8.ttf",
+                "requirements": "Synthetic EBLC strike with an eight-pixel monochrome format-8 compound glyph aligned to whole bytes."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ]
+            },
+            "coverage": [
+              "sbit:load-sbits-only-composite-mono-aligned-format8-success"
+            ]
+          },
+          {
+            "id": "embedded-composite-mono-shifted-aligned-format8",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_composite_mono_shifted_aligned_success_format8.ttf",
+                "requirements": "Synthetic EBLC strike with an eight-pixel monochrome format-8 compound glyph shifted one pixel."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ]
+            },
+            "coverage": [
+              "sbit:load-sbits-only-composite-mono-shifted-aligned-format8-success"
+            ]
+          },
+          {
+            "id": "embedded-composite-gray2-format8",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_composite_gray2_success_format8.ttf",
+                "requirements": "Synthetic EBLC strike with a gray2 format-8 compound glyph."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ]
+            },
+            "coverage": [
+              "sbit:load-sbits-only-composite-gray2-format8-success"
+            ]
+          },
+          {
+            "id": "embedded-composite-gray4-format8",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_composite_gray4_success_format8.ttf",
+                "requirements": "Synthetic EBLC strike with a gray4 format-8 compound glyph."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ]
+            },
+            "coverage": [
+              "sbit:load-sbits-only-composite-gray4-format8-success"
+            ]
+          },
+          {
+            "id": "embedded-composite-bgra-format8",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_composite_bgra_success_format8.ttf",
+                "requirements": "Synthetic EBLC strike with a BGRA format-8 compound glyph."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ]
+            },
+            "coverage": [
+              "sbit:load-sbits-only-composite-bgra-format8-success"
+            ]
           }
         ]
       },

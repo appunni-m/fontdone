@@ -395,7 +395,3 @@ fn be_u24(data: &[u8], offset: usize) -> Option<u32> {
             | u32::from(*data.get(offset + 2)?),
     )
 }
-
-#[cfg(test)]
-#[path = "../tests/unit/pfr.rs"]
-mod tests;

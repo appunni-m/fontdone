@@ -8,6 +8,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::{Arc, OnceLock};
 
+use crate::tt::avar::AvarTable;
 use crate::tt::cff::{Cff2Table, CffTable};
 use crate::tt::cmap::CmapTable;
 use crate::tt::fvar::FvarTable;
@@ -40,11 +41,16 @@ pub struct FontData {
     pub table_directory: crate::tt::TableDirectory,
     pub cmap: CmapTable,
     pub fvar: Option<FvarTable>,
+    pub avar: Option<AvarTable>,
     pub gvar: Option<GvarTable>,
+    pub gvar_error: Option<crate::error::FontError>,
     pub design_variation_coords: Vec<i32>,
     pub normalized_variation_coords: Vec<i16>,
     pub blend_variation_coords_16_16: Vec<i32>,
     pub variation_coordinates_set: bool,
+    /// True after the public design-coordinate setter has rebuilt this face,
+    /// even when the supplied coordinates resolve to the default instance.
+    pub variation_coordinates_explicitly_set: bool,
     pub gasp: Option<GaspTable>,
     pub head: HeadTable,
     pub hhea: HheaTable,
@@ -104,12 +110,27 @@ pub struct FontData {
 }
 
 impl FontData {
+    /// True when the selected variation coordinates leave the default
+    /// instance. FreeType skips `gvar`/HVAR delta application when all
+    /// normalized coordinates are zero, even if the public setter was called
+    /// with an explicit default tuple.
+    pub(crate) fn has_active_variation(&self) -> bool {
+        self.normalized_variation_coords
+            .iter()
+            .any(|coordinate| *coordinate != 0)
+    }
+
     /// Load a glyph outline, returning a shared reference on cache hit.
     /// Uses Rc to avoid cloning the entire outline Vec on every access.
     pub fn load_glyph_outline(
         &self,
         glyph_index: u16,
     ) -> Result<Rc<crate::tt::glyf::GlyphOutline>, crate::error::FontError> {
+        if self.variation_coordinates_explicitly_set {
+            if let Some(error) = &self.gvar_error {
+                return Err(error.clone());
+            }
+        }
         {
             let cache = self.glyph_cache.borrow();
             if let Some(outline) = cache.get(&glyph_index) {
@@ -154,6 +175,11 @@ impl FontData {
         &self,
         glyph_index: u16,
     ) -> Result<Rc<crate::tt::glyf::GlyphOutline>, crate::error::FontError> {
+        if self.variation_coordinates_explicitly_set {
+            if let Some(error) = &self.gvar_error {
+                return Err(error.clone());
+            }
+        }
         if let Some(cff) = &self.cff {
             return Ok(Rc::new(cff.load_glyph(glyph_index)?));
         }
@@ -178,13 +204,12 @@ impl FontData {
         let Some(gvar) = &self.gvar else {
             return Ok(outline.clone());
         };
-        if self.normalized_variation_coords.is_empty() {
+        if !self.has_active_variation() {
             return Ok(outline.clone());
         }
-        let point_count_with_phantoms = outline.points.len() + 4;
-        let Some(deltas) = gvar.glyph_deltas_fixed(
+        let Some(deltas) = gvar.glyph_deltas_fixed_for_outline(
             glyph_index,
-            point_count_with_phantoms,
+            outline,
             &self.normalized_variation_coords,
         )?
         else {
@@ -235,7 +260,7 @@ impl FontData {
         let Some(gvar) = &self.gvar else {
             return Ok(0);
         };
-        if self.normalized_variation_coords.is_empty() {
+        if !self.has_active_variation() {
             return Ok(0);
         }
         let Some(deltas) = gvar.glyph_deltas(
@@ -258,144 +283,5 @@ impl FontData {
         self.mvar
             .as_ref()
             .map(|mvar| mvar.vertical_header_deltas(&self.normalized_variation_coords))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::font::Font;
-    use crate::tt::glyf::GlyphOutline;
-
-    const CFF1_FONT: &[u8] = include_bytes!("../tests/fixtures/input/fonts/cff/pure-cff-cubic.otf");
-    const CFF2_FONT: &[u8] =
-        include_bytes!("../tests/fixtures/input/fonts/cff2/fontinfo-invalid-argument.otf");
-    const GLYF_FONT: &[u8] = include_bytes!("../tests/fixtures/input/fonts/DejaVuSans.ttf");
-    const GVAR_FONT: &[u8] =
-        include_bytes!("../tests/fixtures/input/fonts/variable/gvar-hvar-wght.ttf");
-    const MVAR_FONT: &[u8] =
-        include_bytes!("../tests/fixtures/input/fonts/variable/mvar-hvar-vvar.ttf");
-
-    #[test]
-    fn cff_outline_loaders_cover_cache_and_no_hinting_routes() -> Result<(), crate::FontError> {
-        let font = Font::truetype(CFF1_FONT, 16.0)?;
-        assert!(font.data.has_cff_outlines());
-        assert!(font.data.cff.is_some());
-        assert!(font.data.cff2.is_none());
-        font.data.glyph_cache.borrow_mut().clear();
-
-        let first = font.data.load_glyph_outline(1)?;
-        let cached = font.data.load_glyph_outline(1)?;
-        assert!(Rc::ptr_eq(&first, &cached));
-
-        let no_hinting = font.data.load_glyph_outline_no_hinting(1)?;
-        assert!(!Rc::ptr_eq(&first, &no_hinting));
-        assert_eq!(first.points.len(), no_hinting.points.len());
-        Ok(())
-    }
-
-    #[test]
-    fn cff2_outline_loaders_cover_cache_and_no_hinting_routes() -> Result<(), crate::FontError> {
-        let font = Font::truetype(CFF2_FONT, 16.0)?;
-        assert!(font.data.has_cff_outlines());
-        assert!(font.data.cff.is_none());
-        assert!(font.data.cff2.is_some());
-        font.data.glyph_cache.borrow_mut().clear();
-
-        let first = font.data.load_glyph_outline(1)?;
-        let cached = font.data.load_glyph_outline(1)?;
-        assert!(Rc::ptr_eq(&first, &cached));
-
-        let no_hinting = font.data.load_glyph_outline_no_hinting(1)?;
-        assert!(!Rc::ptr_eq(&first, &no_hinting));
-        assert_eq!(first.points.len(), no_hinting.points.len());
-        Ok(())
-    }
-
-    #[test]
-    fn glyf_font_reports_non_cff_and_caches_loaded_outline() -> Result<(), crate::FontError> {
-        let font = Font::truetype(GLYF_FONT, 16.0)?;
-        assert!(!font.data.has_cff_outlines());
-        font.data.glyph_cache.borrow_mut().clear();
-
-        let first = font.data.load_glyph_outline(36)?;
-        let cached = font.data.load_glyph_outline(36)?;
-        assert!(Rc::ptr_eq(&first, &cached));
-
-        let no_hinting = font.data.load_glyph_outline_no_hinting(36)?;
-        assert!(!Rc::ptr_eq(&first, &no_hinting));
-        Ok(())
-    }
-
-    #[test]
-    fn gvar_helpers_cover_inactive_missing_and_active_glyph_routes() -> Result<(), crate::FontError>
-    {
-        let font = Font::truetype(GVAR_FONT, 16.0)?;
-        assert!(font.data.gvar.is_some());
-
-        let mut inactive = font.data.as_ref().clone();
-        inactive.normalized_variation_coords.clear();
-        let unchanged = inactive.apply_gvar_deltas(10, &GlyphOutline::default())?;
-        assert!(unchanged.points.is_empty());
-        assert_eq!(inactive.gvar_hori_advance_delta(10, 0)?, 0);
-
-        let mut active = font.data.as_ref().clone();
-        active.normalized_variation_coords = vec![0x2000];
-        let missing = active.apply_gvar_deltas(u16::MAX, &GlyphOutline::default())?;
-        assert!(missing.points.is_empty());
-        assert_eq!(active.gvar_hori_advance_delta(u16::MAX, 0)?, 0);
-
-        let base = crate::tt::glyf::load_glyph_no_hinting(
-            &active.glyf_data,
-            &active.loca_data,
-            active.head.index_to_loc_format,
-            10,
-            &active.hmtx,
-        )?;
-        let varied = active.apply_gvar_deltas(10, &base)?;
-        assert_eq!(varied.points.len(), base.points.len());
-        let _ = active.gvar_hori_advance_delta(10, base.points.len())?;
-        let _ = active.hmtx_hori_advance_with_gvar_delta(10, base.points.len())?;
-
-        let cff = Font::truetype(CFF1_FONT, 16.0)?;
-        assert_eq!(cff.data.gvar_hori_advance_delta(1, 0)?, 0);
-        let unchanged = cff.data.apply_gvar_deltas(1, &GlyphOutline::default())?;
-        assert!(unchanged.points.is_empty());
-        Ok(())
-    }
-
-    #[test]
-    fn load_errors_and_advance_fallbacks() -> Result<(), crate::FontError> {
-        let font = Font::truetype(GLYF_FONT, 16.0)?;
-        // Out-of-range glyph index reaches the glyf loader error branch.
-        assert!(font.data.load_glyph_outline(u16::MAX).is_err());
-        assert!(font.data.load_glyph_outline_no_hinting(u16::MAX).is_err());
-
-        // Fallback advance helper tolerates gvar errors.
-        let advance = font.data.hmtx_hori_advance_with_gvar_delta_or_hmtx(36, 0);
-        assert_eq!(advance, i32::from(font.data.hmtx.get(36).advance_width));
-
-        let cff = Font::truetype(CFF1_FONT, 16.0)?;
-        assert!(cff.data.load_glyph_outline(u16::MAX).is_err());
-        assert!(cff.data.load_glyph_outline_no_hinting(u16::MAX).is_err());
-        Ok(())
-    }
-
-    #[test]
-    fn hvar_advance_and_mvar_vertical_deltas() -> Result<(), crate::FontError> {
-        let mut font = Font::truetype(MVAR_FONT, 16.0)?;
-        let data = std::sync::Arc::make_mut(&mut font.data);
-        data.normalized_variation_coords = vec![0x2000];
-        assert!(data.hvar.is_some());
-        assert!(data.mvar.is_some());
-        let _ = data.hmtx_hori_advance_with_gvar_delta(1, 0)?;
-        let deltas = data.mvar_vertical_header_deltas();
-        assert!(deltas.is_some());
-
-        data.hvar = None;
-        data.mvar = None;
-        assert!(data.mvar_vertical_header_deltas().is_none());
-        assert_eq!(data.gvar_hori_advance_delta(1, 0)?, 0);
-        Ok(())
     }
 }

@@ -93,6 +93,37 @@ Run the smallest useful gate first:
 | Per-commit local CI | `make ci` | Fast commit gates suitable for ordinary branch protection |
 | Requested local audit | `make ci-thorough` | Fast gates plus full parity, integrations, coverage, performance, contract, package, and supply-chain evidence |
 
+The unified parity harness compares backend routes in bounded parallel workers;
+it defaults to twice the host's available parallelism and caps that value at 16.
+Set `FONTDONE_UNIFIED_WORKERS` for a reproducible local profile or a constrained
+CI runner. The setting changes scheduling only; it does not change the selected
+input cases or the exact comparison. The default is intentionally bounded
+oversubscription because each worker drives independent Rust, C-ABI, and WASM
+facades and the measured full matrix is faster with that scheduling shape.
+The all-lane coverage target sets `FONTDONE_UNIFIED_WORKERS=1` through
+`COVERAGE_UNIFIED_WORKERS` by default. LLVM instrumentation makes the C-ABI and
+WASM comparison path contend heavily when those backend calls run in parallel;
+the measured single-worker lane is substantially faster and avoids the stalled
+multi-worker behavior. It also sets `CARGO_PROFILE_TEST_OPT_LEVEL=1` through
+`COVERAGE_TEST_OPT_LEVEL`; the optimized test profile preserves coverage
+instrumentation and assertions while avoiding the several-fold slowdown of
+unoptimized instrumented execution. Set the coverage profile, worker, and
+`cargo llvm-cov` flag variables only for an explicitly measured instrumented
+profile. Coverage uses the lightweight
+`api-abi-runtime-check`; the optional-feature build contract is intentionally
+kept in `make optional-feature-contract` and is not rebuilt on every coverage
+run. The coverage recipes retain the instrumented Cargo target with
+`cargo llvm-cov --no-clean` and remove only stale `.profraw` files before each
+measurement, so repeated local runs reuse the compiled coverage binary without
+merging prior execution data. The all-lane target keeps workspace report scope
+for the C-ABI and host-compiled WASM facades but selects only the
+`unified_fixture_parity` integration binary; the workspace's empty unit and
+pipe-trace targets add no parity inputs and can duplicate cfg-dependent FFI
+coverage. Its `COVERAGE_ALL_TARGET_DIR` cache is separate from other coverage
+profiles, so `--no-clean` cannot reuse stale binaries from a different target
+selection. Run `make coverage-clean` after changing the coverage toolchain,
+profile flags, or coverage instrumentation configuration.
+
 `make test-parity` prints these values separately:
 
 - runnable, passed, and failed exact-comparison cases;
@@ -175,8 +206,10 @@ make test-coverage
 make test-coverage-all
 ```
 
-The focused command writes core Rust JSON. The all-lane command first runs the
-facade unit tests, then uses nightly branch coverage for every non-ignored root
+The focused command writes core Rust JSON. The all-lane command schedules the
+independent oracle/audit preparation and the ABI-only package preflight in the
+same two-job setup batch, allowing the preflight to overlap with preparation,
+then uses nightly branch coverage for every non-ignored root
 unit and integration target under the default feature profile, including the
 complete parity matrix. That single coherent coverage build links and measures
 the core, native C ABI, and host-compiled WASM facade together; compiling a
@@ -187,22 +220,40 @@ would compare different runtime contracts. The coverage command writes
 `target/coverage/unified-runtime-all-lanes.json`; test-harness paths are the
 only filename exclusion.
 
-The all-lane run is intentionally expensive, so budget roughly 45–60 minutes
-on a warm development host. It therefore runs in requested thorough CI, not on
-every commit. The last measured run took 48 minutes 58.668 seconds against
-commit `09110a488bcc53c96def8ccf7e3d6c4e6418737f`:
+The all-lane run is still intentionally expensive, but repeated local runs
+reuse the instrumented target: budget roughly 2 minutes with warm coverage
+build artifacts and a warm oracle cache. A cache reset can take longer, so
+allow roughly 4–6 minutes for a cold run. `COVERAGE_TEST_DEBUG=1` keeps line
+tables while omitting full test debuginfo; this reduces the measured end-to-end
+run without changing the coverage totals. Face-cache keys also reuse preloaded
+font content digests instead of rehashing every expanded case, and the
+read-only SFNT table-load/info routes reuse those content-bound handles while
+keeping variation-sequence cases isolated. Oracle
+preparation also preserves the mtime of unchanged generated constants and
+validator overlay sources, avoiding a needless helper rebuild and relink. It
+runs in requested thorough CI, not on every commit. The latest measured run
+took 3 minutes 48.279 seconds end-to-end against the dirty worktree at commit
+`ad6c489963b2797ab39e226efaa6a4690faa63ef`; single-run wall time varies with
+compilation and host load. Its test body finished in 115.99 seconds, while the
+backend totals were approximately 42.14 seconds Rust FFI, 30.78 seconds C ABI,
+31.11 seconds WASM, and 0.04 seconds comparison. The remaining roughly 112
+seconds of wall time was
+outside that test body, in setup/reporting/ingestion and host contention;
+Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 46,028 / 51,219 | 89.87% |
-| Branches | 9,036 / 11,907 | 75.89% |
-| Functions | 3,189 / 3,639 | 87.63% |
-| Regions | 63,823 / 71,957 | 88.70% |
+| Lines | 49,267 / 54,039 | 91.17% |
+| Branches | 9,668 / 12,500 | 77.34% |
+| Functions | 3,368 / 3,825 | 88.05% |
+| Regions | 67,852 / 75,210 | 90.22% |
 
-That managed run passed all 7,212 runnable parity comparisons with 0 failures;
-95 cases remained explicitly pending. Its Coverage MCP run ID is
-`a0f313a4-5f2e-49cd-8ebe-c6687334b349`, and its immutable snapshot ID is
-`5a122fcc-aa76-4503-82d3-e8bbb564f349`. The percentages apply only to the named
+That managed run passed all 7,469 runnable parity comparisons with 0 failures;
+3 cases remained explicitly pending. Its Coverage MCP run ID is
+`e9b39b64-59aa-43e2-9864-9f6e018a6306`, and its immutable snapshot ID is
+`a997c5b2-c045-491c-aae8-13b39271ac05`. That required three-surface
+instrumented execution remains the dominant measured test cost, while the
+latest wall-time tail is outside the test body. The percentages apply only to the named
 source commit, suite, and toolchain. They are not a FreeType-parity percentage,
 and a covered line or branch does not prove an exact result.
 Generate a new report for the worktree being reviewed. LLVM JSON segments are
@@ -251,7 +302,9 @@ Before changing a fixture:
    hashes;
 4. regenerate only the affected `make font-fixture-*` family;
 5. inspect binary and provenance changes;
-6. run the focused parity lane and `make check-font-fixtures`.
+6. add or update the corresponding `tests/manifest.yaml` case and exact route
+   classification when the fixture exercises a new public behavior;
+7. run the focused parity lane and `make check-font-fixtures`.
 
 Third-party material must have redistribution permission and exact provenance.
 The three retained compact control fonts whose exact upstream transformation
@@ -263,6 +316,14 @@ bases until that gap is closed. See
 `scripts/font_generation/` is the only location for code that creates or
 modifies font files. `scripts/build_compressed_fixtures.py` is separate because
 it wraps project-authored bytes rather than generating a font.
+
+When a behavior is first observed in a unit test, migrate it to a maintained
+public-API input whenever the behavior has a representable font, call sequence,
+or ABI observation. The public input must run through the pinned C oracle,
+Rust FFI, C ABI, and WASM routes with exact comparison; unit-test execution
+alone is not parity evidence. Use `make test-case CASE=<case-substring>` for the
+focused migration, regenerate the route audit through `make api-abi-check`, and
+then rerun `make test-parity` before retaining any unit-only case.
 
 ## 6. CI
 
@@ -396,8 +457,8 @@ or reason is stale.
 |---|---:|---|
 | R01 | 57 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
-| R03 | 1,647 | executable parity tests and public contracts |
-| R04 | 512 | licensed canonical fixture inputs |
+| R03 | 1,638 | executable parity tests and public contracts |
+| R04 | 581 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -405,7 +466,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,380** | **all retained paths** |
+| **Total** | **2,440** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

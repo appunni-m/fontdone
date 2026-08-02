@@ -16,6 +16,8 @@ const TUPLE_INDEX_MASK: u16 = 0x0FFF;
 const F2DOT14_ONE: i32 = 0x4000;
 const F16DOT16_ONE: i32 = 0x1_0000;
 
+type GvarIupOutline<'a> = (&'a [(i32, i32)], &'a [u16]);
+
 /// Parsed glyph-variation table.
 #[derive(Debug, Clone)]
 pub struct GvarTable {
@@ -27,12 +29,53 @@ pub struct GvarTable {
 }
 
 impl GvarTable {
+    pub(crate) fn axis_count(&self) -> usize {
+        self.axis_count
+    }
+
     /// Return accumulated gvar deltas for `glyph_index` in 16.16 font units.
     pub fn glyph_deltas_fixed(
         &self,
         glyph_index: u16,
         point_count_with_phantoms: usize,
         normalized_coords: &[i16],
+    ) -> Result<Option<Vec<(i32, i32)>>, FontError> {
+        self.glyph_deltas_fixed_inner(
+            glyph_index,
+            point_count_with_phantoms,
+            normalized_coords,
+            None,
+        )
+    }
+
+    /// Return gvar deltas with FreeType's IUP interpolation for a glyph
+    /// outline.  The plain point-count API above is retained for metric paths,
+    /// where the phantom points have no contour to interpolate through.
+    pub(crate) fn glyph_deltas_fixed_for_outline(
+        &self,
+        glyph_index: u16,
+        outline: &crate::tt::glyf::GlyphOutline,
+        normalized_coords: &[i16],
+    ) -> Result<Option<Vec<(i32, i32)>>, FontError> {
+        let original_points = outline
+            .points
+            .iter()
+            .map(|point| (point.x.wrapping_shl(16), point.y.wrapping_shl(16)))
+            .collect::<Vec<_>>();
+        self.glyph_deltas_fixed_inner(
+            glyph_index,
+            original_points.len() + 4,
+            normalized_coords,
+            Some((&original_points, &outline.end_pts_of_contours)),
+        )
+    }
+
+    fn glyph_deltas_fixed_inner(
+        &self,
+        glyph_index: u16,
+        point_count_with_phantoms: usize,
+        normalized_coords: &[i16],
+        iup_outline: Option<GvarIupOutline<'_>>,
     ) -> Result<Option<Vec<(i32, i32)>>, FontError> {
         if normalized_coords.len() < self.axis_count {
             return Ok(None);
@@ -53,17 +96,25 @@ impl GvarTable {
         let glyph_data = self
             .data
             .get(start..end)
-            .ok_or_else(|| FontError::InvalidFont("gvar glyph data out of range".into()))?;
+            .ok_or_else(|| FontError::InvalidTable("gvar glyph data out of range".into()))?;
         if glyph_data.len() < 4 {
-            return Err(FontError::InvalidFont("gvar glyph data too short".into()));
+            // FreeType's glyph-delta loader treats a short frame as an empty
+            // variation record.  Its unchecked header reads see the padded
+            // SFNT bytes and the operation returns success without applying
+            // deltas; do not turn this C-compatible no-op into an error.
+            return Ok(None);
         }
 
-        let tuple_count_flags = read_u16(glyph_data, 0)?;
+        let tuple_count_flags = read_u16(glyph_data, 0)
+            .map_err(|_| FontError::InvalidTable("gvar glyph header out of range".into()))?;
         let tuple_count = usize::from(tuple_count_flags & TUPLE_COUNT_MASK);
-        let data_offset = usize::from(read_u16(glyph_data, 2)?);
+        let data_offset = usize::from(
+            read_u16(glyph_data, 2)
+                .map_err(|_| FontError::InvalidTable("gvar glyph header out of range".into()))?,
+        );
         let tuple_headers_end = 4 + tuple_count * 4;
         if tuple_headers_end > glyph_data.len() || data_offset > glyph_data.len() {
-            return Err(FontError::InvalidFont(
+            return Err(FontError::InvalidTable(
                 "gvar tuple headers out of range".into(),
             ));
         }
@@ -71,11 +122,17 @@ impl GvarTable {
         let mut tuple_headers = Vec::with_capacity(tuple_count);
         let mut header_pos = 4;
         for _ in 0..tuple_count {
-            let variation_data_size = usize::from(read_u16(glyph_data, header_pos)?);
-            let tuple_index = read_u16(glyph_data, header_pos + 2)?;
+            let variation_data_size =
+                usize::from(read_u16(glyph_data, header_pos).map_err(|_| {
+                    FontError::InvalidTable("gvar tuple header out of range".into())
+                })?);
+            let tuple_index = read_u16(glyph_data, header_pos + 2)
+                .map_err(|_| FontError::InvalidTable("gvar tuple header out of range".into()))?;
             header_pos += 4;
             let peak = if tuple_index & EMBEDDED_PEAK_TUPLE != 0 {
-                let tuple = read_tuple(glyph_data, header_pos, self.axis_count)?;
+                let tuple = read_tuple(glyph_data, header_pos, self.axis_count).map_err(|_| {
+                    FontError::InvalidTable("gvar embedded peak tuple out of range".into())
+                })?;
                 header_pos += self.axis_count * 2;
                 tuple
             } else {
@@ -84,13 +141,19 @@ impl GvarTable {
                     .get(shared_index)
                     .cloned()
                     .ok_or_else(|| {
-                        FontError::InvalidFont("gvar shared tuple index out of range".into())
+                        FontError::InvalidTable("gvar shared tuple index out of range".into())
                     })?
             };
             let intermediate = if tuple_index & INTERMEDIATE_REGION != 0 {
-                let start_tuple = read_tuple(glyph_data, header_pos, self.axis_count)?;
+                let start_tuple =
+                    read_tuple(glyph_data, header_pos, self.axis_count).map_err(|_| {
+                        FontError::InvalidTable("gvar intermediate tuple out of range".into())
+                    })?;
                 header_pos += self.axis_count * 2;
-                let end_tuple = read_tuple(glyph_data, header_pos, self.axis_count)?;
+                let end_tuple =
+                    read_tuple(glyph_data, header_pos, self.axis_count).map_err(|_| {
+                        FontError::InvalidTable("gvar intermediate tuple out of range".into())
+                    })?;
                 header_pos += self.axis_count * 2;
                 Some((start_tuple, end_tuple))
             } else {
@@ -104,7 +167,7 @@ impl GvarTable {
             });
         }
         if header_pos > data_offset {
-            return Err(FontError::InvalidFont(
+            return Err(FontError::InvalidTable(
                 "gvar tuple header exceeds data offset".into(),
             ));
         }
@@ -112,18 +175,30 @@ impl GvarTable {
         let mut shared_points = None;
         let mut tuple_data_pos = data_offset;
         if tuple_count_flags & TUPLES_SHARE_POINT_NUMBERS != 0 {
-            let (points, consumed) =
-                read_point_numbers(&glyph_data[tuple_data_pos..], point_count_with_phantoms)?;
-            tuple_data_pos += consumed;
-            shared_points = Some(points);
+            // FreeType leaves the stream at the shared-point-list start when
+            // that list is malformed.  The affected tuple data is then
+            // ignored below; a bad packed payload must not turn a valid
+            // glyph-load operation into a table error.
+            if let Ok((points, consumed)) =
+                read_point_numbers(&glyph_data[tuple_data_pos..], point_count_with_phantoms)
+            {
+                tuple_data_pos += consumed;
+                shared_points = Some(points);
+            }
         }
 
         let mut deltas = vec![(0i32, 0i32); point_count_with_phantoms];
         for header in tuple_headers {
             let tuple_data_end = tuple_data_pos + header.variation_data_size;
-            let tuple_data = glyph_data
-                .get(tuple_data_pos..tuple_data_end)
-                .ok_or_else(|| FontError::InvalidFont("gvar tuple data out of range".into()))?;
+            let tuple_data = match glyph_data.get(tuple_data_pos..tuple_data_end) {
+                Some(tuple_data) => tuple_data,
+                None => {
+                    // `TT_Vary_Apply_Glyph_Deltas` advances its data cursor
+                    // even when a tuple frame ends early.
+                    tuple_data_pos = tuple_data_end;
+                    continue;
+                }
+            };
             tuple_data_pos = tuple_data_end;
             let scalar = tuple_scalar(
                 &header.peak,
@@ -134,21 +209,54 @@ impl GvarTable {
                 continue;
             }
             let (points, delta_pos) = if header.tuple_index & PRIVATE_POINT_NUMBERS != 0 {
-                read_point_numbers(tuple_data, point_count_with_phantoms)?
+                let Ok(points) = read_point_numbers(tuple_data, point_count_with_phantoms) else {
+                    continue;
+                };
+                points
             } else if let Some(points) = &shared_points {
                 (points.clone(), 0)
             } else {
                 ((0..point_count_with_phantoms).collect(), 0)
             };
-            let (x_deltas, x_consumed) =
-                read_packed_deltas(&tuple_data[delta_pos..], points.len())?;
-            let (y_deltas, _) =
-                read_packed_deltas(&tuple_data[delta_pos + x_consumed..], points.len())?;
+            let Ok((x_deltas, x_consumed)) =
+                read_packed_deltas(&tuple_data[delta_pos..], points.len())
+            else {
+                continue;
+            };
+            let Ok((y_deltas, _)) =
+                read_packed_deltas(&tuple_data[delta_pos + x_consumed..], points.len())
+            else {
+                continue;
+            };
+            let all_points = points.len() == point_count_with_phantoms
+                && points
+                    .iter()
+                    .enumerate()
+                    .all(|(index, point)| *point == index);
+            let interpolate = iup_outline.is_some() && !all_points;
+            let mut tuple_deltas = vec![(0i32, 0i32); point_count_with_phantoms];
+            let mut has_delta = vec![false; point_count_with_phantoms];
             for ((point_index, dx), dy) in points.into_iter().zip(x_deltas).zip(y_deltas) {
-                if let Some((acc_x, acc_y)) = deltas.get_mut(point_index) {
-                    *acc_x += ft_mul_fix(dx << 16, scalar);
-                    *acc_y += ft_mul_fix(dy << 16, scalar);
+                let Some(tuple_delta) = tuple_deltas.get_mut(point_index) else {
+                    continue;
+                };
+                tuple_delta.0 += ft_mul_fix(dx << 16, scalar);
+                tuple_delta.1 += ft_mul_fix(dy << 16, scalar);
+                has_delta[point_index] = true;
+            }
+            if interpolate {
+                if let Some((original_points, contour_ends)) = iup_outline {
+                    interpolate_gvar_deltas(
+                        &mut tuple_deltas,
+                        &has_delta,
+                        original_points,
+                        contour_ends,
+                    );
                 }
+            }
+            for (accumulated, tuple_delta) in deltas.iter_mut().zip(tuple_deltas) {
+                accumulated.0 = accumulated.0.wrapping_add(tuple_delta.0);
+                accumulated.1 = accumulated.1.wrapping_add(tuple_delta.1);
             }
         }
 
@@ -173,6 +281,165 @@ impl GvarTable {
     }
 }
 
+/// Fill omitted packed-point deltas in the current tuple using FreeType's
+/// `tt_interpolate_deltas` before the tuple is accumulated into the result.
+fn interpolate_gvar_deltas(
+    tuple_deltas: &mut [(i32, i32)],
+    has_delta: &[bool],
+    original_points: &[(i32, i32)],
+    contour_ends: &[u16],
+) {
+    let real_point_count = original_points.len().min(tuple_deltas.len());
+    if real_point_count == 0 {
+        return;
+    }
+    let mut first_point = 0usize;
+    for &contour_end in contour_ends {
+        if first_point >= real_point_count {
+            break;
+        }
+        let end_point = usize::from(contour_end);
+        if end_point < first_point || end_point >= real_point_count {
+            break;
+        }
+        let mut point = first_point;
+        while point <= end_point && !has_delta.get(point).copied().unwrap_or(false) {
+            point += 1;
+        }
+        if point <= end_point {
+            let first_delta = point;
+            let mut current_delta = point;
+            point += 1;
+            while point <= end_point {
+                if has_delta.get(point).copied().unwrap_or(false) {
+                    interpolate_gvar_segment(
+                        &mut tuple_deltas[..real_point_count],
+                        original_points,
+                        current_delta + 1,
+                        point - 1,
+                        current_delta,
+                        point,
+                    );
+                    current_delta = point;
+                }
+                point += 1;
+            }
+
+            if current_delta == first_delta {
+                let delta = tuple_deltas[current_delta];
+                for (index, tuple_delta) in tuple_deltas
+                    .iter_mut()
+                    .enumerate()
+                    .take(end_point + 1)
+                    .skip(first_point)
+                {
+                    if index != current_delta {
+                        tuple_delta.0 = tuple_delta.0.wrapping_add(delta.0);
+                        tuple_delta.1 = tuple_delta.1.wrapping_add(delta.1);
+                    }
+                }
+            } else {
+                interpolate_gvar_segment(
+                    &mut tuple_deltas[..real_point_count],
+                    original_points,
+                    current_delta + 1,
+                    end_point,
+                    current_delta,
+                    first_delta,
+                );
+                if first_delta > first_point {
+                    interpolate_gvar_segment(
+                        &mut tuple_deltas[..real_point_count],
+                        original_points,
+                        first_point,
+                        first_delta - 1,
+                        current_delta,
+                        first_delta,
+                    );
+                }
+            }
+        }
+        first_point = end_point + 1;
+    }
+}
+
+fn interpolate_gvar_segment(
+    tuple_deltas: &mut [(i32, i32)],
+    original_points: &[(i32, i32)],
+    first_point: usize,
+    end_point: usize,
+    reference_one: usize,
+    reference_two: usize,
+) {
+    if first_point > end_point {
+        return;
+    }
+    let (mut ref_one, mut ref_two) = (reference_one, reference_two);
+    // FreeType's tt_delta_interpolate processes X and Y in one call.  The
+    // reference swap made for X is intentionally visible to the Y pass.
+    for do_x in [true, false] {
+        let (in_one, in_two) = if do_x {
+            (original_points[ref_one].0, original_points[ref_two].0)
+        } else {
+            (original_points[ref_one].1, original_points[ref_two].1)
+        };
+        if in_one > in_two {
+            std::mem::swap(&mut ref_one, &mut ref_two);
+        }
+        let in_one = gvar_original_component(original_points[ref_one], do_x);
+        let in_two = gvar_original_component(original_points[ref_two], do_x);
+        let out_one = in_one.wrapping_add(gvar_delta_component(tuple_deltas[ref_one], do_x));
+        let out_two = in_two.wrapping_add(gvar_delta_component(tuple_deltas[ref_two], do_x));
+        let delta_one = out_one.wrapping_sub(in_one);
+        let delta_two = out_two.wrapping_sub(in_two);
+
+        if in_one != in_two || out_one == out_two {
+            let scale = if in_one != in_two {
+                crate::fixed::ft_div_fix(out_two.wrapping_sub(out_one), in_two.wrapping_sub(in_one))
+            } else {
+                0
+            };
+            for point in first_point..=end_point {
+                let original = gvar_original_component(original_points[point], do_x);
+                let output = if original <= in_one {
+                    original.wrapping_add(delta_one)
+                } else if original >= in_two {
+                    original.wrapping_add(delta_two)
+                } else {
+                    out_one.wrapping_add(crate::fixed::ft_mul_fix(
+                        original.wrapping_sub(in_one),
+                        scale,
+                    ))
+                };
+                add_gvar_delta_component(
+                    &mut tuple_deltas[point],
+                    output.wrapping_sub(original),
+                    do_x,
+                );
+            }
+        }
+    }
+}
+
+#[inline]
+fn gvar_original_component(point: (i32, i32), do_x: bool) -> i32 {
+    if do_x { point.0 } else { point.1 }
+}
+
+#[inline]
+fn gvar_delta_component(delta: (i32, i32), do_x: bool) -> i32 {
+    if do_x { delta.0 } else { delta.1 }
+}
+
+#[inline]
+fn add_gvar_delta_component(delta: &mut (i32, i32), value: i32, do_x: bool) {
+    if do_x {
+        delta.0 = delta.0.wrapping_add(value);
+    } else {
+        delta.1 = delta.1.wrapping_add(value);
+    }
+}
+
 #[derive(Debug)]
 struct TupleHeader {
     variation_data_size: usize,
@@ -188,16 +455,16 @@ pub fn parse_gvar(data: &[u8], glyph_count: u16) -> Result<GvarTable, FontError>
     let major = read_u16(data, 0)?;
     let minor = read_u16(data, 2)?;
     if major != 1 || minor != 0 {
-        return Err(FontError::InvalidFont("unsupported gvar version".into()));
+        return Err(FontError::InvalidTable("unsupported gvar version".into()));
     }
     let axis_count = usize::from(read_u16(data, 4)?);
     let shared_tuple_count = usize::from(read_u16(data, 6)?);
     let shared_tuple_offset = read_u32(data, 8)? as usize;
     let glyph_variation_count = read_u16(data, 12)?;
     let flags = read_u16(data, 14)?;
-    let data_offset = read_u32(data, 16)? as usize;
+    let data_offset = (read_u32(data, 16)? as usize).min(data.len());
     if glyph_variation_count != glyph_count {
-        return Err(FontError::InvalidFont("gvar glyph count mismatch".into()));
+        return Err(FontError::InvalidTable("gvar glyph count mismatch".into()));
     }
     let mut shared_tuples = Vec::with_capacity(shared_tuple_count);
     let mut shared_pos = shared_tuple_offset;
@@ -209,13 +476,30 @@ pub fn parse_gvar(data: &[u8], glyph_count: u16) -> Result<GvarTable, FontError>
     let offset_count = usize::from(glyph_variation_count) + 1;
     let mut glyph_offsets = Vec::with_capacity(offset_count);
     let offsets_start = 20;
+    let mut max_offset = data_offset;
     if flags & 1 != 0 {
         for index in 0..offset_count {
-            glyph_offsets.push(read_u32(data, offsets_start + index * 4)?);
+            let raw_offset =
+                usize::try_from(read_u32(data, offsets_start + index * 4).map_err(|_| {
+                    FontError::InvalidFont("gvar offset array out of range".into())
+                })?)
+                .unwrap_or(usize::MAX);
+            let candidate = data_offset.saturating_add(raw_offset);
+            let monotonic = max_offset.max(candidate).min(data.len());
+            max_offset = max_offset.max(candidate);
+            glyph_offsets.push((monotonic - data_offset) as u32);
         }
     } else {
         for index in 0..offset_count {
-            glyph_offsets.push(u32::from(read_u16(data, offsets_start + index * 2)?) * 2);
+            let raw_offset =
+                usize::from(read_u16(data, offsets_start + index * 2).map_err(|_| {
+                    FontError::InvalidFont("gvar offset array out of range".into())
+                })?)
+                .saturating_mul(2);
+            let candidate = data_offset.saturating_add(raw_offset);
+            let monotonic = max_offset.max(candidate).min(data.len());
+            max_offset = max_offset.max(candidate);
+            glyph_offsets.push((monotonic - data_offset) as u32);
         }
     }
     Ok(GvarTable {
@@ -225,17 +509,6 @@ pub fn parse_gvar(data: &[u8], glyph_count: u16) -> Result<GvarTable, FontError>
         data_offset,
         data: data.to_vec(),
     })
-}
-
-pub(crate) fn apply_deltas_to_outline(
-    outline: &mut crate::tt::glyf::GlyphOutline,
-    deltas: &[(i32, i32)],
-) {
-    for (point, (dx, dy)) in outline.points.iter_mut().zip(deltas.iter().copied()) {
-        point.x += dx;
-        point.y += dy;
-    }
-    recompute_outline_bounds(outline);
 }
 
 pub(crate) fn apply_fixed_deltas_to_outline(
@@ -280,7 +553,6 @@ fn recompute_outline_bounds(outline: &mut crate::tt::glyf::GlyphOutline) {
     outline.ymin = ymin;
     outline.xmax = xmax;
     outline.ymax = ymax;
-    outline.bbox_xmin = xmin;
 }
 
 fn tuple_scalar(peak: &[i16], intermediate: Option<&(Vec<i16>, Vec<i16>)>, coords: &[i16]) -> i32 {
@@ -464,7 +736,3 @@ fn normalize_axis_delta(delta: i32, extent: i32) -> i32 {
     }
     (((i64::from(delta)) * i64::from(F2DOT14_ONE)) / i64::from(extent)) as i32
 }
-
-#[cfg(test)]
-#[path = "../../tests/unit/tt/gvar.rs"]
-mod tests;

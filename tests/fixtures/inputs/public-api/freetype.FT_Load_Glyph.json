@@ -6,7 +6,8 @@
     "matrix_load",
     "render_and_target_modes",
     "no_scale_no_hinting_and_vertical_flags",
-    "error_out_of_range_null_face_or_invalid_flags"
+    "error_out_of_range_null_face_or_invalid_flags",
+    "sbix_bitmap_error_paths"
   ],
   "cases": [
     {
@@ -80,6 +81,237 @@
             },
             "coverage": [
               "load_glyph:explicit-NotoSans-Regular"
+            ]
+          },
+          {
+            "id": "gvar-packed-default",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/variable/gvar-packed-default.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 32,
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/gvar:default-active-packed-deltas"
+            ]
+          },
+          {
+            "id": "gvar-shared-points-default",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/variable/gvar-shared-points-default.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 32,
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/gvar:default-active-shared-points"
+            ]
+          },
+          {
+            "id": "gvar-all-points-default",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/variable/gvar-all-points-default.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 32,
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/gvar:default-active-private-all-points-without-hvar"
+            ]
+          },
+          {
+            "id": "gvar-empty-outline-default",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/variable/gvar-empty-outline-default.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 32,
+              "glyph_index": 17,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/gvar:default-active-empty-outline-bounds"
+            ]
+          },
+          {
+            "id": "gvar-axis-count-mismatch",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/variable/gvar-axis-count-mismatch.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 32,
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/gvar:normalized-coordinate-count-guard"
+            ]
+          },
+          {
+            "id": "hvar-no-advance-map",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/variable/hvar-no-advance-map.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 32,
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/hvar:default-advance-map-active"
+            ]
+          },
+          {
+            "id": "hvar-map-format-one",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/variable/hvar-map-format-one.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 32,
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/varstore:delta-set-map-format-one-active"
+            ]
+          },
+          {
+            "id": "hvar-map-sentinel",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/variable/hvar-map-sentinel.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 32,
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/varstore:delta-set-map-sentinel-active"
+            ]
+          },
+          {
+            "id": "hvar-long-words",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/variable/hvar-long-words.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 32,
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/varstore:long-word-delta-set-active"
+            ]
+          },
+          {
+            "id": "cff2-A-default",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff2/fontinfo-invalid-argument.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/cff:cff2-load-glyph-default"
+            ]
+          },
+          {
+            "id": "cff2-A-no-hinting",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff2/fontinfo-invalid-argument.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ]
+            },
+            "coverage": [
+              "tt/cff:cff2-load-glyph-no-hinting"
             ]
           }
         ]
@@ -2482,6 +2714,146 @@
           ]
         },
         {
+          "id": "sbit-line-metrics-positive-normalized",
+          "assets": {
+            "font": {
+              "kind": "ref",
+              "role": "font",
+              "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf",
+              "requirements": "Synthetic CBLC/CBDT font with a positive descender and negative min-after-baseline line metrics at 20 ppem."
+            }
+          },
+          "params": {
+            "face_index": 0,
+            "pixel_size": {"x": 0, "y": 20},
+            "glyph_index": 1,
+            "load_flags": ["FT_LOAD_SBITS_ONLY"]
+          },
+          "coverage": [
+            "sbit-line-metrics:positive-descender-normalized-through-load"
+          ]
+        },
+        {
+          "id": "sbit-line-metrics-positive-retained",
+          "assets": {
+            "font": {
+              "kind": "ref",
+              "role": "font",
+              "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf",
+              "requirements": "Synthetic CBLC/CBDT font with a positive descender and non-negative min-after-baseline line metrics at 21 ppem."
+            }
+          },
+          "params": {
+            "face_index": 0,
+            "pixel_size": {"x": 0, "y": 21},
+            "glyph_index": 1,
+            "load_flags": ["FT_LOAD_SBITS_ONLY"]
+          },
+          "coverage": [
+            "sbit-line-metrics:positive-descender-retained-through-load"
+          ]
+        },
+        {
+          "id": "sbit-line-metrics-baseline-fallback",
+          "assets": {
+            "font": {
+              "kind": "ref",
+              "role": "font",
+              "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf",
+              "requirements": "Synthetic CBLC/CBDT font with zero ascender/descender and nonzero baseline metrics at 22 ppem."
+            }
+          },
+          "params": {
+            "face_index": 0,
+            "pixel_size": {"x": 0, "y": 22},
+            "glyph_index": 1,
+            "load_flags": ["FT_LOAD_SBITS_ONLY"]
+          },
+          "coverage": [
+            "sbit-line-metrics:baseline-fallback-through-load"
+          ]
+        },
+        {
+          "id": "sbit-line-metrics-ppem-fallback",
+          "assets": {
+            "font": {
+              "kind": "ref",
+              "role": "font",
+              "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf",
+              "requirements": "Synthetic CBLC/CBDT font with zero line metrics and a 23 ppem fallback height."
+            }
+          },
+          "params": {
+            "face_index": 0,
+            "pixel_size": {"x": 0, "y": 23},
+            "glyph_index": 1,
+            "load_flags": ["FT_LOAD_SBITS_ONLY"]
+          },
+          "coverage": [
+            "sbit-line-metrics:ppem-fallback-through-load"
+          ]
+        },
+        {
+          "id": "sbit-line-metrics-height-repair",
+          "assets": {
+            "font": {
+              "kind": "ref",
+              "role": "font",
+              "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf",
+              "requirements": "Synthetic CBLC/CBDT font with equal ascender and descender values at 24 ppem."
+            }
+          },
+          "params": {
+            "face_index": 0,
+            "pixel_size": {"x": 0, "y": 24},
+            "glyph_index": 1,
+            "load_flags": ["FT_LOAD_SBITS_ONLY"]
+          },
+          "coverage": [
+            "sbit-line-metrics:height-repair-through-load"
+          ]
+        },
+        {
+          "id": "sbit-line-metrics-zero-descender",
+          "assets": {
+            "font": {
+              "kind": "ref",
+              "role": "font",
+              "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf",
+              "requirements": "Synthetic CBLC/CBDT font with a nonzero ascender and zero descender at 25 ppem."
+            }
+          },
+          "params": {
+            "face_index": 0,
+            "pixel_size": {"x": 0, "y": 25},
+            "glyph_index": 1,
+            "load_flags": ["FT_LOAD_SBITS_ONLY"]
+          },
+          "coverage": [
+            "sbit-line-metrics:zero-descender-through-load"
+          ]
+        },
+        {
+          "id": "sbit-line-metrics-right-baseline-or",
+          "assets": {
+            "font": {
+              "kind": "ref",
+              "role": "font",
+              "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf",
+              "requirements": "Synthetic CBLC/CBDT font with zero max-before-baseline and negative min-after-baseline at 26 ppem."
+            }
+          },
+          "params": {
+            "face_index": 0,
+            "pixel_size": {"x": 0, "y": 26},
+            "glyph_index": 1,
+            "load_flags": ["FT_LOAD_SBITS_ONLY"]
+          },
+          "coverage": [
+            "sbit-line-metrics:right-baseline-or-through-load"
+          ]
+        },
+        {
           "id": "sbit-composite-success-format8",
           "assets": {
               "font": {
@@ -2932,8 +3304,8 @@
               "sbit:compound-out-of-bounds-y-public-error"
             ]
           },
-        {
-          "id": "sbit-gray-format1-default-render",
+          {
+            "id": "sbit-gray-format1-default-render",
             "assets": {
               "font": {
                 "kind": "ref",
@@ -2955,6 +3327,32 @@
             },
             "coverage": [
               "sbit:default-load-prefers-embedded-bitmap"
+            ]
+          },
+          {
+            "id": "sbit-gray-format1-bitmap-metrics-only",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_format1.ttf",
+                "requirements": "Synthetic scalable SFNT with one 20 ppem EBLC/EBDT format-1 8-bit gray embedded bitmap for glyph 1."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_BITMAP_METRICS_ONLY",
+                "FT_LOAD_RENDER"
+              ]
+            },
+            "coverage": [
+              "sbit:bitmap-metrics-only-omits-image"
             ]
           },
           {
@@ -3271,6 +3669,111 @@
             },
             "coverage": [
               "autohint/globals:malformed-standard-glyph-ignored"
+            ]
+          },
+          {
+            "id": "loca-early-overflow-empty-glyph",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/latin-loca-early-overflow.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/loca:non-final-next-offset-out-of-range"
+            ]
+          },
+          {
+            "id": "loca-current-overflow-empty-glyph",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/latin-loca-early-overflow.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/loca:current-offset-out-of-range"
+            ]
+          },
+          {
+            "id": "loca-final-overflow-truncated-glyph",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/latin-loca-final-overflow.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 3,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/loca:final-next-offset-out-of-range"
+            ]
+          },
+          {
+            "id": "loca-unordered-entries",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/latin-loca-unordered.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/loca:unordered-entry-upper-bound"
+            ]
+          },
+          {
+            "id": "loca-long-format",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/latin-loca-long-format.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/loca:long-format-offsets"
             ]
           },
           {
@@ -7342,6 +7845,28 @@
             "coverage": [
               "font:no-scale-vmtx-vertical-metrics"
             ]
+          },
+          {
+            "id": "pure-cff-vmtx-no-scale-vertical-glyph1",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/cff/pure-cff-cubic-vmtx.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_SCALE",
+                "FT_LOAD_VERTICAL_LAYOUT"
+              ]
+            },
+            "coverage": [
+              "font:cff-no-scale-vmtx-vertical-metrics-glyph1"
+            ]
           }
         ]
       },
@@ -7486,6 +8011,324 @@
           ]
         },
         "error": "c_oracle"
+      }
+    },
+    {
+      "case_id": "freetype.FT_Load_Glyph.sbix_bitmap_error_paths",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "sbix_bitmap_error_paths",
+      "covers_manifest_cases": [
+        "sbix_bitmap_error_paths"
+      ],
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "sbix-missing-record",
+            "expect_error": false,
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-error-matrix.ttf",
+                "requirements": "Synthetic sbix strike with an equal glyph-0 offset pair."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 0,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:equal-offset-missing-bitmap"]
+          },
+          {
+            "id": "sbix-png-record",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-error-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:png-record-no-decoder"]
+          },
+          {
+            "id": "sbix-jpg-record",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-error-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 2,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:jpg-record-unknown-format"]
+          },
+          {
+            "id": "sbix-tiff-record",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-error-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 3,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:tiff-record-unknown-format"]
+          },
+          {
+            "id": "sbix-rgbl-record",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-error-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 4,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:rgbl-record-unknown-format"]
+          },
+          {
+            "id": "sbix-unknown-record",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-error-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 5,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:unknown-record-unimplemented"]
+          },
+          {
+            "id": "sbix-dupe-png-record",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-error-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 6,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:dupe-recursion-to-png"]
+          },
+          {
+            "id": "sbix-flip-png-record",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-error-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 7,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:flip-recursion-to-png"]
+          },
+          {
+            "id": "sbix-dupe-missing-record",
+            "expect_error": false,
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-error-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 8,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:dupe-recursion-to-missing-bitmap"]
+          },
+          {
+            "id": "sbix-dupe-truncated-target",
+            "expect_error": false,
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-error-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 15,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:dupe-record-truncated-target"]
+          },
+          {
+            "id": "sbix-recursion-limit",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-error-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 9,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:dupe-recursion-depth-limit"]
+          },
+          {
+            "id": "sbix-glyph-index-out-of-range",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-error-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 65535,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:glyph-index-out-of-range"]
+          },
+          {
+            "id": "sbix-glyph-offset-array-short",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-glyph-range-short.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:glyph-offset-array-too-short"]
+          },
+          {
+            "id": "sbix-range-start-after-end",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-range-start-after-end.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:image-start-after-end"]
+          },
+          {
+            "id": "sbix-range-short-record",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-range-short-record.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:image-record-too-short"]
+          },
+          {
+            "id": "sbix-range-end-out-of-bounds",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-range-end-out-of-bounds.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:image-end-out-of-bounds"]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-load",
+        "area:sbix",
+        "coverage:real-error-trigger"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "slot_mutation": "cleared_then_driver_error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "status",
+            "error",
+            "slot_snapshot"
+          ]
+        },
+        "error": "c_oracle",
+        "sources_checked": [
+          "freetype/src/sfnt/ttsbit.c:1476-1578",
+          "freetype/src/truetype/ttgload.c:2401-2485"
+        ]
       }
     },
     {

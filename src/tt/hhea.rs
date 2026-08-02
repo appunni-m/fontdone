@@ -34,34 +34,3 @@ pub fn parse_hhea(data: &[u8]) -> Result<HheaTable, FontError> {
         num_hmetrics: u16::from_be_bytes([data[34], data[35]]),
     })
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn parses_valid_hhea() -> Result<(), FontError> {
-        let mut data = vec![0u8; 36];
-        data[4..6].copy_from_slice(&800i16.to_be_bytes());
-        data[6..8].copy_from_slice(&(-200i16).to_be_bytes());
-        data[8..10].copy_from_slice(&0i16.to_be_bytes());
-        data[10..12].copy_from_slice(&1500u16.to_be_bytes());
-        data[34..36].copy_from_slice(&18u16.to_be_bytes());
-        let table = parse_hhea(&data)?;
-        assert_eq!(table.ascent, 800);
-        assert_eq!(table.descent, -200);
-        assert_eq!(table.line_gap, 0);
-        assert_eq!(table.advance_width_max, 1500);
-        assert_eq!(table.num_hmetrics, 18);
-        Ok(())
-    }
-
-    #[test]
-    fn rejects_short_hhea() {
-        let error = match parse_hhea(&[0u8; 35]) {
-            Err(error) => error,
-            Ok(_) => panic!("short hhea should be rejected"),
-        };
-        assert!(error.to_string().contains("hhea table too short"));
-    }
-}

@@ -328,15 +328,20 @@ For each batch:
 State: `OPEN`
 
 The maintained all-lane coverage suite measures reachable production source in
-the Rust core, C ABI, and host-compiled WASM facade. It runs facade unit tests
-separately, then measures every non-ignored root unit and integration target
-under one default-profile build, including the complete parity matrix;
-test-harness paths are the only filename exclusion. The coherent build prevents
-LLVM from attributing separate feature variants to the same facade source path.
-Optional feature profiles remain a separate `make optional-feature-contract`
-gate so coverage never compares a feature-enabled implementation with a
-default-profile oracle. Executing code does not prove FreeType parity, so G02
-cannot satisfy any G01 item.
+the Rust core, C ABI, and host-compiled WASM facade. It keeps all workspace
+packages in the report but executes only the `unified_fixture_parity`
+integration target under one default-profile build; that target drives the
+complete parity matrix through all three surfaces. Empty root-unit and
+`pipe_trace` targets add no parity inputs and can duplicate cfg-dependent FFI
+source in LLVM's report, so they are intentionally not executed. ABI-only
+package preflight and independent oracle/audit preparation run in the setup
+batch before the coherent coverage build. The isolated
+`COVERAGE_ALL_TARGET_DIR` cache keeps `--no-clean` from mixing stale binaries,
+and test-harness paths remain the only filename exclusion. Optional feature
+profiles remain a separate `make optional-feature-contract` gate so coverage
+never compares a feature-enabled implementation with a default-profile oracle.
+Executing code does not prove FreeType parity, so G02 cannot satisfy any G01
+item.
 
 Baseline snapshot `5a122fcc-aa76-4503-82d3-e8bbb564f349`, produced from commit
 `09110a488bcc53c96def8ccf7e3d6c4e6418737f`, records:
@@ -356,9 +361,9 @@ with 0 failures; 95 cases remained explicitly pending.
 
 ### 8.1 Verified work after the baseline
 
-The following numbered batches are newer than the coverage snapshot above.
-They are retained as completed implementation/test work, but **no coverage
-increase is claimed until the next full all-lane measurement**:
+The following numbered batches are retained as completed implementation/test
+work. The latest all-lane measurement below covers the current worktree; no
+per-batch coverage increase is claimed:
 
 | Batch | Source commit | Verified change |
 |---:|---|---|
@@ -389,19 +394,44 @@ increase is claimed until the next full all-lane measurement**:
 | 25 | `25846d907293f04d4337a60a5ddf28a824065baa` | Promoted the nine GX/classic-kern semantic rows (`FT_VALIDATE_GX`, `FT_VALIDATE_MS`, and the seven table-slot validators) with deterministic valid, absent, truncated, and invalid-header SFNT controls. Focused GX and external-C gates passed; clean full parity run `660ffb48-3bc8-4995-ace8-525dbb51c468` passed 7,269 / 7,269 runnable comparisons with 38 explicitly pending concrete cases; clean C-ABI scorecard run `c5c5ccf7-79cc-4b62-8bfb-312012e8f281` reports C01 runtime rows 5,021 / 5,047 with 26 pending. |
 | 26 | SVG renderer hooks | Routed `otsvg.FT_SVG_Document.renderer_callback_observes_document` through the pinned-C four-hook `ot-svg:svg-hooks` flow and exact Rust FFI, C ABI, and WASM observations: the renderer callback receives the same document pointer class, glyph ID, and lifetime fields (`svg_document_length`, units, glyph range, transform, delta) as pinned C, with the missing-hooks state classified explicitly as unsupported. The route closes the last pending parity route: route audit reports 0 pending routes, clean full parity run `d217ea7be88f6bfd4367b752999520ed6b785a76fb10cd1f6d6da573bc7ebaf7` passed 7,296 / 7,296 runnable comparisons with 12 explicitly pending concrete cases (safety extensions and unresolved stroker assets); C-ABI scorecard is 8 / 12 categories complete (C01.7 5,040 / 5,048, C08.3 7,297 / 7,305). |
 | 27 | Generic-fallback elimination | Promoted the eight generic-fallback rows to exact four-lane routes: PS hinting-engine property set/get/string/load across CFF/Type1/t1cid, `FT_PARAM_TAG_IGNORE_SBIX` outline and bitmap-only open-face dispatch, `FT_Parameter` tag/data variant dispatch, and `FT_PARAM_TAG_STEM_DARKENING` state toggle with preserved public output. Route audit: **0 pending routes, 0 generic-fallback rows**, 5,039 real-parity concrete cases; C-ABI scorecard is 10 / 12 categories complete with C01.7 5,048 / 5,048 and C08.3 7,305 / 7,305 (binary artifacts and platform bundles remain). |
+| 28 | Working tree (`ad6c489963b2797ab39e226efaa6a4690faa63ef`) | Added 13 maintained input-only SBIT cases for index formats 2/4/5 and grayscale, mono, packed-gray, and BGRA compound bitmaps. Traced the BGRA mismatch to pinned `FT_Bitmap_Convert`, implemented the exact premultiplied-sRGB flattening rule at the SBIT boundary, and passed full parity run `d9ebd2d0-6f84-4e8e-bd5c-f8f9d86cdcb7` with 7,468 / 7,468 runnable comparisons and 3 explicitly pending safety-extension cases. |
+| 29 | Working tree (avar normalization) | Added an input-only variable-font case whose `gvar` interpolation exposed the missing `avar` normalization stage. Implemented pinned-compatible `avar` parsing and design/named-instance coordinate mapping; focused parity passed 33 / 33 and full parity run `61dddda3-5866-43ea-bd80-e84cd1d4c5b9` passed 7,469 / 7,469 runnable comparisons with 3 explicitly pending safety-extension cases. |
 
-The latest source-bound parity verification is the maintained all-lane run
-`d217ea7be88f6bfd4367b752999520ed6b785a76fb10cd1f6d6da573bc7ebaf7` on the SVG
-renderer-hook milestone: it passed 7,296 / 7,296 runnable comparisons, 0
-failed, 12 explicitly pending concrete cases (safety extensions and
-unresolved stroker assets), and the route audit reports **0 pending routes**
-with 218 / 218 function routes present in each ABI surface. The committed
-source-digest attestation is `doc/runtime_parity_evidence.json`. The companion
-C-ABI scorecard reports 10 / 12 categories complete with all pinned-C runtime
-rows exact; binary artifacts and platform bundles remain the tracked gaps.
-Full coverage is
-intentionally deferred until a larger set of focused batches is ready, because
-the maintained all-lane pass takes roughly 50 minutes.
+The latest source-bound parity verification is Coverage MCP parity run
+`61dddda3-5866-43ea-bd80-e84cd1d4c5b9`, recorded by run
+`b5861da0-4262-49ab-a7b3-5a6a7b27f4e9` against the dirty worktree at commit
+`ad6c489963b2797ab39e226efaa6a4690faa63ef`: it passed 7,469 / 7,469 runnable
+comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
+route audit reports **0 pending routes** with 218 / 218 function routes present
+in each ABI surface. The committed source-digest attestation is
+`doc/runtime_parity_evidence.json`. The companion C-ABI scorecard, Coverage
+MCP run `1766fdf5-8e70-4328-94e0-d5fab26845da`, reports 10 / 12 categories
+complete, with 5,195 / 5,195 runtime contract rows and 643 / 643 strict error
+routes exact; binary artifacts and platform bundles remain the tracked gaps.
+
+The latest all-lane coverage run completed in 3 minutes 48.279 seconds. Its
+test body finished in 115.99 seconds; backend timings were about 42.14 seconds
+Rust FFI, 30.78 seconds C ABI, 31.11 seconds WASM, and 0.04 seconds comparison.
+The previous warm run completed in 2 minutes 2.149 seconds, so the latest sample's additional wall
+time was outside backend execution, in setup/reporting/ingestion and host
+contention. `make test-coverage-all`
+uses a single parity worker, `CARGO_PROFILE_TEST_OPT_LEVEL=1`,
+`COVERAGE_TEST_DEBUG=1`, and `cargo llvm-cov --no-clean` by default: LLVM
+instrumentation made parallel backend calls contend, the optimized test
+profile removed the several-fold slowdown of unoptimized instrumented code,
+line-table-only debuginfo reduced compile/report overhead, retaining the
+instrumented target removes the repeated rebuild on warm runs, and face-cache
+keys reuse preloaded font content digests instead of rehashing each expanded
+case. Independent oracle/audit preparation now shares a two-job setup batch with
+the single ABI-only package preflight, and unchanged generated
+oracle inputs preserve their mtimes so the helper/validator C build is not
+repeated. The current run measured 49,267 / 54,039 lines, 9,668 / 12,500
+branches, 3,368 / 3,825 functions, and 67,852 / 75,210 regions. It passed
+7,469 / 7,469 runnable parity comparisons with 0 failures. Its Coverage MCP run
+is `e9b39b64-59aa-43e2-9864-9f6e018a6306`, with snapshot
+`a997c5b2-c045-491c-aae8-13b39271ac05`. Each measurement clears stale
+`.profraw` files first; use `make coverage-clean` after changing the coverage
+toolchain or instrumentation configuration.
 
 Run:
 

@@ -72,9 +72,9 @@
       "expect_error": true,
       "inputs": {
         "assets": {
-          "gzip_payload": {
+          "gzip_payloads": {
             "kind": "ref",
-            "id": "compressed/gzip/small-valid.gz"
+            "id": "compressed/gzip/small-text-and-empty-payloads.json"
           }
         },
         "params": {
@@ -131,9 +131,9 @@
       "expect_error": true,
       "inputs": {
         "assets": {
-          "gzip_payload": {
+          "gzip_payloads": {
             "kind": "ref",
-            "id": "compressed/gzip/small-valid.gz"
+            "id": "compressed/gzip/small-text-and-empty-payloads.json"
           }
         },
         "params": {
@@ -179,9 +179,9 @@
       "expect_error": true,
       "inputs": {
         "assets": {
-          "invalid_payloads": {
+          "gzip_payloads": {
             "kind": "ref",
-            "id": "compressed/gzip/invalid-and-truncated-payloads.json"
+            "id": "compressed/gzip/small-text-and-empty-payloads.json"
           }
         },
         "params": {
@@ -216,7 +216,7 @@
         },
         "error": "FT_Err_Invalid_Table",
         "fixture_requirements": [
-          "compressed/gzip/invalid-and-truncated-payloads.json must contain deterministic invalid byte fixture references"
+          "invalid inputs are deterministic mutations of the maintained gzip/zlib payload bytes"
         ],
         "source_refs": [
           "freetype/src/gzip/ftgzip.c:764-767"
@@ -232,9 +232,9 @@
       "expect_error": true,
       "inputs": {
         "assets": {
-          "gzip_payload": {
+          "gzip_payloads": {
             "kind": "ref",
-            "id": "compressed/gzip/small-valid.gz"
+            "id": "compressed/gzip/small-text-and-empty-payloads.json"
           }
         },
         "params": {

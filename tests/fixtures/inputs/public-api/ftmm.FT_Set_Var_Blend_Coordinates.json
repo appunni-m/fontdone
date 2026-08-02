@@ -1,7 +1,7 @@
 {
   "version": 1,
   "subject": "ftmm.FT_Set_Var_Blend_Coordinates",
-  "manifest_cases": ["success_aliases_mm_blend_setter", "success_partial_extra_and_reset", "success_variation_flag_matches_c", "error_null_coords_with_nonzero_count", "output_changes_for_active_blend"],
+  "manifest_cases": ["success_aliases_mm_blend_setter", "success_partial_extra_and_reset", "success_variation_flag_matches_c", "error_null_coords_with_nonzero_count", "output_changes_for_active_blend", "output_changes_for_long_word_delta_set"],
   "cases": [
     {
       "case_id": "ftmm.FT_Set_Var_Blend_Coordinates.success_aliases_mm_blend_setter",
@@ -62,6 +62,18 @@
       "classifiers": ["kind:function", "header:ftmm", "surface:public-c-api", "coverage:glyph-output"],
       "metadata": {"abi": {"header": "freetype/ftmm.h", "symbol": "FT_Set_Var_Blend_Coordinates", "kind": "function"}, "source_behavior": "Successful coordinate changes adjust metrics variations and invalidate autohint data."},
       "expectation": {"status": "ok", "output_shape": {"return": "FT_Error", "glyph_metrics": "FT_Glyph_Metrics", "outline_cbox": "FT_BBox", "bitmap": {"buffer_hash": "sha256"}}, "compare": {"mode": "bytes", "paths": ["return", "glyph_metrics", "outline_cbox", "bitmap.buffer"]}, "source_refs": ["freetype/src/base/ftmm.c:554-570", "freetype/src/truetype/ttgxvar.c"], "fixture_requirements": ["Variable font with gvar and metrics deltas."]}
+    },
+    {
+      "case_id": "ftmm.FT_Set_Var_Blend_Coordinates.output_changes_for_long_word_delta_set",
+      "subject": "ftmm.FT_Set_Var_Blend_Coordinates",
+      "case": "output_changes_for_long_word_delta_set",
+      "operation": "ftmm.set_var_blend_coordinates",
+      "schema": "glyph_result",
+      "expect_error": false,
+      "inputs": {"assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-long-words.ttf", "asset_kind": "font"}}, "params": {"face_index": 0, "num_coords": 2, "coords_16_16": [-32768, 0], "glyph_index": 10, "pixel_size": 32, "load_flags": ["FT_LOAD_DEFAULT"], "render_mode": "FT_RENDER_MODE_NORMAL"}},
+      "classifiers": ["kind:function", "header:ftmm", "surface:public-c-api", "coverage:long-word-delta-output"],
+      "metadata": {"abi": {"header": "freetype/ftmm.h", "symbol": "FT_Set_Var_Blend_Coordinates", "kind": "function"}, "source_behavior": "An active normalized variation region evaluates both the 32-bit and mixed-width ItemVariationStore delta readers before glyph metrics and rendered output are observed."},
+      "expectation": {"status": "ok", "output_shape": {"return": "FT_Error", "glyph_metrics": "FT_Glyph_Metrics", "outline_cbox": "FT_BBox", "bitmap": {"buffer_hash": "sha256"}}, "compare": {"mode": "bytes", "paths": ["return", "glyph_metrics", "outline_cbox", "bitmap.buffer"]}, "source_refs": ["freetype/src/base/ftmm.c:554-570", "freetype/src/truetype/ttgxvar.c", "freetype/src/truetype/ttgxvar.c:ItemVariationStore"], "fixture_requirements": ["Variable font with an active HVAR ItemVariationStore using long and short deltas."]}
     }
   ]
 }

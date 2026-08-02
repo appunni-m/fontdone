@@ -66,7 +66,7 @@ def add_vertical_metrics(font: TTFont) -> None:
     font["vhea"] = vhea
 
 
-def svg_table() -> DefaultTable:
+def svg_payload(document: bytes = SVG_DOCUMENT) -> bytes:
     """Return one SVG document-list record covering glyph index 1."""
 
     document_list_offset = 10
@@ -74,23 +74,67 @@ def svg_table() -> DefaultTable:
     data = bytearray()
     data.extend(struct.pack(">HLL", 0, document_list_offset, 0))
     data.extend(struct.pack(">H", 1))
-    data.extend(struct.pack(">HHLL", 1, 1, document_offset, len(SVG_DOCUMENT)))
-    data.extend(SVG_DOCUMENT)
+    data.extend(struct.pack(">HHLL", 1, 1, document_offset, len(document)))
+    data.extend(document)
+    return bytes(data)
+
+
+def svg_table(data: bytes | None = None) -> DefaultTable:
+    """Return an OpenType SVG table from reviewed raw payload bytes."""
+
     table = DefaultTable("SVG ")
-    table.data = bytes(data)
+    table.data = svg_payload() if data is None else data
     return table
 
 
-def main() -> None:
+def malformed_svg_payloads() -> dict[str, bytes]:
+    """Return malformed SVG controls whose tables are ignored at face open."""
+
+    valid = bytearray(svg_payload())
+
+    list_before_header = bytearray(valid)
+    list_before_header[2:6] = struct.pack(">L", 9)
+
+    list_out_of_range = bytearray(valid)
+    list_out_of_range[2:6] = struct.pack(">L", 0xFFFF_FFFF)
+
+    records_truncated = bytearray(struct.pack(">HLLH", 0, 10, 0, 2))
+    records_truncated.extend(b"\0" * 12)
+
+    document_out_of_bounds = bytearray(valid)
+    document_out_of_bounds[16:20] = struct.pack(">L", 0xFFFF_FFF0)
+
+    gzip_document = b"\x1f\x8b\x08" + b"\0" * (len(SVG_DOCUMENT) - 3)
+
+    return {
+        "svg-list-offset-before-header.ttf": bytes(list_before_header),
+        "svg-list-offset-out-of-range.ttf": bytes(list_out_of_range),
+        "svg-document-records-truncated.ttf": bytes(records_truncated),
+        "svg-document-out-of-bounds.ttf": bytes(document_out_of_bounds),
+        "svg-gzip-document.ttf": svg_payload(gzip_document),
+        "svg-short-table.ttf": b"\0\0",
+    }
+
+
+def write_font(path: Path, payload: bytes) -> None:
+    """Write one deterministic base font with the supplied SVG payload."""
+
     if not BASE_FONT.is_file():
         raise SystemExit(f"missing reviewed synthetic base font: {BASE_FONT}")
     font = TTFont(BASE_FONT, recalcTimestamp=False)
     add_vertical_metrics(font)
-    font["SVG "] = svg_table()
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    if OUTPUT.exists() or OUTPUT.is_symlink():
-        OUTPUT.unlink()
-    font.save(OUTPUT, reorderTables=True)
+    font["SVG "] = svg_table(payload)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists() or path.is_symlink():
+        path.unlink()
+    font.save(path, reorderTables=True)
+    font.close()
+
+
+def main() -> None:
+    write_font(OUTPUT, svg_payload())
+    for name, payload in malformed_svg_payloads().items():
+        write_font(OUTPUT.parent / name, payload)
 
 
 if __name__ == "__main__":

@@ -734,11 +734,14 @@ fn winfnt_font_data(data: &[u8], size_pt: f32, header: &WinFntHeader) -> Arc<Fon
         },
         cmap: tt::cmap::CmapTable::default(),
         fvar: None,
+        avar: None,
         gvar: None,
+        gvar_error: None,
         design_variation_coords: Vec::new(),
         normalized_variation_coords: Vec::new(),
         blend_variation_coords_16_16: Vec::new(),
         variation_coordinates_set: false,
+        variation_coordinates_explicitly_set: false,
         gasp: None,
         head: tt::head::HeadTable {
             units_per_em: header.pixel_height.max(1),
@@ -1295,11 +1298,14 @@ fn bdf_font_data(data: &[u8], size_pt: f32, metadata: &BdfMetadata) -> Arc<FontD
             &metadata.charmap_mappings,
         ),
         fvar: None,
+        avar: None,
         gvar: None,
+        gvar_error: None,
         design_variation_coords: Vec::new(),
         normalized_variation_coords: Vec::new(),
         blend_variation_coords_16_16: Vec::new(),
         variation_coordinates_set: false,
+        variation_coordinates_explicitly_set: false,
         gasp: None,
         head: tt::head::HeadTable {
             // BDF and PCF are bitmap strikes, not scalable outlines.  Use a
@@ -2315,11 +2321,14 @@ fn non_sfnt_outline_font_data(
         },
         cmap: tt::cmap::CmapTable::default(),
         fvar: None,
+        avar: None,
         gvar: None,
+        gvar_error: None,
         design_variation_coords: Vec::new(),
         normalized_variation_coords: Vec::new(),
         blend_variation_coords_16_16: Vec::new(),
         variation_coordinates_set: false,
+        variation_coordinates_explicitly_set: false,
         gasp: None,
         head: tt::head::HeadTable {
             units_per_em,
@@ -3131,6 +3140,81 @@ impl Font {
         Some(sbix.load_glyph_error(glyph_index, self.data.maxp.num_glyphs, ppem, 0))
     }
 
+    /// Construct the whitespace bitmap that the TrueType driver installs when
+    /// an active bitmap-only `sbix` strike has no image for a glyph.
+    ///
+    /// `truetype/ttgload.c:2133-2176` deliberately turns `Missing_Bitmap`
+    /// into a successful zero-sized MONO bitmap when the face is not
+    /// scalable.  Keep this separate from the error probe above so callers
+    /// can preserve all other `sbix` errors exactly.
+    pub(crate) fn sbix_missing_bitmap_glyph(
+        &self,
+        glyph_index: u16,
+        ppem: u16,
+    ) -> Option<tt::sbit::SbitGlyph> {
+        let sbix = self.data.sbix.as_ref().filter(|_| !self.ignore_sbix)?;
+        if !sbix.has_strike(ppem)
+            || self.is_scalable()
+            || !matches!(
+                sbix.load_glyph_error(glyph_index, self.data.maxp.num_glyphs, ppem, 0),
+                Err(FontError::MissingBitmap)
+            )
+        {
+            return None;
+        }
+
+        let metrics = self.size_metrics();
+        let h = self.data.hmtx.get(glyph_index);
+        let (advance_height, top_bearing) = match &self.data.vmtx {
+            Some(vmtx) => {
+                let v = vmtx.get(glyph_index);
+                (i32::from(v.advance_height), i32::from(v.tsb))
+            }
+            None => self
+                .data
+                .os2
+                .as_ref()
+                .filter(|os2| os2.version != 0xFFFF)
+                .map_or_else(
+                    || {
+                        (
+                            (i32::from(self.data.hhea.ascent) - i32::from(self.data.hhea.descent))
+                                .abs(),
+                            i32::from(self.data.hhea.ascent),
+                        )
+                    },
+                    |os2| {
+                        (
+                            (i32::from(os2.s_typo_ascender) - i32::from(os2.s_typo_descender))
+                                .abs(),
+                            i32::from(os2.s_typo_ascender),
+                        )
+                    },
+                ),
+        };
+
+        Some(tt::sbit::SbitGlyph {
+            metrics: tt::sbit::SbitMetrics {
+                width: 0,
+                height: 0,
+                hori_bearing_x: crate::fixed::ft_mul_fix(i32::from(h.lsb), metrics.x_scale),
+                hori_bearing_y: 0,
+                hori_advance: crate::fixed::ft_mul_fix(i32::from(h.advance_width), metrics.x_scale),
+                vert_bearing_x: 0,
+                vert_bearing_y: crate::fixed::ft_mul_fix(top_bearing, metrics.y_scale),
+                vert_advance: crate::fixed::ft_mul_fix(advance_height, metrics.y_scale),
+            },
+            bitmap: tt::sbit::SbitBitmap {
+                width: 0,
+                rows: 0,
+                pitch: 0,
+                pixel_mode: tt::sbit::SbitPixelMode::Mono,
+                num_grays: 0,
+                buffer: Vec::new(),
+            },
+        })
+    }
+
     /// Load a TrueType/OpenType font from raw bytes at a given point size.
     ///
     /// Parses all required tables eagerly. Matches `FT_New_Memory_Face` +
@@ -3532,6 +3616,10 @@ impl Font {
         let fvar = dir
             .find(data, tag(b"fvar"))
             .and_then(|bytes| tt::fvar::parse_fvar(bytes).ok());
+        let avar = fvar.as_ref().and_then(|fvar| {
+            dir.find(data, tag(b"avar"))
+                .and_then(|bytes| tt::avar::parse_avar(bytes, fvar.axes.len()).ok())
+        });
         let named_instance = (face_index >> 16) & 0x7FFF;
         if named_instance != 0
             && fvar
@@ -3626,18 +3714,32 @@ impl Font {
         let hdmx = dir
             .find(data, tag(b"hdmx"))
             .and_then(|d| tt::hdmx::parse_hdmx(d, maxp.num_glyphs).ok());
-        let gvar = dir
-            .find(data, tag(b"gvar"))
-            .and_then(|d| tt::gvar::parse_gvar(d, maxp.num_glyphs).ok());
+        let (gvar, gvar_error) = match dir.find(data, tag(b"gvar")) {
+            Some(bytes) => match tt::gvar::parse_gvar(bytes, maxp.num_glyphs) {
+                Ok(table)
+                    if fvar
+                        .as_ref()
+                        .is_some_and(|fvar| table.axis_count() != fvar.axes.len()) =>
+                {
+                    (
+                        Some(table),
+                        Some(FontError::InvalidTable("gvar axis count mismatch".into())),
+                    )
+                }
+                Ok(table) => (Some(table), None),
+                Err(error) => (None, Some(error)),
+            },
+            None => (None, None),
+        };
         let design_variation_coords = if let Some(coords) = design_coords {
             design_variation_coords_for_design_coords(&fvar, coords)
         } else {
             design_variation_coords_for_named_instance(&fvar, named_instance)
         };
         let normalized_variation_coords = if design_coords.is_some() {
-            normalized_variation_coords_for_design_coords(&fvar, &design_variation_coords)
+            normalized_variation_coords_for_design_coords(&fvar, &avar, &design_variation_coords)
         } else {
-            normalized_variation_coords_for_named_instance(&fvar, named_instance)
+            normalized_variation_coords_for_named_instance(&fvar, &avar, named_instance)
         };
         let blend_variation_coords_16_16 = blend_coords_16_16.map_or_else(
             || {
@@ -3715,11 +3817,14 @@ impl Font {
             table_directory: dir,
             cmap,
             fvar,
+            avar,
             gvar,
+            gvar_error,
             design_variation_coords,
             normalized_variation_coords,
             blend_variation_coords_16_16,
             variation_coordinates_set,
+            variation_coordinates_explicitly_set: design_coords.is_some(),
             head,
             hhea,
             hvar,
@@ -3874,7 +3979,20 @@ impl Font {
         // C parity: src/base/ftmm.c:281-360 clears FT_FACE_FLAG_VARIATION after
         // a successful zero-count FT_Set_Var_Design_Coordinates reset while the
         // TrueType service recomputes default design/blend coordinates.
-        let variation_coordinates_set = !coords.is_empty();
+        // FreeType clears the public variation flag when explicit design
+        // coordinates resolve to the default instance, even though the
+        // caller supplied a non-empty coordinate array.  Blend coordinates
+        // use different public semantics: a non-zero normalized blend value
+        // keeps the flag set even when the corresponding design coordinate
+        // happens to equal its axis default.
+        let variation_coordinates_set = !coords.is_empty()
+            && normalized_variation_coords_for_design_coords(
+                &self.data.fvar,
+                &self.data.avar,
+                &design_variation_coords_for_design_coords(&self.data.fvar, coords),
+            )
+            .iter()
+            .any(|coordinate| *coordinate != 0);
         let mut next = Self::truetype_face_with_load_mode_and_design_coords(
             &self.data.raw_data,
             base_face_index,
@@ -4883,7 +5001,7 @@ impl Font {
                 },
                 header,
             )?,
-            _ => SizeMetrics::from_pixel_size(width, height, &self.data),
+            _ => SizeMetrics::try_from_pixel_size(width, height, &self.data)?,
         };
         self.size_pt = f32::from(size_metrics.y_ppem);
         self.size_metrics = size_metrics;
@@ -4975,7 +5093,16 @@ impl Font {
         // stores the strike index then calls `FT_Select_Metrics`
         // (`src/base/ftobjs.c:3210-3236`) to rebuild scalable size metrics
         // from the strike ppem values.
-        self.size_metrics = SizeMetrics::from_pixel_size(x_ppem, y_ppem, &self.data);
+        let cblc_strike_metrics = self
+            .data
+            .sbit
+            .as_ref()
+            .filter(|sbit| sbit.kind() == tt::sbit::SbitTableKind::Cblc && sbit.strike_count() != 0)
+            .and_then(|sbit| sbit.strike_metrics(strike_index));
+        self.size_metrics = cblc_strike_metrics.map_or_else(
+            || SizeMetrics::from_pixel_size(x_ppem, y_ppem, &self.data),
+            |metrics| SizeMetrics::from_sbit_strike(metrics, &self.data),
+        );
         self.size_pt = f32::from(self.size_metrics.y_ppem);
         self.data.size_pt.set(self.size_pt);
         sync_active_size_metrics(&self.data, self.size_metrics);
@@ -7048,6 +7175,16 @@ impl SizeMetrics {
         let scaled_height = scaled_char_size_26dot6(char_height, y_dpi);
         let x_ppem = ppem_from_scaled_char_size(scaled_width)?;
         let y_ppem = ppem_from_scaled_char_size(scaled_height)?;
+        if let Some(sbit) = data
+            .sbit
+            .as_ref()
+            .filter(|sbit| sbit.kind() == tt::sbit::SbitTableKind::Cblc && sbit.strike_count() != 0)
+        {
+            return sbit
+                .strike_metrics_for_ppem(x_ppem, y_ppem)
+                .map(|metrics| Self::from_sbit_strike(metrics, data))
+                .ok_or(SizeRequestError::InvalidPixelSize);
+        }
         let units_per_em = i32::from(data.head.units_per_em);
         let x_scale = ft_div_fix(scaled_width.max(64), units_per_em);
         let y_scale = ft_div_fix(scaled_height.max(64), units_per_em);
@@ -7083,6 +7220,15 @@ impl SizeMetrics {
         };
         width = width.clamp(1, 0xFFFF);
         height = height.clamp(1, 0xFFFF);
+        if let Some(sbit) = data
+            .sbit
+            .as_ref()
+            .filter(|sbit| sbit.kind() == tt::sbit::SbitTableKind::Cblc && sbit.strike_count() != 0)
+        {
+            if let Some(metrics) = sbit.strike_metrics_for_ppem(width as u16, height as u16) {
+                return Self::from_sbit_strike(metrics, data);
+            }
+        }
         let units_per_em = i32::from(data.head.units_per_em);
         let x_scale = ft_div_fix((width as i32) << 6, units_per_em);
         let y_scale = ft_div_fix((height as i32) << 6, units_per_em);
@@ -7101,6 +7247,54 @@ impl SizeMetrics {
             char_height: (height as i32) << 6,
         }
         .with_face_metrics(data)
+    }
+
+    fn try_from_pixel_size(
+        pixel_width: u32,
+        pixel_height: u32,
+        data: &FontData,
+    ) -> Result<Self, SizeRequestError> {
+        let width = if pixel_width == 0 {
+            pixel_height
+        } else {
+            pixel_width
+        }
+        .clamp(1, 0xFFFF);
+        let height = if pixel_height == 0 {
+            pixel_width
+        } else {
+            pixel_height
+        }
+        .clamp(1, 0xFFFF);
+        if let Some(sbit) = data
+            .sbit
+            .as_ref()
+            .filter(|sbit| sbit.kind() == tt::sbit::SbitTableKind::Cblc && sbit.strike_count() != 0)
+        {
+            return sbit
+                .strike_metrics_for_ppem(width as u16, height as u16)
+                .map(|metrics| Self::from_sbit_strike(metrics, data))
+                .ok_or(SizeRequestError::InvalidPixelSize);
+        }
+        Ok(Self::from_pixel_size(width, height, data))
+    }
+
+    fn from_sbit_strike(metrics: tt::sbit::SbitStrikeMetrics, data: &FontData) -> Self {
+        let units_per_em = i32::from(data.head.units_per_em);
+        Self {
+            x_ppem: metrics.x_ppem,
+            y_ppem: metrics.y_ppem,
+            x_scale: ft_div_fix(i32::from(metrics.x_ppem) << 6, units_per_em),
+            y_scale: ft_div_fix(i32::from(metrics.y_ppem) << 6, units_per_em),
+            ascender: metrics.ascender,
+            descender: metrics.descender,
+            height: i32::from(metrics.height) << 6,
+            max_advance: metrics.max_advance,
+            x_dpi: 72,
+            y_dpi: 72,
+            char_width: i32::from(metrics.x_ppem) << 6,
+            char_height: i32::from(metrics.y_ppem) << 6,
+        }
     }
 
     fn from_size_request(request: SizeRequest, data: &FontData) -> Result<Self, SizeRequestError> {
@@ -7190,15 +7384,18 @@ impl SizeMetrics {
             // (`src/truetype/ttdriver.c:349-410`, `ttobjs.c:1247-1248`).
             return Err(SizeRequestError::InvalidPpem);
         }
-        if data.sbit.as_ref().is_some_and(|sbit| {
-            sbit.kind() == tt::sbit::SbitTableKind::Cblc
-                && sbit.strike_count() != 0
-                && !sbit.has_strike(x_ppem, y_ppem)
-        }) {
+        if let Some(sbit) = data
+            .sbit
+            .as_ref()
+            .filter(|sbit| sbit.kind() == tt::sbit::SbitTableKind::Cblc && sbit.strike_count() != 0)
+        {
             // Pillow's `_imagingft.c` creates the face through FreeType, and the
-            // TrueType/SFNT bitmap driver rejects CBLC/CBDT color bitmap size
-            // requests that do not match an available strike before rendering.
-            return Err(SizeRequestError::InvalidPixelSize);
+            // TrueType/SFNT bitmap driver matches CBLC/CBDT requests to a fixed
+            // strike before loading its strike metrics.
+            return sbit
+                .strike_metrics_for_ppem(x_ppem, y_ppem)
+                .map(|metrics| Self::from_sbit_strike(metrics, data))
+                .ok_or(SizeRequestError::InvalidPixelSize);
         }
         Ok(SizeMetrics {
             x_ppem,
@@ -7421,6 +7618,7 @@ fn named_instance_postscript_name(
 
 fn normalized_variation_coords_for_named_instance(
     fvar: &Option<tt::fvar::FvarTable>,
+    avar: &Option<tt::avar::AvarTable>,
     named_instance: usize,
 ) -> Vec<i16> {
     let Some(fvar) = fvar else {
@@ -7432,7 +7630,8 @@ fn normalized_variation_coords_for_named_instance(
     else {
         return Vec::new();
     };
-    fvar.axes
+    let mut normalized = fvar
+        .axes
         .iter()
         .zip(&instance.coords)
         .map(|(axis, coord)| {
@@ -7443,7 +7642,11 @@ fn normalized_variation_coords_for_named_instance(
                 axis.max_value,
             )
         })
-        .collect()
+        .collect::<Vec<_>>();
+    if let Some(avar) = avar {
+        avar.map_normalized(&mut normalized);
+    }
+    normalized
 }
 
 fn design_variation_coords_for_named_instance(
@@ -7498,12 +7701,14 @@ fn design_variation_coords_for_design_coords(
 
 fn normalized_variation_coords_for_design_coords(
     fvar: &Option<tt::fvar::FvarTable>,
+    avar: &Option<tt::avar::AvarTable>,
     design_coords: &[i32],
 ) -> Vec<i16> {
     let Some(fvar) = fvar else {
         return Vec::new();
     };
-    fvar.axes
+    let mut normalized = fvar
+        .axes
         .iter()
         .enumerate()
         .map(|(index, axis)| {
@@ -7518,7 +7723,11 @@ fn normalized_variation_coords_for_design_coords(
                 axis.max_value,
             )
         })
-        .collect()
+        .collect::<Vec<_>>();
+    if let Some(avar) = avar {
+        avar.map_normalized(&mut normalized);
+    }
+    normalized
 }
 
 fn design_coord_for_normalized_blend_16_16(blend_16_16: i32, axis: &tt::fvar::FvarAxis) -> i32 {
@@ -7807,319 +8016,4 @@ fn face_metric_values(data: &FontData) -> (i32, i32, i32) {
     let win_ascender = i32::from(i16::from_be_bytes(os2.us_win_ascent.to_be_bytes()));
     let win_descender = -i32::from(i16::from_be_bytes(os2.us_win_descent.to_be_bytes()));
     (win_ascender, win_descender, win_ascender - win_descender)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::BdfPropertyValue;
-    use super::Font;
-
-    const DEJAVU_SANS: &[u8] = include_bytes!("../tests/fixtures/input/fonts/DejaVuSans.ttf");
-
-    fn test_font() -> Font {
-        match Font::truetype(DEJAVU_SANS, 20.0) {
-            Ok(font) => font,
-            Err(err) => panic!("test font should load: {err}"),
-        }
-    }
-
-    fn bdf_property_test_font() -> Font {
-        let data = include_bytes!(
-            "../tests/fixtures/input/fonts/bdf/properties-atoms-integers-cardinals.bdf"
-        );
-        match Font::memory_face(data, 0, 12.0) {
-            Ok(font) => font,
-            Err(err) => panic!("BDF fixture should load: {err}"),
-        }
-    }
-
-    fn memory_font(data: &[u8], size_pt: f32) -> Font {
-        match Font::memory_face(data, 0, size_pt) {
-            Ok(font) => font,
-            Err(err) => panic!("fixture should load at {size_pt}pt: {err}"),
-        }
-    }
-
-    fn first_mapped_text(font: &Font) -> String {
-        let (char_code, _) = match font.first_char() {
-            Some(first) => first,
-            None => panic!("fixture must map at least one character"),
-        };
-        match char::from_u32(char_code) {
-            Some(ch) => ch.to_string(),
-            None => "\u{FFFD}".to_string(),
-        }
-    }
-
-    #[test]
-    fn getbbox_uses_freetype_glyph_slot_contract() {
-        let font = test_font();
-        let single = font.getbbox("A");
-        let text = font.getbbox("AA");
-
-        assert_eq!(text, single);
-    }
-
-    #[test]
-    fn getmask_uses_freetype_glyph_slot_contract() {
-        let font = test_font();
-        let single = match font.getmask("A") {
-            Ok(mask) => mask,
-            Err(err) => panic!("single glyph should render: {err}"),
-        };
-        let text = match font.getmask("AA") {
-            Ok(mask) => mask,
-            Err(err) => panic!("text should render: {err}"),
-        };
-
-        assert_eq!(text.width, single.width);
-        assert_eq!(text.height, single.height);
-        assert_eq!(text.xmin, single.xmin);
-        assert_eq!(text.ymin, single.ymin);
-        assert_eq!(text.advance_width, single.advance_width);
-        assert_eq!(
-            text.pixels.len(),
-            text.width as usize * text.height as usize
-        );
-        assert_eq!(text.pixels, single.pixels);
-    }
-
-    #[test]
-    fn getlength_reports_glyph_slot_advance_without_implicit_kerning() {
-        let font = test_font();
-        let single = match font.getlength("A") {
-            Ok(value) => value,
-            Err(error) => panic!("getlength('A') failed: {error}"),
-        };
-        let text = match font.getlength("AA") {
-            Ok(value) => value,
-            Err(error) => panic!("getlength('AA') failed: {error}"),
-        };
-
-        assert!(text > single);
-        assert_eq!(text, single * 2.0);
-    }
-
-    #[test]
-    fn bdf_property_returns_atom_property_from_startproperties_block() {
-        let font = bdf_property_test_font();
-
-        assert_eq!(
-            font.bdf_property("FOUNDRY"),
-            Some(&BdfPropertyValue::Atom("PillowRs".to_string()))
-        );
-    }
-
-    #[test]
-    fn bdf_property_uses_freetype_builtin_integer_format_for_pixel_size() {
-        let font = bdf_property_test_font();
-
-        assert_eq!(
-            font.bdf_property("PIXEL_SIZE"),
-            Some(&BdfPropertyValue::Integer(12))
-        );
-    }
-
-    #[test]
-    fn bdf_property_does_not_synthesize_missing_family_name() {
-        let font = bdf_property_test_font();
-
-        // Pinned FreeType 2.14.3 resolves BDF properties through
-        // `src/base/ftbdf.c:FT_Get_BDF_Property` and
-        // `src/bdf/bdfdrivr.c:bdf_get_bdf_property`; the BDF `FONT` name is
-        // not synthesized into a `FAMILY_NAME` property.
-        assert_eq!(font.bdf_property("FAMILY_NAME"), None);
-    }
-
-    #[test]
-    fn winfnt_bitmap_faces_report_header_and_render() {
-        for data in [
-            include_bytes!("../tests/fixtures/input/fonts/winfnt/ushort-fields-known.fnt")
-                as &[u8],
-            include_bytes!("../tests/fixtures/input/fonts/winfnt/bitmap-header.fnt") as &[u8],
-        ] {
-            let font = memory_font(data, 12.0);
-            assert_eq!(font.font_format(), "Windows FNT");
-            let header = match font.winfnt_header() {
-                Some(header) => header,
-                None => panic!("WinFNT fixture must expose a header"),
-            };
-            assert!(header.file_size > 0 || header.ascent > 0);
-            let size = font.size_metrics();
-            assert!(size.x_ppem > 0 || size.y_ppem > 0);
-            let info = font.face_info();
-            assert!(info.num_glyphs > 0);
-            let bitmap_size = font.winfnt_bitmap_size();
-            assert!(bitmap_size.is_some());
-        }
-    }
-
-    #[test]
-    fn bdf_pcf_type1_pfr_and_cid_formats_load() {
-        let cases: &[(&[u8], &str)] = &[
-            (
-                include_bytes!("../tests/fixtures/input/fonts/bdf/charset-registry.bdf"),
-                "BDF",
-            ),
-            (
-                include_bytes!("../tests/fixtures/input/fonts/pcf/properties-signed-only.pcf"),
-                "PCF",
-            ),
-            (
-                include_bytes!("../tests/fixtures/input/fonts/type1/simple-type1.pfb"),
-                "Type 1",
-            ),
-            (
-                include_bytes!("../tests/fixtures/input/fonts/pfr/basic-metrics-and-kerning.pfr"),
-                "PFR",
-            ),
-            (
-                include_bytes!("../tests/fixtures/input/fonts/cid/fontinfo-populated.cid"),
-                "CID Type 1",
-            ),
-        ];
-        for (data, expected_format) in cases {
-            let font = memory_font(data, 12.0);
-            assert_eq!(font.font_format(), *expected_format);
-            let info = font.face_info();
-            assert!(info.num_glyphs > 0);
-            let metrics = font.size_metrics();
-            assert!(metrics.x_scale != 0 || metrics.x_ppem > 0);
-            let _fstype = font.get_fstype_flags();
-            let _gasp = font.get_gasp(12);
-        }
-    }
-
-    #[test]
-    fn variable_named_instances_update_face_state() {
-        let data =
-            include_bytes!("../tests/fixtures/input/fonts/variable/named-instances-wght-wdth.ttf");
-        let mut font = match Font::truetype(data, 16.0) {
-            Ok(font) => font,
-            Err(err) => panic!("variable fixture should load: {err}"),
-        };
-        let before = font.postscript_name().map(str::to_string);
-        match font.set_named_instance(0) {
-            Ok(()) => {}
-            Err(err) => panic!("named instance 0 should apply: {err}"),
-        }
-        let after = font.postscript_name().map(str::to_string);
-        assert!(after.is_some());
-        // Instance postscript names are synthesized from design coordinates;
-        // they must stay non-empty and change with the selected instance.
-        assert_ne!(after, Some(String::new()));
-        if let (Some(before), Some(after)) = (before.as_deref(), after.as_deref()) {
-            if before != after {
-                assert!(!after.contains('\0'));
-            }
-        }
-        match font.set_named_instance(font.face_info().num_faces + 99) {
-            Err(_) => {}
-            Ok(()) => panic!("out-of-range named instance must fail"),
-        }
-    }
-
-    #[test]
-    fn variable_instances_without_subfamily_synthesize_postscript_names() {
-        for fixture in [
-            "tests/fixtures/input/fonts/variable/variable-name-missing-subfamily.ttf",
-            "tests/fixtures/input/fonts/variable/variable-name-long-postscript.ttf",
-        ] {
-            let data =
-                match std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(fixture))
-                {
-                    Ok(data) => data,
-                    Err(err) => panic!("{fixture} should be readable: {err}"),
-                };
-            let mut font = match Font::truetype(&data, 16.0) {
-                Ok(font) => font,
-                Err(err) => panic!("variable fixture should load: {err}"),
-            };
-            for instance in 1..=12 {
-                match font.set_named_instance(instance) {
-                    Ok(()) => {}
-                    Err(err) => panic!("instance {instance} should apply: {err}"),
-                }
-                let name = match font.postscript_name() {
-                    Some(name) => name,
-                    None => panic!("instance {instance} must expose a postscript name"),
-                };
-                assert!(!name.is_empty());
-                assert!(name.len() <= 127);
-            }
-        }
-    }
-
-    #[test]
-    fn variation_postscript_name_helpers_match_pinned_bounds() {
-        // Synthesized names append axis tags only for non-default coords.
-        let axes = vec![
-            crate::tt::fvar::FvarAxis {
-                tag: u32::from_be_bytes(*b"wght"),
-                min_value: 100,
-                default_value: 400,
-                max_value: 900,
-                flags: 0,
-                name_id: 0,
-            },
-            crate::tt::fvar::FvarAxis {
-                tag: u32::from_be_bytes(*b"wdth"),
-                min_value: 500,
-                default_value: 500,
-                max_value: 1000,
-                flags: 0,
-                name_id: 0,
-            },
-        ];
-        // Coordinates equal to an axis default are omitted from the name.
-        let synthesized = super::synthesize_instance_postscript_name("Test", &axes, &[400, 700]);
-        assert!(synthesized.starts_with("Test_"));
-        assert!(synthesized.contains("wdth"));
-        assert!(!synthesized.contains("wght"));
-        assert_eq!(
-            super::fixed_16_16_to_short_decimal(0x0001_0000),
-            "1".to_string()
-        );
-        assert_eq!(
-            super::fixed_16_16_to_short_decimal(-(0x0001_0000)),
-            "-1".to_string()
-        );
-        assert_eq!(super::fixed_16_16_to_short_decimal(0), "0".to_string());
-        assert_eq!(
-            super::fixed_16_16_to_short_decimal(0x0001_8000),
-            "1.5".to_string()
-        );
-        assert_eq!(
-            super::fixed_16_16_to_short_decimal(0x0001_4000),
-            "1.25".to_string()
-        );
-
-        // Over-long names are truncated with a deterministic MurmurHash suffix.
-        let long = "A".repeat(200);
-        let limited = super::limit_variation_postscript_name("Test", long.clone());
-        assert!(limited.starts_with("Test-"));
-        assert!(limited.ends_with("..."));
-        assert!(limited.len() < long.len());
-        assert_eq!(
-            limited,
-            super::limit_variation_postscript_name("Test", long)
-        );
-    }
-
-    #[test]
-    fn color_and_sbix_fonts_load_and_measure() {
-        for data in [
-            include_bytes!("../tests/fixtures/input/fonts/color/colr-v0-layers-cpal.ttf")
-                as &[u8],
-            include_bytes!("../tests/fixtures/input/fonts/sbix/sbix-overlay.ttf") as &[u8],
-        ] {
-            let font = match Font::truetype(data, 16.0) {
-                Ok(font) => font,
-                Err(err) => panic!("color fixture should load: {err}"),
-            };
-            let text = first_mapped_text(&font);
-            let _bbox = font.getbbox(&text);
-            let _length = font.getlength(&text);
-        }
-    }
 }

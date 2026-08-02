@@ -124,6 +124,26 @@
             "coverage": [
               "freetype.size_record_state:explicit-s3"
             ]
+          },
+          {
+            "id": "type1-mm",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "generic_probe": "set_and_read_client_pointer_identity",
+              "pixel_size": {
+                "pixels": 12
+              }
+            },
+            "coverage": [
+              "freetype.size_record_state:type1-mm"
+            ]
           }
         ]
       },

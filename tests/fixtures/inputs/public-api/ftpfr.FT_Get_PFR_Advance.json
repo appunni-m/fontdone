@@ -100,6 +100,91 @@
             "coverage": [
               "ftpfr.get_pfr_advance:explicit-glast_valid_glyph"
             ]
+          },
+          {
+            "id": "fixed-advance",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/pfr/fixed-advance.pfr"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "aadvance_pointer_class": "valid",
+              "glyph_index": 1,
+              "source_refs": [
+                "freetype/src/pfr/pfrload.c"
+              ]
+            },
+            "coverage": [
+              "ftpfr.get_pfr_advance:physical-fixed-advance"
+            ]
+          },
+          {
+            "id": "all-descriptor-flags",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/pfr/all-descriptor-flags.pfr"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "aadvance_pointer_class": "valid",
+              "glyph_index": 2,
+              "source_refs": [
+                "freetype/src/pfr/pfrload.c",
+                "freetype/src/pfr/pfrload.c:pfr_log_font_load"
+              ]
+            },
+            "coverage": [
+              "ftpfr.get_pfr_advance:physical-and-logical-flags"
+            ]
+          },
+          {
+            "id": "logical-options",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/pfr/logical-options.pfr"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "aadvance_pointer_class": "valid",
+              "glyph_index": 1,
+              "source_refs": [
+                "freetype/src/pfr/pfrload.c:pfr_log_font_load"
+              ]
+            },
+            "coverage": [
+              "ftpfr.get_pfr_advance:logical-optional-fields"
+            ]
+          },
+          {
+            "id": "high-physical-size",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/pfr/high-physical-size.pfr"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "aadvance_pointer_class": "valid",
+              "glyph_index": 1,
+              "source_refs": [
+                "freetype/src/pfr/pfrload.c:pfr_log_font_load"
+              ]
+            },
+            "coverage": [
+              "ftpfr.get_pfr_advance:high-physical-size"
+            ]
           }
         ]
       },

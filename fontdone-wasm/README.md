@@ -113,7 +113,9 @@ The example:
 
 Other exports exist to keep the repository's cross-facade parity harness
 honest. They are inventoried in `abi.json`, but they are not all promoted as
-ergonomic JavaScript calls. Struct-returning C ABI functions in particular can
+ergonomic JavaScript calls. `fontdone_wasm_new_glyph` is one such parity
+lifecycle export; its handle is released with `fontdone_wasm_done_glyph_handle`.
+Struct-returning C ABI functions in particular can
 use target ABI lowering that differs from a direct JavaScript scalar call; use
 the promoted subset unless the schema and generated module signature are both
 handled.

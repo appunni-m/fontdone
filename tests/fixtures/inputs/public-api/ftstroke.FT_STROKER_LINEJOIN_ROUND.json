@@ -66,7 +66,7 @@
         "assets": {
           "paths": {
             "kind": "ref",
-            "id": "outlines/stroker/round-join-line-conic-cubic.json",
+            "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
             "asset_kind": "outline_path_records",
             "status": "required"
           }
@@ -111,7 +111,7 @@
           ]
         },
         "fixture_requirements": [
-          "outlines/stroker/round-join-line-conic-cubic.json must contain angled line, conic, and cubic joins with 26.6 integer coordinates."
+          "input/outlines/stroker/round-join-line-conic-cubic.json must contain angled line, conic, and cubic joins with 26.6 integer coordinates."
         ],
         "source_refs": [
           "freetype/include/freetype/ftstroke.h:104-139",
@@ -136,7 +136,7 @@
         "assets": {
           "paths": {
             "kind": "ref",
-            "id": "outlines/stroker/wide-curve-joins.json",
+            "id": "input/outlines/stroker/wide-curve-joins.json",
             "asset_kind": "outline_path_records",
             "status": "required"
           }

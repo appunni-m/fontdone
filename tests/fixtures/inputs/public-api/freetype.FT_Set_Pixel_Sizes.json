@@ -6,7 +6,8 @@
     "success_zero_dimension_normalization",
     "success_large_dimension_clamp",
     "error_null_face",
-    "error_invalid_or_unscalable_face"
+    "error_invalid_or_unscalable_face",
+    "error_cblc_strike_unavailable"
   ],
   "cases": [
     {
@@ -88,6 +89,158 @@
             },
             "coverage": [
               "set_pixel_sizes:explicit-s[20,_20]"
+            ]
+          },
+          {
+            "id": "sbit-cblc-cbdt-s[20,_20]",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_gray_format1.ttf",
+                "requirements": "Synthetic scalable SFNT with one 20 ppem CBLC/CBDT format-1 8-bit gray embedded bitmap strike."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_width": 20,
+              "pixel_height": 20
+            },
+            "coverage": [
+              "set_pixel_sizes:explicit-sbit-cblc-cbdt-s[20,_20]"
+            ]
+          },
+          {
+            "id": "sbit-cblc-cbdt-metrics-positive-normalized-s[20,_20]",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf",
+                "requirements": "Synthetic CBLC/CBDT font with a positive descender and negative min-after-baseline line metrics at 20 ppem."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_width": 20,
+              "pixel_height": 20
+            },
+            "coverage": [
+              "set_pixel_sizes:sbit-line-metrics-positive-normalized"
+            ]
+          },
+          {
+            "id": "sbit-cblc-cbdt-metrics-positive-retained-s[21,_21]",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf",
+                "requirements": "Synthetic CBLC/CBDT font with a positive descender and non-negative min-after-baseline line metrics at 21 ppem."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_width": 21,
+              "pixel_height": 21
+            },
+            "coverage": [
+              "set_pixel_sizes:sbit-line-metrics-positive-retained"
+            ]
+          },
+          {
+            "id": "sbit-cblc-cbdt-metrics-baseline-fallback-s[22,_22]",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf",
+                "requirements": "Synthetic CBLC/CBDT font with zero ascender/descender and nonzero baseline line metrics at 22 ppem."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_width": 22,
+              "pixel_height": 22
+            },
+            "coverage": [
+              "set_pixel_sizes:sbit-line-metrics-baseline-fallback"
+            ]
+          },
+          {
+            "id": "sbit-cblc-cbdt-metrics-ppem-fallback-s[23,_23]",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf",
+                "requirements": "Synthetic CBLC/CBDT font with zero ascender, descender, and baseline metrics at 23 ppem."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_width": 23,
+              "pixel_height": 23
+            },
+            "coverage": [
+              "set_pixel_sizes:sbit-line-metrics-ppem-fallback"
+            ]
+          },
+          {
+            "id": "sbit-cblc-cbdt-metrics-height-repair-s[24,_24]",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf",
+                "requirements": "Synthetic CBLC/CBDT font with equal ascender and descender values at 24 ppem."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_width": 24,
+              "pixel_height": 24
+            },
+            "coverage": [
+              "set_pixel_sizes:sbit-line-metrics-height-repair"
+            ]
+          },
+          {
+            "id": "sbit-cblc-cbdt-metrics-zero-descender-s[25,_25]",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf",
+                "requirements": "Synthetic CBLC/CBDT font with a nonzero ascender and zero descender at 25 ppem."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_width": 25,
+              "pixel_height": 25
+            },
+            "coverage": [
+              "set_pixel_sizes:sbit-line-metrics-zero-descender"
+            ]
+          },
+          {
+            "id": "sbit-cblc-cbdt-metrics-right-baseline-or-s[26,_26]",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf",
+                "requirements": "Synthetic CBLC/CBDT font with zero max-before and nonzero min-after baseline metrics at 26 ppem."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_width": 26,
+              "pixel_height": 26
+            },
+            "coverage": [
+              "set_pixel_sizes:sbit-line-metrics-right-baseline-or"
             ]
           }
         ]
@@ -393,6 +546,49 @@
             "outputs[*].status",
             "outputs[*].error",
             "outputs[*].size_snapshot_before_after"
+          ]
+        },
+        "error": "FT_Err_Invalid_Pixel_Size"
+      }
+    },
+    {
+      "case_id": "freetype.FT_Set_Pixel_Sizes.error_cblc_strike_unavailable",
+      "subject": "freetype.FT_Set_Pixel_Sizes",
+      "case": "error_cblc_strike_unavailable",
+      "operation": "set_pixel_sizes",
+      "schema": "size_metrics",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_gray_format1.ttf",
+            "requirements": "Synthetic scalable SFNT with one 20 ppem CBLC/CBDT format-1 8-bit gray embedded bitmap strike."
+          }
+        },
+        "params": {
+          "face_index": 0,
+          "pixel_width": 20,
+          "pixel_height": 19
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "active_size_after_error": "unchanged"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "status",
+            "error",
+            "size_snapshot_before_after"
           ]
         },
         "error": "FT_Err_Invalid_Pixel_Size"

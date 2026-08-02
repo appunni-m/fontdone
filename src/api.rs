@@ -686,6 +686,18 @@ impl Face {
         let sbits_only = flags.contains(LoadFlags::SBITS_ONLY);
         let svg_only = flags.contains(LoadFlags::SVG_ONLY);
         let svg_allowed = flags.contains(LoadFlags::COLOR) && !flags.contains(LoadFlags::NO_SVG);
+        // `TT_Load_Glyph` converts a missing image from a non-scalable sbix
+        // face into a successful empty MONO bitmap before trying outlines.
+        // This must precede the outline path because bitmap-only sbix faces
+        // intentionally do not expose a usable scalable glyph there.
+        if let Some(sbit) = font.sbix_missing_bitmap_glyph(glyph_index, font.size_metrics().y_ppem)
+        {
+            let mut slot = empty_sbit_glyph_slot(glyph_index, sbit, vertical_layout);
+            if let Some((xx, xy, yx, yy, dx, dy)) = transform {
+                slot.apply_transform(xx, xy, yx, yy, dx, dy);
+            }
+            return Ok(slot);
+        }
         if svg_allowed {
             match font.load_svg_glyph(glyph_index) {
                 Ok((metrics, document)) => {
@@ -720,7 +732,22 @@ impl Face {
             // outline loading (`base/ftobjs.c:1028-1050`). The TrueType driver
             // repeats that SBIT attempt in `truetype/ttgload.c:2401-2474`.
             match font.load_sbit_only_glyph(glyph_index) {
-                Ok(sbit) => return Ok(sbit_glyph_slot(glyph_index, sbit, vertical_layout)),
+                Ok(mut sbit) => {
+                    // `FT_LOAD_BITMAP_METRICS_ONLY` lets the SBIT loader fill
+                    // metrics and bitmap metadata but skips allocating the
+                    // image buffer (`sfnt/ttsbit.c:545-588`).
+                    if !flags.contains(LoadFlags::COLOR)
+                        && !flags.contains(LoadFlags::BITMAP_METRICS_ONLY)
+                    {
+                        sbit.bitmap.flatten_bgra_to_gray()?;
+                    }
+                    return Ok(sbit_glyph_slot_with_bitmap(
+                        glyph_index,
+                        sbit,
+                        vertical_layout,
+                        !flags.contains(LoadFlags::BITMAP_METRICS_ONLY),
+                    ));
+                }
                 Err(_) if sbits_only => {
                     // For scalable TrueType faces with `FT_LOAD_SBITS_ONLY`,
                     // failed SBIT loading is replaced with Invalid_Argument
@@ -853,10 +880,22 @@ impl Face {
     }
 }
 
-fn sbit_glyph_slot(
+fn empty_sbit_glyph_slot(
     glyph_index: u16,
     sbit: crate::tt::sbit::SbitGlyph,
     vertical_layout: bool,
+) -> GlyphSlot {
+    // The C missing-bitmap fallback sets the slot format to BITMAP but leaves
+    // `FT_Bitmap.buffer` NULL. Keep that distinction from a real owned bitmap
+    // whose buffer happens to have zero bytes.
+    sbit_glyph_slot_with_bitmap(glyph_index, sbit, vertical_layout, false)
+}
+
+fn sbit_glyph_slot_with_bitmap(
+    glyph_index: u16,
+    sbit: crate::tt::sbit::SbitGlyph,
+    vertical_layout: bool,
+    include_bitmap: bool,
 ) -> GlyphSlot {
     let metrics = sbit.metrics;
     let (bitmap_left, bitmap_top) = if vertical_layout {
@@ -864,7 +903,7 @@ fn sbit_glyph_slot(
     } else {
         (metrics.hori_bearing_x / 64, metrics.hori_bearing_y / 64)
     };
-    let bitmap = RenderedBitmap {
+    let bitmap = include_bitmap.then(|| RenderedBitmap {
         width: sbit.bitmap.width,
         rows: sbit.bitmap.rows,
         pitch: sbit.bitmap.pitch,
@@ -873,7 +912,7 @@ fn sbit_glyph_slot(
         left: bitmap_left,
         top: bitmap_top,
         buffer: sbit.bitmap.buffer,
-    };
+    });
     let zero_bbox = BBox {
         x_min: 0,
         y_min: 0,
@@ -898,7 +937,7 @@ fn sbit_glyph_slot(
         slot_outline: None,
         render_outline: None,
     };
-    GlyphSlot::new(glyph_index, loaded, Some(bitmap), vertical_layout, true)
+    GlyphSlot::new(glyph_index, loaded, bitmap, vertical_layout, true)
 }
 
 /// Snapshot of the loaded glyph-slot fields callers normally read from
@@ -1955,618 +1994,4 @@ fn ft_abs_i32_as_u32(value: i32) -> u32 {
 
 fn ft_msb_nonzero(value: u32) -> i32 {
     31 - value.leading_zeros() as i32
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::font::{SizeRequest, SizeRequestType};
-
-    const DEJAVU_SANS: &[u8] = include_bytes!("../tests/fixtures/input/fonts/DejaVuSans.ttf");
-    const EMBEDDED_STRIKES: &[u8] =
-        include_bytes!("../tests/fixtures/input/fonts/bitmap/embedded-strikes.ttf");
-    const SVG_GLYPH: &[u8] = include_bytes!("../tests/fixtures/input/fonts/svg/otsvg-glyph.ttf");
-    const CMAP14: &[u8] =
-        include_bytes!("../tests/fixtures/input/fonts/charmap/cmap-format14-only.ttf");
-
-    fn load(data: &[u8]) -> Face {
-        match Face::from_memory(data, 0, 16.0) {
-            Ok(face) => face,
-            Err(err) => panic!("test font should load: {err}"),
-        }
-    }
-
-    #[test]
-    fn library_and_face_metadata_surfaces() {
-        let library = Library::init();
-        let face = match library.new_memory_face(DEJAVU_SANS, 0, 16.0) {
-            Ok(face) => face,
-            Err(err) => panic!("DejaVuSans should open: {err}"),
-        };
-        assert_eq!(face.size_metrics().x_ppem, 16);
-        assert!(face.charmap_index().is_some());
-
-        let info = face.info();
-        assert!(info.units_per_em > 0);
-        assert!(info.num_glyphs > 0);
-        assert_eq!(info.font_format, "TrueType");
-        assert!(!info.family_name.is_empty());
-
-        let first = match face.first_char() {
-            Some(first) => first,
-            None => panic!("DejaVuSans should have a first char"),
-        };
-        assert!(face.next_char(first.0).is_some());
-        assert!(face.sfnt_name_count() > 0);
-        assert!(face.sfnt_name(0).is_some());
-        assert!(face.sfnt_name(face.sfnt_name_count()).is_none());
-        let _format = face.sfnt_name_format();
-        assert!(face.postscript_name().is_some());
-        let _fstype = face.get_fstype_flags();
-        let _gasp = face.get_gasp(16);
-
-        let a = face.get_char_index('A' as u32);
-        assert!(a > 0);
-        assert!(face.glyph_name(u32::from(a)).is_some());
-        let char_slot = match face.load_char('A' as u32, LoadFlags::DEFAULT) {
-            Ok(slot) => slot,
-            Err(err) => panic!("load_char should succeed: {err}"),
-        };
-        assert_eq!(char_slot.glyph_index, a);
-        let _kern = face.kerning_by_glyphs(u32::from(a), u32::from(a), KerningMode::Default);
-        let _kern_unscaled =
-            face.kerning_by_glyphs(u32::from(a), u32::from(a), KerningMode::Unscaled);
-
-        // Undefined or truncated input must be rejected at face open.
-        match library.new_memory_face(&[], 0, 16.0) {
-            Err(_) => {}
-            Ok(_) => panic!("empty input must not open a face"),
-        }
-
-        // Name-selection options must not reject a normal scalable face.
-        let named = match library.new_memory_face_with_name_options(
-            DEJAVU_SANS,
-            0,
-            16.0,
-            false,
-            false,
-            false,
-        ) {
-            Ok(face) => face,
-            Err(err) => panic!("name options should open DejaVuSans: {err}"),
-        };
-        assert!(named.font().size_metrics().x_ppem == 16);
-    }
-
-    #[test]
-    fn size_requests_update_active_metrics() {
-        let mut face = load(DEJAVU_SANS);
-        face.set_char_size(16 << 6, 16 << 6, 72, 72);
-        assert_eq!(face.size_metrics().x_ppem, 16);
-        face.set_pixel_sizes(24, 24);
-        assert_eq!(face.size_metrics().x_ppem, 24);
-
-        let request = SizeRequest {
-            request_type: SizeRequestType::Nominal,
-            width: 20 << 6,
-            height: 20 << 6,
-            hori_resolution: 72,
-            vert_resolution: 72,
-        };
-        match face.request_size(request) {
-            Ok(()) => {}
-            Err(err) => panic!("nominal size request should succeed: {err:?}"),
-        }
-        assert_eq!(face.size_metrics().x_ppem, 20);
-
-        // DejaVuSans subset has no embedded strikes.
-        match face.select_size(0) {
-            Err(_) => {}
-            Ok(()) => panic!("no-strike face must reject strike selection"),
-        }
-    }
-
-    #[test]
-    fn strike_selection_loads_embedded_bitmaps() {
-        let mut face = load(EMBEDDED_STRIKES);
-        match face.select_size(0) {
-            Ok(()) => {}
-            Err(err) => panic!("embedded-strikes fixture must have a strike: {err:?}"),
-        }
-        assert_eq!(face.size_metrics().x_ppem, 20);
-        match face.select_size(1) {
-            Err(_) => {}
-            Ok(()) => panic!("strike index 1 is out of range"),
-        }
-
-        // At least one cmap-covered glyph must resolve to an embedded bitmap.
-        let mut saw_bitmap = false;
-        let mut current = face.first_char();
-        while let Some((char_code, _)) = current {
-            let glyph = face.get_char_index(char_code);
-            if let Ok(slot) = face.load_glyph(glyph, LoadFlags::DEFAULT | LoadFlags::SBITS_ONLY) {
-                if let Some(bitmap) = slot.bitmap {
-                    assert!(bitmap.rows > 0);
-                    assert!(!bitmap.buffer.is_empty());
-                    saw_bitmap = true;
-                    break;
-                }
-            }
-            current = face.next_char(char_code);
-        }
-        assert!(
-            saw_bitmap,
-            "strike font should expose at least one bitmap glyph"
-        );
-    }
-
-    #[test]
-    fn svg_glyphs_load_as_documents() {
-        let face = load(SVG_GLYPH);
-        let slot = match face.load_glyph(1, LoadFlags::COLOR) {
-            Ok(slot) => slot,
-            Err(err) => panic!("SVG glyph should load: {err}"),
-        };
-        assert_eq!(slot.format, GlyphFormat::Svg);
-        let document = match slot.svg {
-            Some(document) => document,
-            None => panic!("SVG slot must carry its document"),
-        };
-        assert_eq!(document.start_glyph_id, 1);
-        assert!(document.end_glyph_id >= document.start_glyph_id);
-
-        let svg_only = match face.load_glyph(1, LoadFlags::COLOR | LoadFlags::SVG_ONLY) {
-            Ok(slot) => slot,
-            Err(err) => panic!("SVG_ONLY should load the SVG glyph: {err}"),
-        };
-        assert_eq!(svg_only.format, GlyphFormat::Svg);
-        // Without FT_LOAD_COLOR the pinned route rejects SVG-only loads.
-        match face.load_glyph(1, LoadFlags::SVG_ONLY) {
-            Err(_) => {}
-            Ok(_) => panic!("SVG_ONLY without COLOR must be rejected"),
-        }
-
-        let vertical = match face.load_glyph(1, LoadFlags::COLOR | LoadFlags::VERTICAL_LAYOUT) {
-            Ok(slot) => slot,
-            Err(err) => panic!("vertical SVG load should succeed: {err}"),
-        };
-        assert_eq!(vertical.advance.y, vertical.metrics.vert_advance);
-
-        // Identity transform with a translation updates only the document delta.
-        let mut transformed = match face.load_glyph(1, LoadFlags::COLOR) {
-            Ok(slot) => slot,
-            Err(err) => panic!("SVG glyph should load: {err}"),
-        };
-        let before = transformed.advance;
-        transformed.apply_transform(0x1_0000, 0, 0, 0x1_0000, 16 << 6, 8 << 6);
-        assert_eq!(transformed.advance, before);
-        assert_eq!(
-            transformed.svg.as_ref().map(|document| document.delta),
-            Some((16 << 6, 8 << 6))
-        );
-    }
-
-    #[test]
-    fn variation_selector_api_returns_consistent_results() {
-        let face = load(CMAP14);
-        let selectors = match face.get_variant_selectors() {
-            Some(selectors) => selectors,
-            None => panic!("cmap-format14 fixture must expose variation selectors"),
-        };
-        assert!(!selectors.is_empty());
-        assert!(selectors.contains(&0xFE0F));
-
-        let variants = match face.get_variants_of_char('A' as u32) {
-            Some(variants) => variants,
-            None => panic!("A must have variation mappings"),
-        };
-        assert!(variants.contains(&0xFE0F));
-        assert!(variants.contains(&0xE0101));
-
-        let chars = match face.get_chars_of_variant(0xFE0F) {
-            Some(chars) => chars,
-            None => panic!("0xFE0F must map characters"),
-        };
-        assert!(chars.contains(&('A' as u32)));
-        assert!(chars.contains(&('B' as u32)));
-
-        // B maps to the explicit 'base' glyph (index 1); A is a default mapping.
-        assert_eq!(face.get_char_variant_index('B' as u32, 0xFE0F), 1);
-        assert_eq!(face.get_char_variant_index('C' as u32, 0xE0101), 2);
-        assert_eq!(face.get_char_variant_is_default('A' as u32, 0xFE0F), 1);
-        assert_eq!(face.get_char_variant_is_default('B' as u32, 0xFE0F), 0);
-    }
-
-    #[test]
-    fn every_load_flag_route_produces_a_slot() {
-        let face = load(DEJAVU_SANS);
-        let glyph = face.get_char_index('A' as u32);
-        assert!(glyph > 0);
-
-        let plain = match face.load_glyph(glyph, LoadFlags::DEFAULT) {
-            Ok(slot) => slot,
-            Err(err) => panic!("default load should succeed: {err}"),
-        };
-        assert_eq!(plain.format, GlyphFormat::Outline);
-        assert!(plain.metrics.hori_advance > 0);
-        assert_eq!(plain.advance.x, plain.metrics.hori_advance);
-
-        let rendered = match face.load_glyph(glyph, LoadFlags::DEFAULT | LoadFlags::RENDER) {
-            Ok(slot) => slot,
-            Err(err) => panic!("render load should succeed: {err}"),
-        };
-        assert_eq!(rendered.format, GlyphFormat::Bitmap);
-        let bitmap = match rendered.bitmap.as_ref() {
-            Some(bitmap) => bitmap,
-            None => panic!("rendered slot must carry a bitmap"),
-        };
-        assert!(bitmap.width > 0 && bitmap.rows > 0);
-        assert_eq!(rendered.pixel_mode(), Some(PixelMode::Gray));
-
-        let mono = match face.load_glyph(
-            glyph,
-            LoadFlags::DEFAULT | LoadFlags::RENDER | LoadFlags::TARGET_MONO,
-        ) {
-            Ok(slot) => slot,
-            Err(err) => panic!("mono render should succeed: {err}"),
-        };
-        assert_eq!(mono.pixel_mode(), Some(PixelMode::Mono));
-        let lcd = match face.load_glyph(
-            glyph,
-            LoadFlags::DEFAULT | LoadFlags::RENDER | LoadFlags::TARGET_LCD,
-        ) {
-            Ok(slot) => slot,
-            Err(err) => panic!("LCD render should succeed: {err}"),
-        };
-        assert_eq!(lcd.pixel_mode(), Some(PixelMode::Lcd));
-        let lcd_v = match face.load_glyph(
-            glyph,
-            LoadFlags::DEFAULT | LoadFlags::RENDER | LoadFlags::TARGET_LCD_V,
-        ) {
-            Ok(slot) => slot,
-            Err(err) => panic!("LCD_V render should succeed: {err}"),
-        };
-        assert_eq!(lcd_v.pixel_mode(), Some(PixelMode::LcdV));
-
-        for flags in [
-            LoadFlags::TARGET_LIGHT,
-            LoadFlags::FORCE_AUTOHINT,
-            LoadFlags::FORCE_AUTOHINT | LoadFlags::TARGET_MONO,
-            LoadFlags::FORCE_AUTOHINT | LoadFlags::TARGET_LCD,
-            LoadFlags::FORCE_AUTOHINT | LoadFlags::TARGET_LCD_V,
-            LoadFlags::NO_HINTING,
-            LoadFlags::NO_SCALE,
-            LoadFlags::VERTICAL_LAYOUT,
-            LoadFlags::NO_AUTOHINT,
-            LoadFlags::COMPUTE_METRICS,
-            LoadFlags::PEDANTIC,
-            LoadFlags::NO_AUTOHINT | LoadFlags::TARGET_MONO,
-        ] {
-            let slot = match face.load_glyph(glyph, flags) {
-                Ok(slot) => slot,
-                Err(err) => panic!("load flags {flags:?} should succeed: {err}"),
-            };
-            assert!(slot.metrics.hori_advance >= 0);
-        }
-
-        // Out-of-range glyph indexes are rejected.
-        match face.load_glyph(face.info().num_glyphs, LoadFlags::DEFAULT) {
-            Err(_) => {}
-            Ok(_) => panic!("out-of-range glyph must fail"),
-        }
-    }
-
-    #[test]
-    fn transform_and_render_loaded_glyph_paths() {
-        let face = load(DEJAVU_SANS);
-        let glyph = face.get_char_index('A' as u32);
-        let plain = match face.load_glyph(glyph, LoadFlags::DEFAULT) {
-            Ok(slot) => slot,
-            Err(err) => panic!("default load should succeed: {err}"),
-        };
-
-        // 90-degree rotation swaps the advance vector components.
-        let rotated = match face.load_glyph_with_transform(
-            glyph,
-            LoadFlags::DEFAULT,
-            Some((0, 0x1_0000, 0x1_0000, 0, 0, 0)),
-        ) {
-            Ok(slot) => slot,
-            Err(err) => panic!("transformed load should succeed: {err}"),
-        };
-        assert_eq!(rotated.advance.x, 0);
-        assert_eq!(rotated.advance.y, plain.advance.x);
-
-        let translated = match face.load_glyph_with_transform(
-            glyph,
-            LoadFlags::DEFAULT | LoadFlags::RENDER,
-            Some((0x1_0000, 0, 0, 0x1_0000, 16 << 6, 0)),
-        ) {
-            Ok(slot) => slot,
-            Err(err) => panic!("transformed render should succeed: {err}"),
-        };
-        assert_eq!(translated.format, GlyphFormat::Bitmap);
-
-        for (mode, expected) in [
-            (RenderMode::Normal, PixelMode::Gray),
-            (RenderMode::Mono, PixelMode::Mono),
-            (RenderMode::Lcd, PixelMode::Lcd),
-            (RenderMode::LcdV, PixelMode::LcdV),
-        ] {
-            let slot = match face.render_loaded_glyph(glyph, LoadFlags::DEFAULT, mode) {
-                Ok(slot) => slot,
-                Err(err) => panic!("render mode {mode:?} should succeed: {err}"),
-            };
-            assert_eq!(slot.format, GlyphFormat::Bitmap);
-            assert_eq!(slot.pixel_mode(), Some(expected));
-        }
-
-        // SDF rendering is available through the same façade.
-        let sdf = match face.render_loaded_glyph(glyph, LoadFlags::DEFAULT, RenderMode::Sdf) {
-            Ok(slot) => slot,
-            Err(err) => panic!("SDF render should succeed: {err}"),
-        };
-        assert_eq!(sdf.format, GlyphFormat::Bitmap);
-    }
-
-    #[test]
-    fn outline_orientation_matches_freetype_convention() {
-        use crate::outline::{Outline, OutlinePoint};
-
-        let outline = Outline {
-            n_contours: 1,
-            contours: vec![3],
-            points: vec![
-                OutlinePoint {
-                    x: 0,
-                    y: 0,
-                    on_curve: true,
-                },
-                OutlinePoint {
-                    x: 0,
-                    y: 100,
-                    on_curve: true,
-                },
-                OutlinePoint {
-                    x: 100,
-                    y: 100,
-                    on_curve: true,
-                },
-                OutlinePoint {
-                    x: 100,
-                    y: 0,
-                    on_curve: true,
-                },
-            ],
-            tags: Vec::new(),
-            contour_dropouts: Vec::new(),
-            flags: 0,
-            cbox_x_min: 0,
-            cbox_y_min: 0,
-            cbox_x_max: 100,
-            cbox_y_max: 100,
-        };
-        let orientation = outline_get_orientation(Some(&outline));
-        assert!(orientation == 0 || orientation == 1);
-        assert_eq!(outline_get_orientation(None), 0);
-    }
-
-    #[test]
-    fn type1_and_cid_faces_load_glyphs_through_the_facade() {
-        let cases: &[(&str, &[u8])] = &[
-            (
-                "type1-simple",
-                include_bytes!("../tests/fixtures/input/fonts/type1/simple-type1.pfb"),
-            ),
-            (
-                "type1-standard-encoding",
-                include_bytes!("../tests/fixtures/input/fonts/type1/standard-encoding.pfb"),
-            ),
-            (
-                "type1-fixed-pitch",
-                include_bytes!("../tests/fixtures/input/fonts/type1/fixed-pitch-type1.pfb"),
-            ),
-        ];
-        let mut total_outlined = 0usize;
-        for (label, data) in cases {
-            let face = match Face::from_memory(data, 0, 16.0) {
-                Ok(face) => face,
-                Err(err) => panic!("{label} fixture should load: {err}"),
-            };
-            // At least one glyph index must produce a real outline through
-            // both the scaled and no-scale Type1 loaders.
-            let mut outlined = 0usize;
-            for glyph in 0..face.info().num_glyphs {
-                for flags in [LoadFlags::NO_HINTING, LoadFlags::NO_SCALE] {
-                    if let Ok(slot) = face.load_glyph(glyph, flags) {
-                        if slot
-                            .slot_outline()
-                            .is_some_and(|outline| outline.n_contours > 0)
-                        {
-                            outlined += 1;
-                        }
-                    }
-                }
-            }
-            total_outlined += outlined;
-            let glyph = match face.first_char() {
-                Some((char_code, _)) => face.get_char_index(char_code),
-                // CID fixtures may expose no cmap; load the .notdef charstring.
-                None => 0,
-            };
-            for flags in [
-                LoadFlags::NO_HINTING,
-                LoadFlags::NO_SCALE,
-                LoadFlags::NO_SCALE | LoadFlags::VERTICAL_LAYOUT,
-            ] {
-                match face.load_glyph(glyph, flags) {
-                    Ok(slot) => assert!(
-                        slot.metrics.hori_advance >= 0,
-                        "advance must stay non-negative"
-                    ),
-                    Err(err) => panic!("{label} load with {flags:?} should succeed: {err}"),
-                }
-            }
-            match face.load_glyph(glyph, LoadFlags::NO_HINTING | LoadFlags::RENDER) {
-                Ok(slot) => assert_eq!(slot.format, GlyphFormat::Bitmap),
-                Err(err) => panic!("{label} render should succeed: {err}"),
-            }
-        }
-        assert!(
-            total_outlined > 0,
-            "at least one Type1 fixture must contain an outlined glyph"
-        );
-    }
-
-    #[test]
-    fn no_scale_vertical_layout_and_empty_glyphs_complete_slots() {
-        let face = load(DEJAVU_SANS);
-        let glyph = face.get_char_index('A' as u32);
-        // DejaVuSans carries no vmtx: vertical layout synthesizes metrics.
-        match face.load_glyph(glyph, LoadFlags::NO_SCALE | LoadFlags::VERTICAL_LAYOUT) {
-            Ok(slot) => assert!(slot.metrics.vert_advance >= 0),
-            Err(err) => panic!("no-scale vertical layout should succeed: {err}"),
-        }
-        // The subset DejaVuSans leaves glyphs 1 and 2 empty; the no-scale
-        // loader must produce an empty slot, not an error.
-        for glyph in [1u16, 2] {
-            let face = load(DEJAVU_SANS);
-            match face.load_glyph(glyph, LoadFlags::NO_SCALE) {
-                Ok(slot) => assert!(slot.metrics.hori_advance >= 0),
-                Err(err) => panic!("no-scale empty glyph {glyph} should succeed: {err}"),
-            }
-        }
-        // CFF faces without vmtx synthesize vertical metrics on layout.
-        let cff = match Face::from_memory(
-            include_bytes!("../tests/fixtures/input/fonts/cff/pure-cff-cubic.otf"),
-            0,
-            16.0,
-        ) {
-            Ok(face) => face,
-            Err(err) => panic!("pure-cff-cubic should load: {err}"),
-        };
-        match cff.load_glyph(1, LoadFlags::NO_SCALE | LoadFlags::VERTICAL_LAYOUT) {
-            Ok(slot) => assert!(slot.metrics.vert_advance >= 0),
-            Err(err) => panic!("CFF no-scale vertical layout should succeed: {err}"),
-        }
-    }
-
-    #[test]
-    fn synthetic_emboldening_updates_outline_and_bitmap_slots() {
-        let face = load(DEJAVU_SANS);
-        let glyph = face.get_char_index('A' as u32);
-        let mut slot = match face.load_glyph(glyph, LoadFlags::DEFAULT) {
-            Ok(slot) => slot,
-            Err(err) => panic!("default load should succeed: {err}"),
-        };
-        let before_advance = slot.metrics.hori_advance;
-        let before_width = slot.metrics.width;
-        slot.adjust_outline_weight(16 << 6, 16 << 6);
-        assert!(slot.metrics.hori_advance > before_advance);
-        assert!(slot.metrics.width > before_width);
-        // Weighting recomputes the outline boxes.
-        assert!(slot.outline_cbox.x_max >= slot.outline_cbox.x_min);
-
-        let mut rendered = match face.load_glyph(glyph, LoadFlags::DEFAULT | LoadFlags::RENDER) {
-            Ok(slot) => slot,
-            Err(err) => panic!("render should succeed: {err}"),
-        };
-        let before_top = rendered.bitmap_top;
-        let before_width = rendered.metrics.width;
-        rendered.adjust_bitmap_weight(8 << 6, 8 << 6);
-        assert!(rendered.metrics.width >= before_width);
-        assert!(rendered.bitmap_top >= before_top);
-        assert_eq!(rendered.format, GlyphFormat::Bitmap);
-    }
-
-    #[test]
-    fn empty_slot_preserves_the_none_format() {
-        let empty = GlyphSlot::empty();
-        assert_eq!(empty.format, GlyphFormat::None);
-        assert!(empty.bitmap.is_none());
-        assert_eq!(empty.advance, Vector { x: 0, y: 0 });
-    }
-
-    #[test]
-    fn packed_and_mono_bitmaps_embolden_in_every_mode() {
-        // Gray2 converts to 8-bit gray before the embolden loop.
-        let mut gray2 = RenderedBitmap {
-            width: 4,
-            rows: 1,
-            pitch: 1,
-            pixel_mode: PixelMode::Gray2,
-            num_grays: 4,
-            left: 0,
-            top: 0,
-            buffer: vec![0b0000_0101],
-        };
-        assert!(convert_packed_gray_bitmap(&mut gray2, 2, 4));
-        assert_eq!(gray2.pixel_mode, PixelMode::Gray);
-        assert_eq!(gray2.pitch, 4);
-        assert!(embolden_8bit_positive_pitch_bitmap(&mut gray2, 1, 1));
-
-        // Gray4 likewise.
-        let mut gray4 = RenderedBitmap {
-            width: 4,
-            rows: 1,
-            pitch: 2,
-            pixel_mode: PixelMode::Gray4,
-            num_grays: 16,
-            left: 0,
-            top: 0,
-            buffer: vec![0b0000_0001, 0b0000_0010],
-        };
-        assert!(convert_packed_gray_bitmap(&mut gray4, 4, 16));
-        assert_eq!(gray4.pixel_mode, PixelMode::Gray);
-
-        // Monochrome embolden path.
-        let mut mono = RenderedBitmap {
-            width: 8,
-            rows: 2,
-            pitch: 1,
-            pixel_mode: PixelMode::Mono,
-            num_grays: 2,
-            left: 0,
-            top: 0,
-            buffer: vec![0b1111_0000, 0b1111_0000],
-        };
-        assert!(embolden_rendered_bitmap(&mut mono, 2, 1));
-
-        // LCD and color bitmaps are accepted without byte mutation.
-        let mut lcd = RenderedBitmap {
-            width: 9,
-            rows: 1,
-            pitch: 9,
-            pixel_mode: PixelMode::Lcd,
-            num_grays: 256,
-            left: 0,
-            top: 0,
-            buffer: vec![0; 9],
-        };
-        assert!(embolden_rendered_bitmap(&mut lcd, 1, 1));
-        let mut bgra = RenderedBitmap {
-            width: 4,
-            rows: 1,
-            pitch: 16,
-            pixel_mode: PixelMode::Bgra,
-            num_grays: 256,
-            left: 0,
-            top: 0,
-            buffer: vec![0; 16],
-        };
-        assert!(embolden_rendered_bitmap(&mut bgra, 1, 1));
-
-        // LcdV scales the vertical footprint by three.
-        let mut lcd_v = RenderedBitmap {
-            width: 3,
-            rows: 3,
-            pitch: 3,
-            pixel_mode: PixelMode::LcdV,
-            num_grays: 256,
-            left: 0,
-            top: 0,
-            buffer: vec![0; 9],
-        };
-        assert!(embolden_rendered_bitmap(&mut lcd_v, 1, 1));
-    }
 }

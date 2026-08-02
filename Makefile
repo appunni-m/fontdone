@@ -9,6 +9,12 @@ BENCH_SAMPLES ?= 10
 BENCH_PROFILE ?= default
 COVERAGE_TOOLCHAIN ?= nightly
 CARGO_LLVM_COV_VERSION ?= 0.8.7
+COVERAGE_UNIFIED_WORKERS ?= 1
+COVERAGE_TEST_OPT_LEVEL ?= 1
+COVERAGE_TEST_DEBUG ?= 1
+COVERAGE_LLVM_COV_FLAGS ?= --no-clean
+COVERAGE_PREPARATION_JOBS ?= 2
+COVERAGE_ALL_TARGET_DIR ?= target/llvm-cov-all-lanes
 CARGO_DENY_VERSION ?= 0.20.2
 CARGO_AUDIT_VERSION ?= 0.22.2
 PREFIX ?= /usr/local
@@ -64,6 +70,7 @@ help:
 	@printf "  make c-abi-contract-complete  Require all 12 C contract categories from assembled evidence\n"
 	@printf "  make test-coverage        Write core Rust coverage JSON\n"
 	@printf "  make test-coverage-all    Write all-lane branch coverage JSON\n"
+	@printf "  make coverage-clean       Remove cached LLVM coverage build artifacts\n"
 	@printf "  make bench-quick          Run the benchmark smoke gate\n"
 	@printf "  make bench-regression     Require the reviewed performance thresholds\n"
 	@printf "  make record-performance-baseline  Commit-ready evidence from the latest qualifying clean run\n"
@@ -229,18 +236,32 @@ check-docs:
 	$(PYTHON) scripts/check_rustdoc_contracts.py
 
 .PHONY: test-coverage
-test-coverage: unified-oracle api-abi-check
+test-coverage: unified-oracle api-abi-runtime-check
 	mkdir -p $(dir $(COVERAGE_OUTPUT))
+	$(CARGO) llvm-cov clean --profraw-only
+	CARGO_PROFILE_TEST_OPT_LEVEL=$(COVERAGE_TEST_OPT_LEVEL) \
+	CARGO_PROFILE_TEST_DEBUG=$(COVERAGE_TEST_DEBUG) \
 	$(CARGO) llvm-cov --test unified_fixture_parity --locked --json \
+		$(COVERAGE_LLVM_COV_FLAGS) \
 		--ignore-filename-regex '$(CORE_COVERAGE_IGNORE_REGEX)' \
 		--output-path $(COVERAGE_OUTPUT) -- unified_fixture_parity --nocapture
 
 .PHONY: test-coverage-all
-test-coverage-all: unified-oracle api-abi-check
-	$(CARGO) test -p fontdone-c-abi --lib --features abi-test-support --locked
-	$(CARGO) test -p fontdone-wasm --lib --features abi-test-support --locked
+test-coverage-all:
+	+$(MAKE) --no-print-directory -j$(COVERAGE_PREPARATION_JOBS) unified-oracle api-abi-runtime-check coverage-abi-preflight
 	mkdir -p $(dir $(ALL_LANES_COVERAGE_OUTPUT))
+	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --profraw-only
+# Keep workspace report scope for the C-ABI and WASM facades, but execute
+# only the integration binary that drives all three parity lanes. Running
+# the workspace's empty unit and pipe-trace targets duplicates cfg-dependent
+# FFI coverage without adding a parity input.
+	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
+	CARGO_PROFILE_TEST_OPT_LEVEL=$(COVERAGE_TEST_OPT_LEVEL) \
+	CARGO_PROFILE_TEST_DEBUG=$(COVERAGE_TEST_DEBUG) \
+	FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
 	$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov --branch --workspace \
+		--test unified_fixture_parity \
+		$(COVERAGE_LLVM_COV_FLAGS) \
 		--exclude-from-test fontdone-c-abi \
 		--exclude-from-test fontdone-wasm \
 		--locked --json \
@@ -250,8 +271,17 @@ test-coverage-all: unified-oracle api-abi-check
 		$(ALL_LANES_COVERAGE_OUTPUT) > $(ALL_LANES_COVERAGE_OUTPUT).tmp
 	mv $(ALL_LANES_COVERAGE_OUTPUT).tmp $(ALL_LANES_COVERAGE_OUTPUT)
 
+.PHONY: coverage-abi-preflight
+coverage-abi-preflight:
+	$(CARGO) test -p fontdone-c-abi -p fontdone-wasm --lib --features abi-test-support --locked
+
+.PHONY: coverage-clean
+coverage-clean:
+	$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --workspace
+	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --workspace
+
 .PHONY: test-unified-condition-coverage
-test-unified-condition-coverage: unified-oracle api-abi-check
+test-unified-condition-coverage: unified-oracle api-abi-runtime-check
 	mkdir -p $(dir $(CONDITION_COVERAGE_OUTPUT))
 	FONTDONE_ENABLE_SILENT_TRACE_LOGGER=1 \
 	RUSTFLAGS="-Zcoverage-options=condition" $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov \
@@ -300,6 +330,12 @@ test-ffi:
 #   FONTDONE_UNIFIED_OPERATION_FILTER  – substring match on operation name
 #   FONTDONE_UNIFIED_CASE_FILTER       – substring match on case_id/subject/case
 #   FONTDONE_UNIFIED_CASE_LIMIT        – max number of selected concrete cases
+#   FONTDONE_UNIFIED_WORKERS           – bounded backend comparison worker count
+#   COVERAGE_TEST_OPT_LEVEL             – optimization level for coverage builds
+#   COVERAGE_TEST_DEBUG                 – line-table debug level for coverage builds
+#   COVERAGE_LLVM_COV_FLAGS             – extra cargo-llvm-cov flags for coverage builds
+#   COVERAGE_PREPARATION_JOBS           – parallel jobs for independent coverage setup
+#   COVERAGE_ALL_TARGET_DIR             – isolated cached target for all-lane LLVM coverage
 #   FONTDONE_UNIFIED_ORACLE_REFRESH    – force skip cache, re-run C oracle
 #   FONTDONE_UNIFIED_SELECTION_ONLY    – print selection, don't execute
 #   FONTDONE_UNIFIED_PROFILE           – print timing profiles
@@ -415,6 +451,11 @@ api-abi-audit: oracle-fetch
 
 .PHONY: api-abi-check
 api-abi-check: api-abi-audit optional-feature-contract
+	$(PYTHON) scripts/check_public_api_inputs.py --audit-json target/api-abi-audit/api_abi_audit.json
+	$(PYTHON) scripts/check_public_api_inputs.py --audit-json target/api-abi-audit/api_abi_audit.json --route-audit
+
+.PHONY: api-abi-runtime-check
+api-abi-runtime-check: api-abi-audit
 	$(PYTHON) scripts/check_public_api_inputs.py --audit-json target/api-abi-audit/api_abi_audit.json
 	$(PYTHON) scripts/check_public_api_inputs.py --audit-json target/api-abi-audit/api_abi_audit.json --route-audit
 

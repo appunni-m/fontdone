@@ -987,6 +987,25 @@
       "supported_host_contract": false
     },
     {
+      "name": "fontdone_wasm_new_glyph",
+      "parameters": [
+        {
+          "name": "library_present",
+          "type": "i32"
+        },
+        {
+          "name": "format",
+          "type": "rust_ffi::FT_Glyph_Format"
+        },
+        {
+          "name": "aglyph",
+          "type": "*mut usize"
+        }
+      ],
+      "return": "FT_Error",
+      "supported_host_contract": false
+    },
+    {
       "name": "fontdone_wasm_get_glyph_from_face",
       "parameters": [
         {

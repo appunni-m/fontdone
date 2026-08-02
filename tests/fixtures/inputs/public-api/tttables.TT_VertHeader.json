@@ -325,9 +325,9 @@
         "assets": {
           "font": {
             "kind": "ref",
-            "id": "input/fonts/variation/mvar-vertical-metrics.ttf",
+            "id": "input/fonts/variable/mvar-unknown-record.ttf",
             "role": "font",
-            "requirements": "Variable SFNT font with vhea, vmtx, fvar, and MVAR entries that affect vertical header fields after variation coordinate changes."
+            "requirements": "Variable SFNT font with vhea, vmtx, fvar, supported MVAR entries, and an ignored unknown MVAR record."
           }
         },
         "params": {
@@ -370,7 +370,7 @@
       "expectation": {
         "status": "build_dependent",
         "fixture_requirements": [
-          "Missing asset: input/fonts/variation/mvar-vertical-metrics.ttf must include vertical metrics and MVAR deltas observable through TT_VertHeader."
+          "Variable asset must include vertical metrics, supported MVAR deltas, and an ignored unknown MVAR record observable through TT_VertHeader."
         ],
         "output_shape": {
           "default": {

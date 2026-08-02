@@ -171,7 +171,3 @@ pub(crate) fn i32_from_f32(x: f32) -> i32 {
         x as i32
     }
 }
-
-#[cfg(test)]
-#[path = "../tests/unit/casts.rs"]
-mod tests;

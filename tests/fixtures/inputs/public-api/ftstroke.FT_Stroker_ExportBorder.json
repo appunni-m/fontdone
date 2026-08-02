@@ -84,7 +84,7 @@
         "assets": {
           "paths": {
             "kind": "ref",
-            "id": "outlines/stroker/open-line-caps.json",
+            "id": "input/outlines/stroker/open-line-caps.json",
             "asset_kind": "outline_path_records",
             "status": "required_future_asset"
           }
