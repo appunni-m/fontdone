@@ -15,6 +15,7 @@ COVERAGE_TEST_DEBUG ?= 1
 COVERAGE_LLVM_COV_FLAGS ?= --no-clean
 COVERAGE_PREPARATION_JOBS ?= 2
 COVERAGE_ALL_TARGET_DIR ?= target/llvm-cov-all-lanes
+COVERAGE_TEST_BINARY ?=
 COVERAGE_ABI_PREFLIGHT ?= 0
 COVERAGE_UNIFIED_LANE_SPLIT ?= 1
 CARGO_DENY_VERSION ?= 0.20.2
@@ -272,40 +273,32 @@ ifeq ($(COVERAGE_UNIFIED_LANE_SPLIT),1)
 		--output-path $(COVERAGE_ALL_TARGET_DIR)/coverage-build.json \
 		-- unified_fixture_parity --nocapture
 	@set -u; \
+	test_binary="$(COVERAGE_TEST_BINARY)"; \
+	if [ -z "$$test_binary" ]; then \
+	  test_binary=$$(find $(COVERAGE_ALL_TARGET_DIR)/llvm-cov-target/debug/deps \
+	    -maxdepth 1 -type f -name 'unified_fixture_parity-*' -perm -111 -print \
+	    | xargs ls -dt 2>/dev/null | head -n 1); \
+	fi; \
+	if [ ! -x "$$test_binary" ]; then \
+	  echo "coverage test binary not found under $(COVERAGE_ALL_TARGET_DIR)/llvm-cov-target/debug/deps" >&2; \
+	  exit 1; \
+	fi; \
 	lane_status=0; \
 	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
-	  CARGO_PROFILE_TEST_OPT_LEVEL=$(COVERAGE_TEST_OPT_LEVEL) \
-	  CARGO_PROFILE_TEST_DEBUG=$(COVERAGE_TEST_DEBUG) \
 	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
 	  FONTDONE_UNIFIED_BACKEND=rust \
 	  LLVM_PROFILE_FILE=$(COVERAGE_ALL_TARGET_DIR)/fontdone-rust-%p-%m.profraw \
-	  $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov --branch --workspace \
-	    --test unified_fixture_parity --exclude-from-test fontdone-c-abi \
-	    --exclude-from-test fontdone-wasm --locked \
-	    $(filter-out --no-clean,$(COVERAGE_LLVM_COV_FLAGS)) --no-report \
-	    -- unified_fixture_parity --nocapture ) & rust_pid=$$!; \
+	  "$$test_binary" unified_fixture_parity --exact --nocapture ) & rust_pid=$$!; \
 	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
-	  CARGO_PROFILE_TEST_OPT_LEVEL=$(COVERAGE_TEST_OPT_LEVEL) \
-	  CARGO_PROFILE_TEST_DEBUG=$(COVERAGE_TEST_DEBUG) \
 	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
 	  FONTDONE_UNIFIED_BACKEND=c-abi \
 	  LLVM_PROFILE_FILE=$(COVERAGE_ALL_TARGET_DIR)/fontdone-c-abi-%p-%m.profraw \
-	  $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov --branch --workspace \
-	    --test unified_fixture_parity --exclude-from-test fontdone-c-abi \
-	    --exclude-from-test fontdone-wasm --locked \
-	    $(filter-out --no-clean,$(COVERAGE_LLVM_COV_FLAGS)) --no-report \
-	    -- unified_fixture_parity --nocapture ) & c_abi_pid=$$!; \
+	  "$$test_binary" unified_fixture_parity --exact --nocapture ) & c_abi_pid=$$!; \
 	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
-	  CARGO_PROFILE_TEST_OPT_LEVEL=$(COVERAGE_TEST_OPT_LEVEL) \
-	  CARGO_PROFILE_TEST_DEBUG=$(COVERAGE_TEST_DEBUG) \
 	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
 	  FONTDONE_UNIFIED_BACKEND=wasm \
 	  LLVM_PROFILE_FILE=$(COVERAGE_ALL_TARGET_DIR)/fontdone-wasm-%p-%m.profraw \
-	  $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov --branch --workspace \
-	    --test unified_fixture_parity --exclude-from-test fontdone-c-abi \
-	    --exclude-from-test fontdone-wasm --locked \
-	    $(filter-out --no-clean,$(COVERAGE_LLVM_COV_FLAGS)) --no-report \
-	    -- unified_fixture_parity --nocapture ) & wasm_pid=$$!; \
+	  "$$test_binary" unified_fixture_parity --exact --nocapture ) & wasm_pid=$$!; \
 	wait $$rust_pid || lane_status=1; \
 	wait $$c_abi_pid || lane_status=1; \
 	wait $$wasm_pid || lane_status=1; \
@@ -403,6 +396,7 @@ test-ffi:
 #   COVERAGE_LLVM_COV_FLAGS             – extra cargo-llvm-cov flags for coverage builds
 #   COVERAGE_PREPARATION_JOBS           – parallel jobs for independent coverage setup
 #   COVERAGE_ALL_TARGET_DIR             – isolated cached target for all-lane LLVM coverage
+#   COVERAGE_TEST_BINARY                – optional instrumented test binary override; otherwise the newest built binary is used
 #   COVERAGE_ABI_PREFLIGHT               – rerun the standalone ABI unit preflight (1/0)
 #   COVERAGE_UNIFIED_LANE_SPLIT          – run Rust, C ABI, and WASM coverage lanes as separate processes (1/0)
 #   FONTDONE_UNIFIED_BACKEND             – internal lane selector: rust, c-abi, or wasm
