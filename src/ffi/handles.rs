@@ -2467,8 +2467,14 @@ pub fn FT_Get_Svg_Glyph(slot: Option<&FT_GlyphSlot>) -> Result<FT_SvgGlyphOwned,
     })
 }
 
-pub fn FT_Svg_Glyph_Copy(glyph: &FT_SvgGlyphOwned) -> FT_SvgGlyphOwned {
-    glyph.clone()
+pub fn FT_Svg_Glyph_Copy(glyph: &FT_SvgGlyphOwned) -> Result<FT_SvgGlyphOwned, FT_Error> {
+    if glyph.root.format != FT_GLYPH_FORMAT_SVG {
+        return Err(FT_Err_Invalid_Glyph_Format);
+    }
+    if glyph.svg_document.is_empty() {
+        return Err(FT_Err_Invalid_Slot_Handle as FT_Error);
+    }
+    Ok(glyph.clone())
 }
 
 pub fn FT_Svg_Glyph_Transform(

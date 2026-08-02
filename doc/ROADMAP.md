@@ -397,22 +397,25 @@ per-batch coverage increase is claimed:
 | 27 | Generic-fallback elimination | Promoted the eight generic-fallback rows to exact four-lane routes: PS hinting-engine property set/get/string/load across CFF/Type1/t1cid, `FT_PARAM_TAG_IGNORE_SBIX` outline and bitmap-only open-face dispatch, `FT_Parameter` tag/data variant dispatch, and `FT_PARAM_TAG_STEM_DARKENING` state toggle with preserved public output. Route audit: **0 pending routes, 0 generic-fallback rows**, 5,039 real-parity concrete cases; C-ABI scorecard is 10 / 12 categories complete with C01.7 5,048 / 5,048 and C08.3 7,305 / 7,305 (binary artifacts and platform bundles remain). |
 | 28 | Working tree (`ad6c489963b2797ab39e226efaa6a4690faa63ef`) | Added 13 maintained input-only SBIT cases for index formats 2/4/5 and grayscale, mono, packed-gray, and BGRA compound bitmaps. Traced the BGRA mismatch to pinned `FT_Bitmap_Convert`, implemented the exact premultiplied-sRGB flattening rule at the SBIT boundary, and passed full parity run `d9ebd2d0-6f84-4e8e-bd5c-f8f9d86cdcb7` with 7,468 / 7,468 runnable comparisons and 3 explicitly pending safety-extension cases. |
 | 29 | Working tree (avar normalization) | Added an input-only variable-font case whose `gvar` interpolation exposed the missing `avar` normalization stage. Implemented pinned-compatible `avar` parsing and design/named-instance coordinate mapping; focused parity passed 33 / 33 and full parity run `61dddda3-5866-43ea-bd80-e84cd1d4c5b9` passed 7,469 / 7,469 runnable comparisons with 3 explicitly pending safety-extension cases. |
+| 30 | Working tree (SVG glyph-copy zero-length source) | Added an input-only real SVG glyph case for `FT_Glyph_Copy` with a zero public document length, routed the pinned `FT_Err_Invalid_Slot_Handle` and partial-target cleanup through Rust FFI, C ABI, and WASM, and fixed WASM target clearing on class-copy errors. Focused run `9086a87e-aee1-4ef8-a479-276a357623c9` passed 1 / 1; full parity run `4cec1eda-461a-4e04-9009-f7109556e845` passed 7,475 / 7,475 runnable comparisons with 3 explicitly pending safety-extension cases. |
 
 The latest source-bound parity verification is Coverage MCP parity run
-`9d8f414b-f32d-44e3-a838-144373271cea`, recorded by run
-`c1780492-a9b8-436c-a14d-cc4e06fac491` against the worktree at commit
-`a1b0974f096546e40a8206724a353f26e488282a`: it passed 7,474 / 7,474 runnable
+`4cec1eda-461a-4e04-9009-f7109556e845`, recorded by run
+`231bad61-2195-4175-a651-edf5f40ad2c6` against the worktree at commit
+`edcacdb931ecc3362cce101449845a2d6e6511e6`: it passed 7,475 / 7,475 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. The companion C-ABI scorecard, Coverage
-MCP run `1766fdf5-8e70-4328-94e0-d5fab26845da`, reports 10 / 12 categories
-complete, with 5,195 / 5,195 runtime contract rows and 643 / 643 strict error
-routes exact; binary artifacts and platform bundles remain the tracked gaps.
+MCP run `bda8b5a7-e33f-4e41-ae7e-bd90091e31cc`, reports 8 / 12 categories
+complete, with 5,218 / 5,218 runtime contract rows and 646 / 647 strict error
+routes exact; the remaining strict-error gap is the known `FT_Load_Sfnt_Table`
+null-face case, while binary artifacts and platform bundles remain the other
+tracked gaps.
 
-The latest all-lane coverage run completed in 2 minutes 41.636 seconds. Its
-runtime backend timings were about 42.22 seconds Rust FFI, 31.56 seconds C ABI,
-31.26 seconds WASM, and 0.03 seconds comparison. The separately measured
+The latest all-lane coverage run completed in 2 minutes 18.734 seconds. Its
+runtime backend timings were about 39.53 seconds Rust FFI, 29.58 seconds C ABI,
+29.40 seconds WASM, and 0.03 seconds comparison. The separately measured
 removal of the duplicate ABI preflight from the default coverage path reduced
 the earlier 3:48.279 sample by 42.627 seconds (18.7%); the remaining wall-time
 tail is outside backend execution, in setup/build/reporting/ingestion and host
@@ -429,11 +432,11 @@ the ABI-only package preflight remains available separately as
 `make coverage-abi-preflight` and is already exercised by `make test-fast`.
 Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
-repeated. The current run measured 49,275 / 54,038 lines, 9,673 / 12,498
-branches, 3,368 / 3,825 functions, and 67,854 / 75,205 regions. It passed
-7,474 / 7,474 runnable parity comparisons with 0 failures. Its Coverage MCP run
-is `0302c168-2b77-473b-aafc-cbff631fcce3`, with snapshot
-`b84d528a-aa4e-43a7-b504-96e4e975dcd7`. Each measurement clears stale
+repeated. The current run measured 49,340 / 54,104 lines, 9,687 / 12,512
+branches, 3,371 / 3,828 functions, and 67,920 / 75,273 regions. It passed
+7,475 / 7,475 runnable parity comparisons with 0 failures. Its Coverage MCP run
+is `7095f879-d388-4b2d-acff-7bf319f3b2e9`, with snapshot
+`7289bdcf-e1e0-49a4-8645-8a21dde753c5`. Each measurement clears stale
 `.profraw` files first; use `make coverage-clean` after changing the coverage
 toolchain or instrumentation configuration.
 

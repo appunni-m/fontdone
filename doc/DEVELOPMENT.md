@@ -236,10 +236,10 @@ keeping variation-sequence cases isolated. Oracle
 preparation also preserves the mtime of unchanged generated constants and
 validator overlay sources, avoiding a needless helper rebuild and relink. It
 runs in requested thorough CI, not on every commit. The latest measured run
-took 2 minutes 41.636 seconds end-to-end against the worktree at commit
-`a1b0974f096546e40a8206724a353f26e488282a`; single-run wall time varies with
+took 2 minutes 18.734 seconds end-to-end against the worktree at commit
+`edcacdb931ecc3362cce101449845a2d6e6511e6`; single-run wall time varies with
 compilation and host load. Its runtime backend totals were approximately
-42.22 seconds Rust FFI, 31.56 seconds C ABI, 31.26 seconds WASM, and 0.03
+39.53 seconds Rust FFI, 29.58 seconds C ABI, 29.40 seconds WASM, and 0.03
 seconds comparison. The separately measured removal of the duplicate ABI
 preflight from the default coverage path reduced the earlier 3:48.279 sample
 by 42.627 seconds (18.7%); the remaining wall-time tail is outside backend
@@ -248,15 +248,15 @@ Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,275 / 54,038 | 91.19% |
-| Branches | 9,673 / 12,498 | 77.40% |
-| Functions | 3,368 / 3,825 | 88.05% |
-| Regions | 67,854 / 75,205 | 90.23% |
+| Lines | 49,340 / 54,104 | 91.19% |
+| Branches | 9,687 / 12,512 | 77.42% |
+| Functions | 3,371 / 3,828 | 88.06% |
+| Regions | 67,920 / 75,273 | 90.23% |
 
-That managed run passed all 7,474 runnable parity comparisons with 0 failures;
+That managed run passed all 7,475 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its Coverage MCP run ID is
-`0302c168-2b77-473b-aafc-cbff631fcce3`, and its immutable snapshot ID is
-`b84d528a-aa4e-43a7-b504-96e4e975dcd7`. That required three-surface
+`7095f879-d388-4b2d-acff-7bf319f3b2e9`, and its immutable snapshot ID is
+`7289bdcf-e1e0-49a4-8645-8a21dde753c5`. That required three-surface
 instrumented execution remains the dominant measured test cost, while the
 latest wall-time tail is outside the test body. The percentages apply only to the named
 source commit, suite, and toolchain. They are not a FreeType-parity percentage,

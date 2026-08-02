@@ -1263,6 +1263,7 @@ def exact_error_public_route(operation: str, case_id: str, expect_error: bool) -
         "ftgzip.FT_Gzip_Uncompress.reports_invalid_compressed_data",
         "ftglyph.FT_Get_Glyph.error_unsupported_format_or_bad_slot_payload",
         "ftglyph.FT_Glyph_Copy.error_copy_hook_failure_cleans_target",
+        "ftglyph.FT_Glyph_Copy.error_svg_zero_length_source_real",
         "ftglyph.FT_Glyph_Transform.error_null_or_bad_glyph",
         "ftglyph.FT_Glyph_Transform.error_non_scalable_bitmap",
         "ftlist.FT_List_Iterate.stops_on_callback_error",
@@ -6558,6 +6559,11 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
         and row.case_id == "ftglyph.FT_Glyph_Copy.error_copy_hook_failure_cleans_target"
     ):
         return "FT_Glyph_Copy allocation, bitmap-copy, and zero-length SVG failures validate exact public FT_Error, null target output, allocator attempts, and partial-target destruction through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "ftglyph.glyph_copy"
+        and row.case_id == "ftglyph.FT_Glyph_Copy.error_svg_zero_length_source_real"
+    ):
+        return "FT_Glyph_Copy real zero-length SVG source validates FT_Err_Invalid_Slot_Handle and partial-target cleanup through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
     if (
         row.operation == "ftglyph.glyph_to_bitmap"
         and row.case_id

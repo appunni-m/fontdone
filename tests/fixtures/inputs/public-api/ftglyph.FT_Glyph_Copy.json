@@ -6,6 +6,7 @@
     "success_bitmap_copy_is_independent",
     "success_svg_copy_is_independent",
     "error_null_source_target_or_class",
+    "error_svg_zero_length_source_real",
     "error_copy_hook_failure_cleans_target"
   ],
   "cases": [
@@ -279,6 +280,60 @@
           "freetype/src/base/ftglyph.c"
         ],
         "error": "FT_Err_Invalid_Argument"
+      }
+    },
+    {
+      "case_id": "ftglyph.FT_Glyph_Copy.error_svg_zero_length_source_real",
+      "subject": "ftglyph.FT_Glyph_Copy",
+      "case": "error_svg_zero_length_source_real",
+      "operation": "ftglyph.glyph_copy",
+      "schema": "glyph_copy",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "svg_font": {
+            "kind": "ref",
+            "id": "input/fonts/svg/otsvg-glyph.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": 0,
+          "glyph_index": 1,
+          "load_flags": [
+            "FT_LOAD_COLOR"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph",
+        "area:glyph-copy",
+        "runtime:svg-glyph",
+        "malformed_record"
+      ],
+      "metadata": {
+        "source_behavior": "FT_Glyph_Copy allocates a same-class target, then FT_SvgGlyph copy rejects a zero document length with FT_Err_Invalid_Slot_Handle and destroys the partial target before returning."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "target_pointer_class": "null",
+          "source_document_length": 0
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "target_pointer_class",
+            "source_document_length"
+          ]
+        },
+        "error": "FT_Err_Invalid_Slot_Handle",
+        "source_refs": [
+          "freetype/src/base/ftglyph.c:353-409"
+        ]
       }
     },
     {

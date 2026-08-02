@@ -266,6 +266,7 @@ document_wasm_test_support!(
     abi_support_corrupt_outline_glyph_for_render_failure,
     abi_bitmap_glyph_snapshot,
     abi_svg_glyph_snapshot,
+    abi_support_zero_length_svg_glyph,
     abi_support_new_glyph_allocation_failure,
     abi_face_info,
     abi_face_stream_info,

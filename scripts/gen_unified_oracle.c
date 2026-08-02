@@ -9744,6 +9744,63 @@ static void print_glyph_copy_error_row(const char* probe, FT_Error err, FT_Glyph
            target ? "non_null" : "null");
 }
 
+static int emit_glyph_copy_svg_zero_length(int argc, char** argv) {
+    if (argc != 4) {
+        return 1;
+    }
+
+    unsigned char* svg_data = NULL;
+    long svg_data_len = 0;
+    if (load_oracle_source_bytes(argv[2], argv[3], &svg_data, &svg_data_len) != 0) {
+        fprintf(stderr, "failed to load FT_Glyph_Copy SVG source\n");
+        return 2;
+    }
+
+    FT_Library library = NULL;
+    FT_Face face = NULL;
+    FT_Glyph source = NULL;
+    FT_Error setup_error = FT_Init_FreeType(&library);
+    if (!setup_error) {
+        setup_error = FT_New_Memory_Face(
+            library, svg_data, svg_data_len, 0, &face);
+    }
+    if (!setup_error) {
+        setup_error = FT_Set_Pixel_Sizes(face, 0, 20);
+    }
+    if (!setup_error) {
+        setup_error = FT_Load_Glyph(face, 1, FT_LOAD_COLOR);
+    }
+    if (!setup_error) {
+        setup_error = FT_Get_Glyph(face->glyph, &source);
+    }
+    if (setup_error) {
+        printf("{");
+        print_status(setup_error);
+        printf(",\"output\":{\"target_pointer_class\":\"null\",\"source_document_length\":0}}\n");
+        if (source) FT_Done_Glyph(source);
+        if (face) FT_Done_Face(face);
+        if (library) FT_Done_FreeType(library);
+        free(svg_data);
+        return 0;
+    }
+
+    FT_SvgGlyph svg_record = (FT_SvgGlyph)source;
+    svg_record->svg_document_length = 0;
+    FT_Glyph target = (FT_Glyph)0x1;
+    FT_Error copy_error = FT_Glyph_Copy(source, &target);
+
+    printf("{");
+    print_status(copy_error);
+    printf(",\"output\":{\"target_pointer_class\":\"%s\",\"source_document_length\":0}}\n",
+           target ? "non_null" : "null");
+    if (target) FT_Done_Glyph(target);
+    FT_Done_Glyph(source);
+    FT_Done_Face(face);
+    FT_Done_FreeType(library);
+    free(svg_data);
+    return 0;
+}
+
 static int emit_glyph_copy_null_inputs(void) {
     FT_Glyph target = (FT_Glyph)0x1;
     FT_Error null_source_error = FT_Glyph_Copy(NULL, &target);
@@ -37756,6 +37813,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 2 && streq(argv[1], "--glyph-copy-null-inputs")) {
         return emit_glyph_copy_null_inputs();
+    }
+    if (argc == 4 && streq(argv[1], "--glyph-copy-svg-zero-length")) {
+        return emit_glyph_copy_svg_zero_length(argc, argv);
     }
     if (argc == 6 && streq(argv[1], "--glyph-copy-failures")) {
         return emit_glyph_copy_failures(argc, argv);

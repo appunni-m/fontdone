@@ -537,6 +537,47 @@ impl WasmOwnedSvgGlyph {
             },
         };
     }
+
+    fn sync_core_from_record(&mut self) -> Result<(), FT_Error> {
+        let document_len = self.record.svg_document_length;
+        if document_len == 0 || self.record.svg_document.is_null() {
+            return Err(rust_ffi::FT_Err_Invalid_Slot_Handle as FT_Error);
+        }
+        // SAFETY: a non-null public SVG record promises `document_len`
+        // readable bytes for this synchronous copy operation.
+        self.core.svg_document =
+            unsafe { slice::from_raw_parts(self.record.svg_document, document_len).to_vec() };
+        self.core.root.format = self.record.root.format;
+        self.core.root.advance = rust_ffi::FT_Vector {
+            x: self.record.root.advance.x,
+            y: self.record.root.advance.y,
+        };
+        self.core.glyph_index = self.record.glyph_index;
+        self.core.metrics = rust_ffi::FT_Size_Metrics {
+            x_ppem: self.record.metrics.x_ppem,
+            y_ppem: self.record.metrics.y_ppem,
+            x_scale: self.record.metrics.x_scale,
+            y_scale: self.record.metrics.y_scale,
+            ascender: self.record.metrics.ascender,
+            descender: self.record.metrics.descender,
+            height: self.record.metrics.height,
+            max_advance: self.record.metrics.max_advance,
+        };
+        self.core.units_per_EM = self.record.units_per_EM;
+        self.core.start_glyph_id = self.record.start_glyph_id;
+        self.core.end_glyph_id = self.record.end_glyph_id;
+        self.core.transform = rust_ffi::FT_Matrix {
+            xx: self.record.transform.xx,
+            xy: self.record.transform.xy,
+            yx: self.record.transform.yx,
+            yy: self.record.transform.yy,
+        };
+        self.core.delta = rust_ffi::FT_Vector {
+            x: self.record.delta.x,
+            y: self.record.delta.y,
+        };
+        Ok(())
+    }
 }
 
 impl WasmOwnedBitmapGlyph {
@@ -2298,6 +2339,16 @@ pub fn abi_svg_glyph_snapshot(glyph_handle: usize) -> Option<AbiSvgGlyphSnapshot
     })
 }
 
+#[cfg(feature = "abi-test-support")]
+pub fn abi_support_zero_length_svg_glyph(glyph_handle: usize) -> bool {
+    let glyph = ptr::with_exposed_provenance_mut::<FontdoneWasmGlyph>(glyph_handle);
+    let Some(owned) = wasm_owned_svg_glyph_from_root_mut(glyph) else {
+        return false;
+    };
+    owned.record.svg_document_length = 0;
+    true
+}
+
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
 pub struct WasmSvgRendererCallbackCapture {
@@ -3320,6 +3371,14 @@ pub extern "C" fn fontdone_wasm_glyph_copy(
         unsafe { !(*source).clazz.is_null() }
     };
     let err = rust_ffi::FT_Glyph_Copy(!source.is_null(), !target.is_null(), source_has_class);
+    if err == rust_ffi::FT_Err_Unimplemented_Feature as FT_Error && !target.is_null() {
+        // FreeType clears the output immediately after its early argument
+        // checks, before class-specific allocation or copy validation.
+        // SAFETY: `target` is non-null and points to caller-provided output storage.
+        unsafe {
+            *target = 0;
+        }
+    }
     if err == rust_ffi::FT_Err_Unimplemented_Feature as FT_Error
         && !target.is_null()
         && let Some(source) = wasm_owned_outline_glyph_from_root(source)
@@ -3344,20 +3403,20 @@ pub extern "C" fn fontdone_wasm_glyph_copy(
     }
     if err == rust_ffi::FT_Err_Unimplemented_Feature as FT_Error
         && !target.is_null()
-        && let Some(source) = wasm_owned_svg_glyph_from_root(source)
+        && let Some(source) = wasm_owned_svg_glyph_from_root_mut(source.cast_mut())
     {
-        let copy = rust_ffi::FT_Svg_Glyph_Copy(&source.core);
+        if let Err(error) = source.sync_core_from_record() {
+            return error;
+        }
+        let copy = match rust_ffi::FT_Svg_Glyph_Copy(&source.core) {
+            Ok(copy) => copy,
+            Err(error) => return error,
+        };
         // SAFETY: `target` is non-null and points to caller-provided output storage.
         unsafe {
             *target = Box::into_raw(Box::new(WasmOwnedSvgGlyph::new(copy))).addr();
         }
         return rust_ffi::FT_Err_Ok;
-    }
-    if err == rust_ffi::FT_Err_Unimplemented_Feature as FT_Error && !target.is_null() {
-        // SAFETY: `target` is non-null and points to caller-provided output storage.
-        unsafe {
-            *target = 0;
-        }
     }
     err
 }

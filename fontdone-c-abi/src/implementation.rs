@@ -7293,6 +7293,15 @@ pub fn abi_svg_glyph_snapshot(glyph: FT_Glyph) -> Option<AbiSvgGlyphSnapshot> {
 }
 
 #[cfg(feature = "abi-test-support")]
+pub fn abi_support_zero_length_svg_glyph(glyph: FT_Glyph) -> bool {
+    let Some(owned) = owned_svg_glyph_from_root_mut(glyph) else {
+        return false;
+    };
+    owned.record.svg_document_length = 0;
+    true
+}
+
+#[cfg(feature = "abi-test-support")]
 fn rust_bbox_to_abi(bbox: rust_ffi::FT_BBox) -> FT_BBox {
     FT_BBox {
         xMin: bbox.xMin,
@@ -10512,7 +10521,13 @@ pub extern "C" fn FT_Glyph_Copy(source: FT_Glyph, target: *mut FT_Glyph) -> FT_E
                 return error;
             }
         };
-        let copy = rust_ffi::FT_Svg_Glyph_Copy(&source.core);
+        let copy = match rust_ffi::FT_Svg_Glyph_Copy(&source.core) {
+            Ok(copy) => copy,
+            Err(error) => {
+                free_custom_memory_block(memory, record_block);
+                return error;
+            }
+        };
         let mut copy = OwnedSvgGlyph::new(copy);
         copy.allocation_memory = memory;
         copy.allocation_block = record_block;

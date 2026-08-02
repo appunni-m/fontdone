@@ -43675,6 +43675,11 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                 args.push(advance_26_6_values_arg(params)?);
                 return Ok(args);
             }
+            if case.case_id == "ftglyph.FT_Glyph_Copy.error_svg_zero_length_source_real" {
+                let mut args = vec!["--glyph-copy-svg-zero-length".to_string()];
+                push_named_font_source(case, "svg_font", &mut args)?;
+                return Ok(args);
+            }
             if case.operation == "ftglyph.glyph_copy" && params.get("probes").is_some() {
                 return Ok(vec!["--glyph-copy-null-inputs".to_string()]);
             }
@@ -45278,6 +45283,11 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             let face = open_named_face(case, "outline_font")?;
             rust_bitmap_glyph_copy_from_converted_outline(&face, case)
         }
+        "ftglyph.glyph_copy"
+            if case.case_id == "ftglyph.FT_Glyph_Copy.error_svg_zero_length_source_real" =>
+        {
+            rust_svg_zero_length_glyph_copy(case)
+        }
         "ftglyph.glyph_copy" if case.inputs.params.get("probes").is_some() => {
             rust_glyph_copy_null_inputs()
         }
@@ -46745,6 +46755,11 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_done_library(library);
             output
         }
+        "ftglyph.glyph_copy"
+            if case.case_id == "ftglyph.FT_Glyph_Copy.error_svg_zero_length_source_real" =>
+        {
+            c_svg_zero_length_glyph_copy(case)
+        }
         "ftglyph.glyph_copy" if case.inputs.params.get("probes").is_some() => {
             c_glyph_copy_null_inputs()
         }
@@ -48034,6 +48049,11 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             let output = wasm_bitmap_glyph_copy_from_converted_outline(handle, case);
             wasm_done_face(handle);
             output
+        }
+        "ftglyph.glyph_copy"
+            if case.case_id == "ftglyph.FT_Glyph_Copy.error_svg_zero_length_source_real" =>
+        {
+            wasm_svg_zero_length_glyph_copy(case)
         }
         "ftglyph.glyph_copy" if case.inputs.params.get("probes").is_some() => {
             wasm_glyph_copy_null_inputs()
@@ -54524,7 +54544,10 @@ fn rust_svg_glyph_record(face: &FT_Face, case: &InputCase) -> Result<RunOutput, 
     };
     let source_destroyed_before_target = case.operation == "ftglyph.glyph_copy";
     let glyph = if source_destroyed_before_target {
-        FT_Svg_Glyph_Copy(&source)
+        match FT_Svg_Glyph_Copy(&source) {
+            Ok(glyph) => glyph,
+            Err(error_code) => return Ok(error(error_code)),
+        }
     } else {
         source
     };
@@ -60961,6 +60984,102 @@ fn wasm_glyph_copy_null_inputs() -> Result<RunOutput, String> {
         ),
     ];
     Ok(glyph_copy_null_inputs_output(rows))
+}
+
+fn svg_zero_length_glyph_copy_output(error_code: FT_Error, target_is_null: bool) -> RunOutput {
+    error_with_output(
+        error_code,
+        json!({
+            "target_pointer_class": if target_is_null { "null" } else { "non_null" },
+            "source_document_length": 0,
+        }),
+    )
+}
+
+fn rust_svg_zero_length_glyph_copy(case: &InputCase) -> Result<RunOutput, String> {
+    let face = open_named_face(case, "svg_font")?;
+    let slot = FT_Load_Glyph(
+        &face,
+        glyph_index_param(&case.inputs.params)?,
+        load_flags_param(&case.inputs.params)?,
+    )
+    .map_err(|error_code| format!("FT_Load_Glyph returned {error_code}"))?;
+    let mut source = FT_Get_Svg_Glyph(Some(&slot))
+        .map_err(|error_code| format!("FT_Get_Svg_Glyph returned {error_code}"))?;
+    source.svg_document.clear();
+    let error_code = match FT_Svg_Glyph_Copy(&source) {
+        Ok(_) => FT_Err_Ok,
+        Err(error_code) => error_code,
+    };
+    Ok(svg_zero_length_glyph_copy_output(error_code, true))
+}
+
+fn c_svg_zero_length_glyph_copy(case: &InputCase) -> Result<RunOutput, String> {
+    let (library, face) = c_open_named_face(case, "svg_font")?;
+    let source = match c_get_glyph_from_face(
+        face,
+        glyph_index_param(&case.inputs.params)?,
+        load_flags_param(&case.inputs.params)?,
+    ) {
+        Ok(glyph) => glyph,
+        Err(error_code) => {
+            c_done_face(face);
+            c_done_library(library);
+            return Ok(error(error_code));
+        }
+    };
+    if !c_abi::abi_support_zero_length_svg_glyph(source) {
+        c_abi::FT_Done_Glyph(source);
+        c_done_face(face);
+        c_done_library(library);
+        return Err("failed to set C ABI SVG document length to zero".to_string());
+    }
+    let mut target = ptr::dangling_mut();
+    let error_code = c_abi::FT_Glyph_Copy(source, &mut target);
+    let target_is_null = target.is_null();
+    if !target.is_null() {
+        c_abi::FT_Done_Glyph(target);
+    }
+    c_abi::FT_Done_Glyph(source);
+    c_done_face(face);
+    c_done_library(library);
+    Ok(svg_zero_length_glyph_copy_output(
+        error_code,
+        target_is_null,
+    ))
+}
+
+fn wasm_svg_zero_length_glyph_copy(case: &InputCase) -> Result<RunOutput, String> {
+    let face = wasm_open_named_face(case, "svg_font")?;
+    let source = match wasm_get_glyph_from_face(
+        face,
+        glyph_index_param(&case.inputs.params)?,
+        load_flags_param(&case.inputs.params)?,
+    ) {
+        Ok(glyph) => glyph,
+        Err(error_code) => {
+            wasm_done_face(face);
+            return Ok(error(error_code));
+        }
+    };
+    if !wasm_abi::abi_support_zero_length_svg_glyph(source) {
+        wasm_done_glyph_handle(source);
+        wasm_done_face(face);
+        return Err("failed to set WASM SVG document length to zero".to_string());
+    }
+    let source_ptr = ptr::with_exposed_provenance::<wasm_abi::FontdoneWasmGlyph>(source);
+    let mut target = 1usize;
+    let error_code = wasm_abi::fontdone_wasm_glyph_copy(source_ptr, &mut target);
+    let target_is_null = target == 0;
+    if target != 0 {
+        wasm_done_glyph_handle(target);
+    }
+    wasm_done_glyph_handle(source);
+    wasm_done_face(face);
+    Ok(svg_zero_length_glyph_copy_output(
+        error_code,
+        target_is_null,
+    ))
 }
 
 struct GlyphCopyFailureObserved {
