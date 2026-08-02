@@ -15,6 +15,7 @@ COVERAGE_TEST_DEBUG ?= 1
 COVERAGE_LLVM_COV_FLAGS ?= --no-clean
 COVERAGE_PREPARATION_JOBS ?= 2
 COVERAGE_ALL_TARGET_DIR ?= target/llvm-cov-all-lanes
+COVERAGE_ABI_PREFLIGHT ?= 0
 CARGO_DENY_VERSION ?= 0.20.2
 CARGO_AUDIT_VERSION ?= 0.22.2
 PREFIX ?= /usr/local
@@ -248,7 +249,9 @@ test-coverage: unified-oracle api-abi-runtime-check
 
 .PHONY: test-coverage-all
 test-coverage-all:
-	+$(MAKE) --no-print-directory -j$(COVERAGE_PREPARATION_JOBS) unified-oracle api-abi-runtime-check coverage-abi-preflight
+	+$(MAKE) --no-print-directory -j$(COVERAGE_PREPARATION_JOBS) \
+		unified-oracle api-abi-runtime-check \
+		$(if $(filter 1,$(COVERAGE_ABI_PREFLIGHT)),coverage-abi-preflight)
 	mkdir -p $(dir $(ALL_LANES_COVERAGE_OUTPUT))
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --profraw-only
 # Keep workspace report scope for the C-ABI and WASM facades, but execute
@@ -336,6 +339,7 @@ test-ffi:
 #   COVERAGE_LLVM_COV_FLAGS             – extra cargo-llvm-cov flags for coverage builds
 #   COVERAGE_PREPARATION_JOBS           – parallel jobs for independent coverage setup
 #   COVERAGE_ALL_TARGET_DIR             – isolated cached target for all-lane LLVM coverage
+#   COVERAGE_ABI_PREFLIGHT               – rerun the standalone ABI unit preflight (1/0)
 #   FONTDONE_UNIFIED_ORACLE_REFRESH    – force skip cache, re-run C oracle
 #   FONTDONE_UNIFIED_SELECTION_ONLY    – print selection, don't execute
 #   FONTDONE_UNIFIED_PROFILE           – print timing profiles

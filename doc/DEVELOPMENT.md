@@ -122,7 +122,12 @@ pipe-trace targets add no parity inputs and can duplicate cfg-dependent FFI
 coverage. Its `COVERAGE_ALL_TARGET_DIR` cache is separate from other coverage
 profiles, so `--no-clean` cannot reuse stale binaries from a different target
 selection. Run `make coverage-clean` after changing the coverage toolchain,
-profile flags, or coverage instrumentation configuration.
+profile flags, or coverage instrumentation configuration. The ABI-only package
+preflight remains available as `make coverage-abi-preflight`, but the default
+all-lane coverage command does not rerun it: `make test-fast` already executes
+the same test-support contract, and `make ci-thorough` runs that gate before
+coverage. Set `COVERAGE_ABI_PREFLIGHT=1` when an isolated coverage invocation
+also needs the extra preflight.
 
 `make test-parity` prints these values separately:
 
@@ -207,11 +212,10 @@ make test-coverage-all
 ```
 
 The focused command writes core Rust JSON. The all-lane command schedules the
-independent oracle/audit preparation and the ABI-only package preflight in the
-same two-job setup batch, allowing the preflight to overlap with preparation,
-then uses nightly branch coverage for every non-ignored root
-unit and integration target under the default feature profile, including the
-complete parity matrix. That single coherent coverage build links and measures
+independent oracle/audit preparation, then uses nightly branch coverage for
+every non-ignored root unit and integration target under the default feature
+profile, including the complete parity matrix. That single coherent coverage
+build links and measures
 the core, native C ABI, and host-compiled WASM facade together; compiling a
 facade again under a second feature set would make LLVM attribute two object
 variants to the same source path. Optional feature profiles are verified by
@@ -232,26 +236,27 @@ keeping variation-sequence cases isolated. Oracle
 preparation also preserves the mtime of unchanged generated constants and
 validator overlay sources, avoiding a needless helper rebuild and relink. It
 runs in requested thorough CI, not on every commit. The latest measured run
-took 3 minutes 48.279 seconds end-to-end against the dirty worktree at commit
-`ad6c489963b2797ab39e226efaa6a4690faa63ef`; single-run wall time varies with
-compilation and host load. Its test body finished in 115.99 seconds, while the
-backend totals were approximately 42.14 seconds Rust FFI, 30.78 seconds C ABI,
-31.11 seconds WASM, and 0.04 seconds comparison. The remaining roughly 112
-seconds of wall time was
-outside that test body, in setup/reporting/ingestion and host contention;
+took 3 minutes 5.652 seconds end-to-end against the worktree at commit
+`9cb128a1d1db14d4f1dd8341327a1912b4a933c6`; single-run wall time varies with
+compilation and host load. Its test body finished in 126.17 seconds, while the
+backend totals were approximately 46.77 seconds Rust FFI, 33.66 seconds C ABI,
+34.26 seconds WASM, and 0.06 seconds comparison. Removing the duplicate ABI
+preflight from the default coverage path reduced this sample by 42.627 seconds
+against the previous valid 3:48.279 run; the remaining wall-time tail is
+outside the test body, in setup/reporting/ingestion and host contention.
 Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,267 / 54,039 | 91.17% |
-| Branches | 9,668 / 12,500 | 77.34% |
+| Lines | 49,273 / 54,038 | 91.18% |
+| Branches | 9,671 / 12,498 | 77.38% |
 | Functions | 3,368 / 3,825 | 88.05% |
-| Regions | 67,852 / 75,210 | 90.22% |
+| Regions | 67,852 / 75,205 | 90.22% |
 
-That managed run passed all 7,469 runnable parity comparisons with 0 failures;
+That managed run passed all 7,473 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its Coverage MCP run ID is
-`e9b39b64-59aa-43e2-9864-9f6e018a6306`, and its immutable snapshot ID is
-`a997c5b2-c045-491c-aae8-13b39271ac05`. That required three-surface
+`1600748f-448c-4855-8be6-9149d1b1736a`, and its immutable snapshot ID is
+`ade1e8cd-14c9-4082-8c65-2d50e6159f80`. That required three-surface
 instrumented execution remains the dominant measured test cost, while the
 latest wall-time tail is outside the test body. The percentages apply only to the named
 source commit, suite, and toolchain. They are not a FreeType-parity percentage,
@@ -290,7 +295,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 595 tracked paths and no symlinks.
+The canonical input tree currently contains 599 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 

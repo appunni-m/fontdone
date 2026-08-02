@@ -124,10 +124,10 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP parity run
-`61dddda3-5866-43ea-bd80-e84cd1d4c5b9`, recorded by run
-`b5861da0-4262-49ab-a7b3-5a6a7b27f4e9` against the dirty worktree at commit
-`ad6c489963b2797ab39e226efaa6a4690faa63ef`; its source-bound digest is
-`ff30d59c4eb4c0bbf12ba20caab957e17fef0f887c54f013bf9e3526de4dae9b`.
+`1daeba70-88e3-4e1e-a3c8-45472bc1219b`, recorded by run
+`0474aef0-a0ce-4c16-b3ca-8fde7a781bb7` against the worktree at commit
+`9cb128a1d1db14d4f1dd8341327a1912b4a933c6`; its source-bound digest is
+`51231e8849f35e8956cfc490dafb9cc490e7d926663a55ed7348c5652514409b`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -140,14 +140,14 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The last all-lane coverage run was recorded on **2026-08-02** against
-`ad6c489963b2797ab39e226efaa6a4690faa63ef`:
+`9cb128a1d1db14d4f1dd8341327a1912b4a933c6`:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,267 / 54,039 | 91.17% |
-| Branches | 9,668 / 12,500 | 77.34% |
+| Lines | 49,273 / 54,038 | 91.18% |
+| Branches | 9,671 / 12,498 | 77.38% |
 | Functions | 3,368 / 3,825 | 88.05% |
-| Regions | 67,852 / 75,210 | 90.22% |
+| Regions | 67,852 / 75,205 | 90.22% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -158,26 +158,25 @@ WASM lanes. This avoids empty root-unit and pipe-trace binaries that can make
 LLVM count cfg-dependent FFI source twice without adding a parity input. The
 all-lane command uses a dedicated `COVERAGE_ALL_TARGET_DIR` cache, so its
 `--no-clean` reuse cannot mix stale binaries from another coverage target. The
-ABI-only package preflight still shares the two-job setup batch with the
-independent oracle/audit preparation, allowing those checks to overlap before
-one coherent coverage build links and measures all three surfaces. Optional
-feature profiles are
+ABI-only package preflight remains available as `make coverage-abi-preflight`,
+but the default coverage target does not rerun it because `make test-fast`
+already executes that contract before `make ci-thorough`. Optional feature
+profiles are
 verified separately by `make optional-feature-contract`.
 The latest Coverage MCP run is
-`e9b39b64-59aa-43e2-9864-9f6e018a6306`, with snapshot
-`a997c5b2-c045-491c-aae8-13b39271ac05`; it completed in 3 minutes 48.279
-seconds, with 7,469 exact parity comparisons. Its test body finished in
-115.99 seconds and the backend timings were about 42.14 seconds Rust FFI,
-30.78 seconds C ABI, 31.11 seconds WASM, and 0.04 seconds comparison. The
-previous warm baseline was 2 minutes 2.149 seconds; the extra wall time in this sample was outside the
-backend test body, in setup/reporting/ingestion and host contention. Coverage
-MCP does not currently expose timestamps for those sub-phases, so that split
-needs separate instrumentation before it can be optimized further.
-The setup change removes the duplicated Cargo launch and overlaps independent
-oracle/audit preparation; coverage builds
-now retain the instrumented target with `cargo llvm-cov --no-clean`, remove
-stale `.profraw` files before each measurement, and retain line tables while
-omitting full test debuginfo via `COVERAGE_TEST_DEBUG=1`. Face-cache keys now
+`1600748f-448c-4855-8be6-9149d1b1736a`, with snapshot
+`ade1e8cd-14c9-4082-8c65-2d50e6159f80`; it completed in 3 minutes 5.652
+seconds, with 7,473 exact parity comparisons. Its test body finished in
+126.17 seconds and the backend timings were about 46.77 seconds Rust FFI,
+33.66 seconds C ABI, 34.26 seconds WASM, and 0.06 seconds comparison. The
+previous valid run took 3 minutes 48.279 seconds, so removing the duplicate
+ABI preflight from the default coverage path reduced measured wall time by
+42.627 seconds (18.7%). The remaining wall-time tail is outside the parity
+body, in setup/reporting/ingestion and host contention. Coverage MCP does not
+currently expose timestamps for those sub-phases. Coverage builds retain the
+instrumented target with `cargo llvm-cov --no-clean`, remove stale `.profraw`
+files before each measurement, and retain line tables while omitting full test
+debuginfo via `COVERAGE_TEST_DEBUG=1`. Face-cache keys now
 reuse the preload phase's content digests instead of hashing the same font for
 each expanded case, and read-only SFNT table-load/info routes reuse those
 content-bound handles; the variation-sequence route remains isolated. Oracle
