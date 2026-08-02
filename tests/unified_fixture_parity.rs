@@ -42393,7 +42393,13 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             Ok(args)
         }
         "sfnt.load_sfnt_table" => {
-            if lifecycle_handle_param(params, "face") == Some("null") {
+            // Keep this maintained null-face contract on the dedicated oracle
+            // route even when strict-error selection has normalized its
+            // lifecycle parameters. The generic --error fallback cannot
+            // observe the untouched length output.
+            if lifecycle_handle_param(params, "face") == Some("null")
+                || case.case_id == "tttables.FT_Load_Sfnt_Table.null_face_error"
+            {
                 let mut args = vec!["--load-sfnt-table-null-face".to_string()];
                 args.push(load_sfnt_table_tag_hex_arg(params)?);
                 args.push(load_sfnt_table_offset_arg(params)?);
