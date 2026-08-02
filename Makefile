@@ -16,6 +16,7 @@ COVERAGE_LLVM_COV_FLAGS ?= --no-clean
 COVERAGE_PREPARATION_JOBS ?= 2
 COVERAGE_ALL_TARGET_DIR ?= target/llvm-cov-all-lanes
 COVERAGE_ABI_PREFLIGHT ?= 0
+COVERAGE_UNIFIED_LANE_SPLIT ?= 1
 CARGO_DENY_VERSION ?= 0.20.2
 CARGO_AUDIT_VERSION ?= 0.22.2
 PREFIX ?= /usr/local
@@ -254,6 +255,67 @@ test-coverage-all:
 		$(if $(filter 1,$(COVERAGE_ABI_PREFLIGHT)),coverage-abi-preflight)
 	mkdir -p $(dir $(ALL_LANES_COVERAGE_OUTPUT))
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --profraw-only
+ifeq ($(COVERAGE_UNIFIED_LANE_SPLIT),1)
+# Build one instrumented integration binary, then run the Rust FFI, C ABI, and
+# host-WASM comparisons in separate processes. LLVM profile counters are
+# process-local, so this avoids the lock/atomic contention seen when those
+# backends run concurrently in one instrumented process. cargo-llvm-cov merges
+# the three raw profiles in the report step below.
+	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
+	CARGO_PROFILE_TEST_OPT_LEVEL=$(COVERAGE_TEST_OPT_LEVEL) \
+	CARGO_PROFILE_TEST_DEBUG=$(COVERAGE_TEST_DEBUG) \
+	$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov --branch --workspace \
+		--test unified_fixture_parity --exclude-from-test fontdone-c-abi \
+		--exclude-from-test fontdone-wasm --locked \
+		$(filter-out --no-clean,$(COVERAGE_LLVM_COV_FLAGS)) --no-run \
+		--ignore-filename-regex '$(ALL_LANES_COVERAGE_IGNORE_REGEX)' \
+		--output-path $(COVERAGE_ALL_TARGET_DIR)/coverage-build.json \
+		-- unified_fixture_parity --nocapture
+	@set -u; \
+	lane_status=0; \
+	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
+	  CARGO_PROFILE_TEST_OPT_LEVEL=$(COVERAGE_TEST_OPT_LEVEL) \
+	  CARGO_PROFILE_TEST_DEBUG=$(COVERAGE_TEST_DEBUG) \
+	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
+	  FONTDONE_UNIFIED_BACKEND=rust \
+	  LLVM_PROFILE_FILE=$(COVERAGE_ALL_TARGET_DIR)/fontdone-rust-%p-%m.profraw \
+	  $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov --branch --workspace \
+	    --test unified_fixture_parity --exclude-from-test fontdone-c-abi \
+	    --exclude-from-test fontdone-wasm --locked \
+	    $(filter-out --no-clean,$(COVERAGE_LLVM_COV_FLAGS)) --no-report \
+	    -- unified_fixture_parity --nocapture ) & rust_pid=$$!; \
+	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
+	  CARGO_PROFILE_TEST_OPT_LEVEL=$(COVERAGE_TEST_OPT_LEVEL) \
+	  CARGO_PROFILE_TEST_DEBUG=$(COVERAGE_TEST_DEBUG) \
+	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
+	  FONTDONE_UNIFIED_BACKEND=c-abi \
+	  LLVM_PROFILE_FILE=$(COVERAGE_ALL_TARGET_DIR)/fontdone-c-abi-%p-%m.profraw \
+	  $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov --branch --workspace \
+	    --test unified_fixture_parity --exclude-from-test fontdone-c-abi \
+	    --exclude-from-test fontdone-wasm --locked \
+	    $(filter-out --no-clean,$(COVERAGE_LLVM_COV_FLAGS)) --no-report \
+	    -- unified_fixture_parity --nocapture ) & c_abi_pid=$$!; \
+	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
+	  CARGO_PROFILE_TEST_OPT_LEVEL=$(COVERAGE_TEST_OPT_LEVEL) \
+	  CARGO_PROFILE_TEST_DEBUG=$(COVERAGE_TEST_DEBUG) \
+	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
+	  FONTDONE_UNIFIED_BACKEND=wasm \
+	  LLVM_PROFILE_FILE=$(COVERAGE_ALL_TARGET_DIR)/fontdone-wasm-%p-%m.profraw \
+	  $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov --branch --workspace \
+	    --test unified_fixture_parity --exclude-from-test fontdone-c-abi \
+	    --exclude-from-test fontdone-wasm --locked \
+	    $(filter-out --no-clean,$(COVERAGE_LLVM_COV_FLAGS)) --no-report \
+	    -- unified_fixture_parity --nocapture ) & wasm_pid=$$!; \
+	wait $$rust_pid || lane_status=1; \
+	wait $$c_abi_pid || lane_status=1; \
+	wait $$wasm_pid || lane_status=1; \
+	exit $$lane_status
+	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
+	$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov report \
+		--locked --json \
+		--ignore-filename-regex '$(ALL_LANES_COVERAGE_IGNORE_REGEX)' \
+		--output-path $(ALL_LANES_COVERAGE_OUTPUT)
+else
 # Keep workspace report scope for the C-ABI and WASM facades, but execute
 # only the integration binary that drives all three parity lanes. Running
 # the workspace's empty unit and pipe-trace targets duplicates cfg-dependent
@@ -270,6 +332,7 @@ test-coverage-all:
 		--locked --json \
 		--ignore-filename-regex '$(ALL_LANES_COVERAGE_IGNORE_REGEX)' \
 		--output-path $(ALL_LANES_COVERAGE_OUTPUT) -- --nocapture
+endif
 	jq -c '(.data[]?.files[]?.segments[]? | select(length >= 3) | .[2]) |= if . > 2147483647 then 2147483647 else . end' \
 		$(ALL_LANES_COVERAGE_OUTPUT) > $(ALL_LANES_COVERAGE_OUTPUT).tmp
 	mv $(ALL_LANES_COVERAGE_OUTPUT).tmp $(ALL_LANES_COVERAGE_OUTPUT)
@@ -340,6 +403,8 @@ test-ffi:
 #   COVERAGE_PREPARATION_JOBS           – parallel jobs for independent coverage setup
 #   COVERAGE_ALL_TARGET_DIR             – isolated cached target for all-lane LLVM coverage
 #   COVERAGE_ABI_PREFLIGHT               – rerun the standalone ABI unit preflight (1/0)
+#   COVERAGE_UNIFIED_LANE_SPLIT          – run Rust, C ABI, and WASM coverage lanes as separate processes (1/0)
+#   FONTDONE_UNIFIED_BACKEND             – internal lane selector: rust, c-abi, or wasm
 #   FONTDONE_UNIFIED_ORACLE_REFRESH    – force skip cache, re-run C oracle
 #   FONTDONE_UNIFIED_SELECTION_ONLY    – print selection, don't execute
 #   FONTDONE_UNIFIED_PROFILE           – print timing profiles

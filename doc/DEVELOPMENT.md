@@ -129,6 +129,19 @@ the same test-support contract, and `make ci-thorough` runs that gate before
 coverage. Set `COVERAGE_ABI_PREFLIGHT=1` when an isolated coverage invocation
 also needs the extra preflight.
 
+By default, `COVERAGE_UNIFIED_LANE_SPLIT=1` builds one instrumented
+`unified_fixture_parity` binary, then runs the Rust FFI, C ABI, and host-WASM
+comparisons in three separate processes. `FONTDONE_UNIFIED_BACKEND` selects the
+single backend for each process, and each process writes a distinct
+`LLVM_PROFILE_FILE`; the final `cargo llvm-cov report` merges those raw profiles.
+LLVM source-based coverage counters are process-local, so this removes the
+cross-backend counter contention without changing the input matrix or oracle
+comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the legacy
+single-process diagnostic path. The split path was validated through Coverage
+MCP run `20c7831b-280d-4eab-8147-33eb9e3a4876`: all three processes passed
+7,476 / 7,476 cases, and the end-to-end run took 62.027 seconds versus the
+previous warm 113.998-second measurement.
+
 `make test-parity` prints these values separately:
 
 - runnable, passed, and failed exact-comparison cases;
@@ -214,20 +227,21 @@ make test-coverage-all
 The focused command writes core Rust JSON. The all-lane command schedules the
 independent oracle/audit preparation, then uses nightly branch coverage for
 every non-ignored root unit and integration target under the default feature
-profile, including the complete parity matrix. That single coherent coverage
-build links and measures
-the core, native C ABI, and host-compiled WASM facade together; compiling a
-facade again under a second feature set would make LLVM attribute two object
-variants to the same source path. Optional feature profiles are verified by
-`make optional-feature-contract`; mixing them into the default parity process
-would compare different runtime contracts. The coverage command writes
-`target/coverage/unified-runtime-all-lanes.json`; test-harness paths are the
-only filename exclusion.
+profile, including the complete parity matrix. The split path builds and
+instruments the core, native C ABI, and host-compiled WASM facade once, executes
+each backend lane in its own process, and merges the three raw profiles into one
+report. Compiling a facade again under a second feature set would make LLVM
+attribute two object variants to the same source path. Optional feature profiles
+are verified by `make optional-feature-contract`; mixing them into the default
+parity process would compare different runtime contracts. The coverage command
+writes `target/coverage/unified-runtime-all-lanes.json`; test-harness paths are
+the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
-reuse the instrumented target: budget roughly 2 minutes with warm coverage
-build artifacts and a warm oracle cache. A cache reset can take longer, so
-allow roughly 4–6 minutes for a cold run. `COVERAGE_TEST_DEBUG=1` keeps line
+reuse the instrumented target. The split path measured 62.027 seconds
+end-to-end on the current worktree with a warm oracle cache; allow roughly
+2 minutes for host variation and roughly 4–6 minutes after a cache reset.
+`COVERAGE_TEST_DEBUG=1` keeps line
 tables while omitting full test debuginfo; this reduces the measured end-to-end
 run without changing the coverage totals. Face-cache keys also reuse preloaded
 font content digests instead of rehashing every expanded case, and the
@@ -240,12 +254,12 @@ run took 1 minute 53.998 seconds end-to-end against the worktree at commit
 `53995d32008605b8abe6a15db477c86881c929c9`; single-run wall time varies with
 compilation and host load. Its runtime backend totals were approximately
 39.52 seconds Rust FFI, 29.74 seconds C ABI, 30.00 seconds WASM, and 0.03
-seconds comparison. A cold current-commit run took 2 minutes 20.153 seconds,
-including a 24.70-second instrumented rebuild. The separately measured removal
-of the duplicate ABI preflight from the default coverage path reduced the
-earlier 3:48.279 sample by 42.627 seconds (18.7%); the remaining wall-time
-tail is outside backend execution, in setup/build/reporting/ingestion and host
-Coverage MCP does not expose timestamps for those sub-phases yet:
+seconds comparison. The split validation's backend execution totals were about
+50.75 seconds Rust FFI, 39.52 seconds C ABI, and 39.41 seconds WASM, run in
+parallel; its longest test process took 56.42 seconds and the total run took
+62.027 seconds. The remaining wall-time tail is setup, process/report merging,
+and Coverage MCP ingestion rather than another parity route. Coverage MCP does
+not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|

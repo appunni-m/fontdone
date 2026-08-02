@@ -465,6 +465,29 @@ enum RuntimeReadiness {
     Pending { reason: String },
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum UnifiedBackend {
+    Rust,
+    CAbi,
+    Wasm,
+}
+
+fn unified_backend() -> Option<UnifiedBackend> {
+    static BACKEND: OnceLock<Option<UnifiedBackend>> = OnceLock::new();
+    *BACKEND.get_or_init(|| match std::env::var("FONTDONE_UNIFIED_BACKEND") {
+        Ok(value) => Some(match value.as_str() {
+            "rust" => UnifiedBackend::Rust,
+            "c-abi" => UnifiedBackend::CAbi,
+            "wasm" => UnifiedBackend::Wasm,
+            _ => {
+                panic!("FONTDONE_UNIFIED_BACKEND must be one of rust, c-abi, or wasm; got {value}")
+            }
+        }),
+        Err(std::env::VarError::NotPresent) => None,
+        Err(err) => panic!("read FONTDONE_UNIFIED_BACKEND: {err}"),
+    })
+}
+
 #[derive(Clone, Copy)]
 enum GlyphLoadInput {
     CharCode(u64),
@@ -2729,34 +2752,47 @@ impl BackendComparisonWorker {
     fn prewarm_faces(&mut self, cases: &[&InputCase]) -> Result<FacePrewarmProfile, String> {
         let total_start = Instant::now();
         let opened_before = self.opened_face_handle_count();
+        let backend = unified_backend();
         let mut profile = FacePrewarmProfile {
             chunks: 1,
             ..FacePrewarmProfile::default()
         };
-        for case in cases {
-            if !case_uses_cached_face(case) {
-                continue;
+        if backend.is_none_or(|backend| backend == UnifiedBackend::Rust) {
+            for case in cases {
+                if !case_uses_cached_face(case) {
+                    continue;
+                }
+                profile.cases = profile.cases.saturating_add(1);
+                let start = Instant::now();
+                let _ = self.rust_face(case);
+                profile.rust_ffi = profile.rust_ffi.saturating_add(start.elapsed());
             }
-            profile.cases = profile.cases.saturating_add(1);
-            let start = Instant::now();
-            let _ = self.rust_face(case);
-            profile.rust_ffi = profile.rust_ffi.saturating_add(start.elapsed());
         }
-        for case in cases {
-            if !case_uses_cached_face(case) {
-                continue;
+        if backend.is_none_or(|backend| backend == UnifiedBackend::CAbi) {
+            for case in cases {
+                if !case_uses_cached_face(case) {
+                    continue;
+                }
+                let start = Instant::now();
+                let _ = self.c_face(case);
+                profile.c_abi = profile.c_abi.saturating_add(start.elapsed());
             }
-            let start = Instant::now();
-            let _ = self.c_face(case);
-            profile.c_abi = profile.c_abi.saturating_add(start.elapsed());
         }
-        for case in cases {
-            if !case_uses_cached_face(case) {
-                continue;
+        if backend.is_none_or(|backend| backend == UnifiedBackend::Wasm) {
+            for case in cases {
+                if !case_uses_cached_face(case) {
+                    continue;
+                }
+                let start = Instant::now();
+                let _ = self.wasm_face(case);
+                profile.wasm_abi = profile.wasm_abi.saturating_add(start.elapsed());
             }
-            let start = Instant::now();
-            let _ = self.wasm_face(case);
-            profile.wasm_abi = profile.wasm_abi.saturating_add(start.elapsed());
+        }
+        if backend.is_some() {
+            profile.cases = cases
+                .iter()
+                .filter(|case| case_uses_cached_face(case))
+                .count();
         }
 
         profile.opened_face_handles = self
@@ -2775,17 +2811,33 @@ impl BackendComparisonWorker {
 
     fn compare_case(&mut self, case: &InputCase, oracle: &RunOutput) -> Result<(), String> {
         let case_start = Instant::now();
-        let start = Instant::now();
-        let rust_actual = backend_or_error("rust", case.case_id.as_str(), self.run_rust_ffi(case))?;
-        let rust_duration = start.elapsed();
-        self.profile.rust_ffi = self.profile.rust_ffi.saturating_add(rust_duration);
-
-        let start = Instant::now();
-        let c_actual = backend_or_error("c abi", case.case_id.as_str(), self.run_c_abi(case))?;
-        let c_duration = start.elapsed();
-        self.profile.c_abi = self.profile.c_abi.saturating_add(c_duration);
-
-        let (wasm_actual, wasm_duration) = if wasm_backend_applies(case) {
+        let backend = unified_backend();
+        let (rust_actual, rust_duration) = if backend
+            .is_none_or(|backend| backend == UnifiedBackend::Rust)
+        {
+            let start = Instant::now();
+            let actual = backend_or_error("rust", case.case_id.as_str(), self.run_rust_ffi(case))?;
+            let duration = start.elapsed();
+            self.profile.rust_ffi = self.profile.rust_ffi.saturating_add(duration);
+            (Some(actual), duration)
+        } else {
+            (None, Duration::ZERO)
+        };
+        let (c_actual, c_duration) = if backend
+            .is_none_or(|backend| backend == UnifiedBackend::CAbi)
+        {
+            let start = Instant::now();
+            let actual = backend_or_error("c abi", case.case_id.as_str(), self.run_c_abi(case))?;
+            let duration = start.elapsed();
+            self.profile.c_abi = self.profile.c_abi.saturating_add(duration);
+            (Some(actual), duration)
+        } else {
+            (None, Duration::ZERO)
+        };
+        let (wasm_actual, wasm_duration) = if backend
+            .is_none_or(|backend| backend == UnifiedBackend::Wasm)
+            && wasm_backend_applies(case)
+        {
             let start = Instant::now();
             let actual =
                 backend_or_error("wasm abi", case.case_id.as_str(), self.run_wasm_abi(case))?;
@@ -2797,15 +2849,44 @@ impl BackendComparisonWorker {
         };
 
         let start = Instant::now();
-        let result = compare_named_output(case, "rust ffi", oracle, &rust_actual)
-            .and_then(|()| compare_named_output(case, "c abi", oracle, &c_actual))
+        let result = match backend {
+            Some(UnifiedBackend::Rust) => compare_named_output(
+                case,
+                "rust ffi",
+                oracle,
+                rust_actual.as_ref().expect("selected Rust backend output"),
+            ),
+            Some(UnifiedBackend::CAbi) => compare_named_output(
+                case,
+                "c abi",
+                oracle,
+                c_actual.as_ref().expect("selected C ABI backend output"),
+            ),
+            Some(UnifiedBackend::Wasm) => wasm_actual.as_ref().map_or(Ok(()), |actual| {
+                compare_named_output(case, "wasm abi", oracle, actual)
+            }),
+            None => compare_named_output(
+                case,
+                "rust ffi",
+                oracle,
+                rust_actual.as_ref().expect("Rust backend output"),
+            )
+            .and_then(|()| {
+                compare_named_output(
+                    case,
+                    "c abi",
+                    oracle,
+                    c_actual.as_ref().expect("C ABI backend output"),
+                )
+            })
             .and_then(|()| {
                 if let Some(wasm_actual) = wasm_actual.as_ref() {
                     compare_named_output(case, "wasm abi", oracle, wasm_actual)
                 } else {
                     Ok(())
                 }
-            });
+            }),
+        };
         let compare_duration = start.elapsed();
         self.profile.compare = self.profile.compare.saturating_add(compare_duration);
         if profile_enabled() {

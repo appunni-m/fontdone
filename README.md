@@ -156,8 +156,15 @@ packages in the report but executes only the `unified_fixture_parity`
 integration target, which already drives the Rust, C-ABI, and host-compiled
 WASM lanes. This avoids empty root-unit and pipe-trace binaries that can make
 LLVM count cfg-dependent FFI source twice without adding a parity input. The
-all-lane command uses a dedicated `COVERAGE_ALL_TARGET_DIR` cache, so its
-`--no-clean` reuse cannot mix stale binaries from another coverage target. The
+default `COVERAGE_UNIFIED_LANE_SPLIT=1` path builds one instrumented binary,
+then runs the Rust FFI, C ABI, and host-WASM lanes in separate processes with
+separate raw profile files; the final `cargo llvm-cov report` merges them. This
+avoids the LLVM counter contention measured when all three backends share one
+instrumented process without changing the parity inputs. Set
+`COVERAGE_UNIFIED_LANE_SPLIT=0` only for the legacy single-process diagnostic
+path. The all-lane command uses a dedicated `COVERAGE_ALL_TARGET_DIR` cache, so
+its `--no-clean` reuse cannot mix stale binaries from another coverage target.
+The
 ABI-only package preflight remains available as `make coverage-abi-preflight`,
 but the default coverage target does not rerun it because `make test-fast`
 already executes that contract before `make ci-thorough`. Optional feature
@@ -168,13 +175,14 @@ The latest Coverage MCP run is
 `a8ef34a9-b6f4-47ad-ad76-039d7ee9bce6`; the warm run completed in 1 minute
 53.998 seconds, with 7,476 exact parity comparisons. Its runtime backend
 timings were about 39.52 seconds Rust FFI, 29.74 seconds C ABI, 30.00
-seconds WASM, and 0.03 seconds comparison. A cold current-commit run took
-2 minutes 20.153 seconds, including a 24.70-second instrumented rebuild. The
-separately measured removal of the duplicate ABI preflight from the default
-coverage path accounted for 42.627 seconds (18.7%) of the improvement over
-the earlier 3:48.279 sample. The remaining wall-time tail is
-setup/build/reporting/ingestion and host contention; Coverage MCP does not
-currently expose timestamps for those sub-phases. Coverage builds retain the
+seconds WASM, and 0.03 seconds comparison. The lane-split validation run
+`20c7831b-280d-4eab-8147-33eb9e3a4876` passed 7,476 / 7,476 cases in each
+backend process and completed in 62.027 seconds, a 45.6% reduction from the
+previous warm 113.998-second run. Its backend totals were about 50.75 seconds
+Rust FFI, 39.52 seconds C ABI, and 39.41 seconds WASM, executed in parallel;
+the longest test process took 56.42 seconds. The remaining wall-time tail is
+setup, process/report merging, and Coverage MCP ingestion. Coverage builds
+retain the
 instrumented target with `cargo llvm-cov --no-clean`, remove stale `.profraw`
 files before each measurement, and retain line tables while omitting full test
 debuginfo via `COVERAGE_TEST_DEBUG=1`. Face-cache keys now
@@ -183,11 +191,8 @@ each expanded case, and read-only SFNT table-load/info routes reuse those
 content-bound handles; the variation-sequence route remains isolated. Oracle
 preparation now also preserves generated-file mtimes
 when contents are unchanged, so the C helper and FreeType validator overlay are
-not rebuilt on every run. The latest backend timings are about 39.5 seconds
-Rust FFI, 29.7 seconds C ABI, and 30.0 seconds WASM; the remaining dominant
-cost is the required instrumented three-surface parity execution. Run
-`make coverage-clean` after changing coverage instrumentation or profile
-configuration.
+not rebuilt on every run. Run `make coverage-clean` after changing coverage
+instrumentation or profile configuration.
 
 Coverage is a code-execution signal, not a compatibility score. These
 percentages apply only to the named source commit, suite, and toolchain. Run

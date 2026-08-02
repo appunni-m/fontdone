@@ -414,22 +414,27 @@ complete**, with 5,219 / 5,219 runtime contract rows and 647 / 647 strict error
 routes exact; only the Windows import-library item and four fresh target-lane
 bundles remain in that scorecard.
 
-The latest warm all-lane coverage run completed in 1 minute 53.998 seconds.
+The source-bound warm all-lane baseline completed in 1 minute 53.998 seconds.
 Its runtime backend timings were about 39.52 seconds Rust FFI, 29.74 seconds C
 ABI, 30.00 seconds WASM, and 0.03 seconds comparison. A cold current-commit
 run took 2 minutes 20.153 seconds, including a 24.70-second instrumented
 rebuild. The separately measured removal of the duplicate ABI preflight from
 the default coverage path reduced the earlier 3:48.279 sample by 42.627
-seconds (18.7%); the remaining wall-time tail is outside backend execution, in
-setup/build/reporting/ingestion and host contention. `make test-coverage-all`
-uses a single parity worker, `CARGO_PROFILE_TEST_OPT_LEVEL=1`,
-`COVERAGE_TEST_DEBUG=1`, and `cargo llvm-cov --no-clean` by default: LLVM
-instrumentation made parallel backend calls contend, the optimized test
-profile removed the several-fold slowdown of unoptimized instrumented code,
-line-table-only debuginfo reduced compile/report overhead, retaining the
-instrumented target removes the repeated rebuild on warm runs, and face-cache
-keys reuse preloaded font content digests instead of rehashing each expanded
-case. Independent oracle/audit preparation runs in the two-job setup batch;
+seconds (18.7%). `make test-coverage-all` now defaults to
+`COVERAGE_UNIFIED_LANE_SPLIT=1`: it builds one instrumented parity binary and
+runs the Rust FFI, C ABI, and host-WASM lanes in separate processes, each with
+its own raw profile, then merges them with `cargo llvm-cov report`. LLVM
+instrumentation made the old in-process backend calls contend; process-local
+profiles remove that contention while retaining the exact matrix. Set the
+variable to `0` only for the legacy diagnostic path. The command also uses a
+single parity worker per lane, `CARGO_PROFILE_TEST_OPT_LEVEL=1`,
+`COVERAGE_TEST_DEBUG=1`, and `cargo llvm-cov --no-clean` by default: the
+optimized test profile removes the several-fold slowdown of unoptimized
+instrumented code, line-table-only debuginfo reduces compile/report overhead,
+retaining the instrumented target removes repeated warm-run rebuilds, and
+face-cache keys reuse preloaded font content digests instead of rehashing each
+expanded case. Independent oracle/audit preparation runs in the two-job setup
+batch;
 the ABI-only package preflight remains available separately as
 `make coverage-abi-preflight` and is already exercised by `make test-fast`.
 Unchanged generated
@@ -438,9 +443,12 @@ repeated. The current run measured 49,341 / 54,104 lines, 9,688 / 12,512
 branches, 3,371 / 3,828 functions, and 67,921 / 75,273 regions. It passed
 7,476 / 7,476 runnable parity comparisons with 0 failures. Its Coverage MCP run
 is `1a9ca419-0e1f-41a4-8c9f-eba21a2e385b`, with snapshot
-`a8ef34a9-b6f4-47ad-ad76-039d7ee9bce6`. Each measurement clears stale
-`.profraw` files first; use `make coverage-clean` after changing the coverage
-toolchain or instrumentation configuration.
+`a8ef34a9-b6f4-47ad-ad76-039d7ee9bce6`. The lane-split validation run
+`20c7831b-280d-4eab-8147-33eb9e3a4876` passed 7,476 / 7,476 in each backend
+process and completed in 62.027 seconds, a 45.6% reduction from the old warm
+wall time; its longest test process took 56.42 seconds. Each measurement clears
+stale `.profraw` files first; use `make coverage-clean` after changing the
+coverage toolchain or instrumentation configuration.
 
 Run:
 
