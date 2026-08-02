@@ -403,6 +403,7 @@ per-batch coverage increase is claimed:
 | 33 | `082e577a6147065d886ea45a316e244f75045ce3` | Split coverage execution into separate Rust FFI, C ABI, and host-WASM processes with process-local LLVM profiles, retaining the exact unified parity matrix. Validation run `b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 in every lane and measured 61.827 seconds versus the prior warm 113.998-second combined-lane run. |
 | 34 | `776e7d9eb325f09402c5e3f84955de03c5d242ac` | Corrected the split coverage report to name all three workspace packages explicitly, because `cargo llvm-cov report` does not accept `--workspace`; the C-ABI and WASM implementation source therefore remains in the measured denominator. |
 | 35 | `1a08537f6188cfc4631cee7204fc27663104ae62` | Regenerated the maintained leading/single-reference gvar fixture with the avar-mapped tuple peak (`5325` F2DOT14), activating the intended IUP interpolation path. Focused parity passed 33 / 33; full parity run `640b6f77-2758-423a-b6ca-deb42c86a2b9` passed 7,476 / 7,476, and coverage increased by 22 lines, 6 branches, and 32 regions. |
+| 36 | `f4eee93455458366c43af8770c574f50a29cb5ed` | Reused the single instrumented `unified_fixture_parity` binary for all three split coverage processes instead of invoking `cargo llvm-cov` three times. Clean Coverage MCP run `6eb57e9e-4147-4663-b34a-d29227b0fdba` passed 7,476 / 7,476 in every lane in 54.054 seconds, with unchanged workspace coverage totals; this is 52.6% faster than the previous warm 113.998-second run. |
 
 The latest source-bound parity verification is Coverage MCP parity run
 `640b6f77-2758-423a-b6ca-deb42c86a2b9`, recorded by run
@@ -418,20 +419,22 @@ routes exact; only the Windows import-library item and four fresh target-lane
 bundles remain in that scorecard.
 
 The previous combined-lane warm all-lane baseline completed in 1 minute
-53.998 seconds. The split validation completed in 61.827 seconds, a 45.8%
-reduction, with all three backend lanes still passing the exact matrix. The
-latest source-bound full-scope run took 88.585 seconds on commit
-`1a08537f6188cfc4631cee7204fc27663104ae62`.
-Its latest instrumentation timers were about 48.37 seconds Rust FFI, 37.06
-seconds C ABI, 37.02 seconds WASM, and 0.02 seconds comparison. `make
+53.998 seconds. The split validation completed in 61.827 seconds, and the
+binary-reuse path completed in 54.054 seconds, with all three backend lanes
+still passing the exact matrix. The latest source-bound full-scope run took
+54.054 seconds on commit
+`f4eee93455458366c43af8770c574f50a29cb5ed`.
+Its latest instrumentation timers were about 43.26 seconds Rust FFI, 32.10
+seconds C ABI, 32.02 seconds WASM, and 0.01 seconds comparison. `make
 test-coverage-all` now defaults to
 `COVERAGE_UNIFIED_LANE_SPLIT=1`: it builds one instrumented parity binary and
-runs the Rust FFI, C ABI, and host-WASM lanes in separate processes, each with
-its own raw profile, then merges them with `cargo llvm-cov report`. LLVM
-instrumentation made the old in-process backend calls contend; process-local
-profiles remove that contention while retaining the exact matrix. Set the
-variable to `0` only for the legacy diagnostic path. The command also uses a
-single parity worker per lane, `CARGO_PROFILE_TEST_OPT_LEVEL=1`,
+runs that binary directly for the Rust FFI, C ABI, and host-WASM lanes in
+separate processes, each with its own raw profile, then merges them with
+`cargo llvm-cov report`. Reusing the binary removes three repeated Cargo test
+profile setups; LLVM instrumentation made the old in-process backend calls
+contend, while process-local profiles remove that contention without changing
+the exact matrix. Set the variable to `0` only for the legacy diagnostic path.
+The command also uses a single parity worker per lane, `CARGO_PROFILE_TEST_OPT_LEVEL=1`,
 `COVERAGE_TEST_DEBUG=1`, and `cargo llvm-cov --no-clean` by default: the
 optimized test profile removes the several-fold slowdown of unoptimized
 instrumented code, line-table-only debuginfo reduces compile/report overhead,
@@ -446,10 +449,11 @@ oracle inputs preserve their mtimes so the helper/validator C build is not
 repeated. The current run measured 49,363 / 54,104 lines, 9,694 / 12,512
 branches, 3,371 / 3,828 functions, and 67,953 / 75,273 regions. It passed
 7,476 / 7,476 runnable parity comparisons with 0 failures. Its Coverage MCP run
-is `1d9dd685-fc1e-4f8e-9cc6-2085f2899cf1`, with snapshot
-`7a698025-d61d-49bc-8a6b-cd9c8331693d`. The lane-split validation run
+is `6eb57e9e-4147-4663-b34a-d29227b0fdba`, with snapshot
+`89f01e52-d1a2-4c66-83c1-9661ce87575c`. The lane-split validation run
 `b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 in each backend
-process and completed in 61.827 seconds. Each measurement clears
+process and completed in 61.827 seconds; the clean binary-reuse run completed
+in 54.054 seconds. Each measurement clears
 stale `.profraw` files first; use `make coverage-clean` after changing the
 coverage toolchain or instrumentation configuration.
 

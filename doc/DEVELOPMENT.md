@@ -130,17 +130,19 @@ coverage. Set `COVERAGE_ABI_PREFLIGHT=1` when an isolated coverage invocation
 also needs the extra preflight.
 
 By default, `COVERAGE_UNIFIED_LANE_SPLIT=1` builds one instrumented
-`unified_fixture_parity` binary, then runs the Rust FFI, C ABI, and host-WASM
-comparisons in three separate processes. `FONTDONE_UNIFIED_BACKEND` selects the
-single backend for each process, and each process writes a distinct
-`LLVM_PROFILE_FILE`; the final `cargo llvm-cov report` merges those raw profiles.
-LLVM source-based coverage counters are process-local, so this removes the
-cross-backend counter contention without changing the input matrix or oracle
-comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the legacy
-single-process diagnostic path. The split path was validated through Coverage
-MCP run `b0847bf1-9bce-4a79-8966-5115c88f43eb`: all three processes passed
-7,476 / 7,476 cases, and the end-to-end run took 61.827 seconds versus the
-previous warm 113.998-second measurement.
+`unified_fixture_parity` binary, then runs that binary directly for the Rust
+FFI, C ABI, and host-WASM comparisons in three separate processes.
+`FONTDONE_UNIFIED_BACKEND` selects the single backend for each process, and
+each process writes a distinct `LLVM_PROFILE_FILE`; the final `cargo llvm-cov
+report` merges those raw profiles. Reusing the binary avoids reacquiring
+Cargo's build lock and repeating the `cargo llvm-cov` test-profile setup three
+times. LLVM source-based coverage counters are process-local, so this removes
+the cross-backend counter contention without changing the input matrix or
+oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
+legacy single-process diagnostic path. The clean committed validation was
+Coverage MCP run `6eb57e9e-4147-4663-b34a-d29227b0fdba`: all three processes
+passed 7,476 / 7,476 cases, and the end-to-end run took 54.054 seconds versus
+the previous warm 113.998-second measurement.
 
 The report names `fontdone`, `fontdone-c-abi`, and `fontdone-wasm` explicitly
 because `cargo llvm-cov report` does not accept the workspace flag; this keeps
@@ -242,9 +244,10 @@ writes `target/coverage/unified-runtime-all-lanes.json`; test-harness paths are
 the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
-reuse the instrumented target. The split path measured 61.827 seconds
-end-to-end on the current worktree with a warm oracle cache; allow roughly
-2 minutes for host variation and roughly 4–6 minutes after a cache reset.
+reuse the instrumented target and binary. The split path measured 54.054
+seconds end-to-end on the current worktree with a warm oracle cache; allow
+roughly 2 minutes for host variation and roughly 4–6 minutes after a cache
+reset.
 `COVERAGE_TEST_DEBUG=1` keeps line
 tables while omitting full test debuginfo; this reduces the measured end-to-end
 run without changing the coverage totals. Face-cache keys also reuse preloaded
@@ -254,10 +257,10 @@ keeping variation-sequence cases isolated. Oracle
 preparation also preserves the mtime of unchanged generated constants and
 validator overlay sources, avoiding a needless helper rebuild and relink. It
 runs in requested thorough CI, not on every commit. The latest source-bound
-full-scope run took 88.585 seconds end-to-end against commit
-`1a08537f6188cfc4631cee7204fc27663104ae62`; single-run wall time varies with
+full-scope run took 54.054 seconds end-to-end against commit
+`f4eee93455458366c43af8770c574f50a29cb5ed`; single-run wall time varies with
 compilation and host load. Its instrumentation timers were approximately
-48.37 seconds Rust FFI, 37.06 seconds C ABI, 37.02 seconds WASM, and 0.02
+43.26 seconds Rust FFI, 32.10 seconds C ABI, 32.02 seconds WASM, and 0.01
 seconds comparison. The remaining wall-time tail is setup, process/report
 merging, and Coverage MCP ingestion rather than another parity route. Coverage
 MCP does not expose timestamps for those sub-phases yet:
@@ -271,8 +274,8 @@ MCP does not expose timestamps for those sub-phases yet:
 
 That managed run passed all 7,476 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its Coverage MCP run ID is
-`1d9dd685-fc1e-4f8e-9cc6-2085f2899cf1`, and its immutable snapshot ID is
-`7a698025-d61d-49bc-8a6b-cd9c8331693d`. That required three-surface
+`6eb57e9e-4147-4663-b34a-d29227b0fdba`, and its immutable snapshot ID is
+`89f01e52-d1a2-4c66-83c1-9661ce87575c`. That required three-surface
 instrumented execution remains the dominant measured test cost, while the
 latest wall-time tail is outside the test body. The percentages apply only to the named
 source commit, suite, and toolchain. They are not a FreeType-parity percentage,

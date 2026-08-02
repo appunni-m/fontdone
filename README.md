@@ -140,7 +140,7 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The last all-lane coverage run was recorded on **2026-08-02** against
-`1a08537f6188cfc4631cee7204fc27663104ae62`:
+`f4eee93455458366c43af8770c574f50a29cb5ed`:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -157,10 +157,13 @@ integration target, which already drives the Rust, C-ABI, and host-compiled
 WASM lanes. This avoids empty root-unit and pipe-trace binaries that can make
 LLVM count cfg-dependent FFI source twice without adding a parity input. The
 default `COVERAGE_UNIFIED_LANE_SPLIT=1` path builds one instrumented binary,
-then runs the Rust FFI, C ABI, and host-WASM lanes in separate processes with
-separate raw profile files; the final `cargo llvm-cov report` merges them. This
-avoids the LLVM counter contention measured when all three backends share one
-instrumented process without changing the parity inputs. Set
+then runs that binary directly for the Rust FFI, C ABI, and host-WASM lanes in
+separate processes with separate raw profile files; the final `cargo llvm-cov
+report` merges them. Reusing the already-built binary avoids reacquiring
+Cargo's build lock and repeating the `cargo llvm-cov` test-profile setup three
+times. This avoids the LLVM counter contention measured when all three
+backends share one instrumented process without changing the parity inputs.
+Set
 `COVERAGE_UNIFIED_LANE_SPLIT=0` only for the legacy single-process diagnostic
 path. The all-lane command uses a dedicated `COVERAGE_ALL_TARGET_DIR` cache, so
 its `--no-clean` reuse cannot mix stale binaries from another coverage target.
@@ -171,16 +174,16 @@ already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
 The latest Coverage MCP run is
-`1d9dd685-fc1e-4f8e-9cc6-2085f2899cf1`, with snapshot
-`7a698025-d61d-49bc-8a6b-cd9c8331693d`; the source-bound run completed in
-88.585 seconds, with 7,476 exact parity comparisons. Its instrumentation
-timers were about 48.37 seconds Rust FFI, 37.06 seconds C ABI, 37.02 seconds
-WASM, and 0.02 seconds comparison. The lane-split validation run
-`b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 cases in each
-backend process and completed in 61.827 seconds, a 45.8% reduction from the
-previous warm 113.998-second run. The report names all three workspace
-packages explicitly because `cargo llvm-cov report` does not accept the
-workspace flag, keeping C-ABI and WASM source in the denominator. The remaining wall-time tail is
+`6eb57e9e-4147-4663-b34a-d29227b0fdba`, with snapshot
+`89f01e52-d1a2-4c66-83c1-9661ce87575c`; the clean source-bound run completed in
+54.054 seconds, with 7,476 exact parity comparisons in each backend lane. Its
+instrumentation timers were about 43.26 seconds Rust FFI, 32.10 seconds C ABI,
+32.02 seconds WASM, and 0.01 seconds comparison. Reusing the instrumented test
+binary reduced the measured wall time from the previous 61.827-second split
+validation and from the 113.998-second warm combined-lane run; the new result is
+52.6% faster than the latter. The report names all three workspace packages
+explicitly because `cargo llvm-cov report` does not accept the workspace flag,
+keeping C-ABI and WASM source in the denominator. The remaining wall-time tail is
 setup, process/report merging, and Coverage MCP ingestion. Coverage builds
 retain the
 instrumented target with `cargo llvm-cov --no-clean`, remove stale `.profraw`

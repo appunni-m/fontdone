@@ -54,18 +54,18 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-08-02",
-    "source_commit": "1a08537f6188cfc4631cee7204fc27663104ae62",
+    "source_commit": "f4eee93455458366c43af8770c574f50a29cb5ed",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "1d9dd685-fc1e-4f8e-9cc6-2085f2899cf1",
-    "snapshot_id": "7a698025-d61d-49bc-8a6b-cd9c8331693d",
-    "duration_ms": 88585,
+    "run_id": "6eb57e9e-4147-4663-b34a-d29227b0fdba",
+    "snapshot_id": "89f01e52-d1a2-4c66-83c1-9661ce87575c",
+    "duration_ms": 54054,
     "exit_code": 0,
-    "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with line-table debuginfo=1; single-worker parity; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; test-harness source excluded",
+    "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with line-table debuginfo=1; single-worker parity; one instrumented test binary runs directly in three split backend processes; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; test-harness source excluded",
     "lines": {
       "covered": 49363,
       "total": 54104,
-      "percent": 91.23724678397162
+      "percent": 91.23724678397161
     },
     "branches": {
       "covered": 9694,
@@ -614,9 +614,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "5d1d0b5bc5fb6a0200b08467aa8e218edaaee5bc8dd6ad812940df19dfeb578a",
-    "parity_tree_sha256": "26b70e2527db4a8145ffab920580e3bf6ad258671453dba5d2ed47cfbc14fc7e",
-    "log_sha256": "1bf346faaf8e3995e20b8793279ee96b141aef6d05e2e8f80389b07674cf7192",
+    "sha256": "8e9d5a4f5d004b9fc7e93f6db6e2e74f31f590e63d1a4a57b2e39bb254f6bda2",
+    "parity_tree_sha256": "f9ffcf74a43d0e6003dd018eaf6a788d65b6dd5b4390a31e5fe8838eac7bfce1",
+    "log_sha256": "74e8458a8c930d2758778ec369870cd22bbd714724f3fad99a1801352569eb0f",
     "command": "make test-parity"
   }
 }
