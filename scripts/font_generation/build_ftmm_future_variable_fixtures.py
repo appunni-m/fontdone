@@ -647,6 +647,32 @@ def write_gvar_fixtures() -> None:
     )
 
 
+def write_avar_fixtures() -> None:
+    base = TTFont(BASE_FONT, recalcTimestamp=False).getTableData("avar")
+
+    # `avar` is optional at face construction.  These malformed controls keep
+    # the variable face openable while reaching each parser rejection branch
+    # through FT_New_Memory_Face, just as the pinned SFNT driver does.
+    write_table_payload(BASE_FONT, "avar", "avar-short.ttf", b"\0" * 4)
+
+    unsupported = bytearray(base)
+    put_u32(unsupported, 0, 0x0002_0000)
+    write_table_payload(
+        BASE_FONT, "avar", "avar-version-2.ttf", bytes(unsupported)
+    )
+
+    axis_mismatch = bytearray(base)
+    put_u16(axis_mismatch, 6, 1)
+    write_table_payload(
+        BASE_FONT, "avar", "avar-axis-count-mismatch.ttf", bytes(axis_mismatch)
+    )
+
+    truncated = bytearray(base)
+    put_u16(truncated, 8, 0xFFFF)
+    write_table_payload(
+        BASE_FONT, "avar", "avar-map-truncated.ttf", bytes(truncated)
+    )
+
 def base_hvar_payload() -> bytes:
     return TTFont(BASE_FONT, recalcTimestamp=False).getTableData("HVAR")
 
@@ -900,6 +926,7 @@ def main() -> None:
     write_compact_alias("named-instance-missing-psid.ttf")
     write_compact_alias("gvar-hvar-wght.ttf")
     write_mvar_alias("mvar-hvar-vvar.ttf")
+    write_avar_fixtures()
     write_gvar_fixtures()
     write_hvar_fixtures()
     write_mvar_fixtures()

@@ -1031,6 +1031,42 @@
             "coverage": ["tt/gvar:axis-count-mismatch-ignored-at-face-open"]
           },
           {
+            "id": "avar-short-table",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/avar-short.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/avar-short.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/avar:short-table-ignored-at-face-open"]
+          },
+          {
+            "id": "avar-unsupported-version",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/avar-version-2.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/avar-version-2.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/avar:unsupported-version-ignored-at-face-open"]
+          },
+          {
+            "id": "avar-axis-count-mismatch",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/avar-axis-count-mismatch.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/avar-axis-count-mismatch.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/avar:axis-count-mismatch-ignored-at-face-open"]
+          },
+          {
+            "id": "avar-map-truncated",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/avar-map-truncated.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/avar-map-truncated.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/avar:segment-map-truncated-ignored-at-face-open"]
+          },
+          {
             "id": "hvar-short-table",
             "assets": {
               "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-short.ttf"},

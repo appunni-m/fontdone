@@ -84,12 +84,12 @@ fn map_coordinate(value: i32, pairs: &[AvarPair]) -> i32 {
         let upper = pairs[pair_index];
         if value < upper.from {
             let lower = pairs[pair_index - 1];
-            let denominator = upper.from - lower.from;
-            if denominator == 0 {
-                return lower.to;
-            }
-            return crate::fixed::ft_mul_div(value - lower.from, upper.to - lower.to, denominator)
-                .saturating_add(lower.to);
+            return crate::fixed::ft_mul_div(
+                value - lower.from,
+                upper.to - lower.to,
+                upper.from - lower.from,
+            )
+            .wrapping_add(lower.to);
         }
     }
     value
