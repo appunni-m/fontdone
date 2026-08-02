@@ -40,7 +40,7 @@
     "function_total": 218
   },
   "c_contract": {
-    "categories_complete": 8,
+    "categories_complete": 10,
     "categories_total": 12,
     "is_complete": false,
     "runtime_contract_rows_complete": 5219,
@@ -54,12 +54,12 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-08-02",
-    "source_commit": "4a13a92e70800aa9c00671bc7f1784dd2cc6dc4e",
+    "source_commit": "53995d32008605b8abe6a15db477c86881c929c9",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "e391ae9e-9591-4b68-b936-8db1a3177144",
-    "snapshot_id": "30d2ac67-a15d-4f9a-ac1c-7e727d4af8ec",
-    "duration_ms": 111746,
+    "run_id": "1a9ca419-0e1f-41a4-8c9f-eba21a2e385b",
+    "snapshot_id": "a8ef34a9-b6f4-47ad-ad76-039d7ee9bce6",
+    "duration_ms": 113998,
     "exit_code": 0,
     "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with line-table debuginfo=1; single-worker parity; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; test-harness source excluded",
     "lines": {
@@ -614,9 +614,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "1e723625e60d2fadd278c016c896d67aec88f82b4f783242e92ba391f4a9e16e",
-    "parity_tree_sha256": "bd50c97947ba6568509492353b89c6e12584a9bd7f82c326a5d731bcc3a88b12",
-    "log_sha256": "69fdfe03bdf5b780bfa4d4b7585a526a8b2c1e5b6de65cb9d3e136b0460db5c4",
+    "sha256": "4dcbc2947462bc6121f7ec814ac2e7d7a357a3a3742730fb29122e4970f8bab3",
+    "parity_tree_sha256": "7a5ebc1661978c5edc28367b9b23055c9c633634351eff7a74b1f195714c0eb4",
+    "log_sha256": "50c28d903550aa5d7309380cd55d752a75136470b61f158aa051dc989b4de401",
     "command": "make test-parity"
   }
 }

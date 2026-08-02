@@ -235,15 +235,16 @@ read-only SFNT table-load/info routes reuse those content-bound handles while
 keeping variation-sequence cases isolated. Oracle
 preparation also preserves the mtime of unchanged generated constants and
 validator overlay sources, avoiding a needless helper rebuild and relink. It
-runs in requested thorough CI, not on every commit. The latest measured run
-took 1 minute 51.746 seconds end-to-end against the worktree at commit
-`4a13a92e70800aa9c00671bc7f1784dd2cc6dc4e`; single-run wall time varies with
+runs in requested thorough CI, not on every commit. The latest warm measured
+run took 1 minute 53.998 seconds end-to-end against the worktree at commit
+`53995d32008605b8abe6a15db477c86881c929c9`; single-run wall time varies with
 compilation and host load. Its runtime backend totals were approximately
-39.11 seconds Rust FFI, 29.25 seconds C ABI, 29.13 seconds WASM, and 0.03
-seconds comparison. The separately measured removal of the duplicate ABI
-preflight from the default coverage path reduced the earlier 3:48.279 sample
-by 42.627 seconds (18.7%); the remaining wall-time tail is outside backend
-execution, in setup/build/reporting/ingestion and host contention.
+39.52 seconds Rust FFI, 29.74 seconds C ABI, 30.00 seconds WASM, and 0.03
+seconds comparison. A cold current-commit run took 2 minutes 20.153 seconds,
+including a 24.70-second instrumented rebuild. The separately measured removal
+of the duplicate ABI preflight from the default coverage path reduced the
+earlier 3:48.279 sample by 42.627 seconds (18.7%); the remaining wall-time
+tail is outside backend execution, in setup/build/reporting/ingestion and host
 Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
@@ -255,8 +256,8 @@ Coverage MCP does not expose timestamps for those sub-phases yet:
 
 That managed run passed all 7,476 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its Coverage MCP run ID is
-`e391ae9e-9591-4b68-b936-8db1a3177144`, and its immutable snapshot ID is
-`30d2ac67-a15d-4f9a-ac1c-7e727d4af8ec`. That required three-surface
+`1a9ca419-0e1f-41a4-8c9f-eba21a2e385b`, and its immutable snapshot ID is
+`a8ef34a9-b6f4-47ad-ad76-039d7ee9bce6`. That required three-surface
 instrumented execution remains the dominant measured test cost, while the
 latest wall-time tail is outside the test body. The percentages apply only to the named
 source commit, suite, and toolchain. They are not a FreeType-parity percentage,
