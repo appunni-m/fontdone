@@ -30777,6 +30777,7 @@ static int emit_load_sfnt_table_null_face(int argc, char** argv) {
         length_ptr = NULL;
     }
     FT_Error ft_err = FT_Load_Sfnt_Table(NULL, tag, offset, buffer_ptr, length_ptr);
+    printf("{");
     print_status(ft_err);
     printf(",\"output\":{\"length_after\":");
     if (length_ptr) {
@@ -36862,7 +36863,9 @@ static int dispatch(int argc, char** argv) {
     // parameters (source kind, source value, or face).
     // Do NOT intercept when "null" is in task-specific params (tag_ptr, length_ptr, etc.).
     // Check only the first few args that represent handles: argv[2]..argv[min(6, argc-1)].
-    if (argc >= 3) {
+    // The dedicated null-face SFNT route uses `null` as its task-level
+    // buffer-kind argument; let that route observe the untouched length slot.
+    if (argc >= 3 && !streq(argv[1], "--load-sfnt-table-null-face")) {
         int check_end = (argc < 7) ? argc : 6;
         for (int i = 2; i < check_end; i++) {
             if (streq(argv[i], "null")) {
