@@ -2142,6 +2142,31 @@
             ]
           },
           {
+            "id": "sbit-bgra-format1-grayscale-sbits-only",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_bgra_format1.ttf",
+                "requirements": "Synthetic scalable SFNT with one 20 ppem EBLC/EBDT format-1 32-bit BGRA embedded bitmap for glyph 1; the load omits FT_LOAD_COLOR so FreeType flattens the transparent pixel to grayscale."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ]
+            },
+            "coverage": [
+              "sbit:bgra-format1-grayscale-transparent-pixel"
+            ]
+          },
+          {
             "id": "sbit-unsupported-bit-depth-format1",
             "assets": {
               "font": {
