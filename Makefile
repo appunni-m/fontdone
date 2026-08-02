@@ -312,6 +312,7 @@ ifeq ($(COVERAGE_UNIFIED_LANE_SPLIT),1)
 	exit $$lane_status
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
 	$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov report \
+		--package fontdone --package fontdone-c-abi --package fontdone-wasm \
 		--locked --json \
 		--ignore-filename-regex '$(ALL_LANES_COVERAGE_IGNORE_REGEX)' \
 		--output-path $(ALL_LANES_COVERAGE_OUTPUT)
