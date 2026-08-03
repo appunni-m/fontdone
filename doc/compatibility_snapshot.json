@@ -54,12 +54,12 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-08-03",
-    "source_commit": "136ffc910b6721f62f3a090f88a1126a6515ada5",
+    "source_commit": "d4ae55775e19427632f5ab86fe3cd5f2d0e8d8a6",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "5b533df3-5e20-447d-9634-f379be48d57b",
-    "snapshot_id": "aa6b0e14-b313-445b-932d-9f890f2aa8c5",
-    "duration_ms": 52696,
+    "run_id": "76754c69-8563-451b-86cc-3182243a810e",
+    "snapshot_id": "c03f4071-10b1-4ab1-bd12-13bc71589135",
+    "duration_ms": 50743,
     "exit_code": 0,
     "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with line-table debuginfo=1; single-worker parity; one instrumented test binary runs directly in three split backend processes; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; raw LLVM JSON is ingested directly, with segment normalization retained only as an opt-in compatibility rewrite; test-harness source excluded",
     "lines": {

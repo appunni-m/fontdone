@@ -140,9 +140,9 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage run was recorded on **2026-08-03** against the
-current coverage-speed worktree (Coverage MCP run
-`5b533df3-5e20-447d-9634-f379be48d57b`, snapshot
-`aa6b0e14-b313-445b-932d-9f890f2aa8c5`):
+committed speed fix `d4ae55775e19427632f5ab86fe3cd5f2d0e8d8a6` (Coverage MCP
+run `76754c69-8563-451b-86cc-3182243a810e`, snapshot
+`c03f4071-10b1-4ab1-bd12-13bc71589135`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -179,8 +179,8 @@ already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
 The current run passed 7,479 / 7,479 comparisons in each backend lane. Its
-instrumentation timers were about 44.24 seconds Rust FFI, 33.58 seconds C ABI,
-33.50 seconds WASM, and under 0.02 seconds comparison. The three-surface
+instrumentation timers were about 42.45 seconds Rust FFI, 31.87 seconds C ABI,
+31.78 seconds WASM, and under 0.02 seconds comparison. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
 MCP without the compatibility-only segment rewrite. The default
 `COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`

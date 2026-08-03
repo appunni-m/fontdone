@@ -249,7 +249,7 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. A current-host Coverage MCP run
-(`5b533df3-5e20-447d-9634-f379be48d57b`) measured 52.696 seconds end-to-end
+(`76754c69-8563-451b-86cc-3182243a810e`) measured 50.743 seconds end-to-end
 with a warm oracle cache; allow roughly 2 minutes for host variation and
 roughly 4–6 minutes after a cache reset.
 `COVERAGE_TEST_DEBUG=1` keeps line
@@ -278,9 +278,9 @@ MCP does not expose timestamps for those sub-phases yet:
 
 That current run passed all 7,479 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`aa6b0e14-b313-445b-932d-9f890f2aa8c5`. The retained lane logs measured about
-44.24 seconds of Rust FFI execution, 33.58 seconds of C-ABI execution, and
-33.50 seconds of WASM execution; comparison itself was under 20 ms. The
+`c03f4071-10b1-4ab1-bd12-13bc71589135`. The retained lane logs measured about
+42.45 seconds of Rust FFI execution, 31.87 seconds of C-ABI execution, and
+31.78 seconds of WASM execution; comparison itself was under 20 ms. The
 three-surface instrumented execution is therefore the dominant cost, not
 Coverage MCP ingestion. Current LLVM JSON is accepted directly by Coverage
 MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`
