@@ -194,6 +194,50 @@
             "coverage": [
               "ftcid.get_cid_from_glyph_index:format2-charset"
             ]
+          },
+          {
+            "id": "format0_last_valid",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "sfnt_wrapped_cid_font_format0",
+                "path": "input/fonts/cid/ot-cff-cid-keyed-format0.otf",
+                "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
+                "generator": "scripts/font_generation/build_cff_fixtures.py",
+                "sha256": "f3da5cd3a5e0787bcb9bb3e071819f173dd338c39ab1f2926c4402dfda3c443c",
+                "license": "OFL-1.1"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "cid_output": "nonnull_initialized_sentinel",
+              "glyph_index": "last_valid"
+            },
+            "coverage": [
+              "ftcid.get_cid_from_glyph_index:format0-charset"
+            ]
+          },
+          {
+            "id": "format1_last_valid",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "sfnt_wrapped_cid_font_format1",
+                "path": "input/fonts/cid/ot-cff-cid-keyed-format1.otf",
+                "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
+                "generator": "scripts/font_generation/build_cff_fixtures.py",
+                "sha256": "b9ac4a6d07c0c6d5fd39ab0086b588f32aef2a874676f8575e3dfa757ebb8734",
+                "license": "OFL-1.1"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "cid_output": "nonnull_initialized_sentinel",
+              "glyph_index": "last_valid"
+            },
+            "coverage": [
+              "ftcid.get_cid_from_glyph_index:format1-charset"
+            ]
           }
         ]
       },

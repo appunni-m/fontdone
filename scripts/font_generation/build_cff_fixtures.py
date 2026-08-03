@@ -838,6 +838,42 @@ def write_cid_cff_format2() -> None:
     font.save(out, reorderTables=True)
 
 
+def write_cid_cff_charset_variants() -> None:
+    """Derive CID faces whose charsets use CFF formats 0 and 1."""
+    variants = {
+        # Alternating CIDs make a format-0 table smaller than a range table.
+        "format0": [2 * index + 1 for index in range(256)],
+        # Two contiguous ranges fit the one-byte nLeft field used by format 1.
+        "format1": list(range(1, 129)) + list(range(300, 428)),
+    }
+    for label, cid_values in variants.items():
+        out = CID_OUT_DIR / f"ot-cff-cid-keyed-{label}.otf"
+        font = TTFont(CID_SOURCE, recalcTimestamp=False)
+        glyph_order = list(font.getGlyphOrder())
+        if len(glyph_order) != len(cid_values) + 1:
+            raise ValueError("the pinned CID source has an unexpected glyph count")
+
+        top_dict = font["CFF "].cff.topDictIndex[0]
+        old_charstrings = dict(top_dict.CharStrings.charStrings)
+        old_metrics = dict(font["hmtx"].metrics)
+        new_order = [".notdef"] + [f"cid{cid:05d}" for cid in cid_values]
+        top_dict.CharStrings.charStrings.clear()
+        top_dict.CharStrings.charStrings[".notdef"] = old_charstrings[".notdef"]
+        for old_name, new_name in zip(glyph_order[1:], new_order[1:]):
+            top_dict.CharStrings.charStrings[new_name] = old_charstrings[old_name]
+        font["hmtx"].metrics.clear()
+        font["hmtx"].metrics[".notdef"] = old_metrics[".notdef"]
+        for old_name, new_name in zip(glyph_order[1:], new_order[1:]):
+            font["hmtx"].metrics[new_name] = old_metrics[old_name]
+        font.setGlyphOrder(new_order)
+        top_dict.charset = new_order
+        top_dict.CIDCount = max(cid_values) + 1
+        font.recalcTimestamp = False
+        if out.exists() or out.is_symlink():
+            out.unlink()
+        font.save(out, reorderTables=True)
+
+
 def add_vertical_metrics(font: TTFont) -> None:
     glyph_order = font.getGlyphOrder()
     vmtx = newTable("vmtx")
@@ -975,6 +1011,14 @@ def malformed_cff_payload(kind: str) -> bytes:
         # pinned FreeType reports stack underflow while Rust reports the
         # same public face-open failure class.
         return minimal_payload(b"\x11")
+    if kind == "charset_operand_missing":
+        # Top DICT operator 15 is charset.  Its operand underflow is reported
+        # while parsing the dictionary, before the required CharStrings check.
+        return minimal_payload(b"\x0F")
+    if kind == "ros_operands_missing":
+        # ROS is an escaped operator with three required operands.  Keep the
+        # dictionary otherwise minimal so the parser stops at that boundary.
+        return minimal_payload(b"\x0C\x1E")
     if kind == "top_dict_longint_operand_missing_charstrings":
         # CFF DICT longint operand encoding (`cffparse.c:cff_parse_integer`) is
         # parsed by a normal numeric Top DICT operator (`UnderlinePosition`).
@@ -995,6 +1039,10 @@ def malformed_cff_payload(kind: str) -> bytes:
         # Exercise the CFF real-number negative-sign nibble while preserving
         # the same missing-CharStrings face-open failure boundary.
         return minimal_payload(b"\x1E\xE1\x5F\x0C\x03")
+    if kind == "top_dict_real_negative_overflow_missing_charstrings":
+        # The BCD payload spells -40000, driving cff_parse_fixed's negative
+        # saturation path while preserving the missing-CharStrings boundary.
+        return minimal_payload(b"\x1E\xE4\x00\x00\x0F\x0C\x03")
     if kind == "top_dict_positive_operand_missing_charstrings":
         return minimal_payload(b"\xF7\x00\x0C\x03")
     if kind == "top_dict_negative_operand_missing_charstrings":
@@ -1035,10 +1083,13 @@ def write_malformed_cff_faces() -> None:
             "escaped_top_dict_op_overflow",
             "escaped_top_dict_op_missing_charstrings",
             "charstrings_operand_missing",
+            "charset_operand_missing",
+            "ros_operands_missing",
             "top_dict_longint_operand_missing_charstrings",
             "top_dict_real_operand_missing_charstrings",
             "top_dict_real_exponent_operand_missing_charstrings",
             "top_dict_real_negative_operand_missing_charstrings",
+            "top_dict_real_negative_overflow_missing_charstrings",
             "top_dict_positive_operand_missing_charstrings",
             "top_dict_negative_operand_missing_charstrings",
             "top_dict_positive_operand_overflow",
@@ -1123,6 +1174,7 @@ def main() -> None:
     build_cff2(CFF2_OUT_DIR / "fontinfo-invalid-argument.otf")
     write_pure_cff_cubic()
     write_cid_cff_format2()
+    write_cid_cff_charset_variants()
     write_pure_cff_cubic_vmtx()
     write_pure_cff_empty_tt_programs()
     write_malformed_cff_faces()

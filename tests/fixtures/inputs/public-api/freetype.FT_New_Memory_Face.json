@@ -1867,6 +1867,24 @@
             "coverage": [ "tt/cff:top-dict-charstrings-operand-missing-error" ]
           },
           {
+            "id": "cff-charset-operand-missing",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-charset-operand-missing.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-charset-operand-missing.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff:top-dict-charset-operand-missing-error" ]
+          },
+          {
+            "id": "cff-ros-operands-missing",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-ros-operands-missing.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-ros-operands-missing.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff:top-dict-ros-operands-missing-error" ]
+          },
+          {
             "id": "cff-top-dict-longint-operand-missing-charstrings",
             "assets": {
               "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-longint-operand-missing-charstrings.otf" },
@@ -1901,6 +1919,15 @@
             },
             "params": { "variants": [ { "face_index": 0 } ] },
             "coverage": [ "tt/cff:top-dict-real-negative-operand-missing-charstrings-error" ]
+          },
+          {
+            "id": "cff-top-dict-real-negative-overflow-missing-charstrings",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-real-negative-overflow-missing-charstrings.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-real-negative-overflow-missing-charstrings.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff:top-dict-real-negative-overflow-error" ]
           },
           {
             "id": "cff-top-dict-positive-operand-missing-charstrings",

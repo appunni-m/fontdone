@@ -27,3 +27,21 @@ Derived maintained fixture: `ot-cff-cid-keyed-format2.otf`
   charstring and FD assignment. The resulting contiguous CID range has
   `nLeft = 256`, so CFF serialization uses charset format 2 and exercises the
   corresponding parser branch. It remains distributed under the source OFL.
+
+Derived maintained fixture: `ot-cff-cid-keyed-format0.otf`
+
+- Generator: `scripts/font_generation/build_cff_fixtures.py`
+- Source: the stored `ot-cff-cid-keyed.otf` above
+- SHA-256: `f3da5cd3a5e0787bcb9bb3e071819f173dd338c39ab1f2926c4402dfda3c443c`
+- The generator renames the source glyphs to alternating odd CIDs, making
+  CFF charset format 0 the compact representation. It remains distributed
+  under the source OFL.
+
+Derived maintained fixture: `ot-cff-cid-keyed-format1.otf`
+
+- Generator: `scripts/font_generation/build_cff_fixtures.py`
+- Source: the stored `ot-cff-cid-keyed.otf` above
+- SHA-256: `b9ac4a6d07c0c6d5fd39ab0086b588f32aef2a874676f8575e3dfa757ebb8734`
+- The generator renames the source glyphs into two contiguous CID ranges,
+  each within the one-byte `nLeft` limit, making CFF charset format 1 the
+  compact representation. It remains distributed under the source OFL.
