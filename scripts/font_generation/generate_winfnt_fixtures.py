@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 import struct
 
@@ -102,6 +103,13 @@ def build_fnt(
     path.write_bytes(buf)
 
 
+def build_malformed_fnt(path: Path, mutation: Callable[[bytearray], None]) -> None:
+    build_fnt(path, 0, "PillowRsWinFNTMalformed", False)
+    buf = bytearray(path.read_bytes())
+    mutation(buf)
+    path.write_bytes(buf)
+
+
 def build_ushort_contract_fnt(path: Path) -> None:
     header_size = 148
     face_name = b"WinFNTUShortContract\0"
@@ -165,6 +173,26 @@ def main() -> None:
         zero_resolution=True,
     )
     build_ushort_contract_fnt(FONT_ROOT / "ushort-fields-known.fnt")
+    build_malformed_fnt(
+        FONT_ROOT / "invalid-version.fnt",
+        lambda buf: put_u16(buf, 0, 0x0100),
+    )
+    build_malformed_fnt(
+        FONT_ROOT / "vector-font.fnt",
+        lambda buf: put_u16(buf, 66, 1),
+    )
+    build_malformed_fnt(
+        FONT_ROOT / "zero-height.fnt",
+        lambda buf: put_u16(buf, 88, 0),
+    )
+    build_malformed_fnt(
+        FONT_ROOT / "reversed-character-range.fnt",
+        lambda buf: (buf.__setitem__(95, 33), buf.__setitem__(96, 32)),
+    )
+    build_malformed_fnt(
+        FONT_ROOT / "face-name-offset-out-of-range.fnt",
+        lambda buf: put_u32(buf, 105, 0xFFFF_FFFF),
+    )
     charset_root = FONT_ROOT / "charset"
     for name, value in sorted(CHARSETS.items()):
         build_fnt(

@@ -1845,6 +1845,131 @@
             "coverage": [
               "pcf:missing-required-properties-table"
             ]
+          },
+          {
+            "id": "winfnt-invalid-version",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/invalid-version.fnt"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/invalid-version.fnt"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "winfnt:invalid-version"
+            ]
+          },
+          {
+            "id": "winfnt-vector-font",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/vector-font.fnt"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/vector-font.fnt"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "winfnt:vector-font"
+            ]
+          },
+          {
+            "id": "winfnt-zero-height",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/zero-height.fnt"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/zero-height.fnt"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "winfnt:zero-height"
+            ]
+          },
+          {
+            "id": "winfnt-reversed-character-range",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/reversed-character-range.fnt"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/reversed-character-range.fnt"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "winfnt:reversed-character-range"
+            ]
+          },
+          {
+            "id": "winfnt-face-name-offset-out-of-range",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/face-name-offset-out-of-range.fnt"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/face-name-offset-out-of-range.fnt"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "winfnt:face-name-offset-out-of-range"
+            ]
           }
         ]
       },
