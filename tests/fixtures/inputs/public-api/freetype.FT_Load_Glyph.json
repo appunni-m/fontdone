@@ -189,6 +189,90 @@
             ]
           },
           {
+            "id": "gvar-glyph-data-short-runtime",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/variable/gvar-glyph-data-short-runtime.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 32,
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/gvar:runtime-short-glyph-record"
+            ]
+          },
+          {
+            "id": "gvar-tuple-header-short-runtime",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/variable/gvar-tuple-header-short-runtime.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 32,
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/gvar:runtime-short-tuple-header"
+            ]
+          },
+          {
+            "id": "gvar-malformed-packed-runtime",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/variable/gvar-malformed-packed.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 32,
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/gvar:runtime-malformed-packed-tuples"
+            ]
+          },
+          {
+            "id": "gvar-malformed-shared-points-runtime",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/variable/gvar-malformed-shared-points.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 32,
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "tt/gvar:runtime-malformed-shared-points"
+            ]
+          },
+          {
             "id": "hvar-no-advance-map",
             "assets": {
               "font": {

@@ -106,28 +106,28 @@ The last committed full parity snapshot was recorded on **2026-08-03**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,479 |
-| Passed cases | 7,479 |
+| Runnable exact-comparison cases | 7,483 |
+| Passed cases | 7,483 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
 | Covered manifest cases | 4,183 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,268 |
-| Concrete expanded cases | 7,482 |
+| Concrete expanded cases | 7,486 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,479 / 7,479` means every runnable case in that execution matched; the 3
+`7,483 / 7,483` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP parity run
-`1484f32a-a27c-4755-ba4a-43e1393cbbc3`, recorded by run
-`843aa02f-1dcf-417e-ac3e-ee3e8622ee6d` against clean commit
-`91f8da7f08b0143881a7ef79c4a40ea9322cd045`; its source-bound parity-tree
-digest is `92a70fcf432a517b92de82b2a611385c4ace694a4567746d60b9d8aac523a1ef`.
+`13dbb5ce-9074-48e8-9644-920f729025cb`, recorded by run
+`ffdcd4db-fe89-4a1e-a5b5-a5fe4df4d74d` against clean commit
+`cb1a7cf30de7d42eb5b2235ee086f06667bb4e7c`; its source-bound parity-tree
+digest is `60cfc0e22cb50420711a70c748828fdb66531faa5c1077947aeea96d8a2d89ae`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -140,9 +140,9 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage run was recorded on **2026-08-03** against clean
-commit `91f8da7f08b0143881a7ef79c4a40ea9322cd045` (Coverage MCP run
-`b666ea02-c959-475e-92d4-988f627955a1`, snapshot
-`209e1856-736a-47fc-8050-5c0aaa7d6d70`):
+commit `cb1a7cf30de7d42eb5b2235ee086f06667bb4e7c` (Coverage MCP run
+`82c2a8e7-ff1e-49bc-bd74-551811de0b09`, snapshot
+`fe6f131b-5d7a-467c-8bbb-34d92f9b7be5`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -178,7 +178,7 @@ but the default coverage target does not rerun it because `make test-fast`
 already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
-The current run passed 7,479 / 7,479 comparisons in each backend lane. Its
+The current run passed 7,483 / 7,483 comparisons in each backend lane. Its
 instrumentation timers were about 43.44 seconds Rust FFI, 32.57 seconds C ABI,
 32.43 seconds WASM, and under 0.02 seconds comparison. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
@@ -197,10 +197,10 @@ when contents are unchanged, so the C helper and FreeType validator overlay are
 not rebuilt on every run. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The current-head opt-level-1 validation run `9453c549-d468-487b-a9e9-ea753043d2d6`
+The prior opt-level-1 validation run `9453c549-d468-487b-a9e9-ea753043d2d6`
 completed in 54.563 seconds with 7,479 / 7,479 comparisons passing in each
 lane; it ingested as snapshot `961e667a-1e9e-44ee-9be7-18187380b225` without
-changing the measured coverage totals. The same current-head command at
+changing the measured coverage totals. The corresponding command at
 opt-level 3 took 65.332 seconds (`5ce27175-524b-4b9f-aae4-a0390b8e5968`), so
 the repository default is now `COVERAGE_TEST_OPT_LEVEL=1`; use an explicit
 level-3 override only for comparison.
@@ -212,14 +212,15 @@ measurement provenance is retained in the compatibility snapshot.
 
 ### 3.4 C ABI completion contract
 
-The latest committed scorecard has **10 / 12 categories complete**:
+The latest committed scorecard has **7 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,222 / 5,222 pinned-C runtime contract rows exact |
+| Functions | 217 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,226 / 5,226 pinned-C runtime contract rows exact |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
-| Ownership, state, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 649 / 649 expected-error routes compare exact error and output results; 7,478 / 7,478 routes have no generic fallback evidence |
+| Ownership | 22 / 23 ownership rules exact; one `FT_Glyph_To_Bitmap` error route remains |
+| State, modules, headers | Complete under their blocking scorecard measurements |
+| Errors | 648 / 649 expected-error routes compare exact error and output results; 7,483 / 7,483 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 

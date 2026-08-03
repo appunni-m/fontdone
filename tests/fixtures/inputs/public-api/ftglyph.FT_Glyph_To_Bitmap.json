@@ -502,6 +502,13 @@
         },
         "params": {
           "forced_renderer_failure": true,
+          "glyph_index": 36,
+          "record_corruption_fields": [
+            "contour_endpoint_invalid",
+            "points_null",
+            "tags_null",
+            "contours_null"
+          ],
           "destroy_values": [
             false,
             true

@@ -2301,6 +2301,28 @@ pub fn abi_support_corrupt_outline_glyph_for_render_failure(glyph_handle: usize)
 }
 
 #[cfg(feature = "abi-test-support")]
+pub fn abi_support_corrupt_outline_glyph_record(glyph_handle: usize, field: FT_UInt) -> bool {
+    let glyph = ptr::with_exposed_provenance_mut::<FontdoneWasmGlyph>(glyph_handle);
+    let Some(owned) = wasm_owned_outline_glyph_from_root_mut(glyph) else {
+        return false;
+    };
+    if owned.core.outline.points.is_empty() || owned.core.outline.contours.is_empty() {
+        return false;
+    }
+    owned.record.outline.n_points =
+        FT_UShort::try_from(owned.core.outline.points.len()).unwrap_or(FT_UShort::MAX);
+    owned.record.outline.n_contours =
+        FT_UShort::try_from(owned.core.outline.contours.len()).unwrap_or(FT_UShort::MAX);
+    match field {
+        0 => owned.record.outline.points = ptr::null_mut(),
+        1 => owned.record.outline.tags = ptr::null_mut(),
+        2 => owned.record.outline.contours = ptr::null_mut(),
+        _ => return false,
+    }
+    true
+}
+
+#[cfg(feature = "abi-test-support")]
 pub fn abi_bitmap_glyph_snapshot(glyph_handle: usize) -> Option<AbiBitmapGlyphSnapshot> {
     let glyph = ptr::with_exposed_provenance::<FontdoneWasmGlyph>(glyph_handle);
     let owned = wasm_owned_bitmap_glyph_from_root(glyph)?;

@@ -7256,6 +7256,27 @@ pub fn abi_support_corrupt_outline_glyph_for_render_failure(glyph: FT_Glyph) -> 
 }
 
 #[cfg(feature = "abi-test-support")]
+pub fn abi_support_corrupt_outline_glyph_record(glyph: FT_Glyph, field: FT_UInt) -> bool {
+    let Some(owned) = owned_outline_glyph_from_root_mut(glyph) else {
+        return false;
+    };
+    if owned.core.outline.points.is_empty() || owned.core.outline.contours.is_empty() {
+        return false;
+    }
+    owned.record.outline.n_points =
+        FT_UShort::try_from(owned.core.outline.points.len()).unwrap_or(FT_UShort::MAX);
+    owned.record.outline.n_contours =
+        FT_UShort::try_from(owned.core.outline.contours.len()).unwrap_or(FT_UShort::MAX);
+    match field {
+        0 => owned.record.outline.points = ptr::null_mut(),
+        1 => owned.record.outline.tags = ptr::null_mut(),
+        2 => owned.record.outline.contours = ptr::null_mut(),
+        _ => return false,
+    }
+    true
+}
+
+#[cfg(feature = "abi-test-support")]
 pub fn abi_bitmap_glyph_snapshot(glyph: FT_Glyph) -> Option<AbiBitmapGlyphSnapshot> {
     let owned = owned_bitmap_glyph_from_root(glyph)?;
     Some(AbiBitmapGlyphSnapshot {

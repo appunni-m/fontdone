@@ -143,9 +143,9 @@ Cargo's build lock and repeating the `cargo llvm-cov` test-profile setup three
 times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
-legacy single-process diagnostic path. The clean committed validation was
-Coverage MCP run `cce7fb2b-ee6d-43cd-970f-e0dbe7a2b106`: all three processes
-passed 7,478 / 7,478 cases, and the end-to-end run took 57.821 seconds versus
+legacy single-process diagnostic path. The latest clean committed validation is
+Coverage MCP run `82c2a8e7-ff1e-49bc-bd74-551811de0b09`: all three processes
+passed 7,483 / 7,483 cases, and the end-to-end run took 51.714 seconds versus
 the previous warm 113.998-second measurement.
 
 The report names `fontdone`, `fontdone-c-abi`, and `fontdone-wasm` explicitly
@@ -248,10 +248,10 @@ writes `target/coverage/unified-runtime-all-lanes.json`; test-harness paths are
 the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
-reuse the instrumented target and binary. A current-host Coverage MCP run
-(`76754c69-8563-451b-86cc-3182243a810e`) measured 50.743 seconds end-to-end
-with a warm oracle cache; allow roughly 2 minutes for host variation and
-roughly 4–6 minutes after a cache reset.
+reuse the instrumented target and binary. The latest current-host Coverage MCP
+run (`82c2a8e7-ff1e-49bc-bd74-551811de0b09`) measured 51.714 seconds
+end-to-end with a warm oracle cache; allow roughly 2 minutes for host
+variation and roughly 4–6 minutes after a cache reset.
 `COVERAGE_TEST_DEBUG=1` keeps line
 tables while omitting full test debuginfo; this reduces the measured end-to-end
 run without changing the coverage totals. Face-cache keys also reuse preloaded
@@ -260,14 +260,12 @@ read-only SFNT table-load/info routes reuse those content-bound handles while
 keeping variation-sequence cases isolated. Oracle
 preparation also preserves the mtime of unchanged generated constants and
 validator overlay sources, avoiding a needless helper rebuild and relink. It
-runs in requested thorough CI, not on every commit. The latest source-bound
-full-scope run took 57.821 seconds end-to-end against commit
-`e6bef8f9e180eeda5e606270e515314443ba6c44`; single-run wall time varies with
-compilation and host load. Its instrumentation timers were approximately
-44.89 seconds Rust FFI, 34.31 seconds C ABI, 34.08 seconds WASM, and 0.02
-seconds comparison. The remaining wall-time tail is setup, process/report
-merging, and Coverage MCP ingestion rather than another parity route. Coverage
-MCP does not expose timestamps for those sub-phases yet:
+runs in requested thorough CI, not on every commit. The latest instrumentation
+timers were approximately 43.45 seconds Rust FFI, 32.28 seconds C ABI, 32.19
+seconds WASM, and 0.014 seconds comparison; those lanes run concurrently, so
+their sum is not wall time. The remaining wall-time tail is setup,
+process/report merging, and Coverage MCP ingestion rather than another parity
+route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -276,19 +274,18 @@ MCP does not expose timestamps for those sub-phases yet:
 | Functions | 3,371 / 3,828 | 88.06% |
 | Regions | 67,969 / 75,273 | 90.30% |
 
-That current run passed all 7,479 runnable parity comparisons with 0 failures;
+That current run passed all 7,483 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`c03f4071-10b1-4ab1-bd12-13bc71589135`. The retained lane logs measured about
-42.45 seconds of Rust FFI execution, 31.87 seconds of C-ABI execution, and
-31.78 seconds of WASM execution; comparison itself was under 20 ms. The
-three-surface instrumented execution is therefore the dominant cost, not
-Coverage MCP ingestion. Current LLVM JSON is accepted directly by Coverage
+`fe6f131b-5d7a-467c-8bbb-34d92f9b7be5`. The three-surface instrumented
+execution is therefore the dominant cost, not Coverage MCP ingestion. Current
+LLVM JSON is accepted directly by Coverage
 MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`
 rewrite; set it to `1` only for an older LLVM JSON producer that needs the
 segment-count clamp. The report-only rewrite was measured at about 2.9 seconds
-for the 28.6 MB artifact and does not change the coverage totals. The percentages apply only to the named
-source commit, suite, and toolchain. They are not a FreeType-parity percentage,
-and a covered line or branch does not prove an exact result.
+for the 28.6 MB artifact and does not change the coverage totals. The
+percentages apply only to the named source commit, suite, and toolchain. They
+are not a FreeType-parity percentage, and a covered line or branch does not
+prove an exact result.
 Generate a new report for the worktree being reviewed. LLVM JSON segments are
 normalized to segment start lines by the coverage parser; aggregate region
 coverage is preserved from LLVM summaries.
@@ -338,6 +335,12 @@ Before changing a fixture:
 6. add or update the corresponding `tests/manifest.yaml` case and exact route
    classification when the fixture exercises a new public behavior;
 7. run the focused parity lane and `make check-font-fixtures`.
+
+Public glyph-record pointer mutations belong in the maintained input matrix,
+not in unit-only coverage helpers. The `FT_Glyph_To_Bitmap` render-failure
+case uses `record_corruption_fields` to drive separate `points`, `tags`, and
+`contours` null-pointer inputs through the C ABI and WASM public records; the
+Rust route uses the equivalent malformed outline shape before exact comparison.
 
 Third-party material must have redistribution permission and exact provenance.
 The three retained compact control fonts whose exact upstream transformation
