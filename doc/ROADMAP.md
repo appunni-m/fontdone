@@ -418,16 +418,17 @@ per-batch coverage increase is claimed:
 | 48 | `2e047f11369ad89c8f5e22f5755314006e026a4d` | Added a derived CID-keyed CFF ROS fixture whose registry and ordering use standard CFF SIDs `Roman` (389) and `Semibold` (390), implemented their pure-Rust decoding, and explicitly routed the new input through the pinned-C, Rust FFI, C ABI, and WASM parity harness. Committed parity run `0b2e22de-6768-4658-a705-4d4db308959c`, recorded by `f7df490d-f686-4407-8dba-725844b53d34`, passed 7,499 / 7,499 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `a53f0b6b-3d2f-43f9-8c02-9d6523a07147`, snapshot `7ee8b2e4-b166-45fd-bc25-a4d239d7754e`, measured 49,466 / 54,152 lines, 9,709 / 12,520 branches, 3,380 / 3,832 functions, and 68,087 / 75,315 regions in 102.331 seconds; the C-ABI scorecard reports 5,242 / 5,242 runtime rows and 7,499 / 7,499 no-fallback routes. |
 | 49 | `a58512637395397741c99baf9776c2d79072639f` | Added a derived single-glyph CID-keyed CFF input containing only `.notdef` and routed it through `FT_Get_CID_Registry_Ordering_Supplement`, covering the one-glyph charset path through the pinned-C, Rust FFI, C ABI, and WASM parity harness. Committed parity run `74363786-7afc-496b-b9e5-0dc508522359`, recorded by `e5ff9487-bf90-4463-92ba-a27d69ec4bc8`, passed 7,500 / 7,500 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `5a13924d-c556-4260-8f55-260a0b88b493`, snapshot `fb635dfe-ad08-4e8c-861a-5743b32a96d9`, measured 49,467 / 54,152 lines, 9,710 / 12,520 branches, 3,380 / 3,832 functions, and 68,088 / 75,315 regions in 95.540 seconds; the C-ABI scorecard reports 5,243 / 5,243 runtime rows and 7,500 / 7,500 no-fallback routes. |
 | 50 | `839ffce3da73ab8c576ee6c6289050674d761524` | Added a derived CID-keyed CFF input whose ROS ordering SID is `800`, outside the face's String INDEX, and preserved pinned FreeType's successful CID service with a null ordering string through Rust FFI, C ABI, and WASM. Clean source-bound parity run `dbe0e4a1-ee08-4657-8ace-5ad804f493ae`, recorded by `32ddcb8f-81c7-41bf-abe9-fe96f076c380`, passed 7,501 / 7,501 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `1f6f634f-c78d-4896-8d91-1fa0eef64dda`, snapshot `10af8726-f6de-436a-a7a9-467410ae8094`, measured 49,472 / 54,149 lines, 9,712 / 12,522 branches, 3,382 / 3,832 functions, and 68,096 / 75,315 regions in 96.161 seconds; the C-ABI scorecard run `69a771ef-32c3-4321-b0a2-6a06f17761e8` reports 5,244 / 5,244 runtime rows and 7,501 / 7,501 no-fallback routes. |
+| 51 | Working tree (CFF standard SID table) | Replaced the partial CFF SID mapping with the complete 391-entry standard-string table, added a derived CID-keyed ROS fixture using standard `Black` (383) and `Bold` (384) SIDs, and routed it through pinned C, Rust FFI, C ABI, and WASM. Full parity run `cad3bc7e-f1b9-4ae5-bdab-0c80fbabe597`, recorded by `4976f43e-a20a-4953-b1ac-80bcfa1e139b`, passed 7,502 / 7,502 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `9feff338-5c59-4698-948f-e89e4aff6f3f`, snapshot `44ee4327-ff05-49aa-902c-c0154c515d43`, measured 49,474 / 54,152 lines, 9,715 / 12,526 branches, 3,382 / 3,832 functions, and 68,098 / 75,318 regions in 98.080 seconds; the C-ABI scorecard reports 5,245 / 5,245 runtime rows and 7,502 / 7,502 no-fallback routes. |
 
 The latest source-bound parity verification is Coverage MCP parity run
-`dbe0e4a1-ee08-4657-8ace-5ad804f493ae` against committed source
-`839ffce3da73ab8c576ee6c6289050674d761524`: it
-passed 7,501 / 7,501 runnable comparisons, 0 failed, and 3 explicitly pending
+`cad3bc7e-f1b9-4ae5-bdab-0c80fbabe597` against the current worktree rooted at
+`b350b6900035fc65039e89e52fa8eb8dc17ba1f0`: it passed 7,502 / 7,502 runnable
+comparisons, 0 failed, and 3 explicitly pending
 safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. The companion C-ABI scorecard reports
-**10 / 12 categories complete**, with 5,244 / 5,244 runtime contract rows and
+**10 / 12 categories complete**, with 5,245 / 5,245 runtime contract rows and
 659 / 659 strict error routes exact; the remaining contract debt is the
 Windows import-library item and four fresh target-lane bundles.
 
@@ -470,9 +471,9 @@ repeated. The latest warm baseline measured 49,464 / 54,150 lines, 9,709 /
 12,520 branches, 3,380 / 3,832 functions, and 68,085 / 75,313 regions. The
 current source-matched run measured 49,472 / 54,149 lines, 9,712 / 12,522
 branches, 3,382 / 3,832 functions, and 68,096 / 75,315 regions. It passed
-7,501 / 7,501 runnable parity comparisons with 0 failures. Its Coverage MCP
-run is `1f6f634f-c78d-4896-8d91-1fa0eef64dda`, with snapshot
-`10af8726-f6de-436a-a7a9-467410ae8094`. The lane-split validation run
+7,502 / 7,502 runnable parity comparisons with 0 failures. Its Coverage MCP
+run is `9feff338-5c59-4698-948f-e89e4aff6f3f`, with snapshot
+`44ee4327-ff05-49aa-902c-c0154c515d43`. The lane-split validation run
 `b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 in each backend
 process and completed in 61.827 seconds; the latest binary-reuse run completed
 in 57.821 seconds. Each measurement clears

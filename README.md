@@ -106,18 +106,18 @@ The last committed full parity snapshot was recorded on **2026-08-03**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,501 |
-| Passed cases | 7,501 |
+| Runnable exact-comparison cases | 7,502 |
+| Passed cases | 7,502 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
 | Covered manifest cases | 4,183 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,271 |
-| Concrete expanded cases | 7,504 |
+| Logical declared cases | 4,272 |
+| Concrete expanded cases | 7,505 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,501 / 7,501` means every runnable case in that execution matched; the 3
+`7,502 / 7,502` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
@@ -141,16 +141,16 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage run was recorded on **2026-08-03** against
-committed source `839ffce3da73ab8c576ee6c6289050674d761524` (Coverage MCP run
-`1f6f634f-c78d-4896-8d91-1fa0eef64dda`, snapshot
-`10af8726-f6de-436a-a7a9-467410ae8094`):
+the current worktree rooted at `b350b6900035fc65039e89e52fa8eb8dc17ba1f0`
+(Coverage MCP run `9feff338-5c59-4698-948f-e89e4aff6f3f`, snapshot
+`44ee4327-ff05-49aa-902c-c0154c515d43`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,472 / 54,149 | 91.36% |
-| Branches | 9,712 / 12,522 | 77.56% |
+| Lines | 49,474 / 54,152 | 91.36% |
+| Branches | 9,715 / 12,526 | 77.56% |
 | Functions | 3,382 / 3,832 | 88.26% |
-| Regions | 68,096 / 75,315 | 90.41% |
+| Regions | 68,098 / 75,318 | 90.41% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -179,7 +179,7 @@ but the default coverage target does not rerun it because `make test-fast`
 already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
-The current run passed 7,501 / 7,501 comparisons in each backend lane. Its
+The current run passed 7,502 / 7,502 comparisons in each backend lane. Its
 instrumentation timers were about 43.18 seconds Rust FFI, 32.60 seconds C ABI,
 32.37 seconds WASM, and about 13 ms comparison per lane. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
@@ -218,11 +218,11 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,244 / 5,244 pinned-C runtime contract rows exact |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,245 / 5,245 pinned-C runtime contract rows exact |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 659 / 659 expected-error routes compare exact error and output results; 7,501 / 7,501 routes have no generic fallback evidence |
+| Errors | 659 / 659 expected-error routes compare exact error and output results; 7,502 / 7,502 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 

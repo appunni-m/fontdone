@@ -251,7 +251,7 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`7ff4b786-0209-4887-9642-35025a970bac`) measured 51.991 seconds
+run (`9feff338-5c59-4698-948f-e89e4aff6f3f`) measured 98.080 seconds
 end-to-end with warm input and oracle caches; allow roughly 2 minutes for host
 variation and roughly 4–6 minutes after a cache reset.
 `COVERAGE_TEST_DEBUG=1` keeps line
@@ -265,22 +265,22 @@ avoids needless helper rebuilds and relinks, and reuses the FreeType CMake
 configuration when its inputs are unchanged, so repeated oracle builds do not
 recompile all C sources. It runs in requested thorough CI, not on every
 commit. The latest instrumentation
-timers were approximately 45.42 seconds Rust FFI, 32.80 seconds C ABI, 32.56
-seconds WASM, and 15–19 ms comparison per lane; those lanes run concurrently,
+timers were approximately 46.36 seconds Rust FFI, 33.24 seconds C ABI, 32.98
+seconds WASM, and 13–20 ms comparison per lane; those lanes run concurrently,
 so their sum is not wall time. The remaining wall-time tail is setup,
 process/report merging, and Coverage MCP ingestion rather than another parity
 route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,464 / 54,150 | 91.35% |
-| Branches | 9,709 / 12,520 | 77.55% |
-| Functions | 3,380 / 3,832 | 88.20% |
-| Regions | 68,085 / 75,313 | 90.40% |
+| Lines | 49,474 / 54,152 | 91.36% |
+| Branches | 9,715 / 12,526 | 77.56% |
+| Functions | 3,382 / 3,832 | 88.26% |
+| Regions | 68,098 / 75,318 | 90.41% |
 
-That current run passed all 7,498 runnable parity comparisons with 0 failures;
+That current run passed all 7,502 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`f7762084-dc45-41b0-8050-22a69f03fefd`. The three-surface instrumented
+`44ee4327-ff05-49aa-902c-c0154c515d43`. The three-surface instrumented
 execution is therefore the dominant cost, not Coverage MCP ingestion. Current
 LLVM JSON is accepted directly by Coverage
 MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`
@@ -492,7 +492,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,638 | executable parity tests and public contracts |
-| R04 | 614 | licensed canonical fixture inputs |
+| R04 | 615 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -500,7 +500,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,474** | **all retained paths** |
+| **Total** | **2,475** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

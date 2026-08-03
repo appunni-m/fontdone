@@ -1087,6 +1087,18 @@ def write_cid_cff_standard_ros() -> None:
     font.save(out, reorderTables=True)
 
 
+def write_cid_cff_standard_ros_weight_names() -> None:
+    """Derive a CID face whose ROS uses standard SIDs 383/384."""
+    out = CID_OUT_DIR / "ot-cff-cid-keyed-standard-ros-weight-names.otf"
+    font = TTFont(CID_SOURCE, recalcTimestamp=False)
+    top_dict = font["CFF "].cff.topDictIndex[0]
+    top_dict.ROS = ("Black", "Bold", 0)
+    font.recalcTimestamp = False
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    font.save(out, reorderTables=True)
+
+
 def add_vertical_metrics(font: TTFont) -> None:
     glyph_order = font.getGlyphOrder()
     vmtx = newTable("vmtx")
@@ -1413,6 +1425,7 @@ def main() -> None:
     write_cid_cff_single_glyph()
     write_cid_cff_unresolved_ordering()
     write_cid_cff_standard_ros()
+    write_cid_cff_standard_ros_weight_names()
     write_pure_cff_cubic_vmtx()
     write_pure_cff_empty_tt_programs()
     write_malformed_cff_faces()
