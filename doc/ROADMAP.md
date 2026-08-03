@@ -420,17 +420,18 @@ per-batch coverage increase is claimed:
 | 50 | `839ffce3da73ab8c576ee6c6289050674d761524` | Added a derived CID-keyed CFF input whose ROS ordering SID is `800`, outside the face's String INDEX, and preserved pinned FreeType's successful CID service with a null ordering string through Rust FFI, C ABI, and WASM. Clean source-bound parity run `dbe0e4a1-ee08-4657-8ace-5ad804f493ae`, recorded by `32ddcb8f-81c7-41bf-abe9-fe96f076c380`, passed 7,501 / 7,501 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `1f6f634f-c78d-4896-8d91-1fa0eef64dda`, snapshot `10af8726-f6de-436a-a7a9-467410ae8094`, measured 49,472 / 54,149 lines, 9,712 / 12,522 branches, 3,382 / 3,832 functions, and 68,096 / 75,315 regions in 96.161 seconds; the C-ABI scorecard run `69a771ef-32c3-4321-b0a2-6a06f17761e8` reports 5,244 / 5,244 runtime rows and 7,501 / 7,501 no-fallback routes. |
 | 51 | `70c7e218d1f20ad10259444d5be9dcfc8072e5fc` | Replaced the partial CFF SID mapping with the complete 391-entry standard-string table, added a derived CID-keyed ROS fixture using standard `Black` (383) and `Bold` (384) SIDs, and routed it through pinned C, Rust FFI, C ABI, and WASM. Clean full parity run `2c3c0a6e-d9d9-48b1-b6af-62f338e8995c`, recorded by `32d5092a-5434-47fe-b941-01d188e52340`, passed 7,502 / 7,502 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `a62b2d8d-5488-4c80-bcf7-298149f6913d`, snapshot `05be06e0-d390-4752-91c1-ce596cec31e4`, measured 49,474 / 54,152 lines, 9,715 / 12,526 branches, 3,382 / 3,832 functions, and 68,098 / 75,318 regions in 50.482 seconds; the C-ABI scorecard run `d48f445c-3cac-4497-b66d-fb8ccc6930ea` reports 5,245 / 5,245 runtime rows and 7,502 / 7,502 no-fallback routes. |
 | 52 | `887b9700048feed0416b34babee11a2c09f88fad` | Added a safe public `FT_Outline` record-corruption case for `FT_Glyph_To_Bitmap`: a nonzero contour count with a null contours pointer is rejected before Rust rendering while preserving the caller handle and destroy behavior across pinned C, Rust FFI, C ABI, and WASM. Source-bound parity run `657b5c9b-e9c6-4639-9448-42e3d626ad59`, recorded by `b96b0e65-11d1-4039-9c6e-3da782a26bfe`, passed 7,503 / 7,503 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `7f80356b-6051-49a1-a80b-9d3e31308f58`, snapshot `cc31ef3c-be78-4ec8-9b8b-9509a16d1cd5`, measured 49,495 / 54,173 lines, 9,724 / 12,534 branches, 3,384 / 3,834 functions, and 68,127 / 75,345 regions in 119.434 seconds; the C-ABI scorecard reports 5,246 / 5,246 runtime rows and 7,503 / 7,503 no-fallback routes. |
+| 53 | `fa43358046e4a738973cf7dff5cdfff5a76a10b9` | Added a derived CFF face whose ROS registry uses FreeType's `0xFFFF` absent-CID sentinel, then routed the resulting `FT_Get_CID_Registry_Ordering_Supplement` `Invalid_Argument` and output-preservation behavior through pinned C, Rust FFI, C ABI, and WASM. Source-bound parity run `09678b89-dd92-4144-850e-2f2be979ae4c`, recorded by `61608dae-a07e-43ca-9e2d-2e864de7d6df`, passed 7,504 / 7,504 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `1553c8ad-369f-4c7a-922a-5c458f8fe6b4`, snapshot `a055abb2-28be-4450-aa78-b62b0bc9f33a`, measured 49,498 / 54,173 lines, 9,727 / 12,534 branches, 3,384 / 3,834 functions, and 68,130 / 75,345 regions in 89.882 seconds; the C-ABI scorecard run `3bb476bb-3739-45a9-a524-93f9b87a9de5` reports 5,247 / 5,247 runtime rows, 661 / 661 exact-error routes, and 7,504 / 7,504 no-fallback routes. |
 
 The latest source-bound parity verification is Coverage MCP parity run
-`657b5c9b-e9c6-4639-9448-42e3d626ad59` against committed source
-`887b9700048feed0416b34babee11a2c09f88fad`: it passed 7,503 / 7,503 runnable
+`09678b89-dd92-4144-850e-2f2be979ae4c` against committed source
+`fa43358046e4a738973cf7dff5cdfff5a76a10b9`: it passed 7,504 / 7,504 runnable
 comparisons, 0 failed, and 3 explicitly pending
 safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. The companion C-ABI scorecard reports
-**10 / 12 categories complete**, with 5,246 / 5,246 runtime contract rows and
-660 / 660 strict error routes exact; the remaining contract debt is the
+**10 / 12 categories complete**, with 5,247 / 5,247 runtime contract rows and
+661 / 661 strict error routes exact; the remaining contract debt is the
 Windows import-library item and four fresh target-lane bundles.
 
 The three pending cases are deliberately excluded from the pinned-C parity
@@ -444,9 +445,10 @@ covered by the facade/package checks; none is a missing runtime route.
 
 The previous combined-lane warm all-lane baseline completed in 1 minute
 53.998 seconds. The split validation completed in 61.827 seconds, and the
-binary-reuse path completed in 54.054 seconds. The latest clean committed
-source-matched run completed in 50.482 seconds with the instrumented binary
-and expanded-input cache warm; the preceding commit-bound rebuild took 98.080
+binary-reuse path completed in 54.054 seconds. The latest managed
+source-matched coverage run completed in 89.882 seconds; the prior
+execution-only warm measurement with the instrumented binary and expanded-input
+cache warm was 50.482 seconds, the preceding commit-bound rebuild took 98.080
 seconds, and the prior warm committed baseline remains 51.991 seconds. Its
 instrumentation timers were about 44.05 seconds Rust FFI, 33.02 seconds C ABI,
 32.80 seconds WASM, and about 13–14 ms comparison per lane. `make
@@ -479,11 +481,11 @@ and parity results. Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
 repeated. The latest warm baseline measured 49,464 / 54,150 lines, 9,709 /
 12,520 branches, 3,380 / 3,832 functions, and 68,085 / 75,313 regions. The
-current source-matched run measured 49,495 / 54,173 lines, 9,724 / 12,534
-branches, 3,384 / 3,834 functions, and 68,127 / 75,345 regions. It passed
-7,503 / 7,503 runnable parity comparisons with 0 failures. Its Coverage MCP
-run is `7f80356b-6051-49a1-a80b-9d3e31308f58`, with snapshot
-`cc31ef3c-be78-4ec8-9b8b-9509a16d1cd5`. The lane-split validation run
+current source-matched run measured 49,498 / 54,173 lines, 9,727 / 12,534
+branches, 3,384 / 3,834 functions, and 68,130 / 75,345 regions. It passed
+7,504 / 7,504 runnable parity comparisons with 0 failures. Its Coverage MCP
+run is `1553c8ad-369f-4c7a-922a-5c458f8fe6b4`, with snapshot
+`a055abb2-28be-4450-aa78-b62b0bc9f33a`. The lane-split validation run
 `b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 in each backend
 process and completed in 61.827 seconds; the latest binary-reuse run completed
 in 57.821 seconds. Each measurement clears
@@ -491,10 +493,10 @@ stale `.profraw` files first; use `make coverage-clean` after changing the
 coverage toolchain or instrumentation configuration.
 
 The latest coverage-speed validation (Coverage MCP run
-`a62b2d8d-5488-4c80-bcf7-298149f6913d`, snapshot
-`05be06e0-d390-4752-91c1-ce596cec31e4`) measured 50.482 seconds on the clean
-committed source with the binary and expanded-input cache warm. The preceding
-commit-bound rebuild took 98.080 seconds; the prior warm committed baseline
+`1553c8ad-369f-4c7a-922a-5c458f8fe6b4`, snapshot
+`a055abb2-28be-4450-aa78-b62b0bc9f33a`) measured 89.882 seconds end to end.
+The prior execution-only warm measurement was 50.482 seconds; the preceding
+commit-bound rebuild took 98.080 seconds, and the prior warm committed baseline
 remains 51.991 seconds.
 The retained lane timers identify the remaining floor as instrumented parity
 execution (about 44.05 seconds Rust FFI, 33.02 seconds C ABI, and 32.80 seconds
