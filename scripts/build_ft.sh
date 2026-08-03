@@ -6,6 +6,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 "${ROOT}/scripts/fetch_ft.sh"
 cd "${ROOT}/freetype"
 mkdir -p build && cd build
+config_stamp=".fontdone_cmake_config.stamp"
 cmake_args=(
     -S ..
     -B .
@@ -18,15 +19,26 @@ cmake_args=(
     -DFT_DISABLE_HARFBUZZ=ON
     "-DCMAKE_PROJECT_INCLUDE=${ROOT}/scripts/oracle_validator_modules.cmake"
 )
-if [ -f CMakeCache.txt ] &&
-  ! grep -Fq "CMAKE_HOME_DIRECTORY:INTERNAL=${ROOT}/freetype" CMakeCache.txt; then
-  # CMake caches absolute source/build paths. Reconfigure from scratch when a
-  # copied checkout still points at its old location.
-  cmake --fresh "${cmake_args[@]}"
+configure_required=1
+if [ -f CMakeCache.txt ] && [ -f "${config_stamp}" ] &&
+  grep -Fq "CMAKE_HOME_DIRECTORY:INTERNAL=${ROOT}/freetype" CMakeCache.txt &&
+  ! [ "${ROOT}/scripts/build_ft.sh" -nt "${config_stamp}" ] &&
+  ! [ "${ROOT}/scripts/oracle_validator_modules.cmake" -nt "${config_stamp}" ] &&
+  ! find .. -name CMakeLists.txt -type f -newer "${config_stamp}" -print -quit | grep -q .; then
+  configure_required=0
+fi
+if [ "${configure_required}" -eq 1 ]; then
+  if [ -f CMakeCache.txt ] &&
+    ! grep -Fq "CMAKE_HOME_DIRECTORY:INTERNAL=${ROOT}/freetype" CMakeCache.txt; then
+    # CMake caches absolute source/build paths. Reconfigure from scratch when a
+    # copied checkout still points at its old location.
+    cmake --fresh "${cmake_args[@]}"
+  else
+    cmake "${cmake_args[@]}"
+  fi
+  touch "${config_stamp}"
 else
-  # Reconfigure every time so changes to the maintained oracle module overlay
-  # cannot be hidden by an older CMake cache.
-  cmake "${cmake_args[@]}"
+  echo "FreeType oracle CMake configuration unchanged; reusing ${ROOT}/freetype/build"
 fi
 if [ -n "${FONTDONE_BUILD_JOBS:-}" ]; then
   build_jobs="${FONTDONE_BUILD_JOBS}"

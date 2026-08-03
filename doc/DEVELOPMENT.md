@@ -259,10 +259,12 @@ tables while omitting full test debuginfo; this reduces the measured end-to-end
 run without changing the coverage totals. Face-cache keys also reuse preloaded
 font content digests instead of rehashing every expanded case, and the
 read-only SFNT table-load/info routes reuse those content-bound handles while
-keeping variation-sequence cases isolated. Oracle
-preparation also preserves the mtime of unchanged generated constants and
-validator overlay sources, avoiding a needless helper rebuild and relink. It
-runs in requested thorough CI, not on every commit. The latest instrumentation
+keeping variation-sequence cases isolated. Oracle preparation also preserves
+the mtime of unchanged generated constants and validator overlay sources,
+avoids needless helper rebuilds and relinks, and reuses the FreeType CMake
+configuration when its inputs are unchanged, so repeated oracle builds do not
+recompile all C sources. It runs in requested thorough CI, not on every
+commit. The latest instrumentation
 timers were approximately 44.21 seconds Rust FFI, 33.26 seconds C ABI, 33.00
 seconds WASM, and 0.019 seconds comparison; those lanes run concurrently, so
 their sum is not wall time. The remaining wall-time tail is setup,

@@ -421,8 +421,8 @@ safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. The companion C-ABI scorecard reports
-**10 / 12 categories complete**, with 5,232 / 5,232 runtime contract rows and
-654 / 654 strict error routes exact; the remaining contract debt is the
+**10 / 12 categories complete**, with 5,237 / 5,237 runtime contract rows and
+657 / 657 strict error routes exact; the remaining contract debt is the
 Windows import-library item and four fresh target-lane bundles.
 
 The previous combined-lane warm all-lane baseline completed in 1 minute

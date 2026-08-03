@@ -43,8 +43,8 @@
     "categories_complete": 10,
     "categories_total": 12,
     "is_complete": false,
-    "runtime_contract_rows_complete": 5232,
-    "runtime_contract_rows_total": 5232,
+    "runtime_contract_rows_complete": 5237,
+    "runtime_contract_rows_total": 5237,
     "runtime_contract_rows_pending": 0,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
@@ -70,12 +70,12 @@
     "branches": {
       "covered": 9709,
       "total": 12520,
-      "percent": 77.54792332268371
+      "percent": 77.54792332268372
     },
     "functions": {
       "covered": 3380,
       "total": 3832,
-      "percent": 88.20459290187899
+      "percent": 88.204592901879
     },
     "regions": {
       "covered": 68074,
@@ -614,9 +614,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "d12b0878e01ef494a42f5dbc13f8ad4e9849184d2faddfd7fd9fe451ca9a069d",
-    "parity_tree_sha256": "e15fe88771e57bb17fbf7b248c3072723c565300f7157e43ebbac9d563f1d03c",
-    "log_sha256": "da558091f411b176885a42f696abc9b6ebbd52371195432b02138765728693db",
+    "sha256": "c50a377b500a3ebe98b84633415ea256a52022db3eb253ef907a3d957946efa9",
+    "parity_tree_sha256": "4e3386acd551091a13ef39904c657b8d5d2aeb64f925a6a7226819c4384fec1d",
+    "log_sha256": "b2720f438314c7f6907e815f5a886946b3e70ea2a235671334547933de122baa",
     "command": "make test-parity"
   }
 }
