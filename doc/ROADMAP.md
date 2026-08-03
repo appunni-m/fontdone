@@ -417,7 +417,7 @@ per-batch coverage increase is claimed:
 
 The latest source-bound parity verification is Coverage MCP parity run
 `40db7fd0-6544-4a91-8602-418cfeb6ad83` against committed source
-`316dee825953077ee37796d416fc4a61874f59be`: it
+`a4af5a01e62ae8050838c9c789fbc2032661bfdc`: it
 passed 7,494 / 7,494 runnable comparisons, 0 failed, and 3 explicitly pending
 safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present

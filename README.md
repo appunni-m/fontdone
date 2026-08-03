@@ -126,7 +126,7 @@ equivalent to complete behavior for every input, state, or platform.
 The latest source-matched verification is Coverage MCP parity run
 `40db7fd0-6544-4a91-8602-418cfeb6ad83`, recorded by run
 `afd62e98-da8c-4d05-a10c-0f7d48cd63c5` against committed source
-`316dee825953077ee37796d416fc4a61874f59be`;
+`a4af5a01e62ae8050838c9c789fbc2032661bfdc`;
 its source-bound parity-tree digest is retained in
 `doc/runtime_parity_evidence.json`.
 
