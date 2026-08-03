@@ -405,10 +405,11 @@ per-batch coverage increase is claimed:
 | 35 | `1a08537f6188cfc4631cee7204fc27663104ae62` | Regenerated the maintained leading/single-reference gvar fixture with the avar-mapped tuple peak (`5325` F2DOT14), activating the intended IUP interpolation path. Focused parity passed 33 / 33; full parity run `640b6f77-2758-423a-b6ca-deb42c86a2b9` passed 7,476 / 7,476, and coverage increased by 22 lines, 6 branches, and 32 regions. |
 | 36 | `f4eee93455458366c43af8770c574f50a29cb5ed` | Reused the single instrumented `unified_fixture_parity` binary for all three split coverage processes instead of invoking `cargo llvm-cov` three times. Clean Coverage MCP run `6eb57e9e-4147-4663-b34a-d29227b0fdba` passed 7,476 / 7,476 in every lane in 54.054 seconds, with unchanged workspace coverage totals; this is 52.6% faster than the previous warm 113.998-second run. |
 | 37 | `e6bef8f9e180eeda5e606270e515314443ba6c44` | Routed the existing pure-CFF Type 2 operand-stack-overflow and escaped-add argument-underflow glyph inputs through `FT_Load_Glyph`. Focused parity passed 321 / 321; corrected full parity run `352d82a0-1a86-4a01-97b7-9235a1a66b5b` passed 7,478 / 7,478 runnable comparisons with 3 explicitly pending safety-extension cases. The refreshed C-ABI scorecard is exact at 649 / 649 expected-error routes and 5,221 / 5,221 runtime rows; aggregate coverage totals were unchanged. |
+| 38 | `dea377a12afd181a58a0bc4a6d1c74b3a7d4e7c7` | Re-recorded the full parity evidence after the coverage-speed fixes. Clean Coverage MCP run `4be92a34-c7a6-49fb-9a7c-a97ef1482757` passed 7,479 / 7,479 runnable comparisons with 3 explicitly pending safety-extension cases; the source-bound attestation is recorded by `07462991-ef61-45f8-ba2b-e68c05142e3d`. |
 
 The latest source-bound parity verification is Coverage MCP parity run
-`352d82a0-1a86-4a01-97b7-9235a1a66b5b` against commit
-`e6bef8f9e180eeda5e606270e515314443ba6c44`: it passed 7,478 / 7,478 runnable
+`4be92a34-c7a6-49fb-9a7c-a97ef1482757` against commit
+`dea377a12afd181a58a0bc4a6d1c74b3a7d4e7c7`: it passed 7,479 / 7,479 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The committed source-digest attestation is

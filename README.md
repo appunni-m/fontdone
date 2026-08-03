@@ -124,10 +124,10 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP parity run
-`352d82a0-1a86-4a01-97b7-9235a1a66b5b`, recorded by run
-`c500e3d6-24da-491a-8f89-4c38826b3eda` against the source tree represented by
-commit `e6bef8f9e180eeda5e606270e515314443ba6c44`; its source-bound parity-tree
-digest is `ba481ed752d86d910cd7d5ad6d18d3f596d8e4bfa281a399710a71318a63a175`.
+`4be92a34-c7a6-49fb-9a7c-a97ef1482757`, recorded by run
+`07462991-ef61-45f8-ba2b-e68c05142e3d` against clean commit
+`dea377a12afd181a58a0bc4a6d1c74b3a7d4e7c7`; its source-bound parity-tree
+digest is `886563059da1bae8d91c3578158fce6c8b9a8d0b0da91b038484e56582d63642`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
