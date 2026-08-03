@@ -170,8 +170,9 @@ big-endian property records and encoding-table decoding. The companion
 `tests/fixtures/input/fonts/pcf/properties-uncompressed-metrics.pcf` uses the
 uncompressed six-field metric record through the same public property route.
 The generator also keeps malformed PCF controls for an invalid file version,
-overlapping table ranges, and a properties-format mismatch; those are routed
-through the existing face-open error matrix.
+truncated directories, table ranges outside the stream, overlapping table
+ranges, a missing required table, and a properties-format mismatch; those are
+routed through the existing face-open error matrix.
 The reviewed compressed/property outputs are 400 bytes with SHA-256
 `4d840c337be40b056873b9cbe5a8ed5a23081d174761b04233bcac9cdd53cec7` and
 `c636e9b9bd46941afd35159b654cc214fbfa6358a488ce321aba40e8b2c762aa`,

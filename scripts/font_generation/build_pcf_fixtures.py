@@ -260,6 +260,29 @@ def main() -> None:
         missing_properties_output.unlink()
     missing_properties_output.write_bytes(missing_properties)
 
+    # Keep a structurally valid one-entry TOC whose table starts at the end of
+    # the directory but extends past the stream, reaching the pinned driver's
+    # table-range validation error before table-specific parsing.
+    table_outside_stream = (
+        struct.pack("<II", PCF_FILE_VERSION, 1)
+        + struct.pack("<IIII", PCF_PROPERTIES, 0, 1, 24)
+    )
+    table_outside_output = OUT_DIR / "table-outside-stream.pcf"
+    if table_outside_output.exists() or table_outside_output.is_symlink():
+        table_outside_output.unlink()
+    table_outside_output.write_bytes(table_outside_stream)
+
+    # Keep a one-entry TOC whose table begins inside the directory itself,
+    # reaching the first disjunct of the pinned table-range guard.
+    table_before_directory = (
+        struct.pack("<II", PCF_FILE_VERSION, 1)
+        + struct.pack("<IIII", PCF_PROPERTIES, 0, 16, 8)
+    )
+    table_before_output = OUT_DIR / "table-before-directory.pcf"
+    if table_before_output.exists() or table_before_output.is_symlink():
+        table_before_output.unlink()
+    table_before_output.write_bytes(table_before_directory)
+
 
 if __name__ == "__main__":
     main()

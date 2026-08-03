@@ -1847,6 +1847,56 @@
             ]
           },
           {
+            "id": "pcf-table-outside-stream",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/table-outside-stream.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/table-outside-stream.pcf"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pcf:table-range-outside-stream"
+            ]
+          },
+          {
+            "id": "pcf-table-before-directory",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/table-before-directory.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/table-before-directory.pcf"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pcf:table-range-before-directory"
+            ]
+          },
+          {
             "id": "pcf-invalid-version",
             "assets": {
               "font_bytes": {
