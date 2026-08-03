@@ -28773,6 +28773,15 @@ fn c_counted_memory_free_count(memory: &c_abi::FT_MemoryRec) -> i32 {
         .map_or(0, |(_, frees)| *frees)
 }
 
+fn c_counted_memory_is_balanced(memory: &c_abi::FT_MemoryRec) -> bool {
+    C_LIBRARY_MEMORY_COUNTS
+        .get_or_init(|| Mutex::new(BTreeMap::new()))
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .get(&ptr::from_ref(memory).addr())
+        .is_some_and(|(allocations, frees)| allocations == frees)
+}
+
 fn c_module_class_lifecycle(_case: &InputCase) -> Result<RunOutput, String> {
     c_module_log_reset();
     let (_memory, library) = c_new_counted_library().map_err(|status| {
@@ -29616,7 +29625,7 @@ fn c_library_final_destroy(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = required_asset_bytes(case, "font")?;
     C_FACE_FINALIZED.store(0, Ordering::SeqCst);
     c_module_log_reset();
-    let (_memory, library) = c_new_counted_library()
+    let (memory, library) = c_new_counted_library()
         .map_err(|status| format!("C ABI final-destroy library failed: {status}"))?;
     c_abi::FT_Add_Default_Modules(library);
     let module_size = FT_Long::try_from(size_of::<c_abi::FT_ModuleRec>())
@@ -29666,7 +29675,9 @@ fn c_library_final_destroy(case: &InputCase) -> Result<RunOutput, String> {
             .into_iter()
             .map(ToOwned::to_owned)
             .collect(),
-        C_LIBRARY_ALLOCS.load(Ordering::SeqCst) == C_LIBRARY_FREES.load(Ordering::SeqCst),
+        // Compare this library's memory record. The process-wide counters are
+        // reset by other parity cases and may be updated concurrently.
+        c_counted_memory_is_balanced(&memory),
     ))
 }
 

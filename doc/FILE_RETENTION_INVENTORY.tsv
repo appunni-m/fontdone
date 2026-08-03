@@ -2474,4 +2474,4 @@ tests/fixtures/streams/gzip/valid-font-stream.gz	283990	file	767ab166fc9debf9075
 tests/manifest.yaml	1522486	file	f0ffbe7bb50d75d9c6f60b524d13aab7206fc499d6eb4bda6898dc0f8e46c1da	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/pipe_trace.rs	6312	file	2871e8fb783d748516c5542d70125ff3d9186ee63f88ab66124acd44caf422fa	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/support/generated_constant_lookup.rs	89931	file	3309eebd6fa4af72d165481e216c9a1dfcb574b3643a506e9221a8eec81f9d74	-	keep-generated-source	R10	Generated lookup required by the public constant parity test.
-tests/unified_fixture_parity.rs	3348031	file	a72a34f5b472d0e87de9b649d52f60d2c64be75f6d4086d0bd5aaef66b599946	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
+tests/unified_fixture_parity.rs	3348477	file	99422446ce51945e0c5821aca52b8d8db5f83b43947925634ee7fd77120321bf	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
