@@ -144,8 +144,8 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest clean committed validation is
-Coverage MCP run `85d80dc4-ccfe-42ec-b348-78fa43381c2c`: all three processes
-passed 7,483 / 7,483 cases, and the warm end-to-end run took 51.203 seconds.
+Coverage MCP run `eeb78a28-19d8-4863-92cd-ed922a9b7761`: all three processes
+passed 7,494 / 7,494 cases, and the warm end-to-end run took 51.334 seconds.
 A preceding clean-target run took 109.360 seconds because it rebuilt the
 instrumented binary; the build-only step now uses `--no-report -- --list` so
 profile merging cannot happen before the three lane processes execute.
@@ -251,7 +251,7 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`85d80dc4-ccfe-42ec-b348-78fa43381c2c`) measured 51.203 seconds
+run (`eeb78a28-19d8-4863-92cd-ed922a9b7761`) measured 51.334 seconds
 end-to-end with warm input and oracle caches; allow roughly 2 minutes for host
 variation and roughly 4–6 minutes after a cache reset.
 `COVERAGE_TEST_DEBUG=1` keeps line
@@ -263,22 +263,22 @@ keeping variation-sequence cases isolated. Oracle
 preparation also preserves the mtime of unchanged generated constants and
 validator overlay sources, avoiding a needless helper rebuild and relink. It
 runs in requested thorough CI, not on every commit. The latest instrumentation
-timers were approximately 44.29 seconds Rust FFI, 33.28 seconds C ABI, 33.01
-seconds WASM, and 0.017 seconds comparison; those lanes run concurrently, so
+timers were approximately 44.21 seconds Rust FFI, 33.26 seconds C ABI, 33.00
+seconds WASM, and 0.019 seconds comparison; those lanes run concurrently, so
 their sum is not wall time. The remaining wall-time tail is setup,
 process/report merging, and Coverage MCP ingestion rather than another parity
 route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,381 / 54,104 | 91.27% |
-| Branches | 9,698 / 12,512 | 77.51% |
-| Functions | 3,373 / 3,828 | 88.11% |
-| Regions | 67,993 / 75,273 | 90.33% |
+| Lines | 49,454 / 54,150 | 91.33% |
+| Branches | 9,709 / 12,520 | 77.55% |
+| Functions | 3,380 / 3,832 | 88.20% |
+| Regions | 68,074 / 75,313 | 90.39% |
 
-That current run passed all 7,483 runnable parity comparisons with 0 failures;
+That current run passed all 7,494 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`07b3c482-f91a-49a7-97cd-1671132bfe9e`. The three-surface instrumented
+`1d5357f4-f9ea-42bc-bbd3-d5fb030a649d`. The three-surface instrumented
 execution is therefore the dominant cost, not Coverage MCP ingestion. Current
 LLVM JSON is accepted directly by Coverage
 MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`
@@ -322,7 +322,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 603 tracked paths and no symlinks.
+The canonical input tree currently contains 608 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -490,7 +490,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,638 | executable parity tests and public contracts |
-| R04 | 603 | licensed canonical fixture inputs |
+| R04 | 608 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -498,7 +498,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,463** | **all retained paths** |
+| **Total** | **2,468** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
