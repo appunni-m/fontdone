@@ -144,8 +144,8 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest clean committed validation is
-Coverage MCP run `7ff4b786-0209-4887-9642-35025a970bac`: all three processes
-passed 7,498 / 7,498 cases, and the warm end-to-end run took 51.991 seconds.
+Coverage MCP run `a62b2d8d-5488-4c80-bcf7-298149f6913d`: all three processes
+passed 7,502 / 7,502 cases, and the warm end-to-end run took 50.482 seconds.
 A preceding clean-target run took 109.360 seconds because it rebuilt the
 instrumented binary; the build-only step now uses `--no-report -- --list` so
 profile merging cannot happen before the three lane processes execute.
@@ -251,7 +251,7 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`9feff338-5c59-4698-948f-e89e4aff6f3f`) measured 98.080 seconds
+run (`a62b2d8d-5488-4c80-bcf7-298149f6913d`) measured 50.482 seconds
 end-to-end with warm input and oracle caches; allow roughly 2 minutes for host
 variation and roughly 4–6 minutes after a cache reset.
 `COVERAGE_TEST_DEBUG=1` keeps line
@@ -265,8 +265,8 @@ avoids needless helper rebuilds and relinks, and reuses the FreeType CMake
 configuration when its inputs are unchanged, so repeated oracle builds do not
 recompile all C sources. It runs in requested thorough CI, not on every
 commit. The latest instrumentation
-timers were approximately 46.36 seconds Rust FFI, 33.24 seconds C ABI, 32.98
-seconds WASM, and 13–20 ms comparison per lane; those lanes run concurrently,
+timers were approximately 44.05 seconds Rust FFI, 33.02 seconds C ABI, 32.80
+seconds WASM, and 13–14 ms comparison per lane; those lanes run concurrently,
 so their sum is not wall time. The remaining wall-time tail is setup,
 process/report merging, and Coverage MCP ingestion rather than another parity
 route. Coverage MCP does not expose timestamps for those sub-phases yet:
@@ -280,7 +280,7 @@ route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 That current run passed all 7,502 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`44ee4327-ff05-49aa-902c-c0154c515d43`. The three-surface instrumented
+`05be06e0-d390-4752-91c1-ce596cec31e4`. The three-surface instrumented
 execution is therefore the dominant cost, not Coverage MCP ingestion. Current
 LLVM JSON is accepted directly by Coverage
 MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`
@@ -324,7 +324,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 614 tracked paths and no symlinks.
+The canonical input tree currently contains 615 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 

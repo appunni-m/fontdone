@@ -124,9 +124,9 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP parity run
-`dbe0e4a1-ee08-4657-8ace-5ad804f493ae`, recorded by run
-`32ddcb8f-81c7-41bf-abe9-fe96f076c380` against committed source
-`839ffce3da73ab8c576ee6c6289050674d761524`;
+`2c3c0a6e-d9d9-48b1-b6af-62f338e8995c`, recorded by run
+`32d5092a-5434-47fe-b941-01d188e52340` against committed source
+`70c7e218d1f20ad10259444d5be9dcfc8072e5fc`;
 its source-bound parity-tree digest is retained in
 `doc/runtime_parity_evidence.json`.
 
@@ -141,9 +141,9 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage run was recorded on **2026-08-03** against
-the current worktree rooted at `b350b6900035fc65039e89e52fa8eb8dc17ba1f0`
-(Coverage MCP run `9feff338-5c59-4698-948f-e89e4aff6f3f`, snapshot
-`44ee4327-ff05-49aa-902c-c0154c515d43`):
+committed source `70c7e218d1f20ad10259444d5be9dcfc8072e5fc`
+(Coverage MCP run `a62b2d8d-5488-4c80-bcf7-298149f6913d`, snapshot
+`05be06e0-d390-4752-91c1-ce596cec31e4`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -180,8 +180,8 @@ already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
 The current run passed 7,502 / 7,502 comparisons in each backend lane. Its
-instrumentation timers were about 43.18 seconds Rust FFI, 32.60 seconds C ABI,
-32.37 seconds WASM, and about 13 ms comparison per lane. The three-surface
+instrumentation timers were about 44.05 seconds Rust FFI, 33.02 seconds C ABI,
+32.80 seconds WASM, and about 13–14 ms comparison per lane. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
 MCP without the compatibility-only segment rewrite. The default
 `COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
@@ -199,9 +199,10 @@ not rebuilt on every run; unchanged FreeType CMake configuration is reused as
 well. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The latest clean committed source-matched run completed in 96.161 seconds
-while rebuilding the instrumented binary after the routed parity-harness and
-CFF source change; the prior warm committed baseline was 51.991 seconds. The
+The latest clean committed source-matched run completed in 50.482 seconds
+with the instrumented binary and expanded-input cache warm; the preceding
+commit-bound rebuild took 98.080 seconds, and the prior warm committed baseline
+was 51.991 seconds. The
 repository default remains `COVERAGE_TEST_OPT_LEVEL=1`; use an
 explicit level-3 override only for comparison. `make coverage-clean` is now
 safe before a run: the build-only coverage step uses `--no-report -- --list`
