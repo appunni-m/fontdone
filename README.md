@@ -124,9 +124,9 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP parity run
-`742d6cf1-105d-4399-9da7-aa24a6335f6b`, recorded by run
-`520d7cbf-e644-41a7-b300-192162970aa1` against committed source
-`e0ed6cb852510c31bdae872f669012acdbbade66`;
+`40db7fd0-6544-4a91-8602-418cfeb6ad83`, recorded by run
+`afd62e98-da8c-4d05-a10c-0f7d48cd63c5` against committed source
+`316dee825953077ee37796d416fc4a61874f59be`;
 its source-bound parity-tree digest is retained in
 `doc/runtime_parity_evidence.json`.
 
@@ -141,9 +141,9 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage run was recorded on **2026-08-03** against
-committed source `e0ed6cb852510c31bdae872f669012acdbbade66` (Coverage MCP run
-`eeb78a28-19d8-4863-92cd-ed922a9b7761`, snapshot
-`1d5357f4-f9ea-42bc-bbd3-d5fb030a649d`):
+committed source `316dee825953077ee37796d416fc4a61874f59be` (Coverage MCP run
+`4d548309-6e4a-441e-9b19-9e8e840587f3`, snapshot
+`dec343b9-4788-4826-b42e-77c92e9cfc8c`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -180,8 +180,8 @@ already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
 The current run passed 7,494 / 7,494 comparisons in each backend lane. Its
-instrumentation timers were about 44.21 seconds Rust FFI, 33.26 seconds C ABI,
-33.00 seconds WASM, and about 0.019 seconds comparison. The three-surface
+instrumentation timers were about 45.42 seconds Rust FFI, 32.80 seconds C ABI,
+32.56 seconds WASM, and about 15–19 ms comparison per lane. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
 MCP without the compatibility-only segment rewrite. The default
 `COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
@@ -195,10 +195,11 @@ each expanded case, and read-only SFNT table-load/info routes reuse those
 content-bound handles; the variation-sequence route remains isolated. Oracle
 preparation now also preserves generated-file mtimes
 when contents are unchanged, so the C helper and FreeType validator overlay are
-not rebuilt on every run. Run `make coverage-clean` after changing coverage
+not rebuilt on every run; unchanged FreeType CMake configuration is reused as
+well. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The latest clean committed source-matched run completed in 51.334 seconds; the preceding clean-target
+The latest clean committed source-matched run completed in 52.144 seconds; the preceding clean-target
 validation completed in 109.360 seconds because it rebuilt the instrumented
 binary. The repository default remains `COVERAGE_TEST_OPT_LEVEL=1`; use an
 explicit level-3 override only for comparison. `make coverage-clean` is now
