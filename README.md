@@ -124,10 +124,10 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP parity run
-`1fdace28-cc1b-49c5-b618-4ce4a532cada`, recorded by run
-`acfe5218-b327-49e8-92f2-db54d4d6285a` against clean commit
-`753308b8e3c6f3775fa442fa4b74e6a17113aa4c`; its source-bound parity-tree
-digest is `2260286be00e160810909f0a6797af12377bc34ac0f0abb4f5c3c1afb81bbd1f`.
+`8b583a6e-7057-4c8a-a55a-c37fc8b3493d`, recorded by run
+`8281590b-663a-4b91-960e-f911b1f83c9c` against clean commit
+`ca4edb2a38ad5fc34e1082973bd86cf7b5504059`; its source-bound parity-tree
+digest is `89263af8af7c46759472a4d20e977d645e41cce8d5834c319d23dab9f64ac1d1`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -140,16 +140,16 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage run was recorded on **2026-08-03** against clean
-commit `753308b8e3c6f3775fa442fa4b74e6a17113aa4c` (Coverage MCP run
-`8ed5d6c1-2497-4601-9e06-9e553dcd08bb`, snapshot
-`9ea775a8-1599-4480-bd09-5febedbbe325`):
+commit `ca4edb2a38ad5fc34e1082973bd86cf7b5504059` (Coverage MCP run
+`85d80dc4-ccfe-42ec-b348-78fa43381c2c`, snapshot
+`07b3c482-f91a-49a7-97cd-1671132bfe9e`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,367 / 54,104 | 91.24% |
-| Branches | 9,694 / 12,512 | 77.48% |
-| Functions | 3,371 / 3,828 | 88.06% |
-| Regions | 67,969 / 75,273 | 90.30% |
+| Lines | 49,381 / 54,104 | 91.27% |
+| Branches | 9,698 / 12,512 | 77.51% |
+| Functions | 3,373 / 3,828 | 88.11% |
+| Regions | 67,993 / 75,273 | 90.33% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -179,8 +179,8 @@ already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
 The current run passed 7,483 / 7,483 comparisons in each backend lane. Its
-instrumentation timers were about 45.88 seconds Rust FFI, 35.13 seconds C ABI,
-35.05 seconds WASM, and under 0.02 seconds comparison. The three-surface
+instrumentation timers were about 44.29 seconds Rust FFI, 33.28 seconds C ABI,
+33.01 seconds WASM, and under 0.02 seconds comparison. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
 MCP without the compatibility-only segment rewrite. The default
 `COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
@@ -197,13 +197,12 @@ when contents are unchanged, so the C helper and FreeType validator overlay are
 not rebuilt on every run. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The prior opt-level-1 validation run `9453c549-d468-487b-a9e9-ea753043d2d6`
-completed in 54.563 seconds with 7,479 / 7,479 comparisons passing in each
-lane; it ingested as snapshot `961e667a-1e9e-44ee-9be7-18187380b225` without
-changing the measured coverage totals. The corresponding command at
-opt-level 3 took 65.332 seconds (`5ce27175-524b-4b9f-aae4-a0390b8e5968`), so
-the repository default is now `COVERAGE_TEST_OPT_LEVEL=1`; use an explicit
-level-3 override only for comparison.
+The warm run completed in 51.203 seconds; the preceding clean-target
+validation completed in 109.360 seconds because it rebuilt the instrumented
+binary. The repository default remains `COVERAGE_TEST_OPT_LEVEL=1`; use an
+explicit level-3 override only for comparison. `make coverage-clean` is now
+safe before a run: the build-only coverage step uses `--no-report -- --list`
+so it cannot attempt to merge profiles before the three backend lanes execute.
 
 Coverage is a code-execution signal, not a compatibility score. These
 percentages apply only to the named source commit, suite, and toolchain. Run
@@ -212,15 +211,15 @@ measurement provenance is retained in the compatibility snapshot.
 
 ### 3.4 C ABI completion contract
 
-The latest committed scorecard has **7 / 12 categories complete**:
+The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 217 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,226 / 5,226 pinned-C runtime contract rows exact |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,226 / 5,226 pinned-C runtime contract rows exact |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
-| Ownership | 22 / 23 ownership rules exact; one `FT_Glyph_To_Bitmap` error route remains |
+| Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 648 / 649 expected-error routes compare exact error and output results; 7,483 / 7,483 routes have no generic fallback evidence |
+| Errors | 649 / 649 expected-error routes compare exact error and output results; 7,483 / 7,483 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 
@@ -233,7 +232,7 @@ routes remain even when every bare function name has some traced route. The self
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`71dbd4b1-c82d-4185-9e03-4ff4cfd4f0d0`.
+`ab9bf38d-d35f-4784-88e8-1344a5ddab63`.
 
 ### 3.5 Performance baseline
 
