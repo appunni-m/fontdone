@@ -140,16 +140,16 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage run was recorded on **2026-08-03** against clean
-commit `ca4edb2a38ad5fc34e1082973bd86cf7b5504059` (Coverage MCP run
-`85d80dc4-ccfe-42ec-b348-78fa43381c2c`, snapshot
-`07b3c482-f91a-49a7-97cd-1671132bfe9e`):
+commit `562ac7b7f751716a69e267dce71cb6c50db08a63` (Coverage MCP run
+`139abc37-3db6-4e2e-b644-d52bf8fa8422`, snapshot
+`97264b76-7121-4f56-9040-cf4a152d86de`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,381 / 54,104 | 91.27% |
-| Branches | 9,698 / 12,512 | 77.51% |
+| Lines | 49,389 / 54,104 | 91.29% |
+| Branches | 9,699 / 12,512 | 77.52% |
 | Functions | 3,373 / 3,828 | 88.11% |
-| Regions | 67,993 / 75,273 | 90.33% |
+| Regions | 68,011 / 75,273 | 90.35% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -178,9 +178,9 @@ but the default coverage target does not rerun it because `make test-fast`
 already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
-The current run passed 7,483 / 7,483 comparisons in each backend lane. Its
-instrumentation timers were about 44.29 seconds Rust FFI, 33.28 seconds C ABI,
-33.01 seconds WASM, and under 0.02 seconds comparison. The three-surface
+The current run passed 7,485 / 7,485 comparisons in each backend lane. Its
+instrumentation timers were about 42.31 seconds Rust FFI, 32.05 seconds C ABI,
+31.83 seconds WASM, and under 0.02 seconds comparison. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
 MCP without the compatibility-only segment rewrite. The default
 `COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
@@ -197,7 +197,8 @@ when contents are unchanged, so the C helper and FreeType validator overlay are
 not rebuilt on every run. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The warm run completed in 51.203 seconds; the preceding clean-target
+The latest clean warm run completed in 48.868 seconds, 2.335 seconds faster
+than the preceding 51.203-second run; the preceding clean-target
 validation completed in 109.360 seconds because it rebuilt the instrumented
 binary. The repository default remains `COVERAGE_TEST_OPT_LEVEL=1`; use an
 explicit level-3 override only for comparison. `make coverage-clean` is now

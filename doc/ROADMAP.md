@@ -425,11 +425,11 @@ Windows import-library item and four fresh target-lane bundles.
 
 The previous combined-lane warm all-lane baseline completed in 1 minute
 53.998 seconds. The split validation completed in 61.827 seconds, and the
-binary-reuse path completed in 54.054 seconds. The latest warm source-bound run
-completed in 51.203 seconds on commit
-`ca4edb2a38ad5fc34e1082973bd86cf7b5504059`, with all three backend lanes still
-passing the exact matrix. Its latest instrumentation timers were about 44.29
-seconds Rust FFI, 33.28 seconds C ABI, 33.01 seconds WASM, and 0.017 seconds
+binary-reuse path completed in 54.054 seconds. The latest clean warm
+source-bound run completed in 48.868 seconds on commit
+`562ac7b7f751716a69e267dce71cb6c50db08a63`, with all three backend lanes still
+passing the exact matrix. Its latest instrumentation timers were about 42.31
+seconds Rust FFI, 32.05 seconds C ABI, 31.83 seconds WASM, and 0.012 seconds
 comparison. `make
 test-coverage-all` now defaults to
 `COVERAGE_UNIFIED_LANE_SPLIT=1`: it builds one instrumented parity binary and
@@ -458,11 +458,11 @@ each lane. The prior current-head opt-level-1 speed validation run
 65.332 seconds for the opt-level-3 comparison, with identical coverage totals
 and parity results. Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
-repeated. The latest warm run measured 49,381 / 54,104 lines, 9,698 / 12,512
-branches, 3,373 / 3,828 functions, and 67,993 / 75,273 regions. It passed
-7,483 / 7,483 runnable parity comparisons with 0 failures. Its Coverage MCP
-run is `85d80dc4-ccfe-42ec-b348-78fa43381c2c`, with snapshot
-`07b3c482-f91a-49a7-97cd-1671132bfe9e`. The lane-split validation run
+repeated. The latest warm run measured 49,389 / 54,104 lines, 9,699 / 12,512
+branches, 3,373 / 3,828 functions, and 68,011 / 75,273 regions. It passed
+7,485 / 7,485 runnable parity comparisons with 0 failures. Its Coverage MCP
+run is `139abc37-3db6-4e2e-b644-d52bf8fa8422`, with snapshot
+`97264b76-7121-4f56-9040-cf4a152d86de`. The lane-split validation run
 `b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 in each backend
 process and completed in 61.827 seconds; the latest binary-reuse run completed
 in 57.821 seconds. Each measurement clears
@@ -470,11 +470,11 @@ stale `.profraw` files first; use `make coverage-clean` after changing the
 coverage toolchain or instrumentation configuration.
 
 The latest coverage-speed validation (Coverage MCP run
-`85d80dc4-ccfe-42ec-b348-78fa43381c2c`, snapshot
-`07b3c482-f91a-49a7-97cd-1671132bfe9e`) measured 51.203 seconds with warm
+`139abc37-3db6-4e2e-b644-d52bf8fa8422`, snapshot
+`97264b76-7121-4f56-9040-cf4a152d86de`) measured 48.868 seconds with warm
 input and oracle caches and unchanged exact parity. The retained lane timers
-identify the remaining floor as instrumented parity execution (about 44.29
-seconds Rust FFI, 33.28 seconds C ABI, and 33.01 seconds WASM), while
+identify the remaining floor as instrumented parity execution (about 42.31
+seconds Rust FFI, 32.05 seconds C ABI, and 31.83 seconds WASM), while
 comparison is under 25 ms. Coverage MCP accepts the current LLVM JSON directly;
 the compatibility-only `jq` segment rewrite is now opt-in through
 `COVERAGE_NORMALIZE_SEGMENTS=1`. This is a report-path optimization only; it
