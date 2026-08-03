@@ -27,15 +27,15 @@
     "fontdone_pub_enums": 19
   },
   "runtime_parity": {
-    "runnable": 7506,
-    "passed": 7506,
+    "runnable": 7508,
+    "passed": 7508,
     "failed": 0,
     "pending": 3,
     "covered_manifest": 4186,
     "validated_input_subjects": 1543,
     "validated_input_files": 1537,
-    "logical_input_cases": 4276,
-    "concrete_input_cases": 7509,
+    "logical_input_cases": 4278,
+    "concrete_input_cases": 7511,
     "function_route_evidence": 218,
     "function_total": 218
   },
@@ -54,37 +54,37 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-08-03",
-    "source_commit": "e00c3fb9882eb8e817a1a6a97a1f9af5cc412088",
+    "source_commit": "95f3a7d3521d021fd73c1c8ba9ab834367d0d632",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "7ba15050-e5d5-47ec-94ae-2f74d1ab4cd0",
-    "snapshot_id": "403688ee-af78-4314-b4e5-a56462974146",
-    "duration_ms": 50204,
+    "run_id": "e96ecf03-aca8-4ed9-88ef-328e9f3aa232",
+    "snapshot_id": "17fc995d-aefe-4a4c-a3be-08433ca4be26",
+    "duration_ms": 50369,
     "exit_code": 0,
     "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with line-table debuginfo=1; single-worker parity; one instrumented test binary runs directly in three split backend processes; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; source-digest-bound expanded input cache reused across the three processes; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; clean binary preparation uses cargo llvm-cov --no-report -- --list; raw LLVM JSON is ingested directly, with segment normalization retained only as an opt-in compatibility rewrite; test-harness source excluded",
     "lines": {
-      "covered": 49500,
+      "covered": 49502,
       "total": 54175,
-      "percent": 91.37055837563452
+      "percent": 91.37425011536686
     },
     "branches": {
-      "covered": 9729,
+      "covered": 9731,
       "total": 12534,
-      "percent": 77.62087123025371
+      "percent": 77.63682782830701
     },
     "functions": {
       "covered": 3385,
       "total": 3835,
-      "percent": 88.26597131681872
+      "percent": 88.26597131681877
     },
     "regions": {
-      "covered": 68131,
+      "covered": 68133,
       "total": 75345,
-      "percent": 90.42537660096887
+      "percent": 90.42803105713717
     },
     "runtime_parity": {
-      "runnable": 7506,
-      "passed": 7506,
+      "runnable": 7508,
+      "passed": 7508,
       "failed": 0,
       "pending": 3
     },
@@ -862,9 +862,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "2d8c9e458e6885e3d9b0376b20a01a2f60f3e406e642b68a00d831e5fb182a38",
-    "parity_tree_sha256": "ecf29019e6768fa552637a95d2a8ea00c8edd00d56c0c45b4702b5d7a9953295",
-    "log_sha256": "6468206cff5918e60703e9ef8d06e546ec39d5126e7fd0e8ed1065c66870807c",
+    "sha256": "28ebc43ad0aea9af46877baaacac6cdde65c4b89c1bb61e496ed64a390e3ef41",
+    "parity_tree_sha256": "b1093c1b85b4e4166c731de4906538e3e88af7df77fc20948efb7752b392712a",
+    "log_sha256": "26318e6a654ad628a4237951c1bc8dd2b4ac08312bbf57598188662f8a2ffd5a",
     "command": "make test-parity"
   }
 }

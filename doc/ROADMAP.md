@@ -424,10 +424,11 @@ per-batch coverage increase is claimed:
 | 54 | `e558f9b306ea1af408b05d3c0140deeaa279180f` | Added the maintained zero-width, non-empty-row null-buffer `FT_Bitmap_Convert` input and routed C's zero-byte allocation and field behavior through pinned C, Rust FFI, C ABI, and WASM. Source-bound parity run `7d36f0c2-ae32-4cba-9aba-6d0e7d7ca2f2`, recorded by `a7ca74f9-3132-4615-b593-3b8016b0f569`, passed 7,505 / 7,505 runnable comparisons with 3 explicitly pending safety-extension cases. The clean all-lane Coverage MCP run `5f84841d-26e8-49c5-be83-1cee05420341`, snapshot `303a72ac-0257-467d-9f93-badf84ec59bb`, measured 49,498 / 54,173 lines, 9,729 / 12,534 branches, 3,384 / 3,834 functions, and 68,131 / 75,345 regions in 50.861 seconds; the C-ABI scorecard run `550910b8-7fd9-4a05-b0f6-5f4228685b2f` reports 5,248 / 5,248 runtime rows, 661 / 661 exact-error routes, and 7,505 / 7,505 no-fallback routes. |
 | 55 | `65ae15537ca0196f1939c8040e14bdbc115473e5` | Matched FreeType's `tt_face_lookup_table` rule that zero-length SFNT directory entries are missing for `FT_Load_Sfnt_Table`, added the maintained zero-length `EBDT` input, and stabilized per-memory allocator accounting in the C-ABI final-destroy parity harness. Clean source-bound parity run `1d40c267-32d5-458d-98fc-7ed165738f2b`, recorded by `e87cab05-9fd3-48fd-a006-0a3c7a5f1ce7`, passed 7,506 / 7,506 runnable comparisons with 3 explicitly pending safety-extension cases. |
 | 56 | `e00c3fb9882eb8e817a1a6a97a1f9af5cc412088` | Refreshed the committed source-bound parity, coverage, and C-ABI evidence after the zero-length SFNT table route: warm all-lane Coverage MCP run `7ba15050-e5d5-47ec-94ae-2f74d1ab4cd0`, snapshot `403688ee-af78-4314-b4e5-a56462974146`, passed 7,506 / 7,506 comparisons in 50.204 seconds and measured 49,500 / 54,175 lines, 9,729 / 12,534 branches, 3,385 / 3,835 functions, and 68,131 / 75,345 regions; scorecard run `6de87054-ad88-4147-b269-9089e394d6a3` reports 5,249 / 5,249 runtime rows, 662 / 662 exact-error routes, and 7,506 / 7,506 no-fallback routes. |
+| 57 | `95f3a7d3521d021fd73c1c8ba9ab834367d0d632` | Added the maintained zero-resolution WinFNT fixture and exact `FT_Bitmap_Size`/`FT_FaceRec` available-size parity inputs, matching pinned FreeType's 72 dpi defaults when both device resolutions are zero. Clean source-bound parity run `a7a2e636-4d43-4bba-bfb9-cec3050f3a5c`, recorded by `136854fa-3dc5-40b3-b3e5-3948e77485af`, passed 7,508 / 7,508 runnable comparisons with 3 explicitly pending safety-extension cases. The clean all-lane Coverage MCP run `e96ecf03-aca8-4ed9-88ef-328e9f3aa232`, snapshot `17fc995d-aefe-4a4c-a3be-08433ca4be26`, measured 49,502 / 54,175 lines, 9,731 / 12,534 branches, 3,385 / 3,835 functions, and 68,133 / 75,345 regions in 50.369 seconds. |
 
 The latest source-bound parity verification is Coverage MCP parity run
-`1d40c267-32d5-458d-98fc-7ed165738f2b` against committed source
-`65ae15537ca0196f1939c8040e14bdbc115473e5`: it passed 7,506 / 7,506 runnable
+`a7a2e636-4d43-4bba-bfb9-cec3050f3a5c` against committed source
+`95f3a7d3521d021fd73c1c8ba9ab834367d0d632`: it passed 7,508 / 7,508 runnable
 comparisons, 0 failed, and 3 explicitly pending
 safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
@@ -449,12 +450,12 @@ covered by the facade/package checks; none is a missing runtime route.
 The previous combined-lane warm all-lane baseline completed in 1 minute
 53.998 seconds. The split validation completed in 61.827 seconds, and the
 binary-reuse path completed in 54.054 seconds. The latest managed
-source-matched coverage run completed in 50.204 seconds; the preceding managed
+source-matched coverage run completed in 50.369 seconds; the preceding managed
 warm run completed in 50.861 seconds; the first source-bound rebuild took 99.254
 seconds; the prior execution-only warm measurement with the instrumented binary
 and expanded-input cache warm was 50.482 seconds, and the prior warm committed
-baseline remains 51.991 seconds. Its instrumentation timers were about 43.59
-seconds Rust FFI, 32.91 seconds C ABI, 32.70 seconds WASM, and about 13 ms
+baseline remains 51.991 seconds. Its instrumentation timers were about 43.62
+seconds Rust FFI, 33.25 seconds C ABI, 33.03 seconds WASM, and about 13.6 ms
 comparison per lane. `make
 test-coverage-all` now defaults to
 `COVERAGE_UNIFIED_LANE_SPLIT=1`: it builds one instrumented parity binary and
@@ -485,11 +486,11 @@ and parity results. Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
 repeated. The latest warm baseline measured 49,464 / 54,150 lines, 9,709 /
 12,520 branches, 3,380 / 3,832 functions, and 68,085 / 75,313 regions. The
-current source-matched run measured 49,500 / 54,175 lines, 9,729 / 12,534
-branches, 3,385 / 3,835 functions, and 68,131 / 75,345 regions. It passed
-7,506 / 7,506 runnable parity comparisons with 0 failures. Its Coverage MCP
-run is `7ba15050-e5d5-47ec-94ae-2f74d1ab4cd0`, with snapshot
-`403688ee-af78-4314-b4e5-a56462974146`. The lane-split validation run
+current source-matched run measured 49,502 / 54,175 lines, 9,731 / 12,534
+branches, 3,385 / 3,835 functions, and 68,133 / 75,345 regions. It passed
+7,508 / 7,508 runnable parity comparisons with 0 failures. Its Coverage MCP
+run is `e96ecf03-aca8-4ed9-88ef-328e9f3aa232`, with snapshot
+`17fc995d-aefe-4a4c-a3be-08433ca4be26`. The lane-split validation run
 `b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 in each backend
 process and completed in 61.827 seconds; the latest binary-reuse run completed
 in 57.821 seconds. Each measurement clears
@@ -497,8 +498,8 @@ stale `.profraw` files first; use `make coverage-clean` after changing the
 coverage toolchain or instrumentation configuration.
 
 The latest coverage-speed validation (Coverage MCP run
-`7ba15050-e5d5-47ec-94ae-2f74d1ab4cd0`, snapshot
-`403688ee-af78-4314-b4e5-a56462974146`) measured 50.204 seconds end to end.
+`e96ecf03-aca8-4ed9-88ef-328e9f3aa232`, snapshot
+`17fc995d-aefe-4a4c-a3be-08433ca4be26`) measured 50.369 seconds end to end.
 The preceding managed warm run measured 50.861 seconds; the first source-bound
 rebuild took 99.254 seconds; the prior execution-only warm measurement was
 50.482 seconds, and the prior warm committed baseline remains 51.991 seconds.
