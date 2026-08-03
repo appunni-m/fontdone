@@ -273,10 +273,8 @@ ifeq ($(COVERAGE_UNIFIED_LANE_SPLIT),1)
 	$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov --branch --workspace \
 		--test unified_fixture_parity --exclude-from-test fontdone-c-abi \
 		--exclude-from-test fontdone-wasm --locked \
-		$(filter-out --no-clean,$(COVERAGE_LLVM_COV_FLAGS)) --no-run \
-		--ignore-filename-regex '$(ALL_LANES_COVERAGE_IGNORE_REGEX)' \
-		--output-path $(COVERAGE_ALL_TARGET_DIR)/coverage-build.json \
-		-- unified_fixture_parity --nocapture
+		$(filter-out --no-clean,$(COVERAGE_LLVM_COV_FLAGS)) --no-report \
+		-- --list
 	@set -u; \
 	test_binary="$(COVERAGE_TEST_BINARY)"; \
 	if [ -z "$$test_binary" ]; then \
