@@ -687,25 +687,23 @@ fn parse_winfnt_header(data: &[u8]) -> Result<WinFntHeader, FontError> {
         } else {
             0
         },
-        reserved1: if version == 0x0300 {
-            // FreeType winfnt.c reads 16 raw bytes into FT_ULong reserved1[4].
-            // On the maintained LP64 ABI that fills the first two 64-bit
-            // elements and leaves the remaining elements zeroed.
-            [
-                u64::from_le_bytes([
-                    data[132], data[133], data[134], data[135], data[136], data[137], data[138],
-                    data[139],
-                ]),
-                u64::from_le_bytes([
-                    data[140], data[141], data[142], data[143], data[144], data[145], data[146],
-                    data[147],
-                ]),
-                0,
-                0,
-            ]
-        } else {
-            [0; 4]
-        },
+        // FreeType winfnt.c reads the fixed 148-byte header frame before it
+        // applies the v2 zeroing rules, so reserved1 is populated for both
+        // accepted versions. On the maintained LP64 ABI the 16 raw bytes
+        // fill the first two 64-bit elements and leave the remaining elements
+        // zeroed.
+        reserved1: [
+            u64::from_le_bytes([
+                data[132], data[133], data[134], data[135], data[136], data[137], data[138],
+                data[139],
+            ]),
+            u64::from_le_bytes([
+                data[140], data[141], data[142], data[143], data[144], data[145], data[146],
+                data[147],
+            ]),
+            0,
+            0,
+        ],
     })
 }
 
