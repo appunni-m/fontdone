@@ -12295,6 +12295,7 @@ enum GxValidationCall {
         asset_index: Option<usize>,
         flags: FT_UInt,
         table_length: usize,
+        enable_validator: bool,
     },
     NullFace {
         label: String,
@@ -12361,6 +12362,7 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
                     asset_index: None,
                     flags,
                     table_length: full_length,
+                    enable_validator: true,
                 })
                 .collect())
         }
@@ -12375,6 +12377,7 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
             asset_index: None,
             flags: validation_flags_param(params).unwrap_or(FT_VALIDATE_GX as FT_UInt),
             table_length: full_length,
+            enable_validator: true,
         })
         .collect()),
         "ftgxval.FT_VALIDATE_GX.validates_all_requested_tables" => {
@@ -12385,6 +12388,7 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
                 asset_index: None,
                 flags,
                 table_length: full_length,
+                enable_validator: true,
             }];
             for (label, asset) in [
                 ("missing_table", "missing_table_fonts"),
@@ -12401,6 +12405,7 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
                     asset_index: Some(asset_index),
                     flags,
                     table_length: full_length,
+                    enable_validator: true,
                 }));
             }
             Ok(calls)
@@ -12431,6 +12436,7 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
                     asset_index: None,
                     flags,
                     table_length,
+                    enable_validator: true,
                 })
                 .collect())
         }
@@ -12444,6 +12450,7 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
                     asset_index: None,
                     flags,
                     table_length,
+                    enable_validator: true,
                 })
                 .collect())
         }
@@ -12473,6 +12480,7 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
                     asset_index: None,
                     flags,
                     table_length,
+                    enable_validator: true,
                 })
                 .collect())
         }
@@ -12528,6 +12536,7 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
                 asset_index: None,
                 flags,
                 table_length: full_length,
+                enable_validator: true,
             }];
             let malformed_count = match case.inputs.assets.get(malformed_asset) {
                 Some(Asset::List(items)) => items.len(),
@@ -12541,6 +12550,7 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
                     asset_index: Some(asset_index),
                     flags,
                     table_length: full_length,
+                    enable_validator: true,
                 }),
             );
             calls.push(GxValidationCall::Font {
@@ -12549,6 +12559,7 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
                 asset_index: None,
                 flags,
                 table_length: full_length,
+                enable_validator: true,
             });
             Ok(calls)
         }
@@ -12565,8 +12576,19 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
                 asset_index: None,
                 flags,
                 table_length: full_length,
+                enable_validator: true,
             })
             .collect())
+        }
+        "ftgxval.FT_TrueTypeGX_Validate.reports_unimplemented_when_validator_module_is_absent" => {
+            Ok(vec![GxValidationCall::Font {
+                label: "module_absent".to_string(),
+                asset: "font".to_string(),
+                asset_index: None,
+                flags: validation_flags_param(params)?,
+                table_length: 0,
+                enable_validator: false,
+            }])
         }
         "ftgxval.FT_VALIDATE_opbd.gx_validate_selects_opbd_table"
         | "ftgxval.FT_VALIDATE_trak.gx_validate_selects_trak_table"
@@ -12583,6 +12605,7 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
                 asset_index: None,
                 flags,
                 table_length: full_length,
+                enable_validator: true,
             })
             .collect())
         }
@@ -12595,6 +12618,7 @@ fn gx_validation_calls(case: &InputCase) -> Result<Vec<GxValidationCall>, String
                 asset_index: None,
                 flags: validation_flags_param(params)?,
                 table_length: full_length,
+                enable_validator: true,
             }])
         }
         other => Err(format!("unsupported GX validation case {other}")),
@@ -12908,12 +12932,15 @@ fn rust_gx_validation(case: &InputCase) -> Result<RunOutput, String> {
                 asset_index,
                 flags,
                 table_length,
+                enable_validator,
             } => {
                 let bytes = gx_asset_bytes(case, &asset, asset_index)?;
                 let mut library = FT_Init_FreeType();
-                let add = FT_Add_Module(Some(&mut library), Some(&gx_validator_module_info()));
-                if add != FT_Err_Ok {
-                    return Err(format!("FT_Add_Module(gxvalid) returned {add}"));
+                if enable_validator {
+                    let add = FT_Add_Module(Some(&mut library), Some(&gx_validator_module_info()));
+                    if add != FT_Err_Ok {
+                        return Err(format!("FT_Add_Module(gxvalid) returned {add}"));
+                    }
                 }
                 let face = FT_New_Memory_Face(
                     &library,
@@ -12971,27 +12998,41 @@ fn c_gx_validation(case: &InputCase) -> Result<RunOutput, String> {
             ));
             continue;
         }
-        let (label, asset, asset_index, flags, table_length, null_tables) = match call {
-            GxValidationCall::Font {
-                label,
-                asset,
-                asset_index,
-                flags,
-                table_length,
-            } => (label, asset, asset_index, flags, table_length, false),
-            GxValidationCall::NullTables {
-                label,
-                asset,
-                flags,
-                table_length,
-            } => (label, asset, None, flags, table_length, true),
-            GxValidationCall::NullFace { .. } => unreachable!(),
-        };
+        let (label, asset, asset_index, flags, table_length, null_tables, enable_validator) =
+            match call {
+                GxValidationCall::Font {
+                    label,
+                    asset,
+                    asset_index,
+                    flags,
+                    table_length,
+                    enable_validator,
+                } => (
+                    label,
+                    asset,
+                    asset_index,
+                    flags,
+                    table_length,
+                    false,
+                    enable_validator,
+                ),
+                GxValidationCall::NullTables {
+                    label,
+                    asset,
+                    flags,
+                    table_length,
+                } => (label, asset, None, flags, table_length, true, true),
+                GxValidationCall::NullFace { .. } => unreachable!(),
+            };
         let bytes = gx_asset_bytes(case, &asset, asset_index)?;
         let (_memory, library) = c_new_counted_library()
             .map_err(|error| format!("FT_New_Library failed for GX validation: {error}"))?;
         c_abi::FT_Add_Default_Modules(library);
-        let _validator_class = c_enable_gx_validator(library)?;
+        let _validator_class = if enable_validator {
+            Some(c_enable_gx_validator(library)?)
+        } else {
+            None
+        };
         let mut face = ptr::null_mut();
         let open = c_abi::FT_New_Memory_Face(
             library,
@@ -13062,26 +13103,36 @@ fn wasm_gx_validation(case: &InputCase) -> Result<RunOutput, String> {
             ));
             continue;
         }
-        let (label, asset, asset_index, flags, table_length, null_tables) = match call {
-            GxValidationCall::Font {
-                label,
-                asset,
-                asset_index,
-                flags,
-                table_length,
-            } => (label, asset, asset_index, flags, table_length, false),
-            GxValidationCall::NullTables {
-                label,
-                asset,
-                flags,
-                table_length,
-            } => (label, asset, None, flags, table_length, true),
-            GxValidationCall::NullFace { .. } => unreachable!(),
-        };
+        let (label, asset, asset_index, flags, table_length, null_tables, enable_validator) =
+            match call {
+                GxValidationCall::Font {
+                    label,
+                    asset,
+                    asset_index,
+                    flags,
+                    table_length,
+                    enable_validator,
+                } => (
+                    label,
+                    asset,
+                    asset_index,
+                    flags,
+                    table_length,
+                    false,
+                    enable_validator,
+                ),
+                GxValidationCall::NullTables {
+                    label,
+                    asset,
+                    flags,
+                    table_length,
+                } => (label, asset, None, flags, table_length, true, true),
+                GxValidationCall::NullFace { .. } => unreachable!(),
+            };
         let bytes = gx_asset_bytes(case, &asset, asset_index)?;
         let handle =
             wasm_new_face_from_bytes(bytes.as_ref(), face_index_param(&case.inputs.params)?)?;
-        if !wasm_abi::abi_support_enable_gx_validator(handle) {
+        if enable_validator && !wasm_abi::abi_support_enable_gx_validator(handle) {
             wasm_done_face(handle);
             return Err("failed to enable WASM GX validator".to_string());
         }
@@ -41828,9 +41879,14 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                         asset_index,
                         flags,
                         table_length,
+                        enable_validator,
                     } => {
                         args.extend([
-                            "font".to_string(),
+                            if enable_validator {
+                                "font".to_string()
+                            } else {
+                                "no_validator".to_string()
+                            },
                             label,
                             flags.to_string(),
                             table_length.to_string(),

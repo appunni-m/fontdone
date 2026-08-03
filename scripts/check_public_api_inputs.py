@@ -1368,6 +1368,7 @@ def exact_error_public_route(operation: str, case_id: str, expect_error: bool) -
         "ftmoderr.FT_Mod_Err_Winfonts.prefixed_error_base",
         "ftgxval.FT_TrueTypeGX_Validate.rejects_invalid_arguments",
         "ftgxval.FT_TrueTypeGX_Validate.reports_unimplemented_or_invalid_table",
+        "ftgxval.FT_TrueTypeGX_Validate.reports_unimplemented_when_validator_module_is_absent",
         "ftgzip.FT_Gzip_Uncompress.rejects_invalid_arguments",
         "ftgzip.FT_Gzip_Uncompress.reports_buffer_too_small",
         "ftgzip.FT_Gzip_Uncompress.reports_invalid_compressed_data",
@@ -7412,9 +7413,12 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
     if (
         row.operation == "ftgxval.truetype_gx_validate"
         and row.case_id
-        == "ftgxval.FT_TrueTypeGX_Validate.reports_unimplemented_or_invalid_table"
+        in {
+            "ftgxval.FT_TrueTypeGX_Validate.reports_unimplemented_or_invalid_table",
+            "ftgxval.FT_TrueTypeGX_Validate.reports_unimplemented_when_validator_module_is_absent",
+        }
     ):
-        return "FT_TrueTypeGX_Validate unimplemented/invalid-table errors validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+        return "FT_TrueTypeGX_Validate unimplemented/invalid-table/module-absence errors validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
     if (
         row.operation == "ftgzip.gzip_uncompress"
         and row.case_id == "ftgzip.FT_Gzip_Uncompress.uncompresses_valid_gzip_buffer"

@@ -6878,6 +6878,8 @@ subjects:
         description: table_length limits which output slots can be populated, matching the gxvalid service behavior.
       - id: reports_unimplemented_or_invalid_table
         description: Fonts without GX validator support or malformed requested tables return the same public error as C.
+      - id: reports_unimplemented_when_validator_module_is_absent
+        description: An openable GX face reports Unimplemented_Feature when the optional gxvalid module is absent and leaves a zero-length output array untouched.
     # needs-input: operation=FT_TrueTypeGX_Validate; fixture_asset=AAT/GX fonts with feat/mort/morx/bsln/just/kern/opbd/trak/prop/lcar coverage, plus fonts without GX tables and malformed table variants; params validation_flags single-bit, multi-bit, FT_VALIDATE_GX, zero, unknown bits, and table_length 0/short/full; expected output shape=FT_Error plus tables array slot null/non-null and bytes/hash; comparison=exact C oracle error code, per-slot presence class, copied table bytes/hash, output preservation on errors, and same behavior for absent tables.
 
   - id: ftgzip.FT_Gzip_Uncompress

@@ -431,17 +431,18 @@ per-batch coverage increase is claimed:
 | 61 | `ee97486e9747a0d03af96a48b1c073034e8a1e81` | Added five project-authored malformed WinFNT inputs for unsupported version, vector file type, zero pixel height, reversed character range, and out-of-range face-name offset, reaching the pinned `Unknown_File_Format` and `Invalid_File_Format` validation routes. Focused parity run `e422c0cb-002b-4319-89b3-ec28e683d185`, clean full parity run `9814e704-01dd-4b55-8b93-990c61dc6256`, recorded by `f6c6d8a5-ecc5-4006-8e3d-a1ba0bfb533b`, establish 7,516 / 7,516 runnable comparisons with 3 explicitly pending safety-extension cases. The clean all-lane Coverage MCP run `27e96318-7026-40f0-8fd9-3e5f231a7028`, snapshot `dd671bb9-e27f-432f-98b6-207c2f3c6c5d`, measured 49,514 / 54,175 lines, 9,737 / 12,534 branches, 3,388 / 3,835 functions, and 68,146 / 75,345 regions in 51.747 seconds. The clean C-ABI scorecard run `e294e40f-0b61-497a-b346-88d4e45ade81` reports 10 / 12 categories complete, 5,259 / 5,259 runtime rows, 670 / 670 exact-error routes, and 7,516 / 7,516 no-fallback routes. |
 | 62 | `c4f187fe9125e0b41b738142a60580b0654576f9` | Added a valid version-2 WinFNT fixture and header-copy route. The first full parity attempt exposed that Rust zeroed `reserved1` for v2 even though pinned `winfnt.c` reads the fixed 148-byte header frame before applying v2's zeroing rules; the parser now matches that order. Source-bound full parity run `a1264e72-7d3e-4167-935f-9bfc813950d5`, recorded by `85ecb99d-392e-4687-ab0f-13adcd4d90d7`, passes 7,517 / 7,517 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `4f77364e-06b5-48ce-94fd-89519613a972`, snapshot `e78240ed-31c4-4e93-abcb-71c20f199f35`, measures 49,519 / 54,173 lines, 9,743 / 12,532 branches, 3,388 / 3,835 functions, and 68,151 / 75,343 regions in 98.336 seconds. The C-ABI scorecard run `7b4a61e8-3c97-4d7f-925b-ebaf7a996323` reports 10 / 12 categories complete, 5,260 / 5,260 runtime rows, 670 / 670 exact-error routes, and 7,517 / 7,517 no-fallback routes. |
 | 63 | Working tree (PCF endian property routes) | Added the maintained MSB-first PCF properties and encoding-table fixture, expanded `FT_Get_BDF_Property` into explicit little-endian and big-endian variants, and normalized variant case IDs in the BDF oracle/FFI/C-ABI/WASM dispatch after the first full run exposed the harness fallback. Source-bound full parity run `4138ffc6-cfa9-481a-bc5d-f8c8b1f4108f`, recorded by `5fa05f6e-a08c-4023-8d2e-14d7ad9f420a`, passes 7,518 / 7,518 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `5409f603-27d7-4e8e-9bfe-9e4fadc7962c`, snapshot `c6598315-d1e1-4d05-8a7b-df535185d651`, measures 49,521 / 54,173 lines, 9,745 / 12,532 branches, 3,388 / 3,835 functions, and 68,155 / 75,343 regions in 51.653 seconds. |
+| 64 | Working tree (GX validator module absence) | Added the maintained `FT_TrueTypeGX_Validate` case for an openable GX face with the optional `gxvalid` module absent, and routed the real `FT_Err_Unimplemented_Feature` plus zero-length output preservation through the pinned C oracle, Rust FFI, C ABI, and WASM harnesses. Source-bound full parity run `5567be2d-f932-4886-92b7-29e19fddfc28`, recorded by `71752538-1b06-4ee6-82e3-b84693bc11c3`, passes 7,519 / 7,519 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `9c9b7ebb-9aff-4982-8573-bfc4671ee529`, snapshot `bf8b7b67-3658-459e-b918-4587fecdb455`, measures 49,523 / 54,173 lines, 9,747 / 12,532 branches, 3,388 / 3,835 functions, and 68,157 / 75,343 regions in 100.333 seconds including the source-bound instrumented rebuild. The corrected C-ABI scorecard run `4cae8afe-429a-498f-b9cf-4b50971db5e5` reports 10 / 12 categories complete, 5,262 / 5,262 runtime contract rows, and 671 / 671 strict error routes exact. |
 
 The latest source-bound parity verification is Coverage MCP parity run
-`4138ffc6-cfa9-481a-bc5d-f8c8b1f4108f` against source tree
-`16c7337d2a0ae54fa85705ca4227124aac44b48d`: it passed 7,518 / 7,518 runnable
+`5567be2d-f932-4886-92b7-29e19fddfc28` against source tree
+`b7a3b4a32c3a5e0c31d62ba05d8a1cf791ab5ffd`: it passed 7,519 / 7,519 runnable
 comparisons, 0 failed, and 3 explicitly pending
 safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. The companion C-ABI scorecard reports
-**10 / 12 categories complete**, with 5,260 / 5,260 runtime contract rows and
-670 / 670 strict error routes exact; the remaining contract debt is the
+**10 / 12 categories complete**, with 5,262 / 5,262 runtime contract rows and
+671 / 671 strict error routes exact; the remaining contract debt is the
 Windows import-library item and four fresh target-lane bundles.
 
 The three pending cases are deliberately excluded from the pinned-C parity
@@ -495,11 +496,11 @@ and parity results. Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
 repeated. The latest warm baseline measured 49,464 / 54,150 lines, 9,709 /
 12,520 branches, 3,380 / 3,832 functions, and 68,085 / 75,313 regions. The
-current source-bound run measured 49,521 / 54,173 lines, 9,745 / 12,532
-branches, 3,388 / 3,835 functions, and 68,155 / 75,343 regions. It passed
-7,518 / 7,518 runnable parity comparisons with 0 failures. Its Coverage MCP
-run is `5409f603-27d7-4e8e-9bfe-9e4fadc7962c`, with snapshot
-`c6598315-d1e1-4d05-8a7b-df535185d651`. The lane-split validation run
+current source-bound run measured 49,523 / 54,173 lines, 9,747 / 12,532
+branches, 3,388 / 3,835 functions, and 68,157 / 75,343 regions. It passed
+7,519 / 7,519 runnable parity comparisons with 0 failures. Its Coverage MCP
+run is `9c9b7ebb-9aff-4982-8573-bfc4671ee529`, with snapshot
+`bf8b7b67-3658-459e-b918-4587fecdb455`. The lane-split validation run
 `b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 in each backend
 process and completed in 61.827 seconds; the latest binary-reuse run completed
 in 57.821 seconds. Each measurement clears
@@ -507,14 +508,15 @@ stale `.profraw` files first; use `make coverage-clean` after changing the
 coverage toolchain or instrumentation configuration.
 
 The latest coverage-speed validation (Coverage MCP run
-`5409f603-27d7-4e8e-9bfe-9e4fadc7962c`, snapshot
-`c6598315-d1e1-4d05-8a7b-df535185d651`) measured 51.653 seconds end to end.
-The preceding managed source-bound run measured 51.747 seconds; the preceding
-managed warm run measured 51.347 seconds; the first source-bound
+`9c9b7ebb-9aff-4982-8573-bfc4671ee529`, snapshot
+`bf8b7b67-3658-459e-b918-4587fecdb455`) measured 100.333 seconds end to end,
+including a 48.78-second instrumented rebuild; the longest backend execution
+was 48.24 seconds. The preceding managed source-bound run measured 98.336
+seconds; the preceding managed warm run measured 51.653 seconds; the first source-bound
 rebuild took 99.254 seconds; the prior execution-only warm measurement was
 50.482 seconds, and the prior warm committed baseline remains 51.991 seconds.
 The retained lane timers identify the remaining floor as instrumented parity
-execution (about 44.17 seconds Rust FFI, 33.35 seconds C ABI, and 33.12 seconds
+execution (about 44.27 seconds Rust FFI, 33.41 seconds C ABI, and 33.14 seconds
 WASM), while comparison is about 13–15 ms per lane. Coverage MCP accepts the current LLVM JSON directly;
 the compatibility-only `jq` segment rewrite is now opt-in through
 `COVERAGE_NORMALIZE_SEGMENTS=1`. This is a report-path optimization only; it

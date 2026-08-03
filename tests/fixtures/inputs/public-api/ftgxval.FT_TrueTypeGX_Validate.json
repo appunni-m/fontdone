@@ -6,7 +6,8 @@
     "validates_all_gx_tables",
     "rejects_invalid_arguments",
     "respects_table_length",
-    "reports_unimplemented_or_invalid_table"
+    "reports_unimplemented_or_invalid_table",
+    "reports_unimplemented_when_validator_module_is_absent"
   ],
   "cases": [
     {
@@ -304,6 +305,61 @@
         "source_refs": [
           "freetype/src/base/ftgxval.c:59-68",
           "freetype/src/gxvalid/gxvalid.c"
+        ]
+      }
+    },
+    {
+      "case_id": "ftgxval.FT_TrueTypeGX_Validate.reports_unimplemented_when_validator_module_is_absent",
+      "subject": "ftgxval.FT_TrueTypeGX_Validate",
+      "case": "reports_unimplemented_when_validator_module_is_absent",
+      "covers_manifest_cases": [
+        "reports_unimplemented_when_validator_module_is_absent"
+      ],
+      "operation": "ftgxval.truetype_gx_validate",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/aat/feat-opbd-trak-prop.ttf"
+          }
+        },
+        "params": {
+          "validation_flags": [
+            "FT_VALIDATE_GX"
+          ],
+          "table_length": 0,
+          "validator_module": "absent",
+          "tables_initialized_to": "null sentinels"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftgxval"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "status": "FT_Error",
+          "tables": "zero-length non-null output array remains untouched"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "rows[*].status",
+            "rows[*].tables_preserved"
+          ]
+        },
+        "error": [
+          "FT_Err_Unimplemented_Feature"
+        ],
+        "fixture_requirements": [
+          "input/fonts/aat/feat-opbd-trak-prop.ttf must remain openable without the optional gxvalid module"
+        ],
+        "source_refs": [
+          "freetype/include/freetype/ftgxval.h:120-225",
+          "freetype/src/base/ftgxval.c:37-70"
         ]
       }
     }

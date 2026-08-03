@@ -144,8 +144,10 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `5409f603-27d7-4e8e-9bfe-9e4fadc7962c`: all three processes
-passed 7,518 / 7,518 cases, and this warm managed run took 51.653 seconds. The
+Coverage MCP run `9c9b7ebb-9aff-4982-8573-bfc4671ee529`: all three processes
+passed 7,519 / 7,519 cases. This source-bound managed run took 100.333 seconds,
+including a 48.78-second instrumented rebuild; the longest backend execution
+was 48.24 seconds. The preceding managed warm run took 51.653 seconds; the
 preceding managed source-bound run took 98.336 seconds; the prior managed warm
 run took 50.861 seconds; the first source-bound run
 after the code change took 99.254 seconds because it rebuilt the instrumented
@@ -256,8 +258,10 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`5409f603-27d7-4e8e-9bfe-9e4fadc7962c`) measured 51.653 seconds
-end-to-end; the preceding managed source-bound run measured 98.336 seconds,
+run (`9c9b7ebb-9aff-4982-8573-bfc4671ee529`) measured 100.333 seconds
+end-to-end, including a 48.78-second instrumented rebuild; the longest backend
+execution was 48.24 seconds. The preceding managed warm run measured 51.653
+seconds; the preceding managed source-bound run measured 98.336 seconds,
 the prior managed warm run measured 50.861 seconds, the first source-bound
 rebuild measured 99.254 seconds, and the prior execution-only
 warm measurement was 50.482 seconds with
@@ -282,15 +286,17 @@ route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,521 / 54,173 | 91.41% |
-| Branches | 9,745 / 12,532 | 77.76% |
-| Functions | 3,385 / 3,835 | 88.27% |
-| Regions | 68,155 / 75,343 | 90.46% |
+| Lines | 49,523 / 54,173 | 91.42% |
+| Branches | 9,747 / 12,532 | 77.78% |
+| Functions | 3,388 / 3,835 | 88.34% |
+| Regions | 68,157 / 75,343 | 90.46% |
 
-That current run passed all 7,518 runnable parity comparisons with 0 failures;
+That current run passed all 7,519 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`c6598315-d1e1-4d05-8a7b-df535185d651`. The three-surface instrumented
-execution is therefore the dominant cost, not Coverage MCP ingestion. Current
+`bf8b7b67-3658-459e-b918-4587fecdb455`. The current retained run includes a
+source-bound instrumented rebuild; its log reports 48.78 seconds of compilation
+and a 48.24-second longest backend execution. Coverage MCP does not expose
+separate timestamps for report finalization or artifact ingestion. Current
 LLVM JSON is accepted directly by Coverage
 MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`
 rewrite; set it to `1` only for an older LLVM JSON producer that needs the
@@ -333,7 +339,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 626 tracked paths and no symlinks.
+The canonical input tree currently contains 627 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
