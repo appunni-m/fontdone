@@ -194,14 +194,18 @@ make font-fixture-cff
 ```
 
 `tests/fixtures/input/fonts/cff/pure-cff-cubic.otf` is a project-authored
-45-glyph OpenType/CFF1 face. Its append-only Type2 matrix includes successful
-escaped arithmetic and an unknown escaped operator so the public glyph-load
-parity suite exercises both the pinned Adobe success and error paths. The
-reviewed output is 2,616 bytes with SHA-256
-`9fa33a7d3e38f64b9d0edd3ff62448940bfc45e0b95b2aa21ee6f557d71660f5`.
+46-glyph OpenType/CFF1 face. Its append-only Type2 matrix includes successful
+escaped arithmetic, an unknown escaped operator, and a one-operand
+`hvcurveto` boundary so the public glyph-load parity suite exercises both the
+pinned Adobe success and error paths. The reviewed output is 2,648 bytes with
+SHA-256
+`08dfa08cd8d2d27ec2c4ff80bd521a2bb06ea6357e8f50b51bb9619451513063`.
 The malformed CFF1 derivatives are regenerated from the same synthetic base;
 they contain no third-party font material and need no third-party license
-notice.
+notice. The Top DICT error matrix includes truncated positive and negative
+two-byte operands and signed integer-clamp operands before the required
+`CharStrings` field. CFF1 byte `255` remains reserved by the pinned parser and
+is intentionally not treated as a fixed Top DICT operand.
 
 `tests/fixtures/input/fonts/cff/fontinfo-populated.otf` is a project-authored
 2-glyph face whose CFF Top DICT populates the public `PS_FontInfo` strings,

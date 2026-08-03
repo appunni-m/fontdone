@@ -663,20 +663,22 @@ fn read_dict_number(data: &[u8], pos: usize) -> Result<(DictNumber, usize), Font
         30 => read_real_number(data, pos + 1),
         32..=246 => Ok((DictNumber::from_integer(i32::from(byte) - 139), pos + 1)),
         247..=250 => {
-            let next =
-                i32::from(*data.get(pos + 1).ok_or_else(|| {
-                    FontError::InvalidFont("CFF: positive number overflow".into())
-                })?);
+            let next = i32::from(*data.get(pos + 1).ok_or_else(|| {
+                // FreeType's CFF DICT parser classifies a truncated
+                // positive operand as Invalid_Table at face open.
+                FontError::InvalidTable("CFF: positive number overflow".into())
+            })?);
             Ok((
                 DictNumber::from_integer(((i32::from(byte) - 247) * 256) + next + 108),
                 pos + 2,
             ))
         }
         251..=254 => {
-            let next =
-                i32::from(*data.get(pos + 1).ok_or_else(|| {
-                    FontError::InvalidFont("CFF: negative number overflow".into())
-                })?);
+            let next = i32::from(*data.get(pos + 1).ok_or_else(|| {
+                // Match the corresponding cff_parse_integer boundary for
+                // a truncated negative operand.
+                FontError::InvalidTable("CFF: negative number overflow".into())
+            })?);
             Ok((
                 DictNumber::from_integer(-((i32::from(byte) - 251) * 256) - next - 108),
                 pos + 2,

@@ -74,6 +74,7 @@ CUBIC_GLYPH_ORDER = [
     "type2_argument_underflow",
     "type2_escaped_add_success",
     "type2_escape_unknown",
+    "hvcurveto_single_operand",
 ]
 NAMES = {
     "familyName": "Hybrid OTTO Coverage",
@@ -266,6 +267,7 @@ def build_cubic_cff(path: Path, with_vertical_metrics: bool = False) -> None:
         "type2_argument_underflow": (420, 0),
         "type2_escaped_add_success": (420, 0),
         "type2_escape_unknown": (420, 0),
+        "hvcurveto_single_operand": (420, 0),
     }
     builder = FontBuilder(UNITS_PER_EM, isTTF=False)
     builder.setupGlyphOrder(CUBIC_GLYPH_ORDER)
@@ -315,6 +317,7 @@ def build_cubic_cff(path: Path, with_vertical_metrics: bool = False) -> None:
             0x6A: "type2_argument_underflow",
             0x6B: "type2_escaped_add_success",
             0x6C: "type2_escape_unknown",
+            0x6D: "hvcurveto_single_operand",
         }
     )
     builder.setupHorizontalMetrics(metrics)
@@ -723,6 +726,14 @@ def build_cubic_cff(path: Path, with_vertical_metrics: bool = False) -> None:
                 private=None,
                 globalSubrs=[],
             ),
+            "hvcurveto_single_operand": T2CharString(
+                # A one-operand alternating curve reaches the pinned
+                # interpreter's short-argument boundary before endchar.
+                bytecode=bytes([139, 31, 14]),
+                program=None,
+                private=None,
+                globalSubrs=[],
+            ),
         },
         {},
     )
@@ -988,6 +999,23 @@ def malformed_cff_payload(kind: str) -> bytes:
         return minimal_payload(b"\xF7\x00\x0C\x03")
     if kind == "top_dict_negative_operand_missing_charstrings":
         return minimal_payload(b"\xFB\x00\x0C\x03")
+    if kind == "top_dict_positive_operand_overflow":
+        # The positive two-byte CFF DICT number is truncated immediately
+        # after its operator byte.  FreeType's cff_parse_integer path keeps
+        # this at the public face-open error boundary.
+        return minimal_payload(b"\xF7")
+    if kind == "top_dict_negative_operand_overflow":
+        # The negative two-byte CFF DICT number is truncated immediately
+        # after its operator byte.
+        return minimal_payload(b"\xFB")
+    if kind == "top_dict_integer_clamps_missing_charstrings":
+        # Exercise both signed 15-bit overflow clamps used by
+        # cff_parse_fixed for integer operands, then send the values through
+        # the public integer-valued UnderlinePosition field.
+        return minimal_payload(
+            b"\x1D\x00\x00\x9C\x40\x0C\x03"
+            b"\x1D\xFF\xFF\x63\xC0\x0C\x03"
+        )
     if kind == "top_dict_invalid_number":
         # Byte 31 is neither a valid CFF DICT operator nor a valid DICT number.
         # Pinned FreeType rejects it during Top DICT parsing.
@@ -1013,6 +1041,9 @@ def write_malformed_cff_faces() -> None:
             "top_dict_real_negative_operand_missing_charstrings",
             "top_dict_positive_operand_missing_charstrings",
             "top_dict_negative_operand_missing_charstrings",
+            "top_dict_positive_operand_overflow",
+            "top_dict_negative_operand_overflow",
+            "top_dict_integer_clamps_missing_charstrings",
             "top_dict_invalid_number",
         ]:
             replace_sfnt_table(
