@@ -106,27 +106,27 @@ The last committed full parity snapshot was recorded on **2026-08-03**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,509 |
-| Passed cases | 7,509 |
+| Runnable exact-comparison cases | 7,510 |
+| Passed cases | 7,510 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
 | Covered manifest cases | 4,186 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,278 |
-| Concrete expanded cases | 7,512 |
+| Concrete expanded cases | 7,513 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,509 / 7,509` means every runnable case in that execution matched; the 3
+`7,510 / 7,510` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP parity run
-`e2d47891-5bbf-4735-8c96-a6161bab1cfa`, recorded by run
-`a4960caf-8606-4947-a2dc-5a2a46bf240b` against committed source
-`4844120503bf33e017f66120ab73aa411e8e3862`;
+`ede050d6-1651-4ffc-a1cd-3b63c84e20d0`, recorded by run
+`95865556-3fdf-4368-a569-d120e99de68f` against committed source
+`85ec98773299101943b4ca9c3e3acc6d810018f6`;
 its source-bound parity-tree digest is retained in
 `doc/runtime_parity_evidence.json`.
 
@@ -141,16 +141,16 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage run was recorded on **2026-08-03** against
-committed source `f0ea3ae3765e08e18acab174d1a971e7b8b2aa56`
-(Coverage MCP run `5a74c894-77a7-473a-88af-bf5707fd9a5c`, snapshot
-`5c20fc7d-81bc-4d1c-a84b-b89798b876ac`):
+committed source `85ec98773299101943b4ca9c3e3acc6d810018f6`
+(Coverage MCP run `5a39d129-3b01-469b-9fef-a8a3b7c5b61f`, snapshot
+`0e697c95-b596-4f23-bf5a-05ece61c175c`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,506 / 54,175 | 91.38% |
-| Branches | 9,731 / 12,534 | 77.64% |
+| Lines | 49,507 / 54,175 | 91.38% |
+| Branches | 9,733 / 12,534 | 77.65% |
 | Functions | 3,387 / 3,835 | 88.32% |
-| Regions | 68,139 / 75,345 | 90.44% |
+| Regions | 68,140 / 75,345 | 90.44% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -179,9 +179,9 @@ but the default coverage target does not rerun it because `make test-fast`
 already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
-The current warm run passed 7,509 / 7,509 comparisons in each backend lane. Its
-instrumentation timers were 44.42 seconds Rust FFI, 33.55 seconds C ABI,
-33.26 seconds WASM, and about 13 ms comparison per lane. The three-surface
+The current warm run passed 7,510 / 7,510 comparisons in each backend lane. Its
+instrumentation timers were 44.37 seconds Rust FFI, 33.40 seconds C ABI,
+33.16 seconds WASM, and about 13 ms comparison per lane. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
 MCP without the compatibility-only segment rewrite. The default
 `COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
@@ -199,8 +199,8 @@ not rebuilt on every run; unchanged FreeType CMake configuration is reused as
 well. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The latest managed warm source-matched coverage run completed in 51.347 seconds;
-the preceding managed run completed in 50.369 seconds, while the first
+The latest managed warm source-matched coverage run completed in 51.362 seconds;
+the preceding managed run completed in 51.347 seconds, while the first
 source-bound run after the code change took 99.254 seconds because it rebuilt
 the instrumented binary. The prior execution-only warm measurement with the
 instrumented binary and expanded-input cache warm was 50.482 seconds, and the
@@ -221,11 +221,11 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,252 / 5,252 pinned-C runtime contract rows exact |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,253 / 5,253 pinned-C runtime contract rows exact |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 663 / 663 expected-error routes compare exact error and output results; 7,509 / 7,509 routes have no generic fallback evidence |
+| Errors | 664 / 664 expected-error routes compare exact error and output results; 7,510 / 7,510 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 
@@ -238,7 +238,7 @@ routes remain even when every bare function name has some traced route. The self
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`6ebe44c4-3457-473c-bf35-9d6ccadb9a75`.
+`70566cb3-b130-4f17-b013-cae6cd2843b9`.
 
 ### 3.5 Performance baseline
 
