@@ -383,6 +383,71 @@
       }
     },
     {
+      "case_id": "ftcid.FT_Get_CID_Registry_Ordering_Supplement.error_cff_absent_registry_sentinel",
+      "subject": "ftcid.FT_Get_CID_Registry_Ordering_Supplement",
+      "case": "error_non_cid_or_null_outputs",
+      "covers_manifest_cases": [
+        "error_non_cid_or_null_outputs"
+      ],
+      "operation": "ftcid.get_cid_registry_ordering_supplement",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "cid_font": {
+            "kind": "file",
+            "path": "input/fonts/cid/ot-cff-non-cid-sentinel-registry.otf",
+            "asset_kind": "font",
+            "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
+            "generator": "scripts/font_generation/build_cff_fixtures.py",
+            "sha256": "6c6cb6e3b8a2aee04d97014afbf1e3bf888a35335dc32612aa5079be4afa3f7d",
+            "license": "OFL-1.1"
+          }
+        },
+        "params": {
+          "face_index": 0,
+          "outputs_initialized_to_sentinels": true,
+          "call_variants": [
+            "all_outputs_non_null"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcid",
+        "area:cid",
+        "path:error",
+        "cff:absent-registry-sentinel"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "registry": "null_or_unwritten_by_pointer_variant",
+          "ordering": "null_or_unwritten_by_pointer_variant",
+          "supplement": "zero_or_unwritten_by_pointer_variant",
+          "sentinel_preservation": true
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "registry.string",
+            "registry.identity_class",
+            "ordering.string",
+            "ordering.identity_class",
+            "supplement",
+            "output_write_bitmap",
+            "sentinel_preservation"
+          ]
+        },
+        "error": "Invalid_Argument",
+        "fixture_requirements": [
+          "CFF face whose ROS registry uses the 0xFFFF absent-CID sentinel"
+        ]
+      }
+    },
+    {
       "case_id": "ftcid.FT_Get_CID_Registry_Ordering_Supplement.error_non_cid_or_null_outputs",
       "subject": "ftcid.FT_Get_CID_Registry_Ordering_Supplement",
       "case": "error_non_cid_or_null_outputs",

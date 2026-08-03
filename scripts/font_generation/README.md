@@ -234,6 +234,14 @@ the CID service valid and returns a null ordering string for this input. The
 reviewed output is regenerated with `build_cff_fixtures.py` and its SHA-256 is
 recorded in the retention inventory.
 
+`tests/fixtures/input/fonts/cid/ot-cff-non-cid-sentinel-registry.otf` is
+derived from the same source with the ROS registry set to CFF's `0xFFFF`
+absent-CID sentinel. It keeps the CFF table size and offsets stable by removing
+the optional `CIDFontVersion` dictionary entry, and is used to compare the
+pinned non-CID classification through `FT_Get_CID_Registry_Ordering_Supplement`.
+The reviewed output is 145,212 bytes with SHA-256
+`6c6cb6e3b8a2aee04d97014afbf1e3bf888a35335dc32612aa5079be4afa3f7d`.
+
 The malformed CFF1 derivatives are regenerated from the same synthetic base;
 they contain no third-party font material and need no third-party license
 notice. The Top DICT error matrix includes truncated positive and negative

@@ -1057,6 +1057,55 @@ def patch_cff_ros_sids(
     raise ValueError("CFF Top DICT has no ROS operator")
 
 
+def patch_cff_ros_absent_registry(data: bytearray) -> None:
+    """Patch ROS to the CFF absent-registry sentinel without resizing CFF."""
+    header_size = data[2]
+    _, cursor = cff_index_ranges(data, header_size)
+    top_dict_ranges, _ = cff_index_ranges(data, cursor)
+    if len(top_dict_ranges) != 1:
+        raise ValueError("expected one CFF Top DICT")
+    start, end = top_dict_ranges[0]
+    top_dict = bytearray(data[start:end])
+    ros_registry: tuple[int, int] | None = None
+    removable_cid_version: tuple[int, int] | None = None
+    operands: list[tuple[int, int]] = []
+    pos = 0
+    while pos < len(top_dict):
+        byte = top_dict[pos]
+        if byte <= 21:
+            if byte == 12:
+                operator = 0x0C00 | top_dict[pos + 1]
+                operator_length = 2
+            else:
+                operator = byte
+                operator_length = 1
+            if operator == 0x0C1E:
+                if len(operands) != 3:
+                    raise ValueError("CFF ROS does not have three operands")
+                ros_registry = operands[0]
+            elif operator == 0x0C1F:
+                if len(operands) != 1:
+                    raise ValueError("CFF CIDFontVersion does not have one operand")
+                removable_cid_version = (operands[0][0], pos + operator_length)
+            operands.clear()
+            pos += operator_length
+            continue
+        length = cff_dict_number_length(top_dict, pos)
+        operands.append((pos, pos + length))
+        pos += length
+    if ros_registry is None or removable_cid_version is None:
+        raise ValueError("CFF Top DICT lacks ROS or CIDFontVersion")
+    remove_start, remove_end = removable_cid_version
+    if remove_start < ros_registry[1]:
+        raise ValueError("CFF CIDFontVersion precedes ROS")
+    top_dict[remove_start:remove_end] = b""
+    registry_start, registry_end = ros_registry
+    top_dict[registry_start:registry_end] = encode_cff_dict_integer(0xFFFF)
+    if len(top_dict) != end - start:
+        raise ValueError("CFF ROS sentinel patch changed Top DICT length")
+    data[start:end] = top_dict
+
+
 def write_cid_cff_unresolved_ordering() -> None:
     """Derive a CID face whose ROS ordering SID is absent from String INDEX."""
     out = CID_OUT_DIR / "ot-cff-cid-keyed-unresolved-ordering.otf"
@@ -1072,6 +1121,25 @@ def write_cid_cff_unresolved_ordering() -> None:
         # FreeType therefore returns a successful CID service result with a
         # null ordering pointer rather than rejecting the face.
         patch_cff_ros_sids(cff, ordering_sid=800)
+        replace_sfnt_table(base, out, b"CFF ", bytes(cff))
+
+
+def write_cid_cff_absent_registry() -> None:
+    """Derive a CFF face with the absent-CID registry sentinel."""
+    out = CID_OUT_DIR / "ot-cff-non-cid-sentinel-registry.otf"
+    with TemporaryDirectory() as tmp:
+        base = Path(tmp) / "base.otf"
+        font = TTFont(CID_SOURCE, recalcTimestamp=False)
+        font.recalcTimestamp = False
+        font.save(base, reorderTables=True)
+        serialized = TTFont(base, recalcTimestamp=False).getTableData("CFF ")
+        cff = bytearray(serialized)
+        # FreeType's CFF driver uses 0xFFFF as the explicit non-CID sentinel.
+        # Preserve the otherwise valid CFF table and its offsets while
+        # replacing the source's shorter registry operand.  CIDFontVersion is
+        # optional and its default is valid, so its three-byte dictionary
+        # entry makes room without shifting the rest of the CFF table.
+        patch_cff_ros_absent_registry(cff)
         replace_sfnt_table(base, out, b"CFF ", bytes(cff))
 
 
@@ -1424,6 +1492,7 @@ def main() -> None:
     write_cid_cff_charset_variants()
     write_cid_cff_single_glyph()
     write_cid_cff_unresolved_ordering()
+    write_cid_cff_absent_registry()
     write_cid_cff_standard_ros()
     write_cid_cff_standard_ros_weight_names()
     write_pure_cff_cubic_vmtx()
