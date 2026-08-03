@@ -1820,6 +1820,31 @@
             "coverage": [
               "pcf:truncated-directory-invalid-file-format"
             ]
+          },
+          {
+            "id": "pcf-missing-properties-table",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/missing-properties-table.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/missing-properties-table.pcf"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pcf:missing-required-properties-table"
+            ]
           }
         ]
       },

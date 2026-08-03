@@ -16,6 +16,7 @@ PCF_ACCELERATORS = 1 << 1
 PCF_METRICS = 1 << 2
 PCF_BITMAPS = 1 << 3
 PCF_BDF_ENCODINGS = 1 << 5
+PCF_SWIDTHS = 1 << 6
 PCF_COMPRESSED_METRICS = 0x00000100
 
 
@@ -180,6 +181,18 @@ def main() -> None:
     if truncated_output.exists() or truncated_output.is_symlink():
         truncated_output.unlink()
     truncated_output.write_bytes(truncated_directory)
+
+    # Keep a structurally valid one-entry TOC whose required properties table
+    # is absent, reaching the pinned driver's missing-table error path.
+    missing_properties = struct.pack(
+        "<II",
+        PCF_FILE_VERSION,
+        1,
+    ) + struct.pack("<IIII", PCF_SWIDTHS, 0, 0, 24)
+    missing_properties_output = OUT_DIR / "missing-properties-table.pcf"
+    if missing_properties_output.exists() or missing_properties_output.is_symlink():
+        missing_properties_output.unlink()
+    missing_properties_output.write_bytes(missing_properties)
 
 
 if __name__ == "__main__":

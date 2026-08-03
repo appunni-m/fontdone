@@ -427,17 +427,18 @@ per-batch coverage increase is claimed:
 | 57 | `95f3a7d3521d021fd73c1c8ba9ab834367d0d632` | Added the maintained zero-resolution WinFNT fixture and exact `FT_Bitmap_Size`/`FT_FaceRec` available-size parity inputs, matching pinned FreeType's 72 dpi defaults when both device resolutions are zero. Clean source-bound parity run `a7a2e636-4d43-4bba-bfb9-cec3050f3a5c`, recorded by `136854fa-3dc5-40b3-b3e5-3948e77485af`, passed 7,508 / 7,508 runnable comparisons with 3 explicitly pending safety-extension cases. The clean all-lane Coverage MCP run `e96ecf03-aca8-4ed9-88ef-328e9f3aa232`, snapshot `17fc995d-aefe-4a4c-a3be-08433ca4be26`, measured 49,502 / 54,175 lines, 9,731 / 12,534 branches, 3,385 / 3,835 functions, and 68,133 / 75,345 regions in 50.369 seconds. |
 | 58 | `f0ea3ae3765e08e18acab174d1a971e7b8b2aa56` | Added the project-authored 12-byte PCF zero-table-count input to reach the pinned driver's `Invalid_File_Format` count check beyond the separate eight-byte stream-operation boundary. Focused parity run `e6c9705a-56ad-48e7-a8de-bff98d32ce33` passed all 11 expanded comparisons; clean source-bound parity run `e2d47891-5bbf-4735-8c96-a6161bab1cfa`, recorded by `a4960caf-8606-4947-a2dc-5a2a46bf240b`, passed 7,509 / 7,509 runnable comparisons with 3 explicitly pending safety-extension cases. The clean all-lane Coverage MCP run `5a74c894-77a7-473a-88af-bf5707fd9a5c`, snapshot `5c20fc7d-81bc-4d1c-a84b-b89798b876ac`, measured 49,506 / 54,175 lines, 9,731 / 12,534 branches, 3,387 / 3,835 functions, and 68,139 / 75,345 regions in 51.347 seconds. The follow-up C-ABI scorecard run `6ebe44c4-3457-473c-bf35-9d6ccadb9a75` reports 10 / 12 categories complete, 5,252 / 5,252 runtime rows, 663 / 663 exact-error routes, and 7,509 / 7,509 no-fallback routes. |
 | 59 | `85ec98773299101943b4ca9c3e3acc6d810018f6` | Added the project-authored eight-byte PCF TOC header with one table count but no directory bytes, reaching the pinned driver's `stream->size < 16` `Invalid_File_Format` guard before the first directory entry. Focused parity run `b71ec225-ad23-447f-9f25-5b1dd6303d81` passed all 12 expanded comparisons; clean source-bound parity run `ede050d6-1651-4ffc-a1cd-3b63c84e20d0`, recorded by `95865556-3fdf-4368-a569-d120e99de68f`, passed 7,510 / 7,510 runnable comparisons with 3 explicitly pending safety-extension cases. The clean all-lane Coverage MCP run `5a39d129-3b01-469b-9fef-a8a3b7c5b61f`, snapshot `0e697c95-b596-4f23-bf5a-05ece61c175c`, measured 49,507 / 54,175 lines, 9,733 / 12,534 branches, 3,387 / 3,835 functions, and 68,140 / 75,345 regions in 51.362 seconds. The follow-up C-ABI scorecard run `70566cb3-b130-4f17-b013-cae6cd2843b9` reports 10 / 12 categories complete, 5,253 / 5,253 runtime rows, 664 / 664 exact-error routes, and 7,510 / 7,510 no-fallback routes. |
+| 60 | Working tree (`1dd600fc63463846957e03c5f51f61a631e0f141` source tree) | Added the project-authored 24-byte PCF TOC with one zero-length `SWIDTHS` entry and no required properties table, reaching the pinned driver's missing-required-table error path. Focused parity run `fda37118-a323-4113-af05-19b050a979b0`, full source-bound parity run `aab42699-5520-4570-9bdc-25c07c97263d`, and record run `3c153475-f736-493d-8787-51545375205a` establish 7,511 / 7,511 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `b5d5ff52-2a5b-466e-9105-d792a1f0c82a`, snapshot `d10817d2-cefe-4cf1-bd0a-8d73391eb933`, measured 49,508 / 54,175 lines, 9,733 / 12,534 branches, 3,388 / 3,835 functions, and 68,143 / 75,345 regions in 52.387 seconds. The C-ABI scorecard run `f583b55c-6795-41e7-a35b-24237a4a6319` reports 10 / 12 categories complete, 5,254 / 5,254 runtime rows, 665 / 665 exact-error routes, and 7,511 / 7,511 no-fallback routes. |
 
 The latest source-bound parity verification is Coverage MCP parity run
-`ede050d6-1651-4ffc-a1cd-3b63c84e20d0` against committed source
-`85ec98773299101943b4ca9c3e3acc6d810018f6`: it passed 7,510 / 7,510 runnable
+`aab42699-5520-4570-9bdc-25c07c97263d` against source tree
+`1dd600fc63463846957e03c5f51f61a631e0f141`: it passed 7,511 / 7,511 runnable
 comparisons, 0 failed, and 3 explicitly pending
 safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. The companion C-ABI scorecard reports
-**10 / 12 categories complete**, with 5,253 / 5,253 runtime contract rows and
-664 / 664 strict error routes exact; the remaining contract debt is the
+**10 / 12 categories complete**, with 5,254 / 5,254 runtime contract rows and
+665 / 665 strict error routes exact; the remaining contract debt is the
 Windows import-library item and four fresh target-lane bundles.
 
 The three pending cases are deliberately excluded from the pinned-C parity
@@ -452,8 +453,8 @@ covered by the facade/package checks; none is a missing runtime route.
 The previous combined-lane warm all-lane baseline completed in 1 minute
 53.998 seconds. The split validation completed in 61.827 seconds, and the
 binary-reuse path completed in 54.054 seconds. The latest managed
-source-matched coverage run completed in 51.362 seconds; the preceding managed
-warm run completed in 51.347 seconds; the first source-bound rebuild took 99.254
+source-bound coverage run completed in 52.387 seconds; the preceding managed
+warm run completed in 51.362 seconds; the first source-bound rebuild took 99.254
 seconds; the prior execution-only warm measurement with the instrumented binary
 and expanded-input cache warm was 50.482 seconds, and the prior warm committed
 baseline remains 51.991 seconds. Its instrumentation timers were about 44.37
@@ -488,11 +489,11 @@ and parity results. Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
 repeated. The latest warm baseline measured 49,464 / 54,150 lines, 9,709 /
 12,520 branches, 3,380 / 3,832 functions, and 68,085 / 75,313 regions. The
-current source-matched run measured 49,507 / 54,175 lines, 9,733 / 12,534
-branches, 3,387 / 3,835 functions, and 68,140 / 75,345 regions. It passed
-7,510 / 7,510 runnable parity comparisons with 0 failures. Its Coverage MCP
-run is `5a39d129-3b01-469b-9fef-a8a3b7c5b61f`, with snapshot
-`0e697c95-b596-4f23-bf5a-05ece61c175c`. The lane-split validation run
+current source-bound run measured 49,508 / 54,175 lines, 9,733 / 12,534
+branches, 3,388 / 3,835 functions, and 68,143 / 75,345 regions. It passed
+7,511 / 7,511 runnable parity comparisons with 0 failures. Its Coverage MCP
+run is `b5d5ff52-2a5b-466e-9105-d792a1f0c82a`, with snapshot
+`d10817d2-cefe-4cf1-bd0a-8d73391eb933`. The lane-split validation run
 `b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 in each backend
 process and completed in 61.827 seconds; the latest binary-reuse run completed
 in 57.821 seconds. Each measurement clears
@@ -500,8 +501,8 @@ stale `.profraw` files first; use `make coverage-clean` after changing the
 coverage toolchain or instrumentation configuration.
 
 The latest coverage-speed validation (Coverage MCP run
-`5a39d129-3b01-469b-9fef-a8a3b7c5b61f`, snapshot
-`0e697c95-b596-4f23-bf5a-05ece61c175c`) measured 51.362 seconds end to end.
+`b5d5ff52-2a5b-466e-9105-d792a1f0c82a`, snapshot
+`d10817d2-cefe-4cf1-bd0a-8d73391eb933`) measured 52.387 seconds end to end.
 The preceding managed warm run measured 51.347 seconds; the first source-bound
 rebuild took 99.254 seconds; the prior execution-only warm measurement was
 50.482 seconds, and the prior warm committed baseline remains 51.991 seconds.
