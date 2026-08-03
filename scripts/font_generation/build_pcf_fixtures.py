@@ -164,6 +164,15 @@ def main() -> None:
         output.unlink()
     output.write_bytes(data)
 
+    # Keep four bytes after the zero table count so this reaches the PCF
+    # driver's Invalid_File_Format table-count check rather than the separate
+    # eight-byte stream-operation boundary.
+    zero_table_count = struct.pack("<II", PCF_FILE_VERSION, 0) + bytes(4)
+    zero_table_output = OUT_DIR / "zero-table-count.pcf"
+    if zero_table_output.exists() or zero_table_output.is_symlink():
+        zero_table_output.unlink()
+    zero_table_output.write_bytes(zero_table_count)
+
 
 if __name__ == "__main__":
     main()

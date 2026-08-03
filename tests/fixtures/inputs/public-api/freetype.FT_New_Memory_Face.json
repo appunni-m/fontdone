@@ -1770,6 +1770,31 @@
             "coverage": [
               "tt:otto-sfnt-version-condition"
             ]
+          },
+          {
+            "id": "pcf-zero-table-count",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/zero-table-count.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/zero-table-count.pcf"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pcf:zero-table-count-invalid-file-format"
+            ]
           }
         ]
       },
