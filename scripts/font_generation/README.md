@@ -206,6 +206,14 @@ project-authored 48-glyph face. It appends five-operand `hvcurveto` and
 `vhcurveto` cases without changing the 46-glyph control face's SFNT-wide
 auto-hint metrics. The reviewed output is 2,720 bytes with SHA-256
 `ace3fc00642f8d4810810b6124cbe0dbfc44327a8788507d4529ff367f8ba006`.
+
+`tests/fixtures/input/fonts/cid/ot-cff-cid-keyed-standard-ros.otf` is derived
+from the maintained CID-keyed CFF source with its ROS set to the standard CFF
+string SIDs for `Roman` and `Semibold`. It is used by the CID registry and
+ordering parity supplement to exercise standard-SID decoding rather than
+custom-string decoding. The reviewed output is 145,192 bytes with SHA-256
+`57c537c193f26af6ec2681ac00104b3358ba0a6bb73349c8cbd60171972dd896`.
+
 The malformed CFF1 derivatives are regenerated from the same synthetic base;
 they contain no third-party font material and need no third-party license
 notice. The Top DICT error matrix includes truncated positive and negative

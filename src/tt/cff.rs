@@ -496,6 +496,8 @@ fn read_u16(data: &[u8], pos: usize, context: &str) -> Result<u16, FontError> {
 fn sid_string(sid: u16, strings: &[&[u8]]) -> Option<String> {
     match sid {
         388 => Some("Regular".to_string()),
+        389 => Some("Roman".to_string()),
+        390 => Some("Semibold".to_string()),
         0xFFFF => None,
         sid if sid >= 391 => strings
             .get(usize::from(sid - 391))

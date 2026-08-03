@@ -25600,7 +25600,11 @@ fn cid_from_glyph_null_output(error: FT_Error, glyph_index: FT_UInt) -> RunOutpu
 }
 
 fn cid_ros_success_case_supported(case: &InputCase) -> bool {
-    case.case_id == "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_face"
+    matches!(
+        case.case_id.as_str(),
+        "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_face"
+            | "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_standard_ros_face"
+    )
 }
 
 fn cid_ros_string_json(value: Option<&str>) -> Value {
