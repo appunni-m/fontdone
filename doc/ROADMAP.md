@@ -416,8 +416,8 @@ per-batch coverage increase is claimed:
 | 46 | `a4af5a01e62ae8050838c9c789fbc2032661bfdc` | Avoided repeated FreeType oracle CMake reconfiguration when the source, validator overlay, and build script inputs are unchanged. Warm `scripts/build_ft.sh` preparation fell from repeated full-source rebuild setup to about 0.10 seconds; the clean all-lane coverage result remained equivalent at 49,454 / 54,150 lines, 9,709 / 12,520 branches, 3,380 / 3,832 functions, and 68,074 / 75,313 regions. The end-to-end coverage wall time remains host-variable (52.144 seconds in the current clean run), so this is a deterministic setup improvement rather than a claimed full-run speedup. |
 
 The latest source-bound parity verification is Coverage MCP parity run
-`95111175-e4ca-4410-8fd9-ac5df08c054b` against committed source
-`9257b13a353f739f3b4e4bfb8b7ea8d8e7520498`: it
+`ad952319-7b76-4e54-9175-14011a19cf6c` against committed source
+`ab0e5b64f00ceceec6dd7ed9455621ec8d983de5`: it
 passed 7,495 / 7,495 runnable comparisons, 0 failed, and 3 explicitly pending
 safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
@@ -430,7 +430,7 @@ Windows import-library item and four fresh target-lane bundles.
 The previous combined-lane warm all-lane baseline completed in 1 minute
 53.998 seconds. The split validation completed in 61.827 seconds, and the
 binary-reuse path completed in 54.054 seconds. The latest clean committed
-source-matched run completed in 49.644 seconds, with all three backend lanes
+source-matched run completed in 52.521 seconds, with all three backend lanes
 still passing the exact matrix. Its instrumentation timers were about 45.42
 seconds Rust FFI, 32.80 seconds C ABI, 32.56 seconds WASM, and 15–19 ms
 comparison per lane. `make
@@ -464,8 +464,8 @@ oracle inputs preserve their mtimes so the helper/validator C build is not
 repeated. The latest warm run measured 49,463 / 54,150 lines, 9,709 / 12,520
 branches, 3,380 / 3,832 functions, and 68,084 / 75,313 regions. It passed
 7,495 / 7,495 runnable parity comparisons with 0 failures. Its Coverage MCP
-run is `d4cf0eae-7305-4629-9fe7-aa329cae2094`, with snapshot
-`ade13146-3df4-496a-9fa8-be140526f3c2`. The lane-split validation run
+run is `9a77d645-263d-4d3d-be49-a28c154d771f`, with snapshot
+`889c5a92-6da7-4baf-ad11-e3f6fab8c20d`. The lane-split validation run
 `b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 in each backend
 process and completed in 61.827 seconds; the latest binary-reuse run completed
 in 57.821 seconds. Each measurement clears
@@ -473,8 +473,8 @@ stale `.profraw` files first; use `make coverage-clean` after changing the
 coverage toolchain or instrumentation configuration.
 
 The latest coverage-speed validation (Coverage MCP run
-`d4cf0eae-7305-4629-9fe7-aa329cae2094`, snapshot
-`ade13146-3df4-496a-9fa8-be140526f3c2`) measured 49.644 seconds on the clean
+`9a77d645-263d-4d3d-be49-a28c154d771f`, snapshot
+`889c5a92-6da7-4baf-ad11-e3f6fab8c20d`) measured 52.521 seconds on the clean
 committed source with warm input and oracle caches and unchanged exact parity.
 The retained lane timers identify the remaining floor as instrumented parity
 execution (about 45.42 seconds Rust FFI, 32.80 seconds C ABI, and 32.56 seconds

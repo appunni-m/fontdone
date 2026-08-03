@@ -141,9 +141,9 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage run was recorded on **2026-08-03** against
-committed source `9257b13a353f739f3b4e4bfb8b7ea8d8e7520498` (Coverage MCP run
-`d4cf0eae-7305-4629-9fe7-aa329cae2094`, snapshot
-`ade13146-3df4-496a-9fa8-be140526f3c2`):
+committed source `ab0e5b64f00ceceec6dd7ed9455621ec8d983de5` (Coverage MCP run
+`9a77d645-263d-4d3d-be49-a28c154d771f`, snapshot
+`889c5a92-6da7-4baf-ad11-e3f6fab8c20d`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -199,7 +199,7 @@ not rebuilt on every run; unchanged FreeType CMake configuration is reused as
 well. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The latest clean committed source-matched run completed in 49.644 seconds; the preceding clean-target
+The latest clean committed source-matched run completed in 52.521 seconds; the preceding clean-target
 validation completed in 109.360 seconds because it rebuilt the instrumented
 binary. The repository default remains `COVERAGE_TEST_OPT_LEVEL=1`; use an
 explicit level-3 override only for comparison. `make coverage-clean` is now

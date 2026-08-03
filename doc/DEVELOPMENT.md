@@ -144,8 +144,8 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest clean committed validation is
-Coverage MCP run `d4cf0eae-7305-4629-9fe7-aa329cae2094`: all three processes
-passed 7,495 / 7,495 cases, and the warm end-to-end run took 49.644 seconds.
+Coverage MCP run `9a77d645-263d-4d3d-be49-a28c154d771f`: all three processes
+passed 7,495 / 7,495 cases, and the warm end-to-end run took 52.521 seconds.
 A preceding clean-target run took 109.360 seconds because it rebuilt the
 instrumented binary; the build-only step now uses `--no-report -- --list` so
 profile merging cannot happen before the three lane processes execute.
@@ -251,7 +251,7 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`d4cf0eae-7305-4629-9fe7-aa329cae2094`) measured 49.644 seconds
+run (`9a77d645-263d-4d3d-be49-a28c154d771f`) measured 52.521 seconds
 end-to-end with warm input and oracle caches; allow roughly 2 minutes for host
 variation and roughly 4–6 minutes after a cache reset.
 `COVERAGE_TEST_DEBUG=1` keeps line
@@ -280,7 +280,7 @@ route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 That current run passed all 7,495 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`ade13146-3df4-496a-9fa8-be140526f3c2`. The three-surface instrumented
+`889c5a92-6da7-4baf-ad11-e3f6fab8c20d`. The three-surface instrumented
 execution is therefore the dominant cost, not Coverage MCP ingestion. Current
 LLVM JSON is accepted directly by Coverage
 MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`
@@ -324,7 +324,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 608 tracked paths and no symlinks.
+The canonical input tree currently contains 609 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
