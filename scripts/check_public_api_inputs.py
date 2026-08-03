@@ -5981,6 +5981,7 @@ def future_batch_real_parity_reason(row: ConcreteInput) -> str | None:
         "ftcid.FT_Get_CID_Is_Internally_CID_Keyed.null_output_matches_c": "CID-keyed face output validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_face": "CID registry/ordering/supplement output validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_standard_ros_face": "CID registry/ordering/supplement output with standard CFF Roman/Semibold SIDs validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
+        "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_single_glyph_face": "CID registry/ordering/supplement output for a single-.notdef CFF face validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "t1tables.FT_Get_PS_Font_Info.cff2_invalid_argument": "CFF2 FontInfo Invalid_Argument status and cleared output validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "t1tables.FT_Get_PS_Font_Info.cid_type1_success": "CID Type 1 FontInfo output validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "t1tables.FT_Get_PS_Font_Private.cid_type1_invalid_argument": "CID Type 1 unsupported private-dictionary status and cleared output validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI",

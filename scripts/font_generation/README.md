@@ -214,6 +214,13 @@ ordering parity supplement to exercise standard-SID decoding rather than
 custom-string decoding. The reviewed output is 145,192 bytes with SHA-256
 `57c537c193f26af6ec2681ac00104b3358ba0a6bb73349c8cbd60171972dd896`.
 
+`tests/fixtures/input/fonts/cid/ot-cff-cid-keyed-single-glyph.otf` is derived
+from the same maintained CID-keyed CFF source after reducing its CharStrings,
+charset, metrics, and FDSelect records to the required `.notdef` glyph. It is
+used by the CID registry and ordering parity supplement to exercise the
+single-glyph CID charset boundary. The reviewed output is regenerated with
+`build_cff_fixtures.py` and its SHA-256 is recorded in the retention inventory.
+
 The malformed CFF1 derivatives are regenerated from the same synthetic base;
 they contain no third-party font material and need no third-party license
 notice. The Top DICT error matrix includes truncated positive and negative
