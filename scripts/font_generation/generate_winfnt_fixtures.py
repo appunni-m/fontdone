@@ -110,6 +110,13 @@ def build_malformed_fnt(path: Path, mutation: Callable[[bytearray], None]) -> No
     path.write_bytes(buf)
 
 
+def build_v2_fnt(path: Path) -> None:
+    build_fnt(path, 0, "PillowRsWinFNTV2", True)
+    buf = bytearray(path.read_bytes())
+    put_u16(buf, 0, 0x0200)
+    path.write_bytes(buf)
+
+
 def build_ushort_contract_fnt(path: Path) -> None:
     header_size = 148
     face_name = b"WinFNTUShortContract\0"
@@ -173,6 +180,7 @@ def main() -> None:
         zero_resolution=True,
     )
     build_ushort_contract_fnt(FONT_ROOT / "ushort-fields-known.fnt")
+    build_v2_fnt(FONT_ROOT / "version-2.fnt")
     build_malformed_fnt(
         FONT_ROOT / "invalid-version.fnt",
         lambda buf: put_u16(buf, 0, 0x0100),

@@ -11743,6 +11743,8 @@ subjects:
         description: Public declaration returns FT_Error from FT_Face and FT_WinFNT_HeaderRec*, checks null face before null output, and dispatches through FT_SERVICE_ID_WINFNT.
       - id: winfnt_face_copies_header_success
         description: For a valid Windows FNT face, C copies the driver's stored FT_WinFNT_HeaderRec into the caller buffer and returns FT_Err_Ok.
+      - id: winfnt_v2_face_copies_header_success
+        description: A valid version-2 Windows FNT face follows the shorter header path and exposes zeroed version-3-only fields through FT_Get_WinFNT_Header.
       - id: null_face_returns_invalid_face_handle
         description: A null face returns Invalid_Face_Handle without touching the output buffer.
       - id: null_output_returns_invalid_argument

@@ -4,6 +4,7 @@
   "manifest_cases": [
     "signature_and_dispatch_contract",
     "winfnt_face_copies_header_success",
+    "winfnt_v2_face_copies_header_success",
     "null_face_returns_invalid_face_handle",
     "null_output_returns_invalid_argument",
     "non_winfnt_face_returns_invalid_argument"
@@ -156,6 +157,98 @@
         ],
         "fixture_requirements": [
           "input/fonts/winfnt/bitmap-header.fnt must be a valid Windows FNT or FON face whose parsed header exercises nonzero offsets, charset, dimensions, ABC spacing, flags, and reserved1 fields."
+        ]
+      }
+    },
+    {
+      "case_id": "ftwinfnt.FT_Get_WinFNT_Header.winfnt_v2_face_copies_header_success",
+      "subject": "ftwinfnt.FT_Get_WinFNT_Header",
+      "case": "winfnt_v2_face_copies_header_success",
+      "operation": "ftwinfnt.get_winfnt_header",
+      "schema": "api_result",
+      "expect_error": false,
+      "abi": {
+        "header": "freetype/ftwinfnt.h",
+        "symbol": "FT_Get_WinFNT_Header",
+        "signature": "FT_Error FT_Get_WinFNT_Header(FT_Face face, FT_WinFNT_HeaderRec* aheader)"
+      },
+      "inputs": {
+        "assets": {
+          "winfnt_font": {
+            "kind": "ref",
+            "id": "input/fonts/winfnt/version-2.fnt",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_source": "winfnt_font",
+          "face_index": 0,
+          "header_pointer_mode": "caller_owned_record",
+          "initial_header_sentinel": "0xA5"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftwinfnt",
+        "format:winfnt",
+        "format:winfnt-v2"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Err_Ok",
+          "header": "FT_WinFNT_HeaderRec copied from driver-owned parsed version-2 header",
+          "sentinel_unchanged": false
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "header.version",
+            "header.file_size",
+            "header.copyright",
+            "header.file_type",
+            "header.nominal_point_size",
+            "header.vertical_resolution",
+            "header.horizontal_resolution",
+            "header.ascent",
+            "header.internal_leading",
+            "header.external_leading",
+            "header.italic",
+            "header.underline",
+            "header.strike_out",
+            "header.weight",
+            "header.charset",
+            "header.pixel_width",
+            "header.pixel_height",
+            "header.pitch_and_family",
+            "header.avg_width",
+            "header.max_width",
+            "header.first_char",
+            "header.last_char",
+            "header.default_char",
+            "header.break_char",
+            "header.bytes_per_row",
+            "header.device_offset",
+            "header.face_name_offset",
+            "header.bits_pointer",
+            "header.bits_offset",
+            "header.reserved",
+            "header.flags",
+            "header.A_space",
+            "header.B_space",
+            "header.C_space",
+            "header.color_table_offset",
+            "header.reserved1"
+          ]
+        },
+        "source_refs": [
+          "freetype/include/freetype/ftwinfnt.h:182-221",
+          "freetype/src/base/ftwinfnt.c:41-45",
+          "freetype/src/winfonts/winfnt.c:396-420"
+        ],
+        "fixture_requirements": [
+          "input/fonts/winfnt/version-2.fnt must be a valid version-2 Windows FNT face whose common header fields are nonzero and whose version-3-only fields are absent from the parsed record."
         ]
       }
     },
