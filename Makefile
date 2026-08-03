@@ -383,7 +383,9 @@ test-ffi:
 # ── Single Feature Testing ────────────────────────────────────────────
 # These targets run the unified parity test filtered to a single operation
 # or case. They always refresh the oracle cache (FONTDONE_UNIFIED_ORACLE_REFRESH=1)
-# to avoid cache-key confusion when switching between filters.
+# to avoid cache-key confusion when switching between filters. Focused checks
+# use the runtime-only ABI audit; the optional-feature contract remains in the
+# full api-abi-check/test-parity gate and need not be rebuilt for every probe.
 #
 # Usage:
 #   make test-op OP=ftadvanc.get_advance
@@ -417,7 +419,7 @@ test-ffi:
 #   FONTDONE_UNIFIED_REPORT_EXPECTED_ERROR_MISMATCHES – write strict ledger without failing
 
 .PHONY: test-op
-test-op: unified-oracle api-abi-check
+test-op: unified-oracle api-abi-runtime-check
 	@if [ -z "$(OP)" ]; then \
 		echo "Usage: make test-op OP=<operation>" >&2; \
 		echo "  Example operations: ftadvanc.get_advance, load_glyph, render_glyph, freetype.inspect_glyph_metrics" >&2; \
@@ -428,7 +430,7 @@ test-op: unified-oracle api-abi-check
 	$(CARGO) test --test unified_fixture_parity --locked unified_fixture_parity -- --nocapture
 
 .PHONY: test-case
-test-case: unified-oracle api-abi-check
+test-case: unified-oracle api-abi-runtime-check
 	@if [ -z "$(CASE)" ]; then \
 		echo "Usage: make test-case CASE=<substring>" >&2; \
 		echo "  Matches against case_id, subject, or case fields" >&2; \

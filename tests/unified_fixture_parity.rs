@@ -48,7 +48,7 @@ use fontdone::{
 };
 use fontdone_c_abi as c_abi;
 use fontdone_wasm as wasm_abi;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
@@ -250,6 +250,15 @@ struct InputCase {
     route_pending_reason: Option<String>,
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+struct InputCaseCache {
+    schema_version: u32,
+    source_digest: String,
+    cases: Vec<InputCase>,
+}
+
+const INPUT_CASE_CACHE_SCHEMA_VERSION: u32 = 3;
+
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq)]
 enum RouteEvidence {
     RealParity,
@@ -327,32 +336,79 @@ struct VariantCompareExpectation {
     compare_error_output: Option<bool>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone)]
 enum Asset {
     List(Vec<Asset>),
     Ref {
-        #[serde(default)]
         id: Option<String>,
-        #[serde(default)]
         path: Option<String>,
     },
-    #[serde(rename = "file")]
     File {
         path: String,
-        #[serde(default)]
         sha256: Option<String>,
-        #[serde(default)]
         length: Option<u64>,
     },
-    #[serde(rename = "inline_bytes")]
     InlineBytes {
         encoding: String,
-        #[serde(default)]
         value: Option<String>,
-        #[serde(default)]
         data: Option<String>,
     },
     Other(Value),
+}
+
+impl Serialize for Asset {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Self::List(items) => items.serialize(serializer),
+            Self::Ref { id, path } => {
+                let mut object = serde_json::Map::new();
+                object.insert("kind".to_string(), json!("ref"));
+                if let Some(id) = id {
+                    object.insert("id".to_string(), json!(id));
+                }
+                if let Some(path) = path {
+                    object.insert("path".to_string(), json!(path));
+                }
+                object.serialize(serializer)
+            }
+            Self::File {
+                path,
+                sha256,
+                length,
+            } => {
+                let mut object = serde_json::Map::new();
+                object.insert("kind".to_string(), json!("file"));
+                object.insert("path".to_string(), json!(path));
+                if let Some(sha256) = sha256 {
+                    object.insert("sha256".to_string(), json!(sha256));
+                }
+                if let Some(length) = length {
+                    object.insert("length".to_string(), json!(length));
+                }
+                object.serialize(serializer)
+            }
+            Self::InlineBytes {
+                encoding,
+                value,
+                data,
+            } => {
+                let mut object = serde_json::Map::new();
+                object.insert("kind".to_string(), json!("inline_bytes"));
+                object.insert("encoding".to_string(), json!(encoding));
+                if let Some(value) = value {
+                    object.insert("value".to_string(), json!(value));
+                }
+                if let Some(data) = data {
+                    object.insert("data".to_string(), json!(data));
+                }
+                object.serialize(serializer)
+            }
+            Self::Other(value) => value.serialize(serializer),
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -38207,14 +38263,45 @@ fn collect_asset_cache_input(
 }
 
 fn load_all_case_files() -> Vec<InputCase> {
+    // Parsing 1,537 JSON files into 7,486 expanded cases is useful on a cold
+    // checkout but needlessly repeats for every focused or coverage process.
+    // Keep the derived form under target/ and bind it to both the loader and
+    // every maintained input so cache reuse cannot hide fixture changes.
     let input_dir = fixture_dir().join("inputs").join("public-api");
     let mut paths = input_case_paths(&input_dir);
     paths.sort();
 
+    let sources = paths
+        .iter()
+        .map(|path| {
+            let bytes =
+                fs::read(path).unwrap_or_else(|err| panic!("read {}: {err}", path.display()));
+            (path.clone(), bytes)
+        })
+        .collect::<Vec<_>>();
+    let source_count = sources.len();
+    let source_digest = input_case_source_digest(&sources);
+    let cache_path = input_case_cache_path();
+    if let Ok(bytes) = fs::read(&cache_path)
+        && let Ok(cache) = serde_json::from_slice::<InputCaseCache>(&bytes)
+        && cache.schema_version == INPUT_CASE_CACHE_SCHEMA_VERSION
+        && cache.source_digest == source_digest
+    {
+        let mut cases = cache.cases;
+        assert_unique_runtime_case_ids(&cases);
+        apply_route_evidence(&mut cases);
+        eprintln!(
+            "input_case_cache: hit cases={} files={} path={}",
+            cases.len(),
+            sources.len(),
+            cache_path.display()
+        );
+        return cases;
+    }
+
     let mut cases = Vec::new();
-    for path in paths {
-        let text = fs::read_to_string(&path).expect("read input case file");
-        let raw: Value = serde_json::from_str(&text)
+    for (path, bytes) in sources {
+        let raw: Value = serde_json::from_slice(&bytes)
             .unwrap_or_else(|err| panic!("parse {}: {err}", path.display()));
         assert!(
             raw.get("matrix_cases").is_none(),
@@ -38231,7 +38318,63 @@ fn load_all_case_files() -> Vec<InputCase> {
     }
     assert_unique_runtime_case_ids(&cases);
     apply_route_evidence(&mut cases);
+    let cache = InputCaseCache {
+        schema_version: INPUT_CASE_CACHE_SCHEMA_VERSION,
+        source_digest,
+        cases: cases.clone(),
+    };
+    if let Some(parent) = cache_path.parent()
+        && let Err(err) = fs::create_dir_all(parent)
+    {
+        eprintln!(
+            "input_case_cache: create_failed path={} error={err}",
+            cache_path.display()
+        );
+    } else if let Ok(bytes) = serde_json::to_vec(&cache) {
+        let tmp = cache_path.with_extension(format!("json.tmp.{}", std::process::id()));
+        if fs::write(&tmp, bytes)
+            .and_then(|()| fs::rename(&tmp, &cache_path))
+            .is_ok()
+        {
+            eprintln!(
+                "input_case_cache: wrote cases={} files={} path={}",
+                cases.len(),
+                source_count,
+                cache_path.display()
+            );
+        } else {
+            let _ = fs::remove_file(&tmp);
+        }
+    }
     cases
+}
+
+fn input_case_cache_path() -> PathBuf {
+    manifest_dir()
+        .join("target")
+        .join("unified-fixtures")
+        .join("input_cases.json")
+}
+
+fn input_case_source_digest(sources: &[(PathBuf, Vec<u8>)]) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(b"fontdone-unified-input-cases-v1\n");
+    let loader_path = manifest_dir()
+        .join("tests")
+        .join("unified_fixture_parity.rs");
+    if let Ok(loader) = fs::read(&loader_path) {
+        hash_framed(&mut hasher, b"loader");
+        hash_framed(&mut hasher, &loader);
+    }
+    for (path, bytes) in sources {
+        let relative = path.strip_prefix(manifest_dir()).map_or_else(
+            |_| path.to_string_lossy().into_owned(),
+            |path| path.display().to_string(),
+        );
+        hash_framed(&mut hasher, relative.as_bytes());
+        hash_framed(&mut hasher, bytes);
+    }
+    hex_bytes(&hasher.finalize())
 }
 
 fn apply_route_evidence(cases: &mut [InputCase]) {
