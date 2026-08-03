@@ -124,9 +124,9 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP parity run
-`09678b89-dd92-4144-850e-2f2be979ae4c`, recorded by run
-`61608dae-a07e-43ca-9e2d-2e864de7d6df` against committed source
-`fa43358046e4a738973cf7dff5cdfff5a76a10b9`;
+`6b341682-7f20-4dd8-b5b0-8d4a7e8b463a`, recorded by run
+`931037e3-8b6c-4490-9099-dc899fb77868` against committed source
+`546b0ac2b0996101ccb0c2ad99e942d63a185d1d`;
 its source-bound parity-tree digest is retained in
 `doc/runtime_parity_evidence.json`.
 

@@ -423,8 +423,8 @@ per-batch coverage increase is claimed:
 | 53 | `fa43358046e4a738973cf7dff5cdfff5a76a10b9` | Added a derived CFF face whose ROS registry uses FreeType's `0xFFFF` absent-CID sentinel, then routed the resulting `FT_Get_CID_Registry_Ordering_Supplement` `Invalid_Argument` and output-preservation behavior through pinned C, Rust FFI, C ABI, and WASM. Source-bound parity run `09678b89-dd92-4144-850e-2f2be979ae4c`, recorded by `61608dae-a07e-43ca-9e2d-2e864de7d6df`, passed 7,504 / 7,504 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `1553c8ad-369f-4c7a-922a-5c458f8fe6b4`, snapshot `a055abb2-28be-4450-aa78-b62b0bc9f33a`, measured 49,498 / 54,173 lines, 9,727 / 12,534 branches, 3,384 / 3,834 functions, and 68,130 / 75,345 regions in 89.882 seconds; the C-ABI scorecard run `3bb476bb-3739-45a9-a524-93f9b87a9de5` reports 5,247 / 5,247 runtime rows, 661 / 661 exact-error routes, and 7,504 / 7,504 no-fallback routes. |
 
 The latest source-bound parity verification is Coverage MCP parity run
-`09678b89-dd92-4144-850e-2f2be979ae4c` against committed source
-`fa43358046e4a738973cf7dff5cdfff5a76a10b9`: it passed 7,504 / 7,504 runnable
+`6b341682-7f20-4dd8-b5b0-8d4a7e8b463a` against committed source
+`546b0ac2b0996101ccb0c2ad99e942d63a185d1d`: it passed 7,504 / 7,504 runnable
 comparisons, 0 failed, and 3 explicitly pending
 safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
