@@ -40,7 +40,13 @@ def put_u32(buf: bytearray, offset: int, value: int) -> None:
     struct.pack_into("<I", buf, offset, value)
 
 
-def build_fnt(path: Path, charset: int, family: str, exercise_header: bool) -> None:
+def build_fnt(
+    path: Path,
+    charset: int,
+    family: str,
+    exercise_header: bool,
+    zero_resolution: bool = False,
+) -> None:
     header_size = 148
     face_name = family.encode("ascii") + b"\0"
     bits_offset = header_size + len(face_name)
@@ -54,8 +60,8 @@ def build_fnt(path: Path, charset: int, family: str, exercise_header: bool) -> N
     buf[6 : 6 + len(copyright_text)] = copyright_text
     put_u16(buf, 66, 0)  # bitmap FNT, not vector
     put_u16(buf, 68, 8 if not exercise_header else 9)
-    put_u16(buf, 70, 72)
-    put_u16(buf, 72, 96 if exercise_header else 72)
+    put_u16(buf, 70, 0 if zero_resolution else 72)
+    put_u16(buf, 72, 0 if zero_resolution else (96 if exercise_header else 72))
     put_u16(buf, 74, 7)
     put_u16(buf, 76, 1 if exercise_header else 0)
     put_u16(buf, 78, 2 if exercise_header else 0)
@@ -151,6 +157,13 @@ def build_ushort_contract_fnt(path: Path) -> None:
 
 def main() -> None:
     build_fnt(FONT_ROOT / "bitmap-header.fnt", 0, "PillowRsWinFNT", True)
+    build_fnt(
+        FONT_ROOT / "zero-resolution.fnt",
+        0,
+        "PillowRsWinFNTZeroResolution",
+        False,
+        zero_resolution=True,
+    )
     build_ushort_contract_fnt(FONT_ROOT / "ushort-fields-known.fnt")
     charset_root = FONT_ROOT / "charset"
     for name, value in sorted(CHARSETS.items()):

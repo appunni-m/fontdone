@@ -2304,7 +2304,7 @@ subjects:
         description: Size, alignment, and offsets match the pinned C field order height, width, size, x_ppem, y_ppem with FT_Short and FT_Pos field types.
       # needs-input: operation inspect face->available_sizes after FT_Open_Face/FT_New_Memory_Face; fixture assets one bitmap-strike font such as SFNT embedded bitmaps, PCF/BDF, or Windows FNT plus one scalable outline control with no fixed sizes; params live FT_Face handles; expected output shape array of FT_Bitmap_Size records with num_fixed_sizes count; comparison rule exact count and per-record field parity for height/width pixels and size/x_ppem/y_ppem 26.6 values, with NULL or zero-count behavior matching C for no strikes.
       - id: available_sizes_values_match_c
-        description: Bitmap strike records exposed by a face match C counts and per-field values exactly.
+        description: Bitmap strike records exposed by a face match C counts and per-field values exactly, including WinFNT zero-resolution 72 dpi defaults.
 
   - id: freetype.FT_CharMapRec
     kind: record

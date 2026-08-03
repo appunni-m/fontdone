@@ -117,6 +117,64 @@
           "Bitmap-strike font such as SFNT embedded bitmap, PCF/BDF, or Windows FNT with deterministic strike metrics"
         ]
       }
+    },
+    {
+      "case_id": "freetype.FT_Bitmap_Size.available_sizes_zero_resolution_defaults_match_c",
+      "subject": "freetype.FT_Bitmap_Size",
+      "case": "available_sizes_values_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/winfnt/zero-resolution.fnt"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "fixture:winfnt_zero_resolution"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        },
+        "fixture_requirements": [
+          "Synthetic WinFNT face has zero horizontal and vertical resolutions so pinned C's 72 dpi defaults are observable."
+        ]
+      }
     }
   ]
 }
