@@ -144,8 +144,8 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `0573714b-462f-4a73-afdb-f3a55163b75d`: all three processes
-passed 7,527 / 7,527 cases. This source/input-bound managed run took 77.454
+Coverage MCP run `bc1b4361-bf2d-45fa-8816-5f2b6a348040`: all three processes
+passed 7,527 / 7,527 cases. This source/input-bound managed run took 50.505
 seconds. The preceding warm managed run took 50.842 seconds. The
 preceding source-bound run took 100.333 seconds, including a 48.78-second
 instrumented rebuild; the longest backend execution was 48.24 seconds. The
@@ -258,7 +258,7 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`0573714b-462f-4a73-afdb-f3a55163b75d`) measured 77.454 seconds
+run (`bc1b4361-bf2d-45fa-8816-5f2b6a348040`) measured 50.505 seconds
 end-to-end with the source/input-bound refresh. The preceding warm run
 (`fb9ed28c-46d3-4a3d-beb9-1d576ba385cc`) measured 50.842 seconds with the
 warm instrumented binary. The preceding source-bound run
@@ -280,22 +280,22 @@ avoids needless helper rebuilds and relinks, and reuses the FreeType CMake
 configuration when its inputs are unchanged, so repeated oracle builds do not
 recompile all C sources. It runs in requested thorough CI, not on every
 commit. The latest instrumentation
-timers were approximately 44.659 seconds Rust FFI, 33.589 seconds C ABI, 33.429
-seconds WASM, and 14 ms comparison per lane; those lanes run concurrently,
+timers were approximately 44.436 seconds Rust FFI, 32.994 seconds C ABI, 32.759
+seconds WASM, and 11 ms comparison per lane; those lanes run concurrently,
 so their sum is not wall time. The remaining wall-time tail is setup,
 process/report merging, and Coverage MCP ingestion rather than another parity
 route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,548 / 54,173 | 91.46% |
-| Branches | 9,756 / 12,532 | 77.85% |
+| Lines | 49,567 / 54,173 | 91.50% |
+| Branches | 9,760 / 12,532 | 77.88% |
 | Functions | 3,391 / 3,835 | 88.42% |
-| Regions | 68,207 / 75,343 | 90.53% |
+| Regions | 68,226 / 75,343 | 90.55% |
 
 That current run passed all 7,527 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`b3a8c64a-2abc-4e36-ac93-8d8302a15d75`. The preceding retained run includes a
+`fd4f0598-e3a6-4e78-ba83-92e98f443fac`. The preceding retained run includes a
 source-bound instrumented rebuild; its log reports 48.78 seconds of compilation
 and a 48.24-second longest backend execution. Coverage MCP does not expose
 separate timestamps for report finalization or artifact ingestion. Current

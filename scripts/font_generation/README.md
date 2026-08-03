@@ -44,7 +44,7 @@ licenses are enforced by `make supply-chain`.
 | `build_render_fixtures.py` | Synthetic | Project-authored outlines and TrueType programs. |
 | `build_type1_fixtures.py` | Synthetic | Project-authored Type 1 charstrings, dictionaries, AFM data, notices, and a naked CID-keyed Type 1 resource. |
 | `build_type42_fixtures.py` | Synthetic | Project-authored embedded TrueType tables, outlines, names, and Type 42 wrapper. |
-| `generate_malformed_bdf_fixtures.py` | Synthetic | Project-authored BDF text, including intentionally malformed variants. |
+| `generate_malformed_bdf_fixtures.py` | Synthetic | Project-authored BDF text, including valid atom/integer/cardinal property controls and intentionally malformed variants. |
 | `generate_winfnt_fixtures.py` | Synthetic | Project-authored binary WinFNT records and bitmap data, including short-header and declared-size validation controls. |
 | `build_cpal_palette_fixtures.py` | Derived | `tests/fixtures/input/fonts/DejaVuSans.ttf`; DejaVu/Bitstream terms remain applicable. |
 | `build_cmap_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; only cmap/table mutations. |
@@ -138,11 +138,14 @@ make font-fixture-sbit
 
 `tests/fixtures/input/fonts/bdf/sfnt-bdf-table.otb` is a synthetic derivative
 of the project-generated `hinter-control-matrix.ttf`. Its project-authored
-`BDF ` table contains 1 strike at 20 ppem and 5 properties:
+`BDF ` table contains 1 strike at 20 ppem and 8 properties:
 `CHARSET_REGISTRY=ISO10646`, `CHARSET_ENCODING=1`,
-`FAMILY_NAME=Fontdone SFNT BDF`, `PIXEL_SIZE=20`, and `POINT_SIZE=200`.
-The reviewed output is 5,240 bytes with SHA-256
-`81adb1735aa8b4219324c3ff5002c6c51795e18038292b4ee99e37522f9177ff`.
+`FAMILY_NAME=Fontdone SFNT BDF`, `PIXEL_SIZE=20`, `POINT_SIZE=200`, an
+undefined property record, a defined `RESOLUTION_X` cardinal, and a defined
+unknown-format record. The latter three records are parser controls and are
+not requested by the public property case.
+The reviewed output is 5,324 bytes with SHA-256
+`eacad2a21d685995749c089e2e032ce3c568b502aec153379eec2468b77ba6bd`.
 It contains no third-party font material and needs no third-party license
 notice.
 

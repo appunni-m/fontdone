@@ -124,9 +124,9 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`77d5f9de-66e8-4821-8287-71a1c9d3d7f3`, recorded by run
-`6478c34b-6c6c-4b35-baa7-cdee234f736b` against source tree
-`39c4c2a0eec69e9200853c78682ef5e14755d6e7`; its source-bound parity-tree
+`46b07241-7dbc-4afa-99a6-9436344e803f`, recorded by run
+`affe5136-7402-45d8-ac2c-2233b1c2a1e8` against source tree
+`9a4de6f5706927710d7d8025da15583a9666408e`; its source-bound parity-tree
 digest is retained in `doc/runtime_parity_evidence.json`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
@@ -140,16 +140,16 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage run was recorded on **2026-08-03** against
-source tree `39c4c2a0eec69e9200853c78682ef5e14755d6e7`
-(Coverage MCP run `0573714b-462f-4a73-afdb-f3a55163b75d`, snapshot
-`b3a8c64a-2abc-4e36-ac93-8d8302a15d75`):
+source tree `9a4de6f5706927710d7d8025da15583a9666408e`
+(Coverage MCP run `bc1b4361-bf2d-45fa-8816-5f2b6a348040`, snapshot
+`fd4f0598-e3a6-4e78-ba83-92e98f443fac`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,548 / 54,173 | 91.46% |
-| Branches | 9,756 / 12,532 | 77.85% |
+| Lines | 49,567 / 54,173 | 91.50% |
+| Branches | 9,760 / 12,532 | 77.88% |
 | Functions | 3,391 / 3,835 | 88.42% |
-| Regions | 68,207 / 75,343 | 90.53% |
+| Regions | 68,226 / 75,343 | 90.55% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -178,9 +178,9 @@ but the default coverage target does not rerun it because `make test-fast`
 already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
-The current source-bound run passed 7,527 / 7,527 comparisons in each backend lane. Its
-instrumentation timers were 44.659 seconds Rust FFI, 33.589 seconds C ABI,
-33.429 seconds WASM, and about 14 ms comparison per lane. The three-surface
+The current source/input-bound run passed 7,527 / 7,527 comparisons in each backend lane. Its
+instrumentation timers were 44.436 seconds Rust FFI, 32.994 seconds C ABI,
+32.759 seconds WASM, and about 11 ms comparison per lane. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
 MCP without the compatibility-only segment rewrite. The default
 `COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
@@ -198,7 +198,7 @@ not rebuilt on every run; unchanged FreeType CMake configuration is reused as
 well. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The latest source/input-bound coverage run completed in 77.454 seconds;
+The latest source/input-bound coverage run completed in 50.505 seconds;
 the preceding managed warm source-bound coverage run completed in 50.842 seconds;
 the preceding source-bound run completed in 100.333 seconds including the
 instrumented rebuild; its longest backend execution was 48.24 seconds;
@@ -243,7 +243,7 @@ routes remain even when every bare function name has some traced route. The self
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`0dd97d49-2754-435a-bbe9-afd542ae3d0f`.
+`8710ea2a-150b-4481-902e-b93481ff08e9`.
 
 ### 3.5 Performance baseline
 

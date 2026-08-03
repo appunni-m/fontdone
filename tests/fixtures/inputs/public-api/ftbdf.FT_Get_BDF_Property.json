@@ -29,7 +29,8 @@
           "properties": [
             "FAMILY_NAME",
             "POINT_SIZE",
-            "PIXEL_SIZE"
+            "PIXEL_SIZE",
+            "RESOLUTION_X"
           ],
           "face_index": 0
         }

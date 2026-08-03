@@ -28708,7 +28708,7 @@ static int emit_bdf_property_case(int argc, char** argv) {
     }
 
     if (streq(case_id, "ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties")) {
-        const char* names[] = {"FAMILY_NAME", "POINT_SIZE", "PIXEL_SIZE"};
+        const char* names[] = {"FAMILY_NAME", "POINT_SIZE", "PIXEL_SIZE", "RESOLUTION_X"};
         printf("{");
         print_status(0);
         printf(",\"output\":{\"rows\":[");

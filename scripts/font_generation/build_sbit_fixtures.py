@@ -40,6 +40,12 @@ def sfnt_bdf_table() -> bytes:
         ("FAMILY_NAME", 0x10, "Fontdone SFNT BDF"),
         ("PIXEL_SIZE", 0x12, 20),
         ("POINT_SIZE", 0x12, 200),
+        # Keep parser-only records in the maintained table so the Rust SFNT
+        # BDF loader exercises the same optional record forms that FreeType
+        # accepts and skips while serving the public property API.
+        ("UNDEFINED_PROPERTY", 0x02, 0),
+        ("RESOLUTION_X", 0x13, 75),
+        ("UNSUPPORTED_PROPERTY", 0x14, 0),
     ]
     records = bytearray()
     for name, property_type, value in properties:
