@@ -1972,6 +1972,31 @@
             ]
           },
           {
+            "id": "pcf-unsupported-properties-format",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/unsupported-properties-format.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/unsupported-properties-format.pcf"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pcf:properties-format-unsupported"
+            ]
+          },
+          {
             "id": "winfnt-short-header",
             "assets": {
               "font_bytes": {

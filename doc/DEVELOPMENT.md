@@ -144,8 +144,8 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `43067a3b-392e-4e67-a725-66731b62aa92`: all three processes
-passed 7,529 / 7,529 cases. This source/input-bound managed run took 49.844
+Coverage MCP run `9179524b-915a-44c2-83ac-5bbd8729ee33`: all three processes
+passed 7,530 / 7,530 cases. This source/input-bound managed run took 50.695
 seconds. The preceding warm managed run took 50.842 seconds. The
 preceding source-bound run took 100.333 seconds, including a 48.78-second
 instrumented rebuild; the longest backend execution was 48.24 seconds. The
@@ -258,7 +258,7 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`43067a3b-392e-4e67-a725-66731b62aa92`) measured 49.844 seconds
+run (`9179524b-915a-44c2-83ac-5bbd8729ee33`) measured 50.695 seconds
 end-to-end with the source/input-bound refresh. The preceding warm run
 (`fb9ed28c-46d3-4a3d-beb9-1d576ba385cc`) measured 50.842 seconds with the
 warm instrumented binary. The preceding source-bound run
@@ -289,13 +289,13 @@ route. Coverage MCP does not expose timestamps for those sub-phases yet:
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
 | Lines | 49,568 / 54,173 | 91.50% |
-| Branches | 9,762 / 12,532 | 77.90% |
+| Branches | 9,763 / 12,532 | 77.90% |
 | Functions | 3,391 / 3,835 | 88.42% |
 | Regions | 68,227 / 75,343 | 90.56% |
 
-That current run passed all 7,529 runnable parity comparisons with 0 failures;
+That current run passed all 7,530 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`e80396af-59c6-471b-a4c7-26e1e1001c61`. The preceding retained run includes a
+`b3b9b6a4-2ff8-44bd-b086-688eb50b2270`. The preceding retained run includes a
 source-bound instrumented rebuild; its log reports 48.78 seconds of compilation
 and a 48.24-second longest backend execution. Coverage MCP does not expose
 separate timestamps for report finalization or artifact ingestion. Current
@@ -341,7 +341,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 637 tracked paths and no symlinks.
+The canonical input tree currently contains 638 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -509,7 +509,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,638 | executable parity tests and public contracts |
-| R04 | 637 | licensed canonical fixture inputs |
+| R04 | 638 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -517,7 +517,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,497** | **all retained paths** |
+| **Total** | **2,498** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

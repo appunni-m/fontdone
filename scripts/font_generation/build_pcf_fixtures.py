@@ -193,6 +193,13 @@ def main() -> None:
         *tables[1:],
     ]
     invalid_properties_data = build_pcf(invalid_properties_tables)
+    unsupported_properties_payload = bytearray(properties_table())
+    struct.pack_into("<I", unsupported_properties_payload, 0, PCF_COMPRESSED_METRICS)
+    unsupported_properties_tables = [
+        (PCF_PROPERTIES, 0, bytes(unsupported_properties_payload)),
+        *tables[1:],
+    ]
+    unsupported_properties_data = build_pcf(unsupported_properties_tables)
     msb_tables = [
         (PCF_PROPERTIES, PCF_BYTE_MASK, properties_table(msb=True)),
         *tables[1:4],
@@ -225,6 +232,11 @@ def main() -> None:
     if invalid_properties_output.exists() or invalid_properties_output.is_symlink():
         invalid_properties_output.unlink()
     invalid_properties_output.write_bytes(invalid_properties_data)
+
+    unsupported_properties_output = OUT_DIR / "unsupported-properties-format.pcf"
+    if unsupported_properties_output.exists() or unsupported_properties_output.is_symlink():
+        unsupported_properties_output.unlink()
+    unsupported_properties_output.write_bytes(unsupported_properties_data)
 
     msb_output = OUT_DIR / "properties-msb.pcf"
     if msb_output.exists() or msb_output.is_symlink():
