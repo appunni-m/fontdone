@@ -464,6 +464,17 @@ in 57.821 seconds. Each measurement clears
 stale `.profraw` files first; use `make coverage-clean` after changing the
 coverage toolchain or instrumentation configuration.
 
+The 2026-08-03 coverage-speed validation (Coverage MCP run
+`5b533df3-5e20-447d-9634-f379be48d57b`) measured 52.696 seconds with a warm
+oracle cache and unchanged exact parity/coverage totals. The retained lane
+timers identify the remaining floor as instrumented parity execution (about
+44.24 seconds Rust FFI, 33.58 seconds C ABI, and 33.50 seconds WASM), while
+comparison is under 20 ms. Coverage MCP accepts the current LLVM JSON directly;
+the compatibility-only `jq` segment rewrite is now opt-in through
+`COVERAGE_NORMALIZE_SEGMENTS=1`, avoiding about 2.9 seconds of report work on
+the measured 28.6 MB artifact. This is a report-path optimization only; it does
+not remove a parity lane or change a coverage denominator.
+
 Run:
 
 ```bash

@@ -15,6 +15,9 @@ COVERAGE_UNIFIED_WORKERS ?= 1
 COVERAGE_TEST_OPT_LEVEL ?= 1
 COVERAGE_TEST_DEBUG ?= 1
 COVERAGE_LLVM_COV_FLAGS ?= --no-clean
+# Current cargo-llvm-cov emits a report accepted directly by Coverage MCP.
+# Keep the compatibility rewrite opt-in for older LLVM JSON producers.
+COVERAGE_NORMALIZE_SEGMENTS ?= 0
 COVERAGE_PREPARATION_JOBS ?= 2
 COVERAGE_ALL_TARGET_DIR ?= target/llvm-cov-all-lanes
 COVERAGE_TEST_BINARY ?=
@@ -329,9 +332,12 @@ else
 		--ignore-filename-regex '$(ALL_LANES_COVERAGE_IGNORE_REGEX)' \
 		--output-path $(ALL_LANES_COVERAGE_OUTPUT) -- --nocapture
 endif
+
+ifeq ($(COVERAGE_NORMALIZE_SEGMENTS),1)
 	jq -c '(.data[]?.files[]?.segments[]? | select(length >= 3) | .[2]) |= if . > 2147483647 then 2147483647 else . end' \
 		$(ALL_LANES_COVERAGE_OUTPUT) > $(ALL_LANES_COVERAGE_OUTPUT).tmp
 	mv $(ALL_LANES_COVERAGE_OUTPUT).tmp $(ALL_LANES_COVERAGE_OUTPUT)
+endif
 
 .PHONY: coverage-abi-preflight
 coverage-abi-preflight:
@@ -395,6 +401,7 @@ test-ffi:
 #   FONTDONE_UNIFIED_WORKERS           – bounded backend comparison worker count
 #   COVERAGE_TEST_OPT_LEVEL             – optimization level for coverage builds
 #   COVERAGE_TEST_DEBUG                 – line-table debug level for coverage builds
+#   COVERAGE_NORMALIZE_SEGMENTS          – rewrite oversized LLVM segment counts (1/0)
 #   COVERAGE_LLVM_COV_FLAGS             – extra cargo-llvm-cov flags for coverage builds
 #   COVERAGE_PREPARATION_JOBS           – parallel jobs for independent coverage setup
 #   COVERAGE_ALL_TARGET_DIR             – isolated cached target for all-lane LLVM coverage

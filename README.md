@@ -139,15 +139,17 @@ their exact worktree than the committed release snapshot.
 
 ### 3.3 Last measured combined coverage
 
-The last all-lane coverage run was recorded on **2026-08-02** against
-`e6bef8f9e180eeda5e606270e515314443ba6c44`:
+The latest all-lane coverage run was recorded on **2026-08-03** against the
+current coverage-speed worktree (Coverage MCP run
+`5b533df3-5e20-447d-9634-f379be48d57b`, snapshot
+`aa6b0e14-b313-445b-932d-9f890f2aa8c5`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,363 / 54,104 | 91.24% |
+| Lines | 49,367 / 54,104 | 91.24% |
 | Branches | 9,694 / 12,512 | 77.48% |
 | Functions | 3,371 / 3,828 | 88.06% |
-| Regions | 67,953 / 75,273 | 90.28% |
+| Regions | 67,969 / 75,273 | 90.30% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -176,19 +178,14 @@ but the default coverage target does not rerun it because `make test-fast`
 already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
-The committed coverage snapshot remains Coverage MCP run
-`cce7fb2b-ee6d-43cd-970f-e0dbe7a2b106`, with snapshot
-`1fab8ecd-b4c0-491d-abcc-110f66101193`; the corrected-index source-bound run
-completed in 57.821 seconds, with 7,478 exact parity comparisons in each
-backend lane. Its instrumentation timers were about 44.89 seconds Rust FFI,
-34.31 seconds C ABI, 34.08 seconds WASM, and 0.02 seconds comparison. Reusing the instrumented test
-binary reduced the measured wall time from the previous 61.827-second split
-validation and from the 113.998-second warm combined-lane run; the new result is
-49.3% faster than the latter. The report names all three workspace packages
-explicitly because `cargo llvm-cov report` does not accept the workspace flag,
-keeping C-ABI and WASM source in the denominator. The remaining wall-time tail is
-setup, process/report merging, and Coverage MCP ingestion. Coverage builds
-retain the
+The current run passed 7,479 / 7,479 comparisons in each backend lane. Its
+instrumentation timers were about 44.24 seconds Rust FFI, 33.58 seconds C ABI,
+33.50 seconds WASM, and under 0.02 seconds comparison. The three-surface
+instrumented execution is the dominant cost; the report is accepted by Coverage
+MCP without the compatibility-only segment rewrite. The default
+`COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
+pass over the 28.6 MB JSON artifact; set it to `1` only for an older LLVM JSON
+producer that needs the segment-count clamp. Coverage builds retain the
 instrumented target with `cargo llvm-cov --no-clean`, remove stale `.profraw`
 files before each measurement, and retain line tables while omitting full test
 debuginfo via `COVERAGE_TEST_DEBUG=1`. Face-cache keys now

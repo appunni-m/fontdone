@@ -248,10 +248,10 @@ writes `target/coverage/unified-runtime-all-lanes.json`; test-harness paths are
 the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
-reuse the instrumented target and binary. The optimized-profile path measured
-53.316 seconds end-to-end in Coverage MCP with a warm oracle cache; allow
-roughly 2 minutes for host variation and roughly 4–6 minutes after a cache
-reset.
+reuse the instrumented target and binary. A current-host Coverage MCP run
+(`5b533df3-5e20-447d-9634-f379be48d57b`) measured 52.696 seconds end-to-end
+with a warm oracle cache; allow roughly 2 minutes for host variation and
+roughly 4–6 minutes after a cache reset.
 `COVERAGE_TEST_DEBUG=1` keeps line
 tables while omitting full test debuginfo; this reduces the measured end-to-end
 run without changing the coverage totals. Face-cache keys also reuse preloaded
@@ -271,17 +271,22 @@ MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,363 / 54,104 | 91.24% |
+| Lines | 49,367 / 54,104 | 91.24% |
 | Branches | 9,694 / 12,512 | 77.48% |
 | Functions | 3,371 / 3,828 | 88.06% |
-| Regions | 67,953 / 75,273 | 90.28% |
+| Regions | 67,969 / 75,273 | 90.30% |
 
-That managed run passed all 7,478 runnable parity comparisons with 0 failures;
-3 cases remained explicitly pending. Its Coverage MCP run ID is
-`cce7fb2b-ee6d-43cd-970f-e0dbe7a2b106`, and its immutable snapshot ID is
-`1fab8ecd-b4c0-491d-abcc-110f66101193`. That required three-surface
-instrumented execution remains the dominant measured test cost, while the
-latest wall-time tail is outside the test body. The percentages apply only to the named
+That current run passed all 7,479 runnable parity comparisons with 0 failures;
+3 cases remained explicitly pending. Its immutable coverage snapshot is
+`aa6b0e14-b313-445b-932d-9f890f2aa8c5`. The retained lane logs measured about
+44.24 seconds of Rust FFI execution, 33.58 seconds of C-ABI execution, and
+33.50 seconds of WASM execution; comparison itself was under 20 ms. The
+three-surface instrumented execution is therefore the dominant cost, not
+Coverage MCP ingestion. Current LLVM JSON is accepted directly by Coverage
+MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`
+rewrite; set it to `1` only for an older LLVM JSON producer that needs the
+segment-count clamp. The report-only rewrite was measured at about 2.9 seconds
+for the 28.6 MB artifact and does not change the coverage totals. The percentages apply only to the named
 source commit, suite, and toolchain. They are not a FreeType-parity percentage,
 and a covered line or branch does not prove an exact result.
 Generate a new report for the worktree being reviewed. LLVM JSON segments are
