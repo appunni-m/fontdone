@@ -144,8 +144,8 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest clean committed validation is
-Coverage MCP run `82c2a8e7-ff1e-49bc-bd74-551811de0b09`: all three processes
-passed 7,483 / 7,483 cases, and the end-to-end run took 51.714 seconds versus
+Coverage MCP run `8ed5d6c1-2497-4601-9e06-9e553dcd08bb`: all three processes
+passed 7,483 / 7,483 cases, and the end-to-end run took 54.897 seconds versus
 the previous warm 113.998-second measurement.
 
 The report names `fontdone`, `fontdone-c-abi`, and `fontdone-wasm` explicitly
@@ -249,7 +249,7 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`82c2a8e7-ff1e-49bc-bd74-551811de0b09`) measured 51.714 seconds
+run (`8ed5d6c1-2497-4601-9e06-9e553dcd08bb`) measured 54.897 seconds
 end-to-end with a warm oracle cache; allow roughly 2 minutes for host
 variation and roughly 4–6 minutes after a cache reset.
 `COVERAGE_TEST_DEBUG=1` keeps line
@@ -261,8 +261,8 @@ keeping variation-sequence cases isolated. Oracle
 preparation also preserves the mtime of unchanged generated constants and
 validator overlay sources, avoiding a needless helper rebuild and relink. It
 runs in requested thorough CI, not on every commit. The latest instrumentation
-timers were approximately 43.45 seconds Rust FFI, 32.28 seconds C ABI, 32.19
-seconds WASM, and 0.014 seconds comparison; those lanes run concurrently, so
+timers were approximately 45.88 seconds Rust FFI, 35.13 seconds C ABI, 35.05
+seconds WASM, and 0.018 seconds comparison; those lanes run concurrently, so
 their sum is not wall time. The remaining wall-time tail is setup,
 process/report merging, and Coverage MCP ingestion rather than another parity
 route. Coverage MCP does not expose timestamps for those sub-phases yet:
@@ -276,7 +276,7 @@ route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 That current run passed all 7,483 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`fe6f131b-5d7a-467c-8bbb-34d92f9b7be5`. The three-surface instrumented
+`9ea775a8-1599-4480-bd09-5febedbbe325`. The three-surface instrumented
 execution is therefore the dominant cost, not Coverage MCP ingestion. Current
 LLVM JSON is accepted directly by Coverage
 MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`
