@@ -139,14 +139,14 @@ their exact worktree than the committed release snapshot.
 
 ### 3.3 Last measured combined coverage
 
-The latest all-lane coverage run was recorded on **2026-08-03** for the
-current source-matched worktree (Coverage MCP run
-`b7a03d61-2504-4b23-b85f-5b99d94a9e7e`, snapshot
-`69558454-f986-425e-8a3f-bb8f327979f1`):
+The latest all-lane coverage run was recorded on **2026-08-03** against
+committed source `6ec81f38c5faafcc7924674c21c294ee8c3a5af3` (Coverage MCP run
+`a24f431c-5a5b-4c73-8fa4-2738888d0db2`, snapshot
+`7724fcea-e4b9-408f-9f80-9447f00f3363`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,445 / 54,152 | 91.31% |
+| Lines | 49,443 / 54,150 | 91.31% |
 | Branches | 9,707 / 12,520 | 77.53% |
 | Functions | 3,379 / 3,832 | 88.18% |
 | Regions | 68,059 / 75,313 | 90.37% |
@@ -179,8 +179,8 @@ already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
 The current run passed 7,489 / 7,489 comparisons in each backend lane. Its
-instrumentation timers were about 42.47 seconds Rust FFI, 32.03 seconds C ABI,
-31.80 seconds WASM, and about 0.013 seconds comparison. The three-surface
+instrumentation timers were about 45.73 seconds Rust FFI, 34.46 seconds C ABI,
+34.12 seconds WASM, and about 0.015 seconds comparison. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
 MCP without the compatibility-only segment rewrite. The default
 `COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
@@ -197,7 +197,7 @@ when contents are unchanged, so the C helper and FreeType validator overlay are
 not rebuilt on every run. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The latest warm source-matched run completed in 48.921 seconds; the preceding clean-target
+The latest clean committed source-matched run completed in 52.354 seconds; the preceding clean-target
 validation completed in 109.360 seconds because it rebuilt the instrumented
 binary. The repository default remains `COVERAGE_TEST_OPT_LEVEL=1`; use an
 explicit level-3 override only for comparison. `make coverage-clean` is now
