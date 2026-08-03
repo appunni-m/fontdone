@@ -54,37 +54,37 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-08-03",
-    "source_commit": "95f3a7d3521d021fd73c1c8ba9ab834367d0d632",
+    "source_commit": "f0ea3ae3765e08e18acab174d1a971e7b8b2aa56",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "e96ecf03-aca8-4ed9-88ef-328e9f3aa232",
-    "snapshot_id": "17fc995d-aefe-4a4c-a3be-08433ca4be26",
-    "duration_ms": 50369,
+    "run_id": "5a74c894-77a7-473a-88af-bf5707fd9a5c",
+    "snapshot_id": "5c20fc7d-81bc-4d1c-a84b-b89798b876ac",
+    "duration_ms": 51347,
     "exit_code": 0,
     "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with line-table debuginfo=1; single-worker parity; one instrumented test binary runs directly in three split backend processes; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; source-digest-bound expanded input cache reused across the three processes; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; clean binary preparation uses cargo llvm-cov --no-report -- --list; raw LLVM JSON is ingested directly, with segment normalization retained only as an opt-in compatibility rewrite; test-harness source excluded",
     "lines": {
-      "covered": 49502,
+      "covered": 49506,
       "total": 54175,
-      "percent": 91.37425011536686
+      "percent": 91.38163359483157
     },
     "branches": {
       "covered": 9731,
       "total": 12534,
-      "percent": 77.636827828307
+      "percent": 77.63682782830701
     },
     "functions": {
-      "covered": 3385,
+      "covered": 3387,
       "total": 3835,
-      "percent": 88.26597131681876
+      "percent": 88.31812255541069
     },
     "regions": {
-      "covered": 68133,
+      "covered": 68139,
       "total": 75345,
-      "percent": 90.42803105713718
+      "percent": 90.43599442564204
     },
     "runtime_parity": {
-      "runnable": 7508,
-      "passed": 7508,
+      "runnable": 7509,
+      "passed": 7509,
       "failed": 0,
       "pending": 3
     },

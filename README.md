@@ -141,16 +141,16 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage run was recorded on **2026-08-03** against
-committed source `95f3a7d3521d021fd73c1c8ba9ab834367d0d632`
-(Coverage MCP run `e96ecf03-aca8-4ed9-88ef-328e9f3aa232`, snapshot
-`17fc995d-aefe-4a4c-a3be-08433ca4be26`):
+committed source `f0ea3ae3765e08e18acab174d1a971e7b8b2aa56`
+(Coverage MCP run `5a74c894-77a7-473a-88af-bf5707fd9a5c`, snapshot
+`5c20fc7d-81bc-4d1c-a84b-b89798b876ac`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,502 / 54,175 | 91.37% |
+| Lines | 49,506 / 54,175 | 91.38% |
 | Branches | 9,731 / 12,534 | 77.64% |
-| Functions | 3,385 / 3,835 | 88.27% |
-| Regions | 68,133 / 75,345 | 90.43% |
+| Functions | 3,387 / 3,835 | 88.32% |
+| Regions | 68,139 / 75,345 | 90.44% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -179,9 +179,9 @@ but the default coverage target does not rerun it because `make test-fast`
 already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
-The current warm run passed 7,508 / 7,508 comparisons in each backend lane. Its
-instrumentation timers were 43.59 seconds Rust FFI, 32.91 seconds C ABI,
-32.70 seconds WASM, and about 13 ms comparison per lane. The three-surface
+The current warm run passed 7,509 / 7,509 comparisons in each backend lane. Its
+instrumentation timers were 44.42 seconds Rust FFI, 33.55 seconds C ABI,
+33.26 seconds WASM, and about 13 ms comparison per lane. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
 MCP without the compatibility-only segment rewrite. The default
 `COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
@@ -199,8 +199,8 @@ not rebuilt on every run; unchanged FreeType CMake configuration is reused as
 well. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The latest managed warm source-matched coverage run completed in 50.369 seconds;
-the preceding managed run completed in 50.861 seconds, while the first
+The latest managed warm source-matched coverage run completed in 51.347 seconds;
+the preceding managed run completed in 50.369 seconds, while the first
 source-bound run after the code change took 99.254 seconds because it rebuilt
 the instrumented binary. The prior execution-only warm measurement with the
 instrumented binary and expanded-input cache warm was 50.482 seconds, and the
