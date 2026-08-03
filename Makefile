@@ -10,8 +10,9 @@ BENCH_PROFILE ?= default
 COVERAGE_TOOLCHAIN ?= nightly
 CARGO_LLVM_COV_VERSION ?= 0.8.7
 COVERAGE_UNIFIED_WORKERS ?= 1
-# Opt-level 3 is the fastest measured warm all-lane coverage profile.
-COVERAGE_TEST_OPT_LEVEL ?= 3
+# Opt-level 1 is the fastest measured current-host all-lane coverage profile;
+# its coverage totals and parity results match the opt-level-3 comparison.
+COVERAGE_TEST_OPT_LEVEL ?= 1
 COVERAGE_TEST_DEBUG ?= 1
 COVERAGE_LLVM_COV_FLAGS ?= --no-clean
 COVERAGE_PREPARATION_JOBS ?= 2

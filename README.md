@@ -200,12 +200,13 @@ when contents are unchanged, so the C helper and FreeType validator overlay are
 not rebuilt on every run. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The optimized-profile validation run `5cbc8af7-0f66-4f4a-8918-a1315ab63f70`
-completed in 53.730 seconds with 7,479 / 7,479 comparisons passing in each
-lane; it ingested as snapshot `99f1efe5-55b7-4495-a49e-1ab979609cdb` without
-changing the measured coverage totals. The repository default now uses
-`COVERAGE_TEST_OPT_LEVEL=3`; use an explicit level-1 override only to reproduce
-the historical committed coverage snapshot above.
+The current-head opt-level-1 validation run `9453c549-d468-487b-a9e9-ea753043d2d6`
+completed in 54.563 seconds with 7,479 / 7,479 comparisons passing in each
+lane; it ingested as snapshot `961e667a-1e9e-44ee-9be7-18187380b225` without
+changing the measured coverage totals. The same current-head command at
+opt-level 3 took 65.332 seconds (`5ce27175-524b-4b9f-aae4-a0390b8e5968`), so
+the repository default is now `COVERAGE_TEST_OPT_LEVEL=1`; use an explicit
+level-3 override only for comparison.
 
 Coverage is a code-execution signal, not a compatibility score. These
 percentages apply only to the named source commit, suite, and toolchain. Run
