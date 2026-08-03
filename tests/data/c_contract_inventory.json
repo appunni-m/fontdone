@@ -73,7 +73,7 @@
       "id": "O12",
       "subject": "glyph bitmap conversion",
       "rule": "FT_Glyph_To_Bitmap preserves or destroys the source according to destroy and transfers the replacement glyph only after successful rendering.",
-      "routes": ["ftglyph.FT_Glyph_To_Bitmap.success_outline_to_bitmap_destroy_false", "ftglyph.FT_Glyph_To_Bitmap.success_outline_to_bitmap_destroy_true", "ftglyph.FT_Glyph_To_Bitmap.error_render_failure_preserves_original"]
+      "routes": ["ftglyph.FT_Glyph_To_Bitmap.success_outline_to_bitmap_destroy_false", "ftglyph.FT_Glyph_To_Bitmap.success_outline_to_bitmap_destroy_true", "ftglyph.FT_Glyph_To_Bitmap.error_invalid_outline_record_rejected", "ftglyph.FT_Glyph_To_Bitmap.error_render_failure_preserves_original"]
     },
     {
       "id": "O13",

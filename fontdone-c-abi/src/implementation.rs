@@ -7256,6 +7256,22 @@ pub fn abi_support_corrupt_outline_glyph_for_render_failure(glyph: FT_Glyph) -> 
 }
 
 #[cfg(feature = "abi-test-support")]
+pub fn abi_support_corrupt_outline_glyph_for_record_sync(glyph: FT_Glyph) -> bool {
+    let Some(owned) = owned_outline_glyph_from_root_mut(glyph) else {
+        return false;
+    };
+    if owned.core.outline.contours.is_empty() {
+        return false;
+    }
+    // Keep the public count non-zero while removing the required contour
+    // storage.  The pinned gray renderer explicitly rejects this record after
+    // the cbox stage, while the thin ABI must reject it during record sync.
+    owned.record.outline.n_contours = 1;
+    owned.record.outline.contours = ptr::null_mut();
+    true
+}
+
+#[cfg(feature = "abi-test-support")]
 pub fn abi_bitmap_glyph_snapshot(glyph: FT_Glyph) -> Option<AbiBitmapGlyphSnapshot> {
     let owned = owned_bitmap_glyph_from_root(glyph)?;
     Some(AbiBitmapGlyphSnapshot {

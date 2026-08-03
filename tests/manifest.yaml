@@ -6294,6 +6294,8 @@ subjects:
         description: Null the_glyph, null *the_glyph, null library, null clazz, or a class without glyph_prepare returns FT_Err_Invalid_Argument and preserves the caller handle according to C.
       - id: error_render_failure_preserves_original
         description: Renderer failures do not destroy the original glyph even when destroy is true, free the partial bitmap glyph, and leave the caller handle unchanged.
+      - id: error_invalid_outline_record_rejected
+        description: A nonzero public FT_Outline contour count with a null contours pointer is rejected with FT_Err_Invalid_Outline while preserving the caller handle, for both destroy values.
     # needs-input: operation=FT_Get_Glyph then FT_Glyph_To_Bitmap; fixture_asset=outline font with glyphs covering normal/mono/lcd render, bitmap glyph control, and malformed or unsupported glyph format facade; params={render_mode, origin vectors including null/negative/fractional 26.6, destroy true/false, null handle cases}; output shape={FT_Error, resulting glyph kind, handle replacement class, bitmap fields/bytes, left/top, advance, original-glyph mutation/free events}; comparison=exact C oracle error, bytes, placement, ownership, origin restoration, and output-handle preservation.
   - id: ftglyph.FT_Glyph_Transform
     kind: function

@@ -2301,6 +2301,23 @@ pub fn abi_support_corrupt_outline_glyph_for_render_failure(glyph_handle: usize)
 }
 
 #[cfg(feature = "abi-test-support")]
+pub fn abi_support_corrupt_outline_glyph_for_record_sync(glyph_handle: usize) -> bool {
+    let glyph = ptr::with_exposed_provenance_mut::<FontdoneWasmGlyph>(glyph_handle);
+    let Some(owned) = wasm_owned_outline_glyph_from_root_mut(glyph) else {
+        return false;
+    };
+    if owned.core.outline.contours.is_empty() {
+        return false;
+    }
+    // Keep the public count non-zero while removing the required contour
+    // storage.  The handle wrapper must reject this record before rendering
+    // or replacement, matching pinned FreeType's public-record validation.
+    owned.record.outline.n_contours = 1;
+    owned.record.outline.contours = ptr::null_mut();
+    true
+}
+
+#[cfg(feature = "abi-test-support")]
 pub fn abi_bitmap_glyph_snapshot(glyph_handle: usize) -> Option<AbiBitmapGlyphSnapshot> {
     let glyph = ptr::with_exposed_provenance::<FontdoneWasmGlyph>(glyph_handle);
     let owned = wasm_owned_bitmap_glyph_from_root(glyph)?;

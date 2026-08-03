@@ -8,6 +8,12 @@
   ],
   "cases": [
     {
+      "case_id": "ftglyph.FT_Glyph_To_Bitmap.error_invalid_outline_record_rejected",
+      "status": "routed",
+      "operation": "glyph_to_bitmap",
+      "required_route": "Load a real outline glyph, corrupt its public FT_Outline contours pointer while n_contours remains non-zero, and compare FT_Err_Invalid_Outline plus caller-handle preservation across pinned C, Rust FFI, C ABI, and WASM ABI."
+    },
+    {
       "case_id": "ftglyph.FT_Glyph_To_Bitmap.error_invalid_arguments_or_unrenderable_format",
       "status": "routed",
       "operation": "glyph_to_bitmap",

@@ -8382,6 +8382,59 @@ static void print_glyph_to_bitmap_render_failure_payload(FT_GlyphSlot slot,
     printf("]}}\n");
 }
 
+static void print_glyph_to_bitmap_invalid_outline_record_payload(
+    FT_GlyphSlot slot,
+    FT_Render_Mode render_mode
+) {
+    FT_Error first_error = FT_Err_Ok;
+    FT_Error errors[2] = {FT_Err_Ok, FT_Err_Ok};
+    int handle_unchanged[2] = {0, 0};
+
+    for (int destroy = 0; destroy < 2; destroy++) {
+        FT_Glyph glyph = NULL;
+        FT_Error err = FT_Get_Glyph(slot, &glyph);
+        FT_Glyph original = glyph;
+        FT_Short* original_contours = NULL;
+        if (!err && glyph && glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
+            FT_OutlineGlyph outline_glyph = (FT_OutlineGlyph)glyph;
+            if (outline_glyph->outline.n_contours == 0 ||
+                outline_glyph->outline.contours == NULL) {
+                err = FT_Err_Invalid_Outline;
+            } else {
+                original_contours = outline_glyph->outline.contours;
+                outline_glyph->outline.contours = NULL;
+                err = FT_Glyph_To_Bitmap(&glyph, render_mode, NULL, destroy);
+                handle_unchanged[destroy] = glyph == original;
+                if (glyph == original) {
+                    outline_glyph->outline.contours = original_contours;
+                }
+            }
+        } else if (!err) {
+            err = FT_Err_Invalid_Glyph_Format;
+        }
+        errors[destroy] = err;
+        if (!first_error && err) {
+            first_error = err;
+        }
+        if (glyph) {
+            FT_Done_Glyph(glyph);
+        }
+    }
+
+    print_status(first_error);
+    printf(",\"output\":{\"rows\":[");
+    for (int destroy = 0; destroy < 2; destroy++) {
+        if (destroy) {
+            printf(",");
+        }
+        printf("{\"destroy\":%s,\"error\":%d,\"caller_handle_class\":\"%s\"}",
+               destroy ? "true" : "false",
+               errors[destroy],
+               handle_unchanged[destroy] ? "original_unchanged" : "changed");
+    }
+    printf("]}}\n");
+}
+
 static void print_stroked_glyph_to_bitmap_payload(
     FT_Library library,
     FT_Face face,
@@ -32698,7 +32751,7 @@ static int emit_face_or_slot(int argc, char** argv) {
     } else if (streq(command, "--load-glyph-num-glyphs")) {
         glyph_index = (FT_UInt)face->num_glyphs;
         load_flags = (FT_Int32)strtol(argv[7], NULL, 10);
-    } else if (streq(command, "--load-glyph") || streq(command, "--load-svg-glyph") || streq(command, "--render-glyph-index") || streq(command, "--inspect-glyph-metrics") || streq(command, "--inspect-glyph-slot") || streq(command, "--load-glyph-outline") || streq(command, "--outline-get-bbox") || streq(command, "--outline-get-cbox") || streq(command, "--glyph-get-cbox") || streq(command, "--glyph-transform") || streq(command, "--svg-glyph-transform") || streq(command, "--glyph-to-bitmap") || streq(command, "--glyph-to-bitmap-origins") || streq(command, "--glyph-to-bitmap-render-failure") || streq(command, "--glyph-record") || streq(command, "--get-glyph-unsupported-format") || streq(command, "--done-glyph-outline") || streq(command, "--done-glyph-bitmap") || streq(command, "--get-glyph-advance-boundaries") || streq(command, "--sbit-cache-lookup") || streq(command, "--get-subglyph-info") || streq(command, "--get-subglyph-info-null-outputs")) {
+    } else if (streq(command, "--load-glyph") || streq(command, "--load-svg-glyph") || streq(command, "--render-glyph-index") || streq(command, "--inspect-glyph-metrics") || streq(command, "--inspect-glyph-slot") || streq(command, "--load-glyph-outline") || streq(command, "--outline-get-bbox") || streq(command, "--outline-get-cbox") || streq(command, "--glyph-get-cbox") || streq(command, "--glyph-transform") || streq(command, "--svg-glyph-transform") || streq(command, "--glyph-to-bitmap") || streq(command, "--glyph-to-bitmap-origins") || streq(command, "--glyph-to-bitmap-render-failure") || streq(command, "--glyph-to-bitmap-invalid-outline-record") || streq(command, "--glyph-record") || streq(command, "--get-glyph-unsupported-format") || streq(command, "--done-glyph-outline") || streq(command, "--done-glyph-bitmap") || streq(command, "--get-glyph-advance-boundaries") || streq(command, "--sbit-cache-lookup") || streq(command, "--get-subglyph-info") || streq(command, "--get-subglyph-info-null-outputs")) {
         glyph_index = (FT_UInt)strtoul(argv[7], NULL, 10);
         load_flags = (FT_Int32)strtol(argv[8], NULL, 10);
     } else {
@@ -32794,6 +32847,15 @@ static int emit_face_or_slot(int argc, char** argv) {
             face->glyph,
             FT_RENDER_MODE_NORMAL,
             origin);
+        FT_Done_Face(face);
+        FT_Done_FreeType(library);
+        free(data);
+        return 0;
+    }
+    if (!err && streq(command, "--glyph-to-bitmap-invalid-outline-record")) {
+        print_glyph_to_bitmap_invalid_outline_record_payload(
+            face->glyph,
+            FT_RENDER_MODE_NORMAL);
         FT_Done_Face(face);
         FT_Done_FreeType(library);
         free(data);
@@ -37895,6 +37957,9 @@ static int dispatch(int argc, char** argv) {
         return emit_face_or_slot(argc, argv);
     }
     if (argc == 11 && streq(argv[1], "--glyph-to-bitmap-render-failure")) {
+        return emit_face_or_slot(argc, argv);
+    }
+    if (argc == 9 && streq(argv[1], "--glyph-to-bitmap-invalid-outline-record")) {
         return emit_face_or_slot(argc, argv);
     }
     if (argc == 16 && streq(argv[1], "--stroked-glyph-to-bitmap")) {
