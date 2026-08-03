@@ -1922,6 +1922,106 @@
             ]
           },
           {
+            "id": "winfnt-short-header",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/short-header.fnt"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/short-header.fnt"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "winfnt:short-header"
+            ]
+          },
+          {
+            "id": "winfnt-short-v3-header",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/short-v3-header.fnt"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/short-v3-header.fnt"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "winfnt:short-v3-header"
+            ]
+          },
+          {
+            "id": "winfnt-declared-size-too-small",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/declared-size-too-small.fnt"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/declared-size-too-small.fnt"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "winfnt:declared-size-too-small"
+            ]
+          },
+          {
+            "id": "winfnt-declared-size-beyond-stream",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/declared-size-beyond-stream.fnt"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/winfnt/declared-size-beyond-stream.fnt"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "winfnt:declared-size-beyond-stream"
+            ]
+          },
+          {
             "id": "winfnt-invalid-version",
             "assets": {
               "font_bytes": {

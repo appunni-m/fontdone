@@ -110,6 +110,14 @@ def build_malformed_fnt(path: Path, mutation: Callable[[bytearray], None]) -> No
     path.write_bytes(buf)
 
 
+def build_short_fnt(path: Path, version: int, length: int) -> None:
+    buf = bytearray(length)
+    if length >= 2:
+        put_u16(buf, 0, version)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(buf)
+
+
 def build_v2_fnt(path: Path) -> None:
     build_fnt(path, 0, "PillowRsWinFNTV2", True)
     buf = bytearray(path.read_bytes())
@@ -200,6 +208,16 @@ def main() -> None:
     build_malformed_fnt(
         FONT_ROOT / "face-name-offset-out-of-range.fnt",
         lambda buf: put_u32(buf, 105, 0xFFFF_FFFF),
+    )
+    build_short_fnt(FONT_ROOT / "short-header.fnt", 0x0200, 2)
+    build_short_fnt(FONT_ROOT / "short-v3-header.fnt", 0x0300, 118)
+    build_malformed_fnt(
+        FONT_ROOT / "declared-size-too-small.fnt",
+        lambda buf: put_u32(buf, 2, 100),
+    )
+    build_malformed_fnt(
+        FONT_ROOT / "declared-size-beyond-stream.fnt",
+        lambda buf: put_u32(buf, 2, len(buf) + 1),
     )
     charset_root = FONT_ROOT / "charset"
     for name, value in sorted(CHARSETS.items()):

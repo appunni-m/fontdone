@@ -45,7 +45,7 @@ licenses are enforced by `make supply-chain`.
 | `build_type1_fixtures.py` | Synthetic | Project-authored Type 1 charstrings, dictionaries, AFM data, notices, and a naked CID-keyed Type 1 resource. |
 | `build_type42_fixtures.py` | Synthetic | Project-authored embedded TrueType tables, outlines, names, and Type 42 wrapper. |
 | `generate_malformed_bdf_fixtures.py` | Synthetic | Project-authored BDF text, including intentionally malformed variants. |
-| `generate_winfnt_fixtures.py` | Synthetic | Project-authored binary WinFNT records and bitmap data. |
+| `generate_winfnt_fixtures.py` | Synthetic | Project-authored binary WinFNT records and bitmap data, including short-header and declared-size validation controls. |
 | `build_cpal_palette_fixtures.py` | Derived | `tests/fixtures/input/fonts/DejaVuSans.ttf`; DejaVu/Bitstream terms remain applicable. |
 | `build_cmap_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; only cmap/table mutations. |
 | `build_gasp_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
