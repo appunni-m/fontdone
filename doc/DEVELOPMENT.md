@@ -144,9 +144,12 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `5f84841d-26e8-49c5-be83-1cee05420341`: all three processes
-passed 7,505 / 7,505 cases, and this managed run took 50.861 seconds. The
-prior execution-only warm unchanged-binary baseline remains 50.482 seconds.
+Coverage MCP run `7ba15050-e5d5-47ec-94ae-2f74d1ab4cd0`: all three processes
+passed 7,506 / 7,506 cases, and this warm managed run took 50.204 seconds. The
+preceding managed warm run took 50.861 seconds; the first source-bound run
+after the code change took 99.254 seconds because it rebuilt the instrumented
+binary. The prior execution-only warm unchanged-binary baseline remains 50.482
+seconds.
 A preceding clean-target run took 109.360 seconds because it rebuilt the
 instrumented binary; the build-only step now uses `--no-report -- --list` so
 profile merging cannot happen before the three lane processes execute.
@@ -252,9 +255,10 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`5f84841d-26e8-49c5-be83-1cee05420341`) measured 50.861 seconds
-end-to-end; the preceding managed run measured 89.882 seconds, and the prior
-execution-only warm measurement was 50.482 seconds with
+run (`7ba15050-e5d5-47ec-94ae-2f74d1ab4cd0`) measured 50.204 seconds
+end-to-end; the preceding managed warm run measured 50.861 seconds, the first
+source-bound rebuild measured 99.254 seconds, and the prior execution-only
+warm measurement was 50.482 seconds with
 warm input and oracle caches. Allow roughly 2 minutes for host variation and
 roughly 4–6 minutes after a cache reset.
 `COVERAGE_TEST_DEBUG=1` keeps line
@@ -268,22 +272,22 @@ avoids needless helper rebuilds and relinks, and reuses the FreeType CMake
 configuration when its inputs are unchanged, so repeated oracle builds do not
 recompile all C sources. It runs in requested thorough CI, not on every
 commit. The latest instrumentation
-timers were approximately 44.05 seconds Rust FFI, 33.02 seconds C ABI, 32.80
-seconds WASM, and 13–14 ms comparison per lane; those lanes run concurrently,
+timers were approximately 43.59 seconds Rust FFI, 32.91 seconds C ABI, 32.70
+seconds WASM, and 13 ms comparison per lane; those lanes run concurrently,
 so their sum is not wall time. The remaining wall-time tail is setup,
 process/report merging, and Coverage MCP ingestion rather than another parity
 route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,498 / 54,173 | 91.37% |
+| Lines | 49,500 / 54,175 | 91.37% |
 | Branches | 9,729 / 12,534 | 77.62% |
-| Functions | 3,384 / 3,834 | 88.26% |
+| Functions | 3,385 / 3,835 | 88.27% |
 | Regions | 68,131 / 75,345 | 90.43% |
 
-That current run passed all 7,505 runnable parity comparisons with 0 failures;
+That current run passed all 7,506 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`303a72ac-0257-467d-9f93-badf84ec59bb`. The three-surface instrumented
+`403688ee-af78-4314-b4e5-a56462974146`. The three-surface instrumented
 execution is therefore the dominant cost, not Coverage MCP ingestion. Current
 LLVM JSON is accepted directly by Coverage
 MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`
