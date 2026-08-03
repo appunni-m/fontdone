@@ -173,6 +173,14 @@ def main() -> None:
         zero_table_output.unlink()
     zero_table_output.write_bytes(zero_table_count)
 
+    # Keep only the TOC header so the pinned driver reaches its stream-size
+    # Invalid_File_Format guard before attempting the first directory entry.
+    truncated_directory = struct.pack("<II", PCF_FILE_VERSION, 1)
+    truncated_output = OUT_DIR / "truncated-directory.pcf"
+    if truncated_output.exists() or truncated_output.is_symlink():
+        truncated_output.unlink()
+    truncated_output.write_bytes(truncated_directory)
+
 
 if __name__ == "__main__":
     main()
