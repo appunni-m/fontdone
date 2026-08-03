@@ -55946,21 +55946,32 @@ fn c_manager_remove_face_id(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
     let face_index = face_index_param(&case.inputs.params)?;
     manager_remove_face_id_output(&case.inputs.params, || {
-        let (library_a, face_a) = c_new_face_from_bytes(bytes.as_ref(), face_index)?;
-        let (library_b, face_b) = c_new_face_from_bytes(bytes.as_ref(), face_index)?;
-        let scaler = manager_lifecycle_scaler();
-        let a_first = c_load_manager_lifecycle_glyph(face_a, scaler);
-        let b_first = c_load_manager_lifecycle_glyph(face_b, scaler);
-        c_done_face(face_a);
-        c_done_library(library_a);
-        let (library_a2, face_a2) = c_new_face_from_bytes(bytes.as_ref(), face_index)?;
-        let a_after_remove = c_load_manager_lifecycle_glyph(face_a2, scaler);
-        let b_after_remove = c_load_manager_lifecycle_glyph(face_b, scaler);
-        let a_after_unref = c_load_manager_lifecycle_glyph(face_a2, scaler);
-        c_done_face(face_a2);
-        c_done_library(library_a2);
-        c_done_face(face_b);
-        c_done_library(library_b);
+        // Exercise the exported FTC manager route itself.  The previous
+        // probe closed and reopened two independent faces, which produced the
+        // expected counts but never executed FTC_Manager_RemoveFaceID or its
+        // cache invalidation path.
+        let mut manager = c_abi::AbiSBitCacheHarness::new(bytes.as_ref(), face_index)
+            .map_err(|error| format!("C ABI manager setup returned {error}"))?;
+        let mut face_id_a_marker = 0_u8;
+        let mut face_id_b_marker = 0_u8;
+        let face_id_a = ptr::from_mut(&mut face_id_a_marker).cast();
+        let face_id_b = ptr::from_mut(&mut face_id_b_marker).cast();
+        let image_type = |face_id| c_abi::FTC_ImageTypeRec {
+            face_id,
+            width: 0,
+            height: 12,
+            flags: FT_LOAD_DEFAULT,
+        };
+        let a_first = manager.lookup(image_type(face_id_a), 36, true, true).error;
+        let b_first = manager.lookup(image_type(face_id_b), 36, true, true).error;
+        c_abi::FTC_Manager_RemoveFaceID(manager.manager_handle(), face_id_a);
+        let a_after_remove = manager.lookup(image_type(face_id_a), 36, true, true).error;
+        let b_after_remove = manager.lookup(image_type(face_id_b), 36, true, true).error;
+        let a_after_unref = manager.lookup(image_type(face_id_a), 36, true, true).error;
+        let mut unknown_face_id_marker = 0_u8;
+        let unknown_face_id = ptr::from_mut(&mut unknown_face_id_marker).cast();
+        c_abi::FTC_Manager_RemoveFaceID(manager.manager_handle(), unknown_face_id);
+        c_abi::FTC_Manager_RemoveFaceID(manager.manager_handle(), ptr::null_mut());
         Ok(ManagerRemoveFaceIdObserved {
             a_first,
             b_first,
