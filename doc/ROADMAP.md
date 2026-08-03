@@ -433,6 +433,15 @@ in each ABI surface. The committed source-digest attestation is
 660 / 660 strict error routes exact; the remaining contract debt is the
 Windows import-library item and four fresh target-lane bundles.
 
+The three pending cases are deliberately excluded from the pinned-C parity
+numerator and denominator because their inputs are undefined or
+memory-unsafe for FreeType 2.14.3:
+`freetype.FT_Done_FreeType.error_invalid_or_foreign_library_handle`,
+`freetype.FT_Face_Properties.error_null_face`, and
+`ftimage.FT_Outline.null_internal_pointer_safety_extension`. Fontdone still
+rejects each input without dereferencing it, and the safety behavior remains
+covered by the facade/package checks; none is a missing runtime route.
+
 The previous combined-lane warm all-lane baseline completed in 1 minute
 53.998 seconds. The split validation completed in 61.827 seconds, and the
 binary-reuse path completed in 54.054 seconds. The latest clean committed
