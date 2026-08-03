@@ -159,7 +159,10 @@ LLVM count cfg-dependent FFI source twice without adding a parity input. The
 default `COVERAGE_UNIFIED_LANE_SPLIT=1` path builds one instrumented binary,
 then runs that binary directly for the Rust FFI, C ABI, and host-WASM lanes in
 separate processes with separate raw profile files; the final `cargo llvm-cov
-report` merges them. Reusing the already-built binary avoids reacquiring
+report` merges them. Those raw profiles live under the nested
+`COVERAGE_ALL_TARGET_DIR/llvm-cov-target` directory scanned by
+`cargo llvm-cov report`; placing them beside that directory would make the
+report reuse stale profile data. Reusing the already-built binary avoids reacquiring
 Cargo's build lock and repeating the `cargo llvm-cov` test-profile setup three
 times. This avoids the LLVM counter contention measured when all three
 backends share one instrumented process without changing the parity inputs.

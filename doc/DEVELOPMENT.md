@@ -135,7 +135,10 @@ By default, `COVERAGE_UNIFIED_LANE_SPLIT=1` builds one instrumented
 FFI, C ABI, and host-WASM comparisons in three separate processes.
 `FONTDONE_UNIFIED_BACKEND` selects the single backend for each process, and
 each process writes a distinct `LLVM_PROFILE_FILE`; the final `cargo llvm-cov
-report` merges those raw profiles. Reusing the binary avoids reacquiring
+report` merges those raw profiles. The split lanes must write those files under
+`$(COVERAGE_ALL_TARGET_DIR)/llvm-cov-target`, the nested target directory that
+`cargo llvm-cov report` scans; placing them beside that directory makes the
+report reuse an older `fontdone.profdata`. Reusing the binary avoids reacquiring
 Cargo's build lock and repeating the `cargo llvm-cov` test-profile setup three
 times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
@@ -315,7 +318,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 599 tracked paths and no symlinks.
+The canonical input tree currently contains 600 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -483,7 +486,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,638 | executable parity tests and public contracts |
-| R04 | 599 | licensed canonical fixture inputs |
+| R04 | 600 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -491,7 +494,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,459** | **all retained paths** |
+| **Total** | **2,460** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
