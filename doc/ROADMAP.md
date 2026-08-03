@@ -414,23 +414,24 @@ per-batch coverage increase is claimed:
 | 44 | `6ec81f38c5faafcc7924674c21c294ee8c3a5af3` | Added malformed CFF1 Top DICT overflow/clamping fixtures and a one-operand `hvcurveto` fixture; corrected truncated positive/negative DICT-number error mapping to the pinned C error. Source-bound parity run `fabe97ff-bca0-4826-ba13-66b4e60f57ec` passed 7,489 / 7,489 runnable comparisons with 3 safety-extension cases pending. Clean committed coverage run `a24f431c-5a5b-4c73-8fa4-2738888d0db2`, snapshot `7724fcea-e4b9-408f-9f80-9447f00f3363`, measured 49,443 / 54,150 lines, 9,707 / 12,520 branches, 3,379 / 3,832 functions, and 68,059 / 75,313 regions. |
 | 45 | `e0ed6cb852510c31bdae872f669012acdbbade66` | Added project-authored CFF CID charset format 0 and format 1 fixtures plus malformed Top DICT charset, ROS, and negative-real overflow inputs. Source-bound parity run `742d6cf1-105d-4399-9da7-aa24a6335f6b` passed 7,494 / 7,494 runnable comparisons with 3 safety-extension cases pending. Clean committed coverage run `eeb78a28-19d8-4863-92cd-ed922a9b7761`, snapshot `1d5357f4-f9ea-42bc-bbd3-d5fb030a649d`, measured 49,454 / 54,150 lines, 9,709 / 12,520 branches, 3,380 / 3,832 functions, and 68,074 / 75,313 regions. |
 | 46 | `a4af5a01e62ae8050838c9c789fbc2032661bfdc` | Avoided repeated FreeType oracle CMake reconfiguration when the source, validator overlay, and build script inputs are unchanged. Warm `scripts/build_ft.sh` preparation fell from repeated full-source rebuild setup to about 0.10 seconds; the clean all-lane coverage result remained equivalent at 49,454 / 54,150 lines, 9,709 / 12,520 branches, 3,380 / 3,832 functions, and 68,074 / 75,313 regions. The end-to-end coverage wall time remains host-variable (52.144 seconds in the current clean run), so this is a deterministic setup improvement rather than a claimed full-run speedup. |
+| 47 | `8ccdf8a6d24f235c7893a1c00b149761d366209f` | Added public CFF1 Type 2 parity inputs for the true `hvcurveto`/`vhcurveto` last-delta branches and a malformed Top DICT real-number reserved nibble, while preserving existing CFF auto-hint controls. Focused parity passed 326 / 326; source-bound full parity run `44f0150f-de1d-49b7-998b-185ebff29294` passed 7,498 / 7,498 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `7ff4b786-0209-4887-9642-35025a970bac`, snapshot `f7762084-dc45-41b0-8050-22a69f03fefd`, measured 49,464 / 54,150 lines, 9,709 / 12,520 branches, 3,380 / 3,832 functions, and 68,085 / 75,313 regions in 51.991 seconds. |
 
 The latest source-bound parity verification is Coverage MCP parity run
-`ad952319-7b76-4e54-9175-14011a19cf6c` against committed source
-`ab0e5b64f00ceceec6dd7ed9455621ec8d983de5`: it
-passed 7,495 / 7,495 runnable comparisons, 0 failed, and 3 explicitly pending
+`44f0150f-de1d-49b7-998b-185ebff29294` against committed source
+`8ccdf8a6d24f235c7893a1c00b149761d366209f`: it
+passed 7,498 / 7,498 runnable comparisons, 0 failed, and 3 explicitly pending
 safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. The companion C-ABI scorecard reports
-**10 / 12 categories complete**, with 5,238 / 5,238 runtime contract rows and
-657 / 657 strict error routes exact; the remaining contract debt is the
+**10 / 12 categories complete**, with 5,241 / 5,241 runtime contract rows and
+659 / 659 strict error routes exact; the remaining contract debt is the
 Windows import-library item and four fresh target-lane bundles.
 
 The previous combined-lane warm all-lane baseline completed in 1 minute
 53.998 seconds. The split validation completed in 61.827 seconds, and the
 binary-reuse path completed in 54.054 seconds. The latest clean committed
-source-matched run completed in 52.521 seconds, with all three backend lanes
+source-matched run completed in 51.991 seconds, with all three backend lanes
 still passing the exact matrix. Its instrumentation timers were about 45.42
 seconds Rust FFI, 32.80 seconds C ABI, 32.56 seconds WASM, and 15–19 ms
 comparison per lane. `make
@@ -461,11 +462,11 @@ each lane. The prior current-head opt-level-1 speed validation run
 65.332 seconds for the opt-level-3 comparison, with identical coverage totals
 and parity results. Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
-repeated. The latest warm run measured 49,463 / 54,150 lines, 9,709 / 12,520
-branches, 3,380 / 3,832 functions, and 68,084 / 75,313 regions. It passed
-7,495 / 7,495 runnable parity comparisons with 0 failures. Its Coverage MCP
-run is `9a77d645-263d-4d3d-be49-a28c154d771f`, with snapshot
-`889c5a92-6da7-4baf-ad11-e3f6fab8c20d`. The lane-split validation run
+repeated. The latest warm run measured 49,464 / 54,150 lines, 9,709 / 12,520
+branches, 3,380 / 3,832 functions, and 68,085 / 75,313 regions. It passed
+7,498 / 7,498 runnable parity comparisons with 0 failures. Its Coverage MCP
+run is `7ff4b786-0209-4887-9642-35025a970bac`, with snapshot
+`f7762084-dc45-41b0-8050-22a69f03fefd`. The lane-split validation run
 `b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 in each backend
 process and completed in 61.827 seconds; the latest binary-reuse run completed
 in 57.821 seconds. Each measurement clears
@@ -473,8 +474,8 @@ stale `.profraw` files first; use `make coverage-clean` after changing the
 coverage toolchain or instrumentation configuration.
 
 The latest coverage-speed validation (Coverage MCP run
-`9a77d645-263d-4d3d-be49-a28c154d771f`, snapshot
-`889c5a92-6da7-4baf-ad11-e3f6fab8c20d`) measured 52.521 seconds on the clean
+`7ff4b786-0209-4887-9642-35025a970bac`, snapshot
+`f7762084-dc45-41b0-8050-22a69f03fefd`) measured 51.991 seconds on the clean
 committed source with warm input and oracle caches and unchanged exact parity.
 The retained lane timers identify the remaining floor as instrumented parity
 execution (about 45.42 seconds Rust FFI, 32.80 seconds C ABI, and 32.56 seconds
