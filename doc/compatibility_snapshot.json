@@ -54,12 +54,12 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-08-03",
-    "source_commit": "1dd600fc63463846957e03c5f51f61a631e0f141",
+    "source_commit": "e4637b4bea8a6b0ede612b241df3f8ac89d45aac",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "b5d5ff52-2a5b-466e-9105-d792a1f0c82a",
-    "snapshot_id": "d10817d2-cefe-4cf1-bd0a-8d73391eb933",
-    "duration_ms": 52387,
+    "run_id": "3fa7d660-61a0-4e9c-a665-80d1388edcfd",
+    "snapshot_id": "f123d96e-2619-4825-8721-f990a9e42456",
+    "duration_ms": 50635,
     "exit_code": 0,
     "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with line-table debuginfo=1; single-worker parity; one instrumented test binary runs directly in three split backend processes; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; source-digest-bound expanded input cache reused across the three processes; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; clean binary preparation uses cargo llvm-cov --no-report -- --list; raw LLVM JSON is ingested directly, with segment normalization retained only as an opt-in compatibility rewrite; test-harness source excluded",
     "lines": {
@@ -862,9 +862,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "f0dc0b0d2b86c55ed21f853a58adccf55684e9898ed08a4fb6288e1340f08102",
+    "sha256": "8dedd862e47fa8ef0dd5cd66d009f4088377eed55830378a20fefb5fd2f240a9",
     "parity_tree_sha256": "8ad40f71d6575439620f3e600896f60b08882f67f1c483ebc3efac6e37bee3da",
-    "log_sha256": "91d46ef54979095fddf26e8002f2f6c5f1cd250744f8a9d56654cfd6ed8f5ae3",
+    "log_sha256": "87ec1f8d847ab9a4a95b3a5f388112b71c81da78718c689f819ee2c847638360",
     "command": "make test-parity"
   }
 }

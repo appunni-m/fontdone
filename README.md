@@ -124,9 +124,9 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`aab42699-5520-4570-9bdc-25c07c97263d`, recorded by run
-`3c153475-f736-493d-8787-51545375205a` against source commit
-`1dd600fc63463846957e03c5f51f61a631e0f141`; its source-bound parity-tree
+`b4596d6b-c372-4714-9e24-08a1a3273df8`, recorded by run
+`d8b0a763-25d8-4830-bcaa-b6dec30bd229` against source commit
+`e4637b4bea8a6b0ede612b241df3f8ac89d45aac`; its source-bound parity-tree
 digest is retained in `doc/runtime_parity_evidence.json`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
@@ -140,9 +140,9 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage run was recorded on **2026-08-03** against
-source commit `1dd600fc63463846957e03c5f51f61a631e0f141`
-(Coverage MCP run `b5d5ff52-2a5b-466e-9105-d792a1f0c82a`, snapshot
-`d10817d2-cefe-4cf1-bd0a-8d73391eb933`):
+source commit `e4637b4bea8a6b0ede612b241df3f8ac89d45aac`
+(Coverage MCP run `3fa7d660-61a0-4e9c-a665-80d1388edcfd`, snapshot
+`f123d96e-2619-4825-8721-f990a9e42456`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -179,8 +179,8 @@ already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
 The current warm run passed 7,511 / 7,511 comparisons in each backend lane. Its
-instrumentation timers were 45.42 seconds Rust FFI, 34.15 seconds C ABI,
-33.94 seconds WASM, and about 14 ms comparison per lane. The three-surface
+instrumentation timers were 44.39 seconds Rust FFI, 33.48 seconds C ABI,
+33.22 seconds WASM, and about 15 ms comparison per lane. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
 MCP without the compatibility-only segment rewrite. The default
 `COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
@@ -198,8 +198,9 @@ not rebuilt on every run; unchanged FreeType CMake configuration is reused as
 well. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The latest managed source-bound coverage run completed in 52.387 seconds;
-the preceding managed warm source-matched coverage run completed in 51.362 seconds;
+The latest managed source-bound coverage run completed in 50.635 seconds;
+the preceding managed source-bound run completed in 52.387 seconds; the
+preceding managed warm source-matched coverage run completed in 51.362 seconds;
 the preceding managed run completed in 51.347 seconds, while the first
 source-bound run after the code change took 99.254 seconds because it rebuilt
 the instrumented binary. The prior execution-only warm measurement with the
@@ -238,7 +239,7 @@ routes remain even when every bare function name has some traced route. The self
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`f583b55c-6795-41e7-a35b-24237a4a6319`.
+`1f2ab790-e813-4f74-b9f6-4ad812e1f980`.
 
 ### 3.5 Performance baseline
 
