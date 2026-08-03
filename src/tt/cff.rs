@@ -11,6 +11,35 @@ use crate::tt::glyf::{GlyphOutline, OutlinePoint};
 const TYPE2_TAG_ON: u8 = 0x01;
 const TYPE2_TAG_CUBIC: u8 = 0x02;
 const CFF_MAX_OPERANDS: usize = 48;
+const CFF_FIXED_ONE: i32 = 1 << 16;
+
+#[derive(Clone, Copy)]
+struct DictNumber {
+    integer: i32,
+    fixed: i32,
+}
+
+impl DictNumber {
+    fn from_integer(integer: i32) -> Self {
+        // Match cff_parse_fixed for integer operands: CFF fixed fields use
+        // 16.16 values and clamp outside the signed 15-bit input range.
+        let fixed = if integer > 0x7FFF {
+            i32::MAX
+        } else if integer < -0x7FFF {
+            -i32::MAX
+        } else {
+            integer << 16
+        };
+        Self { integer, fixed }
+    }
+
+    fn from_fixed(fixed: i32) -> Self {
+        Self {
+            integer: fixed >> 16,
+            fixed,
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct CffTable {
@@ -279,7 +308,7 @@ impl TopDict {
 
 fn parse_top_dict(data: &[u8]) -> Result<TopDict, FontError> {
     let mut pos = 0usize;
-    let mut stack = Vec::new();
+    let mut stack: Vec<DictNumber> = Vec::new();
     let mut dict = TopDict::default();
     while pos < data.len() {
         let byte = data[pos];
@@ -298,12 +327,12 @@ fn parse_top_dict(data: &[u8]) -> Result<TopDict, FontError> {
                 u16::from(byte)
             };
             if op == 15 {
-                let offset = stack.last().copied().ok_or_else(|| {
+                let offset = stack.last().map(|number| number.integer).ok_or_else(|| {
                     FontError::InvalidArgument("CFF: charset operand missing".into())
                 })?;
                 dict.charset_offset = usize::try_from(offset).ok();
             } else if op == 17 {
-                let offset = stack.last().copied().ok_or_else(|| {
+                let offset = stack.last().map(|number| number.integer).ok_or_else(|| {
                     // CFF Top DICT operator 17 (`CharStrings`) consumes one
                     // operand.  Pinned `cffparse.c` reports the underflow as a
                     // public Invalid_Argument face-open failure.
@@ -320,12 +349,14 @@ fn parse_top_dict(data: &[u8]) -> Result<TopDict, FontError> {
                         "CFF: ROS operands missing".into(),
                     ));
                 }
-                dict.cid_registry_sid = u16::try_from(stack[0]).ok();
-                dict.cid_ordering_sid = u16::try_from(stack[1]).ok();
-                dict.cid_supplement = Some(stack[2]);
+                dict.cid_registry_sid = u16::try_from(stack[0].integer).ok();
+                dict.cid_ordering_sid = u16::try_from(stack[1].integer).ok();
+                dict.cid_supplement = Some(stack[2].integer);
                 dict.consumed_non_charstrings_operands = true;
             } else if matches!(op, 0..=4) {
-                let sid = stack.last().and_then(|value| u16::try_from(*value).ok());
+                let sid = stack
+                    .last()
+                    .and_then(|value| u16::try_from(value.integer).ok());
                 match op {
                     0 => dict.version_sid = sid,
                     1 => dict.notice_sid = sid,
@@ -335,23 +366,31 @@ fn parse_top_dict(data: &[u8]) -> Result<TopDict, FontError> {
                     _ => {}
                 }
                 dict.consumed_non_charstrings_operands = true;
-            } else if matches!(op, 0x0C02..=0x0C05) {
-                let value = stack.last().copied().unwrap_or(0);
+            } else if matches!(op, 0x0C01..=0x0C04) {
+                let value = stack
+                    .last()
+                    .copied()
+                    .unwrap_or_else(|| DictNumber::from_integer(0));
                 match op {
-                    0x0C02 => dict.italic_angle = value,
+                    0x0C01 => dict.is_fixed_pitch = value.integer != 0,
+                    // CFF_FIELD_FIXED invokes cff_parse_fixed, so an
+                    // integer operand is returned as 16.16, unlike the
+                    // integer-valued underline fields beside it.
+                    0x0C02 => dict.italic_angle = value.fixed,
                     0x0C03 => {
-                        dict.underline_position = i16::try_from(value).unwrap_or_else(|_| {
-                            if value.is_negative() {
-                                i16::MIN
-                            } else {
-                                i16::MAX
-                            }
-                        });
+                        dict.underline_position =
+                            i16::try_from(value.integer).unwrap_or_else(|_| {
+                                if value.integer.is_negative() {
+                                    i16::MIN
+                                } else {
+                                    i16::MAX
+                                }
+                            });
                     }
                     0x0C04 => {
-                        dict.underline_thickness = u16::try_from(value.max(0)).unwrap_or(u16::MAX);
+                        dict.underline_thickness =
+                            u16::try_from(value.integer.max(0)).unwrap_or(u16::MAX);
                     }
-                    0x0C05 => dict.is_fixed_pitch = value != 0,
                     _ => {}
                 }
                 dict.consumed_non_charstrings_operands = true;
@@ -596,7 +635,7 @@ fn read_cff2_index(data: &[u8], pos: usize) -> Result<(Vec<&[u8]>, usize), FontE
     Ok((objects, object_base + last))
 }
 
-fn read_dict_number(data: &[u8], pos: usize) -> Result<(i32, usize), FontError> {
+fn read_dict_number(data: &[u8], pos: usize) -> Result<(DictNumber, usize), FontError> {
     let byte = *data
         .get(pos)
         .ok_or_else(|| FontError::InvalidFont("CFF: dict number overflow".into()))?;
@@ -605,32 +644,54 @@ fn read_dict_number(data: &[u8], pos: usize) -> Result<(i32, usize), FontError> 
             let bytes = data
                 .get(pos + 1..pos + 3)
                 .ok_or_else(|| FontError::InvalidFont("CFF: shortint overflow".into()))?;
-            Ok((i32::from(i16::from_be_bytes([bytes[0], bytes[1]])), pos + 3))
+            Ok((
+                DictNumber::from_integer(i32::from(i16::from_be_bytes([bytes[0], bytes[1]]))),
+                pos + 3,
+            ))
         }
         29 => {
             let bytes = data
                 .get(pos + 1..pos + 5)
                 .ok_or_else(|| FontError::InvalidFont("CFF: longint overflow".into()))?;
             Ok((
-                i32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]),
+                DictNumber::from_integer(i32::from_be_bytes([
+                    bytes[0], bytes[1], bytes[2], bytes[3],
+                ])),
                 pos + 5,
             ))
         }
         30 => read_real_number(data, pos + 1),
-        32..=246 => Ok((i32::from(byte) - 139, pos + 1)),
+        32..=246 => Ok((DictNumber::from_integer(i32::from(byte) - 139), pos + 1)),
         247..=250 => {
             let next =
                 i32::from(*data.get(pos + 1).ok_or_else(|| {
                     FontError::InvalidFont("CFF: positive number overflow".into())
                 })?);
-            Ok((((i32::from(byte) - 247) * 256) + next + 108, pos + 2))
+            Ok((
+                DictNumber::from_integer(((i32::from(byte) - 247) * 256) + next + 108),
+                pos + 2,
+            ))
         }
         251..=254 => {
             let next =
                 i32::from(*data.get(pos + 1).ok_or_else(|| {
                     FontError::InvalidFont("CFF: negative number overflow".into())
                 })?);
-            Ok((-((i32::from(byte) - 251) * 256) - next - 108, pos + 2))
+            Ok((
+                DictNumber::from_integer(-((i32::from(byte) - 251) * 256) - next - 108),
+                pos + 2,
+            ))
+        }
+        255 => {
+            let bytes = data
+                .get(pos + 1..pos + 5)
+                .ok_or_else(|| FontError::InvalidFont("CFF: fixed number overflow".into()))?;
+            Ok((
+                DictNumber::from_fixed(i32::from_be_bytes([
+                    bytes[0], bytes[1], bytes[2], bytes[3],
+                ])),
+                pos + 5,
+            ))
         }
         _ => {
             // FreeType rejects bytes that are neither CFF DICT operators nor
@@ -641,7 +702,7 @@ fn read_dict_number(data: &[u8], pos: usize) -> Result<(i32, usize), FontError> 
     }
 }
 
-fn read_real_number(data: &[u8], mut pos: usize) -> Result<(i32, usize), FontError> {
+fn read_real_number(data: &[u8], mut pos: usize) -> Result<(DictNumber, usize), FontError> {
     let mut text = String::new();
     loop {
         let byte = *data
@@ -655,8 +716,16 @@ fn read_real_number(data: &[u8], mut pos: usize) -> Result<(i32, usize), FontErr
                 0xB | 0xC => text.push('E'),
                 0xE => text.push('-'),
                 0xF => {
-                    let rounded = text.parse::<f32>().unwrap_or(0.0).round();
-                    return Ok((rounded as i32, pos));
+                    let parsed = text.parse::<f64>().unwrap_or(0.0);
+                    let scaled = parsed * f64::from(CFF_FIXED_ONE);
+                    let fixed = if scaled >= f64::from(i32::MAX) {
+                        i32::MAX
+                    } else if scaled <= -f64::from(i32::MAX) {
+                        -i32::MAX
+                    } else {
+                        scaled.round() as i32
+                    };
+                    return Ok((DictNumber::from_fixed(fixed), pos));
                 }
                 _ => {}
             }

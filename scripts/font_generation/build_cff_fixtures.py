@@ -151,9 +151,19 @@ def build_cff(path: Path) -> None:
     builder.setupCFF(
         NAMES["psName"],
         {
+            # Keep the CFF FontInfo fixture populated across both string and
+            # scalar Top DICT fields.  The public PS_FontInfo route compares
+            # these values against the pinned C oracle, so this remains a
+            # parity input rather than coverage-only scaffolding.
+            "version": "Fontdone CFF Version",
+            "Notice": "Fontdone synthetic CFF notice",
             "FullName": NAMES["fullName"],
             "FamilyName": NAMES["familyName"],
             "Weight": NAMES["styleName"],
+            "isFixedPitch": 1,
+            "ItalicAngle": -12,
+            "UnderlinePosition": -200,
+            "UnderlineThickness": 80,
         },
         {".notdef": t2_charstring(), "A": t2_charstring(rectangle=True)},
         {},

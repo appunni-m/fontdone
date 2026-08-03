@@ -203,6 +203,14 @@ The malformed CFF1 derivatives are regenerated from the same synthetic base;
 they contain no third-party font material and need no third-party license
 notice.
 
+`tests/fixtures/input/fonts/cff/fontinfo-populated.otf` is a project-authored
+2-glyph face whose CFF Top DICT populates the public `PS_FontInfo` strings,
+`isFixedPitch`, `ItalicAngle`, `UnderlinePosition`, and `UnderlineThickness`
+fields. The reviewed output is 1,032 bytes with SHA-256
+`f025afe97f11f22a04cf000f067a829375fb3ef55e979c8846ebc2ce0866df3f`.
+The derived `hybrid-otto-face-info.otf` is 1,124 bytes with SHA-256
+`1f2d2392f2fc6948f37b1a8cb5980fa1a4aa850edd8d1d1cd2d35e1519a9f196`.
+
 ### 3.3. CFF2 fixture
 
 The CFF2 FontInfo control is regenerated through:
