@@ -205,7 +205,9 @@ they contain no third-party font material and need no third-party license
 notice. The Top DICT error matrix includes truncated positive and negative
 two-byte operands and signed integer-clamp operands before the required
 `CharStrings` field. CFF1 byte `255` remains reserved by the pinned parser and
-is intentionally not treated as a fixed Top DICT operand.
+is intentionally not treated as a fixed Top DICT operand; the CFF2 malformed
+matrix separately exercises its valid 16.16 fixed-number encoding before the
+required `CharStrings` field.
 
 `tests/fixtures/input/fonts/cff/fontinfo-populated.otf` is a project-authored
 2-glyph face whose CFF Top DICT populates the public `PS_FontInfo` strings,

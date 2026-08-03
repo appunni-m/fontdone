@@ -2029,6 +2029,15 @@
             "coverage": [ "tt/cff2:missing-charstrings-error" ]
           },
           {
+            "id": "cff2-top-dict-fixed-operand-missing-charstrings",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-top-dict-fixed-operand-missing-charstrings.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-top-dict-fixed-operand-missing-charstrings.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff2:top-dict-fixed-operand-missing-charstrings-error" ]
+          },
+          {
             "id": "cff2-global-index-count-truncated",
             "assets": {
               "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff2/malformed-global-index-count-truncated.otf" },

@@ -144,8 +144,8 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest clean committed validation is
-Coverage MCP run `4d548309-6e4a-441e-9b19-9e8e840587f3`: all three processes
-passed 7,494 / 7,494 cases, and the warm end-to-end run took 52.144 seconds.
+Coverage MCP run `d4cf0eae-7305-4629-9fe7-aa329cae2094`: all three processes
+passed 7,495 / 7,495 cases, and the warm end-to-end run took 49.644 seconds.
 A preceding clean-target run took 109.360 seconds because it rebuilt the
 instrumented binary; the build-only step now uses `--no-report -- --list` so
 profile merging cannot happen before the three lane processes execute.
@@ -251,7 +251,7 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`4d548309-6e4a-441e-9b19-9e8e840587f3`) measured 52.144 seconds
+run (`d4cf0eae-7305-4629-9fe7-aa329cae2094`) measured 49.644 seconds
 end-to-end with warm input and oracle caches; allow roughly 2 minutes for host
 variation and roughly 4–6 minutes after a cache reset.
 `COVERAGE_TEST_DEBUG=1` keeps line
@@ -273,14 +273,14 @@ route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,454 / 54,150 | 91.33% |
+| Lines | 49,463 / 54,150 | 91.34% |
 | Branches | 9,709 / 12,520 | 77.55% |
 | Functions | 3,380 / 3,832 | 88.20% |
-| Regions | 68,074 / 75,313 | 90.39% |
+| Regions | 68,084 / 75,313 | 90.40% |
 
-That current run passed all 7,494 runnable parity comparisons with 0 failures;
+That current run passed all 7,495 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`dec343b9-4788-4826-b42e-77c92e9cfc8c`. The three-surface instrumented
+`ade13146-3df4-496a-9fa8-be140526f3c2`. The three-surface instrumented
 execution is therefore the dominant cost, not Coverage MCP ingestion. Current
 LLVM JSON is accepted directly by Coverage
 MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`

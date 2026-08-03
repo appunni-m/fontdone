@@ -1117,6 +1117,13 @@ def malformed_cff2_payload(kind: str) -> bytes:
     if kind == "missing_charstrings":
         return b"\x02\x00\x05\x00\x00"
 
+    if kind == "top_dict_fixed_operand_missing_charstrings":
+        # CFF2 DICTs accept the 16.16 fixed-number encoding (byte 255).  Keep
+        # the Top DICT otherwise minimal so the face-open result remains the
+        # required-CharStrings failure after the fixed operand is parsed.
+        top_dict = b"\xff\x00\x00\x00\x00\x0c\x03"
+        return b"\x02\x00\x05\x00\x07" + top_dict + b"\x00\x00\x00\x00"
+
     # CFF DICT integer 9 followed by CharStrings (operator 17).  The
     # resulting top-dict end is byte 7, so the payload after it is the CFF2
     # Global Subr INDEX probe.  Each malformed tail stops at a distinct
@@ -1152,6 +1159,7 @@ def write_malformed_cff2_faces() -> None:
             "invalid_header_size",
             "top_dict_truncated",
             "missing_charstrings",
+            "top_dict_fixed_operand_missing_charstrings",
             "global_index_count_truncated",
             "global_index_invalid_offsize",
             "global_index_offset_truncated",

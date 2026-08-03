@@ -106,18 +106,18 @@ The last committed full parity snapshot was recorded on **2026-08-03**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,494 |
-| Passed cases | 7,494 |
+| Runnable exact-comparison cases | 7,495 |
+| Passed cases | 7,495 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
 | Covered manifest cases | 4,183 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,268 |
-| Concrete expanded cases | 7,497 |
+| Concrete expanded cases | 7,498 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,494 / 7,494` means every runnable case in that execution matched; the 3
+`7,495 / 7,495` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
@@ -141,16 +141,16 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage run was recorded on **2026-08-03** against
-committed source `316dee825953077ee37796d416fc4a61874f59be` (Coverage MCP run
-`4d548309-6e4a-441e-9b19-9e8e840587f3`, snapshot
-`dec343b9-4788-4826-b42e-77c92e9cfc8c`):
+committed source `9257b13a353f739f3b4e4bfb8b7ea8d8e7520498` (Coverage MCP run
+`d4cf0eae-7305-4629-9fe7-aa329cae2094`, snapshot
+`ade13146-3df4-496a-9fa8-be140526f3c2`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,454 / 54,150 | 91.33% |
+| Lines | 49,463 / 54,150 | 91.34% |
 | Branches | 9,709 / 12,520 | 77.55% |
 | Functions | 3,380 / 3,832 | 88.20% |
-| Regions | 68,074 / 75,313 | 90.39% |
+| Regions | 68,084 / 75,313 | 90.40% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -179,7 +179,7 @@ but the default coverage target does not rerun it because `make test-fast`
 already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
-The current run passed 7,494 / 7,494 comparisons in each backend lane. Its
+The current run passed 7,495 / 7,495 comparisons in each backend lane. Its
 instrumentation timers were about 45.42 seconds Rust FFI, 32.80 seconds C ABI,
 32.56 seconds WASM, and about 15–19 ms comparison per lane. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
@@ -199,7 +199,7 @@ not rebuilt on every run; unchanged FreeType CMake configuration is reused as
 well. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The latest clean committed source-matched run completed in 52.144 seconds; the preceding clean-target
+The latest clean committed source-matched run completed in 49.644 seconds; the preceding clean-target
 validation completed in 109.360 seconds because it rebuilt the instrumented
 binary. The repository default remains `COVERAGE_TEST_OPT_LEVEL=1`; use an
 explicit level-3 override only for comparison. `make coverage-clean` is now
@@ -217,11 +217,11 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,237 / 5,237 pinned-C runtime contract rows exact |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,238 / 5,238 pinned-C runtime contract rows exact |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 657 / 657 expected-error routes compare exact error and output results; 7,494 / 7,494 routes have no generic fallback evidence |
+| Errors | 657 / 657 expected-error routes compare exact error and output results; 7,495 / 7,495 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 
