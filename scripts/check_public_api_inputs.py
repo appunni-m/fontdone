@@ -1230,6 +1230,7 @@ def exact_error_public_route(operation: str, case_id: str, expect_error: bool) -
         "ftcid.FT_Get_CID_From_Glyph_Index.non_cid_or_null_face_errors_and_clears_output",
         "ftcid.FT_Get_CID_Is_Internally_CID_Keyed.non_cid_or_null_face_errors_and_clears_output",
         "ftcid.FT_Get_CID_Registry_Ordering_Supplement.error_non_cid_or_null_outputs",
+        "ftcid.FT_Get_CID_Registry_Ordering_Supplement.error_cff_absent_registry_sentinel",
         "ftcache.FTC_CMapCache_Lookup.error_null_cache_returns_zero",
         "ftcache.FTC_CMapCache_New.error_null_manager_or_output",
         "ftcache.FTC_ImageCache_Lookup.error_null_aglyph",
@@ -5984,6 +5985,7 @@ def future_batch_real_parity_reason(row: ConcreteInput) -> str | None:
         "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_standard_weight_ros_face": "CID registry/ordering/supplement output with standard CFF Black/Bold SIDs validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_single_glyph_face": "CID registry/ordering/supplement output for a single-.notdef CFF face validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_unresolved_ordering_face": "CID registry output and null unresolved ordering behavior validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
+        "ftcid.FT_Get_CID_Registry_Ordering_Supplement.error_cff_absent_registry_sentinel": "CID registry absent-CID sentinel error output validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "t1tables.FT_Get_PS_Font_Info.cff2_invalid_argument": "CFF2 FontInfo Invalid_Argument status and cleared output validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "t1tables.FT_Get_PS_Font_Info.cid_type1_success": "CID Type 1 FontInfo output validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "t1tables.FT_Get_PS_Font_Private.cid_type1_invalid_argument": "CID Type 1 unsupported private-dictionary status and cleared output validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
@@ -6845,9 +6847,12 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
     if (
         row.operation == "ftcid.get_cid_registry_ordering_supplement"
         and row.case_id
-        == "ftcid.FT_Get_CID_Registry_Ordering_Supplement.error_non_cid_or_null_outputs"
+        in {
+            "ftcid.FT_Get_CID_Registry_Ordering_Supplement.error_non_cid_or_null_outputs",
+            "ftcid.FT_Get_CID_Registry_Ordering_Supplement.error_cff_absent_registry_sentinel",
+        }
     ):
-        return "FT_Get_CID_Registry_Ordering_Supplement non-CID/null-output errors validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+        return "FT_Get_CID_Registry_Ordering_Supplement non-CID/absent-CID-sentinel errors validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
     if (
         row.operation == "ftcache.cmap_cache_lookup"
         and row.case_id == "ftcache.FTC_CMapCache_Lookup.error_null_cache_returns_zero"
