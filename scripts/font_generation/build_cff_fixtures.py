@@ -952,6 +952,129 @@ def write_cid_cff_single_glyph() -> None:
     font.save(out, reorderTables=True)
 
 
+def cff_index_ranges(data: bytes | bytearray, pos: int) -> tuple[list[tuple[int, int]], int]:
+    """Return object byte ranges and the byte after one CFF INDEX."""
+    count = int.from_bytes(data[pos : pos + 2], "big")
+    if count == 0:
+        return [], pos + 2
+    off_size = data[pos + 2]
+    if not 1 <= off_size <= 4:
+        raise ValueError("invalid CFF INDEX offSize")
+    offset_pos = pos + 3
+    offsets = [
+        int.from_bytes(data[offset_pos + index * off_size : offset_pos + (index + 1) * off_size], "big")
+        for index in range(count + 1)
+    ]
+    object_base = offset_pos + (count + 1) * off_size
+    ranges = [
+        (object_base + offsets[index] - 1, object_base + offsets[index + 1] - 1)
+        for index in range(count)
+    ]
+    return ranges, object_base + offsets[-1] - 1
+
+
+def cff_dict_number_length(data: bytes | bytearray, pos: int) -> int:
+    """Return the encoded length of one CFF DICT number."""
+    byte = data[pos]
+    if byte == 28:
+        return 3
+    if byte in {29, 255}:
+        return 5
+    if byte == 30:
+        cursor = pos + 1
+        while cursor < len(data):
+            packed = data[cursor]
+            cursor += 1
+            if packed & 0x0F == 0x0F or packed >> 4 == 0x0F:
+                return cursor - pos
+        raise ValueError("unterminated CFF real number")
+    if 32 <= byte <= 246:
+        return 1
+    if 247 <= byte <= 254:
+        return 2
+    raise ValueError(f"invalid CFF DICT number byte {byte}")
+
+
+def encode_cff_dict_integer(value: int) -> bytes:
+    """Encode an integer using the CFF DICT number representation."""
+    if -107 <= value <= 107:
+        return bytes([value + 139])
+    if 108 <= value <= 1131:
+        value -= 108
+        return bytes([(value // 256) + 247, value % 256])
+    if -1131 <= value <= -108:
+        value = -value - 108
+        return bytes([(value // 256) + 251, value % 256])
+    if -32768 <= value <= 32767:
+        return b"\x1c" + value.to_bytes(2, "big", signed=True)
+    return b"\x1d" + value.to_bytes(4, "big", signed=True)
+
+
+def patch_cff_ros_sids(
+    data: bytearray,
+    *,
+    registry_sid: int | None = None,
+    ordering_sid: int | None = None,
+) -> None:
+    """Patch ROS SID operands without changing the surrounding CFF layout."""
+    header_size = data[2]
+    _, cursor = cff_index_ranges(data, header_size)
+    top_dict_ranges, _ = cff_index_ranges(data, cursor)
+    if len(top_dict_ranges) != 1:
+        raise ValueError("expected one CFF Top DICT")
+    start, end = top_dict_ranges[0]
+    top_dict = bytearray(data[start:end])
+    operands: list[tuple[int, int]] = []
+    pos = 0
+    while pos < len(top_dict):
+        byte = top_dict[pos]
+        if byte <= 21:
+            if byte == 12:
+                operator = 0x0C00 | top_dict[pos + 1]
+                operator_length = 2
+            else:
+                operator = byte
+                operator_length = 1
+            if operator == 0x0C1E:
+                if len(operands) != 3:
+                    raise ValueError("CFF ROS does not have three operands")
+                replacements = (registry_sid, ordering_sid, None)
+                for (operand_start, operand_end), replacement in zip(operands, replacements):
+                    if replacement is None:
+                        continue
+                    encoded = encode_cff_dict_integer(replacement)
+                    if len(encoded) != operand_end - operand_start:
+                        raise ValueError("CFF ROS SID replacement changed operand width")
+                    top_dict[operand_start:operand_end] = encoded
+                data[start:end] = top_dict
+                return
+            operands.clear()
+            pos += operator_length
+            continue
+        length = cff_dict_number_length(top_dict, pos)
+        operands.append((pos, pos + length))
+        pos += length
+    raise ValueError("CFF Top DICT has no ROS operator")
+
+
+def write_cid_cff_unresolved_ordering() -> None:
+    """Derive a CID face whose ROS ordering SID is absent from String INDEX."""
+    out = CID_OUT_DIR / "ot-cff-cid-keyed-unresolved-ordering.otf"
+    with TemporaryDirectory() as tmp:
+        base = Path(tmp) / "base.otf"
+        font = TTFont(CID_SOURCE, recalcTimestamp=False)
+        font.recalcTimestamp = False
+        font.save(base, reorderTables=True)
+        serialized = TTFont(base, recalcTimestamp=False).getTableData("CFF ")
+        cff = bytearray(serialized)
+        # SID 800 is encoded in the same two bytes as the source's custom
+        # ordering SID but is beyond this face's String INDEX.  Pinned
+        # FreeType therefore returns a successful CID service result with a
+        # null ordering pointer rather than rejecting the face.
+        patch_cff_ros_sids(cff, ordering_sid=800)
+        replace_sfnt_table(base, out, b"CFF ", bytes(cff))
+
+
 def write_cid_cff_standard_ros() -> None:
     """Derive a CID face whose ROS uses standard CFF string SIDs 389/390."""
     out = CID_OUT_DIR / "ot-cff-cid-keyed-standard-ros.otf"
@@ -1288,6 +1411,7 @@ def main() -> None:
     write_cid_cff_format2()
     write_cid_cff_charset_variants()
     write_cid_cff_single_glyph()
+    write_cid_cff_unresolved_ordering()
     write_cid_cff_standard_ros()
     write_pure_cff_cubic_vmtx()
     write_pure_cff_empty_tt_programs()

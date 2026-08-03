@@ -55,8 +55,10 @@ pub struct Cff2Table {
 
 #[derive(Debug, Clone)]
 pub struct CffCidInfo {
-    registry: String,
-    ordering: String,
+    // FreeType keeps a CID face usable when a custom ROS SID is outside the
+    // String INDEX; the corresponding public string pointer is then null.
+    registry: Option<String>,
+    ordering: Option<String>,
     supplement: i32,
     glyph_cids: Vec<u16>,
 }
@@ -200,12 +202,12 @@ impl Cff2Table {
 }
 
 impl CffCidInfo {
-    pub(crate) fn registry(&self) -> &str {
-        &self.registry
+    pub(crate) fn registry(&self) -> Option<&str> {
+        self.registry.as_deref()
     }
 
-    pub(crate) fn ordering(&self) -> &str {
-        &self.ordering
+    pub(crate) fn ordering(&self) -> Option<&str> {
+        self.ordering.as_deref()
     }
 
     pub(crate) fn supplement(&self) -> i32 {
@@ -290,12 +292,15 @@ impl TopDict {
         let Some(ordering_sid) = self.cid_ordering_sid else {
             return Ok(None);
         };
-        let registry = sid_string(registry_sid, strings).ok_or_else(|| {
-            FontError::InvalidTable("CFF: CID registry SID is not resolvable".into())
-        })?;
-        let ordering = sid_string(ordering_sid, strings).ok_or_else(|| {
-            FontError::InvalidTable("CFF: CID ordering SID is not resolvable".into())
-        })?;
+        // CFF uses 0xFFFF as the absent CID registry sentinel.  Any other
+        // registry SID keeps the CID service active, even when its custom
+        // String INDEX entry cannot be resolved. `cff_get_ros` returns OK
+        // and exposes null for each unresolved string pointer.
+        if registry_sid == 0xFFFF {
+            return Ok(None);
+        }
+        let registry = sid_string(registry_sid, strings);
+        let ordering = sid_string(ordering_sid, strings);
         let glyph_cids = parse_cff_charset_cids(data, self.charset_offset, glyph_count)?;
         Ok(Some(CffCidInfo {
             registry,

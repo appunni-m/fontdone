@@ -249,6 +249,73 @@
       }
     },
     {
+      "case_id": "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_unresolved_ordering_face",
+      "subject": "ftcid.FT_Get_CID_Registry_Ordering_Supplement",
+      "case": "success_cid_keyed_face",
+      "covers_manifest_cases": [
+        "success_cid_keyed_face"
+      ],
+      "operation": "ftcid.get_cid_registry_ordering_supplement",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "cid_font": {
+            "kind": "file",
+            "path": "input/fonts/cid/ot-cff-cid-keyed-unresolved-ordering.otf",
+            "asset_kind": "font",
+            "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
+            "generator": "scripts/font_generation/build_cff_fixtures.py",
+            "sha256": "fff02e2df2a299fe5521fbbdcf44349e8d581949a9f98efb01c1b4094e1ec23d",
+            "license": "OFL-1.1"
+          }
+        },
+        "params": {
+          "face_index": 0,
+          "outputs_initialized_to_sentinels": true,
+          "call_variants": [
+            "all_outputs_non_null"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcid",
+        "area:cid",
+        "path:success",
+        "cff:unresolved-ordering-sid"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "registry": "nullable_c_string_face_owned",
+          "ordering": "nullable_c_string_face_owned",
+          "supplement": "FT_Int",
+          "write_bitmap": [
+            "registry",
+            "ordering",
+            "supplement"
+          ]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "error",
+            "registry.string",
+            "registry.identity_class",
+            "ordering.string",
+            "ordering.identity_class",
+            "supplement",
+            "output_write_bitmap"
+          ]
+        },
+        "fixture_requirements": [
+          "CID-keyed face whose ROS ordering SID is outside the CFF String INDEX and therefore yields a null ordering string"
+        ]
+      }
+    },
+    {
       "case_id": "ftcid.FT_Get_CID_Registry_Ordering_Supplement.error_non_cid_or_null_outputs",
       "subject": "ftcid.FT_Get_CID_Registry_Ordering_Supplement",
       "case": "error_non_cid_or_null_outputs",

@@ -13036,8 +13036,8 @@ fn face_to_ffi(
         .cid_registry_ordering_supplement()
         .map_or((None, None, 0), |(registry, ordering, supplement)| {
             (
-                CString::new(registry).ok(),
-                CString::new(ordering).ok(),
+                registry.and_then(|value| CString::new(value).ok()),
+                ordering.and_then(|value| CString::new(value).ok()),
                 supplement,
             )
         });

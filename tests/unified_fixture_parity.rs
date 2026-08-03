@@ -25605,6 +25605,7 @@ fn cid_ros_success_case_supported(case: &InputCase) -> bool {
         "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_face"
             | "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_standard_ros_face"
             | "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_single_glyph_face"
+            | "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_unresolved_ordering_face"
     )
 }
 

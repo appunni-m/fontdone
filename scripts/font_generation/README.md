@@ -221,6 +221,13 @@ used by the CID registry and ordering parity supplement to exercise the
 single-glyph CID charset boundary. The reviewed output is regenerated with
 `build_cff_fixtures.py` and its SHA-256 is recorded in the retention inventory.
 
+`tests/fixtures/input/fonts/cid/ot-cff-cid-keyed-unresolved-ordering.otf` is
+derived from the same maintained CID-keyed CFF source after replacing its ROS
+ordering SID with `800`, outside the face's String INDEX. Pinned FreeType keeps
+the CID service valid and returns a null ordering string for this input. The
+reviewed output is regenerated with `build_cff_fixtures.py` and its SHA-256 is
+recorded in the retention inventory.
+
 The malformed CFF1 derivatives are regenerated from the same synthetic base;
 they contain no third-party font material and need no third-party license
 notice. The Top DICT error matrix includes truncated positive and negative

@@ -4560,9 +4560,11 @@ impl Font {
             .and_then(|cid| cid.cid_for_glyph_index(glyph_index))
     }
 
-    pub(crate) fn cid_registry_ordering_supplement(&self) -> Option<(&str, &str, i32)> {
+    pub(crate) fn cid_registry_ordering_supplement(
+        &self,
+    ) -> Option<(Option<&str>, Option<&str>, i32)> {
         if let Some(cid) = self.cid_type1.as_ref() {
-            return Some((&cid.registry, &cid.ordering, cid.supplement));
+            return Some((Some(&cid.registry), Some(&cid.ordering), cid.supplement));
         }
         self.data
             .cff
