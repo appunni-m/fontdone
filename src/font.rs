@@ -5388,10 +5388,15 @@ impl Font {
                 12 + self.data.table_directory.records.len() * 16,
             ));
         }
-        let record =
-            self.data.table_directory.record(tag).ok_or_else(|| {
-                FontError::InvalidFont(format!("SFNT table 0x{tag:08X} not found"))
-            })?;
+        // FreeType's `tt_face_lookup_table` treats a directory entry with a
+        // zero length as missing for raw SFNT table loads
+        // (`freetype/src/sfnt/ttload.c:74-91`).
+        let record = self
+            .data
+            .table_directory
+            .record(tag)
+            .filter(|record| record.length != 0)
+            .ok_or_else(|| FontError::InvalidFont(format!("SFNT table 0x{tag:08X} not found")))?;
         Ok((i64::from(record.offset), record.length as usize))
     }
 

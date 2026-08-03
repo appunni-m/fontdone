@@ -20243,6 +20243,8 @@ subjects:
         description: Declaration is visible from freetype/tttables.h as FT_Error FT_Load_Sfnt_Table(FT_Face face, FT_ULong tag, FT_Long offset, FT_Byte* buffer, FT_ULong* length).
       - id: length_probe_success
         description: With length non-null and *length zero, C returns FT_Err_Ok and writes the full size for a present table, tag 0 whole font, or tag 1 table directory.
+      - id: zero_length_table_probe
+        description: A zero-length SFNT directory entry is treated as missing, returning FT_Err_Table_Missing without requiring a data buffer.
       - id: byte_load_success
         description: With a valid buffer and requested length, C copies exact raw bytes from the selected table or font slice and updates observable length state as C does.
       - id: missing_table_or_invalid_face_error
