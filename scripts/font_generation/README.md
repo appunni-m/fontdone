@@ -185,7 +185,25 @@ reviewed output is 900 bytes with SHA-256
 It contains no third-party font material and needs no third-party license
 notice.
 
-### 3.2. CFF2 fixture
+### 3.2. CFF1 Type2 coverage fixture
+
+The CFF1 Type2 coverage family is regenerated through:
+
+```bash
+make font-fixture-cff
+```
+
+`tests/fixtures/input/fonts/cff/pure-cff-cubic.otf` is a project-authored
+45-glyph OpenType/CFF1 face. Its append-only Type2 matrix includes successful
+escaped arithmetic and an unknown escaped operator so the public glyph-load
+parity suite exercises both the pinned Adobe success and error paths. The
+reviewed output is 2,616 bytes with SHA-256
+`9fa33a7d3e38f64b9d0edd3ff62448940bfc45e0b95b2aa21ee6f557d71660f5`.
+The malformed CFF1 derivatives are regenerated from the same synthetic base;
+they contain no third-party font material and need no third-party license
+notice.
+
+### 3.3. CFF2 fixture
 
 The CFF2 FontInfo control is regenerated through:
 

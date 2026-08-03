@@ -72,6 +72,8 @@ CUBIC_GLYPH_ORDER = [
     "cubic_close_to_start",
     "type2_stack_overflow",
     "type2_argument_underflow",
+    "type2_escaped_add_success",
+    "type2_escape_unknown",
 ]
 NAMES = {
     "familyName": "Hybrid OTTO Coverage",
@@ -252,6 +254,8 @@ def build_cubic_cff(path: Path, with_vertical_metrics: bool = False) -> None:
         "cubic_close_to_start": (620, 0),
         "type2_stack_overflow": (420, 0),
         "type2_argument_underflow": (420, 0),
+        "type2_escaped_add_success": (420, 0),
+        "type2_escape_unknown": (420, 0),
     }
     builder = FontBuilder(UNITS_PER_EM, isTTF=False)
     builder.setupGlyphOrder(CUBIC_GLYPH_ORDER)
@@ -299,6 +303,8 @@ def build_cubic_cff(path: Path, with_vertical_metrics: bool = False) -> None:
             0x68: "cubic_close_to_start",
             0x69: "type2_stack_overflow",
             0x6A: "type2_argument_underflow",
+            0x6B: "type2_escaped_add_success",
+            0x6C: "type2_escape_unknown",
         }
     )
     builder.setupHorizontalMetrics(metrics)
@@ -686,6 +692,23 @@ def build_cubic_cff(path: Path, with_vertical_metrics: bool = False) -> None:
             ),
             "type2_argument_underflow": T2CharString(
                 bytecode=bytes([12, 10, 14]),
+                program=None,
+                private=None,
+                globalSubrs=[],
+            ),
+            "type2_escaped_add_success": T2CharString(
+                # 0 + 1 leaves one width operand for endchar, matching the
+                # pinned Adobe interpreter's successful escaped arithmetic
+                # route.
+                bytecode=bytes([139, 140, 12, 10, 14]),
+                program=None,
+                private=None,
+                globalSubrs=[],
+            ),
+            "type2_escape_unknown": T2CharString(
+                # Escape 99 is outside the pinned Type 2 escaped-op set and
+                # must reach the public unsupported-operation error route.
+                bytecode=bytes([12, 99, 14]),
                 program=None,
                 private=None,
                 globalSubrs=[],
