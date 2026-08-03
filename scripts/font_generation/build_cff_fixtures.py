@@ -75,6 +75,8 @@ CUBIC_GLYPH_ORDER = [
     "type2_escaped_add_success",
     "type2_escape_unknown",
     "hvcurveto_single_operand",
+    "hvcurveto_last_delta",
+    "vhcurveto_last_delta",
 ]
 NAMES = {
     "familyName": "Hybrid OTTO Coverage",
@@ -213,7 +215,11 @@ def build_cff2(path: Path) -> None:
     builder.save(path)
 
 
-def build_cubic_cff(path: Path, with_vertical_metrics: bool = False) -> None:
+def build_cubic_cff(
+    path: Path,
+    with_vertical_metrics: bool = False,
+    include_append_only_glyphs: bool = True,
+) -> None:
     names = {
         "familyName": "Pure CFF Cubic Coverage",
         "styleName": "Regular",
@@ -268,11 +274,17 @@ def build_cubic_cff(path: Path, with_vertical_metrics: bool = False) -> None:
         "type2_escaped_add_success": (420, 0),
         "type2_escape_unknown": (420, 0),
         "hvcurveto_single_operand": (420, 0),
+        "hvcurveto_last_delta": (420, 0),
+        "vhcurveto_last_delta": (420, 0),
     }
+    glyph_order = (
+        CUBIC_GLYPH_ORDER
+        if include_append_only_glyphs
+        else CUBIC_GLYPH_ORDER[:-2]
+    )
     builder = FontBuilder(UNITS_PER_EM, isTTF=False)
-    builder.setupGlyphOrder(CUBIC_GLYPH_ORDER)
-    builder.setupCharacterMap(
-        {
+    builder.setupGlyphOrder(glyph_order)
+    character_map = {
             0x41: "A",
             0x42: "cubic_c2_x_flatness",
             0x43: "cubic_c2_y_flatness",
@@ -318,8 +330,14 @@ def build_cubic_cff(path: Path, with_vertical_metrics: bool = False) -> None:
             0x6B: "type2_escaped_add_success",
             0x6C: "type2_escape_unknown",
             0x6D: "hvcurveto_single_operand",
-        }
-    )
+            0x6E: "hvcurveto_last_delta",
+            0x6F: "vhcurveto_last_delta",
+    }
+    if not include_append_only_glyphs:
+        character_map.pop(0x6E)
+        character_map.pop(0x6F)
+    builder.setupCharacterMap(character_map)
+    metrics = {name: metrics[name] for name in glyph_order}
     builder.setupHorizontalMetrics(metrics)
     builder.setupHorizontalHeader(ascent=1200, descent=-200)
     builder.setupNameTable(names)
@@ -330,14 +348,7 @@ def build_cubic_cff(path: Path, with_vertical_metrics: bool = False) -> None:
         usWinDescent=200,
     )
     builder.setupPost()
-    builder.setupCFF(
-        names["psName"],
-        {
-            "FullName": names["fullName"],
-            "FamilyName": names["familyName"],
-            "Weight": names["styleName"],
-        },
-        {
+    charstrings = {
             ".notdef": t2_charstring(),
             "A": t2_charstring(cubic="arched"),
             "cubic_c2_x_flatness": t2_charstring(cubic="c2_x"),
@@ -734,7 +745,46 @@ def build_cubic_cff(path: Path, with_vertical_metrics: bool = False) -> None:
                 private=None,
                 globalSubrs=[],
             ),
+            "hvcurveto_last_delta": t2_program_charstring(
+                [
+                    600,
+                    100,
+                    "vmoveto",
+                    100,
+                    50,
+                    60,
+                    70,
+                    80,
+                    "hvcurveto",
+                    "endchar",
+                ]
+            ),
+            "vhcurveto_last_delta": t2_program_charstring(
+                [
+                    600,
+                    100,
+                    "vmoveto",
+                    100,
+                    50,
+                    60,
+                    70,
+                    80,
+                    "vhcurveto",
+                    "endchar",
+                ]
+            ),
+        }
+    if not include_append_only_glyphs:
+        charstrings.pop("hvcurveto_last_delta")
+        charstrings.pop("vhcurveto_last_delta")
+    builder.setupCFF(
+        names["psName"],
+        {
+            "FullName": names["fullName"],
+            "FamilyName": names["familyName"],
+            "Weight": names["styleName"],
         },
+        charstrings,
         {},
     )
     builder.setupMaxp()
@@ -805,6 +855,14 @@ def write_hybrid_otto_face_info() -> None:
 def write_pure_cff_cubic() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / "pure-cff-cubic.otf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    build_cubic_cff(out, include_append_only_glyphs=False)
+
+
+def write_pure_cff_cubic_last_delta() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / "pure-cff-cubic-last-delta.otf"
     if out.exists() or out.is_symlink():
         out.unlink()
     build_cubic_cff(out)
@@ -906,7 +964,11 @@ def write_pure_cff_cubic_vmtx() -> None:
     out = OUT_DIR / "pure-cff-cubic-vmtx.otf"
     if out.exists() or out.is_symlink():
         out.unlink()
-    build_cubic_cff(out, with_vertical_metrics=True)
+    build_cubic_cff(
+        out,
+        with_vertical_metrics=True,
+        include_append_only_glyphs=False,
+    )
 
 
 def empty_program_table(tag: str):
@@ -921,7 +983,7 @@ def write_pure_cff_empty_tt_programs() -> None:
     out = OUT_DIR / "pure-cff-empty-tt-programs.otf"
     with TemporaryDirectory() as tmp:
         cff_path = Path(tmp) / "pure-cff-cubic.otf"
-        build_cubic_cff(cff_path)
+        build_cubic_cff(cff_path, include_append_only_glyphs=False)
         font = TTFont(cff_path, recalcTimestamp=False)
         # This deliberately odd OTTO face keeps CFF outlines while carrying
         # empty TrueType program tables.  It exercises the scaler's public CFF
@@ -1039,6 +1101,11 @@ def malformed_cff_payload(kind: str) -> bytes:
         # Exercise the CFF real-number negative-sign nibble while preserving
         # the same missing-CharStrings face-open failure boundary.
         return minimal_payload(b"\x1E\xE1\x5F\x0C\x03")
+    if kind == "top_dict_real_reserved_nibble_missing_charstrings":
+        # The 0xD BCD nibble is reserved.  FreeType ignores it while parsing
+        # the legal real operand, then reaches the same missing-CharStrings
+        # face-open boundary.
+        return minimal_payload(b"\x1E\xD1\x5F\x0C\x03")
     if kind == "top_dict_real_negative_overflow_missing_charstrings":
         # The BCD payload spells -40000, driving cff_parse_fixed's negative
         # saturation path while preserving the missing-CharStrings boundary.
@@ -1074,7 +1141,10 @@ def write_malformed_cff_faces() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory() as tmp:
         base = Path(tmp) / "base.otf"
-        build_cubic_cff(base)
+        # Keep malformed face-open controls independent of the append-only
+        # glyph-load matrix so adding a glyph does not perturb unrelated
+        # SFNT metadata in every derived error fixture.
+        build_cubic_cff(base, include_append_only_glyphs=False)
         for kind in [
             "short_header",
             "invalid_name_index_offsize",
@@ -1089,6 +1159,7 @@ def write_malformed_cff_faces() -> None:
             "top_dict_real_operand_missing_charstrings",
             "top_dict_real_exponent_operand_missing_charstrings",
             "top_dict_real_negative_operand_missing_charstrings",
+            "top_dict_real_reserved_nibble_missing_charstrings",
             "top_dict_real_negative_overflow_missing_charstrings",
             "top_dict_positive_operand_missing_charstrings",
             "top_dict_negative_operand_missing_charstrings",
@@ -1181,6 +1252,7 @@ def main() -> None:
     build_cff(INPUT_OUT_DIR / "fontinfo-populated.otf")
     build_cff2(CFF2_OUT_DIR / "fontinfo-invalid-argument.otf")
     write_pure_cff_cubic()
+    write_pure_cff_cubic_last_delta()
     write_cid_cff_format2()
     write_cid_cff_charset_variants()
     write_pure_cff_cubic_vmtx()

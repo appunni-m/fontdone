@@ -196,18 +196,24 @@ make font-fixture-cff
 `tests/fixtures/input/fonts/cff/pure-cff-cubic.otf` is a project-authored
 46-glyph OpenType/CFF1 face. Its append-only Type2 matrix includes successful
 escaped arithmetic, an unknown escaped operator, and a one-operand
-`hvcurveto` boundary so the public glyph-load parity suite exercises both the
-pinned Adobe success and error paths. The reviewed output is 2,648 bytes with
-SHA-256
+`hvcurveto` boundary so the public glyph-load parity suite
+exercises both the pinned Adobe success and error paths. The reviewed output is
+2,648 bytes with SHA-256
 `08dfa08cd8d2d27ec2c4ff80bd521a2bb06ea6357e8f50b51bb9619451513063`.
+
+`tests/fixtures/input/fonts/cff/pure-cff-cubic-last-delta.otf` is a separate
+project-authored 48-glyph face. It appends five-operand `hvcurveto` and
+`vhcurveto` cases without changing the 46-glyph control face's SFNT-wide
+auto-hint metrics. The reviewed output is 2,720 bytes with SHA-256
+`ace3fc00642f8d4810810b6124cbe0dbfc44327a8788507d4529ff367f8ba006`.
 The malformed CFF1 derivatives are regenerated from the same synthetic base;
 they contain no third-party font material and need no third-party license
 notice. The Top DICT error matrix includes truncated positive and negative
 two-byte operands and signed integer-clamp operands before the required
-`CharStrings` field. CFF1 byte `255` remains reserved by the pinned parser and
-is intentionally not treated as a fixed Top DICT operand; the CFF2 malformed
-matrix separately exercises its valid 16.16 fixed-number encoding before the
-required `CharStrings` field.
+`CharStrings` field, including a reserved BCD real-number nibble. CFF1 byte
+`255` remains reserved by the pinned parser and is intentionally not treated as
+a fixed Top DICT operand; the CFF2 malformed matrix separately exercises its
+valid 16.16 fixed-number encoding before the required `CharStrings` field.
 
 `tests/fixtures/input/fonts/cff/fontinfo-populated.otf` is a project-authored
 2-glyph face whose CFF Top DICT populates the public `PS_FontInfo` strings,

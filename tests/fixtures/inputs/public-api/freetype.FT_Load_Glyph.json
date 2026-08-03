@@ -1130,6 +1130,58 @@
             ]
           },
           {
+            "id": "pure-cff-hvcurveto-last-delta-no-hinting",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/cff/pure-cff-cubic-last-delta.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 46,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "tt/cff:hvcurveto-last-delta"
+            ]
+          },
+          {
+            "id": "pure-cff-vhcurveto-last-delta-no-hinting",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/cff/pure-cff-cubic-last-delta.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 47,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "tt/cff:vhcurveto-last-delta"
+            ]
+          },
+          {
             "id": "pure-cff-type2-escape-unsupported-no-hinting",
             "assets": {
               "font": {
