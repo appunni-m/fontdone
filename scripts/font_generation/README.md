@@ -152,20 +152,23 @@ project-generated base with one project-authored 20 ppem EBLC/EBDT strike and
 no third-party font material. The reviewed output is 4,996 bytes with SHA-256
 `79d8dbe88acd78551717cc8b3b2b7ae22464ffaf3a5bf6971cc0411b1dd1a446`.
 
-The PCF property fixture is regenerated through:
+The PCF property fixtures are regenerated through:
 
 ```bash
 make font-fixture-pcf
 ```
 
-`tests/fixtures/input/fonts/pcf/properties-signed-only.pcf` is a
-project-authored 1-glyph PCF with 5 required PCF tables and 7 properties. It
-proves the PCF service rule that all numeric values—including
-`POINT_SIZE=-120`—are exposed as signed `BDF_PROPERTY_TYPE_INTEGER` values.
-The reviewed output is 400 bytes with SHA-256
-`4d840c337be40b056873b9cbe5a8ed5a23081d174761b04233bcac9cdd53cec7`.
-It contains no third-party font material and needs no third-party license
-notice.
+`tests/fixtures/input/fonts/pcf/properties-signed-only.pcf` and
+`tests/fixtures/input/fonts/pcf/properties-msb.pcf` are project-authored
+1-glyph PCFs with 5 required PCF tables and 7 properties. They prove the PCF
+service rule that all numeric values—including `POINT_SIZE=-120`—are exposed
+as signed `BDF_PROPERTY_TYPE_INTEGER` values, and cover both little-endian and
+big-endian property records and encoding-table decoding. The reviewed outputs
+are 400 bytes with SHA-256
+`4d840c337be40b056873b9cbe5a8ed5a23081d174761b04233bcac9cdd53cec7` and
+`c636e9b9bd46941afd35159b654cc214fbfa6358a488ce321aba40e8b2c762aa`,
+respectively. They contain no third-party font material and need no
+third-party license notice.
 
 ### 3.1. CID Type 1 fixture
 

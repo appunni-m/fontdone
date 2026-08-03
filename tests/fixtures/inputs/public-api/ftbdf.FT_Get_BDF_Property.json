@@ -73,20 +73,48 @@
       "schema": "api_result",
       "expect_error": false,
       "inputs": {
-        "assets": {
-          "pcf_font": {
-            "kind": "ref",
-            "id": "input/fonts/pcf/properties-signed-only.pcf",
-            "asset_kind": "font"
+        "variants": [
+          {
+            "id": "lsb_properties_signed_only",
+            "coverage": [
+              "pcf/properties:little-endian-property-records"
+            ],
+            "assets": {
+              "pcf_font": {
+                "kind": "ref",
+                "id": "input/fonts/pcf/properties-signed-only.pcf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "properties": [
+                "FAMILY_NAME",
+                "POINT_SIZE"
+              ],
+              "face_index": 0
+            }
+          },
+          {
+            "id": "msb_properties_signed_only",
+            "coverage": [
+              "pcf/properties:big-endian-property-records"
+            ],
+            "assets": {
+              "pcf_font": {
+                "kind": "ref",
+                "id": "input/fonts/pcf/properties-msb.pcf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "properties": [
+                "FAMILY_NAME",
+                "POINT_SIZE"
+              ],
+              "face_index": 0
+            }
           }
-        },
-        "params": {
-          "properties": [
-            "FAMILY_NAME",
-            "POINT_SIZE"
-          ],
-          "face_index": 0
-        }
+        ]
       },
       "classifiers": [
         "kind:function",

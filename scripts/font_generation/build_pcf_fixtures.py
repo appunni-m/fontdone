@@ -18,13 +18,14 @@ PCF_BITMAPS = 1 << 3
 PCF_BDF_ENCODINGS = 1 << 5
 PCF_SWIDTHS = 1 << 6
 PCF_COMPRESSED_METRICS = 0x00000100
+PCF_BYTE_MASK = 1 << 2
 
 
 def align4(data: bytes) -> bytes:
     return data + bytes((-len(data)) % 4)
 
 
-def properties_table() -> bytes:
+def properties_table(*, msb: bool = False) -> bytes:
     strings = bytearray()
     offsets: dict[str, int] = {}
 
@@ -46,18 +47,23 @@ def properties_table() -> bytes:
         ("CHARSET_REGISTRY", "ISO10646"),
         ("CHARSET_ENCODING", "1"),
     ]
+    endian = ">" if msb else "<"
     records = bytearray()
     for name, value in properties:
         name_offset = string_offset(name)
         is_string = isinstance(value, str)
         raw_value = string_offset(value) if is_string else value
-        records.extend(struct.pack("<iBi", name_offset, is_string, raw_value))
+        records.extend(struct.pack(f"{endian}iBi", name_offset, is_string, raw_value))
 
     records.extend(bytes((-len(properties)) % 4))
+    # FreeType always reads the format word as little-endian, then uses its
+    # byte-order bit for the property count, records, and string size.
+    format_word = struct.pack("<I", PCF_BYTE_MASK if msb else 0)
     return align4(
-        struct.pack("<II", 0, len(properties))
+        format_word
+        + struct.pack(f"{endian}I", len(properties))
         + records
-        + struct.pack("<I", len(strings))
+        + struct.pack(f"{endian}I", len(strings))
         + strings
     )
 
@@ -114,11 +120,13 @@ def bitmaps_table() -> bytes:
     )
 
 
-def encodings_table() -> bytes:
+def encodings_table(*, msb: bool = False) -> bytes:
+    endian = ">" if msb else "<"
+    format_word = struct.pack("<I", PCF_BYTE_MASK if msb else 0)
     return align4(
-        struct.pack(
-            "<IHHHHHH",
-            0,
+        format_word
+        + struct.pack(
+            f"{endian}HHHHHH",
             65,  # firstCol
             65,  # lastCol
             0,  # firstRow
@@ -150,20 +158,31 @@ def build_pcf(tables: list[tuple[int, int, bytes]]) -> bytes:
 
 
 def main() -> None:
-    data = build_pcf(
-        [
-            (PCF_PROPERTIES, 0, properties_table()),
-            (PCF_ACCELERATORS, 0, accelerators_table()),
-            (PCF_METRICS, PCF_COMPRESSED_METRICS, metrics_table()),
-            (PCF_BITMAPS, 0, bitmaps_table()),
-            (PCF_BDF_ENCODINGS, 0, encodings_table()),
-        ]
-    )
+    tables = [
+        (PCF_PROPERTIES, 0, properties_table()),
+        (PCF_ACCELERATORS, 0, accelerators_table()),
+        (PCF_METRICS, PCF_COMPRESSED_METRICS, metrics_table()),
+        (PCF_BITMAPS, 0, bitmaps_table()),
+        (PCF_BDF_ENCODINGS, 0, encodings_table()),
+    ]
+    data = build_pcf(tables)
+    msb_tables = [
+        (PCF_PROPERTIES, PCF_BYTE_MASK, properties_table(msb=True)),
+        *tables[1:4],
+        (PCF_BDF_ENCODINGS, PCF_BYTE_MASK, encodings_table(msb=True)),
+    ]
+    msb_data = build_pcf(msb_tables)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
+
     output = OUT_DIR / "properties-signed-only.pcf"
     if output.exists() or output.is_symlink():
         output.unlink()
     output.write_bytes(data)
+
+    msb_output = OUT_DIR / "properties-msb.pcf"
+    if msb_output.exists() or msb_output.is_symlink():
+        msb_output.unlink()
+    msb_output.write_bytes(msb_data)
 
     # Keep four bytes after the zero table count so this reaches the PCF
     # driver's Invalid_File_Format table-count check rather than the separate

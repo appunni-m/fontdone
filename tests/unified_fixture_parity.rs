@@ -25237,7 +25237,7 @@ fn property_get_case_output(
 
 fn bdf_property_error_case_supported(case: &InputCase) -> bool {
     matches!(
-        case.case_id.as_str(),
+        case_id_base(&case.case_id),
         "ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties"
             | "ftbdf.FT_Get_BDF_Property.success_pcf_properties_signed_only"
             | "ftbdf.FT_Get_BDF_Property.success_sfnt_bdf_table_selected_strike"
@@ -25249,7 +25249,7 @@ fn bdf_property_error_case_supported(case: &InputCase) -> bool {
 
 fn bdf_property_success_row_case(case: &InputCase) -> bool {
     matches!(
-        case.case_id.as_str(),
+        case_id_base(&case.case_id),
         "ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties"
             | "ftbdf.FT_Get_BDF_Property.success_pcf_properties_signed_only"
             | "ftbdf.FT_Get_BDF_Property.success_sfnt_bdf_table_selected_strike"
@@ -25258,7 +25258,7 @@ fn bdf_property_success_row_case(case: &InputCase) -> bool {
 
 fn sfnt_bdf_selected_strike_case(case: &InputCase) -> bool {
     matches!(
-        case.case_id.as_str(),
+        case_id_base(&case.case_id),
         "ftbdf.FT_Get_BDF_Property.success_sfnt_bdf_table_selected_strike"
             | "ftbdf.FT_Get_BDF_Charset_ID.success_sfnt_bdf_table_selected_strike"
     )
@@ -25908,7 +25908,7 @@ fn bdf_property_run_output(error_code: FT_Error, output: Value) -> RunOutput {
 }
 
 fn bdf_property_name_for_case(case: &InputCase) -> Result<&str, String> {
-    match case.case_id.as_str() {
+    match case_id_base(&case.case_id) {
         "ftbdf.FT_Get_BDF_Property.error_missing_property_sets_none" => Ok("NO_SUCH_PROPERTY"),
         "ftbdf.FT_Get_BDF_Property.error_unsupported_face_or_unselected_strike" => {
             Ok("FAMILY_NAME")
@@ -25918,7 +25918,7 @@ fn bdf_property_name_for_case(case: &InputCase) -> Result<&str, String> {
 }
 
 fn rust_bdf_property_output(case: &InputCase) -> Result<RunOutput, String> {
-    if case.case_id == "ftbdf.FT_Get_BDF_Property.error_null_face_or_output" {
+    if case_id_base(&case.case_id) == "ftbdf.FT_Get_BDF_Property.error_null_face_or_output" {
         let mut null_face_property = bdf_property_sentinel();
         let null_face_error =
             FT_Get_BDF_Property(None, Some("FAMILY_NAME"), Some(&mut null_face_property));
@@ -25991,7 +25991,7 @@ fn rust_bdf_property_output(case: &InputCase) -> Result<RunOutput, String> {
 }
 
 fn c_bdf_property_output(case: &InputCase) -> Result<RunOutput, String> {
-    if case.case_id == "ftbdf.FT_Get_BDF_Property.error_null_face_or_output" {
+    if case_id_base(&case.case_id) == "ftbdf.FT_Get_BDF_Property.error_null_face_or_output" {
         let mut null_face_property = bdf_property_sentinel();
         let prop_name = CString::new("FAMILY_NAME").map_err(|err| err.to_string())?;
         let null_face_error = c_abi::FT_Get_BDF_Property(
@@ -26114,7 +26114,7 @@ fn wasm_raw_string_json(ptr: *const FT_Byte, len: FT_UInt) -> Value {
 }
 
 fn wasm_bdf_property_output(case: &InputCase) -> Result<RunOutput, String> {
-    if case.case_id == "ftbdf.FT_Get_BDF_Property.error_null_face_or_output" {
+    if case_id_base(&case.case_id) == "ftbdf.FT_Get_BDF_Property.error_null_face_or_output" {
         let mut null_face_property = wasm_bdf_property_sentinel();
         let prop_name = b"FAMILY_NAME";
         let null_face_error = wasm_abi::fontdone_wasm_get_bdf_property(
@@ -41089,7 +41089,10 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         | "FT_Property_Set_or_Get"
         | "FT_Property_Get" => Ok(vec!["--property-case".to_string(), case.case_id.clone()]),
         "ftbdf.get_bdf_property" if bdf_property_error_case_supported(case) => {
-            let mut args = vec!["--bdf-property-case".to_string(), case.case_id.clone()];
+            let mut args = vec![
+                "--bdf-property-case".to_string(),
+                case_id_base(&case.case_id).to_string(),
+            ];
             push_font_source(case, &mut args)?;
             args.push(face_index_param(params)?.to_string());
             Ok(args)
