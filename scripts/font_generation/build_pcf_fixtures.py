@@ -96,6 +96,13 @@ def metrics_table() -> bytes:
     return align4(struct.pack("<IH", PCF_COMPRESSED_METRICS, 1) + metric)
 
 
+def uncompressed_metrics_table() -> bytes:
+    # Uncompressed metrics use a 32-bit glyph count followed by six signed
+    # 16-bit fields.  Keep this alongside the compressed control so the
+    # public PCF property route exercises both metric decoders.
+    return align4(struct.pack("<II", 0, 1) + metric_record())
+
+
 def bitmaps_table() -> bytes:
     bitmap = bytes(
         [
@@ -166,6 +173,26 @@ def main() -> None:
         (PCF_BDF_ENCODINGS, 0, encodings_table()),
     ]
     data = build_pcf(tables)
+    uncompressed_tables = [
+        (PCF_PROPERTIES, 0, properties_table()),
+        (PCF_ACCELERATORS, 0, accelerators_table()),
+        (PCF_METRICS, 0, uncompressed_metrics_table()),
+        (PCF_BITMAPS, 0, bitmaps_table()),
+        (PCF_BDF_ENCODINGS, 0, encodings_table()),
+    ]
+    uncompressed_data = build_pcf(uncompressed_tables)
+    invalid_version = struct.pack("<II", 0x12345678, 0)
+    overlapping_tables = (
+        struct.pack("<II", PCF_FILE_VERSION, 2)
+        + struct.pack("<IIII", PCF_SWIDTHS, 0, 8, 40)
+        + struct.pack("<IIII", PCF_PROPERTIES, 0, 8, 44)
+        + bytes(12)
+    )
+    invalid_properties_tables = [
+        (PCF_PROPERTIES, 0, properties_table(msb=True)),
+        *tables[1:],
+    ]
+    invalid_properties_data = build_pcf(invalid_properties_tables)
     msb_tables = [
         (PCF_PROPERTIES, PCF_BYTE_MASK, properties_table(msb=True)),
         *tables[1:4],
@@ -178,6 +205,26 @@ def main() -> None:
     if output.exists() or output.is_symlink():
         output.unlink()
     output.write_bytes(data)
+
+    uncompressed_output = OUT_DIR / "properties-uncompressed-metrics.pcf"
+    if uncompressed_output.exists() or uncompressed_output.is_symlink():
+        uncompressed_output.unlink()
+    uncompressed_output.write_bytes(uncompressed_data)
+
+    invalid_version_output = OUT_DIR / "invalid-version.pcf"
+    if invalid_version_output.exists() or invalid_version_output.is_symlink():
+        invalid_version_output.unlink()
+    invalid_version_output.write_bytes(invalid_version)
+
+    overlapping_output = OUT_DIR / "overlapping-tables.pcf"
+    if overlapping_output.exists() or overlapping_output.is_symlink():
+        overlapping_output.unlink()
+    overlapping_output.write_bytes(overlapping_tables)
+
+    invalid_properties_output = OUT_DIR / "invalid-properties-format.pcf"
+    if invalid_properties_output.exists() or invalid_properties_output.is_symlink():
+        invalid_properties_output.unlink()
+    invalid_properties_output.write_bytes(invalid_properties_data)
 
     msb_output = OUT_DIR / "properties-msb.pcf"
     if msb_output.exists() or msb_output.is_symlink():

@@ -144,15 +144,14 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `9c9b7ebb-9aff-4982-8573-bfc4671ee529`: all three processes
-passed 7,519 / 7,519 cases. This source-bound managed run took 100.333 seconds,
-including a 48.78-second instrumented rebuild; the longest backend execution
-was 48.24 seconds. The preceding managed warm run took 51.653 seconds; the
-preceding managed source-bound run took 98.336 seconds; the prior managed warm
-run took 50.861 seconds; the first source-bound run
-after the code change took 99.254 seconds because it rebuilt the instrumented
-binary. The prior execution-only warm unchanged-binary baseline remains 50.482
-seconds.
+Coverage MCP run `fb9ed28c-46d3-4a3d-beb9-1d576ba385cc`: all three processes
+passed 7,523 / 7,523 cases. This warm managed run took 50.842 seconds. The
+preceding source-bound run took 100.333 seconds, including a 48.78-second
+instrumented rebuild; the longest backend execution was 48.24 seconds. The
+preceding managed warm run took 51.653 seconds; the prior managed warm run took
+50.861 seconds; the first source-bound run after the code change took 99.254
+seconds because it rebuilt the instrumented binary. The prior execution-only
+warm unchanged-binary baseline remains 50.482 seconds.
 A preceding clean-target run took 109.360 seconds because it rebuilt the
 instrumented binary; the build-only step now uses `--no-report -- --list` so
 profile merging cannot happen before the three lane processes execute.
@@ -258,12 +257,12 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`9c9b7ebb-9aff-4982-8573-bfc4671ee529`) measured 100.333 seconds
-end-to-end, including a 48.78-second instrumented rebuild; the longest backend
-execution was 48.24 seconds. The preceding managed warm run measured 51.653
-seconds; the preceding managed source-bound run measured 98.336 seconds,
-the prior managed warm run measured 50.861 seconds, the first source-bound
-rebuild measured 99.254 seconds, and the prior execution-only
+run (`fb9ed28c-46d3-4a3d-beb9-1d576ba385cc`) measured 50.842 seconds
+end-to-end with the warm instrumented binary. The preceding source-bound run
+measured 100.333 seconds including a 48.78-second instrumented rebuild; the
+longest backend execution was 48.24 seconds. The preceding managed warm run
+measured 51.653 seconds; the prior managed warm run measured 50.861 seconds,
+the first source-bound rebuild measured 99.254 seconds, and the prior execution-only
 warm measurement was 50.482 seconds with
 warm input and oracle caches. Allow roughly 2 minutes for host variation and
 roughly 4–6 minutes after a cache reset.
@@ -286,14 +285,14 @@ route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,523 / 54,173 | 91.42% |
-| Branches | 9,747 / 12,532 | 77.78% |
-| Functions | 3,388 / 3,835 | 88.34% |
-| Regions | 68,157 / 75,343 | 90.46% |
+| Lines | 49,543 / 54,173 | 91.45% |
+| Branches | 9,752 / 12,532 | 77.82% |
+| Functions | 3,391 / 3,835 | 88.42% |
+| Regions | 68,204 / 75,343 | 90.52% |
 
-That current run passed all 7,519 runnable parity comparisons with 0 failures;
+That current run passed all 7,523 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`bf8b7b67-3658-459e-b918-4587fecdb455`. The current retained run includes a
+`1d2bd6e8-2948-43f9-96f4-e4394b139214`. The preceding retained run includes a
 source-bound instrumented rebuild; its log reports 48.78 seconds of compilation
 and a 48.24-second longest backend execution. Coverage MCP does not expose
 separate timestamps for report finalization or artifact ingestion. Current
@@ -339,7 +338,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 627 tracked paths and no symlinks.
+The canonical input tree currently contains 631 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -507,7 +506,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,638 | executable parity tests and public contracts |
-| R04 | 627 | licensed canonical fixture inputs |
+| R04 | 631 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -515,7 +514,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,487** | **all retained paths** |
+| **Total** | **2,491** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

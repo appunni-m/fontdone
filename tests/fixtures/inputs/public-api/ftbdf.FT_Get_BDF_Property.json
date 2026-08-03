@@ -113,6 +113,26 @@
               ],
               "face_index": 0
             }
+          },
+          {
+            "id": "uncompressed_metrics",
+            "coverage": [
+              "pcf/metrics:uncompressed-six-field-record"
+            ],
+            "assets": {
+              "pcf_font": {
+                "kind": "ref",
+                "id": "input/fonts/pcf/properties-uncompressed-metrics.pcf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "properties": [
+                "FAMILY_NAME",
+                "POINT_SIZE"
+              ],
+              "face_index": 0
+            }
           }
         ]
       },

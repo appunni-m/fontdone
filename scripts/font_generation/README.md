@@ -163,8 +163,13 @@ make font-fixture-pcf
 1-glyph PCFs with 5 required PCF tables and 7 properties. They prove the PCF
 service rule that all numeric values—including `POINT_SIZE=-120`—are exposed
 as signed `BDF_PROPERTY_TYPE_INTEGER` values, and cover both little-endian and
-big-endian property records and encoding-table decoding. The reviewed outputs
-are 400 bytes with SHA-256
+big-endian property records and encoding-table decoding. The companion
+`tests/fixtures/input/fonts/pcf/properties-uncompressed-metrics.pcf` uses the
+uncompressed six-field metric record through the same public property route.
+The generator also keeps malformed PCF controls for an invalid file version,
+overlapping table ranges, and a properties-format mismatch; those are routed
+through the existing face-open error matrix.
+The reviewed compressed/property outputs are 400 bytes with SHA-256
 `4d840c337be40b056873b9cbe5a8ed5a23081d174761b04233bcac9cdd53cec7` and
 `c636e9b9bd46941afd35159b654cc214fbfa6358a488ce321aba40e8b2c762aa`,
 respectively. They contain no third-party font material and need no

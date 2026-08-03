@@ -1847,6 +1847,81 @@
             ]
           },
           {
+            "id": "pcf-invalid-version",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/invalid-version.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/invalid-version.pcf"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pcf:invalid-file-version"
+            ]
+          },
+          {
+            "id": "pcf-overlapping-tables",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/overlapping-tables.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/overlapping-tables.pcf"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pcf:overlapping-table-ranges"
+            ]
+          },
+          {
+            "id": "pcf-invalid-properties-format",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/invalid-properties-format.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/invalid-properties-format.pcf"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pcf:properties-format-mismatch"
+            ]
+          },
+          {
             "id": "winfnt-invalid-version",
             "assets": {
               "font_bytes": {

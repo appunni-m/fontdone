@@ -432,17 +432,18 @@ per-batch coverage increase is claimed:
 | 62 | `c4f187fe9125e0b41b738142a60580b0654576f9` | Added a valid version-2 WinFNT fixture and header-copy route. The first full parity attempt exposed that Rust zeroed `reserved1` for v2 even though pinned `winfnt.c` reads the fixed 148-byte header frame before applying v2's zeroing rules; the parser now matches that order. Source-bound full parity run `a1264e72-7d3e-4167-935f-9bfc813950d5`, recorded by `85ecb99d-392e-4687-ab0f-13adcd4d90d7`, passes 7,517 / 7,517 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `4f77364e-06b5-48ce-94fd-89519613a972`, snapshot `e78240ed-31c4-4e93-abcb-71c20f199f35`, measures 49,519 / 54,173 lines, 9,743 / 12,532 branches, 3,388 / 3,835 functions, and 68,151 / 75,343 regions in 98.336 seconds. The C-ABI scorecard run `7b4a61e8-3c97-4d7f-925b-ebaf7a996323` reports 10 / 12 categories complete, 5,260 / 5,260 runtime rows, 670 / 670 exact-error routes, and 7,517 / 7,517 no-fallback routes. |
 | 63 | Working tree (PCF endian property routes) | Added the maintained MSB-first PCF properties and encoding-table fixture, expanded `FT_Get_BDF_Property` into explicit little-endian and big-endian variants, and normalized variant case IDs in the BDF oracle/FFI/C-ABI/WASM dispatch after the first full run exposed the harness fallback. Source-bound full parity run `4138ffc6-cfa9-481a-bc5d-f8c8b1f4108f`, recorded by `5fa05f6e-a08c-4023-8d2e-14d7ad9f420a`, passes 7,518 / 7,518 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `5409f603-27d7-4e8e-9bfe-9e4fadc7962c`, snapshot `c6598315-d1e1-4d05-8a7b-df535185d651`, measures 49,521 / 54,173 lines, 9,745 / 12,532 branches, 3,388 / 3,835 functions, and 68,155 / 75,343 regions in 51.653 seconds. |
 | 64 | Working tree (GX validator module absence) | Added the maintained `FT_TrueTypeGX_Validate` case for an openable GX face with the optional `gxvalid` module absent, and routed the real `FT_Err_Unimplemented_Feature` plus zero-length output preservation through the pinned C oracle, Rust FFI, C ABI, and WASM harnesses. Source-bound full parity run `5567be2d-f932-4886-92b7-29e19fddfc28`, recorded by `71752538-1b06-4ee6-82e3-b84693bc11c3`, passes 7,519 / 7,519 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `9c9b7ebb-9aff-4982-8573-bfc4671ee529`, snapshot `bf8b7b67-3658-459e-b918-4587fecdb455`, measures 49,523 / 54,173 lines, 9,747 / 12,532 branches, 3,388 / 3,835 functions, and 68,157 / 75,343 regions in 100.333 seconds including the source-bound instrumented rebuild. The corrected C-ABI scorecard run `4cae8afe-429a-498f-b9cf-4b50971db5e5` reports 10 / 12 categories complete, 5,262 / 5,262 runtime contract rows, and 671 / 671 strict error routes exact. |
+| 65 | Working tree (PCF metric and malformed-input routes) | Added an uncompressed six-field PCF metrics fixture to the existing BDF-property route, plus invalid-version, overlapping-table, and properties-format PCF controls to the memory-face error matrix. Focused parity runs `a92895b5-6503-4582-b679-e05f6fd32119` (3 / 3) and `e9578db4-41bd-4c34-9461-8529a04ef651` (21 / 21) passed. Source-bound full parity run `404f312d-788e-4573-9021-0efd1d2a72b5`, recorded by `98a016eb-e121-460c-b317-ca321e584e46`, passes 7,523 / 7,523 runnable comparisons with 3 explicitly pending safety-extension cases, 0 pending route-audit items, and 218 / 218 function routes in Rust FFI, C ABI, and WASM. The warm all-lane Coverage MCP run `fb9ed28c-46d3-4a3d-beb9-1d576ba385cc`, snapshot `1d2bd6e8-2948-43f9-96f4-e4394b139214`, measures 49,543 / 54,173 lines, 9,752 / 12,532 branches, 3,391 / 3,835 functions, and 68,204 / 75,343 regions in 50.842 seconds. The C-ABI scorecard run `71be95b2-1305-439f-a5c6-b4c6981dc87f` reports 10 / 12 categories complete, 5,266 / 5,266 runtime contract rows, 674 / 674 exact-error routes, and 7,523 / 7,523 no-fallback routes; Windows import-library evidence and four platform bundles remain. |
 
 The latest source-bound parity verification is Coverage MCP parity run
-`5567be2d-f932-4886-92b7-29e19fddfc28` against source tree
-`b7a3b4a32c3a5e0c31d62ba05d8a1cf791ab5ffd`: it passed 7,519 / 7,519 runnable
+`404f312d-788e-4573-9021-0efd1d2a72b5` against source tree
+`77a94d555f799f9cd6a9ed5f18cbc2eb8b2bd284`: it passed 7,523 / 7,523 runnable
 comparisons, 0 failed, and 3 explicitly pending
 safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. The companion C-ABI scorecard reports
-**10 / 12 categories complete**, with 5,262 / 5,262 runtime contract rows and
-671 / 671 strict error routes exact; the remaining contract debt is the
+**10 / 12 categories complete**, with 5,266 / 5,266 runtime contract rows and
+674 / 674 strict error routes exact; the remaining contract debt is the
 Windows import-library item and four fresh target-lane bundles.
 
 The three pending cases are deliberately excluded from the pinned-C parity
@@ -457,8 +458,8 @@ covered by the facade/package checks; none is a missing runtime route.
 The previous combined-lane warm all-lane baseline completed in 1 minute
 53.998 seconds. The split validation completed in 61.827 seconds, and the
 binary-reuse path completed in 54.054 seconds. The latest managed
-source-bound coverage run completed in 51.653 seconds; the preceding managed
-source-bound coverage run completed in 98.336 seconds; the preceding managed
+warm source-bound coverage run completed in 50.842 seconds; the preceding managed
+source-bound coverage run completed in 100.333 seconds; the preceding managed
 source-bound run completed in 51.747 seconds; the preceding managed
 source-bound run completed in 52.387 seconds; the preceding managed warm run
 completed in 51.362 seconds; the first source-bound rebuild took 99.254 seconds;
@@ -496,11 +497,11 @@ and parity results. Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
 repeated. The latest warm baseline measured 49,464 / 54,150 lines, 9,709 /
 12,520 branches, 3,380 / 3,832 functions, and 68,085 / 75,313 regions. The
-current source-bound run measured 49,523 / 54,173 lines, 9,747 / 12,532
-branches, 3,388 / 3,835 functions, and 68,157 / 75,343 regions. It passed
-7,519 / 7,519 runnable parity comparisons with 0 failures. Its Coverage MCP
-run is `9c9b7ebb-9aff-4982-8573-bfc4671ee529`, with snapshot
-`bf8b7b67-3658-459e-b918-4587fecdb455`. The lane-split validation run
+current warm source-bound run measured 49,543 / 54,173 lines, 9,752 / 12,532
+branches, 3,391 / 3,835 functions, and 68,204 / 75,343 regions. It passed
+7,523 / 7,523 runnable parity comparisons with 0 failures. Its Coverage MCP
+run is `fb9ed28c-46d3-4a3d-beb9-1d576ba385cc`, with snapshot
+`1d2bd6e8-2948-43f9-96f4-e4394b139214`. The lane-split validation run
 `b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 in each backend
 process and completed in 61.827 seconds; the latest binary-reuse run completed
 in 57.821 seconds. Each measurement clears
@@ -508,11 +509,12 @@ stale `.profraw` files first; use `make coverage-clean` after changing the
 coverage toolchain or instrumentation configuration.
 
 The latest coverage-speed validation (Coverage MCP run
-`9c9b7ebb-9aff-4982-8573-bfc4671ee529`, snapshot
-`bf8b7b67-3658-459e-b918-4587fecdb455`) measured 100.333 seconds end to end,
-including a 48.78-second instrumented rebuild; the longest backend execution
-was 48.24 seconds. The preceding managed source-bound run measured 98.336
-seconds; the preceding managed warm run measured 51.653 seconds; the first source-bound
+`fb9ed28c-46d3-4a3d-beb9-1d576ba385cc`, snapshot
+`1d2bd6e8-2948-43f9-96f4-e4394b139214`) measured 50.842 seconds end to end
+with the warm instrumented binary. The preceding source-bound run measured
+100.333 seconds, including a 48.78-second instrumented rebuild; the longest
+backend execution was 48.24 seconds. The preceding managed warm run measured
+51.653 seconds; the first source-bound
 rebuild took 99.254 seconds; the prior execution-only warm measurement was
 50.482 seconds, and the prior warm committed baseline remains 51.991 seconds.
 The retained lane timers identify the remaining floor as instrumented parity
