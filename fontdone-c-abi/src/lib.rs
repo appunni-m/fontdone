@@ -334,7 +334,6 @@ document_abi_test_support!(
     abi_get_outline_glyph_from_face,
     abi_outline_glyph_snapshot,
     abi_support_corrupt_outline_glyph_for_render_failure,
-    abi_support_corrupt_outline_glyph_record,
     abi_bitmap_glyph_snapshot,
     abi_svg_glyph_snapshot,
     abi_support_zero_length_svg_glyph,

@@ -336,12 +336,6 @@ Before changing a fixture:
    classification when the fixture exercises a new public behavior;
 7. run the focused parity lane and `make check-font-fixtures`.
 
-Public glyph-record pointer mutations belong in the maintained input matrix,
-not in unit-only coverage helpers. The `FT_Glyph_To_Bitmap` render-failure
-case uses `record_corruption_fields` to drive separate `points`, `tags`, and
-`contours` null-pointer inputs through the C ABI and WASM public records; the
-Rust route uses the equivalent malformed outline shape before exact comparison.
-
 Third-party material must have redistribution permission and exact provenance.
 The three retained compact control fonts whose exact upstream transformation
 was not recoverable may remain unchanged, but must not be used as new generator

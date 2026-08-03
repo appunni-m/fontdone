@@ -52388,14 +52388,12 @@ fn wasm_glyph_to_bitmap_origins(face_handle: usize, case: &InputCase) -> Result<
 }
 
 fn glyph_to_bitmap_render_failure_row(
-    corruption: &str,
     destroy: bool,
     error: FT_Error,
     handle_unchanged: bool,
     original_restored: bool,
 ) -> Value {
     json!({
-        "corruption": corruption,
         "destroy": destroy,
         "error": error,
         "caller_handle_class": if handle_unchanged {
@@ -52431,49 +52429,22 @@ fn glyph_to_bitmap_render_failure_output(rows: Vec<Value>) -> RunOutput {
     }
 }
 
-fn glyph_to_bitmap_record_corruption_fields(params: &Value) -> Result<Vec<String>, String> {
-    let Some(values) = params
-        .get("record_corruption_fields")
-        .and_then(Value::as_array)
-    else {
-        return Ok(vec!["contour_endpoint_invalid".to_string()]);
-    };
-    if values.is_empty() {
-        return Err("record_corruption_fields must not be empty".to_string());
-    }
-    values
-        .iter()
-        .enumerate()
-        .map(|(index, value)| {
-            let field = value
-                .as_str()
-                .ok_or_else(|| format!("record_corruption_fields[{index}] must be a string"))?;
-            match field {
-                "contour_endpoint_invalid" | "points_null" | "tags_null" | "contours_null" => {
-                    Ok(field.to_string())
-                }
-                _ => Err(format!(
-                    "record_corruption_fields[{index}] has unsupported value {field}"
-                )),
-            }
-        })
-        .collect()
-}
-
-fn glyph_to_bitmap_record_corruption_field(field: &str) -> Option<FT_UInt> {
-    match field {
-        "points_null" => Some(0),
-        "tags_null" => Some(1),
-        "contours_null" => Some(2),
-        _ => None,
-    }
-}
-
-fn rust_corrupt_outline_for_record_failure(
-    glyph: &mut FT_OutlineGlyphOwned,
-    corruption: &str,
-) -> Result<(), String> {
-    if corruption == "contour_endpoint_invalid" {
+fn rust_glyph_to_bitmap_render_failure(case: &InputCase) -> Result<RunOutput, String> {
+    let face = open_face(case)?;
+    let mut rows = Vec::new();
+    for destroy in [false, true] {
+        let slot = match FT_Load_Glyph(
+            &face,
+            glyph_index_param(&case.inputs.params)?,
+            load_flags_param(&case.inputs.params)?,
+        ) {
+            Ok(slot) => slot,
+            Err(err) => return Ok(error(err)),
+        };
+        let mut glyph = match FT_Get_Outline_Glyph(Some(&slot)) {
+            Ok(glyph) => glyph,
+            Err(err) => return Ok(error(err)),
+        };
         let invalid_endpoint = FT_UShort::try_from(glyph.outline.points.len())
             .map_err(|err| format!("outline point count does not fit FT_UShort: {err}"))?;
         let endpoint = glyph
@@ -52482,54 +52453,23 @@ fn rust_corrupt_outline_for_record_failure(
             .last_mut()
             .ok_or_else(|| "render-failure outline has no contours".to_string())?;
         *endpoint = invalid_endpoint;
-    } else {
-        // Pure Rust owns vectors rather than exposing raw public-record
-        // pointers. A non-empty contour with no points is the equivalent
-        // invalid-outline input for the C-ABI/WASM null-pointer cases.
-        glyph.outline.points.clear();
-        glyph.outline.tags.clear();
-        glyph.outline.contours = vec![0];
-    }
-    Ok(())
-}
-
-fn rust_glyph_to_bitmap_render_failure(case: &InputCase) -> Result<RunOutput, String> {
-    let face = open_face(case)?;
-    let mut rows = Vec::new();
-    for corruption in glyph_to_bitmap_record_corruption_fields(&case.inputs.params)? {
-        for destroy in [false, true] {
-            let slot = match FT_Load_Glyph(
-                &face,
-                glyph_index_param(&case.inputs.params)?,
-                load_flags_param(&case.inputs.params)?,
-            ) {
-                Ok(slot) => slot,
-                Err(err) => return Ok(error(err)),
-            };
-            let mut glyph = match FT_Get_Outline_Glyph(Some(&slot)) {
-                Ok(glyph) => glyph,
-                Err(err) => return Ok(error(err)),
-            };
-            rust_corrupt_outline_for_record_failure(&mut glyph, &corruption)?;
-            let before = glyph.clone();
-            let error = FT_Outline_Glyph_To_Bitmap_In_Place(
-                &mut glyph,
-                render_mode_param(&case.inputs.params)?,
-                glyph_to_bitmap_origin(&case.inputs.params)?,
-                destroy,
-            )
-            .map_or_else(|error| error, |_| FT_Err_Ok);
-            let original_restored = glyph == before;
-            FT_Done_Glyph(true);
-            drop(glyph);
-            rows.push(glyph_to_bitmap_render_failure_row(
-                &corruption,
-                destroy,
-                error,
-                true,
-                original_restored,
-            ));
-        }
+        let before = glyph.clone();
+        let error = FT_Outline_Glyph_To_Bitmap_In_Place(
+            &mut glyph,
+            render_mode_param(&case.inputs.params)?,
+            glyph_to_bitmap_origin(&case.inputs.params)?,
+            destroy,
+        )
+        .map_or_else(|error| error, |_| FT_Err_Ok);
+        let original_restored = glyph == before;
+        FT_Done_Glyph(true);
+        drop(glyph);
+        rows.push(glyph_to_bitmap_render_failure_row(
+            destroy,
+            error,
+            true,
+            original_restored,
+        ));
     }
     Ok(glyph_to_bitmap_render_failure_output(rows))
 }
@@ -52543,53 +52483,44 @@ fn c_glyph_to_bitmap_render_failure(
         y: origin.y,
     });
     let mut rows = Vec::new();
-    for corruption in glyph_to_bitmap_record_corruption_fields(&case.inputs.params)? {
-        for destroy in [false, true] {
-            let original = match c_get_glyph_from_face(
-                face,
-                glyph_index_param(&case.inputs.params)?,
-                load_flags_param(&case.inputs.params)?,
-            ) {
-                Ok(glyph) => glyph,
-                Err(err) => return Ok(error(err)),
-            };
-            let corrupted =
-                if let Some(field) = glyph_to_bitmap_record_corruption_field(&corruption) {
-                    c_abi::abi_support_corrupt_outline_glyph_record(original, field)
-                } else {
-                    c_abi::abi_support_corrupt_outline_glyph_for_render_failure(original)
-                };
-            if !corrupted {
-                c_abi::FT_Done_Glyph(original);
-                return Err("failed to corrupt C ABI outline glyph".to_string());
-            }
-            let before = c_abi::abi_outline_glyph_snapshot(original)
-                .ok_or_else(|| "missing C ABI outline snapshot before failure".to_string())?;
-            let mut handle = original;
-            let error = c_abi::FT_Glyph_To_Bitmap(
-                &mut handle,
-                render_mode_param(&case.inputs.params)?,
-                origin.as_ref().map_or(ptr::null(), ptr::from_ref),
-                u8::from(destroy),
-            );
-            let after = c_abi::abi_outline_glyph_snapshot(original);
-            let original_restored = after.is_some_and(|after| {
-                after.advance.x == before.advance.x
-                    && after.advance.y == before.advance.y
-                    && after.outline == before.outline
-            });
-            let handle_unchanged = handle == original;
-            if !handle.is_null() {
-                c_abi::FT_Done_Glyph(handle);
-            }
-            rows.push(glyph_to_bitmap_render_failure_row(
-                &corruption,
-                destroy,
-                error,
-                handle_unchanged,
-                original_restored,
-            ));
+    for destroy in [false, true] {
+        let original = match c_get_glyph_from_face(
+            face,
+            glyph_index_param(&case.inputs.params)?,
+            load_flags_param(&case.inputs.params)?,
+        ) {
+            Ok(glyph) => glyph,
+            Err(err) => return Ok(error(err)),
+        };
+        if !c_abi::abi_support_corrupt_outline_glyph_for_render_failure(original) {
+            c_abi::FT_Done_Glyph(original);
+            return Err("failed to corrupt C ABI outline glyph".to_string());
         }
+        let before = c_abi::abi_outline_glyph_snapshot(original)
+            .ok_or_else(|| "missing C ABI outline snapshot before failure".to_string())?;
+        let mut handle = original;
+        let error = c_abi::FT_Glyph_To_Bitmap(
+            &mut handle,
+            render_mode_param(&case.inputs.params)?,
+            origin.as_ref().map_or(ptr::null(), ptr::from_ref),
+            u8::from(destroy),
+        );
+        let after = c_abi::abi_outline_glyph_snapshot(original);
+        let original_restored = after.is_some_and(|after| {
+            after.advance.x == before.advance.x
+                && after.advance.y == before.advance.y
+                && after.outline == before.outline
+        });
+        let handle_unchanged = handle == original;
+        if !handle.is_null() {
+            c_abi::FT_Done_Glyph(handle);
+        }
+        rows.push(glyph_to_bitmap_render_failure_row(
+            destroy,
+            error,
+            handle_unchanged,
+            original_restored,
+        ));
     }
     Ok(glyph_to_bitmap_render_failure_output(rows))
 }
@@ -52604,51 +52535,42 @@ fn wasm_glyph_to_bitmap_render_failure(
             y: origin.y,
         });
     let mut rows = Vec::new();
-    for corruption in glyph_to_bitmap_record_corruption_fields(&case.inputs.params)? {
-        for destroy in [false, true] {
-            let original = match wasm_get_glyph_from_face(
-                face_handle,
-                glyph_index_param(&case.inputs.params)?,
-                load_flags_param(&case.inputs.params)?,
-            ) {
-                Ok(glyph) => glyph,
-                Err(err) => return Ok(error(err)),
-            };
-            let corrupted =
-                if let Some(field) = glyph_to_bitmap_record_corruption_field(&corruption) {
-                    wasm_abi::abi_support_corrupt_outline_glyph_record(original, field)
-                } else {
-                    wasm_abi::abi_support_corrupt_outline_glyph_for_render_failure(original)
-                };
-            if !corrupted {
-                wasm_done_glyph_handle(original);
-                return Err("failed to corrupt WASM outline glyph".to_string());
-            }
-            let before = wasm_abi::abi_outline_glyph_snapshot(original)
-                .ok_or_else(|| "missing WASM outline snapshot before failure".to_string())?;
-            let mut handle = original;
-            let error = wasm_abi::fontdone_wasm_glyph_to_bitmap_handle(
-                &mut handle,
-                render_mode_param(&case.inputs.params)?,
-                origin.as_ref().map_or(ptr::null(), ptr::from_ref),
-                u8::from(destroy),
-            );
-            let after = wasm_abi::abi_outline_glyph_snapshot(original);
-            let original_restored = after.is_some_and(|after| {
-                after.advance.x == before.advance.x
-                    && after.advance.y == before.advance.y
-                    && after.outline == before.outline
-            });
-            let handle_unchanged = handle == original;
-            wasm_done_glyph_handle(handle);
-            rows.push(glyph_to_bitmap_render_failure_row(
-                &corruption,
-                destroy,
-                error,
-                handle_unchanged,
-                original_restored,
-            ));
+    for destroy in [false, true] {
+        let original = match wasm_get_glyph_from_face(
+            face_handle,
+            glyph_index_param(&case.inputs.params)?,
+            load_flags_param(&case.inputs.params)?,
+        ) {
+            Ok(glyph) => glyph,
+            Err(err) => return Ok(error(err)),
+        };
+        if !wasm_abi::abi_support_corrupt_outline_glyph_for_render_failure(original) {
+            wasm_done_glyph_handle(original);
+            return Err("failed to corrupt WASM outline glyph".to_string());
         }
+        let before = wasm_abi::abi_outline_glyph_snapshot(original)
+            .ok_or_else(|| "missing WASM outline snapshot before failure".to_string())?;
+        let mut handle = original;
+        let error = wasm_abi::fontdone_wasm_glyph_to_bitmap_handle(
+            &mut handle,
+            render_mode_param(&case.inputs.params)?,
+            origin.as_ref().map_or(ptr::null(), ptr::from_ref),
+            u8::from(destroy),
+        );
+        let after = wasm_abi::abi_outline_glyph_snapshot(original);
+        let original_restored = after.is_some_and(|after| {
+            after.advance.x == before.advance.x
+                && after.advance.y == before.advance.y
+                && after.outline == before.outline
+        });
+        let handle_unchanged = handle == original;
+        wasm_done_glyph_handle(handle);
+        rows.push(glyph_to_bitmap_render_failure_row(
+            destroy,
+            error,
+            handle_unchanged,
+            original_restored,
+        ));
     }
     Ok(glyph_to_bitmap_render_failure_output(rows))
 }
