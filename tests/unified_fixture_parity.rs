@@ -86743,6 +86743,9 @@ fn bitmap_convert_output(
         "success_empty_or_null_source_buffer" => {
             vec![bitmap_convert_empty_run(backend)?]
         }
+        "success_zero_width_source" => {
+            vec![bitmap_convert_zero_width_run(backend)?]
+        }
         "error_invalid_arguments_or_alignment" => bitmap_convert_error_runs(backend)?,
         "error_unsupported_pixel_mode" => bitmap_convert_unsupported_runs(backend)?,
         other => return Err(format!("unsupported bitmap_convert scenario {other}")),
@@ -86876,6 +86879,24 @@ fn bitmap_convert_empty_run(backend: BitmapConvertBackend) -> Result<Value, Stri
     };
     bitmap_convert_run_with_records(
         "empty_null_buffer",
+        Some((source, None)),
+        Some((FT_Bitmap_C::default(), None)),
+        4,
+        false,
+        backend,
+    )
+}
+
+fn bitmap_convert_zero_width_run(backend: BitmapConvertBackend) -> Result<Value, String> {
+    let source = FT_Bitmap_C {
+        pixel_mode: FT_PIXEL_MODE_GRAY as u8,
+        rows: 3,
+        width: 0,
+        pitch: 0,
+        ..Default::default()
+    };
+    bitmap_convert_run_with_records(
+        "zero_width_null_buffer",
         Some((source, None)),
         Some((FT_Bitmap_C::default(), None)),
         4,

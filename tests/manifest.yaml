@@ -2742,6 +2742,8 @@ subjects:
         description: Reusing a target without FT_Bitmap_Done reallocates and overwrites fields and bytes exactly like C.
       - id: success_empty_or_null_source_buffer
         description: Empty source dimensions or null source buffer follow C field and allocation behavior.
+      - id: success_zero_width_source
+        description: A zero-width, non-empty-row grayscale source with no buffer follows C's zero-byte allocation and field behavior.
       - id: error_invalid_arguments_or_alignment
         description: Null library/source/target and invalid alignment values return C errors and target preservation behavior.
       - id: error_unsupported_pixel_mode

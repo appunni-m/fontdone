@@ -3365,6 +3365,15 @@ static int emit_bitmap_convert(const char* scenario) {
         FT_Bitmap_Init(&target);
         RUN_CONVERT("empty_null_buffer", &source, &target, 4, library);
         FT_Bitmap_Done(library, &target);
+    } else if (streq(scenario, "success_zero_width_source")) {
+        FT_Bitmap_Init(&source);
+        source.pixel_mode = FT_PIXEL_MODE_GRAY;
+        source.width = 0;
+        source.rows = 3;
+        source.pitch = 0;
+        FT_Bitmap_Init(&target);
+        RUN_CONVERT("zero_width_null_buffer", &source, &target, 4, library);
+        FT_Bitmap_Done(library, &target);
     } else if (streq(scenario, "error_invalid_arguments_or_alignment")) {
         bitmap_convert_source(&source, bytes, FT_PIXEL_MODE_GRAY, 0);
         dirty_bitmap(&target);

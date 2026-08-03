@@ -6,6 +6,7 @@
     "success_alignment_and_flow",
     "success_repeated_conversion_reallocates",
     "success_empty_or_null_source_buffer",
+    "success_zero_width_source",
     "error_invalid_arguments_or_alignment",
     "error_unsupported_pixel_mode"
   ],
@@ -257,6 +258,64 @@
             0,
             -1,
             1
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftbitmap",
+        "area:bitmap"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "bitmap_fields": [
+            "rows",
+            "width",
+            "pitch",
+            "pixel_mode",
+            "num_grays",
+            "buffer"
+          ],
+          "buffer_bytes": true,
+          "allocator_events": true,
+          "target_pixel_mode": "GRAY",
+          "alignment_policy": true
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "error",
+            "target.rows",
+            "target.width",
+            "target.pitch",
+            "target.num_grays",
+            "target.pixel_mode",
+            "target.buffer_bytes",
+            "allocator.events"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ftbitmap.FT_Bitmap_Convert.success_zero_width_source",
+      "subject": "ftbitmap.FT_Bitmap_Convert",
+      "case": "success_zero_width_source",
+      "operation": "ftbitmap.bitmap_convert",
+      "schema": "bitmap_operation",
+      "expect_error": false,
+      "inputs": {
+        "params": {
+          "scenario": "success_zero_width_source",
+          "pixel_modes": [
+            "GRAY"
+          ],
+          "alignments": [
+            4
+          ],
+          "target_initial_pitch": [
+            0
           ]
         }
       },
