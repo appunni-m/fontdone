@@ -124,10 +124,10 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP parity run
-`4be92a34-c7a6-49fb-9a7c-a97ef1482757`, recorded by run
-`07462991-ef61-45f8-ba2b-e68c05142e3d` against clean commit
-`dea377a12afd181a58a0bc4a6d1c74b3a7d4e7c7`; its source-bound parity-tree
-digest is `886563059da1bae8d91c3578158fce6c8b9a8d0b0da91b038484e56582d63642`.
+`1484f32a-a27c-4755-ba4a-43e1393cbbc3`, recorded by run
+`843aa02f-1dcf-417e-ac3e-ee3e8622ee6d` against clean commit
+`91f8da7f08b0143881a7ef79c4a40ea9322cd045`; its source-bound parity-tree
+digest is `92a70fcf432a517b92de82b2a611385c4ace694a4567746d60b9d8aac523a1ef`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -139,10 +139,10 @@ their exact worktree than the committed release snapshot.
 
 ### 3.3 Last measured combined coverage
 
-The latest all-lane coverage run was recorded on **2026-08-03** against the
-committed speed fix `d4ae55775e19427632f5ab86fe3cd5f2d0e8d8a6` (Coverage MCP
-run `76754c69-8563-451b-86cc-3182243a810e`, snapshot
-`c03f4071-10b1-4ab1-bd12-13bc71589135`):
+The latest all-lane coverage run was recorded on **2026-08-03** against clean
+commit `91f8da7f08b0143881a7ef79c4a40ea9322cd045` (Coverage MCP run
+`b666ea02-c959-475e-92d4-988f627955a1`, snapshot
+`209e1856-736a-47fc-8050-5c0aaa7d6d70`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -179,8 +179,8 @@ already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
 The current run passed 7,479 / 7,479 comparisons in each backend lane. Its
-instrumentation timers were about 42.45 seconds Rust FFI, 31.87 seconds C ABI,
-31.78 seconds WASM, and under 0.02 seconds comparison. The three-surface
+instrumentation timers were about 43.44 seconds Rust FFI, 32.57 seconds C ABI,
+32.43 seconds WASM, and under 0.02 seconds comparison. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
 MCP without the compatibility-only segment rewrite. The default
 `COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
