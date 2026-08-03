@@ -172,6 +172,28 @@
             "coverage": [
               "ftcid.get_cid_from_glyph_index:explicit-glast_valid"
             ]
+          },
+          {
+            "id": "format2_last_valid",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "sfnt_wrapped_cid_font_format2",
+                "path": "input/fonts/cid/ot-cff-cid-keyed-format2.otf",
+                "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
+                "generator": "scripts/font_generation/build_cff_fixtures.py",
+                "sha256": "f63d0db1c34ef09855d1270ecaae1f7bf503049de06319c4705896b69863baa5",
+                "license": "OFL-1.1"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "cid_output": "nonnull_initialized_sentinel",
+              "glyph_index": "last_valid"
+            },
+            "coverage": [
+              "ftcid.get_cid_from_glyph_index:format2-charset"
+            ]
           }
         ]
       },

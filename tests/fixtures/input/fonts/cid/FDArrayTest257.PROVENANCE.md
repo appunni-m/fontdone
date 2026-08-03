@@ -17,3 +17,13 @@ Why this fixture is used:
   `FT_Get_CID_Is_Internally_CID_Keyed`.
 - Non-SFNT Type 1 CID rows remain pending; this fixture must not be used to
   satisfy those separate `cid_keyed_font` cases.
+
+Derived maintained fixture: `ot-cff-cid-keyed-format2.otf`
+
+- Generator: `scripts/font_generation/build_cff_fixtures.py`
+- Source: the stored `ot-cff-cid-keyed.otf` above
+- SHA-256: `f63d0db1c34ef09855d1270ecaae1f7bf503049de06319c4705896b69863baa5`
+- The generator adds one real CID (`cid00257`) using the source's final
+  charstring and FD assignment. The resulting contiguous CID range has
+  `nLeft = 256`, so CFF serialization uses charset format 2 and exercises the
+  corresponding parser branch. It remains distributed under the source OFL.

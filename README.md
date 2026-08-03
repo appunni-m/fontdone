@@ -102,22 +102,22 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The last committed full parity snapshot was recorded on **2026-08-02**:
+The last committed full parity snapshot was recorded on **2026-08-03**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,478 |
-| Passed cases | 7,478 |
+| Runnable exact-comparison cases | 7,479 |
+| Passed cases | 7,479 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
 | Covered manifest cases | 4,183 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,268 |
-| Concrete expanded cases | 7,481 |
+| Concrete expanded cases | 7,482 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,478 / 7,478` means every runnable case in that execution matched; the 3
+`7,479 / 7,479` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
@@ -173,7 +173,7 @@ but the default coverage target does not rerun it because `make test-fast`
 already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
-The latest Coverage MCP run is
+The committed coverage snapshot remains Coverage MCP run
 `cce7fb2b-ee6d-43cd-970f-e0dbe7a2b106`, with snapshot
 `1fab8ecd-b4c0-491d-abcc-110f66101193`; the corrected-index source-bound run
 completed in 57.821 seconds, with 7,478 exact parity comparisons in each
@@ -197,6 +197,13 @@ when contents are unchanged, so the C helper and FreeType validator overlay are
 not rebuilt on every run. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
+The optimized-profile validation run `5cbc8af7-0f66-4f4a-8918-a1315ab63f70`
+completed in 53.730 seconds with 7,479 / 7,479 comparisons passing in each
+lane; it ingested as snapshot `99f1efe5-55b7-4495-a49e-1ab979609cdb` without
+changing the measured coverage totals. The repository default now uses
+`COVERAGE_TEST_OPT_LEVEL=3`; use an explicit level-1 override only to reproduce
+the historical committed coverage snapshot above.
+
 Coverage is a code-execution signal, not a compatibility score. These
 percentages apply only to the named source commit, suite, and toolchain. Run
 `make test-coverage-all` again after source changes. The exact machine-readable
@@ -208,7 +215,7 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,221 / 5,221 pinned-C runtime contract rows exact |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,222 / 5,222 pinned-C runtime contract rows exact |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership, state, modules, headers | Complete under their blocking scorecard measurements |
 | Errors | 649 / 649 expected-error routes compare exact error and output results; 7,478 / 7,478 routes have no generic fallback evidence |

@@ -104,12 +104,13 @@ The all-lane coverage target sets `FONTDONE_UNIFIED_WORKERS=1` through
 `COVERAGE_UNIFIED_WORKERS` by default. LLVM instrumentation makes the C-ABI and
 WASM comparison path contend heavily when those backend calls run in parallel;
 the measured single-worker lane is substantially faster and avoids the stalled
-multi-worker behavior. It also sets `CARGO_PROFILE_TEST_OPT_LEVEL=1` through
-`COVERAGE_TEST_OPT_LEVEL`; the optimized test profile preserves coverage
-instrumentation and assertions while avoiding the several-fold slowdown of
-unoptimized instrumented execution. Set the coverage profile, worker, and
+multi-worker behavior. It also sets `CARGO_PROFILE_TEST_OPT_LEVEL=3` through
+`COVERAGE_TEST_OPT_LEVEL`; this was the fastest measured warm all-lane profile
+(53.316 seconds versus 55.474 seconds at opt-level 1) while preserving coverage
+instrumentation and assertions. Set the coverage profile, worker, and
 `cargo llvm-cov` flag variables only for an explicitly measured instrumented
-profile. Coverage uses the lightweight
+profile; the historical opt-level-1 setting remains useful when reproducing the
+older committed coverage snapshot. Coverage uses the lightweight
 `api-abi-runtime-check`; the optional-feature build contract is intentionally
 kept in `make optional-feature-contract` and is not rebuilt on every coverage
 run. The coverage recipes retain the instrumented Cargo target with
@@ -244,8 +245,8 @@ writes `target/coverage/unified-runtime-all-lanes.json`; test-harness paths are
 the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
-reuse the instrumented target and binary. The split path measured 57.821
-seconds end-to-end on the current worktree with a warm oracle cache; allow
+reuse the instrumented target and binary. The optimized-profile path measured
+53.316 seconds end-to-end in Coverage MCP with a warm oracle cache; allow
 roughly 2 minutes for host variation and roughly 4–6 minutes after a cache
 reset.
 `COVERAGE_TEST_DEBUG=1` keeps line

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from array import array
+from copy import copy
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -20,6 +21,8 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = ROOT / "tests" / "fixtures" / "input" / "fonts" / "cff"
 INPUT_OUT_DIR = ROOT / "tests" / "fixtures" / "input" / "fonts" / "cff"
 CFF2_OUT_DIR = ROOT / "tests" / "fixtures" / "input" / "fonts" / "cff2"
+CID_OUT_DIR = ROOT / "tests" / "fixtures" / "input" / "fonts" / "cid"
+CID_SOURCE = CID_OUT_DIR / "ot-cff-cid-keyed.otf"
 UNITS_PER_EM = 1000
 FIXED_HEAD_TIME = 0
 GLYPH_ORDER = [".notdef", "A"]
@@ -763,6 +766,34 @@ def write_pure_cff_cubic() -> None:
     build_cubic_cff(out)
 
 
+def write_cid_cff_format2() -> None:
+    """Derive a CID face whose contiguous charset must use format 2."""
+    out = CID_OUT_DIR / "ot-cff-cid-keyed-format2.otf"
+    font = TTFont(CID_SOURCE, recalcTimestamp=False)
+    glyph_order = list(font.getGlyphOrder())
+    if len(glyph_order) != 257 or glyph_order[-1] != "cid00256":
+        raise ValueError("the pinned CID source must contain glyphs cid00001..cid00256")
+
+    # A format-1 charset stores nLeft in one byte.  Adding one real CID makes
+    # the existing contiguous 1..257 range require format 2's 16-bit nLeft.
+    extra_glyph = "cid00257"
+    hmtx = font["hmtx"]
+    top_dict = font["CFF "].cff.topDictIndex[0]
+    font.setGlyphOrder(glyph_order + [extra_glyph])
+    hmtx.metrics[extra_glyph] = hmtx.metrics[glyph_order[-1]]
+    font["maxp"].numGlyphs = len(glyph_order) + 1
+    top_dict.charset = glyph_order + [extra_glyph]
+    top_dict.CIDCount += 1
+    top_dict.CharStrings.charStrings[extra_glyph] = copy(
+        top_dict.CharStrings.charStrings[glyph_order[-1]]
+    )
+    top_dict.FDSelect.gidArray.append(top_dict.FDSelect.gidArray[-1])
+    font.recalcTimestamp = False
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    font.save(out, reorderTables=True)
+
+
 def add_vertical_metrics(font: TTFont) -> None:
     glyph_order = font.getGlyphOrder()
     vmtx = newTable("vmtx")
@@ -1027,6 +1058,7 @@ def main() -> None:
     build_cff(INPUT_OUT_DIR / "fontinfo-populated.otf")
     build_cff2(CFF2_OUT_DIR / "fontinfo-invalid-argument.otf")
     write_pure_cff_cubic()
+    write_cid_cff_format2()
     write_pure_cff_cubic_vmtx()
     write_pure_cff_empty_tt_programs()
     write_malformed_cff_faces()

@@ -414,7 +414,7 @@ route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. The companion C-ABI scorecard, Coverage
 MCP run `04c2b90e-f349-469e-8f28-1bd87291a279`, reports **10 / 12 categories
-complete**, with 5,221 / 5,221 runtime contract rows and 649 / 649 strict error
+complete**, with 5,222 / 5,222 runtime contract rows and 649 / 649 strict error
 routes exact; only the Windows import-library item and four fresh target-lane
 bundles remain in that scorecard.
 
@@ -434,7 +434,7 @@ separate processes, each with its own raw profile, then merges them with
 profile setups; LLVM instrumentation made the old in-process backend calls
 contend, while process-local profiles remove that contention without changing
 the exact matrix. Set the variable to `0` only for the legacy diagnostic path.
-The command also uses a single parity worker per lane, `CARGO_PROFILE_TEST_OPT_LEVEL=1`,
+The command also uses a single parity worker per lane, `CARGO_PROFILE_TEST_OPT_LEVEL=3`,
 `COVERAGE_TEST_DEBUG=1`, and `cargo llvm-cov --no-clean` by default: the
 optimized test profile removes the several-fold slowdown of unoptimized
 instrumented code, line-table-only debuginfo reduces compile/report overhead,
@@ -444,7 +444,10 @@ expanded case. Independent oracle/audit preparation runs in the two-job setup
 batch;
 the ABI-only package preflight remains available separately as
 `make coverage-abi-preflight` and is already exercised by `make test-fast`.
-Unchanged generated
+The optimized-profile validation run `79f4439e-2db4-4ee2-8746-c101d8db2925`
+completed in 53.316 seconds with 7,479 / 7,479 runnable comparisons passing in
+each lane; the historical opt-level-1 source-bound snapshot remains the
+compatibility evidence recorded above. Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
 repeated. The current run measured 49,363 / 54,104 lines, 9,694 / 12,512
 branches, 3,371 / 3,828 functions, and 67,953 / 75,273 regions. It passed
