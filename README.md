@@ -124,9 +124,9 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-matched verification is Coverage MCP parity run
-`2c3c0a6e-d9d9-48b1-b6af-62f338e8995c`, recorded by run
-`32d5092a-5434-47fe-b941-01d188e52340` against committed source
-`70c7e218d1f20ad10259444d5be9dcfc8072e5fc`;
+`657b5c9b-e9c6-4639-9448-42e3d626ad59`, recorded by run
+`b96b0e65-11d1-4039-9c6e-3da782a26bfe` against committed source
+`887b9700048feed0416b34babee11a2c09f88fad`;
 its source-bound parity-tree digest is retained in
 `doc/runtime_parity_evidence.json`.
 
@@ -141,7 +141,7 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage run was recorded on **2026-08-03** against
-committed source `87f7301c3c331ae4cee95d03bcafa32f3a09357d`
+committed source `887b9700048feed0416b34babee11a2c09f88fad`
 (Coverage MCP run `7f80356b-6051-49a1-a80b-9d3e31308f58`, snapshot
 `cc31ef3c-be78-4ec8-9b8b-9509a16d1cd5`):
 
@@ -179,7 +179,7 @@ but the default coverage target does not rerun it because `make test-fast`
 already executes that contract before `make ci-thorough`. Optional feature
 profiles are
 verified separately by `make optional-feature-contract`.
-The current run passed 7,502 / 7,502 comparisons in each backend lane. Its
+The current run passed 7,503 / 7,503 comparisons in each backend lane. Its
 instrumentation timers were about 44.05 seconds Rust FFI, 33.02 seconds C ABI,
 32.80 seconds WASM, and about 13–14 ms comparison per lane. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage

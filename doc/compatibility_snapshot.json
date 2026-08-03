@@ -54,7 +54,7 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-08-03",
-    "source_commit": "87f7301c3c331ae4cee95d03bcafa32f3a09357d",
+    "source_commit": "887b9700048feed0416b34babee11a2c09f88fad",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
     "run_id": "7f80356b-6051-49a1-a80b-9d3e31308f58",
@@ -65,7 +65,7 @@
     "lines": {
       "covered": 49495,
       "total": 54173,
-      "percent": 91.36470197330774
+      "percent": 91.36470197330775
     },
     "branches": {
       "covered": 9724,
@@ -614,9 +614,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "d03a49be5ce3077aa45fa3308785dfa3a077ebb242b6e9ef7cc68f0546757530",
+    "sha256": "9fe941f5ff42fe38f41146eace6de409540ad483849f60709264bb55bd6950fb",
     "parity_tree_sha256": "08f76b0b815dfe4cddb663a4a92ec3ec8de6dab67ae7882c88f2754392b87000",
-    "log_sha256": "a1eeb738be27aace07548c0c92789e903f5aa45a876cc051e488b080e78fc893",
+    "log_sha256": "8b2b139e807d8865ead196763b57a18bf93fa37a08fa482e3c263dff64c931e6",
     "command": "make test-parity"
   }
 }

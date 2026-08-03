@@ -143,9 +143,10 @@ Cargo's build lock and repeating the `cargo llvm-cov` test-profile setup three
 times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
-legacy single-process diagnostic path. The latest clean committed validation is
-Coverage MCP run `a62b2d8d-5488-4c80-bcf7-298149f6913d`: all three processes
-passed 7,502 / 7,502 cases, and the warm end-to-end run took 50.482 seconds.
+legacy single-process diagnostic path. The latest measured validation is
+Coverage MCP run `7f80356b-6051-49a1-a80b-9d3e31308f58`: all three processes
+passed 7,503 / 7,503 cases, and this source-rebuild run took 119.434 seconds.
+The warm unchanged-binary baseline remains 50.482 seconds.
 A preceding clean-target run took 109.360 seconds because it rebuilt the
 instrumented binary; the build-only step now uses `--no-report -- --list` so
 profile merging cannot happen before the three lane processes execute.
@@ -273,14 +274,14 @@ route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,474 / 54,152 | 91.36% |
-| Branches | 9,715 / 12,526 | 77.56% |
-| Functions | 3,382 / 3,832 | 88.26% |
-| Regions | 68,098 / 75,318 | 90.41% |
+| Lines | 49,495 / 54,173 | 91.36% |
+| Branches | 9,724 / 12,534 | 77.58% |
+| Functions | 3,384 / 3,834 | 88.26% |
+| Regions | 68,127 / 75,345 | 90.42% |
 
-That current run passed all 7,502 runnable parity comparisons with 0 failures;
+That current run passed all 7,503 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`05be06e0-d390-4752-91c1-ce596cec31e4`. The three-surface instrumented
+`cc31ef3c-be78-4ec8-9b8b-9509a16d1cd5`. The three-surface instrumented
 execution is therefore the dominant cost, not Coverage MCP ingestion. Current
 LLVM JSON is accepted directly by Coverage
 MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`
