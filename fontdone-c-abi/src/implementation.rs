@@ -2245,14 +2245,13 @@ fn ftc_sbit_cache_lookup_impl(
     }
     let error = FT_Load_Glyph(face, key.glyph_index, ftc_load_flags(key.load_flags));
     if error != rust_ffi::FT_Err_Ok {
-        if ftc_load_flags(key.load_flags) & rust_ffi::FT_LOAD_SBITS_ONLY != 0 {
-            let record = FTC_SBitRec {
-                width: FT_Byte::MAX,
-                ..FTC_SBitRec::default()
-            };
-            return ftc_sbit_cache_store(cache, manager, key, record, Box::new([]), sbit, anode);
-        }
-        return error;
+        // `ftcsbits.c` suppresses every non-OOM glyph-load error and caches
+        // it as an unavailable SBit sentinel with a successful lookup.
+        let record = FTC_SBitRec {
+            width: FT_Byte::MAX,
+            ..FTC_SBitRec::default()
+        };
+        return ftc_sbit_cache_store(cache, manager, key, record, Box::new([]), sbit, anode);
     }
     // SAFETY: face is live and owns its public glyph slot.
     let slot = unsafe { (*face).glyph };

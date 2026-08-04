@@ -6,7 +6,8 @@
     "clears_outputs_before_lookup",
     "returns_cache_owned_sbit",
     "optional_anode_locks_node",
-    "missing_bitmap_has_null_buffer"
+    "missing_bitmap_has_null_buffer",
+    "missing_bitmap_without_sbits_only_caches_unavailable_sbit"
   ],
   "cases": [
     {
@@ -332,6 +333,63 @@
         },
         "fixture_requirements": [
           "Bitmap strike fixture with one glyph intentionally missing embedded bitmap data"
+        ]
+      }
+    },
+    {
+      "case_id": "ftcache.FTC_SBitCache_Lookup.missing_bitmap_without_sbits_only_caches_unavailable_sbit",
+      "subject": "ftcache.FTC_SBitCache_Lookup",
+      "case": "missing_bitmap_without_sbits_only_caches_unavailable_sbit",
+      "operation": "ftcache.sbit_cache_lookup",
+      "schema": "cache_sbit_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "file",
+            "role": "bitmap_strike_font",
+            "path": "input/fixtures/assets/fonts/sbit_missing_bitmap.ttf"
+          }
+        },
+        "params": {
+          "runtime_route": "actual_ftc_manager_sbit_cache",
+          "cache": "live_sbit_cache",
+          "image_type": {
+            "face_id": "stable_pointer:bitmap-strike",
+            "width": 9,
+            "height": 9,
+            "flags": [
+              "FT_LOAD_DEFAULT"
+            ]
+          },
+          "glyph_index": 1,
+          "anode_output": "nonnull"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcache",
+        "area:sbit-cache",
+        "state:unavailable-sbit"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "sbit": "descriptor_with_unavailable_sentinel",
+          "buffer": "null"
+        },
+        "compare": {
+          "mode": "nullness",
+          "paths": [
+            "status",
+            "sbit.buffer_null",
+            "sbit.width",
+            "sbit.height"
+          ]
+        },
+        "fixture_requirements": [
+          "The maintained SBIT fixture must make the pinned cache's glyph-load path produce a successful unavailable descriptor when FT_LOAD_SBITS_ONLY is absent."
         ]
       }
     }

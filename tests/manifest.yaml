@@ -3116,6 +3116,8 @@ subjects:
         description: A non-null anode output receives the cache node and increments its reference count until FTC_Node_Unref releases it.
       - id: missing_bitmap_has_null_buffer
         description: Missing small bitmap data is represented by a successful descriptor with buffer set to null when C does so.
+      - id: missing_bitmap_without_sbits_only_caches_unavailable_sbit
+        description: A glyph-load failure without FT_LOAD_SBITS_ONLY is converted into a successful unavailable SBit descriptor by the cache.
 
   - id: ftcache.FTC_SBitCache_LookupScaler
     kind: function

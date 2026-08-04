@@ -3380,13 +3380,16 @@ fn ftc_sbit_cache_fill(
     }
     let slot = match FT_Load_Glyph(&cache.face, key.glyph_index, key.flags) {
         Ok(slot) => slot,
-        Err(_error) if key.flags & FT_LOAD_SBITS_ONLY != 0 => {
+        Err(_error) => {
+            // FreeType's `ftc_snode_load` converts every glyph-load failure
+            // into an unavailable SBit sentinel and returns success. The
+            // cache therefore preserves lookup success even when the
+            // underlying glyph cannot produce a bitmap.
             cache
                 .entries
                 .insert(key, Box::new(ftc_missing_sbit_entry()));
             return Ok(());
         }
-        Err(error) => return Err(error),
     };
     let slot = if slot.format == FT_GLYPH_FORMAT_BITMAP {
         slot
