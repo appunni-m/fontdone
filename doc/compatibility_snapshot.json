@@ -54,33 +54,33 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-08-04",
-    "source_commit": "a0ec16967cf5d71601c3b975bd10e3c5821b898d",
+    "source_commit": "7cfd9101e8bf255295382631c769be834f08fb06",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "0a0c3ca5-12f6-49a3-84fd-16aafb07e2c6",
-    "snapshot_id": "4faba8c3-aea6-498f-852e-3635d82702ea",
-    "duration_ms": 86334,
+    "run_id": "2869a82c-0698-493a-932d-32220e82508d",
+    "snapshot_id": "c364b208-1c90-44e4-98de-46d38ab889aa",
+    "duration_ms": 92551,
     "exit_code": 0,
     "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with line-table debuginfo=1; single-worker parity; one instrumented test binary runs directly in three split backend processes; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; source-digest-bound expanded input cache reused across the three processes; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; clean binary preparation uses cargo llvm-cov --no-report -- --list; raw LLVM JSON is ingested directly, with segment normalization retained only as an opt-in compatibility rewrite; test-harness source excluded",
     "lines": {
-      "covered": 49822,
-      "total": 54356,
-      "percent": 91.65869453234233
+      "covered": 49871,
+      "total": 54394,
+      "percent": 91.68474464095304
     },
     "branches": {
-      "covered": 9865,
-      "total": 12582,
-      "percent": 78.40565887776189
+      "covered": 9875,
+      "total": 12594,
+      "percent": 78.41035413689058
     },
     "functions": {
-      "covered": 3401,
-      "total": 3847,
-      "percent": 88.40655055887705
+      "covered": 3405,
+      "total": 3850,
+      "percent": 88.44155844155844
     },
     "regions": {
-      "covered": 68556,
-      "total": 75578,
-      "percent": 90.70893646299187
+      "covered": 68622,
+      "total": 75630,
+      "percent": 90.73383577945263
     },
     "runtime_parity": {
       "runnable": 7539,
@@ -862,9 +862,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "686ed0dec2b4cd32ff260b0d73325113a9064af9c8650d2914a082390d275835",
-    "parity_tree_sha256": "492cb1af061af6d233e0222cda1f61a2898bc3290b1fcaf1ef7ea03f6cf930e0",
-    "log_sha256": "43b4e6e537ec769cc74e9a5c43d76e0fcaeeb4ac320c53dabfe658d825860289",
+    "sha256": "c5b74f11d71d2eb7a2a3d30ef0399369e596ceb4ee6310c829887b82053929ce",
+    "parity_tree_sha256": "b659ecebf1e0dc4a9d1b43ce7e3111a62116a861cae04f36be2ddf244b2c9a57",
+    "log_sha256": "8046fd1ceb98213efc0cb627146c512ff5e5079fcd6cb10f687f184c9fe5908c",
     "command": "make test-parity"
   }
 }

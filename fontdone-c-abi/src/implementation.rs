@@ -4038,6 +4038,54 @@ pub struct AbiCacheManagerOwnershipSnapshot {
 }
 
 #[cfg(feature = "abi-test-support")]
+fn abi_sbit_cache_lookup_snapshot(
+    manager: FTC_Manager,
+    error: FT_Error,
+    sbit: FTC_SBit,
+    node: FTC_Node,
+    sbit_output: bool,
+    anode_output: bool,
+) -> AbiSBitCacheLookupSnapshot {
+    let record = if sbit_output && error == rust_ffi::FT_Err_Ok && !sbit.is_null() {
+        // SAFETY: successful lookup returns a manager-owned record that is
+        // live until manager reset/done.
+        Some(unsafe { *sbit })
+    } else {
+        None
+    };
+    let buffer = record
+        .filter(|record| !record.buffer.is_null())
+        .map(|record| {
+            let pitch = usize::from(record.pitch.unsigned_abs());
+            let len = pitch.saturating_mul(usize::from(record.height));
+            // SAFETY: the live cache record owns at least pitch*height bytes
+            // when its buffer pointer is non-null.
+            unsafe { slice::from_raw_parts(record.buffer, len) }.to_vec()
+        })
+        .unwrap_or_default();
+    let node_locked = anode_output && error == rust_ffi::FT_Err_Ok && !node.is_null();
+    let node_ref_count = if node_locked {
+        // SAFETY: a non-null node returned by this live manager remains
+        // readable until it is unreferenced below.
+        unsafe { (*node).ref_count }
+    } else {
+        0
+    };
+    if node_locked {
+        FTC_Node_Unref(node, manager);
+    }
+    AbiSBitCacheLookupSnapshot {
+        error,
+        sbit: record,
+        buffer,
+        sbit_null: !sbit_output || sbit.is_null(),
+        anode_null: !anode_output || node.is_null(),
+        node_locked,
+        node_ref_count,
+    }
+}
+
+#[cfg(feature = "abi-test-support")]
 impl AbiSBitCacheHarness {
     /// Builds a library, requester-backed manager, and manager-owned SBit cache.
     pub fn new(bytes: &[FT_Byte], face_index: FT_Long) -> Result<Self, FT_Error> {
@@ -4134,6 +4182,19 @@ impl AbiSBitCacheHarness {
         }
     }
 
+    /// Registers an SBit cache for a route that starts with manager-only state.
+    pub fn ensure_sbit_cache(&mut self) -> Result<(), FT_Error> {
+        if !self.cache.is_null() {
+            return Ok(());
+        }
+        let error = FTC_SBitCache_New(self.manager, &mut self.cache);
+        if error == rust_ffi::FT_Err_Ok {
+            Ok(())
+        } else {
+            Err(error)
+        }
+    }
+
     /// Calls the exported image-cache lookup and optionally releases its node.
     /// A retained node is safe to unreference after `FTC_Manager_RemoveFaceID`
     /// because the manager owns node allocations until reset or done.
@@ -4189,43 +4250,34 @@ impl AbiSBitCacheHarness {
                 ptr::null_mut()
             },
         );
-        let record = if error == rust_ffi::FT_Err_Ok && !sbit.is_null() {
-            // SAFETY: successful lookup returns a manager-owned record that is
-            // live until manager reset/done.
-            Some(unsafe { *sbit })
-        } else {
-            None
-        };
-        let buffer = record
-            .filter(|record| !record.buffer.is_null())
-            .map(|record| {
-                let pitch = usize::from(record.pitch.unsigned_abs());
-                let len = pitch.saturating_mul(usize::from(record.height));
-                // SAFETY: the live cache record owns at least pitch*height
-                // bytes when its buffer pointer is non-null.
-                unsafe { slice::from_raw_parts(record.buffer, len) }.to_vec()
-            })
-            .unwrap_or_default();
-        let node_locked = anode_output && error == rust_ffi::FT_Err_Ok && !node.is_null();
-        let node_ref_count = if node_locked {
-            // SAFETY: a non-null node returned by this live manager remains
-            // readable until it is unreferenced below.
-            unsafe { (*node).ref_count }
-        } else {
-            0
-        };
-        if node_locked {
-            FTC_Node_Unref(node, self.manager);
-        }
-        AbiSBitCacheLookupSnapshot {
-            error,
-            sbit: record,
-            buffer,
-            sbit_null: sbit.is_null(),
-            anode_null: node.is_null(),
-            node_locked,
-            node_ref_count,
-        }
+        abi_sbit_cache_lookup_snapshot(self.manager, error, sbit, node, sbit_output, anode_output)
+    }
+
+    /// Calls the exported `FTC_SBitCache_LookupScaler` and snapshots its
+    /// manager-owned record and node state.
+    pub fn lookup_scaler(
+        &mut self,
+        mut scaler: FTC_ScalerRec,
+        load_flags: FT_ULong,
+        glyph_index: FT_UInt,
+        anode_output: bool,
+    ) -> AbiSBitCacheLookupSnapshot {
+        let _keep_requester_alive = &self.requester;
+        let mut sbit = NonNull::<FTC_SBitRec>::dangling().as_ptr();
+        let mut node = NonNull::<FTC_NodeRec>::dangling().as_ptr();
+        let error = FTC_SBitCache_LookupScaler(
+            self.cache,
+            ptr::from_mut(&mut scaler),
+            load_flags,
+            glyph_index,
+            &mut sbit,
+            if anode_output {
+                &mut node
+            } else {
+                ptr::null_mut()
+            },
+        );
+        abi_sbit_cache_lookup_snapshot(self.manager, error, sbit, node, true, anode_output)
     }
 
     /// Exercises manager-owned face, size, cache, node, reset, and done state.

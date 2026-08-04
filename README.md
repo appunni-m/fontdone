@@ -124,10 +124,10 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`f63cb35f-e590-43bb-90ba-859788819779`, recorded in
+`6668ef13-e1cc-44dc-b4b5-516d2253bfbd`, recorded in
 `doc/runtime_parity_evidence.json` after passing 7,539 / 7,539 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `492cb1af061af6d233e0222cda1f61a2898bc3290b1fcaf1ef7ea03f6cf930e0`.
+Its source-bound parity-tree digest is `b659ecebf1e0dc4a9d1b43ce7e3111a62116a861cae04f36be2ddf244b2c9a57`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -141,15 +141,15 @@ their exact worktree than the committed release snapshot.
 
 The latest all-lane coverage snapshot was recorded on **2026-08-04**
 for the current source-matched working tree (Coverage MCP run
-`0a0c3ca5-12f6-49a3-84fd-16aafb07e2c6`, snapshot
-`4faba8c3-aea6-498f-852e-3635d82702ea`):
+`2869a82c-0698-493a-932d-32220e82508d`, snapshot
+`c364b208-1c90-44e4-98de-46d38ab889aa`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,822 / 54,356 | 91.66% |
-| Branches | 9,865 / 12,582 | 78.41% |
-| Functions | 3,401 / 3,847 | 88.41% |
-| Regions | 68,556 / 75,578 | 90.71% |
+| Lines | 49,871 / 54,394 | 91.68% |
+| Branches | 9,875 / 12,594 | 78.41% |
+| Functions | 3,405 / 3,850 | 88.44% |
+| Regions | 68,622 / 75,630 | 90.73% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -184,12 +184,11 @@ backend and measured 49,624 / 54,186 lines, 9,815 / 12,538 branches,
 3,391 / 3,835 functions, and 68,297 / 75,365 regions; it is retained in
 `doc/DEVELOPMENT.md` and `doc/ROADMAP.md` until a new compatibility snapshot
 is deliberately promoted.
-The current dirty-worktree validation run `0a0c3ca5-12f6-49a3-84fd-16aafb07e2c6`
-(`4faba8c3-aea6-498f-852e-3635d82702ea`) passed 7,539 / 7,539 comparisons in
-each backend and measured 49,822 / 54,356 lines, 9,865 / 12,582 branches,
-3,401 / 3,847 functions, and 68,556 / 75,578 regions in 86.334 seconds.
-The current source/input-bound run passed 7,539 / 7,539 comparisons in each backend lane. Its
-lane executions were 39.86 seconds Rust FFI, 28.83 seconds C ABI, and 28.73
+The current source/input-bound validation run `2869a82c-0698-493a-932d-32220e82508d`
+(`c364b208-1c90-44e4-98de-46d38ab889aa`) passed 7,539 / 7,539 comparisons in
+each backend and measured 49,871 / 54,394 lines, 9,875 / 12,594 branches,
+3,405 / 3,850 functions, and 68,622 / 75,630 regions in 92.551 seconds.
+Its lane executions were 39.48 seconds Rust FFI, 28.85 seconds C ABI, and 28.76
 seconds WASM, with about 11–12 ms comparison per lane. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
 MCP without the compatibility-only segment rewrite. The default
@@ -208,7 +207,7 @@ not rebuilt on every run; unchanged FreeType CMake configuration is reused as
 well. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The latest source/input-bound coverage run completed in 86.334 seconds;
+The latest source/input-bound coverage run completed in 92.551 seconds;
 the preceding managed warm source-bound coverage run completed in 50.842 seconds;
 the preceding source-bound run completed in 100.333 seconds including the
 instrumented rebuild; its longest backend execution was 48.24 seconds;
@@ -253,7 +252,7 @@ routes remain even when every bare function name has some traced route. The self
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`f1638566-ebc5-4494-a162-cc64a002af3a`.
+`a84698c1-7473-47c8-a8ae-0dc562bfe2da`.
 
 ### 3.5 Performance baseline
 
