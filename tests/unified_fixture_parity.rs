@@ -89850,6 +89850,7 @@ struct BitmapBlendSample {
 fn bitmap_blend_output(case: &InputCase, backend: BitmapBlendBackend) -> Result<RunOutput, String> {
     let scenario = string_param(&case.inputs.params, "scenario")?;
     if scenario == "error_invalid_arguments_or_target_mode" {
+        bitmap_blend_null_argument_errors(backend)?;
         let mut sample = bitmap_blend_default_sample();
         let (mut source, source_bytes) = bitmap_blend_source_record(FT_PIXEL_MODE_GRAY, false);
         let (mut target, target_bytes) = bitmap_blend_source_record(FT_PIXEL_MODE_GRAY, false);
@@ -89894,6 +89895,156 @@ fn bitmap_blend_output(case: &InputCase, backend: BitmapBlendBackend) -> Result<
         runs.push(run_output_json(bitmap_blend_run(backend, sample)?));
     }
     Ok(ok(json!({ "runs": runs })))
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum BitmapBlendNullArgument {
+    Library,
+    Source,
+    Target,
+    TargetOffset,
+}
+
+fn bitmap_blend_null_argument_errors(backend: BitmapBlendBackend) -> Result<(), String> {
+    for null_argument in [
+        BitmapBlendNullArgument::Library,
+        BitmapBlendNullArgument::Source,
+        BitmapBlendNullArgument::Target,
+        BitmapBlendNullArgument::TargetOffset,
+    ] {
+        let error = bitmap_blend_null_argument_call(backend, null_argument);
+        if error != FT_Err_Invalid_Argument {
+            return Err(format!(
+                "bitmap_blend null {null_argument:?} returned {error}, expected {}",
+                FT_Err_Invalid_Argument
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn bitmap_blend_null_argument_call(
+    backend: BitmapBlendBackend,
+    null_argument: BitmapBlendNullArgument,
+) -> FT_Error {
+    let sample = bitmap_blend_default_sample();
+    match backend {
+        BitmapBlendBackend::Rust => {
+            let library = FT_Init_FreeType();
+            let source = FT_Bitmap_C::default();
+            let mut target = FT_Bitmap_C::default();
+            let mut target_offset = sample.target_offset;
+            FT_Bitmap_Blend(
+                (null_argument != BitmapBlendNullArgument::Library).then_some(&library),
+                (null_argument != BitmapBlendNullArgument::Source).then_some(&source),
+                sample.source_offset,
+                (null_argument != BitmapBlendNullArgument::Target).then_some(&mut target),
+                (null_argument != BitmapBlendNullArgument::TargetOffset)
+                    .then_some(&mut target_offset),
+                FT_Color {
+                    blue: sample.color.blue,
+                    green: sample.color.green,
+                    red: sample.color.red,
+                    alpha: sample.color.alpha,
+                },
+            )
+        }
+        BitmapBlendBackend::CAbi => {
+            let mut library = ptr::null_mut();
+            if null_argument != BitmapBlendNullArgument::Library {
+                let error = c_abi::FT_Init_FreeType(&mut library);
+                if error != FT_Err_Ok {
+                    return error;
+                }
+            }
+            let source = c_abi::FT_Bitmap::default();
+            let mut target = c_abi::FT_Bitmap::default();
+            let source_ptr: *const c_abi::FT_Bitmap =
+                if null_argument == BitmapBlendNullArgument::Source {
+                    ptr::null()
+                } else {
+                    &source
+                };
+            let target_ptr: *mut c_abi::FT_Bitmap =
+                if null_argument == BitmapBlendNullArgument::Target {
+                    ptr::null_mut()
+                } else {
+                    &mut target
+                };
+            let mut target_offset = c_abi::FT_Vector {
+                x: sample.target_offset.x,
+                y: sample.target_offset.y,
+            };
+            let target_offset_ptr: *mut c_abi::FT_Vector =
+                if null_argument == BitmapBlendNullArgument::TargetOffset {
+                    ptr::null_mut()
+                } else {
+                    &mut target_offset
+                };
+            let error = c_abi::FT_Bitmap_Blend(
+                library,
+                source_ptr,
+                c_abi::FT_Vector {
+                    x: sample.source_offset.x,
+                    y: sample.source_offset.y,
+                },
+                target_ptr,
+                target_offset_ptr,
+                c_abi::FT_Color {
+                    blue: sample.color.blue,
+                    green: sample.color.green,
+                    red: sample.color.red,
+                    alpha: sample.color.alpha,
+                },
+            );
+            if !library.is_null() {
+                c_done_library(library);
+            }
+            error
+        }
+        BitmapBlendBackend::Wasm => {
+            let source = wasm_abi::FontdoneWasmBitmap::default();
+            let mut target = wasm_abi::FontdoneWasmBitmap::default();
+            let source_ptr: *const wasm_abi::FontdoneWasmBitmap =
+                if null_argument == BitmapBlendNullArgument::Source {
+                    ptr::null()
+                } else {
+                    &source
+                };
+            let target_ptr: *mut wasm_abi::FontdoneWasmBitmap =
+                if null_argument == BitmapBlendNullArgument::Target {
+                    ptr::null_mut()
+                } else {
+                    &mut target
+                };
+            let mut target_offset = wasm_abi::FontdoneWasmVector {
+                x: sample.target_offset.x,
+                y: sample.target_offset.y,
+            };
+            let target_offset_ptr: *mut wasm_abi::FontdoneWasmVector =
+                if null_argument == BitmapBlendNullArgument::TargetOffset {
+                    ptr::null_mut()
+                } else {
+                    &mut target_offset
+                };
+            wasm_abi::fontdone_wasm_bitmap_blend(
+                usize::from(null_argument != BitmapBlendNullArgument::Library),
+                source_ptr,
+                wasm_abi::FontdoneWasmVector {
+                    x: sample.source_offset.x,
+                    y: sample.source_offset.y,
+                },
+                target_ptr,
+                target_offset_ptr,
+                wasm_abi::FontdoneWasmColor {
+                    blue: sample.color.blue,
+                    green: sample.color.green,
+                    red: sample.color.red,
+                    alpha: sample.color.alpha,
+                },
+            )
+        }
+    }
 }
 
 fn run_output_json(output: RunOutput) -> Value {

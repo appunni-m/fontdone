@@ -3961,6 +3961,16 @@ static int emit_bitmap_blend(const char* scenario) {
     FT_Vector target_offset = { -33, 130 };
 
     if (streq(scenario, "error_invalid_arguments_or_target_mode")) {
+        FT_Bitmap null_source;
+        FT_Bitmap null_target;
+        FT_Vector null_target_offset = {0, 0};
+        FT_Bitmap_Init(&null_source);
+        FT_Bitmap_Init(&null_target);
+        err = FT_Bitmap_Blend(NULL, &null_source, source_offset, &null_target, &null_target_offset, color);
+        err = FT_Bitmap_Blend(library, NULL, source_offset, &null_target, &null_target_offset, color);
+        err = FT_Bitmap_Blend(library, &null_source, source_offset, NULL, &null_target_offset, color);
+        err = FT_Bitmap_Blend(library, &null_source, source_offset, &null_target, NULL, color);
+
         unsigned char source_bytes[96];
         unsigned char target_bytes[96];
         FT_Bitmap source;
