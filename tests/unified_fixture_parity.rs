@@ -48132,6 +48132,12 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_image_cache_lookup_scaler(case)
         }
         "ftcache.cmap_cache_lookup"
+            if case_id_base(&case.case_id)
+                == "ftcache.FTC_CMapCache_Lookup.error_null_cache_returns_zero" =>
+        {
+            c_cmap_cache_lookup_null(case)
+        }
+        "ftcache.cmap_cache_lookup"
             if !case.expect_error && cmap_cache_indexes(&case.inputs.params).is_ok() =>
         {
             c_cmap_cache_lookup(case)
@@ -58708,6 +58714,15 @@ fn c_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
             Ok((glyph_index, manager.requester_calls() as i32, active))
         },
     )
+}
+
+fn c_cmap_cache_lookup_null(case: &InputCase) -> Result<RunOutput, String> {
+    let char_code = cmap_cache_char_code(&case.inputs.params)?;
+    for cmap_index in cmap_cache_indexes(&case.inputs.params)? {
+        let _ =
+            c_abi::FTC_CMapCache_Lookup(ptr::null_mut(), ptr::null_mut(), cmap_index, char_code);
+    }
+    Ok(error(FT_Err_Unimplemented_Feature as FT_Error))
 }
 
 fn wasm_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
