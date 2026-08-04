@@ -75970,6 +75970,7 @@ enum CheckOutlineKind {
     MultiContour,
     ZeroPointsOneContour,
     NonIncreasingContours,
+    FinalEndpointMismatch,
 }
 
 fn outline_check_cases(case_id: &str) -> Result<Vec<(&'static str, CheckOutlineKind)>, String> {
@@ -75987,6 +75988,10 @@ fn outline_check_cases(case_id: &str) -> Result<Vec<(&'static str, CheckOutlineK
             ("null", CheckOutlineKind::Null),
             ("bad_zero_points", CheckOutlineKind::ZeroPointsOneContour),
             ("bad_contours", CheckOutlineKind::NonIncreasingContours),
+            (
+                "bad_final_endpoint",
+                CheckOutlineKind::FinalEndpointMismatch,
+            ),
         ]);
     }
     Err(format!("unsupported outline check case {case_id}"))
@@ -76032,6 +76037,12 @@ fn check_outline_model(kind: CheckOutlineKind) -> Option<MutableOutlineModel> {
             points: vec![(0, 0), (64, 0), (64, 64), (0, 64)],
             tags: vec![1; 4],
             contours: vec![2, 2],
+            flags: 0,
+        }),
+        CheckOutlineKind::FinalEndpointMismatch => Some(MutableOutlineModel {
+            points: vec![(0, 0), (64, 0), (64, 64), (0, 64)],
+            tags: vec![1; 4],
+            contours: vec![2],
             flags: 0,
         }),
     }

@@ -16943,6 +16943,7 @@ typedef enum CheckOutlineKind_ {
     CHECK_OUTLINE_MULTI_CONTOUR,
     CHECK_OUTLINE_ZERO_POINTS_ONE_CONTOUR,
     CHECK_OUTLINE_NONINCREASING_CONTOURS,
+    CHECK_OUTLINE_FINAL_ENDPOINT_MISMATCH,
 } CheckOutlineKind;
 
 static void build_check_outline(
@@ -16992,6 +16993,11 @@ static void build_check_outline(
         contours[0] = 2;
         contours[1] = 2;
         outline->n_contours = 2;
+        return;
+    }
+    if (kind == CHECK_OUTLINE_FINAL_ENDPOINT_MISMATCH) {
+        contours[0] = 2;
+        outline->n_contours = 1;
         return;
     }
     points[4].x = 128;
@@ -17067,6 +17073,11 @@ static int emit_outline_check(int argc, char** argv) {
         print_outline_check_observation(
             "bad_contours",
             CHECK_OUTLINE_NONINCREASING_CONTOURS,
+            &emitted
+        );
+        print_outline_check_observation(
+            "bad_final_endpoint",
+            CHECK_OUTLINE_FINAL_ENDPOINT_MISMATCH,
             &emitted
         );
     } else {

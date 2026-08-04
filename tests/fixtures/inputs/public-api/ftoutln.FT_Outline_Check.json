@@ -34,10 +34,10 @@
       "operation": "ftoutln.outline_check",
       "schema": "api_result",
       "expect_error": true,
-      "inputs": {"assets": {"bad_zero_points": {"kind": "ref", "id": "outlines/invalid/zero-points-one-contour.json", "asset_kind": "outline_model"}, "bad_contours": {"kind": "ref", "id": "outlines/invalid/nonincreasing-contours.json", "asset_kind": "outline_model"}}, "params": {"scenarios": [{"outline_pointer": null}, {"outline_ref": "bad_zero_points"}, {"outline_ref": "bad_contours"}]}},
+      "inputs": {"assets": {"bad_zero_points": {"kind": "ref", "id": "outlines/invalid/zero-points-one-contour.json", "asset_kind": "outline_model"}, "bad_contours": {"kind": "ref", "id": "outlines/invalid/nonincreasing-contours.json", "asset_kind": "outline_model"}, "bad_final_endpoint": {"kind": "ref", "id": "outlines/invalid/final-endpoint-mismatch.json", "asset_kind": "outline_model"}}, "params": {"scenarios": [{"outline_pointer": null}, {"outline_ref": "bad_zero_points"}, {"outline_ref": "bad_contours"}, {"outline_ref": "bad_final_endpoint"}]}},
       "classifiers": ["kind:function", "header:ftoutln", "surface:public-c-api", "error:invalid-outline"],
       "metadata": {"abi": {"header": "freetype/ftoutln.h", "symbol": "FT_Outline_Check", "kind": "function", "c_signature": "FT_Error FT_Outline_Check(FT_Outline* outline)"}, "source_behavior": "Null, count mismatch, empty contours, non-increasing endpoints, and final endpoint mismatch return Invalid_Outline."},
-      "expectation": {"status": "error", "output_shape": {"results": [{"return": "FT_Error"}]}, "compare": {"mode": "exact_error", "paths": ["results[*].return"]}, "error": "FT_Err_Invalid_Outline", "source_refs": ["freetype/src/base/ftoutln.c:352-390"], "fixture_requirements": ["Invalid outline assets for zero points with contours and non-increasing contour endpoints."]}
+      "expectation": {"status": "error", "output_shape": {"results": [{"return": "FT_Error"}]}, "compare": {"mode": "exact_error", "paths": ["results[*].return"]}, "error": "FT_Err_Invalid_Outline", "source_refs": ["freetype/src/base/ftoutln.c:352-390"], "fixture_requirements": ["Invalid outline assets for zero points with contours, non-increasing contour endpoints, and a final endpoint that does not equal n_points - 1."]}
     }
   ]
 }
