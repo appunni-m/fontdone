@@ -58132,46 +58132,38 @@ fn rust_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
 
 fn c_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
-    let mut state = CCmapCacheState {
-        bytes,
-        library: std::ptr::null_mut(),
-        face: std::ptr::null_mut(),
-        requester_count: 0,
-    };
-    let output = cmap_cache_lookup_output(
+    let mut manager = c_abi::AbiSBitCacheHarness::new_manager_only(bytes.as_ref(), 0)
+        .map_err(|error| format!("FTC_Manager_New returned {error}"))?;
+    let manager_handle = manager.manager_handle();
+    let mut cache = std::ptr::null_mut();
+    let cache_status = c_abi::FTC_CMapCache_New(manager_handle, &mut cache);
+    if cache_status != FT_Err_Ok {
+        return Err(format!("FTC_CMapCache_New returned {cache_status}"));
+    }
+    let face_id = manager.face_id();
+    cmap_cache_lookup_output(
         &case.inputs.params,
         |state_change, cmap_index, char_code| {
             match state_change {
-                CmapCacheStateChange::RemoveFaceId | CmapCacheStateChange::Reset => {
-                    if !state.face.is_null() {
-                        c_done_face(state.face);
-                        state.face = std::ptr::null_mut();
-                    }
-                    if !state.library.is_null() {
-                        c_done_library(state.library);
-                        state.library = std::ptr::null_mut();
-                    }
+                CmapCacheStateChange::RemoveFaceId => {
+                    c_abi::FTC_Manager_RemoveFaceID(manager_handle, face_id);
+                }
+                CmapCacheStateChange::Reset => {
+                    c_abi::FTC_Manager_Reset(manager_handle);
                 }
                 CmapCacheStateChange::None => {}
             }
-            if state.face.is_null() {
-                state.requester_count += 1;
-                let (library, face) = c_new_face_from_bytes(state.bytes.as_ref(), 0)?;
-                state.library = library;
-                state.face = face;
-            }
-            let glyph_index = c_cmap_cache_lookup_glyph(state.face, cmap_index, char_code)?;
-            let active = c_abi::abi_active_charmap_index(state.face).unwrap_or(-1);
-            Ok((glyph_index, state.requester_count, active))
+            let glyph_index = c_abi::FTC_CMapCache_Lookup(cache, face_id, cmap_index, char_code);
+            let mut face = std::ptr::null_mut();
+            let face_status = c_abi::FTC_Manager_LookupFace(manager_handle, face_id, &mut face);
+            let active = if face_status == FT_Err_Ok {
+                c_abi::abi_active_charmap_index(face).unwrap_or(-1)
+            } else {
+                -1
+            };
+            Ok((glyph_index, manager.requester_calls() as i32, active))
         },
-    );
-    if !state.face.is_null() {
-        c_done_face(state.face);
-    }
-    if !state.library.is_null() {
-        c_done_library(state.library);
-    }
-    output
+    )
 }
 
 fn wasm_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
@@ -58211,13 +58203,6 @@ fn wasm_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
 struct RustCmapCacheState {
     bytes: Arc<[u8]>,
     face: Option<FT_Face>,
-    requester_count: i32,
-}
-
-struct CCmapCacheState {
-    bytes: Arc<[u8]>,
-    library: c_abi::FT_Library,
-    face: c_abi::FT_Face,
     requester_count: i32,
 }
 

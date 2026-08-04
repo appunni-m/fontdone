@@ -124,10 +124,10 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`5d5b5986-c6cb-4953-a10e-a72e8711bcce`, recorded in
+`06950ec3-0954-47ae-8271-d66df83c8bf9`, recorded in
 `doc/runtime_parity_evidence.json` after passing 7,539 / 7,539 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `b2da82ad3fb0db9866c4c1bdc7ac1dca615069934ca9e4d3f56f1e7ca28eabaa`.
+Its source-bound parity-tree digest is `6cfb80fc77569127ba17bca790d873df7bedd4dc61dc00b7ce880024636ad176`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -141,15 +141,15 @@ their exact worktree than the committed release snapshot.
 
 The latest committed all-lane coverage snapshot was recorded on **2026-08-04**
 for the current source-matched working tree (Coverage MCP run
-`b8b246c4-a7d9-4d39-8f08-aeb4694679f4`, snapshot
-`54a29596-5f12-4598-b272-2ca8df957b63`):
+`3a32c0bc-1f21-42d2-9ade-076d8d59e266`, snapshot
+`361294c8-673e-4e19-85dd-610e28824b05`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,786 / 54,356 | 91.59% |
-| Branches | 9,853 / 12,582 | 78.31% |
-| Functions | 3,399 / 3,847 | 88.35% |
-| Regions | 68,499 / 75,578 | 90.63% |
+| Lines | 49,802 / 54,356 | 91.62% |
+| Branches | 9,862 / 12,582 | 78.38% |
+| Functions | 3,400 / 3,847 | 88.38% |
+| Regions | 68,531 / 75,578 | 90.68% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -184,12 +184,12 @@ backend and measured 49,624 / 54,186 lines, 9,815 / 12,538 branches,
 3,391 / 3,835 functions, and 68,297 / 75,365 regions; it is retained in
 `doc/DEVELOPMENT.md` and `doc/ROADMAP.md` until a new compatibility snapshot
 is deliberately promoted.
-The current dirty-worktree validation run `b8b246c4-a7d9-4d39-8f08-aeb4694679f4`
-(`54a29596-5f12-4598-b272-2ca8df957b63`) passed 7,539 / 7,539 comparisons in
-each backend and measured 49,786 / 54,356 lines, 9,853 / 12,582 branches,
-3,399 / 3,847 functions, and 68,499 / 75,578 regions in 89.542 seconds.
+The current dirty-worktree validation run `3a32c0bc-1f21-42d2-9ade-076d8d59e266`
+(`361294c8-673e-4e19-85dd-610e28824b05`) passed 7,539 / 7,539 comparisons in
+each backend and measured 49,802 / 54,356 lines, 9,862 / 12,582 branches,
+3,400 / 3,847 functions, and 68,531 / 75,578 regions in 89.806 seconds.
 The current source/input-bound run passed 7,539 / 7,539 comparisons in each backend lane. Its
-lane executions were 43.67 seconds Rust FFI, 33.18 seconds C ABI, and 32.96
+lane executions were 39.85 seconds Rust FFI, 29.02 seconds C ABI, and 28.91
 seconds WASM, with about 11 ms comparison per lane. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
 MCP without the compatibility-only segment rewrite. The default
@@ -208,7 +208,7 @@ not rebuilt on every run; unchanged FreeType CMake configuration is reused as
 well. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The latest source/input-bound coverage run completed in 89.542 seconds;
+The latest source/input-bound coverage run completed in 89.806 seconds;
 the preceding managed warm source-bound coverage run completed in 50.842 seconds;
 the preceding source-bound run completed in 100.333 seconds including the
 instrumented rebuild; its longest backend execution was 48.24 seconds;
