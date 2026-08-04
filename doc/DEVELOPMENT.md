@@ -144,11 +144,16 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `b5b428a8-0008-47fe-a606-d1ce8efa9ea5` (snapshot
-`8f754963-2323-466e-a786-4c7d881bcaa5`): all three processes passed 7,539 /
-7,539 cases. This source/input-bound managed run took 95.454 seconds; the
-lane executions finished in 43.80 seconds (Rust), 32.01 seconds (C ABI), and
-31.89 seconds (WASM). The
+Coverage MCP run `adf4c9fa-c972-4dbc-bdba-f9e3505379e2` (snapshot
+`791315ec-3edd-4ff9-a956-72ff15cf158e`): all three processes passed 7,539 /
+7,539 cases. This source/input-bound managed run took 121.804 seconds,
+including a 1m 14s instrumented test-profile build; the lane executions
+finished in 40.10 seconds (Rust), 29.20 seconds (C ABI), and 29.10 seconds
+(WASM). The same-source warm repeat `53c8e8ce-801e-4d7b-8495-cc5d09403b79`
+(snapshot `353b0be8-324a-4fc9-9f24-e36fff5c97bc`) took 46.969 seconds. The
+three lanes already run concurrently, so increasing coverage workers is not a
+safe speedup: the current two-worker experiment stalled without producing
+parity progress and was cancelled after 172 seconds. The
 preceding source-bound managed run took 93.856 seconds. The preceding warm managed run took 50.842 seconds. The
 preceding source-bound run took 100.333 seconds, including a 48.78-second
 instrumented rebuild; the longest backend execution was 48.24 seconds. The
@@ -319,15 +324,15 @@ route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,871 / 54,394 | 91.68% |
-| Branches | 9,875 / 12,594 | 78.41% |
-| Functions | 3,405 / 3,850 | 88.44% |
-| Regions | 68,622 / 75,630 | 90.73% |
+| Lines | 49,881 / 54,403 | 91.69% |
+| Branches | 9,878 / 12,596 | 78.42% |
+| Functions | 3,406 / 3,851 | 88.44% |
+| Regions | 68,629 / 75,636 | 90.74% |
 
 That current run passed all 7,539 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`8f754963-2323-466e-a786-4c7d881bcaa5`. Its retained log reports a
-43.80-second longest backend execution. Coverage MCP does not expose
+`353b0be8-324a-4fc9-9f24-e36fff5c97bc`. Its retained log reports a
+40.10-second longest backend execution. Coverage MCP does not expose
 separate timestamps for compilation, report finalization, or artifact ingestion. Current
 LLVM JSON is accepted directly by Coverage
 MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`

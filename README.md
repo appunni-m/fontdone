@@ -124,10 +124,10 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`83458c27-c65c-45d2-8d2d-609f260e2926`, recorded in
+`fcef97a3-0ec6-43b2-ba43-79613f68bce2`, recorded in
 `doc/runtime_parity_evidence.json` after passing 7,539 / 7,539 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `c0c1f4b3d8a942441b7e685746785adf56f106f60951ab4e2b09abd149f6cad7`.
+Its source-bound parity-tree digest is `485cbaf9256daf4ffcd26c17e241d43db262c7cc87fafbb5d3397bd70577325d`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -141,15 +141,15 @@ their exact worktree than the committed release snapshot.
 
 The latest all-lane coverage snapshot was recorded on **2026-08-04**
 for the current source-matched working tree (Coverage MCP run
-`b5b428a8-0008-47fe-a606-d1ce8efa9ea5`, snapshot
-`8f754963-2323-466e-a786-4c7d881bcaa5`):
+`53c8e8ce-801e-4d7b-8495-cc5d09403b79`, snapshot
+`353b0be8-324a-4fc9-9f24-e36fff5c97bc`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,871 / 54,394 | 91.68% |
-| Branches | 9,875 / 12,594 | 78.41% |
-| Functions | 3,405 / 3,850 | 88.44% |
-| Regions | 68,622 / 75,630 | 90.73% |
+| Lines | 49,881 / 54,403 | 91.69% |
+| Branches | 9,878 / 12,596 | 78.42% |
+| Functions | 3,406 / 3,851 | 88.44% |
+| Regions | 68,629 / 75,636 | 90.74% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -184,14 +184,17 @@ backend and measured 49,624 / 54,186 lines, 9,815 / 12,538 branches,
 3,391 / 3,835 functions, and 68,297 / 75,365 regions; it is retained in
 `doc/DEVELOPMENT.md` and `doc/ROADMAP.md` until a new compatibility snapshot
 is deliberately promoted.
-The current source/input-bound validation run `b5b428a8-0008-47fe-a606-d1ce8efa9ea5`
-(`8f754963-2323-466e-a786-4c7d881bcaa5`) passed 7,539 / 7,539 comparisons in
-each backend and measured 49,871 / 54,394 lines, 9,875 / 12,594 branches,
-3,405 / 3,850 functions, and 68,622 / 75,630 regions in 95.454 seconds.
-Its lane executions were 43.80 seconds Rust FFI, 32.01 seconds C ABI, and 31.89
-seconds WASM, with about 23–27 ms comparison per lane. The three-surface
-instrumented execution is the dominant cost; the report is accepted by Coverage
-MCP without the compatibility-only segment rewrite. The default
+The current source/input-bound cold run `adf4c9fa-c972-4dbc-bdba-f9e3505379e2`
+(`791315ec-3edd-4ff9-a956-72ff15cf158e`) passed 7,539 / 7,539 comparisons in
+each backend and measured 49,881 / 54,403 lines, 9,878 / 12,596 branches,
+3,406 / 3,851 functions, and 68,629 / 75,636 regions in 121.804 seconds.
+The retained build log shows a 1m 14s instrumented test-profile build. The
+same-source warm repeat `53c8e8ce-801e-4d7b-8495-cc5d09403b79`
+(`353b0be8-324a-4fc9-9f24-e36fff5c97bc`) completed in 46.969 seconds.
+Its lane executions were 40.10 seconds Rust FFI, 29.20 seconds C ABI, and 29.10
+seconds WASM, with about 13–16 ms comparison per lane. The three-surface
+instrumented execution and fresh binary build are the dominant costs; the report
+is accepted by Coverage MCP without the compatibility-only segment rewrite. The default
 `COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
 pass over the 28.6 MB JSON artifact; set it to `1` only for an older LLVM JSON
 producer that needs the segment-count clamp. Coverage builds retain the
@@ -207,7 +210,9 @@ not rebuilt on every run; unchanged FreeType CMake configuration is reused as
 well. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The latest source/input-bound coverage run completed in 95.454 seconds;
+The latest source/input-bound coverage run completed in 121.804 seconds,
+including the 74-second instrumented rebuild; its same-source warm repeat
+completed in 46.969 seconds;
 the preceding managed warm source-bound coverage run completed in 50.842 seconds;
 the preceding source-bound run completed in 100.333 seconds including the
 instrumented rebuild; its longest backend execution was 48.24 seconds;
