@@ -72,6 +72,10 @@
             },
             {
               "node": "foreign_or_bad_cache_index",
+              "manager": "null"
+            },
+            {
+              "node": "foreign_or_bad_cache_index",
               "manager": "live_empty"
             }
           ]

@@ -93,6 +93,12 @@
               "memory": "library_memory",
               "output": "valid",
               "output_len": null
+            },
+            {
+              "memory": "library_memory",
+              "output": "valid",
+              "output_len": "valid",
+              "input": null
             }
           ],
           "input_pointer_null_is_delayed_to_inflate": true

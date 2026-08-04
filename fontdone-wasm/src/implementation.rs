@@ -539,8 +539,11 @@ impl WasmOwnedSvgGlyph {
     }
 
     fn sync_core_from_record(&mut self) -> Result<(), FT_Error> {
+        if self.record.svg_document.is_null() {
+            return Err(rust_ffi::FT_Err_Invalid_Slot_Handle as FT_Error);
+        }
         let document_len = self.record.svg_document_length;
-        if document_len == 0 || self.record.svg_document.is_null() {
+        if document_len == 0 {
             return Err(rust_ffi::FT_Err_Invalid_Slot_Handle as FT_Error);
         }
         // SAFETY: a non-null public SVG record promises `document_len`
@@ -2357,12 +2360,15 @@ pub fn abi_svg_glyph_snapshot(glyph_handle: usize) -> Option<AbiSvgGlyphSnapshot
 }
 
 #[cfg(feature = "abi-test-support")]
-pub fn abi_support_zero_length_svg_glyph(glyph_handle: usize) -> bool {
+pub fn abi_support_zero_length_svg_glyph(glyph_handle: usize, null_document: bool) -> bool {
     let glyph = ptr::with_exposed_provenance_mut::<FontdoneWasmGlyph>(glyph_handle);
     let Some(owned) = wasm_owned_svg_glyph_from_root_mut(glyph) else {
         return false;
     };
     owned.record.svg_document_length = 0;
+    if null_document {
+        owned.record.svg_document = ptr::null();
+    }
     true
 }
 

@@ -801,12 +801,12 @@ impl OwnedSvgGlyph {
     }
 
     fn sync_core_from_record(&mut self) -> Result<(), FT_Error> {
+        if self.record.svg_document.is_null() {
+            return Err(rust_ffi::FT_Err_Invalid_Slot_Handle as FT_Error);
+        }
         let document_len = usize::try_from(self.record.svg_document_length)
             .map_err(|_| rust_ffi::FT_Err_Invalid_Slot_Handle as FT_Error)?;
         if document_len == 0 {
-            return Err(rust_ffi::FT_Err_Invalid_Slot_Handle as FT_Error);
-        }
-        if self.record.svg_document.is_null() {
             return Err(rust_ffi::FT_Err_Invalid_Slot_Handle as FT_Error);
         }
         // SAFETY: a non-null public SVG record promises `document_len`
@@ -7309,11 +7309,14 @@ pub fn abi_svg_glyph_snapshot(glyph: FT_Glyph) -> Option<AbiSvgGlyphSnapshot> {
 }
 
 #[cfg(feature = "abi-test-support")]
-pub fn abi_support_zero_length_svg_glyph(glyph: FT_Glyph) -> bool {
+pub fn abi_support_zero_length_svg_glyph(glyph: FT_Glyph, null_document: bool) -> bool {
     let Some(owned) = owned_svg_glyph_from_root_mut(glyph) else {
         return false;
     };
     owned.record.svg_document_length = 0;
+    if null_document {
+        owned.record.svg_document = ptr::null_mut();
+    }
     true
 }
 

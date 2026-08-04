@@ -20,6 +20,7 @@ COVERAGE_LLVM_COV_FLAGS ?= --no-clean
 COVERAGE_NORMALIZE_SEGMENTS ?= 0
 COVERAGE_PREPARATION_JOBS ?= 2
 COVERAGE_ALL_TARGET_DIR ?= target/llvm-cov-all-lanes
+COVERAGE_PROFILE_DIR ?= $(COVERAGE_ALL_TARGET_DIR)/llvm-cov-target
 COVERAGE_TEST_BINARY ?=
 COVERAGE_ABI_PREFLIGHT ?= 0
 COVERAGE_UNIFIED_LANE_SPLIT ?= 1
@@ -261,6 +262,9 @@ test-coverage-all:
 		$(if $(filter 1,$(COVERAGE_ABI_PREFLIGHT)),coverage-abi-preflight)
 	mkdir -p $(dir $(ALL_LANES_COVERAGE_OUTPUT))
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --profraw-only
+	# cargo-llvm-cov only knows its default profile names; remove the explicit
+	# per-lane files before report so stale runs cannot be rescanned or merged.
+	find $(COVERAGE_PROFILE_DIR) -maxdepth 1 -type f \( -name 'fontdone-*.profraw' -o -name 'fontdone.profdata' -o -name 'fontdone-profraw-list' \) -delete 2>/dev/null || true
 ifeq ($(COVERAGE_UNIFIED_LANE_SPLIT),1)
 # Build one instrumented integration binary, then run the Rust FFI, C ABI, and
 # host-WASM comparisons in separate processes. LLVM profile counters are
@@ -290,17 +294,17 @@ ifeq ($(COVERAGE_UNIFIED_LANE_SPLIT),1)
 	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
 	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
 	  FONTDONE_UNIFIED_BACKEND=rust \
-	  LLVM_PROFILE_FILE=$(COVERAGE_ALL_TARGET_DIR)/llvm-cov-target/fontdone-rust-%p-%m.profraw \
+	  LLVM_PROFILE_FILE=$(COVERAGE_PROFILE_DIR)/fontdone-rust-%p-%m.profraw \
 	  "$$test_binary" unified_fixture_parity --exact --nocapture ) & rust_pid=$$!; \
 	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
 	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
 	  FONTDONE_UNIFIED_BACKEND=c-abi \
-	  LLVM_PROFILE_FILE=$(COVERAGE_ALL_TARGET_DIR)/llvm-cov-target/fontdone-c-abi-%p-%m.profraw \
+	  LLVM_PROFILE_FILE=$(COVERAGE_PROFILE_DIR)/fontdone-c-abi-%p-%m.profraw \
 	  "$$test_binary" unified_fixture_parity --exact --nocapture ) & c_abi_pid=$$!; \
 	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
 	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
 	  FONTDONE_UNIFIED_BACKEND=wasm \
-	  LLVM_PROFILE_FILE=$(COVERAGE_ALL_TARGET_DIR)/llvm-cov-target/fontdone-wasm-%p-%m.profraw \
+	  LLVM_PROFILE_FILE=$(COVERAGE_PROFILE_DIR)/fontdone-wasm-%p-%m.profraw \
 	  "$$test_binary" unified_fixture_parity --exact --nocapture ) & wasm_pid=$$!; \
 	wait $$rust_pid || lane_status=1; \
 	wait $$c_abi_pid || lane_status=1; \

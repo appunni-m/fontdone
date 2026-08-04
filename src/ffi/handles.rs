@@ -7540,7 +7540,11 @@ pub fn FT_Gzip_Uncompress(
         return FT_Err_Invalid_Argument;
     };
     let Some(input) = input else {
-        return FT_Err_Invalid_Table;
+        // FreeType 2.14.3 deliberately delays a null input pointer to zlib
+        // (`src/gzip/ftgzip.c:721`).  The pinned oracle leaves the caller's
+        // output buffer and length unchanged and returns success for the
+        // maintained null-pointer probe; preserve that measured behavior.
+        return FT_Err_Ok;
     };
 
     let mut decoded = Vec::new();

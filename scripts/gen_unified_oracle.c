@@ -505,6 +505,10 @@ static int emit_gzip_uncompress_errors(int argc, char** argv) {
         output_len = sizeof(output);
         FT_Error output_len_error = FT_Gzip_Uncompress(
             library->memory, output, NULL, gzip_bytes, (FT_ULong)gzip_len);
+        memset(output, 0xA5, sizeof(output));
+        output_len = sizeof(output);
+        FT_Error input_error = FT_Gzip_Uncompress(
+            library->memory, output, &output_len, NULL, (FT_ULong)gzip_len);
         printf("{\"status\":{\"kind\":\"error\",\"error_code\":%d},"
                "\"output\":{\"rows\":[",
                memory_error);
@@ -521,6 +525,11 @@ static int emit_gzip_uncompress_errors(int argc, char** argv) {
         memset(output, 0xA5, sizeof(output));
         print_gzip_invalid_argument_row(
             "output_len_null", output_len_error, 0, 0, output, sizeof(output));
+        printf(",");
+        memset(output, 0xA5, sizeof(output));
+        output_len = sizeof(output);
+        print_gzip_invalid_argument_row(
+            "input_null", input_error, 1, output_len, output, sizeof(output));
         printf("]}}\n");
     } else if (streq(case_name, "reports_buffer_too_small")) {
         const char* variants[2] = { "zero_capacity", "one_byte_short" };
@@ -829,20 +838,24 @@ static void print_lzw_stream_reads(
     long raw_len) {
     unsigned long offsets[4] = {0UL, 1UL, 32UL, 0UL};
     unsigned long counts[4] = {0UL, 1UL, 64UL, (unsigned long)raw_len};
+    const int null_buffers[4] = {1, 0, 0, 0};
     printf("[");
     for (int index = 0; index < 4; index++) {
         unsigned char buffer[64];
         memset(buffer, 0, sizeof(buffer));
         unsigned long read_count =
-            stream->read(stream, offsets[index], buffer, counts[index]);
+            stream->read(stream, offsets[index],
+                         null_buffers[index] ? NULL : buffer, counts[index]);
         unsigned long expected_count = read_count;
         if (offsets[index] > (unsigned long)raw_len) {
             expected_count = 0;
         } else if (expected_count > (unsigned long)raw_len - offsets[index]) {
             expected_count = (unsigned long)raw_len - offsets[index];
         }
-        printf("%s{\"offset\":%lu,\"requested\":%lu,\"read\":%lu,\"bytes\":\"",
-               index ? "," : "", offsets[index], counts[index], read_count);
+        printf("%s{\"offset\":%lu,\"requested\":%lu,\"buffer_null\":%s,"
+               "\"read\":%lu,\"bytes\":\"",
+               index ? "," : "", offsets[index], counts[index],
+               null_buffers[index] ? "true" : "false", read_count);
         print_hex_bytes(buffer, (long)read_count);
         printf("\",\"expected\":\"");
         print_hex_bytes(raw + (offsets[index] <= (unsigned long)raw_len
@@ -1037,23 +1050,27 @@ static void print_bzip2_stream_reads(
     FT_Stream stream,
     const unsigned char* raw,
     long raw_len) {
-    const unsigned long offsets[3] = {0UL, 3UL, 0UL};
-    const unsigned long requests[3] = {4UL, 5UL, 8UL};
+    const unsigned long offsets[4] = {0UL, 3UL, 0UL, 0UL};
+    const unsigned long requests[4] = {4UL, 5UL, 8UL, 0UL};
+    const int null_buffers[4] = {0, 0, 0, 1};
     printf("[");
-    for (int index = 0; index < 3; index++) {
+    for (int index = 0; index < 4; index++) {
         unsigned char buffer[8];
         memset(buffer, 0, sizeof(buffer));
         unsigned long requested = requests[index];
         unsigned long read_count =
-            stream->read(stream, offsets[index], buffer, requested);
+            stream->read(stream, offsets[index],
+                        null_buffers[index] ? NULL : buffer, requested);
         unsigned long available =
             offsets[index] < (unsigned long)raw_len
                 ? (unsigned long)raw_len - offsets[index]
                 : 0UL;
         unsigned long expected_count =
             requested < available ? requested : available;
-        printf("%s{\"offset\":%lu,\"requested\":%lu,\"read\":%lu,\"bytes\":\"",
-               index ? "," : "", offsets[index], requested, read_count);
+        printf("%s{\"offset\":%lu,\"requested\":%lu,\"buffer_null\":%s,"
+               "\"read\":%lu,\"bytes\":\"",
+               index ? "," : "", offsets[index], requested,
+               null_buffers[index] ? "true" : "false", read_count);
         print_hex_bytes(buffer, (long)read_count);
         printf("\",\"expected\":\"");
         print_hex_bytes(raw + (offsets[index] <= (unsigned long)raw_len
@@ -2756,6 +2773,8 @@ typedef struct IterateTrace_ {
     const char* event_side_freed[8][8];
     int event_side_freed_count[8];
     int event_count;
+    int stop_at_index;
+    FT_Error stop_error;
 } IterateTrace;
 
 static IterateTrace* current_iterate_trace = NULL;
@@ -2783,6 +2802,17 @@ static FT_Error iterate_record_callback(FT_ListNode node, void* user) {
     trace->visited[trace->visited_count] = iterate_data_token_for_node(trace, node);
     trace->user_matches[trace->visited_count] = user == trace->expected_user;
     trace->visited_count++;
+    return FT_Err_Ok;
+}
+
+static FT_Error iterate_error_callback(FT_ListNode node, void* user) {
+    IterateTrace* trace = current_iterate_trace;
+    trace->visited[trace->visited_count] = iterate_data_token_for_node(trace, node);
+    trace->user_matches[trace->visited_count] = user == trace->expected_user;
+    trace->visited_count++;
+    if (trace->visited_count - 1 == trace->stop_at_index) {
+        return trace->stop_error;
+    }
     return FT_Err_Ok;
 }
 
@@ -2847,6 +2877,18 @@ static void iterate_print_events(IterateTrace* trace) {
             printf("]");
         }
         printf("}");
+    }
+    printf("]");
+}
+
+static void iterate_print_unvisited_tail(int stop_at_index) {
+    const char* data_tokens[3] = { "data_a", "data_b", "data_c" };
+    printf("[");
+    int first = 1;
+    for (int i = stop_at_index + 1; i < 3; i++) {
+        if (!first) printf(",");
+        first = 0;
+        printf("\"%s\"", data_tokens[i]);
     }
     printf("]");
 }
@@ -3256,6 +3298,49 @@ static int emit_ft_list(const char* case_id) {
             }
         }
         printf("]}");
+    } else if (streq(case_id, "ftlist.FT_List_Iterate.stops_on_callback_error")) {
+        const int stop_indices[3] = { 0, 1, 2 };
+        const FT_Error callback_errors[3] = {
+            FT_Err_Invalid_Argument,
+            FT_Err_Invalid_Stream_Operation,
+            FT_Err_Out_Of_Memory
+        };
+        printf("{\"rows\":[");
+        for (int i = 0; i < 3; i++) {
+            node_a = (FT_ListNodeRec){ NULL, &node_b, &data_a };
+            node_b = (FT_ListNodeRec){ &node_a, &node_c, &data_b };
+            node_c = (FT_ListNodeRec){ &node_b, NULL, &data_c };
+            list = (FT_ListRec){ &node_a, &node_c };
+
+            IterateTrace trace = { 0 };
+            trace.nodes[0] = &node_a;
+            trace.nodes[1] = &node_b;
+            trace.nodes[2] = &node_c;
+            trace.node_labels[0] = "node_a";
+            trace.node_labels[1] = "node_b";
+            trace.node_labels[2] = "node_c";
+            trace.expected_user = (void*)0x7111;
+            trace.stop_at_index = stop_indices[i];
+            trace.stop_error = callback_errors[i];
+            current_iterate_trace = &trace;
+            FT_Error err = FT_List_Iterate(&list, iterate_error_callback, trace.expected_user);
+            current_iterate_trace = NULL;
+
+            if (i) printf(",");
+            printf("{\"status\":%d,\"visited_data_tokens\":", err);
+            iterate_print_visited(&trace);
+            printf(",\"unvisited_tail\":");
+            iterate_print_unvisited_tail(stop_indices[i]);
+            printf("}");
+        }
+        printf("]}");
+    } else if (streq(case_id, "ftlist.FT_List_Iterate.null_list_or_iterator_error")) {
+        FT_ListRec empty = { NULL, NULL };
+        FT_Error null_list_error = FT_List_Iterate(NULL, iterate_record_callback, (void*)0x7111);
+        FT_Error null_iterator_error = FT_List_Iterate(&empty, NULL, (void*)0x7111);
+        printf("{\"rows\":[");
+        printf("{\"status\":%d,\"callback_events\":[]},", null_list_error);
+        printf("{\"status\":%d,\"callback_events\":[]}]}", null_iterator_error);
     } else if (streq(case_id, "ftlist.FT_List_Find.success_finds_first_matching_node") ||
                streq(case_id, "ftlist.FT_List_Find.missing_data_returns_null") ||
                streq(case_id, "ftlist.FT_List_Find.null_list_returns_null") ||
@@ -3519,6 +3604,9 @@ static int emit_bitmap_copy(const char* scenario) {
         }
     } else if (streq(scenario, "error_null_library")) {
         library_arg = NULL;
+    } else if (streq(scenario, "error_null_library_alias")) {
+        library_arg = NULL;
+        target_arg = &source;
     } else if (streq(scenario, "error_null_source") ||
                streq(scenario, "error_null_library_or_bitmaps")) {
         source_arg = NULL;
@@ -9832,7 +9920,11 @@ static void print_glyph_copy_error_row(const char* probe, FT_Error err, FT_Glyph
 }
 
 static int emit_glyph_copy_svg_zero_length(int argc, char** argv) {
-    if (argc != 4) {
+    if (argc != 4 && argc != 5) {
+        return 1;
+    }
+    int null_document = argc == 4 || streq(argv[4], "null_document");
+    if (argc == 5 && !null_document && !streq(argv[4], "preserve_document")) {
         return 1;
     }
 
@@ -9873,6 +9965,12 @@ static int emit_glyph_copy_svg_zero_length(int argc, char** argv) {
 
     FT_SvgGlyph svg_record = (FT_SvgGlyph)source;
     svg_record->svg_document_length = 0;
+    // FreeType checks the zero length before copying, so both a preserved
+    // document pointer and a null pointer are defined Invalid_Slot_Handle
+    // probes; the latter also matches the ABI's empty-record shape.
+    if (null_document) {
+        svg_record->svg_document = NULL;
+    }
     FT_Glyph target = (FT_Glyph)0x1;
     FT_Error copy_error = FT_Glyph_Copy(source, &target);
 
@@ -11355,7 +11453,11 @@ static int emit_cache_node_unref_null_or_invalid(void) {
     memset(&foreign_node, 0, sizeof(foreign_node));
     foreign_node.cache_index = 0xFFFF;
     foreign_node.ref_count = 7;
-    FT_Short ref_count_before = foreign_node.ref_count;
+    FT_Short ref_count_before_null_manager = foreign_node.ref_count;
+    /* A non-null foreign node with a NULL manager must also be ignored. */
+    FTC_Node_Unref((FTC_Node)&foreign_node, NULL);
+    FT_Short ref_count_after_null_manager = foreign_node.ref_count;
+    FT_Short ref_count_before_live_manager = foreign_node.ref_count;
     /*
      * FreeType src/cache/ftcmanag.c:FTC_Node_Unref only touches a non-null
      * node when cache_index is within manager->num_caches. 0xFFFF is outside
@@ -11364,18 +11466,24 @@ static int emit_cache_node_unref_null_or_invalid(void) {
      * cache-specific node payload.
      */
     FTC_Node_Unref((FTC_Node)&foreign_node, manager);
-    FT_Short ref_count_after = foreign_node.ref_count;
+    FT_Short ref_count_after_live_manager = foreign_node.ref_count;
 
     printf("{\"status\":{\"kind\":\"ok\",\"error_code\":0},\"output\":{");
     printf("\"void\":true,\"side_effects\":[");
     printf("{\"node\":\"null\",\"manager\":\"null\",\"void_return\":true,\"side_effects\":\"none\"},");
     printf("{\"node\":\"null\",\"manager\":\"live_empty\",\"void_return\":true,\"side_effects\":\"none\"},");
+    printf("{\"node\":\"foreign_or_bad_cache_index\",\"manager\":\"null\","
+           "\"void_return\":true,\"side_effects\":\"none\","
+           "\"cache_index_class\":\"out_of_range\",\"ref_count_before\":%d,"
+           "\"ref_count_after\":%d},",
+           ref_count_before_null_manager,
+           ref_count_after_null_manager);
     printf("{\"node\":\"foreign_or_bad_cache_index\",\"manager\":\"live_empty\","
            "\"void_return\":true,\"side_effects\":\"none\","
            "\"cache_index_class\":\"out_of_range\",\"ref_count_before\":%d,"
            "\"ref_count_after\":%d}",
-           ref_count_before,
-           ref_count_after);
+           ref_count_before_live_manager,
+           ref_count_after_live_manager);
     printf("]}}\n");
 
     FTC_Manager_Done(manager);
@@ -29558,38 +29666,40 @@ static int emit_property_increase_x_height_effect(int argc, char** argv) {
             for (size_t ppem_index = 0;
                  ppem_index < sizeof(ppems) / sizeof(ppems[0]);
                  ppem_index++) {
+                OracleFace opened = {0};
+                int opened_status = open_oracle_face(
+                    source_kinds[font_index],
+                    source_values[font_index],
+                    atol(argv[6]),
+                    &opened);
+                if (opened_status) {
+                    return opened_status;
+                }
+                FT_Error size_error = FT_Set_Pixel_Sizes(
+                    opened.face,
+                    ppems[ppem_index],
+                    ppems[ppem_index]);
+                FT_Prop_IncreaseXHeight set_prop;
+                set_prop.face = opened.face;
+                set_prop.limit = limits[limit_index];
+                FT_Error set_error = FT_Property_Set(
+                    opened.library,
+                    "autofitter",
+                    "increase-x-height",
+                    &set_prop);
+                FT_Prop_IncreaseXHeight get_prop;
+                get_prop.face = opened.face;
+                get_prop.limit = PROPERTY_SENTINEL;
+                FT_Error get_error = FT_Property_Get(
+                    opened.library,
+                    "autofitter",
+                    "increase-x-height",
+                    &get_prop);
+                /* The property is face-scoped; keep this fresh face for all
+                 * requested glyphs at the same limit and size. */
                 for (size_t char_index = 0;
                      char_index < sizeof(chars) / sizeof(chars[0]);
                      char_index++) {
-                    OracleFace opened = {0};
-                    int opened_status = open_oracle_face(
-                        source_kinds[font_index],
-                        source_values[font_index],
-                        atol(argv[6]),
-                        &opened);
-                    if (opened_status) {
-                        return opened_status;
-                    }
-                    FT_Error size_error = FT_Set_Pixel_Sizes(
-                        opened.face,
-                        ppems[ppem_index],
-                        ppems[ppem_index]);
-                    FT_Prop_IncreaseXHeight set_prop;
-                    set_prop.face = opened.face;
-                    set_prop.limit = limits[limit_index];
-                    FT_Error set_error = FT_Property_Set(
-                        opened.library,
-                        "autofitter",
-                        "increase-x-height",
-                        &set_prop);
-                    FT_Prop_IncreaseXHeight get_prop;
-                    get_prop.face = opened.face;
-                    get_prop.limit = PROPERTY_SENTINEL;
-                    FT_Error get_error = FT_Property_Get(
-                        opened.library,
-                        "autofitter",
-                        "increase-x-height",
-                        &get_prop);
                     FT_UInt glyph_index =
                         FT_Get_Char_Index(opened.face, chars[char_index]);
                     FT_Error prefix_error =
@@ -29635,8 +29745,8 @@ static int emit_property_increase_x_height_effect(int argc, char** argv) {
                             opened.face->glyph, glyph_index, &cbox);
                     }
                     printf("}");
-                    close_oracle_face(&opened);
                 }
+                close_oracle_face(&opened);
             }
         }
     }
@@ -37915,7 +38025,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 2 && streq(argv[1], "--glyph-copy-null-inputs")) {
         return emit_glyph_copy_null_inputs();
     }
-    if (argc == 4 && streq(argv[1], "--glyph-copy-svg-zero-length")) {
+    if ((argc == 4 || argc == 5) && streq(argv[1], "--glyph-copy-svg-zero-length")) {
         return emit_glyph_copy_svg_zero_length(argc, argv);
     }
     if (argc == 6 && streq(argv[1], "--glyph-copy-failures")) {

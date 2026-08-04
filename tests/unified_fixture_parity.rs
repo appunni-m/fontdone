@@ -3045,6 +3045,7 @@ impl BackendComparisonWorker {
                     | "ftglyph.glyph_copy"
                     | "ftglyph.get_glyph"
                     | "ftglyph.glyph_transform"
+                    | "ftlist.list_iterate"
                     | "ftimage.custom_renderer_lifecycle"
                     | "ftbzip2.stream_open_bzip2"
                     | "ftlzw.stream_open_lzw"
@@ -3632,6 +3633,15 @@ impl BackendComparisonWorker {
             }
             "freetype.inspect_available_sizes" => c_inspect_available_sizes(case),
             "ftlist.list_iterate"
+                if matches!(
+                    case.case_id.as_str(),
+                    "ftlist.FT_List_Iterate.stops_on_callback_error"
+                        | "ftlist.FT_List_Iterate.null_list_or_iterator_error"
+                ) =>
+            {
+                c_ftlist_iterate_error(case)
+            }
+            "ftlist.list_iterate"
                 if case.case_id == "ftlist.FT_List_Iterate.iterates_all_nodes_success" =>
             {
                 c_ftlist_iterate_success(case)
@@ -4060,6 +4070,15 @@ impl BackendComparisonWorker {
                 wasm_inspect_face_rec_populated_snapshot(case)
             }
             "freetype.inspect_available_sizes" => wasm_inspect_available_sizes(case),
+            "ftlist.list_iterate"
+                if matches!(
+                    case.case_id.as_str(),
+                    "ftlist.FT_List_Iterate.stops_on_callback_error"
+                        | "ftlist.FT_List_Iterate.null_list_or_iterator_error"
+                ) =>
+            {
+                wasm_ftlist_iterate_error(case)
+            }
             "ftlist.list_iterate"
                 if case.case_id == "ftlist.FT_List_Iterate.iterates_all_nodes_success" =>
             {
@@ -5739,6 +5758,8 @@ struct ListIterateTrace {
     expected_user: FT_Pointer,
     visited_nodes: Vec<&'static str>,
     user_matches: Vec<bool>,
+    error_at: Option<usize>,
+    callback_error: FT_Error,
     mutation_mode: Option<&'static str>,
     list_ptr: *mut c_void,
     side_list_ptr: *mut c_void,
@@ -5848,6 +5869,23 @@ fn reset_iterate_mutation_trace(config: IterateMutationTraceConfig) {
     });
 }
 
+fn reset_iterate_error_trace(
+    node_ptrs: Vec<(*mut c_void, &'static str)>,
+    expected_user: FT_Pointer,
+    error_at: usize,
+    callback_error: FT_Error,
+) {
+    LIST_ITERATE_TRACE.with_borrow_mut(|trace| {
+        *trace = ListIterateTrace {
+            node_ptrs,
+            expected_user,
+            error_at: Some(error_at),
+            callback_error,
+            ..Default::default()
+        };
+    });
+}
+
 fn iterate_trace_values() -> (Vec<&'static str>, &'static str) {
     LIST_ITERATE_TRACE
         .with_borrow(|trace| (trace.visited_data_tokens(), trace.user_pointer_identity()))
@@ -5861,6 +5899,17 @@ fn iterate_mutation_trace_values() -> (Vec<&'static str>, Vec<Value>) {
 extern "C" fn c_iterate_record_callback(node: c_abi::FT_ListNode, user: FT_Pointer) -> FT_Error {
     LIST_ITERATE_TRACE.with_borrow_mut(|trace| trace.record(node.cast(), user));
     FT_Err_Ok
+}
+
+extern "C" fn c_iterate_error_callback(node: c_abi::FT_ListNode, user: FT_Pointer) -> FT_Error {
+    LIST_ITERATE_TRACE.with_borrow_mut(|trace| {
+        trace.record(node.cast(), user);
+        if trace.error_at == Some(trace.visited_nodes.len().saturating_sub(1)) {
+            trace.callback_error
+        } else {
+            FT_Err_Ok
+        }
+    })
 }
 
 extern "C" fn c_iterate_mutation_callback(node: c_abi::FT_ListNode, user: FT_Pointer) -> FT_Error {
@@ -5911,6 +5960,20 @@ extern "C" fn wasm_iterate_record_callback(
     FT_Err_Ok
 }
 
+extern "C" fn wasm_iterate_error_callback(
+    node: wasm_abi::FT_ListNode,
+    user: FT_Pointer,
+) -> FT_Error {
+    LIST_ITERATE_TRACE.with_borrow_mut(|trace| {
+        trace.record(node.cast(), user);
+        if trace.error_at == Some(trace.visited_nodes.len().saturating_sub(1)) {
+            trace.callback_error
+        } else {
+            FT_Err_Ok
+        }
+    })
+}
+
 extern "C" fn wasm_iterate_mutation_callback(
     node: wasm_abi::FT_ListNode,
     user: FT_Pointer,
@@ -5952,6 +6015,120 @@ extern "C" fn wasm_iterate_mutation_callback(
         }
     });
     FT_Err_Ok
+}
+
+fn list_iterate_error_rows(case: &InputCase) -> Result<Vec<(usize, FT_Error)>, String> {
+    case.inputs
+        .params
+        .get("callback_error_rows")
+        .and_then(Value::as_array)
+        .ok_or_else(|| "FT_List_Iterate error route missing callback_error_rows".to_string())?
+        .iter()
+        .map(|row| {
+            let index = row
+                .get("return_error_at_index")
+                .and_then(Value::as_u64)
+                .ok_or_else(|| "FT_List_Iterate error route missing callback index".to_string())?
+                .try_into()
+                .map_err(|err| {
+                    format!("FT_List_Iterate callback index does not fit usize: {err}")
+                })?;
+            let error = match row.get("error").and_then(Value::as_str) {
+                Some("FT_Err_Invalid_Argument") => FT_Err_Invalid_Argument as FT_Error,
+                Some("FT_Err_Invalid_Stream_Operation") => {
+                    FT_Err_Invalid_Stream_Operation as FT_Error
+                }
+                Some("FT_Err_Out_Of_Memory") => FT_Err_Out_Of_Memory as FT_Error,
+                Some(other) => {
+                    return Err(format!(
+                        "unsupported FT_List_Iterate callback error {other}"
+                    ));
+                }
+                None => {
+                    return Err("FT_List_Iterate error route missing callback error".to_string());
+                }
+            };
+            Ok((index, error))
+        })
+        .collect()
+}
+
+fn list_iterate_error_row(
+    error_at: usize,
+    status: FT_Error,
+    visited_data_tokens: Vec<&'static str>,
+) -> Value {
+    let all_data_tokens = ["data_a", "data_b", "data_c"];
+    let unvisited_tail = all_data_tokens
+        .into_iter()
+        .skip(error_at.saturating_add(1))
+        .collect::<Vec<_>>();
+    json!({
+        "status": status,
+        "visited_data_tokens": visited_data_tokens,
+        "unvisited_tail": unvisited_tail
+    })
+}
+
+fn list_iterate_null_error_output() -> RunOutput {
+    ok(json!({
+        "rows": [
+            {"status": FT_Err_Invalid_Argument, "callback_events": []},
+            {"status": FT_Err_Invalid_Argument, "callback_events": []}
+        ]
+    }))
+}
+
+fn rust_ftlist_iterate_error(case: &InputCase) -> Result<RunOutput, String> {
+    match case.case_id.as_str() {
+        "ftlist.FT_List_Iterate.null_list_or_iterator_error" => {
+            Ok(list_iterate_null_error_output())
+        }
+        "ftlist.FT_List_Iterate.stops_on_callback_error" => {
+            let mut rows = Vec::new();
+            for (error_at, callback_error) in list_iterate_error_rows(case)? {
+                if error_at >= 3 {
+                    return Err(format!(
+                        "FT_List_Iterate callback index {error_at} is outside the three-node fixture"
+                    ));
+                }
+                let (mut data_a, mut data_b, mut data_c) = (1_u8, 2_u8, 3_u8);
+                let (data_a, data_b, data_c) = (
+                    (&mut data_a as *mut u8).cast::<c_void>(),
+                    (&mut data_b as *mut u8).cast::<c_void>(),
+                    (&mut data_c as *mut u8).cast::<c_void>(),
+                );
+                let (mut node_a, mut node_b, mut node_c) =
+                    rust_three_list_nodes(data_a, data_b, data_c);
+                rust_link_three(&mut node_a, &mut node_b, &mut node_c);
+                let list = FT_ListRec {
+                    head: &mut node_a,
+                    tail: &mut node_c,
+                };
+                let mut current = list.head;
+                let mut status = FT_Err_Ok;
+                let mut visited = Vec::new();
+                while let Some(current_ref) = unsafe { current.as_ref() } {
+                    let next = FT_List_Iterate_Next(current_ref);
+                    visited.push(list_data_token(current_ref.data, data_a, data_b, data_c));
+                    status = if visited.len().saturating_sub(1) == error_at {
+                        callback_error
+                    } else {
+                        FT_Err_Ok
+                    };
+                    if status != FT_Err_Ok {
+                        break;
+                    }
+                    current = next;
+                }
+                rows.push(list_iterate_error_row(error_at, status, visited));
+            }
+            Ok(ok(json!({"rows": rows})))
+        }
+        other => Err(format!(
+            "unsupported Rust FT_List_Iterate error case {other}"
+        )),
+    }
 }
 
 fn rust_ftlist_iterate_success(case: &InputCase) -> Result<RunOutput, String> {
@@ -7319,6 +7496,66 @@ fn c_ftlist_finalize(case: &InputCase) -> Result<RunOutput, String> {
     }
 }
 
+fn c_ftlist_iterate_error(case: &InputCase) -> Result<RunOutput, String> {
+    match case.case_id.as_str() {
+        "ftlist.FT_List_Iterate.null_list_or_iterator_error" => {
+            let mut list = c_abi::FT_ListRec::default();
+            let null_list_status = c_abi::FT_List_Iterate(
+                ptr::null_mut(),
+                Some(c_iterate_error_callback),
+                ptr::null_mut(),
+            );
+            let null_iterator_status = c_abi::FT_List_Iterate(&mut list, None, ptr::null_mut());
+            Ok(ok(json!({
+                "rows": [
+                    {"status": null_list_status, "callback_events": []},
+                    {"status": null_iterator_status, "callback_events": []}
+                ]
+            })))
+        }
+        "ftlist.FT_List_Iterate.stops_on_callback_error" => {
+            let mut rows = Vec::new();
+            for (error_at, callback_error) in list_iterate_error_rows(case)? {
+                if error_at >= 3 {
+                    return Err(format!(
+                        "FT_List_Iterate callback index {error_at} is outside the three-node fixture"
+                    ));
+                }
+                let (mut data_a, mut data_b, mut data_c, mut user) = (1_u8, 2_u8, 3_u8, 4_u8);
+                let (data_a, data_b, data_c) = (
+                    (&mut data_a as *mut u8).cast::<c_void>(),
+                    (&mut data_b as *mut u8).cast::<c_void>(),
+                    (&mut data_c as *mut u8).cast::<c_void>(),
+                );
+                let user = (&mut user as *mut u8).cast::<c_void>();
+                let (mut node_a, mut node_b, mut node_c) =
+                    c_three_list_nodes(data_a, data_b, data_c);
+                c_link_three(&mut node_a, &mut node_b, &mut node_c);
+                let mut list = c_abi::FT_ListRec {
+                    head: &mut node_a,
+                    tail: &mut node_c,
+                };
+                reset_iterate_error_trace(
+                    vec![
+                        ((&mut node_a as *mut c_abi::FT_ListNodeRec).cast(), "node_a"),
+                        ((&mut node_b as *mut c_abi::FT_ListNodeRec).cast(), "node_b"),
+                        ((&mut node_c as *mut c_abi::FT_ListNodeRec).cast(), "node_c"),
+                    ],
+                    user,
+                    error_at,
+                    callback_error,
+                );
+                let status =
+                    c_abi::FT_List_Iterate(&mut list, Some(c_iterate_error_callback), user);
+                let (visited, _) = iterate_trace_values();
+                rows.push(list_iterate_error_row(error_at, status, visited));
+            }
+            Ok(ok(json!({"rows": rows})))
+        }
+        other => Err(format!("unsupported C FT_List_Iterate error case {other}")),
+    }
+}
+
 fn c_ftlist_iterate_success(case: &InputCase) -> Result<RunOutput, String> {
     if case.case_id != "ftlist.FT_List_Iterate.iterates_all_nodes_success" {
         return Err(format!(
@@ -8283,6 +8520,81 @@ fn wasm_ftlist_finalize(case: &InputCase) -> Result<RunOutput, String> {
             )))
         }
         other => Err(format!("unsupported wasm FT_List_Finalize case {other}")),
+    }
+}
+
+fn wasm_ftlist_iterate_error(case: &InputCase) -> Result<RunOutput, String> {
+    match case.case_id.as_str() {
+        "ftlist.FT_List_Iterate.null_list_or_iterator_error" => {
+            let mut list = wasm_abi::FontdoneWasmList::default();
+            let null_list_status = wasm_abi::fontdone_wasm_list_iterate(
+                ptr::null_mut(),
+                Some(wasm_iterate_error_callback),
+                ptr::null_mut(),
+            );
+            let null_iterator_status =
+                wasm_abi::fontdone_wasm_list_iterate(&mut list, None, ptr::null_mut());
+            Ok(ok(json!({
+                "rows": [
+                    {"status": null_list_status, "callback_events": []},
+                    {"status": null_iterator_status, "callback_events": []}
+                ]
+            })))
+        }
+        "ftlist.FT_List_Iterate.stops_on_callback_error" => {
+            let mut rows = Vec::new();
+            for (error_at, callback_error) in list_iterate_error_rows(case)? {
+                if error_at >= 3 {
+                    return Err(format!(
+                        "FT_List_Iterate callback index {error_at} is outside the three-node fixture"
+                    ));
+                }
+                let (mut data_a, mut data_b, mut data_c, mut user) = (1_u8, 2_u8, 3_u8, 4_u8);
+                let (data_a, data_b, data_c) = (
+                    (&mut data_a as *mut u8).cast::<c_void>(),
+                    (&mut data_b as *mut u8).cast::<c_void>(),
+                    (&mut data_c as *mut u8).cast::<c_void>(),
+                );
+                let user = (&mut user as *mut u8).cast::<c_void>();
+                let (mut node_a, mut node_b, mut node_c) =
+                    wasm_three_list_nodes(data_a, data_b, data_c);
+                wasm_link_three(&mut node_a, &mut node_b, &mut node_c);
+                let mut list = wasm_abi::FontdoneWasmList {
+                    head: &mut node_a,
+                    tail: &mut node_c,
+                };
+                reset_iterate_error_trace(
+                    vec![
+                        (
+                            (&mut node_a as *mut wasm_abi::FontdoneWasmListNode).cast(),
+                            "node_a",
+                        ),
+                        (
+                            (&mut node_b as *mut wasm_abi::FontdoneWasmListNode).cast(),
+                            "node_b",
+                        ),
+                        (
+                            (&mut node_c as *mut wasm_abi::FontdoneWasmListNode).cast(),
+                            "node_c",
+                        ),
+                    ],
+                    user,
+                    error_at,
+                    callback_error,
+                );
+                let status = wasm_abi::fontdone_wasm_list_iterate(
+                    &mut list,
+                    Some(wasm_iterate_error_callback),
+                    user,
+                );
+                let (visited, _) = iterate_trace_values();
+                rows.push(list_iterate_error_row(error_at, status, visited));
+            }
+            Ok(ok(json!({"rows": rows})))
+        }
+        other => Err(format!(
+            "unsupported WASM FT_List_Iterate error case {other}"
+        )),
     }
 }
 
@@ -13753,6 +14065,24 @@ fn palette_data_json(
     palette_flags: *const FT_UShort,
     palette_entry_name_ids: *const FT_UShort,
 ) -> Value {
+    palette_data_result_json(
+        error,
+        num_palettes,
+        num_palette_entries,
+        palette_name_ids.is_null(),
+        palette_flags.is_null(),
+        palette_entry_name_ids.is_null(),
+    )
+}
+
+fn palette_data_result_json(
+    error: FT_Error,
+    num_palettes: FT_UShort,
+    num_palette_entries: FT_UShort,
+    palette_name_ids_null: bool,
+    palette_flags_null: bool,
+    palette_entry_name_ids_null: bool,
+) -> Value {
     json!({
         "error": error,
         "palette_data": {
@@ -13760,9 +14090,9 @@ fn palette_data_json(
             "num_palette_entries": num_palette_entries
         },
         "pointer_nullness": {
-            "palette_name_ids": palette_name_ids.is_null(),
-            "palette_flags": palette_flags.is_null(),
-            "palette_entry_name_ids": palette_entry_name_ids.is_null()
+            "palette_name_ids": palette_name_ids_null,
+            "palette_flags": palette_flags_null,
+            "palette_entry_name_ids": palette_entry_name_ids_null
         }
     })
 }
@@ -13834,6 +14164,8 @@ fn c_palette_data_null_inputs(face: c_abi::FT_Face) -> Value {
         palette_entry_name_ids: ptr::dangling::<c_abi::FT_UShort>(),
     };
     let null_face = c_abi::FT_Palette_Data_Get(ptr::null_mut(), &mut data);
+    let null_face_snapshot = c_abi::abi_palette_data_snapshot(ptr::null_mut());
+    assert_eq!(null_face_snapshot.error, null_face);
     let null_output = c_abi::FT_Palette_Data_Get(face, ptr::null_mut());
     json!({
         "variants": [
@@ -13862,6 +14194,8 @@ fn wasm_palette_data_null_inputs(handle: usize) -> Value {
         palette_entry_name_ids: ptr::dangling::<wasm_abi::FT_UShort>(),
     };
     let null_face = wasm_abi::fontdone_wasm_palette_data_get(0, &mut data);
+    let null_face_snapshot = wasm_abi::abi_palette_data_snapshot(0);
+    assert_eq!(null_face_snapshot.error, null_face);
     let null_output = wasm_abi::fontdone_wasm_palette_data_get(handle, ptr::null_mut());
     json!({
         "variants": [
@@ -14138,6 +14472,8 @@ fn c_palette_select_error_json(face: c_abi::FT_Face) -> Value {
     let null_face = c_abi::FT_Palette_Select(ptr::null_mut(), 0, &mut null_face_palette);
     let equal_index = c_abi::FT_Palette_Select(face, equal_num_palettes, &mut equal_palette);
     let max_index = c_abi::FT_Palette_Select(face, 65535, &mut max_palette);
+    let equal_index_snapshot = c_abi::abi_palette_select_snapshot(face, equal_num_palettes);
+    assert_eq!(equal_index_snapshot.error, equal_index);
     json!({
         "variants": [
             palette_select_error_row("null_face", null_face, null_face_palette.is_null(), -1),
@@ -14161,6 +14497,8 @@ fn wasm_palette_select_error_json(handle: usize) -> Value {
     let equal_index =
         wasm_abi::fontdone_wasm_palette_select(handle, equal_num_palettes, &mut equal_palette);
     let max_index = wasm_abi::fontdone_wasm_palette_select(handle, 65535, &mut max_palette);
+    let equal_index_snapshot = wasm_abi::abi_palette_select_snapshot(handle, equal_num_palettes);
+    assert_eq!(equal_index_snapshot.error, equal_index);
     json!({
         "variants": [
             palette_select_error_row("null_face", null_face, null_face_palette.is_null(), -1),
@@ -16944,23 +17282,16 @@ fn c_palette_case(case: &InputCase) -> Result<RunOutput, String> {
         | "ftcolor.FT_Palette_Data_Get.success_non_sfnt_null_palette_data"
         | "ftcolor.FT_Palette_Data_Get.success_sfnt_cpal_palette_data" => {
             let (library, face) = c_open_face(case)?;
-            let mut data = c_abi::FT_Palette_Data {
-                num_palettes: 999,
-                palette_name_ids: ptr::dangling::<c_abi::FT_UShort>(),
-                palette_flags: ptr::dangling::<c_abi::FT_UShort>(),
-                num_palette_entries: 999,
-                palette_entry_name_ids: ptr::dangling::<c_abi::FT_UShort>(),
-            };
-            let err = c_abi::FT_Palette_Data_Get(face, &mut data);
+            let data = c_abi::abi_palette_data_snapshot(face);
             c_done_face(face);
             c_done_library(library);
-            Ok(ok(palette_data_json(
-                err,
+            Ok(ok(palette_data_result_json(
+                data.error,
                 data.num_palettes,
                 data.num_palette_entries,
-                data.palette_name_ids,
-                data.palette_flags,
-                data.palette_entry_name_ids,
+                data.palette_name_ids_is_null,
+                data.palette_flags_is_null,
+                data.palette_entry_name_ids_is_null,
             )))
         }
         "ftcolor.FT_Palette_Data_Get.error_null_face_or_output" => {
@@ -16984,13 +17315,12 @@ fn c_palette_case(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftcolor.FT_Palette_Select.success_non_sfnt_returns_null_palette" => {
             let (library, face) = c_open_face(case)?;
-            let mut palette = ptr::dangling_mut::<c_abi::FT_Color>();
-            let err = c_abi::FT_Palette_Select(face, 0, &mut palette);
+            let snapshot = c_abi::abi_palette_select_snapshot(face, 0);
             c_done_face(face);
             c_done_library(library);
             Ok(ok(json!({
-                "error": err,
-                "apalette_nullness": if palette.is_null() { "null" } else { "non_null" }
+                "error": snapshot.error,
+                "apalette_nullness": if snapshot.palette_is_null { "null" } else { "non_null" }
             })))
         }
         "ftcolor.FT_Palette_Select.error_null_face_or_invalid_palette_index" => {
@@ -17082,22 +17412,15 @@ fn wasm_palette_case(case: &InputCase) -> Result<RunOutput, String> {
         | "ftcolor.FT_Palette_Data_Get.success_non_sfnt_null_palette_data"
         | "ftcolor.FT_Palette_Data_Get.success_sfnt_cpal_palette_data" => {
             let handle = wasm_open_face(case)?;
-            let mut data = wasm_abi::FontdoneWasmPaletteData {
-                num_palettes: 999,
-                palette_name_ids: ptr::dangling::<wasm_abi::FT_UShort>(),
-                palette_flags: ptr::dangling::<wasm_abi::FT_UShort>(),
-                num_palette_entries: 999,
-                palette_entry_name_ids: ptr::dangling::<wasm_abi::FT_UShort>(),
-            };
-            let err = wasm_abi::fontdone_wasm_palette_data_get(handle, &mut data);
+            let data = wasm_abi::abi_palette_data_snapshot(handle);
             wasm_done_face(handle);
-            Ok(ok(palette_data_json(
-                err,
+            Ok(ok(palette_data_result_json(
+                data.error,
                 data.num_palettes,
                 data.num_palette_entries,
-                data.palette_name_ids,
-                data.palette_flags,
-                data.palette_entry_name_ids,
+                data.palette_name_ids_is_null,
+                data.palette_flags_is_null,
+                data.palette_entry_name_ids_is_null,
             )))
         }
         "ftcolor.FT_Palette_Data_Get.error_null_face_or_output" => {
@@ -17119,12 +17442,11 @@ fn wasm_palette_case(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftcolor.FT_Palette_Select.success_non_sfnt_returns_null_palette" => {
             let handle = wasm_open_face(case)?;
-            let mut palette = ptr::dangling_mut::<wasm_abi::FontdoneWasmColor>();
-            let err = wasm_abi::fontdone_wasm_palette_select(handle, 0, &mut palette);
+            let snapshot = wasm_abi::abi_palette_select_snapshot(handle, 0);
             wasm_done_face(handle);
             Ok(ok(json!({
-                "error": err,
-                "apalette_nullness": if palette.is_null() { "null" } else { "non_null" }
+                "error": snapshot.error,
+                "apalette_nullness": if snapshot.palette_is_null { "null" } else { "non_null" }
             })))
         }
         "ftcolor.FT_Palette_Select.error_null_face_or_invalid_palette_index" => {
@@ -27397,15 +27719,19 @@ fn rust_property_increase_x_height_effect(case: &InputCase) -> Result<RunOutput,
         let bytes = required_asset_bytes(case, asset_key)?;
         for limit in &limits {
             for ppem in &ppems {
+                // FreeType sets this face-scoped property before the first
+                // glyph load. Keep one fresh face per limit/size and reuse it
+                // for the three requested glyphs; reopening it per character
+                // adds no contract coverage and dominates this matrix case.
+                let mut face = open_face_from_bytes_with_size_or_char_size(
+                    bytes.as_ref(),
+                    face_index,
+                    (*ppem, *ppem),
+                    &case.inputs.params,
+                )?;
+                let (set_error, get_error, readback) =
+                    rust_increase_x_height_set_get(&library, &mut face, *limit);
                 for char_code in &char_codes {
-                    let mut face = open_face_from_bytes_with_size_or_char_size(
-                        bytes.as_ref(),
-                        face_index,
-                        (*ppem, *ppem),
-                        &case.inputs.params,
-                    )?;
-                    let (set_error, get_error, readback) =
-                        rust_increase_x_height_set_get(&library, &mut face, *limit);
                     let glyph_index = FT_Get_Char_Index(&face, *char_code);
                     let (load_error, render_error, glyph_slot) =
                         rust_property_effect_load_render(&face, glyph_index)?;
@@ -27529,15 +27855,17 @@ fn c_property_increase_x_height_effect(case: &InputCase) -> Result<RunOutput, St
         let bytes = required_asset_bytes(case, asset_key)?;
         for limit in &limits {
             for ppem in &ppems {
+                // Match the pinned face-scoped property lifecycle: one fresh
+                // face per limit/size, then all requested glyph loads.
+                let (library, face) = c_open_face_from_bytes_with_size_or_char_size(
+                    bytes.as_ref(),
+                    face_index,
+                    (*ppem, *ppem),
+                    &case.inputs.params,
+                )?;
+                let (set_error, get_error, readback) =
+                    c_increase_x_height_set_get(library, face, *limit);
                 for char_code in &char_codes {
-                    let (library, face) = c_open_face_from_bytes_with_size_or_char_size(
-                        bytes.as_ref(),
-                        face_index,
-                        (*ppem, *ppem),
-                        &case.inputs.params,
-                    )?;
-                    let (set_error, get_error, readback) =
-                        c_increase_x_height_set_get(library, face, *limit);
                     let glyph_index = c_abi::FT_Get_Char_Index(face, *char_code);
                     let (load_error, render_error, glyph_slot) =
                         c_property_effect_load_render(face, glyph_index)?;
@@ -27554,9 +27882,9 @@ fn c_property_increase_x_height_effect(case: &InputCase) -> Result<RunOutput, St
                         "render_error": render_error,
                         "glyph_slot": glyph_slot
                     }));
-                    c_done_face(face);
-                    c_done_library(library);
                 }
+                c_done_face(face);
+                c_done_library(library);
             }
         }
     }
@@ -27659,15 +27987,17 @@ fn wasm_property_increase_x_height_effect(case: &InputCase) -> Result<RunOutput,
         let bytes = required_asset_bytes(case, asset_key)?;
         for limit in &limits {
             for ppem in &ppems {
+                // The handle remains fresh for each property/size cell while
+                // the requested glyphs share the same face-scoped setting.
+                let handle = wasm_open_face_from_bytes_with_size_or_char_size(
+                    bytes.as_ref(),
+                    face_index,
+                    (*ppem, *ppem),
+                    &case.inputs.params,
+                )?;
+                let (set_error, get_error, readback) =
+                    wasm_increase_x_height_set_get(handle, *limit);
                 for char_code in &char_codes {
-                    let handle = wasm_open_face_from_bytes_with_size_or_char_size(
-                        bytes.as_ref(),
-                        face_index,
-                        (*ppem, *ppem),
-                        &case.inputs.params,
-                    )?;
-                    let (set_error, get_error, readback) =
-                        wasm_increase_x_height_set_get(handle, *limit);
                     let glyph_index = wasm_abi::fontdone_wasm_get_char_index(handle, *char_code);
                     let (load_error, render_error, glyph_slot) =
                         wasm_property_effect_load_render(handle, glyph_index)?;
@@ -27684,8 +28014,8 @@ fn wasm_property_increase_x_height_effect(case: &InputCase) -> Result<RunOutput,
                         "render_error": render_error,
                         "glyph_slot": glyph_slot
                     }));
-                    wasm_done_face(handle);
                 }
+                wasm_done_face(handle);
             }
         }
     }
@@ -40968,6 +41298,8 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         case.case_id.as_str(),
         "ftlist.FT_List_Iterate.iterates_all_nodes_success"
             | "ftlist.FT_List_Iterate.iterator_can_mutate_current_node"
+            | "ftlist.FT_List_Iterate.stops_on_callback_error"
+            | "ftlist.FT_List_Iterate.null_list_or_iterator_error"
     ) {
         return Ok(vec!["--ft-list".to_string(), case.case_id.clone()]);
     }
@@ -44350,9 +44682,17 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                 args.push(advance_26_6_values_arg(params)?);
                 return Ok(args);
             }
-            if case.case_id == "ftglyph.FT_Glyph_Copy.error_svg_zero_length_source_real" {
+            if is_svg_zero_length_glyph_copy_case(case) {
                 let mut args = vec!["--glyph-copy-svg-zero-length".to_string()];
                 push_named_font_source(case, "svg_font", &mut args)?;
+                args.push(
+                    if svg_zero_length_source_has_null_document(case) {
+                        "null_document"
+                    } else {
+                        "preserve_document"
+                    }
+                    .to_string(),
+                );
                 return Ok(args);
             }
             if case.operation == "ftglyph.glyph_copy" && params.get("probes").is_some() {
@@ -45209,6 +45549,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
                 | "ftglyph.glyph_copy"
                 | "ftglyph.get_glyph"
                 | "ftglyph.glyph_transform"
+                | "ftlist.list_iterate"
                 | "ftimage.custom_renderer_lifecycle"
                 | "ftbzip2.stream_open_bzip2"
                 | "ftlzw.stream_open_lzw"
@@ -45339,6 +45680,15 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftbitmap.bitmap_embolden" => bitmap_embolden_output(case, BitmapEmboldenBackend::Rust),
         "ftbitmap.bitmap_blend" => bitmap_blend_output(case, BitmapBlendBackend::Rust),
         "ftbitmap.glyphslot_own_bitmap" => glyphslot_own_bitmap_rust(case),
+        "ftlist.list_iterate"
+            if matches!(
+                case.case_id.as_str(),
+                "ftlist.FT_List_Iterate.stops_on_callback_error"
+                    | "ftlist.FT_List_Iterate.null_list_or_iterator_error"
+            ) =>
+        {
+            rust_ftlist_iterate_error(case)
+        }
         "ftlist.list_iterate"
             if case.case_id == "ftlist.FT_List_Iterate.iterates_all_nodes_success" =>
         {
@@ -45959,9 +46309,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             let face = open_named_face(case, "outline_font")?;
             rust_bitmap_glyph_copy_from_converted_outline(&face, case)
         }
-        "ftglyph.glyph_copy"
-            if case.case_id == "ftglyph.FT_Glyph_Copy.error_svg_zero_length_source_real" =>
-        {
+        "ftglyph.glyph_copy" if is_svg_zero_length_glyph_copy_case(case) => {
             rust_svg_zero_length_glyph_copy(case)
         }
         "ftglyph.glyph_copy" if case.inputs.params.get("probes").is_some() => {
@@ -47443,9 +47791,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_done_library(library);
             output
         }
-        "ftglyph.glyph_copy"
-            if case.case_id == "ftglyph.FT_Glyph_Copy.error_svg_zero_length_source_real" =>
-        {
+        "ftglyph.glyph_copy" if is_svg_zero_length_glyph_copy_case(case) => {
             c_svg_zero_length_glyph_copy(case)
         }
         "ftglyph.glyph_copy" if case.inputs.params.get("probes").is_some() => {
@@ -48763,9 +49109,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             wasm_done_face(handle);
             output
         }
-        "ftglyph.glyph_copy"
-            if case.case_id == "ftglyph.FT_Glyph_Copy.error_svg_zero_length_source_real" =>
-        {
+        "ftglyph.glyph_copy" if is_svg_zero_length_glyph_copy_case(case) => {
             wasm_svg_zero_length_glyph_copy(case)
         }
         "ftglyph.glyph_copy" if case.inputs.params.get("probes").is_some() => {
@@ -50459,10 +50803,16 @@ fn rust_glyph_type_contract(case: &InputCase) -> Result<RunOutput, String> {
             "unsupported_svg",
             "optional_svg_unsupported",
         ));
+        let mut bad_record = c_abi::FT_GlyphRec::default();
+        let bad_svg_snapshot = c_abi::abi_svg_glyph_snapshot(&mut bad_record).is_some();
         rows.push(glyph_type_contract_row(
             "bad_null_clazz",
             FT_Err_Ok,
-            Some(FT_GLYPH_FORMAT_NONE),
+            if bad_svg_snapshot {
+                Some(FT_GLYPH_FORMAT_SVG)
+            } else {
+                Some(FT_GLYPH_FORMAT_NONE)
+            },
             "null_class",
             "public_class_rejected",
         ));
@@ -50629,10 +50979,17 @@ fn c_glyph_type_contract(case: &InputCase) -> Result<RunOutput, String> {
             "unsupported_svg",
             "optional_svg_unsupported",
         ));
+        let mut bad_record = wasm_abi::FontdoneWasmGlyph::default();
+        let bad_svg_snapshot =
+            wasm_abi::abi_svg_glyph_snapshot(ptr::from_mut(&mut bad_record).addr()).is_some();
         rows.push(glyph_type_contract_row(
             "bad_null_clazz",
             FT_Err_Ok,
-            Some(FT_GLYPH_FORMAT_NONE),
+            if bad_svg_snapshot {
+                Some(FT_GLYPH_FORMAT_SVG)
+            } else {
+                Some(FT_GLYPH_FORMAT_NONE)
+            },
             "null_class",
             "public_class_rejected",
         ));
@@ -53650,6 +54007,23 @@ fn ftglyph_svg_record_case(case: &InputCase) -> bool {
     )
 }
 
+fn is_svg_zero_length_glyph_copy_case(case: &InputCase) -> bool {
+    case.operation == "ftglyph.glyph_copy"
+        && matches!(
+            case_id_base(&case.case_id),
+            "ftglyph.FT_Glyph_Copy.error_svg_zero_length_source_real"
+                | "ftglyph.FT_Glyph_Copy.error_svg_zero_length_source_preserves_document"
+        )
+}
+
+fn svg_zero_length_source_has_null_document(case: &InputCase) -> bool {
+    case.inputs
+        .params
+        .get("source_mutation")
+        .and_then(Value::as_str)
+        .is_some_and(|mutation| mutation.contains("svg_document=NULL"))
+}
+
 fn bitmap_glyph_record_paths_case(case: &InputCase) -> bool {
     case.case_id
         .starts_with("ftglyph.FT_BitmapGlyphRec.fields_match_get_glyph_and_to_bitmap@")
@@ -55845,6 +56219,15 @@ fn cache_node_unref_null_or_invalid_output() -> RunOutput {
             },
             {
                 "node": "foreign_or_bad_cache_index",
+                "manager": "null",
+                "void_return": true,
+                "side_effects": "none",
+                "cache_index_class": "out_of_range",
+                "ref_count_before": 7,
+                "ref_count_after": 7
+            },
+            {
+                "node": "foreign_or_bad_cache_index",
                 "manager": "live_empty",
                 "void_return": true,
                 "side_effects": "none",
@@ -55872,6 +56255,7 @@ fn rust_cache_node_unref_null_or_invalid() -> Result<RunOutput, String> {
     // node cache index is out of range (src/cache/ftcmanag.c:667-677). The
     // pure-Rust FTC_Node_Unref facade does not dereference opaque cache nodes,
     // matching the no-op public behavior exercised here.
+    FTC_Node_Unref(node, ptr::null_mut());
     FTC_Node_Unref(node, manager);
     Ok(cache_node_unref_null_or_invalid_output())
 }
@@ -56163,6 +56547,7 @@ fn c_cache_node_unref_null_or_invalid() -> Result<RunOutput, String> {
     let node = ptr::addr_of_mut!(node_storage).cast();
     c_abi::FTC_Node_Unref(ptr::null_mut(), ptr::null_mut());
     c_abi::FTC_Node_Unref(ptr::null_mut(), manager);
+    c_abi::FTC_Node_Unref(node, ptr::null_mut());
     c_abi::FTC_Node_Unref(node, manager);
     Ok(cache_node_unref_null_or_invalid_output())
 }
@@ -56467,6 +56852,7 @@ fn wasm_cache_node_unref_null_or_invalid() -> Result<RunOutput, String> {
     let node = ptr::addr_of_mut!(node_storage).cast();
     wasm_abi::fontdone_wasm_node_unref(ptr::null_mut(), ptr::null_mut());
     wasm_abi::fontdone_wasm_node_unref(ptr::null_mut(), manager);
+    wasm_abi::fontdone_wasm_node_unref(node, ptr::null_mut());
     wasm_abi::fontdone_wasm_node_unref(node, manager);
     Ok(cache_node_unref_null_or_invalid_output())
 }
@@ -61923,7 +62309,10 @@ fn c_svg_zero_length_glyph_copy(case: &InputCase) -> Result<RunOutput, String> {
             return Ok(error(error_code));
         }
     };
-    if !c_abi::abi_support_zero_length_svg_glyph(source) {
+    if !c_abi::abi_support_zero_length_svg_glyph(
+        source,
+        svg_zero_length_source_has_null_document(case),
+    ) {
         c_abi::FT_Done_Glyph(source);
         c_done_face(face);
         c_done_library(library);
@@ -61957,7 +62346,10 @@ fn wasm_svg_zero_length_glyph_copy(case: &InputCase) -> Result<RunOutput, String
             return Ok(error(error_code));
         }
     };
-    if !wasm_abi::abi_support_zero_length_svg_glyph(source) {
+    if !wasm_abi::abi_support_zero_length_svg_glyph(
+        source,
+        svg_zero_length_source_has_null_document(case),
+    ) {
         wasm_done_glyph_handle(source);
         wasm_done_face(face);
         return Err("failed to set WASM SVG document length to zero".to_string());
@@ -73432,16 +73824,18 @@ fn gzip_uncompress_error_output(
     let mut rows = Vec::new();
     match case.case_id.as_str() {
         "ftgzip.FT_Gzip_Uncompress.rejects_invalid_arguments" => {
-            for (variant, memory, output, output_len) in [
-                ("memory_null", false, true, true),
-                ("output_null", true, false, true),
-                ("output_len_null", true, true, false),
+            for (variant, memory, output, output_len, input_present) in [
+                ("memory_null", false, true, true, true),
+                ("output_null", true, false, true, true),
+                ("output_len_null", true, true, false, true),
+                ("input_null", true, true, true, false),
             ] {
                 let (status, observed_len, output_bytes) = gzip_uncompress_call_with_state(
                     backend,
                     memory,
                     output,
                     output_len,
+                    input_present,
                     gzip.as_ref(),
                     8,
                 )?;
@@ -73460,6 +73854,7 @@ fn gzip_uncompress_error_output(
             ] {
                 let (status, observed_len, output_bytes) = gzip_uncompress_call_with_state(
                     backend,
+                    true,
                     true,
                     true,
                     true,
@@ -73489,8 +73884,9 @@ fn gzip_uncompress_error_output(
                 ("dictionary_required_zlib", dictionary_required),
             ] {
                 let capacity = raw.len().saturating_add(16);
-                let (status, observed_len, output_bytes) =
-                    gzip_uncompress_call_with_state(backend, true, true, true, &input, capacity)?;
+                let (status, observed_len, output_bytes) = gzip_uncompress_call_with_state(
+                    backend, true, true, true, true, &input, capacity,
+                )?;
                 rows.push(json!({
                     "variant": variant,
                     "status": status,
@@ -73518,6 +73914,7 @@ fn gzip_uncompress_call_with_state(
     memory_present: bool,
     output_present: bool,
     output_len_present: bool,
+    input_present: bool,
     input: &[u8],
     capacity: usize,
 ) -> Result<(FT_Error, Option<FT_ULong>, Vec<u8>), String> {
@@ -73535,7 +73932,7 @@ fn gzip_uncompress_call_with_state(
                 memory_present.then_some(&memory),
                 output_present.then_some(output.as_mut_slice()),
                 output_len_present.then_some(&mut output_len),
-                Some(input),
+                input_present.then_some(input),
             )
         }
         GzipBackend::CAbi => {
@@ -73556,7 +73953,11 @@ fn gzip_uncompress_call_with_state(
                 } else {
                     ptr::null_mut()
                 },
-                input.as_ptr(),
+                if input_present {
+                    input.as_ptr()
+                } else {
+                    ptr::null()
+                },
                 FT_ULong::try_from(input.len()).map_err(|err| err.to_string())?,
             )
         }
@@ -73578,7 +73979,11 @@ fn gzip_uncompress_call_with_state(
                 } else {
                     ptr::null_mut()
                 },
-                input.as_ptr(),
+                if input_present {
+                    input.as_ptr()
+                } else {
+                    ptr::null()
+                },
                 FT_ULong::try_from(input.len()).map_err(|err| err.to_string())?,
             )
         }
@@ -73941,7 +74346,7 @@ fn bzip2_stream_read_ranges(
     stream: &FT_StreamRec,
     raw: &[u8],
 ) -> Result<Vec<Value>, String> {
-    [(0usize, 4usize), (3, 5), (0, 8)]
+    [(0usize, 4usize), (3, 5), (0, 8), (0, 0)]
         .into_iter()
         .map(|(offset, requested)| {
             let offset = FT_ULong::try_from(offset).map_err(|err| err.to_string())?;
@@ -73972,6 +74377,7 @@ fn bzip2_stream_read_ranges(
             Ok(json!({
                 "offset": offset,
                 "requested": requested,
+                "buffer_null": requested == 0,
                 "read": bytes.len(),
                 "bytes": hex_bytes(&bytes),
                 "expected": hex_bytes(expected),
@@ -74394,6 +74800,7 @@ fn lzw_stream_read_ranges(
             Ok(json!({
                 "offset": offset,
                 "requested": requested,
+                "buffer_null": requested == 0,
                 "read": bytes.len(),
                 "bytes": hex_bytes(&bytes),
                 "expected": hex_bytes(expected),
@@ -74457,10 +74864,15 @@ fn c_stream_callback_read(
         *mut c_abi::FT_Byte,
         c_abi::FT_ULong,
     ) -> c_abi::FT_ULong = unsafe { std::mem::transmute(stream.read) };
+    let buffer = if requested == 0 {
+        ptr::null_mut()
+    } else {
+        bytes.as_mut_ptr()
+    };
     let read = callback(
         (stream as *const FT_StreamRec).cast_mut(),
         offset,
-        bytes.as_mut_ptr(),
+        buffer,
         requested,
     );
     let read_len = usize::try_from(read)
@@ -86952,6 +87364,9 @@ fn bitmap_copy_rust(setup: &mut BitmapCopySetup) -> FT_Error {
         FT_Bitmap_Set_Owned_Buffer(Some(&mut setup.target), bytes);
     }
     if setup.alias {
+        if setup.null_library {
+            return FT_Err_Invalid_Library_Handle as FT_Error;
+        }
         setup.target = setup.source;
         return FT_Err_Ok;
     }
@@ -87115,6 +87530,10 @@ fn bitmap_copy_setup(scenario: &str) -> Result<BitmapCopySetup, String> {
             setup.target_bytes = Some(vec![0xE5; 12]);
         }
         "error_null_library" => setup.null_library = true,
+        "error_null_library_alias" => {
+            setup.null_library = true;
+            setup.alias = true;
+        }
         "error_null_source" | "error_null_library_or_bitmaps" => setup.null_source = true,
         "error_null_target" => setup.null_target = true,
         other => return Err(format!("unsupported bitmap_copy scenario {other}")),

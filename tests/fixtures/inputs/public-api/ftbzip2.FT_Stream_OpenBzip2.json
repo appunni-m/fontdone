@@ -105,6 +105,7 @@
               64
             ]
           ],
+          "null_buffer_zero_count": true,
           "seek_backwards": true
         }
       },

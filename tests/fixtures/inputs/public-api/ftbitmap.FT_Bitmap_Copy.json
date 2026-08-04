@@ -273,6 +273,15 @@
             ]
           },
           {
+            "id": "null-library-alias",
+            "params": {
+              "scenario": "error_null_library_alias"
+            },
+            "coverage": [
+              "ftbitmap.bitmap_copy:null-library-alias"
+            ]
+          },
+          {
             "id": "null-source",
             "params": {
               "scenario": "error_null_source"

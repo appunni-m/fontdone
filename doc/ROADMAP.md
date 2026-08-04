@@ -441,7 +441,11 @@ per-batch coverage increase is claimed:
 
 | 71 | Working tree (FT_Glyph_Transform invalid-root route) | Routed the existing `ftglyph.FT_Glyph_Transform.error_null_or_bad_glyph` input through an actual pinned-C probe and the Rust FFI, C ABI, and WASM backends instead of the generic no-face fallback. Focused parity run `6d230680-fda8-42a3-868d-3dd021d6c577` passed 1 / 1. Source-bound full parity run `a4731863-3756-4988-8796-d12b58413ff9` passes 7,535 / 7,535 runnable comparisons with 3 explicitly pending safety-extension cases, 0 pending route-audit items, and 218 / 218 function routes. The source-bound all-lane Coverage MCP run `65a2d2aa-2356-4f8e-b02a-b60dac78a025`, snapshot `8a1afdcf-e688-41af-84ca-be248623e71c`, measures 49,591 / 54,177 lines, 9,780 / 12,534 branches, 3,391 / 3,835 functions, and 68,261 / 75,357 regions in 94.253 seconds; mutable outline/SVG root-class rejection is now exercised, while the non-mutable SVG rejection remains uncovered at `fontdone-c-abi/src/implementation.rs:1044` and `fontdone-wasm/src/implementation.rs:706`. The C-ABI scorecard run `937d8ab7-d805-4bb3-ae30-31baba850ad2` reports 10 / 12 categories complete, 5,278 / 5,278 runtime contract rows, 681 / 681 strict error routes, and 7,535 / 7,535 no-fallback routes. Windows import-library evidence and four fresh target-lane bundles remain. |
 
-The latest source-bound parity verification is Coverage MCP parity run
+| 72 | Working tree (coverage matrix runtime) | Grouped the maintained `FT_Prop_IncreaseXHeight.limit_changes_autohint_x_height` matrix by its pinned face-scoped lifecycle: one fresh face per `(font, limit, ppem)` cell, followed by the three requested glyph loads. The refreshed all-lane Coverage MCP run `c1bc9991-b54f-405c-bf03-22b83752a230`, snapshot `934ff05d-8c38-4c56-96ca-d5477f27576e`, passed 7,537 / 7,537 comparisons in each backend with 0 failures, reduced the source-bound wall time from 103.059 to 93.856 seconds, and measured 49,624 / 54,186 lines, 9,814 / 12,538 branches, 3,391 / 3,835 functions, and 68,297 / 75,365 regions. Coverage remains 91.58% line, 78.27% branch, 88.42% function, and 90.62% region; the remaining roadmap blockers are unchanged: four fresh non-host platform bundles and Windows import-library evidence for the C-ABI completion contract. |
+
+| 73 | Working tree (FTC_Node_Unref null-manager branch) | Added the defined `ftcache.FTC_Node_Unref.null_or_invalid_inputs_noop` variant with a non-null foreign node and a null manager, exercising the pinned early-return path without dereferencing an invalid node. Focused parity run `3b7c3210-ee18-40da-81a3-1aa7cf67da07` passed 1 / 1; the official full parity run `5a310945-27fb-43bb-b005-9ba809f2e45f` passed 7,537 / 7,537 runnable comparisons with 3 explicitly pending safety-extension cases. The all-lane Coverage MCP run `b0194751-8e81-4d73-a17d-d6ae1a636c71`, snapshot `21949c21-abcd-4b97-b5c8-a9badd976487`, completed in 89.100 seconds and measured 49,624 / 54,186 lines, 9,815 / 12,538 branches, 3,391 / 3,835 functions, and 68,297 / 75,365 regions; the C-ABI `FTC_Node_Unref` guard reached 4 / 4 branches. Four fresh non-host platform bundles and Windows import-library evidence remain for the C-ABI completion contract. |
+
+The preceding committed source-bound parity verification is Coverage MCP parity run
 `a4731863-3756-4988-8796-d12b58413ff9` against parity-tree digest
 `80eeb675123ecc0aaaa693f94f917d86864ef57d1e4daac767e78b96917f5e3c`: it passed 7,535 / 7,535 runnable
 comparisons, 0 failed, and 3 explicitly pending
@@ -449,7 +453,7 @@ safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. The companion C-ABI scorecard reports
-**10 / 12 categories complete**, with 5,278 / 5,278 runtime contract rows and
+**10 / 12 categories complete**, with 5,280 / 5,280 runtime contract rows and
 681 / 681 strict error routes exact; the remaining contract debt is the
 Windows import-library item and four fresh target-lane bundles.
 

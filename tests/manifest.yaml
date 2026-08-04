@@ -2859,7 +2859,7 @@ subjects:
       - id: success_open_valid_bzip2_stream
         description: A valid bzip2-compressed source initializes the target stream with C-compatible memory, size sentinel, pos, read, close, and descriptor behavior.
       - id: success_read_decompressed_bytes
-        description: Reads through the wrapped stream produce exact decompressed bytes and seek/read behavior matching C.
+        description: Reads through the wrapped stream produce exact decompressed bytes and seek/read behavior matching C, including the defined null-buffer zero-count callback probe.
       - id: lifecycle_close_does_not_close_source
         description: Closing the bzip2 stream releases wrapper state but does not close or free the source stream object.
       - id: error_null_stream_or_source
@@ -2872,7 +2872,7 @@ subjects:
         description: In the active pinned build without bzip2 support, FT_Stream_OpenBzip2 returns Unimplemented_Feature before reading invalid, truncated, or empty bzip2 headers.
       - id: out_of_scope_uncompiled_bzip2_policy
         description: If this build intentionally excludes bzip2, the ABI-visible behavior must be documented as C-compatible Unimplemented_Feature rather than silently omitting the symbol.
-    # needs-input: operation=FT_Stream_OpenBzip2 plus FT_Stream read/close through wrapper; fixture_asset=valid .pcf.bz2 or compressed byte fixture, raw expected decompressed bytes, invalid/truncated bzip2 byte fixtures; params valid source stream, null target, null source, corrupt header, truncated stream, uncompiled-bzip2 feature configuration; output shape=FT_Error, target FT_Stream fields memory/size/pos/base/read/close/descriptor classification, read byte chunks, and source close-count state; comparison=exact C oracle error, stream field classification, decompressed bytes, close ownership behavior, and Unimplemented_Feature policy when excluded.
+    # needs-input: operation=FT_Stream_OpenBzip2 plus FT_Stream read/close through wrapper; fixture_asset=valid .pcf.bz2 or compressed byte fixture, raw expected decompressed bytes, invalid/truncated bzip2 byte fixtures; params valid source stream, null target, null source, corrupt header, truncated stream, null-buffer zero-count callback, uncompiled-bzip2 feature configuration; output shape=FT_Error, target FT_Stream fields memory/size/pos/base/read/close/descriptor classification, read byte chunks, and source close-count state; comparison=exact C oracle error, stream field classification, decompressed bytes, close ownership behavior, and Unimplemented_Feature policy when excluded.
 
   - id: ftcache.FTC_CMapCache_Lookup
     kind: function
@@ -6255,7 +6255,9 @@ subjects:
       - id: error_null_source_target_or_class
         description: Null target, null source, or a source with null clazz returns FT_Err_Invalid_Argument; when target is non-null C first writes *target to null before later failure paths.
       - id: error_svg_zero_length_source_real
-        description: A real SVG glyph whose public document length is set to zero returns FT_Err_Invalid_Slot_Handle and destroys the partial copy target exactly like C.
+        description: A real SVG glyph whose public document length is set to zero returns FT_Err_Invalid_Slot_Handle and destroys the partial copy target exactly like C, with both preserved-pointer and null-pointer controls.
+      - id: error_svg_zero_length_source_preserves_document
+        description: A zero-length SVG record with a still-valid document pointer returns before reading the pointer, proving the pinned C validation order without invoking undefined memory.
       - id: error_copy_hook_failure_cleans_target
         description: Allocation or class copy failure destroys the partial copy and leaves the returned target null.
     # needs-input: operation=FT_Get_Glyph then FT_Glyph_Copy; fixture_asset=outline, bitmap, and SVG fonts where available plus allocation-failure facade; params={glyph_kind, source_mutation_after_copy, source_destroy_before_target, null_source, null_target, bad_class}; output shape={FT_Error, target nullness, copied root fields, outline arrays/bitmap bytes/SVG bytes, allocation/free events}; comparison=exact C oracle deep-copy contents, independence after source mutation/free, and error cleanup.
@@ -6891,7 +6893,7 @@ subjects:
       - id: uncompresses_valid_gzip_buffer
         description: Valid compressed input produces the same output bytes and used output_len as C.
       - id: rejects_invalid_arguments
-        description: Null memory, output_len, or output pointer reports Invalid_Argument like C.
+        description: Null memory, output_len, or output pointer reports Invalid_Argument, while a null input pointer is delayed to inflate and reports the same decompression error as C.
       - id: reports_buffer_too_small
         description: An output buffer that cannot hold the uncompressed data reports Array_Too_Large like C.
       - id: reports_invalid_compressed_data
@@ -8213,14 +8215,14 @@ subjects:
       - id: import_contract
         description: Declaration is visible from freetype/ftlzw.h as FT_Error FT_Stream_OpenLZW(FT_Stream stream, FT_Stream source).
       - id: opens_valid_lzw_stream
-        description: With FT_CONFIG_OPTION_USE_LZW and valid .Z data, C initializes the target stream with memory, descriptor, read, close, pos, size, and null base fields.
+        description: With FT_CONFIG_OPTION_USE_LZW and valid .Z data, C initializes the target stream with memory, descriptor, read, close, pos, size, and null base fields; the declared zero-count read uses a null buffer and returns zero without copying.
       - id: invalid_header_error
         description: With LZW support enabled, a source stream without the LZW magic/header returns the same C error before allocating the LZW descriptor.
       - id: null_stream_or_source_error
         description: A null target stream or source stream returns FT_Err_Invalid_Stream_Handle.
       - id: unsupported_build_error
         description: Without FT_CONFIG_OPTION_USE_LZW, the exported function returns FT_Err_Unimplemented_Feature for all arguments.
-    # needs-input: operation=FT_Stream_OpenLZW then stream read/seek/close; fixture_asset=small valid .pcf.Z or synthetic .Z binary, invalid-header binary, and FT_Stream memory wrapper records; params={lzw_enabled:false/true, target_stream:null/valid, source_stream:null/valid, read_offsets:[0,1,backward], read_counts:[0,1,64]}; output shape={FT_Error, target stream field snapshot, decoded byte chunks/hash, close side effects, source stream ownership class}; comparison=exact C oracle error code, stream field mutation, decoded bytes, backward-seek reset behavior, and unsupported-build classification.
+    # needs-input: operation=FT_Stream_OpenLZW then stream read/seek/close; fixture_asset=small valid .pcf.Z or synthetic .Z binary, invalid-header binary, and FT_Stream memory wrapper records; params={lzw_enabled:false/true, target_stream:null/valid, source_stream:null/valid, read_offsets:[0,1,backward], read_counts:[0,1,64], null_buffer_zero_count:true}; output shape={FT_Error, target stream field snapshot, decoded byte chunks/hash, close side effects, source stream ownership class}; comparison=exact C oracle error code, stream field mutation, decoded bytes, backward-seek reset behavior, and unsupported-build classification.
 
   - id: ftmm.T1_MAX_MM_AXIS
     kind: constant
