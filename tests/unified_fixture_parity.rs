@@ -56714,34 +56714,64 @@ fn c_image_cache_lookup_scaler(case: &InputCase) -> Result<RunOutput, String> {
 }
 
 fn c_image_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
-    let (library, face) = c_new_face_without_size(case)?;
+    // Exercise the exported manager/cache route rather than reproducing the
+    // result with a directly opened face.  The pinned oracle keeps one
+    // requester-backed FTC_FaceID alive across all rows, so the first lookup
+    // populates the image cache and an optional second lookup reaches its hit
+    // path before the returned node is unreferenced.
+    let bytes = font_bytes(case)?;
+    let mut manager = c_abi::AbiSBitCacheHarness::new_manager_only(
+        bytes.as_ref(),
+        face_index_param(&case.inputs.params)?,
+    )
+    .map_err(|error| format!("C ABI image cache setup returned {error}"))?;
+    let manager_handle = manager.manager_handle();
+    let face_id = manager.face_id();
     let image_type = image_cache_type_param(&case.inputs.params)?;
+    let mut cache = ptr::null_mut();
+    let create_status = c_abi::FTC_ImageCache_New(manager_handle, &mut cache);
+    if create_status != FT_Err_Ok {
+        return Ok(error(create_status));
+    }
     let glyph_indexes = cache_glyph_indexes(&case.inputs.params)?;
     let repeat_lookup = bool_param(&case.inputs.params, "repeat_lookup", false)?;
+    let image_type_rec = c_abi::FTC_ImageTypeRec {
+        face_id,
+        width: image_type.width,
+        height: image_type.height,
+        flags: image_type.flags as i32,
+    };
     let output = image_cache_lookup_output(
         &case.inputs.params,
         glyph_indexes,
         repeat_lookup,
         |glyph_index| {
-            let size_err = c_apply_cache_scaler(face, image_type.scaler());
-            if size_err != FT_Err_Ok {
-                return Ok(Err(size_err));
+            let mut glyph = ptr::null_mut();
+            let mut node = ptr::null_mut();
+            let status = c_abi::FTC_ImageCache_Lookup(
+                cache,
+                ptr::from_ref(&image_type_rec).cast_mut(),
+                glyph_index,
+                &mut glyph,
+                &mut node,
+            );
+            let result = if status == FT_Err_Ok {
+                c_cached_glyph_record(glyph).map(Ok)
+            } else {
+                Ok(Err(status))
+            };
+            if !node.is_null() {
+                c_abi::FTC_Node_Unref(node, manager_handle);
             }
-            let err = c_abi::FT_Load_Glyph(face, glyph_index, image_type.flags as i32);
-            if err != FT_Err_Ok {
-                return Ok(Err(err));
-            }
-            let slot = c_abi::abi_slot_snapshot(face)
-                .ok_or_else(|| "missing c glyph slot snapshot".to_string())?;
-            Ok(Ok(glyph_record_json(
-                slot.format,
-                slot.advance.x,
-                slot.advance.y,
-            )))
+            result
         },
     );
-    c_done_face(face);
-    c_done_library(library);
+    if manager.requester_calls() != 1 {
+        return Err(format!(
+            "C ABI image cache requester count diverged: {}",
+            manager.requester_calls()
+        ));
+    }
     output
 }
 

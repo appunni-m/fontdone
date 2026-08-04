@@ -144,11 +144,11 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `3a32c0bc-1f21-42d2-9ade-076d8d59e266` (snapshot
-`361294c8-673e-4e19-85dd-610e28824b05`): all three processes passed 7,539 /
-7,539 cases. This source/input-bound managed run took 89.806 seconds,
-including the 42.32-second instrumented rebuild; the lane executions finished
-in 39.85 seconds (Rust), 29.02 seconds (C ABI), and 28.91 seconds (WASM). The
+Coverage MCP run `0ea25900-4164-463c-8083-597f2c610921` (snapshot
+`3fdd6bb8-e1b6-4326-a1a0-6246ef91131e`): all three processes passed 7,539 /
+7,539 cases. This source/input-bound managed run took 90.116 seconds,
+including the 42.67-second instrumented rebuild; the lane executions finished
+in 40.18 seconds (Rust), 29.22 seconds (C ABI), and 29.11 seconds (WASM). The
 preceding source-bound managed run took 93.856 seconds. The preceding warm managed run took 50.842 seconds. The
 preceding source-bound run took 100.333 seconds, including a 48.78-second
 instrumented rebuild; the longest backend execution was 48.24 seconds. The
@@ -268,8 +268,8 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`3a32c0bc-1f21-42d2-9ade-076d8d59e266`, snapshot
-`361294c8-673e-4e19-85dd-610e28824b05`) measured 89.806 seconds end-to-end
+run (`0ea25900-4164-463c-8083-597f2c610921`, snapshot
+`3fdd6bb8-e1b6-4326-a1a0-6246ef91131e`) measured 90.116 seconds end-to-end
 with the exported CMap-cache lifecycle path. The preceding
 image-cache remove-face-ID run (`b8b246c4-a7d9-4d39-8f08-aeb4694679f4`,
 snapshot `54a29596-5f12-4598-b272-2ca8df957b63`) measured 89.542 seconds. The
@@ -311,8 +311,8 @@ previous round-robin schedule reopened those faces in every worker. On the
 current host this reduced a warm full-matrix run from 227.03 seconds to
 192.75 seconds, with 7,535 / 7,535 runnable comparisons passing; the new run
 opened 924 cached face handles and spent 81.55 seconds in face prewarming.
-The latest instrumentation timers were approximately 39.850 seconds Rust FFI,
-29.024 seconds C ABI, 28.909 seconds WASM, and 12–14 ms comparison per lane;
+The latest instrumentation timers were approximately 40.177 seconds Rust FFI,
+29.217 seconds C ABI, 29.105 seconds WASM, and 14–15 ms comparison per lane;
 those lanes run concurrently,
 so their sum is not wall time. The remaining wall-time tail is setup,
 process/report merging, and Coverage MCP ingestion rather than another parity
@@ -320,14 +320,14 @@ route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,802 / 54,356 | 91.62% |
-| Branches | 9,862 / 12,582 | 78.38% |
-| Functions | 3,400 / 3,847 | 88.38% |
-| Regions | 68,531 / 75,578 | 90.68% |
+| Lines | 49,816 / 54,356 | 91.65% |
+| Branches | 9,864 / 12,582 | 78.40% |
+| Functions | 3,401 / 3,847 | 88.41% |
+| Regions | 68,548 / 75,578 | 90.70% |
 
 That current run passed all 7,539 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`361294c8-673e-4e19-85dd-610e28824b05`. Its retained log reports 42.32 seconds
+`3fdd6bb8-e1b6-4326-a1a0-6246ef91131e`. Its retained log reports 42.67 seconds
 of compilation and a 44.33-second longest backend execution. Coverage MCP does not expose
 separate timestamps for report finalization or artifact ingestion. Current
 LLVM JSON is accepted directly by Coverage
