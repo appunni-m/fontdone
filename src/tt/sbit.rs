@@ -404,10 +404,10 @@ fn find_image_in_subtable(
             // `(glyph_index - start) * image_size`.
             let image_size =
                 read_u32(eblc, subtable_start + 8).ok_or_else(|| no_bitmap_error(recurse_count))?;
-            let _metrics = read_big_metrics(
-                eblc.get(subtable_start + 12..subtable_start + 20)
-                    .ok_or_else(|| no_bitmap_error(recurse_count))?,
-            )?;
+            let _metrics = match eblc.get(subtable_start + 12..subtable_start + 20) {
+                Some(bytes) => read_big_metrics(bytes)?,
+                None => return Err(no_bitmap_error(recurse_count)),
+            };
             let glyph_delta = u32::from(glyph_index - first_glyph);
             let image_start = image_size.checked_mul(glyph_delta).ok_or_else(|| {
                 FontError::InvalidFont("embedded bitmap image offset overflow".into())
@@ -510,10 +510,10 @@ fn find_image_in_subtable(
             // image format 5 uses those metrics for bit-aligned EBDT payloads.
             let image_size =
                 read_u32(eblc, subtable_start + 8).ok_or_else(|| no_bitmap_error(recurse_count))?;
-            let metrics = read_big_metrics(
-                eblc.get(subtable_start + 12..subtable_start + 20)
-                    .ok_or_else(|| no_bitmap_error(recurse_count))?,
-            )?;
+            let metrics = match eblc.get(subtable_start + 12..subtable_start + 20) {
+                Some(bytes) => read_big_metrics(bytes)?,
+                None => return Err(no_bitmap_error(recurse_count)),
+            };
             let num_glyphs = read_u32(eblc, subtable_start + 20)
                 .ok_or_else(|| no_bitmap_error(recurse_count))?;
             let glyphs_start = subtable_start.checked_add(24).ok_or_else(|| {
