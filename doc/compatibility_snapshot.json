@@ -862,9 +862,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "c31fadb21dc70443d7d54b9c144644c2dab357f3a88e257d0011232167e6c885",
-    "parity_tree_sha256": "56be57560a2c55c8756857dcd8fa028ee9aec6a4dd288254c6ad47af58a92761",
-    "log_sha256": "1d18d43cea6e36c30a542628bf0da986718c6ebea2687822c9e0b711d648ac22",
+    "sha256": "b695fcf3a36839b59b7ac27deddec78a892ebe1d43adb571a620817aba8c52b5",
+    "parity_tree_sha256": "ea84b599d62173a1bafc652407ddf90b410dbba96d0940acb337efedc3efd7ba",
+    "log_sha256": "9e127aa33071083aac9cab02fd34ab2e8eef955abf5a30944b4bd4f7521dbbb2",
     "command": "make test-parity"
   }
 }

@@ -48155,6 +48155,12 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         {
             c_manager_new_null(case)
         }
+        "ftcache.cmap_cache_new"
+            if case_id_base(&case.case_id)
+                == "ftcache.FTC_CMapCache_New.error_null_manager_or_output" =>
+        {
+            c_cmap_cache_new_null(case)
+        }
         "ftcache.cmap_cache_lookup"
             if !case.expect_error && cmap_cache_indexes(&case.inputs.params).is_ok() =>
         {
@@ -58149,6 +58155,16 @@ fn c_cmap_cache_new(case: &InputCase) -> Result<RunOutput, String> {
     cmap_cache_new_output(&case.inputs.params, || {
         Ok((first, after_reset, requester_after_first as i32, 2))
     })
+}
+
+fn c_cmap_cache_new_null(case: &InputCase) -> Result<RunOutput, String> {
+    let mut cache = ptr::null_mut();
+    let _ = c_abi::FTC_CMapCache_New(ptr::null_mut(), &mut cache);
+    let bytes = font_bytes(case)?;
+    let manager = c_abi::AbiSBitCacheHarness::new_manager_only(bytes.as_ref(), 0)
+        .map_err(|error| format!("FTC_Manager_New returned {error}"))?;
+    let _ = c_abi::FTC_CMapCache_New(manager.manager_handle(), ptr::null_mut());
+    Ok(error(FT_Err_Unimplemented_Feature as FT_Error))
 }
 
 fn wasm_cmap_cache_new(case: &InputCase) -> Result<RunOutput, String> {
