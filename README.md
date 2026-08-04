@@ -106,15 +106,15 @@ The latest full parity snapshot was recorded on **2026-08-04** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,537 |
-| Passed cases | 7,537 |
+| Runnable exact-comparison cases | 7,538 |
+| Passed cases | 7,538 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
 | Covered manifest cases | 4,189 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,281 |
-| Concrete expanded cases | 7,540 |
+| Concrete expanded cases | 7,541 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
 `7,537 / 7,537` means every runnable case in that execution matched; the 3
@@ -184,6 +184,12 @@ backend and measured 49,624 / 54,186 lines, 9,815 / 12,538 branches,
 3,391 / 3,835 functions, and 68,297 / 75,365 regions; it is retained in
 `doc/DEVELOPMENT.md` and `doc/ROADMAP.md` until a new compatibility snapshot
 is deliberately promoted.
+The newest dirty-worktree validation run `a7a11b61-aae7-4fa0-8f66-d54e6bd0bdc1`
+(`90a240aa-1197-401d-9cdf-682c62ba7025`) passed 7,538 / 7,538 comparisons in
+each backend and measured 49,664 / 54,227 lines, 9,824 / 12,548 branches,
+3,395 / 3,839 functions, and 68,346 / 75,418 regions in 91.262 seconds.
+It includes the maintained bitmap-copy null-buffer parity input and is the
+current worktree measurement rather than a promoted compatibility snapshot.
 The current source/input-bound run passed 7,537 / 7,537 comparisons in each backend lane. Its
 lane executions were 43.67 seconds Rust FFI, 33.18 seconds C ABI, and 32.96
 seconds WASM, with about 11 ms comparison per lane. The three-surface
@@ -232,7 +238,7 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,280 / 5,280 pinned-C runtime contract rows exact |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,281 / 5,281 pinned-C runtime contract rows exact |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |

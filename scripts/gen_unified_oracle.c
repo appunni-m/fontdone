@@ -8847,10 +8847,21 @@ static void print_get_glyph_payload(FT_GlyphSlot slot, const char* action) {
             FT_Done_Glyph(source);
         }
         glyph = copy;
-    } else if (!err && streq(action, "copy")) {
+    } else if (!err && (streq(action, "copy") ||
+                        streq(action, "copy-null-buffer"))) {
         FT_Glyph source = glyph;
         FT_Glyph copy = NULL;
+        FT_Byte* source_bitmap_buffer = NULL;
+        if (streq(action, "copy-null-buffer") &&
+            glyph && glyph->format == FT_GLYPH_FORMAT_BITMAP) {
+            FT_BitmapGlyph source_bitmap = (FT_BitmapGlyph)source;
+            source_bitmap_buffer = source_bitmap->bitmap.buffer;
+            source_bitmap->bitmap.buffer = NULL;
+        }
         err = FT_Glyph_Copy(glyph, &copy);
+        if (source_bitmap_buffer) {
+            ((FT_BitmapGlyph)source)->bitmap.buffer = source_bitmap_buffer;
+        }
         if (!err && source && copy &&
             source->format == FT_GLYPH_FORMAT_SVG &&
             copy->format == FT_GLYPH_FORMAT_SVG) {

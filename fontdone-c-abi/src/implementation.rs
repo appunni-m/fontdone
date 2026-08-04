@@ -897,9 +897,6 @@ impl OwnedBitmapGlyph {
                     .and_then(|pitch| rows.checked_mul(pitch))
             })
             .ok_or(rust_ffi::FT_Err_Invalid_Argument)?;
-        if byte_len != 0 && self.record.bitmap.buffer.is_null() {
-            return Err(rust_ffi::FT_Err_Invalid_Argument);
-        }
         self.core.root.library = self.record.root.library.cast::<c_void>();
         self.core.root.format = self.record.root.format;
         self.core.root.advance = rust_ffi::FT_Vector {
@@ -912,7 +909,11 @@ impl OwnedBitmapGlyph {
             rows: self.record.bitmap.rows,
             width: self.record.bitmap.width,
             pitch: self.record.bitmap.pitch,
-            buffer: if byte_len == 0 {
+            // FreeType's `FT_Bitmap_Copy` preserves a null source buffer and
+            // returns success even when rows and pitch describe a non-empty
+            // descriptor.  Keep that public-record behavior without ever
+            // constructing a slice from a null pointer.
+            buffer: if byte_len == 0 || self.record.bitmap.buffer.is_null() {
                 Vec::new()
             } else {
                 // SAFETY: non-empty public bitmap storage was checked above

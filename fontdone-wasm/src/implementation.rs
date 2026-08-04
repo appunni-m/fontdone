@@ -620,6 +620,44 @@ impl WasmOwnedBitmapGlyph {
             palette: ptr::null(),
         };
     }
+
+    fn sync_core_from_record(&mut self) -> Result<(), FT_Error> {
+        let byte_len = usize::try_from(self.record.bitmap.rows)
+            .ok()
+            .and_then(|rows| {
+                usize::try_from(self.record.bitmap.pitch.unsigned_abs())
+                    .ok()
+                    .and_then(|pitch| rows.checked_mul(pitch))
+            })
+            .ok_or(rust_ffi::FT_Err_Invalid_Argument)?;
+        if !self.record.bitmap.buffer.is_null() && self.record.bitmap.buffer_len < byte_len {
+            return Err(rust_ffi::FT_Err_Invalid_Argument);
+        }
+        self.core.root.format = self.record.root.format;
+        self.core.root.advance = rust_ffi::FT_Vector {
+            x: self.record.root.advance.x,
+            y: self.record.root.advance.y,
+        };
+        self.core.left = self.record.left;
+        self.core.top = self.record.top;
+        self.core.bitmap = rust_ffi::FT_Bitmap {
+            rows: self.record.bitmap.rows,
+            width: self.record.bitmap.width,
+            pitch: self.record.bitmap.pitch,
+            // A null public buffer is a valid empty-payload descriptor for
+            // `FT_Bitmap_Copy`, even when rows and pitch are non-zero.
+            buffer: if byte_len == 0 || self.record.bitmap.buffer.is_null() {
+                Vec::new()
+            } else {
+                // SAFETY: non-null storage is bounded by the public
+                // `buffer_len` field before this slice is formed.
+                unsafe { slice::from_raw_parts(self.record.bitmap.buffer, byte_len).to_vec() }
+            },
+            num_grays: self.record.bitmap.num_grays,
+            pixel_mode: self.record.bitmap.pixel_mode,
+        };
+        Ok(())
+    }
 }
 
 fn wasm_glyph_root_from_core(root: &rust_ffi::FT_GlyphRec) -> FontdoneWasmGlyph {
@@ -699,6 +737,19 @@ fn wasm_owned_bitmap_glyph_from_root(
     // `Box<WasmOwnedBitmapGlyph>` records, whose first field starts with the
     // public `FontdoneWasmGlyph` root.
     Some(unsafe { &*ptr::from_ref(glyph).cast::<WasmOwnedBitmapGlyph>() })
+}
+
+fn wasm_owned_bitmap_glyph_from_root_mut(
+    glyph: *mut FontdoneWasmGlyph,
+) -> Option<&'static mut WasmOwnedBitmapGlyph> {
+    let glyph_ref = unsafe { glyph.as_ref() }?;
+    if glyph_ref.clazz != wasm_owned_bitmap_glyph_class() {
+        return None;
+    }
+    // SAFETY: this private class marker is assigned only to
+    // `Box<WasmOwnedBitmapGlyph>` records, whose first field starts with the
+    // public `FontdoneWasmGlyph` root.
+    Some(unsafe { &mut *glyph.cast::<WasmOwnedBitmapGlyph>() })
 }
 
 fn wasm_owned_svg_glyph_from_root(
@@ -3415,8 +3466,11 @@ pub extern "C" fn fontdone_wasm_glyph_copy(
     }
     if err == rust_ffi::FT_Err_Unimplemented_Feature as FT_Error
         && !target.is_null()
-        && let Some(source) = wasm_owned_bitmap_glyph_from_root(source)
+        && let Some(source) = wasm_owned_bitmap_glyph_from_root_mut(source.cast_mut())
     {
+        if let Err(error) = source.sync_core_from_record() {
+            return error;
+        }
         let copy = rust_ffi::FT_Bitmap_Glyph_Copy(&source.core);
         // SAFETY: `target` is non-null and points to caller-provided output storage.
         unsafe {

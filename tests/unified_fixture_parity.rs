@@ -1253,6 +1253,16 @@ fn glyph_copy_from_converted_outline_case(case: &InputCase) -> bool {
             == Some("FT_Get_Glyph outline then FT_Glyph_To_Bitmap")
 }
 
+fn glyph_copy_null_bitmap_buffer_case(case: &InputCase) -> bool {
+    case.operation == "ftglyph.glyph_copy"
+        && case
+            .inputs
+            .params
+            .get("source_mutation")
+            .and_then(Value::as_str)
+            == Some("bitmap.buffer=NULL")
+}
+
 fn is_glyph_to_bitmap_stroked_outline_case(case: &InputCase) -> bool {
     case.inputs
         .params
@@ -44737,7 +44747,7 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             };
             args.push(glyph_index.to_string());
             args.push(load_flags_param(params)?.to_string());
-            args.push(glyph_record_action(case.operation.as_str()).to_string());
+            args.push(glyph_record_action(case).to_string());
             Ok(args)
         }
         "ftglyph.done_glyph" => {
@@ -54200,27 +54210,47 @@ fn rust_bitmap_glyph_record(face: &FT_Face, case: &InputCase) -> Result<RunOutpu
         load_flags_param(&case.inputs.params)?,
     ) {
         Ok(slot) => match FT_Get_Bitmap_Glyph(Some(&slot)) {
-            Ok(glyph) => {
-                let glyph = if case.operation == "ftglyph.glyph_copy" {
+            Ok(mut glyph) => {
+                if glyph_copy_null_bitmap_buffer_case(case) {
+                    glyph.bitmap.buffer.clear();
+                }
+                let is_copy = case.operation == "ftglyph.glyph_copy";
+                let glyph = if is_copy {
                     FT_Bitmap_Glyph_Copy(&glyph)
                 } else {
                     glyph
                 };
-                Ok(ok(bitmap_glyph_record_output(
-                    glyph.root.format,
-                    glyph.root.advance.x,
-                    glyph.root.advance.y,
-                    true,
-                    true,
-                    glyph.left,
-                    glyph.top,
-                    glyph.bitmap.width,
-                    glyph.bitmap.rows,
-                    glyph.bitmap.pitch,
-                    glyph.bitmap.pixel_mode,
-                    glyph.bitmap.num_grays,
-                    &glyph.bitmap.buffer,
-                )))
+                Ok(ok(if is_copy && glyph_copy_null_bitmap_buffer_case(case) {
+                    bitmap_copy_glyph_record_output(
+                        glyph.root.format,
+                        glyph.root.advance.x,
+                        glyph.root.advance.y,
+                        glyph.left,
+                        glyph.top,
+                        glyph.bitmap.width,
+                        glyph.bitmap.rows,
+                        glyph.bitmap.pitch,
+                        glyph.bitmap.pixel_mode,
+                        glyph.bitmap.num_grays,
+                        &glyph.bitmap.buffer,
+                    )
+                } else {
+                    bitmap_glyph_record_output(
+                        glyph.root.format,
+                        glyph.root.advance.x,
+                        glyph.root.advance.y,
+                        true,
+                        true,
+                        glyph.left,
+                        glyph.top,
+                        glyph.bitmap.width,
+                        glyph.bitmap.rows,
+                        glyph.bitmap.pitch,
+                        glyph.bitmap.pixel_mode,
+                        glyph.bitmap.num_grays,
+                        &glyph.bitmap.buffer,
+                    )
+                }))
             }
             Err(err) => Ok(error(err)),
         },
@@ -54297,6 +54327,7 @@ fn rust_bitmap_glyph_record_paths(case: &InputCase) -> Result<RunOutput, String>
 
 fn c_bitmap_glyph_record(face: c_abi::FT_Face, case: &InputCase) -> Result<RunOutput, String> {
     let mut glyph: c_abi::FT_Glyph = ptr::null_mut();
+    let mut source_bitmap_buffer: *mut c_abi::FT_Byte = ptr::null_mut();
     let mut err = c_abi::FT_Load_Glyph(
         face,
         bitmap_glyph_record_index(&case.inputs.params)?,
@@ -54309,28 +54340,64 @@ fn c_bitmap_glyph_record(face: c_abi::FT_Face, case: &InputCase) -> Result<RunOu
         if err == FT_Err_Ok && case.operation == "ftglyph.glyph_copy" {
             let source = glyph;
             glyph = ptr::null_mut();
+            if glyph_copy_null_bitmap_buffer_case(case) {
+                // FT_Bitmap_Copy treats a null source buffer as an empty
+                // payload while preserving the public bitmap descriptor.
+                // Save the owned source pointer so cleanup can still release
+                // it after the copy call observes the mutation.
+                // SAFETY: `source` was returned by `FT_Get_Glyph` for the
+                // maintained bitmap-strike fixture, so its first record is an
+                // `FT_BitmapGlyphRec` for this scoped public mutation.
+                let bitmap = unsafe { &mut *source.cast::<c_abi::FT_BitmapGlyphRec>() };
+                source_bitmap_buffer = bitmap.bitmap.buffer;
+                bitmap.bitmap.buffer = ptr::null_mut();
+            }
             err = c_abi::FT_Glyph_Copy(source, &mut glyph);
+            if !source_bitmap_buffer.is_null() {
+                // SAFETY: the source glyph remains live until the cleanup call
+                // below; restore its owned buffer before `FT_Done_Glyph`.
+                unsafe {
+                    (*source.cast::<c_abi::FT_BitmapGlyphRec>()).bitmap.buffer =
+                        source_bitmap_buffer;
+                }
+            }
             c_abi::FT_Done_Glyph(source);
         }
     }
     let output = if err == FT_Err_Ok {
         let snapshot = c_abi::abi_bitmap_glyph_snapshot(glyph)
             .ok_or_else(|| "missing c bitmap glyph snapshot".to_string())?;
-        ok(bitmap_glyph_record_output(
-            snapshot.root.format,
-            snapshot.root.advance.x,
-            snapshot.root.advance.y,
-            true,
-            true,
-            snapshot.left,
-            snapshot.top,
-            snapshot.bitmap.width,
-            snapshot.bitmap.rows,
-            snapshot.bitmap.pitch,
-            snapshot.bitmap.pixel_mode,
-            snapshot.bitmap.num_grays,
-            &snapshot.bitmap.buffer,
-        ))
+        ok(if glyph_copy_null_bitmap_buffer_case(case) {
+            bitmap_copy_glyph_record_output(
+                snapshot.root.format,
+                snapshot.root.advance.x,
+                snapshot.root.advance.y,
+                snapshot.left,
+                snapshot.top,
+                snapshot.bitmap.width,
+                snapshot.bitmap.rows,
+                snapshot.bitmap.pitch,
+                snapshot.bitmap.pixel_mode,
+                snapshot.bitmap.num_grays,
+                &snapshot.bitmap.buffer,
+            )
+        } else {
+            bitmap_glyph_record_output(
+                snapshot.root.format,
+                snapshot.root.advance.x,
+                snapshot.root.advance.y,
+                true,
+                true,
+                snapshot.left,
+                snapshot.top,
+                snapshot.bitmap.width,
+                snapshot.bitmap.rows,
+                snapshot.bitmap.pitch,
+                snapshot.bitmap.pixel_mode,
+                snapshot.bitmap.num_grays,
+                &snapshot.bitmap.buffer,
+            )
+        })
     } else {
         error(err)
     };
@@ -54443,6 +54510,17 @@ fn wasm_bitmap_glyph_record(handle: usize, case: &InputCase) -> Result<RunOutput
         if err == FT_Err_Ok && case.operation == "ftglyph.glyph_copy" {
             let source = glyph_handle;
             glyph_handle = 0;
+            if glyph_copy_null_bitmap_buffer_case(case) {
+                let source_record =
+                    ptr::with_exposed_provenance_mut::<wasm_abi::FontdoneWasmGlyph>(source);
+                // SAFETY: `source` was returned by the WASM get-glyph facade
+                // for the maintained bitmap-strike fixture, so this is the
+                // matching bitmap glyph record for the scoped mutation.
+                let bitmap =
+                    unsafe { &mut *source_record.cast::<wasm_abi::FontdoneWasmBitmapGlyph>() };
+                bitmap.bitmap.buffer = ptr::null();
+                bitmap.bitmap.buffer_len = 0;
+            }
             let source_ptr = ptr::with_exposed_provenance::<wasm_abi::FontdoneWasmGlyph>(source);
             err = wasm_abi::fontdone_wasm_glyph_copy(source_ptr, &mut glyph_handle);
             let source_ptr =
@@ -54453,21 +54531,37 @@ fn wasm_bitmap_glyph_record(handle: usize, case: &InputCase) -> Result<RunOutput
     let output = if err == FT_Err_Ok {
         let snapshot = wasm_abi::abi_bitmap_glyph_snapshot(glyph_handle)
             .ok_or_else(|| "missing wasm bitmap glyph snapshot".to_string())?;
-        ok(bitmap_glyph_record_output(
-            snapshot.root.format,
-            snapshot.root.advance.x,
-            snapshot.root.advance.y,
-            true,
-            true,
-            snapshot.left,
-            snapshot.top,
-            snapshot.bitmap.width,
-            snapshot.bitmap.rows,
-            snapshot.bitmap.pitch,
-            snapshot.bitmap.pixel_mode,
-            snapshot.bitmap.num_grays,
-            &snapshot.bitmap.buffer,
-        ))
+        ok(if glyph_copy_null_bitmap_buffer_case(case) {
+            bitmap_copy_glyph_record_output(
+                snapshot.root.format,
+                snapshot.root.advance.x,
+                snapshot.root.advance.y,
+                snapshot.left,
+                snapshot.top,
+                snapshot.bitmap.width,
+                snapshot.bitmap.rows,
+                snapshot.bitmap.pitch,
+                snapshot.bitmap.pixel_mode,
+                snapshot.bitmap.num_grays,
+                &snapshot.bitmap.buffer,
+            )
+        } else {
+            bitmap_glyph_record_output(
+                snapshot.root.format,
+                snapshot.root.advance.x,
+                snapshot.root.advance.y,
+                true,
+                true,
+                snapshot.left,
+                snapshot.top,
+                snapshot.bitmap.width,
+                snapshot.bitmap.rows,
+                snapshot.bitmap.pitch,
+                snapshot.bitmap.pixel_mode,
+                snapshot.bitmap.num_grays,
+                &snapshot.bitmap.buffer,
+            )
+        })
     } else {
         error(err)
     };
@@ -59854,8 +59948,11 @@ fn glyph_record_json_from_root_parts(format: i32, advance_x: i64, advance_y: i64
     })
 }
 
-fn glyph_record_action(operation: &str) -> &'static str {
-    match operation {
+fn glyph_record_action(case: &InputCase) -> &'static str {
+    if glyph_copy_null_bitmap_buffer_case(case) {
+        return "copy-null-buffer";
+    }
+    match case.operation.as_str() {
         "ftglyph.glyph_copy" => "copy",
         "ftglyph.get_glyph" => "get",
         _ => "record",

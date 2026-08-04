@@ -144,11 +144,11 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `b0194751-8e81-4d73-a17d-d6ae1a636c71` (snapshot
-`21949c21-abcd-4b97-b5c8-a9badd976487`): all three processes passed 7,537 /
-7,537 cases. This source/input-bound managed run took 89.100 seconds,
-including a 42.26-second instrumented rebuild; the lane executions finished in
-43.67 seconds (Rust), 33.18 seconds (C ABI), and 32.96 seconds (WASM). The
+Coverage MCP run `a7a11b61-aae7-4fa0-8f66-d54e6bd0bdc1` (snapshot
+`90a240aa-1197-401d-9cdf-682c62ba7025`): all three processes passed 7,538 /
+7,538 cases. This source/input-bound managed run took 91.262 seconds,
+including the instrumented rebuild; the lane executions finished in 39.93
+seconds (Rust), 29.08 seconds (C ABI), and 28.86 seconds (WASM). The
 preceding source-bound managed run took 93.856 seconds. The preceding warm managed run took 50.842 seconds. The
 preceding source-bound run took 100.333 seconds, including a 48.78-second
 instrumented rebuild; the longest backend execution was 48.24 seconds. The
@@ -268,9 +268,12 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`b0194751-8e81-4d73-a17d-d6ae1a636c71`, snapshot
-`21949c21-abcd-4b97-b5c8-a9badd976487`) measured 89.100 seconds end-to-end
-with the source/input-bound refresh. The preceding source-bound run
+run (`a7a11b61-aae7-4fa0-8f66-d54e6bd0bdc1`, snapshot
+`90a240aa-1197-401d-9cdf-682c62ba7025`) measured 91.262 seconds end-to-end
+with the expanded bitmap-copy null-buffer input set. The preceding
+source/input-bound refresh (`b0194751-8e81-4d73-a17d-d6ae1a636c71`, snapshot
+`21949c21-abcd-4b97-b5c8-a9badd976487`) measured 89.100 seconds. The
+preceding source-bound run
 (`c1bc9991-b54f-405c-bf03-22b83752a230`, snapshot
 `934ff05d-8c38-4c56-96ca-d5477f27576e`) measured 93.856 seconds including a
 39.79-second instrumented rebuild. The preceding warm run
@@ -314,14 +317,14 @@ route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,624 / 54,186 | 91.58% |
-| Branches | 9,815 / 12,538 | 78.28% |
-| Functions | 3,391 / 3,835 | 88.42% |
-| Regions | 68,297 / 75,365 | 90.62% |
+| Lines | 49,664 / 54,227 | 91.59% |
+| Branches | 9,824 / 12,548 | 78.29% |
+| Functions | 3,395 / 3,839 | 88.43% |
+| Regions | 68,346 / 75,418 | 90.62% |
 
-That current run passed all 7,537 runnable parity comparisons with 0 failures;
+That current run passed all 7,538 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`21949c21-abcd-4b97-b5c8-a9badd976487`. The preceding retained run includes a
+`90a240aa-1197-401d-9cdf-682c62ba7025`. The preceding retained run includes a
 source-bound instrumented rebuild; its log reports 39.79 seconds of compilation
 and a 48.24-second longest backend execution. Coverage MCP does not expose
 separate timestamps for report finalization or artifact ingestion. Current

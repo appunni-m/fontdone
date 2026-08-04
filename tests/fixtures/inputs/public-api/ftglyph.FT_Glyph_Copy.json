@@ -122,6 +122,23 @@
             ]
           },
           {
+            "id": "gray-null-buffer",
+            "assets": {
+              "bitmap_strike_font": {
+                "kind": "ref",
+                "id": "input/fixtures/assets/fonts/sbit_gray_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "source_creation": "FT_Get_Glyph bitmap",
+              "source_mutation": "bitmap.buffer=NULL"
+            },
+            "coverage": [
+              "ftglyph.glyph_copy:explicit-gray-null-buffer"
+            ]
+          },
+          {
             "id": "empty-outline-g21",
             "assets": {
               "outline_font": {
