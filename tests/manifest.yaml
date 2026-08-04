@@ -4157,13 +4157,15 @@ subjects:
         description: A null apalette still selects the palette and returns FT_Err_Ok when the palette index is valid, matching ftcolor.h.
       - id: success_reselect_resets_user_modifications
         description: Reselecting the same palette after modifying returned entries resets colors to original CPAL values like C FreeType.
+      - id: success_reselect_ignores_out_of_range_mutation
+        description: An attempted mutation at an entry index outside the returned CPAL array is ignored, while subsequent valid selection and reselection preserve C behavior.
       - id: success_non_sfnt_returns_null_palette
         description: Non-SFNT faces return FT_Err_Ok and write NULL through apalette when the output pointer is provided.
       - id: error_null_face_or_invalid_palette_index
         description: Null face and out-of-range palette indexes return the pinned C error and preserve or write apalette exactly as C does.
       - id: error_color_layers_disabled
         description: Builds without TT_CONFIG_OPTION_COLOR_LAYERS return Unimplemented_Feature and preserve outputs like the pinned C fallback.
-    # needs-input: operation=FT_Palette_Data_Get and FT_Palette_Select; fixture_asset=CPAL/COLR font with at least two palettes and distinct BGRA values; params palette indexes 0, last valid, out-of-range, null apalette, non-null apalette, modify returned palette entry then reselect; expected output shape=FT_Error plus active palette index side effect and FT_Color array { blue, green, red, alpha } or null; comparison=exact C oracle error, BGRA byte equality, pointer-null classification, reset behavior, and output preservation on errors.
+    # needs-input: operation=FT_Palette_Data_Get and FT_Palette_Select; fixture_asset=CPAL/COLR font with at least two palettes and distinct BGRA values; params palette indexes 0, last valid, out-of-range, null apalette, non-null apalette, modify returned palette entry including an out-of-range entry then reselect; expected output shape=FT_Error plus active palette index side effect and FT_Color array { blue, green, red, alpha } or null; comparison=exact C oracle error, BGRA byte equality, pointer-null classification, reset behavior, ignored out-of-range mutation, and output preservation on errors.
 
   - id: ftcolor.FT_Palette_Set_Foreground_Color
     kind: function

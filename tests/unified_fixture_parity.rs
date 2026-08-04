@@ -14648,6 +14648,17 @@ fn rust_palette_reselect_json(face: &FT_Face) -> Value {
 
 fn c_palette_reselect_json(face: c_abi::FT_Face) -> Value {
     let first = c_abi::abi_palette_select_snapshot(face, 0);
+    let _ignored_out_of_range = c_abi::abi_palette_mutate_entry(
+        face,
+        0,
+        usize::MAX,
+        c_abi::FT_Color {
+            blue: 9,
+            green: 9,
+            red: 9,
+            alpha: 9,
+        },
+    );
     let mutated = c_abi::abi_palette_mutate_entry(
         face,
         0,
@@ -14676,6 +14687,17 @@ fn c_palette_reselect_json(face: c_abi::FT_Face) -> Value {
 
 fn wasm_palette_reselect_json(handle: usize) -> Value {
     let first = wasm_abi::abi_palette_select_snapshot(handle, 0);
+    let _ignored_out_of_range = wasm_abi::abi_palette_mutate_entry(
+        handle,
+        0,
+        usize::MAX,
+        wasm_abi::FontdoneWasmColor {
+            blue: 9,
+            green: 9,
+            red: 9,
+            alpha: 9,
+        },
+    );
     let mutated = wasm_abi::abi_palette_mutate_entry(
         handle,
         0,
@@ -17343,6 +17365,10 @@ fn rust_palette_case(case: &InputCase) -> Result<RunOutput, String> {
             let face = open_face(case)?;
             Ok(ok(rust_palette_reselect_json(&face)))
         }
+        "ftcolor.FT_Palette_Select.success_reselect_ignores_out_of_range_mutation" => {
+            let face = open_face(case)?;
+            Ok(ok(rust_palette_reselect_json(&face)))
+        }
         "ftcolor.FT_Palette_Set_Foreground_Color.success_non_sfnt_noop" => {
             let face = open_face(case)?;
             let err = FT_Palette_Set_Foreground_Color(
@@ -17459,6 +17485,13 @@ fn c_palette_case(case: &InputCase) -> Result<RunOutput, String> {
             Ok(ok(output))
         }
         "ftcolor.FT_Palette_Select.success_reselect_resets_user_modifications" => {
+            let (library, face) = c_open_face(case)?;
+            let output = c_palette_reselect_json(face);
+            c_done_face(face);
+            c_done_library(library);
+            Ok(ok(output))
+        }
+        "ftcolor.FT_Palette_Select.success_reselect_ignores_out_of_range_mutation" => {
             let (library, face) = c_open_face(case)?;
             let output = c_palette_reselect_json(face);
             c_done_face(face);
@@ -17582,6 +17615,12 @@ fn wasm_palette_case(case: &InputCase) -> Result<RunOutput, String> {
             Ok(ok(output))
         }
         "ftcolor.FT_Palette_Select.success_reselect_resets_user_modifications" => {
+            let handle = wasm_open_face(case)?;
+            let output = wasm_palette_reselect_json(handle);
+            wasm_done_face(handle);
+            Ok(ok(output))
+        }
+        "ftcolor.FT_Palette_Select.success_reselect_ignores_out_of_range_mutation" => {
             let handle = wasm_open_face(case)?;
             let output = wasm_palette_reselect_json(handle);
             wasm_done_face(handle);

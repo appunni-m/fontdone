@@ -22448,7 +22448,8 @@ static int emit_color_palette_case(int argc, char** argv) {
                followup ? "false" : "true");
         print_color_entries(followup, count);
         printf("}}\n");
-    } else if (streq(case_id, "ftcolor.FT_Palette_Select.success_reselect_resets_user_modifications")) {
+    } else if (streq(case_id, "ftcolor.FT_Palette_Select.success_reselect_resets_user_modifications") ||
+               streq(case_id, "ftcolor.FT_Palette_Select.success_reselect_ignores_out_of_range_mutation")) {
         FT_UShort count = palette_entry_count(face.face);
         FT_Color* first = NULL;
         FT_Error first_err = FT_Palette_Select(face.face, 0, &first);

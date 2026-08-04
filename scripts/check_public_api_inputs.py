@@ -6808,9 +6808,12 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
     if (
         row.operation == "ftcolor.palette_select"
         and row.case_id
-        == "ftcolor.FT_Palette_Select.success_reselect_resets_user_modifications"
+        in {
+            "ftcolor.FT_Palette_Select.success_reselect_resets_user_modifications",
+            "ftcolor.FT_Palette_Select.success_reselect_ignores_out_of_range_mutation",
+        }
     ):
-        return "FT_Palette_Select CPAL reselection reset behavior validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+        return "FT_Palette_Select CPAL reselection and ignored out-of-range mutation behavior validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
     if (
         row.operation == "ftcolor.palette_set_foreground_color"
         and row.case_id == "ftcolor.FT_Palette_Set_Foreground_Color.error_null_face"
