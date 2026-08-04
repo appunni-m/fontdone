@@ -58287,43 +58287,62 @@ fn rust_manager_lookup_size(case: &InputCase) -> Result<RunOutput, String> {
 }
 
 fn c_manager_lookup_size(case: &InputCase) -> Result<RunOutput, String> {
-    let (library, face) = c_new_face_without_size(case)?;
+    let bytes = font_bytes(case)?;
+    let mut manager = c_abi::AbiSBitCacheHarness::new_manager_only(
+        bytes.as_ref(),
+        face_index_param(&case.inputs.params)?,
+    )
+    .map_err(|error| format!("C ABI manager lookup-size setup returned {error}"))?;
+    let manager_handle = manager.manager_handle();
+    let face_id = manager.face_id();
     let rows = cache_scaler_rows(&case.inputs.params)?;
     let repeat_lookup = bool_param(&case.inputs.params, "repeat_lookup", false)?;
-    let mut requester_count = 0u32;
-    let mut face_requested = false;
-    let output = manager_lookup_size_outputs(rows, repeat_lookup, |row, repeat_lookup| {
-        let before_count = requester_count;
-        if !face_requested {
-            requester_count = requester_count.saturating_add(1);
-            face_requested = true;
-        }
-        let status = c_apply_cache_scaler(face, row);
+    manager_lookup_size_outputs(rows, repeat_lookup, |row, repeat_lookup| {
+        let before_count = manager.requester_calls();
+        let mut scaler = c_abi::FTC_ScalerRec {
+            face_id,
+            width: row.width,
+            height: row.height,
+            pixel: if row.pixel { 1 } else { 0 },
+            x_res: row.x_res,
+            y_res: row.y_res,
+        };
+        let mut size = ptr::null_mut();
+        let status =
+            c_abi::FTC_Manager_LookupSize(manager_handle, ptr::from_mut(&mut scaler), &mut size);
+        let after_count = manager.requester_calls();
         let metrics = if status == FT_Err_Ok {
-            Some(c_size_metrics_json(face)?)
+            let snapshot = c_abi::abi_size_rec_snapshot(size)
+                .ok_or_else(|| "missing C ABI manager size snapshot".to_string())?;
+            Some(c_size_metrics_value(&snapshot.metrics))
         } else {
             None
         };
-        let repeat_status = if repeat_lookup {
-            c_apply_cache_scaler(face, row)
+        let (repeat_status, repeat_size, after_repeat_count) = if repeat_lookup {
+            let mut repeat_size = ptr::null_mut();
+            let repeat_status = c_abi::FTC_Manager_LookupSize(
+                manager_handle,
+                ptr::from_mut(&mut scaler),
+                &mut repeat_size,
+            );
+            (repeat_status, repeat_size, manager.requester_calls())
         } else {
-            status
+            (status, ptr::null_mut(), after_count)
         };
         Ok(ManagerLookupSizeRowOutput {
             status,
             metrics,
             requester_count_before: before_count,
-            requester_count_after: requester_count,
-            requester_count_after_repeat: requester_count,
+            requester_count_after: after_count,
+            requester_count_after_repeat: after_repeat_count,
             repeat_status,
             repeat_same_identity: repeat_lookup
                 && status == FT_Err_Ok
-                && repeat_status == FT_Err_Ok,
+                && repeat_status == FT_Err_Ok
+                && !size.is_null()
+                && size == repeat_size,
         })
-    });
-    c_done_face(face);
-    c_done_library(library);
-    output
+    })
 }
 
 fn wasm_manager_lookup_size(case: &InputCase) -> Result<RunOutput, String> {
@@ -58406,33 +58425,24 @@ fn c_manager_lookup_face(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
     let face_index = face_index_param(&case.inputs.params)?;
     let sequence = manager_lookup_face_sequence(&case.inputs.params)?;
-    let mut library: c_abi::FT_Library = ptr::null_mut();
-    let mut cached_face: c_abi::FT_Face = ptr::null_mut();
-    let mut requester_count = 0u32;
-    let output = manager_lookup_face_outputs(sequence, |step_index, action| match action {
+    let mut manager = c_abi::AbiSBitCacheHarness::new_manager_only(bytes.as_ref(), face_index)
+        .map_err(|error| format!("C ABI manager lookup-face setup returned {error}"))?;
+    let manager_handle = manager.manager_handle();
+    let face_id = manager.face_id();
+    manager_lookup_face_outputs(sequence, |step_index, action| match action {
         ManagerLookupFaceAction::RemoveFaceA => {
-            if !cached_face.is_null() {
-                c_done_face(cached_face);
-                cached_face = ptr::null_mut();
-            }
-            if !library.is_null() {
-                c_done_library(library);
-                library = ptr::null_mut();
-            }
+            c_abi::FTC_Manager_RemoveFaceID(manager_handle, face_id);
             Ok(None)
         }
         ManagerLookupFaceAction::LookupFaceA => {
-            let before_count = requester_count;
-            if cached_face.is_null() {
-                requester_count = requester_count.saturating_add(1);
-                let opened = c_new_face_from_bytes(bytes.as_ref(), face_index)?;
-                library = opened.0;
-                cached_face = opened.1;
-            }
+            let before_count = manager.requester_calls();
+            let mut face = ptr::null_mut();
+            let status = c_abi::FTC_Manager_LookupFace(manager_handle, face_id, &mut face);
+            let requester_count = manager.requester_calls();
             Ok(Some(ManagerLookupFaceRowOutput {
                 step_index,
                 face_id: "face-A",
-                status: FT_Err_Ok,
+                status,
                 requester_count_before: before_count,
                 requester_count_after: requester_count,
                 identity_class: if requester_count > before_count {
@@ -58440,17 +58450,14 @@ fn c_manager_lookup_face(case: &InputCase) -> Result<RunOutput, String> {
                 } else {
                     "cached"
                 },
-                face: Some(c_manager_lookup_face_public(cached_face)?),
+                face: if status == FT_Err_Ok {
+                    Some(c_manager_lookup_face_public(face)?)
+                } else {
+                    None
+                },
             }))
         }
-    });
-    if !cached_face.is_null() {
-        c_done_face(cached_face);
-    }
-    if !library.is_null() {
-        c_done_library(library);
-    }
-    output
+    })
 }
 
 fn wasm_manager_lookup_face(case: &InputCase) -> Result<RunOutput, String> {
