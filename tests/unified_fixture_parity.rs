@@ -64,6 +64,15 @@ extern "C" fn debug_hook_b(_arg: FT_Pointer) -> FT_Error {
     FT_Err_Ok
 }
 
+unsafe extern "C" fn c_manager_new_requester(
+    _face_id: c_abi::FTC_FaceID,
+    _library: c_abi::FT_Library,
+    _req_data: c_abi::FT_Pointer,
+    _aface: *mut c_abi::FT_Face,
+) -> c_abi::FT_Error {
+    FT_Err_Ok
+}
+
 thread_local! {
     static C_MODULE_LIFECYCLE_LOG: RefCell<Vec<&'static str>> =
         const { RefCell::new(Vec::new()) };
@@ -48137,6 +48146,15 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         {
             c_cmap_cache_lookup_null(case)
         }
+        "ftcache.manager_new"
+            if matches!(
+                case_id_base(&case.case_id),
+                "ftcache.FTC_Manager_New.error_null_library"
+                    | "ftcache.FTC_Manager_New.error_null_requester_or_output"
+            ) =>
+        {
+            c_manager_new_null(case)
+        }
         "ftcache.cmap_cache_lookup"
             if !case.expect_error && cmap_cache_indexes(&case.inputs.params).is_ok() =>
         {
@@ -58721,6 +58739,40 @@ fn c_cmap_cache_lookup_null(case: &InputCase) -> Result<RunOutput, String> {
     for cmap_index in cmap_cache_indexes(&case.inputs.params)? {
         let _ =
             c_abi::FTC_CMapCache_Lookup(ptr::null_mut(), ptr::null_mut(), cmap_index, char_code);
+    }
+    Ok(error(FT_Err_Unimplemented_Feature as FT_Error))
+}
+
+fn c_manager_new_null(case: &InputCase) -> Result<RunOutput, String> {
+    let base = case_id_base(&case.case_id);
+    let mut manager = ptr::null_mut();
+    if base == "ftcache.FTC_Manager_New.error_null_library" {
+        let _ = c_abi::FTC_Manager_New(
+            ptr::null_mut(),
+            0,
+            0,
+            0,
+            Some(c_manager_new_requester),
+            ptr::null_mut(),
+            &mut manager,
+        );
+    } else {
+        let mut library = ptr::null_mut();
+        let init_error = c_abi::FT_Init_FreeType(&mut library);
+        if init_error != FT_Err_Ok {
+            return Err(format!("FT_Init_FreeType returned {init_error}"));
+        }
+        let _ = c_abi::FTC_Manager_New(library, 0, 0, 0, None, ptr::null_mut(), &mut manager);
+        let _ = c_abi::FTC_Manager_New(
+            library,
+            0,
+            0,
+            0,
+            Some(c_manager_new_requester),
+            ptr::null_mut(),
+            ptr::null_mut(),
+        );
+        c_done_library(library);
     }
     Ok(error(FT_Err_Unimplemented_Feature as FT_Error))
 }
