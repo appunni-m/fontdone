@@ -39102,7 +39102,7 @@ fn with_public_family_exact_error(mut case: InputCase) -> InputCase {
                 == "freetype.FT_Attach_Stream.error_invalid_open_args_or_unsupported_driver"
             || case.case_id == "freetype.FT_New_Face.error_null_library_or_aface"
             || case.case_id == "fterrdef.FT_Err_Bbx_Too_Big.bdf_bitmap_size_overflow_returns_error"
-            || case.case_id
+            || case_id_base(&case.case_id)
                 == "fterrdef.FT_Err_Corrupted_Font_Glyphs.bdf_glyph_parse_failure_returns_error"
             || case.case_id
                 == "fterrdef.FT_Err_Corrupted_Font_Header.bdf_header_parse_failure_returns_error"

@@ -106,28 +106,28 @@ The latest full parity snapshot was recorded on **2026-08-04** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,540 |
-| Passed cases | 7,540 |
+| Runnable exact-comparison cases | 7,541 |
+| Passed cases | 7,541 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
 | Covered manifest cases | 4,191 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,283 |
-| Concrete expanded cases | 7,543 |
+| Concrete expanded cases | 7,544 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,539 / 7,539` means every runnable case in that execution matched; the 3
+`7,541 / 7,541` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`fcef97a3-0ec6-43b2-ba43-79613f68bce2`, recorded in
-`doc/runtime_parity_evidence.json` after passing 7,539 / 7,539 runnable
+`f23fce71-c6b6-4354-b2c0-534cdfd252ee`, recorded in
+`doc/runtime_parity_evidence.json` after passing 7,541 / 7,541 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `485cbaf9256daf4ffcd26c17e241d43db262c7cc87fafbb5d3397bd70577325d`.
+Its source-bound parity-tree digest is `714dedbc05bc4240787d3bf19e49a6fe049ece1cdce15100b16b9c295768af0f`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -184,15 +184,11 @@ backend and measured 49,624 / 54,186 lines, 9,815 / 12,538 branches,
 3,391 / 3,835 functions, and 68,297 / 75,365 regions; it is retained in
 `doc/DEVELOPMENT.md` and `doc/ROADMAP.md` until a new compatibility snapshot
 is deliberately promoted.
-The current source/input-bound cold run `adf4c9fa-c972-4dbc-bdba-f9e3505379e2`
-(`791315ec-3edd-4ff9-a956-72ff15cf158e`) passed 7,539 / 7,539 comparisons in
-each backend and measured 49,881 / 54,403 lines, 9,878 / 12,596 branches,
-3,406 / 3,851 functions, and 68,629 / 75,636 regions in 121.804 seconds.
-The retained build log shows a 1m 14s instrumented test-profile build. The
-same-source warm repeat `53c8e8ce-801e-4d7b-8495-cc5d09403b79`
-(`353b0be8-324a-4fc9-9f24-e36fff5c97bc`) completed in 46.969 seconds.
-Its lane executions were 40.10 seconds Rust FFI, 29.20 seconds C ABI, and 29.10
-seconds WASM, with about 13–16 ms comparison per lane. The three-surface
+The current source/input-bound all-lane run `8a1972fe-557b-4687-867a-866fade33dc6`
+(`7717d894-d846-4fc6-a912-21a7b6ba7210`) passed 7,541 / 7,541 comparisons in
+each backend and measured 49,880 / 54,395 lines, 9,878 / 12,592 branches,
+3,404 / 3,849 functions, and 68,626 / 75,626 regions in 85.945 seconds.
+Its exact BDF error branch is recorded at `src/font.rs:1536-1537`; the three-surface
 instrumented execution and fresh binary build are the dominant costs; the report
 is accepted by Coverage MCP without the compatibility-only segment rewrite. The default
 `COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
@@ -240,11 +236,11 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,283 / 5,283 pinned-C runtime contract rows exact |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,284 / 5,284 pinned-C runtime contract rows exact |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 683 / 683 expected-error routes compare exact error and output results; 7,539 / 7,539 routes have no generic fallback evidence |
+| Errors | 684 / 684 expected-error routes compare exact error and output results; 7,541 / 7,541 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 

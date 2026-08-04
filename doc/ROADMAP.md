@@ -455,18 +455,19 @@ per-batch coverage increase is claimed:
 | 82 | Working tree (bitmap glyph transform parity route) | Routed the maintained `ftglyph.FT_Glyph_Transform.error_non_scalable_bitmap` case through an actual pinned-C bitmap-transform probe, the pure-Rust bitmap semantic helper, and the real C-ABI/WASM `FT_Glyph_Transform` calls. The route preserves bitmap fields and advance on the pinned `FT_Err_Invalid_Glyph_Format` result; the descriptive setup metadata is now parsed without falling back to a generic error route. Full parity run `fcef97a3-0ec6-43b2-ba43-79613f68bce2` passed 7,539 / 7,539 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items; Rust, C ABI, and WASM each have 218 / 218 function-route evidence. C-ABI scorecard run `fda455d9-86d8-45ca-aaf6-0a2178c0400a` reports 218 / 218 verified functions, 1,003 / 1,003 exact unique cases, and 683 / 683 strict-error routes; `FT_Glyph_Transform` is entered and verified in 5 / 5 candidate cases. The cold all-lane coverage run `adf4c9fa-c972-4dbc-bdba-f9e3505379e2`, snapshot `791315ec-3edd-4ff9-a956-72ff15cf158e`, measured 49,881 / 54,403 lines, 9,878 / 12,596 branches, 3,406 / 3,851 functions, and 68,629 / 75,636 regions in 121.804 seconds; the same-source warm repeat `53c8e8ce-801e-4d7b-8495-cc5d09403b79`, snapshot `353b0be8-324a-4fc9-9f24-e36fff5c97bc`, completed in 46.969 seconds. The denominator stayed at 7,539 because this replaces the old generic fallback with a real route rather than adding scope. Windows import-library evidence and four fresh target-lane bundles remain. |
 
 | 83 | Working tree (SBit cache load-error sentinel parity route) | Aligned the pure-Rust `FTC_SBitCache` and exported C-ABI `FTC_SBitCache_Lookup` implementations with pinned `ftcsbits.c`: every glyph-load failure, including calls without `FT_LOAD_SBITS_ONLY`, becomes a successful unavailable-SBit sentinel instead of propagating the load error. Added the maintained input-only `ftcache.FTC_SBitCache_Lookup.missing_bitmap_without_sbits_only_caches_unavailable_sbit` case. Source-bound parity run `57007a2f-3fee-4556-975b-22f7cdfb03d8` passed 7,540 / 7,540 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items; Rust, C ABI, and WASM each retain 218 / 218 function-route evidence. All-lane Coverage MCP run `4f87db8f-92b5-4fae-b861-aa5d6cd9306e`, snapshot `11b9565d-9cca-47ef-bbca-4512a012b96d`, measured 49,879 / 54,395 lines, 9,877 / 12,592 branches, 3,404 / 3,849 functions, and 68,624 / 75,626 regions. C-ABI scorecard run `923526b2-41b8-4839-a057-5e2e02145b7d` reports 10 / 12 categories complete, 5,283 / 5,283 runtime rows, and 7,540 / 7,540 no-fallback routes; Windows import-library evidence and four fresh target-lane bundles remain. |
+| 84 | Working tree (BDF ENDFONT-before-ENDCHAR error route) | Added the maintained input-only `fterrdef.FT_Err_Corrupted_Font_Glyphs.bdf_glyph_parse_failure_returns_error@endfont-before-endchar` fixture, reaching pinned `bdflib.c:834-842` while `BDF_GLYPH_BITS_` is active. The existing EOF-corruption variant remains beside it, and the exact-error promotion now handles both variant routes through Rust FFI, C ABI, and WASM. Source-bound parity run `f23fce71-c6b6-4354-b2c0-534cdfd252ee` passed 7,541 / 7,541 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items; Rust, C ABI, and WASM each retain 218 / 218 function-route evidence. All-lane Coverage MCP run `8a1972fe-557b-4687-867a-866fade33dc6`, snapshot `7717d894-d846-4fc6-a912-21a7b6ba7210`, measured 49,880 / 54,395 lines, 9,878 / 12,592 branches, 3,404 / 3,849 functions, and 68,626 / 75,626 regions in 85.945 seconds; `src/font.rs:1536-1537` is now executed. C-ABI scorecard run `fbb47fb3-fec7-4874-a223-43756e312f84` reports 10 / 12 categories complete, 5,284 / 5,284 runtime contract rows, 684 / 684 exact-error routes, and 7,541 / 7,541 no-generic-fallback routes. Windows import-library evidence and four fresh target-lane bundles remain. |
 
 The current source-bound parity verification is Coverage MCP parity run
-`fcef97a3-0ec6-43b2-ba43-79613f68bce2` against parity-tree digest
-`485cbaf9256daf4ffcd26c17e241d43db262c7cc87fafbb5d3397bd70577325d`: it passed 7,539 / 7,539 runnable
+`f23fce71-c6b6-4354-b2c0-534cdfd252ee` against parity-tree digest
+`714dedbc05bc4240787d3bf19e49a6fe049ece1cdce15100b16b9c295768af0f`: it passed 7,541 / 7,541 runnable
 comparisons, 0 failed, and 3 explicitly pending
 safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The committed source-digest attestation is
 `doc/runtime_parity_evidence.json`. The companion C-ABI scorecard run
-`fda455d9-86d8-45ca-aaf6-0a2178c0400a` reports
-**10 / 12 categories complete**, with 5,282 / 5,282 runtime contract rows and
-683 / 683 strict error routes exact; the remaining contract debt is the
+`fbb47fb3-fec7-4874-a223-43756e312f84` reports
+**10 / 12 categories complete**, with 5,284 / 5,284 runtime contract rows and
+684 / 684 strict error routes exact; the remaining contract debt is the
 Windows import-library item and four fresh target-lane bundles.
 
 The three pending cases are deliberately excluded from the pinned-C parity
@@ -478,12 +479,15 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current source-bound cold all-lane run `adf4c9fa-c972-4dbc-bdba-f9e3505379e2`
-completed in 121.804 seconds, including a 1m 14s instrumented test-profile
-build. The same-source warm repeat `53c8e8ce-801e-4d7b-8495-cc5d09403b79`
-completed in 46.969 seconds. Its instrumentation timers were 40.100 seconds
-Rust FFI, 29.201 seconds C ABI, 29.099 seconds WASM, and about 13–16 ms
-comparison per lane. The lanes already run concurrently; a two-worker
+The current source-bound all-lane run `8a1972fe-557b-4687-867a-866fade33dc6`
+completed in 85.945 seconds with snapshot
+`7717d894-d846-4fc6-a912-21a7b6ba7210`. It measured 49,880 / 54,395 lines,
+9,878 / 12,592 branches, 3,404 / 3,849 functions, and 68,626 / 75,626
+regions; the parity matrix passed 7,541 / 7,541 in each backend. The prior
+same-source warm repeat `53c8e8ce-801e-4d7b-8495-cc5d09403b79` completed in
+46.969 seconds. Its instrumentation timers were 40.100 seconds Rust FFI,
+29.201 seconds C ABI, 29.099 seconds WASM, and about 13–16 ms comparison per
+lane. The lanes already run concurrently; a two-worker
 coverage experiment stalled without parity progress and was cancelled after
 172 seconds. The previous combined-lane warm all-lane baseline completed in 1
 minute 53.998 seconds. The split validation completed in 61.827 seconds, and
@@ -518,11 +522,11 @@ and parity results. Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
 repeated. The latest warm baseline measured 49,464 / 54,150 lines, 9,709 /
 12,520 branches, 3,380 / 3,832 functions, and 68,085 / 75,313 regions. The
-current source/input-bound run measured 49,881 / 54,403 lines, 9,878 / 12,596
-branches, 3,406 / 3,851 functions, and 68,629 / 75,636 regions. It passed
-7,539 / 7,539 runnable parity comparisons with 0 failures. Its Coverage MCP
-run is `adf4c9fa-c972-4dbc-bdba-f9e3505379e2`, with snapshot
-`791315ec-3edd-4ff9-a956-72ff15cf158e`. The same-source warm snapshot is
+current source/input-bound run measured 49,880 / 54,395 lines, 9,878 / 12,592
+branches, 3,404 / 3,849 functions, and 68,626 / 75,626 regions. It passed
+7,541 / 7,541 runnable parity comparisons with 0 failures. Its Coverage MCP
+run is `8a1972fe-557b-4687-867a-866fade33dc6`, with snapshot
+`7717d894-d846-4fc6-a912-21a7b6ba7210`. The same-source warm snapshot is
 `353b0be8-324a-4fc9-9f24-e36fff5c97bc`; the lane-split validation run
 `b0847bf1-9bce-4a79-8966-5115c88f43eb` passed 7,476 / 7,476 in each backend
 process and completed in 61.827 seconds; the latest binary-reuse run completed

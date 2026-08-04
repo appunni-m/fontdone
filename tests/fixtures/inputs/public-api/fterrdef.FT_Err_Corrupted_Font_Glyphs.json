@@ -62,21 +62,47 @@
       "schema": "api_result",
       "expect_error": true,
       "inputs": {
-        "assets": {
-          "fixture": {
-            "kind": "ref",
-            "role": "font",
-            "id": "input/generated/bdf/corrupted-glyphs.bdf",
-            "requirements": "Malformed BDF with valid header and CHARS section, then missing ENDCHAR/required glyph fields or unterminated glyph data."
+        "variants": [
+          {
+            "id": "unterminated-glyph-data",
+            "assets": {
+              "fixture": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/generated/bdf/corrupted-glyphs.bdf",
+                "requirements": "Malformed BDF with valid header and CHARS section, then missing ENDCHAR/required glyph fields or unterminated glyph data."
+              }
+            },
+            "params": {
+              "expected_error_symbol": "FT_Err_Corrupted_Font_Glyphs",
+              "expected_error_value_source": "pinned fterrdef.h",
+              "pinned_source": "freetype/src/bdf/bdflib.c:841,1667",
+              "face_index": 0,
+              "output_face": "sentinel_non_null_before_call"
+            },
+            "coverage": [
+              "bdf:unterminated-glyph-data-corrupted-glyphs"
+            ]
+          },
+          {
+            "id": "endfont-before-endchar",
+            "assets": {
+              "fixture": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/bdf/endfont_before_endchar.bdf",
+                "requirements": "Malformed BDF with a valid glyph header and bitmap row followed by ENDFONT before ENDCHAR."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pinned_source": "freetype/src/bdf/bdflib.c:834-842"
+            },
+            "coverage": [
+              "bdf:ENDFONT-before-ENDCHAR-corrupted-glyphs"
+            ]
           }
-        },
-        "params": {
-          "expected_error_symbol": "FT_Err_Corrupted_Font_Glyphs",
-          "expected_error_value_source": "pinned fterrdef.h",
-          "pinned_source": "freetype/src/bdf/bdflib.c:841,1667",
-          "face_index": 0,
-          "output_face": "sentinel_non_null_before_call"
-        }
+        ]
       },
       "classifiers": [
         "kind:error",
