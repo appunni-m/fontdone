@@ -2889,6 +2889,7 @@ struct BackendComparisonWorker {
     // parameter decoding for the same input.
     face_keys: BTreeMap<usize, String>,
     rust_faces: BTreeMap<String, FT_Face>,
+    rust_api_faces: BTreeMap<String, ApiFace>,
     c_faces: BTreeMap<String, CachedCAbiFace>,
     wasm_faces: BTreeMap<String, CachedWasmFace>,
     profile: BackendProfile,
@@ -2934,7 +2935,11 @@ impl BackendComparisonWorker {
                 }
                 profile.cases = profile.cases.saturating_add(1);
                 let start = Instant::now();
-                let _ = self.rust_face(case);
+                if case.operation == "load_char" {
+                    let _ = self.rust_api_face(case);
+                } else {
+                    let _ = self.rust_face(case);
+                }
                 profile.rust_ffi = profile.rust_ffi.saturating_add(start.elapsed());
             }
         }
@@ -2975,6 +2980,7 @@ impl BackendComparisonWorker {
     fn opened_face_handle_count(&self) -> usize {
         self.rust_faces
             .len()
+            .saturating_add(self.rust_api_faces.len())
             .saturating_add(self.c_faces.len())
             .saturating_add(self.wasm_faces.len())
     }
@@ -3517,7 +3523,7 @@ impl BackendComparisonWorker {
                 let face = self.rust_face(case)?;
                 Ok(ok(rust_next_char_output(face, &case.inputs.params)?))
             }
-            "load_char" => rust_load_char_public_api(case),
+            "load_char" => self.rust_load_char_public_api(case),
             "load_glyph" => {
                 if lifecycle_handle_param_is_null(&case.inputs.params, "face") {
                     return Ok(error(FT_Err_Invalid_Face_Handle as FT_Error));
@@ -4474,6 +4480,34 @@ impl BackendComparisonWorker {
         self.rust_faces
             .get(&key)
             .ok_or_else(|| format!("missing cached rust face {key}"))
+    }
+
+    fn rust_api_face(&mut self, case: &InputCase) -> Result<&ApiFace, String> {
+        let key = self.face_key(case)?;
+        if !self.rust_api_faces.contains_key(&key) {
+            self.rust_api_faces
+                .insert(key.clone(), open_api_face(case)?);
+        }
+        self.rust_api_faces
+            .get(&key)
+            .ok_or_else(|| format!("missing cached rust API face {key}"))
+    }
+
+    fn rust_load_char_public_api(&mut self, case: &InputCase) -> Result<RunOutput, String> {
+        let raw_load_flags = load_flags_param(&case.inputs.params)?;
+        let char_code = u64_param(&case.inputs.params, "char_code")?;
+        if lifecycle_handle_param(&case.inputs.params, "face") == Some("null") {
+            return Ok(error(FT_Err_Invalid_Face_Handle as FT_Error));
+        }
+        let Ok(char_code) = u32::try_from(char_code) else {
+            return rust_load_char_public_api(case);
+        };
+        let load_flags = match load_flags_to_core(raw_load_flags) {
+            Ok(flags) => flags,
+            Err(err) => return Ok(error(err)),
+        };
+        let face = self.rust_api_face(case)?;
+        rust_load_char_with_api_face(face, case, char_code, load_flags)
     }
 
     fn c_face(&mut self, case: &InputCase) -> Result<c_abi::FT_Face, String> {
@@ -63992,6 +64026,15 @@ fn rust_load_char_public_api(case: &InputCase) -> Result<RunOutput, String> {
         Err(err) => return Ok(error(err)),
     };
     let face = open_api_face(case)?;
+    rust_load_char_with_api_face(&face, case, char_code, load_flags)
+}
+
+fn rust_load_char_with_api_face(
+    face: &ApiFace,
+    case: &InputCase,
+    char_code: u32,
+    load_flags: fontdone::LoadFlags,
+) -> Result<RunOutput, String> {
     let expected_autohint_bits = reset_autohint_coverage_if_requested(case)?;
     let output = match face.load_char(char_code, load_flags) {
         Ok(slot) => ok(api_slot_json(&slot)),
