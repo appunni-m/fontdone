@@ -3648,7 +3648,7 @@ impl BackendComparisonWorker {
                     );
                     Ok(ok(uint32_list_json(c_abi::abi_uint32_list(ptr))))
                 }
-                "freetype.set_transform" => return run_rust_ffi(case),
+                "freetype.set_transform" => return c_set_transform(case),
                 "freetype.get_first_char" => Ok(ok(c_first_char_output(
                     std::ptr::null_mut(),
                     &case.inputs.params,
@@ -4092,7 +4092,7 @@ impl BackendComparisonWorker {
                     );
                     Ok(ok(uint32_list_json(wasm_abi::abi_uint32_list(ptr))))
                 }
-                "freetype.set_transform" => return run_rust_ffi(case),
+                "freetype.set_transform" => return wasm_set_transform(case),
                 "freetype.get_first_char" => Ok(ok(wasm_first_char_output(0, &case.inputs.params))),
                 "freetype.get_next_char" => Ok(ok(wasm_next_char_output(0, &case.inputs.params)?)),
                 "winfnt.get_header" | "ftwinfnt.get_winfnt_header" => {
@@ -47025,8 +47025,8 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         | "sfnt.get_sfnt_table.head"
         | "sfnt.get_sfnt_table.maxp"
         | "sfnt.get_sfnt_table.hhea"
-        | "sfnt.get_sfnt_table.hhea.after_variation"
-        | "freetype.set_transform" => run_rust_ffi(case),
+        | "sfnt.get_sfnt_table.hhea.after_variation" => run_rust_ffi(case),
+        "freetype.set_transform" => c_set_transform(case),
         "freetype.get_transform" => c_get_transform(case),
         "freetype.reference_face" => c_reference_face(case),
         "freetype.new_face" => c_new_face_path(case),
@@ -48405,11 +48405,11 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         | "sfnt.get_sfnt_table.head"
         | "sfnt.get_sfnt_table.maxp"
         | "sfnt.get_sfnt_table.hhea"
-        | "sfnt.get_sfnt_table.hhea.after_variation"
-        | "freetype.set_transform"
-        | "freetype.get_transform"
-        | "freetype.reference_face"
-        | "freetype.new_face" => run_rust_ffi(case),
+        | "sfnt.get_sfnt_table.hhea.after_variation" => run_rust_ffi(case),
+        "freetype.set_transform" => wasm_set_transform(case),
+        "freetype.get_transform" | "freetype.reference_face" | "freetype.new_face" => {
+            run_rust_ffi(case)
+        }
         "freetype.open_face_pair"
             if case.case_id == "freetype.FT_STYLE_FLAG_BOLD.face_style_flag_behavior" =>
         {
@@ -72573,6 +72573,140 @@ fn c_get_transform(case: &InputCase) -> Result<RunOutput, String> {
     Ok(ok(output))
 }
 
+fn c_set_transform(case: &InputCase) -> Result<RunOutput, String> {
+    let params = &case.inputs.params;
+    let steps = set_transform_steps(params)?;
+    if lifecycle_handle_param(params, "face") == Some("null") {
+        for step in &steps {
+            let matrix = step.matrix.map(|value| {
+                let matrix = ft_matrix_from_matrix_value(value);
+                c_abi::FT_Matrix {
+                    xx: matrix.xx,
+                    xy: matrix.xy,
+                    yx: matrix.yx,
+                    yy: matrix.yy,
+                }
+            });
+            let delta = step.delta.map(|value| {
+                let delta = ft_vector_from_vector_value(value);
+                c_abi::FT_Vector {
+                    x: delta.x,
+                    y: delta.y,
+                }
+            });
+            c_abi::FT_Set_Transform(
+                ptr::null_mut(),
+                matrix
+                    .as_ref()
+                    .map_or(ptr::null(), |matrix| matrix as *const c_abi::FT_Matrix),
+                delta
+                    .as_ref()
+                    .map_or(ptr::null(), |delta| delta as *const c_abi::FT_Vector),
+            );
+        }
+        return Ok(ok(json!({"void": true})));
+    }
+
+    let (library, face) = c_open_face(case)?;
+    let output = (|| {
+        for step in &steps {
+            let matrix = step.matrix.map(|value| {
+                let matrix = ft_matrix_from_matrix_value(value);
+                c_abi::FT_Matrix {
+                    xx: matrix.xx,
+                    xy: matrix.xy,
+                    yx: matrix.yx,
+                    yy: matrix.yy,
+                }
+            });
+            let delta = step.delta.map(|value| {
+                let delta = ft_vector_from_vector_value(value);
+                c_abi::FT_Vector {
+                    x: delta.x,
+                    y: delta.y,
+                }
+            });
+            c_abi::FT_Set_Transform(
+                face,
+                matrix
+                    .as_ref()
+                    .map_or(ptr::null(), |matrix| matrix as *const c_abi::FT_Matrix),
+                delta
+                    .as_ref()
+                    .map_or(ptr::null(), |delta| delta as *const c_abi::FT_Vector),
+            );
+        }
+        if !set_transform_has_post_load(params) {
+            return Ok(ok(json!({"void": true})));
+        }
+        let pixel_size = params
+            .get("size_ppem")
+            .and_then(Value::as_u64)
+            .unwrap_or(20);
+        let pixel_size = u32::try_from(pixel_size).map_err(|err| err.to_string())?;
+        let _ = c_abi::FT_Set_Pixel_Sizes(face, pixel_size, pixel_size);
+        let glyph_index = set_transform_post_glyph_index(params)?;
+        let err = c_abi::FT_Load_Glyph(face, glyph_index, load_flags_param(params)?);
+        if err == FT_Err_Ok {
+            Ok(c_slot_json(face).map(ok)?)
+        } else {
+            Ok(error(err))
+        }
+    })();
+    c_done_face(face);
+    c_done_library(library);
+    output
+}
+
+fn wasm_set_transform(case: &InputCase) -> Result<RunOutput, String> {
+    let params = &case.inputs.params;
+    let steps = set_transform_steps(params)?;
+    if lifecycle_handle_param(params, "face") == Some("null") {
+        for step in &steps {
+            let matrix = step.matrix.map(ft_matrix_from_matrix_value);
+            let delta = step.delta.map(ft_vector_from_vector_value);
+            wasm_abi::fontdone_wasm_set_transform(
+                0,
+                matrix.as_ref().map_or(ptr::null(), ptr::from_ref),
+                delta.as_ref().map_or(ptr::null(), ptr::from_ref),
+            );
+        }
+        return Ok(ok(json!({"void": true})));
+    }
+
+    let handle = wasm_open_face(case)?;
+    let output = (|| {
+        for step in &steps {
+            let matrix = step.matrix.map(ft_matrix_from_matrix_value);
+            let delta = step.delta.map(ft_vector_from_vector_value);
+            wasm_abi::fontdone_wasm_set_transform(
+                handle,
+                matrix.as_ref().map_or(ptr::null(), ptr::from_ref),
+                delta.as_ref().map_or(ptr::null(), ptr::from_ref),
+            );
+        }
+        if !set_transform_has_post_load(params) {
+            return Ok(ok(json!({"void": true})));
+        }
+        let pixel_size = params
+            .get("size_ppem")
+            .and_then(Value::as_u64)
+            .unwrap_or(20);
+        let pixel_size = u32::try_from(pixel_size).map_err(|err| err.to_string())?;
+        let _ = wasm_abi::fontdone_wasm_set_pixel_sizes(handle, pixel_size, pixel_size);
+        let glyph_index = set_transform_post_glyph_index(params)?;
+        let err =
+            wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, load_flags_param(params)?);
+        if err == FT_Err_Ok {
+            Ok(wasm_slot_json(handle).map(ok)?)
+        } else {
+            Ok(error(err))
+        }
+    })();
+    wasm_done_face(handle);
+    output
+}
+
 fn c_new_memory_face_variants(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
     let rows = memory_face_rows(&case.inputs.params)?;
@@ -87819,6 +87953,35 @@ fn get_transform_set_sequence(params: &Value) -> Result<Vec<TransformSetStep>, S
         .collect()
 }
 
+fn set_transform_steps(params: &Value) -> Result<Vec<TransformSetStep>, String> {
+    if let Some(rows) = params.get("sequence").and_then(Value::as_array) {
+        if !rows.is_empty() {
+            return rows
+                .iter()
+                .map(|row| {
+                    Ok(TransformSetStep {
+                        matrix: optional_transform_matrix(row, "matrix")?,
+                        delta: optional_transform_delta(row, "delta")?,
+                    })
+                })
+                .collect();
+        }
+    }
+    let (xx, xy, yx, yy, dx, dy) = set_transform_matrix_param(params)?;
+    Ok(vec![TransformSetStep {
+        matrix: Some(MatrixValue {
+            xx: i64::from(xx),
+            xy: i64::from(xy),
+            yx: i64::from(yx),
+            yy: i64::from(yy),
+        }),
+        delta: Some(VectorValue {
+            x: i64::from(dx),
+            y: i64::from(dy),
+        }),
+    }])
+}
+
 fn get_transform_rows(params: &Value) -> Result<Vec<GetTransformRow>, String> {
     if let Some(rows) = params.get("variants").and_then(Value::as_array) {
         return rows.iter().map(get_transform_row).collect();
@@ -92991,7 +93154,7 @@ fn named_matrix_value(name: &str) -> Result<MatrixValue, String> {
             yx: 0,
             yy: 98_304,
         }),
-        "rotate_90" | "rotate90" => Ok(MatrixValue {
+        "rotate_90" | "rotate90" | "non_identity" => Ok(MatrixValue {
             xx: 0,
             xy: -65_536,
             yx: 65_536,

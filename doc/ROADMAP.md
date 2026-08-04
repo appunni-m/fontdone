@@ -470,14 +470,15 @@ per-batch coverage increase is claimed:
 | 92 | Working tree (FT_New_Face pathname ABI parity route) | Reused the maintained `freetype.FT_New_Face` pathname/error matrix and routed the C-ABI lane through the exported `FT_New_Face` pathname call, covering the real wrapper and filesystem-backed face-open path without changing the parity matrix; the WASM lane remains on its existing memory-backed route because it has no pathname export. Full parity run `23adc824-8815-4caf-a2f8-f1c9f7086bf4`, recorded by `3232b1fe-c889-49df-ac81-1eb4b09a35e3`, passed 7,542 / 7,542 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items. All-lane Coverage MCP run `2954842b-5f37-4f95-8195-d61c03b5b279`, snapshot `c72734e7-38a0-43c3-b51f-79c2eac36005`, completed in 70.782 seconds and measured 49,918 / 54,382 lines, 9,897 / 12,590 branches, 3,408 / 3,848 functions, and 68,687 / 75,611 regions; the C-ABI `FT_New_Face` wrapper and core pathname success path are now covered. C-ABI scorecard run `d64bfddf-0a3f-43fe-af94-312a79dedc33` reports 10 / 12 categories complete, 5,285 / 5,285 runtime rows, and 684 / 684 strict-error routes; Windows import-library evidence and four fresh target-lane bundles remain. |
 | 93 | Working tree (FT_Reference_Face C-ABI parity route) | Reused the maintained `freetype.FT_Reference_Face` success/null matrix and routed the C-ABI lane through the exported `FT_Reference_Face` call, including both wrapper branches, while preserving the existing `refcount` output contract and leaving the WASM lane unchanged. Full parity run `e67db1d2-6b12-4af2-b68a-2881bca4a3a3`, recorded by `f30d9f91-1533-4676-90a2-37f882e3ca85`, passed 7,542 / 7,542 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items. All-lane Coverage MCP run `716a02d6-cb98-4120-8204-fb411c1493e7`, snapshot `a258e327-5954-48cb-868c-2ca8e7df04e5`, completed in 72.219 seconds and measured 49,928 / 54,382 lines, 9,900 / 12,590 branches, 3,409 / 3,848 functions, and 68,698 / 75,611 regions; all C-ABI `FT_Reference_Face` wrapper lines and branches are now covered. C-ABI scorecard run `35d84940-f7e6-41f0-8cc4-deae8b62bf1b` reports 10 / 12 categories complete, 5,285 / 5,285 runtime rows, and 684 / 684 strict-error routes; Windows import-library evidence and four fresh target-lane bundles remain. |
 | 94 | Working tree (FT_Get_Transform C-ABI parity route) | Reused the maintained `freetype.FT_Get_Transform` identity, set-sequence, sentinel, null-output, and null-face matrix and routed only the C-ABI `get_transform` operation through the exported `FT_Get_Transform`/`FT_Set_Transform` calls, preserving the existing output shape without changing the parity matrix. Full parity run `aec5d45e-6b81-4340-8571-6ab6ce399571`, recorded by `7b8dc26a-11d0-4896-9b3b-c221343acfee`, passed 7,542 / 7,542 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items. All-lane Coverage MCP run `34f340d9-3b35-43c1-97c7-7a0f8295889d`, snapshot `31d69b3f-cb1e-4247-9cad-ea5bc5656979`, completed in 69.916 seconds and measured 49,953 / 54,382 lines, 9,907 / 12,590 branches, 3,410 / 3,848 functions, and 68,726 / 75,611 regions; every C-ABI `FT_Get_Transform` wrapper line and branch is now covered. C-ABI scorecard run `5bfbfed7-3feb-49ed-b743-1e0d3cab6b1a` reports 10 / 12 categories complete, 5,285 / 5,285 runtime rows, and 684 / 684 strict-error routes; Windows import-library evidence and four fresh target-lane bundles remain. |
+| 95 | Working tree (FT_Set_Transform C-ABI/WASM parity route) | Reused the maintained `freetype.FT_Set_Transform` matrix and routed its live sequence, nullable matrix/delta inputs, and null-face/null-handle guards through the exported C-ABI and WASM wrappers; the fixture-defined `non_identity` token now reaches the shared transform parser without changing the matrix denominator. Full parity run `727f5f4a-8659-4540-8b79-67539c10c7d5`, recorded by `41115e02-bc22-4f63-9933-fb68a51e7910`, passed 7,542 / 7,542 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items; Rust, C ABI, and WASM each retain 218 / 218 function-route evidence. All-lane Coverage MCP run `e90e76ff-69e5-4d80-8096-0fb277fcf9d4`, snapshot `2adc96fb-eccd-45ca-95a1-1784e293691c`, completed in 69.467 seconds and measured 49,956 / 54,382 lines, 9,910 / 12,590 branches, 3,410 / 3,848 functions, and 68,729 / 75,611 regions; the C-ABI wrapper moved to 8,819 / 9,761 lines and 1,464 / 2,084 branches, while WASM moved to 6,432 / 7,022 lines and 1,149 / 1,682 branches. Both wrapper null guards and nullable-pointer branches are covered. C-ABI scorecard run `7cd9ccdc-8fe6-4e49-b8b0-105e37df44f8` passed with 10 / 12 categories complete, 5,285 / 5,285 runtime rows, and 684 / 684 strict-error routes; Windows import-library evidence and four fresh target-lane bundles remain. |
 
 The current source-bound parity verification is Coverage MCP parity run
-`aec5d45e-6b81-4340-8571-6ab6ce399571`: it passed 7,542 / 7,542 runnable
+`727f5f4a-8659-4540-8b79-67539c10c7d5`: it passed 7,542 / 7,542 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The source-digest attestation was refreshed by record run
-`7b8dc26a-11d0-4896-9b3b-c221343acfee` in `doc/runtime_parity_evidence.json`.
-The companion C-ABI scorecard run `5bfbfed7-3feb-49ed-b743-1e0d3cab6b1a`
+`41115e02-bc22-4f63-9933-fb68a51e7910` in `doc/runtime_parity_evidence.json`.
+The companion C-ABI scorecard run `7cd9ccdc-8fe6-4e49-b8b0-105e37df44f8`
 reports **10 / 12 categories complete**, with 5,285 / 5,285 runtime contract
 rows and 684 / 684 strict error routes exact; the remaining contract debt is
 the Windows import-library item and four fresh target-lane bundles.
@@ -491,15 +492,15 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current source-bound all-lane run `34f340d9-3b35-43c1-97c7-7a0f8295889d`
-completed in 69.916 seconds with snapshot
-`31d69b3f-cb1e-4247-9cad-ea5bc5656979`. It measured 49,953 / 54,382 lines,
-9,907 / 12,590 branches, 3,410 / 3,848 functions, and 68,726 / 75,611
+The current source-bound all-lane run `e90e76ff-69e5-4d80-8096-0fb277fcf9d4`
+completed in 69.467 seconds with snapshot
+`2adc96fb-eccd-45ca-95a1-1784e293691c`. It measured 49,956 / 54,382 lines,
+9,910 / 12,590 branches, 3,410 / 3,848 functions, and 68,729 / 75,611
 regions; the parity matrix passed 7,542 / 7,542 in each backend. This source-
 changing validation includes the instrumented rebuild and is not a speed
 comparison against the previous warm snapshot. Its separate-process lane
-timers were 22.185 seconds Rust, 20.133 seconds C ABI, and 20.030 seconds
-WASM, with about 11.9–12.2 ms of comparison per lane. The lanes already
+timers were 22.311 seconds Rust, 20.198 seconds C ABI, and 20.097 seconds
+WASM, with about 10.5 ms of comparison per lane. The lanes already
 run concurrently; a two-worker
 coverage experiment completed in 87.614 seconds, so the default remains one
 worker per lane. The previous combined-lane warm all-lane baseline completed in 1
