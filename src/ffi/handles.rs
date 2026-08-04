@@ -2968,6 +2968,21 @@ pub fn FT_Glyph_Transform_Outline(
     FT_Err_Ok
 }
 
+pub fn FT_Glyph_Transform_Bitmap(
+    glyph: Option<&mut FT_BitmapGlyphOwned>,
+    _matrix: Option<&FT_Matrix>,
+    _delta: Option<&FT_Vector>,
+) -> FT_Error {
+    let Some(_glyph) = glyph else {
+        return FT_Err_Invalid_Argument;
+    };
+    // FreeType `src/base/ftglyph.c:672-714` returns Invalid_Glyph_Format when
+    // the selected glyph class has no transform hook.  Bitmap glyphs are
+    // non-scalable and deliberately leave that hook unset, so neither a
+    // matrix nor a delta may mutate their bitmap or root advance.
+    FT_Err_Invalid_Glyph_Format
+}
+
 pub fn FT_Glyph_Copy(
     source_present: bool,
     target_present: bool,

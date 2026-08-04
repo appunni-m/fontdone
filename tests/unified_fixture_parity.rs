@@ -1213,6 +1213,69 @@ fn glyph_transform_specs_arg(params: &Value) -> Result<String, String> {
         .join(";"))
 }
 
+fn glyph_transform_bitmap_spec(params: &Value) -> Result<GlyphTransformSpec, String> {
+    let matrix = match params.get("matrix") {
+        Some(Value::Null) | None => None,
+        Some(matrix) => Some(FT_Matrix {
+            xx: i64_value(
+                matrix
+                    .get("xx")
+                    .ok_or_else(|| "matrix.xx is missing".to_string())?,
+                "matrix.xx",
+            )?,
+            xy: i64_value(
+                matrix
+                    .get("xy")
+                    .ok_or_else(|| "matrix.xy is missing".to_string())?,
+                "matrix.xy",
+            )?,
+            yx: i64_value(
+                matrix
+                    .get("yx")
+                    .ok_or_else(|| "matrix.yx is missing".to_string())?,
+                "matrix.yx",
+            )?,
+            yy: i64_value(
+                matrix
+                    .get("yy")
+                    .ok_or_else(|| "matrix.yy is missing".to_string())?,
+                "matrix.yy",
+            )?,
+        }),
+    };
+    let delta = match params.get("delta") {
+        Some(Value::Null) | None => None,
+        Some(delta) => Some(FT_Vector {
+            x: i64_value(
+                delta
+                    .get("x")
+                    .ok_or_else(|| "delta.x is missing".to_string())?,
+                "delta.x",
+            )?,
+            y: i64_value(
+                delta
+                    .get("y")
+                    .ok_or_else(|| "delta.y is missing".to_string())?,
+                "delta.y",
+            )?,
+        }),
+    };
+    Ok(GlyphTransformSpec { matrix, delta })
+}
+
+fn glyph_transform_bitmap_spec_arg(params: &Value) -> Result<String, String> {
+    let spec = glyph_transform_bitmap_spec(params)?;
+    let matrix = spec.matrix.map_or_else(
+        || "null".to_string(),
+        |matrix| format!("{},{},{},{}", matrix.xx, matrix.xy, matrix.yx, matrix.yy),
+    );
+    let delta = spec.delta.map_or_else(
+        || "null".to_string(),
+        |delta| format!("{},{}", delta.x, delta.y),
+    );
+    Ok(format!("{matrix}/{delta}"))
+}
+
 fn glyph_transform_load_flags(params: &Value) -> Result<FT_Int32, String> {
     load_flags_param(glyph_transform_setup_params(params))
 }
@@ -44479,6 +44542,17 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             Ok(vec!["--glyph-transform-invalid-inputs".to_string()])
         }
         "ftglyph.glyph_transform"
+            if case.case_id == "ftglyph.FT_Glyph_Transform.error_non_scalable_bitmap" =>
+        {
+            let mut args = vec!["--glyph-transform-bitmap".to_string()];
+            push_font_source(case, &mut args)?;
+            push_face_size(params, &mut args)?;
+            args.push(glyph_index_param(params)?.to_string());
+            args.push(glyph_transform_load_flags(params)?.to_string());
+            args.push(glyph_transform_bitmap_spec_arg(params)?);
+            Ok(args)
+        }
+        "ftglyph.glyph_transform"
             if case.case_id == "ftglyph.FT_Glyph_Transform.success_svg_transform_accumulates" =>
         {
             let mut args = vec!["--svg-glyph-transform".to_string()];
@@ -46342,6 +46416,11 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             ]))
         }
         "ftglyph.glyph_transform"
+            if case.case_id == "ftglyph.FT_Glyph_Transform.error_non_scalable_bitmap" =>
+        {
+            rust_bitmap_glyph_transform(case)
+        }
+        "ftglyph.glyph_transform"
             if case.case_id == "ftglyph.FT_Glyph_Transform.success_svg_transform_accumulates" =>
         {
             rust_svg_glyph_transform(case)
@@ -47833,6 +47912,11 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             Ok(glyph_transform_invalid_inputs_output(statuses))
         }
         "ftglyph.glyph_transform"
+            if case.case_id == "ftglyph.FT_Glyph_Transform.error_non_scalable_bitmap" =>
+        {
+            c_bitmap_glyph_transform(case)
+        }
+        "ftglyph.glyph_transform"
             if case.case_id == "ftglyph.FT_Glyph_Transform.success_svg_transform_accumulates" =>
         {
             c_svg_glyph_transform(case)
@@ -49149,6 +49233,11 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
                 wasm_abi::fontdone_wasm_glyph_transform(&mut glyph, &matrix, &delta),
             ];
             Ok(glyph_transform_invalid_inputs_output(statuses))
+        }
+        "ftglyph.glyph_transform"
+            if case.case_id == "ftglyph.FT_Glyph_Transform.error_non_scalable_bitmap" =>
+        {
+            wasm_bitmap_glyph_transform(case)
         }
         "ftglyph.glyph_transform"
             if case.case_id == "ftglyph.FT_Glyph_Transform.success_svg_transform_accumulates" =>
@@ -50640,6 +50729,52 @@ fn glyph_transform_row_json(
 
 fn glyph_transform_output(rows: Vec<Value>) -> RunOutput {
     ok(json!({ "rows": rows }))
+}
+
+fn glyph_bitmap_transform_bitmap_json(
+    width: u32,
+    rows: u32,
+    pitch: i32,
+    pixel_mode: i32,
+    num_grays: u16,
+    left: i32,
+    top: i32,
+    buffer: &[u8],
+) -> Value {
+    if buffer.is_empty() {
+        Value::Null
+    } else {
+        json!({
+            "width": width,
+            "rows": rows,
+            "pitch": pitch,
+            "pixel_mode": pixel_mode,
+            "num_grays": num_grays,
+            "left": left,
+            "top": top,
+            "buffer_hex": hex_bytes(buffer)
+        })
+    }
+}
+
+fn glyph_bitmap_transform_output(
+    status: FT_Error,
+    bitmap_before: Value,
+    bitmap_after: Value,
+    advance_before: Value,
+    advance_after: Value,
+) -> RunOutput {
+    let output = json!({
+        "bitmap_before": bitmap_before,
+        "bitmap_after": bitmap_after,
+        "advance_before": advance_before,
+        "advance_after": advance_after
+    });
+    if status == FT_Err_Ok {
+        ok(output)
+    } else {
+        error_with_output(status, output)
+    }
 }
 
 fn glyph_transform_invalid_inputs_output(statuses: [FT_Error; 2]) -> RunOutput {
@@ -52948,6 +53083,141 @@ fn c_glyph_transform(case: &InputCase) -> Result<RunOutput, String> {
     Ok(glyph_transform_output(rows))
 }
 
+fn c_bitmap_glyph_transform(case: &InputCase) -> Result<RunOutput, String> {
+    let (library, face) = c_open_face(case)?;
+    let params = &case.inputs.params;
+    let glyph_index = glyph_index_param(params)?;
+    let load_flags = glyph_transform_load_flags(params)?;
+    let spec = glyph_transform_bitmap_spec(params)?;
+    let mut status = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
+    if status == FT_Err_Ok {
+        status = c_abi::abi_render_glyph_from_face(face, FT_RENDER_MODE_NORMAL);
+    }
+    let mut glyph = ptr::null_mut();
+    if status == FT_Err_Ok {
+        let slot = c_abi::abi_glyph_slot_pointer(face)
+            .ok_or_else(|| "missing c bitmap transform slot pointer".to_string())?;
+        status = c_abi::FT_Get_Glyph(slot, &mut glyph);
+    }
+    if status != FT_Err_Ok {
+        c_done_face(face);
+        c_done_library(library);
+        return Ok(error(status));
+    }
+    let before = c_abi::abi_bitmap_glyph_snapshot(glyph)
+        .ok_or_else(|| "missing c bitmap transform snapshot before".to_string())?;
+    let bitmap_before = glyph_bitmap_transform_bitmap_json(
+        before.bitmap.width,
+        before.bitmap.rows,
+        before.bitmap.pitch,
+        before.bitmap.pixel_mode,
+        before.bitmap.num_grays,
+        before.left,
+        before.top,
+        &before.bitmap.buffer,
+    );
+    let advance_before = json!({
+        "x": before.root.advance.x,
+        "y": before.root.advance.y
+    });
+    let matrix = spec.matrix.map(|matrix| c_abi::FT_Matrix {
+        xx: matrix.xx,
+        xy: matrix.xy,
+        yx: matrix.yx,
+        yy: matrix.yy,
+    });
+    let delta = spec.delta.map(|delta| c_abi::FT_Vector {
+        x: delta.x,
+        y: delta.y,
+    });
+    status = c_abi::FT_Glyph_Transform(
+        glyph,
+        matrix.as_ref().map_or(ptr::null(), ptr::from_ref),
+        delta.as_ref().map_or(ptr::null(), ptr::from_ref),
+    );
+    let after = c_abi::abi_bitmap_glyph_snapshot(glyph)
+        .ok_or_else(|| "missing c bitmap transform snapshot after".to_string())?;
+    let bitmap_after = glyph_bitmap_transform_bitmap_json(
+        after.bitmap.width,
+        after.bitmap.rows,
+        after.bitmap.pitch,
+        after.bitmap.pixel_mode,
+        after.bitmap.num_grays,
+        after.left,
+        after.top,
+        &after.bitmap.buffer,
+    );
+    let advance_after = json!({
+        "x": after.root.advance.x,
+        "y": after.root.advance.y
+    });
+    c_abi::FT_Done_Glyph(glyph);
+    c_done_face(face);
+    c_done_library(library);
+    Ok(glyph_bitmap_transform_output(
+        status,
+        bitmap_before,
+        bitmap_after,
+        advance_before,
+        advance_after,
+    ))
+}
+
+fn rust_bitmap_glyph_transform(case: &InputCase) -> Result<RunOutput, String> {
+    let face = open_face(case)?;
+    let params = &case.inputs.params;
+    let glyph_index = glyph_index_param(params)?;
+    let load_flags = glyph_transform_load_flags(params)?;
+    let spec = glyph_transform_bitmap_spec(params)?;
+    let slot = match FT_Load_Glyph(&face, glyph_index, load_flags)
+        .and_then(|slot| FT_Render_Glyph(slot, FT_RENDER_MODE_NORMAL))
+    {
+        Ok(slot) => slot,
+        Err(status) => return Ok(error(status)),
+    };
+    let mut glyph = match FT_Get_Bitmap_Glyph(Some(&slot)) {
+        Ok(glyph) => glyph,
+        Err(status) => return Ok(error(status)),
+    };
+    let bitmap_before = glyph_bitmap_transform_bitmap_json(
+        glyph.bitmap.width,
+        glyph.bitmap.rows,
+        glyph.bitmap.pitch,
+        glyph.bitmap.pixel_mode,
+        glyph.bitmap.num_grays,
+        glyph.left,
+        glyph.top,
+        &glyph.bitmap.buffer,
+    );
+    let advance_before = json!({
+        "x": glyph.root.advance.x,
+        "y": glyph.root.advance.y
+    });
+    let status =
+        FT_Glyph_Transform_Bitmap(Some(&mut glyph), spec.matrix.as_ref(), spec.delta.as_ref());
+    let bitmap_after = glyph_bitmap_transform_bitmap_json(
+        glyph.bitmap.width,
+        glyph.bitmap.rows,
+        glyph.bitmap.pitch,
+        glyph.bitmap.pixel_mode,
+        glyph.bitmap.num_grays,
+        glyph.left,
+        glyph.top,
+        &glyph.bitmap.buffer,
+    );
+    let advance_after = json!({
+        "x": glyph.root.advance.x,
+        "y": glyph.root.advance.y
+    });
+    Ok(glyph_bitmap_transform_output(
+        status,
+        bitmap_before,
+        bitmap_after,
+        advance_before,
+        advance_after,
+    ))
+}
+
 fn wasm_outline_record_json(outline: &wasm_abi::FontdoneWasmOutline) -> Value {
     json!({
         "n_points": outline.n_points,
@@ -53022,6 +53292,83 @@ fn wasm_glyph_transform(case: &InputCase) -> Result<RunOutput, String> {
     }
     wasm_done_face(handle);
     Ok(glyph_transform_output(rows))
+}
+
+fn wasm_bitmap_glyph_transform(case: &InputCase) -> Result<RunOutput, String> {
+    let handle = wasm_open_face(case)?;
+    let params = &case.inputs.params;
+    let glyph_index = glyph_index_param(params)?;
+    let load_flags = glyph_transform_load_flags(params)?;
+    let spec = glyph_transform_bitmap_spec(params)?;
+    let mut status = wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, load_flags);
+    if status == FT_Err_Ok {
+        status = wasm_abi::fontdone_wasm_render_glyph(handle, FT_RENDER_MODE_NORMAL);
+    }
+    let mut glyph_handle = 0usize;
+    if status == FT_Err_Ok {
+        status = wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut glyph_handle);
+    }
+    if status != FT_Err_Ok {
+        wasm_done_face(handle);
+        return Ok(error(status));
+    }
+    let before = wasm_abi::abi_bitmap_glyph_snapshot(glyph_handle)
+        .ok_or_else(|| "missing wasm bitmap transform snapshot before".to_string())?;
+    let bitmap_before = glyph_bitmap_transform_bitmap_json(
+        before.bitmap.width,
+        before.bitmap.rows,
+        before.bitmap.pitch,
+        before.bitmap.pixel_mode,
+        before.bitmap.num_grays,
+        before.left,
+        before.top,
+        &before.bitmap.buffer,
+    );
+    let advance_before = json!({
+        "x": before.root.advance.x,
+        "y": before.root.advance.y
+    });
+    let matrix = spec.matrix.map(|matrix| wasm_abi::FontdoneWasmMatrix {
+        xx: matrix.xx,
+        xy: matrix.xy,
+        yx: matrix.yx,
+        yy: matrix.yy,
+    });
+    let delta = spec.delta.map(|delta| wasm_abi::FontdoneWasmVector {
+        x: delta.x,
+        y: delta.y,
+    });
+    let glyph = ptr::with_exposed_provenance_mut::<wasm_abi::FontdoneWasmGlyph>(glyph_handle);
+    status = wasm_abi::fontdone_wasm_glyph_transform(
+        glyph,
+        matrix.as_ref().map_or(ptr::null(), ptr::from_ref),
+        delta.as_ref().map_or(ptr::null(), ptr::from_ref),
+    );
+    let after = wasm_abi::abi_bitmap_glyph_snapshot(glyph_handle)
+        .ok_or_else(|| "missing wasm bitmap transform snapshot after".to_string())?;
+    let bitmap_after = glyph_bitmap_transform_bitmap_json(
+        after.bitmap.width,
+        after.bitmap.rows,
+        after.bitmap.pitch,
+        after.bitmap.pixel_mode,
+        after.bitmap.num_grays,
+        after.left,
+        after.top,
+        &after.bitmap.buffer,
+    );
+    let advance_after = json!({
+        "x": after.root.advance.x,
+        "y": after.root.advance.y
+    });
+    wasm_abi::fontdone_wasm_done_glyph_handle(glyph);
+    wasm_done_face(handle);
+    Ok(glyph_bitmap_transform_output(
+        status,
+        bitmap_before,
+        bitmap_after,
+        advance_before,
+        advance_after,
+    ))
 }
 
 fn rust_glyph_to_bitmap(face: &FT_Face, case: &InputCase) -> Result<RunOutput, String> {

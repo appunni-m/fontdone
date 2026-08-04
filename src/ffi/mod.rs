@@ -171,6 +171,7 @@ export_freetype_routes!(
     FT_Glyph_Copy,
     FT_Glyph_Get_CBox,
     FT_Glyph_To_Bitmap,
+    FT_Glyph_Transform_Bitmap,
     FT_Glyph_Transform_Outline,
     FT_GlyphSlot_AdjustWeight,
     FT_GlyphSlot_Embolden,
