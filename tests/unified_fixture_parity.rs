@@ -47026,8 +47026,8 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         | "sfnt.get_sfnt_table.maxp"
         | "sfnt.get_sfnt_table.hhea"
         | "sfnt.get_sfnt_table.hhea.after_variation"
-        | "freetype.set_transform"
-        | "freetype.get_transform" => run_rust_ffi(case),
+        | "freetype.set_transform" => run_rust_ffi(case),
+        "freetype.get_transform" => c_get_transform(case),
         "freetype.reference_face" => c_reference_face(case),
         "freetype.new_face" => c_new_face_path(case),
         "freetype.open_face_pair"
@@ -72466,6 +72466,111 @@ fn c_reference_face(case: &InputCase) -> Result<RunOutput, String> {
     c_done_face(face);
     c_done_library(library);
     output
+}
+
+fn c_get_transform(case: &InputCase) -> Result<RunOutput, String> {
+    let params = &case.inputs.params;
+    let rows = get_transform_rows(params)?;
+    let sequence = get_transform_set_sequence(params)?;
+    let needs_live_face = !sequence.is_empty() || rows.iter().any(|row| !row.face_is_null);
+    let (library, face) = if needs_live_face {
+        let (library, face) = c_open_face(case)?;
+        (Some(library), Some(face))
+    } else {
+        (None, None)
+    };
+
+    if let Some(face) = face {
+        for step in &sequence {
+            let matrix = step.matrix.map(|value| {
+                let matrix = ft_matrix_from_matrix_value(value);
+                c_abi::FT_Matrix {
+                    xx: matrix.xx,
+                    xy: matrix.xy,
+                    yx: matrix.yx,
+                    yy: matrix.yy,
+                }
+            });
+            let delta = step.delta.map(|value| {
+                let delta = ft_vector_from_vector_value(value);
+                c_abi::FT_Vector {
+                    x: delta.x,
+                    y: delta.y,
+                }
+            });
+            c_abi::FT_Set_Transform(
+                face,
+                matrix
+                    .as_ref()
+                    .map_or(ptr::null(), |matrix| matrix as *const c_abi::FT_Matrix),
+                delta
+                    .as_ref()
+                    .map_or(ptr::null(), |delta| delta as *const c_abi::FT_Vector),
+            );
+        }
+    }
+
+    let sentinels = get_transform_sentinel_values(params)?;
+    let mut snapshots = Vec::with_capacity(rows.len());
+    for row in &rows {
+        let mut matrix = c_abi::FT_Matrix {
+            xx: sentinels.matrix.xx as _,
+            xy: sentinels.matrix.xy as _,
+            yx: sentinels.matrix.yx as _,
+            yy: sentinels.matrix.yy as _,
+        };
+        let mut delta = c_abi::FT_Vector {
+            x: sentinels.delta.x as _,
+            y: sentinels.delta.y as _,
+        };
+        c_abi::FT_Get_Transform(
+            if row.face_is_null {
+                ptr::null_mut()
+            } else {
+                face.unwrap_or(ptr::null_mut())
+            },
+            if row.matrix_output {
+                &mut matrix
+            } else {
+                ptr::null_mut()
+            },
+            if row.delta_output {
+                &mut delta
+            } else {
+                ptr::null_mut()
+            },
+        );
+        let snapshot_matrix = FT_Matrix {
+            xx: matrix.xx as FT_Fixed,
+            xy: matrix.xy as FT_Fixed,
+            yx: matrix.yx as FT_Fixed,
+            yy: matrix.yy as FT_Fixed,
+        };
+        let snapshot_delta = FT_Vector {
+            x: delta.x as FT_Pos,
+            y: delta.y as FT_Pos,
+        };
+        snapshots.push(transform_snapshot_json(
+            row,
+            &snapshot_matrix,
+            &snapshot_delta,
+        ));
+    }
+    let output = if snapshots.len() == 1 && params.get("variants").is_none() {
+        json!({
+            "matrix": snapshots[0]["matrix"].clone(),
+            "delta": snapshots[0]["delta"].clone()
+        })
+    } else {
+        json!({"rows": snapshots})
+    };
+    if let Some(face) = face {
+        c_done_face(face);
+    }
+    if let Some(library) = library {
+        c_done_library(library);
+    }
+    Ok(ok(output))
 }
 
 fn c_new_memory_face_variants(case: &InputCase) -> Result<RunOutput, String> {
