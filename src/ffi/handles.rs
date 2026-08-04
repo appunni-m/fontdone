@@ -25,8 +25,8 @@ use crate::{api, grays, render, scaler};
 
 use super::constants::*;
 use super::convert::{
-    FT_LOAD_TARGET_MODE, error_to_ft, glyph_format_from_core, load_flag_for_render_mode,
-    load_flags_to_core, render_mode_to_core,
+    FT_LOAD_TARGET_MODE, error_to_ft, glyph_format_from_core, load_flags_to_core,
+    render_mode_to_core,
 };
 use super::types::{
     BDF_PropertyRec, FT_Affine23, FT_Angle, FT_BBox, FT_Bitmap, FT_Bitmap_C, FT_Bitmap_Size,
@@ -14785,7 +14785,7 @@ pub fn FT_Get_Advances(
 }
 
 pub fn FT_Render_Glyph(
-    slot: FT_GlyphSlot,
+    mut slot: FT_GlyphSlot,
     render_mode: FT_Render_Mode,
 ) -> Result<FT_GlyphSlot, FT_Error> {
     if slot.format == FT_GLYPH_FORMAT_SVG {
@@ -14822,24 +14822,14 @@ pub fn FT_Render_Glyph(
         // the original slot fields stay intact.
         return Err(FT_Err_Cannot_Render_Glyph);
     }
-    let was_bitmap = slot.format == FT_GLYPH_FORMAT_BITMAP;
-    let source_face = slot.source_face.clone();
-    let load_flags = slot.load_flags;
-    slot.core_slot
-        .render(mode)
-        .map(|rendered| {
-            let render_flags = if was_bitmap {
-                load_flags
-            } else {
-                load_flags | api::LoadFlags::RENDER | load_flag_for_render_mode(mode)
-            };
-            slot_to_ffi(
-                &face_to_ffi(source_face, false, slot.svg_hooks),
-                rendered,
-                render_flags,
-            )
-        })
-        .map_err(error_to_ft)
+    // Rendering mutates the existing glyph slot. Rebuilding an entire
+    // `FT_Face` through `face_to_ffi` here is both unnecessary and expensive:
+    // it reparses public SFNT records, charmaps, and the autofitter script map
+    // for every `FT_Render_Glyph` call. Keep the slot's already-owned source
+    // face and refresh only the public fields that mirror its new core slot.
+    slot.core_slot = slot.core_slot.render(mode).map_err(error_to_ft)?;
+    refresh_slot_public_fields(&mut slot);
+    Ok(slot)
 }
 
 /// C-layout `FT_SVG_DocumentRec` view over an owned slot document.

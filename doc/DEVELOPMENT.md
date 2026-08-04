@@ -272,9 +272,15 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`b5b428a8-0008-47fe-a606-d1ce8efa9ea5`, snapshot
-`8f754963-2323-466e-a786-4c7d881bcaa5`) measured 95.454 seconds end-to-end
-with the exported SBit-cache scaler lifecycle path. The preceding
+run (`f588e930-5ce8-4084-88ea-7bb518d8d44a`, snapshot
+`a24488bf-6fa8-4142-b2fd-03069ef7adab`) measured 71.425 seconds end-to-end
+after `FT_Render_Glyph` was changed to refresh the existing glyph slot
+in-place instead of rebuilding its public face metadata. It passed all 7,541
+runnable comparisons with 0 failures and retained the three explicitly
+pending safety-extension cases. The focused x-height case
+(`91144282-c800-4cd7-b6d6-1b83176f2bdd`) passed 1 / 1; its measured backend
+work was 9.110 seconds Rust, 8.739 seconds C ABI, 8.711 seconds WASM, and
+2.411 ms for comparison. The preceding
 image-cache remove-face-ID run (`b8b246c4-a7d9-4d39-8f08-aeb4694679f4`,
 snapshot `54a29596-5f12-4598-b272-2ca8df957b63`) measured 89.542 seconds. The
 preceding
@@ -322,17 +328,24 @@ so their sum is not wall time. The remaining wall-time tail is setup,
 process/report merging, and Coverage MCP ingestion rather than another parity
 route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
+The latest all-lane report's retained lane timers were 22.614 seconds Rust,
+20.503 seconds C ABI, 20.376 seconds WASM, and about 13.5 ms comparison per
+lane. These are backend execution measurements inside the 71.425-second
+end-to-end run; compilation, report finalization, and artifact ingestion are
+included in the wall time but are not separately exposed by Coverage MCP.
+
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,881 / 54,403 | 91.69% |
-| Branches | 9,878 / 12,596 | 78.42% |
-| Functions | 3,406 / 3,851 | 88.44% |
-| Regions | 68,629 / 75,636 | 90.74% |
+| Lines | 49,859 / 54,382 | 91.68% |
+| Branches | 9,876 / 12,590 | 78.44% |
+| Functions | 3,402 / 3,848 | 88.41% |
+| Regions | 68,603 / 75,611 | 90.73% |
 
-That current run passed all 7,539 runnable parity comparisons with 0 failures;
+That latest run passed all 7,541 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`353b0be8-324a-4fc9-9f24-e36fff5c97bc`. Its retained log reports a
-40.10-second longest backend execution. Coverage MCP does not expose
+`a24488bf-6fa8-4142-b2fd-03069ef7adab`. The source-bound full parity run
+`34cb406a-5caa-44e4-9185-916fb0d83ecf` completed in 106.697 seconds and
+recorded 7,541 / 7,541 exact comparisons. Coverage MCP does not expose
 separate timestamps for compilation, report finalization, or artifact ingestion. Current
 LLVM JSON is accepted directly by Coverage
 MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`

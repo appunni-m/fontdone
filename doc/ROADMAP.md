@@ -461,18 +461,18 @@ per-batch coverage increase is claimed:
 | 86 | Working tree (exported manager-done lifecycle route) | Replaced the C-ABI `ftcache.manager_done` direct-face/`FT_Load_Glyph` helper with the exported `FTC_CMapCache_New`/`Lookup`, `FTC_Manager_LookupFace`/`LookupSize`, `FTC_ImageCache_New`/`LookupScaler`, `FTC_Node_Unref`, and manager-done lifecycle sequence. The maintained fixture remains unchanged. Focused run `0b4b4884-28d2-4664-89c4-4fd848e46703` passed 1 / 1; full parity run `fb6a26cc-8b74-4767-840c-af61419b0959` passed 7,541 / 7,541 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items. The all-lane Coverage MCP snapshot `951a0c97-6c2f-4950-ac34-db6263ab498a` remains 49,880 / 54,395 lines, 9,878 / 12,592 branches, 3,404 / 3,849 functions, and 68,626 / 75,626 regions; C-ABI scorecard run `f2db419e-cfd5-4066-a50c-47e61d14f95c` remains 10 / 12 categories complete. Windows import-library evidence and four fresh target-lane bundles remain. |
 | 87 | Working tree (Rust `load_char` coverage-speed route) | Reused one worker-local high-level `ApiFace` per existing face key for `load_char`, eliminating repeated face-open/parse work while retaining the null-face and out-of-range fallbacks. Focused run `2345f427-cfa9-4d7a-ac92-93c6d709786a` passed 1,854 / 1,854 cases; full source-bound parity run `69def8d6-3ead-4dc8-ac96-7020741b41b4` passed 7,541 / 7,541 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items. The post-change source-bound all-lane Coverage MCP run `2b98fdd4-0780-4a51-8910-d3a74d50085c`, snapshot `bcd39500-84e8-42e0-874a-c23069ae7b0b`, measured the unchanged 49,880 / 54,395 lines, 9,878 / 12,592 branches, 3,404 / 3,849 functions, and 68,626 / 75,626 regions in 85.335 seconds; the same-source warm repeat `e7ccccdb-80f1-4d32-9fa3-d4c06a7c1673`, snapshot `292d059b-daeb-4e7d-ad3c-2451185bd1d7`, completed in 37.220 seconds versus the prior 48.265-second warm baseline. Warm lane timers were 30.545 seconds Rust FFI, 29.756 seconds C ABI, and 29.654 seconds WASM. C-ABI scorecard run `b93ef417-5341-4f97-9552-bca32d625cbc` remains 10 / 12 categories complete; the Windows import-library item and four platform bundles remain. |
 
+| 88 | Working tree (FT_Render_Glyph slot-refresh coverage route) | Changed `FT_Render_Glyph` to render into the existing glyph slot and refresh its public fields in place, avoiding repeated `FT_Face` metadata reconstruction while preserving the source face and render semantics. Focused run `91144282-c800-4cd7-b6d6-1b83176f2bdd` passed 1 / 1 with measured backend work of 9.110 seconds Rust, 8.739 seconds C ABI, 8.711 seconds WASM, and 2.411 ms comparison. Source-bound full parity run `34cb406a-5caa-44e4-9185-916fb0d83ecf`, recorded by `14606f6b-be06-466c-adf1-f789e56175dc`, passed 7,541 / 7,541 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items; Rust, C ABI, and WASM each retain 218 / 218 function-route evidence. The source-bound all-lane Coverage MCP run `f588e930-5ce8-4084-88ea-7bb518d8d44a`, snapshot `a24488bf-6fa8-4142-b2fd-03069ef7adab`, completed in 71.425 seconds and measured 49,859 / 54,382 lines, 9,876 / 12,590 branches, 3,402 / 3,848 functions, and 68,603 / 75,611 regions. C-ABI scorecard run `7c549f0f-df19-4dfd-a7a2-d4724db93734` reports 10 / 12 categories complete, 5,284 / 5,284 runtime rows, 684 / 684 strict-error routes, and 7,541 / 7,541 no-generic-fallback routes; Windows import-library evidence and four fresh target-lane bundles remain. |
+
 The current source-bound parity verification is Coverage MCP parity run
-`69def8d6-3ead-4dc8-ac96-7020741b41b4` against parity-tree digest
-`2c3f612c999fbfe43b8c7257e9acdf50154ec9aa26054cb4424aa7da15ab65a7`: it passed
-7,541 / 7,541 runnable comparisons, 0 failed, and 3 explicitly pending
-safety-extension cases. The route audit reports **0 pending routes** with 218 /
-218 function routes present in each ABI surface. The source-digest attestation
-was refreshed by record run `8997126b-8cbe-448c-9701-a52e19411d64` in
-`doc/runtime_parity_evidence.json`. The companion C-ABI scorecard run
-`b93ef417-5341-4f97-9552-bca32d625cbc` reports **10 / 12 categories complete**,
-with 5,284 / 5,284 runtime contract rows and 684 / 684 strict error routes
-exact; the remaining contract debt is the Windows import-library item and four
-fresh target-lane bundles.
+`34cb406a-5caa-44e4-9185-916fb0d83ecf`: it passed 7,541 / 7,541 runnable
+comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
+route audit reports **0 pending routes** with 218 / 218 function routes present
+in each ABI surface. The source-digest attestation was refreshed by record run
+`14606f6b-be06-466c-adf1-f789e56175dc` in `doc/runtime_parity_evidence.json`.
+The companion C-ABI scorecard run `7c549f0f-df19-4dfd-a7a2-d4724db93734`
+reports **10 / 12 categories complete**, with 5,284 / 5,284 runtime contract
+rows and 684 / 684 strict error routes exact; the remaining contract debt is
+the Windows import-library item and four fresh target-lane bundles.
 
 The three pending cases are deliberately excluded from the pinned-C parity
 numerator and denominator because their inputs are undefined or
@@ -483,15 +483,14 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current source-bound all-lane run `2b98fdd4-0780-4a51-8910-d3a74d50085c`
-completed in 85.335 seconds with snapshot
-`bcd39500-84e8-42e0-874a-c23069ae7b0b`. It measured 49,880 / 54,395 lines,
-9,878 / 12,592 branches, 3,404 / 3,849 functions, and 68,626 / 75,626
-regions; the parity matrix passed 7,541 / 7,541 in each backend. The
-same-source warm repeat `e7ccccdb-80f1-4d32-9fa3-d4c06a7c1673` completed in
-37.220 seconds. Its instrumentation timers were 30.545 seconds Rust FFI,
-29.756 seconds C ABI, 29.654 seconds WASM, and about 14.7–15.1 ms comparison per
-lane. The lanes already run concurrently; a two-worker
+The current source-bound all-lane run `f588e930-5ce8-4084-88ea-7bb518d8d44a`
+completed in 71.425 seconds with snapshot
+`a24488bf-6fa8-4142-b2fd-03069ef7adab`. It measured 49,859 / 54,382 lines,
+9,876 / 12,590 branches, 3,402 / 3,848 functions, and 68,603 / 75,611
+regions; the parity matrix passed 7,541 / 7,541 in each backend. Its
+instrumentation timers were 22.614 seconds Rust, 20.503 seconds C ABI, 20.376
+seconds WASM, and about 13.4–13.6 ms comparison per lane. The lanes already
+run concurrently; a two-worker
 coverage experiment completed in 128.268 seconds, so the default remains one
 worker per lane. The previous combined-lane warm all-lane baseline completed in 1
 minute 53.998 seconds. The split validation completed in 61.827 seconds, and
@@ -524,24 +523,29 @@ each lane. The prior current-head opt-level-1 speed validation run
 65.332 seconds for the opt-level-3 comparison, with identical coverage totals
 and parity results. Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
-repeated. The current source/input-bound run measured 49,880 / 54,395 lines,
-9,878 / 12,592 branches, 3,404 / 3,849 functions, and 68,626 / 75,626
+repeated. The current source/input-bound run measured 49,859 / 54,382 lines,
+9,876 / 12,590 branches, 3,402 / 3,848 functions, and 68,603 / 75,611
 regions. It passed 7,541 / 7,541 runnable parity comparisons with 0 failures.
-Its Coverage MCP run is `2b98fdd4-0780-4a51-8910-d3a74d50085c`, with snapshot
-`bcd39500-84e8-42e0-874a-c23069ae7b0b`; the same-source warm snapshot is
-`292d059b-daeb-4e7d-ad3c-2451185bd1d7`. Each measurement clears stale
+Its Coverage MCP run is `f588e930-5ce8-4084-88ea-7bb518d8d44a`, with snapshot
+`a24488bf-6fa8-4142-b2fd-03069ef7adab`. Each measurement clears stale
 `.profraw` files first; use `make coverage-clean` after changing the coverage
 toolchain or instrumentation configuration.
 
 The latest coverage-speed validation (Coverage MCP run
+`f588e930-5ce8-4084-88ea-7bb518d8d44a`, snapshot
+`a24488bf-6fa8-4142-b2fd-03069ef7adab`) measured 71.425 seconds end to end
+after avoiding per-render `FT_Face` metadata reconstruction in
+`FT_Render_Glyph`. Its retained lane timers were 22.614 seconds Rust, 20.503
+seconds C ABI, 20.376 seconds WASM, and about 13.4–13.6 ms comparison per
+lane. The preceding load-char validation (Coverage MCP run
 `e7ccccdb-80f1-4d32-9fa3-d4c06a7c1673`, snapshot
 `292d059b-daeb-4e7d-ad3c-2451185bd1d7`) measured 37.220 seconds end to end
 with the warm instrumented binary. The prior warm baseline run
 `8c64555d-d1ad-4f27-8b36-9ca60d8ce0e4` measured 48.265 seconds, so the new
-path is about 22.9% faster overall. The retained lane timers identify the
-remaining floor as instrumented parity execution (about 30.545 seconds Rust
-FFI, 29.756 seconds C ABI, and 29.654 seconds WASM), while comparison is about
-14.7–15.1 ms per lane. The measured Rust reduction comes from reusing the
+path was about 22.9% faster overall. The earlier retained lane timers identify
+the remaining floor as instrumented parity execution (about 30.545 seconds
+Rust FFI, 29.756 seconds C ABI, and 29.654 seconds WASM), while comparison was
+about 14.7–15.1 ms per lane. The measured Rust reduction came from reusing the
 worker-local high-level `ApiFace` for `load_char`; LLVM report and Coverage MCP
 ingestion are not the bottleneck. Coverage MCP accepts the current LLVM JSON
 directly; the compatibility-only `jq` segment rewrite remains opt-in through
