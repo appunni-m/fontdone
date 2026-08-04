@@ -56582,7 +56582,7 @@ fn c_sbit_cache_lookup_scaler(case: &InputCase) -> Result<RunOutput, String> {
             },
             load_flags_ulong as c_abi::FT_ULong,
             glyph_index,
-            false,
+            true,
         );
         if snapshot.error != FT_Err_Ok {
             return Ok(Err(snapshot.error));
