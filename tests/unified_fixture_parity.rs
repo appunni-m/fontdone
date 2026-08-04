@@ -57230,22 +57230,41 @@ fn c_manager_remove_face_id(case: &InputCase) -> Result<RunOutput, String> {
         // cache invalidation path.
         let mut manager = c_abi::AbiSBitCacheHarness::new(bytes.as_ref(), face_index)
             .map_err(|error| format!("C ABI manager setup returned {error}"))?;
+        manager
+            .ensure_image_cache()
+            .map_err(|error| format!("C ABI image cache setup returned {error}"))?;
         let mut face_id_a_marker = 0_u8;
         let mut face_id_b_marker = 0_u8;
         let face_id_a = ptr::from_mut(&mut face_id_a_marker).cast();
         let face_id_b = ptr::from_mut(&mut face_id_b_marker).cast();
-        let image_type = |face_id| c_abi::FTC_ImageTypeRec {
+        let scaler = |face_id| c_abi::FTC_ScalerRec {
             face_id,
             width: 0,
             height: 12,
-            flags: FT_LOAD_DEFAULT,
+            pixel: 1,
+            x_res: 0,
+            y_res: 0,
         };
-        let a_first = manager.lookup(image_type(face_id_a), 36, true, true).error;
-        let b_first = manager.lookup(image_type(face_id_b), 36, true, true).error;
+        let (a_first, held_node) = manager.image_lookup(scaler(face_id_a), 36, false);
+        let (b_first, b_node) = manager.image_lookup(scaler(face_id_b), 36, true);
+        if !b_node.is_null() {
+            return Err("C ABI image cache node release left a live node".to_string());
+        }
         c_abi::FTC_Manager_RemoveFaceID(manager.manager_handle(), face_id_a);
-        let a_after_remove = manager.lookup(image_type(face_id_a), 36, true, true).error;
-        let b_after_remove = manager.lookup(image_type(face_id_b), 36, true, true).error;
-        let a_after_unref = manager.lookup(image_type(face_id_a), 36, true, true).error;
+        let (a_after_remove, a_after_remove_node) =
+            manager.image_lookup(scaler(face_id_a), 36, true);
+        let (b_after_remove, b_after_remove_node) =
+            manager.image_lookup(scaler(face_id_b), 36, true);
+        if !a_after_remove_node.is_null() || !b_after_remove_node.is_null() {
+            return Err("C ABI image cache node release left a live node".to_string());
+        }
+        if !held_node.is_null() {
+            c_abi::FTC_Node_Unref(held_node, manager.manager_handle());
+        }
+        let (a_after_unref, a_after_unref_node) = manager.image_lookup(scaler(face_id_a), 36, true);
+        if !a_after_unref_node.is_null() {
+            return Err("C ABI image cache node release left a live node".to_string());
+        }
         let mut unknown_face_id_marker = 0_u8;
         let unknown_face_id = ptr::from_mut(&mut unknown_face_id_marker).cast();
         c_abi::FTC_Manager_RemoveFaceID(manager.manager_handle(), unknown_face_id);

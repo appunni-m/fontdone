@@ -4001,6 +4001,7 @@ pub struct AbiSBitCacheHarness {
     library: FT_Library,
     manager: FTC_Manager,
     cache: FTC_SBitCache,
+    image_cache: FTC_ImageCache,
     requester: Box<AbiSBitRequesterData>,
 }
 
@@ -4099,6 +4100,7 @@ impl AbiSBitCacheHarness {
             library,
             manager,
             cache,
+            image_cache: ptr::null_mut(),
             requester,
         })
     }
@@ -4116,6 +4118,49 @@ impl AbiSBitCacheHarness {
     /// Returns the number of requester callbacks observed so far.
     pub fn requester_calls(&self) -> FT_UInt {
         self.requester.requester_calls
+    }
+
+    /// Registers an image cache for manager lifecycle probes that exercise
+    /// `FTC_Manager_RemoveFaceID` invalidation across cache kinds.
+    pub fn ensure_image_cache(&mut self) -> Result<(), FT_Error> {
+        if !self.image_cache.is_null() {
+            return Ok(());
+        }
+        let error = FTC_ImageCache_New(self.manager, &mut self.image_cache);
+        if error == rust_ffi::FT_Err_Ok {
+            Ok(())
+        } else {
+            Err(error)
+        }
+    }
+
+    /// Calls the exported image-cache lookup and optionally releases its node.
+    /// A retained node is safe to unreference after `FTC_Manager_RemoveFaceID`
+    /// because the manager owns node allocations until reset or done.
+    pub fn image_lookup(
+        &mut self,
+        mut scaler: FTC_ScalerRec,
+        glyph_index: FT_UInt,
+        release_node: bool,
+    ) -> (FT_Error, FTC_Node) {
+        if self.image_cache.is_null() {
+            return (rust_ffi::FT_Err_Invalid_Argument, ptr::null_mut());
+        }
+        let mut glyph = ptr::null_mut();
+        let mut node = ptr::null_mut();
+        let error = FTC_ImageCache_LookupScaler(
+            self.image_cache,
+            ptr::from_mut(&mut scaler),
+            rust_ffi::FT_LOAD_DEFAULT as FT_ULong,
+            glyph_index,
+            &mut glyph,
+            &mut node,
+        );
+        if release_node && !node.is_null() {
+            FTC_Node_Unref(node, self.manager);
+            node = ptr::null_mut();
+        }
+        (error, node)
     }
 
     /// Calls the exported `FTC_SBitCache_Lookup` and snapshots its outputs.

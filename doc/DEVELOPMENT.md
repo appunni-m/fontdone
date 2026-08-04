@@ -268,9 +268,9 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`a7a11b61-aae7-4fa0-8f66-d54e6bd0bdc1`, snapshot
-`90a240aa-1197-401d-9cdf-682c62ba7025`) measured 91.262 seconds end-to-end
-with the expanded bitmap-copy null-buffer input set. The preceding
+run (`b8b246c4-a7d9-4d39-8f08-aeb4694679f4`, snapshot
+`54a29596-5f12-4598-b272-2ca8df957b63`) measured 89.542 seconds end-to-end
+with the expanded image-cache remove-face-ID input path. The preceding
 source/input-bound refresh (`b0194751-8e81-4d73-a17d-d6ae1a636c71`, snapshot
 `21949c21-abcd-4b97-b5c8-a9badd976487`) measured 89.100 seconds. The
 preceding source-bound run
