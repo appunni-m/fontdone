@@ -56682,34 +56682,68 @@ fn c_scaler_descriptor_lifetime(case: &InputCase) -> Result<RunOutput, String> {
 }
 
 fn c_image_cache_lookup_scaler(case: &InputCase) -> Result<RunOutput, String> {
-    let (library, face) = c_new_face_without_size(case)?;
+    // Keep the requester-backed manager and image cache alive across the
+    // scaler/glyph matrix so each row exercises FTC_ImageCache_LookupScaler's
+    // key construction and cache hit/miss behavior.  The raw FT_ULong flags
+    // are preserved for the exported call; the output helper reports the
+    // oracle's FT_Int32 truncation separately.
+    let bytes = font_bytes(case)?;
+    let mut manager = c_abi::AbiSBitCacheHarness::new_manager_only(
+        bytes.as_ref(),
+        face_index_param(&case.inputs.params)?,
+    )
+    .map_err(|error| format!("C ABI image cache scaler setup returned {error}"))?;
+    let manager_handle = manager.manager_handle();
+    let face_id = manager.face_id();
+    let mut cache = ptr::null_mut();
+    let create_status = c_abi::FTC_ImageCache_New(manager_handle, &mut cache);
+    if create_status != FT_Err_Ok {
+        return Ok(error(create_status));
+    }
     let rows = cache_scaler_rows(&case.inputs.params)?;
     let glyph_indexes = cache_glyph_indexes(&case.inputs.params)?;
     let load_flags = cache_effective_load_flags(&case.inputs.params)?;
+    let load_flags_ulong = cache_load_flags_ulong_param(&case.inputs.params)?;
     let output = cache_image_scaler_outputs(
         rows,
         glyph_indexes,
         load_flags,
-        |row, glyph_index, load_flags| {
-            let size_err = c_apply_cache_scaler(face, row);
-            if size_err != FT_Err_Ok {
-                return Ok(Err(size_err));
+        |row, glyph_index, _load_flags| {
+            let mut scaler = c_abi::FTC_ScalerRec {
+                face_id,
+                width: row.width,
+                height: row.height,
+                pixel: if row.pixel { 1 } else { 0 },
+                x_res: row.x_res,
+                y_res: row.y_res,
+            };
+            let mut glyph = ptr::null_mut();
+            let mut node = ptr::null_mut();
+            let status = c_abi::FTC_ImageCache_LookupScaler(
+                cache,
+                &mut scaler,
+                load_flags_ulong as c_abi::FT_ULong,
+                glyph_index,
+                &mut glyph,
+                &mut node,
+            );
+            let result = if status == FT_Err_Ok {
+                c_cached_glyph_record(glyph).map(Ok)
+            } else {
+                Ok(Err(status))
+            };
+            if !node.is_null() {
+                c_abi::FTC_Node_Unref(node, manager_handle);
             }
-            let err = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
-            if err != FT_Err_Ok {
-                return Ok(Err(err));
-            }
-            let slot = c_abi::abi_slot_snapshot(face)
-                .ok_or_else(|| "missing c glyph slot snapshot".to_string())?;
-            Ok(Ok(glyph_record_json(
-                slot.format,
-                slot.advance.x,
-                slot.advance.y,
-            )))
+            result
         },
     );
-    c_done_face(face);
-    c_done_library(library);
+    if manager.requester_calls() != 1 {
+        return Err(format!(
+            "C ABI image cache scaler requester count diverged: {}",
+            manager.requester_calls()
+        ));
+    }
     output
 }
 

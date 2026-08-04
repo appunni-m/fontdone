@@ -124,10 +124,10 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`c41445de-10a4-4a5d-a353-414785a283d3`, recorded in
+`f63cb35f-e590-43bb-90ba-859788819779`, recorded in
 `doc/runtime_parity_evidence.json` after passing 7,539 / 7,539 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `615d782b9e6c546016ff8cd883470d8a90d813672ed34edf26bc6cd0d5d579a4`.
+Its source-bound parity-tree digest is `492cb1af061af6d233e0222cda1f61a2898bc3290b1fcaf1ef7ea03f6cf930e0`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -141,15 +141,15 @@ their exact worktree than the committed release snapshot.
 
 The latest all-lane coverage snapshot was recorded on **2026-08-04**
 for the current source-matched working tree (Coverage MCP run
-`0ea25900-4164-463c-8083-597f2c610921`, snapshot
-`3fdd6bb8-e1b6-4326-a1a0-6246ef91131e`):
+`0a0c3ca5-12f6-49a3-84fd-16aafb07e2c6`, snapshot
+`4faba8c3-aea6-498f-852e-3635d82702ea`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,816 / 54,356 | 91.65% |
-| Branches | 9,864 / 12,582 | 78.40% |
+| Lines | 49,822 / 54,356 | 91.66% |
+| Branches | 9,865 / 12,582 | 78.41% |
 | Functions | 3,401 / 3,847 | 88.41% |
-| Regions | 68,548 / 75,578 | 90.70% |
+| Regions | 68,556 / 75,578 | 90.71% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -184,13 +184,13 @@ backend and measured 49,624 / 54,186 lines, 9,815 / 12,538 branches,
 3,391 / 3,835 functions, and 68,297 / 75,365 regions; it is retained in
 `doc/DEVELOPMENT.md` and `doc/ROADMAP.md` until a new compatibility snapshot
 is deliberately promoted.
-The current dirty-worktree validation run `0ea25900-4164-463c-8083-597f2c610921`
-(`3fdd6bb8-e1b6-4326-a1a0-6246ef91131e`) passed 7,539 / 7,539 comparisons in
-each backend and measured 49,816 / 54,356 lines, 9,864 / 12,582 branches,
-3,401 / 3,847 functions, and 68,548 / 75,578 regions in 90.116 seconds.
+The current dirty-worktree validation run `0a0c3ca5-12f6-49a3-84fd-16aafb07e2c6`
+(`4faba8c3-aea6-498f-852e-3635d82702ea`) passed 7,539 / 7,539 comparisons in
+each backend and measured 49,822 / 54,356 lines, 9,865 / 12,582 branches,
+3,401 / 3,847 functions, and 68,556 / 75,578 regions in 86.334 seconds.
 The current source/input-bound run passed 7,539 / 7,539 comparisons in each backend lane. Its
-lane executions were 40.18 seconds Rust FFI, 29.22 seconds C ABI, and 29.11
-seconds WASM, with about 11 ms comparison per lane. The three-surface
+lane executions were 39.86 seconds Rust FFI, 28.83 seconds C ABI, and 28.73
+seconds WASM, with about 11–12 ms comparison per lane. The three-surface
 instrumented execution is the dominant cost; the report is accepted by Coverage
 MCP without the compatibility-only segment rewrite. The default
 `COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
@@ -208,7 +208,7 @@ not rebuilt on every run; unchanged FreeType CMake configuration is reused as
 well. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The latest source/input-bound coverage run completed in 90.116 seconds;
+The latest source/input-bound coverage run completed in 86.334 seconds;
 the preceding managed warm source-bound coverage run completed in 50.842 seconds;
 the preceding source-bound run completed in 100.333 seconds including the
 instrumented rebuild; its longest backend execution was 48.24 seconds;
@@ -253,7 +253,7 @@ routes remain even when every bare function name has some traced route. The self
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`fb52f881-2a37-46b5-9d83-ca1dd8b2e259`.
+`f1638566-ebc5-4494-a162-cc64a002af3a`.
 
 ### 3.5 Performance baseline
 
