@@ -57781,19 +57781,57 @@ fn c_manager_done(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
     let face_index = face_index_param(&case.inputs.params)?;
     manager_done_output(&case.inputs.params, || {
-        let (library, face) = c_new_face_from_bytes(bytes.as_ref(), face_index)?;
-        let cmap_lookup = c_cmap_cache_lookup_glyph(face, -1, 65)?;
+        let mut manager = c_abi::AbiSBitCacheHarness::new_manager_only(bytes.as_ref(), face_index)
+            .map_err(|error| format!("C ABI manager-done setup returned {error}"))?;
+        let manager_handle = manager.manager_handle();
+        let face_id = manager.face_id();
+        let mut cmap_cache = ptr::null_mut();
+        let cmap_status = c_abi::FTC_CMapCache_New(manager_handle, &mut cmap_cache);
+        if cmap_status != FT_Err_Ok {
+            return Err(format!("C ABI CMap cache setup returned {cmap_status}"));
+        }
+        let cmap_lookup = c_abi::FTC_CMapCache_Lookup(cmap_cache, face_id, -1, 65);
+        let mut face = ptr::null_mut();
+        let lookup_face_status = c_abi::FTC_Manager_LookupFace(manager_handle, face_id, &mut face);
         let scaler = manager_lifecycle_scaler();
-        let size_status = c_apply_cache_scaler(face, scaler);
-        let image_lookup_status = c_load_manager_lifecycle_glyph(face, scaler);
-        c_done_face(face);
-        c_done_library(library);
+        let mut c_scaler = c_abi::FTC_ScalerRec {
+            face_id,
+            width: scaler.width,
+            height: scaler.height,
+            pixel: if scaler.pixel { 1 } else { 0 },
+            x_res: scaler.x_res,
+            y_res: scaler.y_res,
+        };
+        let mut size = ptr::null_mut();
+        let lookup_size_status =
+            c_abi::FTC_Manager_LookupSize(manager_handle, ptr::from_mut(&mut c_scaler), &mut size);
+        let mut image_cache = ptr::null_mut();
+        let image_cache_status = c_abi::FTC_ImageCache_New(manager_handle, &mut image_cache);
+        if image_cache_status != FT_Err_Ok {
+            return Err(format!(
+                "C ABI image cache setup returned {image_cache_status}"
+            ));
+        }
+        let mut glyph = ptr::null_mut();
+        let mut node = ptr::null_mut();
+        let image_lookup_status = c_abi::FTC_ImageCache_LookupScaler(
+            image_cache,
+            ptr::from_mut(&mut c_scaler),
+            FT_LOAD_DEFAULT as c_abi::FT_ULong,
+            36,
+            &mut glyph,
+            &mut node,
+        );
+        if !node.is_null() {
+            c_abi::FTC_Node_Unref(node, manager_handle);
+        }
+        let requester_count_before_done = manager.requester_calls();
         Ok(ManagerDoneObserved {
             cmap_lookup,
-            lookup_face_status: FT_Err_Ok,
-            lookup_size_status: size_status,
+            lookup_face_status,
+            lookup_size_status,
             image_lookup_status,
-            requester_count_before_done: 1,
+            requester_count_before_done,
         })
     })
 }
