@@ -47027,8 +47027,8 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         | "sfnt.get_sfnt_table.hhea"
         | "sfnt.get_sfnt_table.hhea.after_variation"
         | "freetype.set_transform"
-        | "freetype.get_transform"
-        | "freetype.reference_face" => run_rust_ffi(case),
+        | "freetype.get_transform" => run_rust_ffi(case),
+        "freetype.reference_face" => c_reference_face(case),
         "freetype.new_face" => c_new_face_path(case),
         "freetype.open_face_pair"
             if case.case_id == "freetype.FT_STYLE_FLAG_BOLD.face_style_flag_behavior" =>
@@ -72445,6 +72445,25 @@ fn c_new_face_path(case: &InputCase) -> Result<RunOutput, String> {
             Ok(error(status))
         }
     };
+    c_done_library(library);
+    output
+}
+
+fn c_reference_face(case: &InputCase) -> Result<RunOutput, String> {
+    if lifecycle_handle_param(&case.inputs.params, "face") == Some("null") {
+        return Ok(error(c_abi::FT_Reference_Face(ptr::null_mut())));
+    }
+    let (library, face) = c_open_face(case)?;
+    let status = c_abi::FT_Reference_Face(face);
+    let output = if status == FT_Err_Ok {
+        Ok(ok(json!({"refcount": 2})))
+    } else {
+        Ok(error(status))
+    };
+    if status == FT_Err_Ok {
+        c_done_face(face);
+    }
+    c_done_face(face);
     c_done_library(library);
     output
 }

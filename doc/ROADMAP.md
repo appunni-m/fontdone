@@ -468,14 +468,15 @@ per-batch coverage increase is claimed:
 
 | 91 | Working tree (FT_Attach_File pathname parity route) | Reused the maintained `freetype.FT_Attach_File` success input and its existing AFM asset, replacing the C-ABI harness's `FT_Attach_Stream` memory helper with the exported `FT_Attach_File` pathname call so the real wrapper and filesystem path are exercised without changing the parity matrix. Full parity run `c40d3d07-0945-4736-982e-5862e46e7c5c` passed 7,542 / 7,542 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items. All-lane Coverage MCP run `ab61915f-45f1-4a74-ab87-df0593c02792`, snapshot `a9f872b4-2883-4afd-99a5-55ae84d39c25`, completed in 73.635 seconds and measured 49,886 / 54,382 lines, 9,891 / 12,590 branches, 3,405 / 3,848 functions, and 68,642 / 75,611 regions; the C-ABI wrapper's success path is now covered. C-ABI scorecard run `cb3af2a7-f009-4cf1-95ac-fb1da8e2ee62` reports 10 / 12 categories complete, 5,285 / 5,285 runtime rows, and 684 / 684 strict-error routes; Windows import-library evidence and four fresh target-lane bundles remain. |
 | 92 | Working tree (FT_New_Face pathname ABI parity route) | Reused the maintained `freetype.FT_New_Face` pathname/error matrix and routed the C-ABI lane through the exported `FT_New_Face` pathname call, covering the real wrapper and filesystem-backed face-open path without changing the parity matrix; the WASM lane remains on its existing memory-backed route because it has no pathname export. Full parity run `23adc824-8815-4caf-a2f8-f1c9f7086bf4`, recorded by `3232b1fe-c889-49df-ac81-1eb4b09a35e3`, passed 7,542 / 7,542 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items. All-lane Coverage MCP run `2954842b-5f37-4f95-8195-d61c03b5b279`, snapshot `c72734e7-38a0-43c3-b51f-79c2eac36005`, completed in 70.782 seconds and measured 49,918 / 54,382 lines, 9,897 / 12,590 branches, 3,408 / 3,848 functions, and 68,687 / 75,611 regions; the C-ABI `FT_New_Face` wrapper and core pathname success path are now covered. C-ABI scorecard run `d64bfddf-0a3f-43fe-af94-312a79dedc33` reports 10 / 12 categories complete, 5,285 / 5,285 runtime rows, and 684 / 684 strict-error routes; Windows import-library evidence and four fresh target-lane bundles remain. |
+| 93 | Working tree (FT_Reference_Face C-ABI parity route) | Reused the maintained `freetype.FT_Reference_Face` success/null matrix and routed the C-ABI lane through the exported `FT_Reference_Face` call, including both wrapper branches, while preserving the existing `refcount` output contract and leaving the WASM lane unchanged. Full parity run `e67db1d2-6b12-4af2-b68a-2881bca4a3a3`, recorded by `f30d9f91-1533-4676-90a2-37f882e3ca85`, passed 7,542 / 7,542 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items. All-lane Coverage MCP run `716a02d6-cb98-4120-8204-fb411c1493e7`, snapshot `a258e327-5954-48cb-868c-2ca8e7df04e5`, completed in 72.219 seconds and measured 49,928 / 54,382 lines, 9,900 / 12,590 branches, 3,409 / 3,848 functions, and 68,698 / 75,611 regions; all C-ABI `FT_Reference_Face` wrapper lines and branches are now covered. C-ABI scorecard run `35d84940-f7e6-41f0-8cc4-deae8b62bf1b` reports 10 / 12 categories complete, 5,285 / 5,285 runtime rows, and 684 / 684 strict-error routes; Windows import-library evidence and four fresh target-lane bundles remain. |
 
 The current source-bound parity verification is Coverage MCP parity run
-`23adc824-8815-4caf-a2f8-f1c9f7086bf4`: it passed 7,542 / 7,542 runnable
+`e67db1d2-6b12-4af2-b68a-2881bca4a3a3`: it passed 7,542 / 7,542 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The source-digest attestation was refreshed by record run
-`3232b1fe-c889-49df-ac81-1eb4b09a35e3` in `doc/runtime_parity_evidence.json`.
-The companion C-ABI scorecard run `d64bfddf-0a3f-43fe-af94-312a79dedc33`
+`f30d9f91-1533-4676-90a2-37f882e3ca85` in `doc/runtime_parity_evidence.json`.
+The companion C-ABI scorecard run `35d84940-f7e6-41f0-8cc4-deae8b62bf1b`
 reports **10 / 12 categories complete**, with 5,285 / 5,285 runtime contract
 rows and 684 / 684 strict error routes exact; the remaining contract debt is
 the Windows import-library item and four fresh target-lane bundles.
@@ -489,15 +490,15 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current source-bound all-lane run `2954842b-5f37-4f95-8195-d61c03b5b279`
-completed in 70.782 seconds with snapshot
-`c72734e7-38a0-43c3-b51f-79c2eac36005`. It measured 49,918 / 54,382 lines,
-9,897 / 12,590 branches, 3,408 / 3,848 functions, and 68,687 / 75,611
+The current source-bound all-lane run `716a02d6-cb98-4120-8204-fb411c1493e7`
+completed in 72.219 seconds with snapshot
+`a258e327-5954-48cb-868c-2ca8e7df04e5`. It measured 49,928 / 54,382 lines,
+9,900 / 12,590 branches, 3,409 / 3,848 functions, and 68,698 / 75,611
 regions; the parity matrix passed 7,542 / 7,542 in each backend. This source-
 changing validation includes the instrumented rebuild and is not a speed
 comparison against the previous warm snapshot. Its separate-process lane
-timers were 23.116 seconds Rust, 21.079 seconds C ABI, and 20.948 seconds
-WASM, with about 14.8–15.7 ms of comparison per lane. The lanes already
+timers were 22.739 seconds Rust, 20.632 seconds C ABI, and 20.491 seconds
+WASM, with about 14.5–16.2 ms of comparison per lane. The lanes already
 run concurrently; a two-worker
 coverage experiment completed in 87.614 seconds, so the default remains one
 worker per lane. The previous combined-lane warm all-lane baseline completed in 1
@@ -531,11 +532,11 @@ each lane. The prior current-head opt-level-1 speed validation run
 65.332 seconds for the opt-level-3 comparison, with identical coverage totals
 and parity results. Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
-repeated. The current source/input-bound run measured 49,918 / 54,382 lines,
-9,897 / 12,590 branches, 3,408 / 3,848 functions, and 68,687 / 75,611
+repeated. The current source/input-bound run measured 49,928 / 54,382 lines,
+9,900 / 12,590 branches, 3,409 / 3,848 functions, and 68,698 / 75,611
 regions. It passed 7,542 / 7,542 runnable parity comparisons with 0 failures.
-Its Coverage MCP run is `2954842b-5f37-4f95-8195-d61c03b5b279`, with snapshot
-`c72734e7-38a0-43c3-b51f-79c2eac36005`. Each measurement clears stale
+Its Coverage MCP run is `716a02d6-cb98-4120-8204-fb411c1493e7`, with snapshot
+`a258e327-5954-48cb-868c-2ca8e7df04e5`. Each measurement clears stale
 `.profraw` files first; use `make coverage-clean` after changing the coverage
 toolchain or instrumentation configuration.
 
