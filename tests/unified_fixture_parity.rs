@@ -47028,8 +47028,8 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         | "sfnt.get_sfnt_table.hhea.after_variation"
         | "freetype.set_transform"
         | "freetype.get_transform"
-        | "freetype.reference_face"
-        | "freetype.new_face" => run_rust_ffi(case),
+        | "freetype.reference_face" => run_rust_ffi(case),
+        "freetype.new_face" => c_new_face_path(case),
         "freetype.open_face_pair"
             if case.case_id == "freetype.FT_STYLE_FLAG_BOLD.face_style_flag_behavior" =>
         {
@@ -72378,6 +72378,75 @@ fn rust_new_face_variants(case: &InputCase) -> Result<RunOutput, String> {
             Err(err) => Ok((err, true)),
         }
     })
+}
+
+fn c_new_face_path(case: &InputCase) -> Result<RunOutput, String> {
+    let pathname = if new_face_missing_path_case(case) {
+        Some(missing_pathname(case)?)
+    } else if lifecycle_handle_param(&case.inputs.params, "pathname") == Some("null") {
+        None
+    } else {
+        Some(font_pathname(case)?)
+    };
+    let pathname = pathname
+        .map(CString::new)
+        .transpose()
+        .map_err(|err| format!("FT_New_Face pathname contains NUL: {err}"))?;
+    let pathname_ptr = pathname
+        .as_ref()
+        .map_or(ptr::null(), |pathname| pathname.as_ptr());
+    let face_index = face_index_param(&case.inputs.params)?;
+    let mut library = ptr::null_mut();
+    let init_error = c_abi::FT_Init_FreeType(&mut library);
+    if init_error != FT_Err_Ok {
+        return Ok(error(init_error));
+    }
+    let output = if case.inputs.params.get("variants").is_some() {
+        let rows = memory_face_rows(&case.inputs.params)?;
+        memory_face_outputs(rows, false, |row| {
+            let library_arg = if row.library_is_null {
+                ptr::null_mut()
+            } else {
+                library
+            };
+            let mut face = ptr::null_mut();
+            let face_ptr = if row.aface_is_null {
+                ptr::null_mut()
+            } else {
+                &mut face
+            };
+            let error = c_abi::FT_New_Face(library_arg, pathname_ptr, row.face_index, face_ptr);
+            let face_is_null = face.is_null();
+            if !face_is_null {
+                c_done_face(face);
+            }
+            Ok((error, face_is_null))
+        })
+    } else {
+        let library_arg = if lifecycle_handle_param(&case.inputs.params, "library") == Some("null")
+        {
+            ptr::null_mut()
+        } else {
+            library
+        };
+        let mut face = ptr::null_mut();
+        let face_ptr = if lifecycle_handle_param(&case.inputs.params, "aface") == Some("null") {
+            ptr::null_mut()
+        } else {
+            &mut face
+        };
+        let status = c_abi::FT_New_Face(library_arg, pathname_ptr, face_index, face_ptr);
+        if !face.is_null() {
+            c_done_face(face);
+        }
+        if status == FT_Err_Ok {
+            Ok(ok(json!({"opened": true})))
+        } else {
+            Ok(error(status))
+        }
+    };
+    c_done_library(library);
+    output
 }
 
 fn c_new_memory_face_variants(case: &InputCase) -> Result<RunOutput, String> {
