@@ -74398,7 +74398,15 @@ fn bzip2_stream_invalid_output(
     {
         let mut memory = FT_MemoryRec::default();
         let mut source = FT_StreamRec {
-            base: bytes.as_ptr().cast_mut(),
+            // Match the pinned C oracle's empty memory stream exactly.  The
+            // zero-length source is rejected before FreeType dereferences its
+            // base pointer, so NULL is a safe and meaningful public record
+            // shape here.
+            base: if variant == "empty" {
+                ptr::null_mut()
+            } else {
+                bytes.as_ptr().cast_mut()
+            },
             size: FT_ULong::try_from(bytes.len()).map_err(|err| err.to_string())?,
             pos: 3,
             memory: (&mut memory) as *mut FT_MemoryRec,
