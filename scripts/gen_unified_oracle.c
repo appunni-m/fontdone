@@ -1086,6 +1086,28 @@ static void print_bzip2_target_fields(const FT_StreamRec* stream) {
     print_lzw_stream_fields(stream);
 }
 
+typedef struct Bzip2MemorySource_ {
+    const unsigned char* bytes;
+    long length;
+} Bzip2MemorySource;
+
+static unsigned long bzip2_memory_source_read(
+    FT_Stream stream,
+    unsigned long offset,
+    unsigned char* buffer,
+    unsigned long count) {
+    Bzip2MemorySource* source = (Bzip2MemorySource*)stream->descriptor.pointer;
+    if (!source || count == 0 || offset >= (unsigned long)source->length || !buffer) {
+        return 0;
+    }
+    unsigned long available = (unsigned long)source->length - offset;
+    if (available > count) {
+        available = count;
+    }
+    memcpy(buffer, source->bytes + offset, (size_t)available);
+    return available;
+}
+
 static int emit_bzip2_stream_case(int argc, char** argv) {
     if (argc < 3) {
         fprintf(stderr, "--bzip2-stream-case requires CASE_ID and fixture paths\n");
@@ -1102,6 +1124,7 @@ static int emit_bzip2_stream_case(int argc, char** argv) {
     }
 
     if (streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.success_open_valid_bzip2_stream") ||
+        streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.success_open_callback_bzip2_stream") ||
         streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.success_read_decompressed_bytes") ||
         streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.lifecycle_close_does_not_close_source")) {
         if (argc != 5) {
@@ -1122,11 +1145,18 @@ static int emit_bzip2_stream_case(int argc, char** argv) {
         }
         FT_StreamRec source;
         FT_StreamRec stream;
+        Bzip2MemorySource callback_source = {compressed, compressed_len};
+        int callback_source_case =
+            streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.success_open_callback_bzip2_stream");
         memset(&source, 0, sizeof(source));
         init_lzw_stream_sentinel(&stream);
-        source.base = compressed;
+        source.base = callback_source_case ? NULL : compressed;
         source.size = (FT_ULong)compressed_len;
         source.pos = 3;
+        if (callback_source_case) {
+            source.descriptor.pointer = &callback_source;
+            source.read = bzip2_memory_source_read;
+        }
         source.memory = library->memory;
         FT_Error status = FT_Stream_OpenBzip2(&stream, &source);
         FT_ULong source_pos_after_open = source.pos;
@@ -1148,17 +1178,21 @@ static int emit_bzip2_stream_case(int argc, char** argv) {
         } else {
             print_bzip2_stream_reads(&stream, raw, raw_len);
         }
-        int source_alive = source.base == compressed &&
-                           compressed_len > 0 &&
-                           source.base[0] == compressed[0];
+        int source_alive = callback_source_case
+            ? source.base == NULL && source.read == bzip2_memory_source_read
+            : source.base == compressed &&
+              compressed_len > 0 &&
+              source.base[0] == compressed[0];
         if (!status && stream.close) {
             stream.close(&stream);
         }
         printf(",\"target_after_close\":");
         print_bzip2_target_fields(&stream);
         printf(",\"wrapper_open_after_close\":%s,\"source_close_count\":0,"
+               "\"source_read_class\":\"%s\","
                "\"source_alive_after_target_close\":%s}}\n",
                stream.descriptor.pointer ? "true" : "false",
+               source.read ? "callback" : "null",
                source_alive ? "true" : "false");
         free(compressed);
         free(raw);

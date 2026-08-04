@@ -2797,6 +2797,53 @@ pub extern "C" fn fontdone_wasm_stream_open_gzip(
     rust_ffi::FT_Stream_OpenGzip(Some(stream_ref), Some(source_ref), Some(source_bytes))
 }
 
+fn bzip2_source_bytes(
+    source: *mut rust_ffi::FT_StreamRec,
+    source_base: *mut FT_Byte,
+    source_read: FT_Pointer,
+    source_len: usize,
+) -> Result<Vec<FT_Byte>, FT_Error> {
+    if source_len == 0 {
+        return Ok(Vec::new());
+    }
+    if !source_base.is_null() {
+        // SAFETY: the WASM host supplied a memory-backed source readable for
+        // the advertised non-zero size.
+        return Ok(unsafe { slice::from_raw_parts(source_base.cast_const(), source_len) }.to_vec());
+    }
+    if source_read.is_null() {
+        return Err(rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error);
+    }
+    // SAFETY: public FT_StreamRec.read has FreeType's FT_Stream_IoFunc ABI;
+    // the host retains the source stream for this synchronous materialization.
+    let stream_io = unsafe {
+        std::mem::transmute::<
+            FT_Pointer,
+            extern "C" fn(
+                *mut rust_ffi::FT_StreamRec,
+                FT_ULong,
+                *mut FT_Byte,
+                FT_ULong,
+            ) -> FT_ULong,
+        >(source_read)
+    };
+    if stream_io(source, 0, ptr::null_mut(), 0) != 0 {
+        return Err(rust_ffi::FT_Err_Invalid_Stream_Operation as FT_Error);
+    }
+    let requested = FT_ULong::try_from(source_len)
+        .map_err(|_| rust_ffi::FT_Err_Invalid_Argument as FT_Error)?;
+    let mut bytes = Vec::new();
+    bytes
+        .try_reserve_exact(source_len)
+        .map_err(|_| rust_ffi::FT_Err_Out_Of_Memory as FT_Error)?;
+    bytes.resize(source_len, 0);
+    let read_count = stream_io(source, 0, bytes.as_mut_ptr(), requested);
+    if read_count != requested {
+        return Err(rust_ffi::FT_Err_Invalid_Stream_Operation as FT_Error);
+    }
+    Ok(bytes)
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn fontdone_wasm_stream_open_bzip2(
     stream: *mut rust_ffi::FT_StreamRec,
@@ -2805,27 +2852,34 @@ pub extern "C" fn fontdone_wasm_stream_open_bzip2(
     if !cfg!(feature = "bzip2") {
         return rust_ffi::FT_Err_Unimplemented_Feature as FT_Error;
     }
+    let (source_base, source_read, source_len) = {
+        let Some(source_ref) = (unsafe { source.as_ref() }) else {
+            return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
+        };
+        let Ok(source_len) = usize::try_from(source_ref.size) else {
+            return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
+        };
+        (source_ref.base, source_ref.read, source_len)
+    };
+    if source_base.is_null() && source_len != 0 && source_read.is_null() {
+        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
+    }
+    let source_bytes =
+        match bzip2_source_bytes(source.cast_mut(), source_base, source_read, source_len) {
+            Ok(bytes) => bytes,
+            Err(error) => return error,
+        };
     let Some(stream_ref) = (unsafe { stream.as_mut() }) else {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     };
     let Some(source_ref) = (unsafe { source.cast_mut().as_mut() }) else {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     };
-    let Ok(source_len) = usize::try_from(source_ref.size) else {
-        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
-    };
-    if source_ref.base.is_null() && source_len != 0 {
-        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
-    }
-    // SAFETY: the WASM host parity facade supplies a memory-backed source
-    // stream whose `base` remains readable for `size` bytes during this call.
-    let source_bytes = if source_len == 0 {
-        &[][..]
-    } else {
-        // SAFETY: the non-empty source was checked for a non-null base above.
-        unsafe { slice::from_raw_parts(source_ref.base.cast_const(), source_len) }
-    };
-    rust_ffi::FT_Stream_OpenBzip2(Some(stream_ref), Some(source_ref), Some(source_bytes))
+    rust_ffi::FT_Stream_OpenBzip2(
+        Some(stream_ref),
+        Some(source_ref),
+        Some(source_bytes.as_slice()),
+    )
 }
 
 #[unsafe(no_mangle)]

@@ -2858,6 +2858,8 @@ subjects:
     cases:
       - id: success_open_valid_bzip2_stream
         description: A valid bzip2-compressed source initializes the target stream with C-compatible memory, size sentinel, pos, read, close, and descriptor behavior.
+      - id: success_open_callback_bzip2_stream
+        description: A valid bzip2-compressed source supplied through a caller-owned FT_Stream_IoFunc opens and reads with the same wrapper state and source ownership as C.
       - id: success_read_decompressed_bytes
         description: Reads through the wrapped stream produce exact decompressed bytes and seek/read behavior matching C, including the defined null-buffer zero-count callback probe.
       - id: lifecycle_close_does_not_close_source

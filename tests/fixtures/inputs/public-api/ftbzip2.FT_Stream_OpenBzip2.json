@@ -3,6 +3,7 @@
   "subject": "ftbzip2.FT_Stream_OpenBzip2",
   "manifest_cases": [
     "success_open_valid_bzip2_stream",
+    "success_open_callback_bzip2_stream",
     "success_read_decompressed_bytes",
     "lifecycle_close_does_not_close_source",
     "error_null_stream_or_source",
@@ -67,6 +68,70 @@
         },
         "fixture_requirements": [
           "Valid bzip2-compressed byte fixture with known decompressed bytes"
+        ]
+      }
+    },
+    {
+      "case_id": "ftbzip2.FT_Stream_OpenBzip2.success_open_callback_bzip2_stream",
+      "subject": "ftbzip2.FT_Stream_OpenBzip2",
+      "case": "success_open_callback_bzip2_stream",
+      "operation": "ftbzip2.stream_open_bzip2",
+      "schema": "stream_wrapper",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "compressed": {
+            "kind": "ref",
+            "id": "compressed/bzip2/valid-pcf-header.pcf.bz2",
+            "asset_kind": "binary"
+          },
+          "raw": {
+            "kind": "ref",
+            "id": "compressed/bzip2/valid-pcf-header.raw",
+            "asset_kind": "binary"
+          }
+        },
+        "params": {
+          "target_stream": "empty",
+          "source_stream": "read_callback",
+          "source_base": null,
+          "source_size": "compressed_length"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftbzip2",
+        "area:bzip2-stream",
+        "area:callbacks"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "stream_fields": [
+            "memory",
+            "base",
+            "size",
+            "pos",
+            "read",
+            "close",
+            "descriptor"
+          ],
+          "source_ownership": "not_closed",
+          "source_read": "callback"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "error",
+            "stream.field_classes",
+            "source.close_count",
+            "source.read_class",
+            "decoded_reads[*].bytes"
+          ]
+        },
+        "fixture_requirements": [
+          "Valid bzip2-compressed byte fixture with a caller-owned FT_Stream_IoFunc and known decompressed bytes"
         ]
       }
     },

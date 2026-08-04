@@ -41454,6 +41454,7 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         let mut args = vec!["--bzip2-stream-case".to_string(), case.case_id.clone()];
         match case.case_id.as_str() {
             "ftbzip2.FT_Stream_OpenBzip2.success_open_valid_bzip2_stream"
+            | "ftbzip2.FT_Stream_OpenBzip2.success_open_callback_bzip2_stream"
             | "ftbzip2.FT_Stream_OpenBzip2.success_read_decompressed_bytes"
             | "ftbzip2.FT_Stream_OpenBzip2.lifecycle_close_does_not_close_source" => {
                 for key in ["compressed", "raw"] {
@@ -74169,6 +74170,56 @@ enum Bzip2StreamBackend {
     Wasm,
 }
 
+#[repr(C)]
+struct Bzip2CallbackSource {
+    bytes: *const FT_Byte,
+    len: usize,
+}
+
+extern "C" fn bzip2_source_read(
+    stream: *mut FT_StreamRec,
+    offset: FT_ULong,
+    buffer: *mut FT_Byte,
+    count: FT_ULong,
+) -> FT_ULong {
+    if count == 0 {
+        return 0;
+    }
+    let Some(stream) = (unsafe { stream.as_ref() }) else {
+        return 0;
+    };
+    let state = unsafe {
+        stream
+            .descriptor
+            .pointer
+            .cast::<Bzip2CallbackSource>()
+            .as_ref()
+    };
+    let Some(state) = state else {
+        return 0;
+    };
+    let Ok(offset) = usize::try_from(offset) else {
+        return 0;
+    };
+    let Ok(count) = usize::try_from(count) else {
+        return 0;
+    };
+    if offset >= state.len || state.bytes.is_null() || buffer.is_null() {
+        return 0;
+    }
+    let available = (state.len - offset).min(count);
+    // SAFETY: the callback state points at the maintained compressed fixture,
+    // and the caller supplies `count` writable bytes for this read.
+    unsafe {
+        ptr::copy_nonoverlapping(state.bytes.add(offset), buffer, available);
+    }
+    FT_ULong::try_from(available).unwrap_or(FT_ULong::MAX)
+}
+
+fn bzip2_source_read_pointer() -> FT_Pointer {
+    bzip2_source_read as *const () as FT_Pointer
+}
+
 #[derive(Debug, Clone, Copy)]
 enum LzwStreamBackend {
     Rust,
@@ -74238,6 +74289,7 @@ fn is_bzip2_enabled_stream_case(case: &InputCase) -> bool {
     matches!(
         case.case_id.as_str(),
         "ftbzip2.FT_Stream_OpenBzip2.success_open_valid_bzip2_stream"
+            | "ftbzip2.FT_Stream_OpenBzip2.success_open_callback_bzip2_stream"
             | "ftbzip2.FT_Stream_OpenBzip2.success_read_decompressed_bytes"
             | "ftbzip2.FT_Stream_OpenBzip2.lifecycle_close_does_not_close_source"
             | "ftbzip2.FT_Stream_OpenBzip2.error_null_stream_or_source"
@@ -74248,6 +74300,7 @@ fn is_bzip2_enabled_stream_case(case: &InputCase) -> bool {
 fn bzip2_stream_output(case: &InputCase, backend: Bzip2StreamBackend) -> Result<RunOutput, String> {
     match case.case_id.as_str() {
         "ftbzip2.FT_Stream_OpenBzip2.success_open_valid_bzip2_stream"
+        | "ftbzip2.FT_Stream_OpenBzip2.success_open_callback_bzip2_stream"
         | "ftbzip2.FT_Stream_OpenBzip2.success_read_decompressed_bytes"
         | "ftbzip2.FT_Stream_OpenBzip2.lifecycle_close_does_not_close_source" => {
             let compressed = case
@@ -74303,11 +74356,33 @@ fn bzip2_stream_success_output(
     compressed: &[u8],
     raw: &[u8],
 ) -> Result<RunOutput, String> {
+    let callback_source =
+        case_id == "ftbzip2.FT_Stream_OpenBzip2.success_open_callback_bzip2_stream";
+    let mut callback_state = Bzip2CallbackSource {
+        bytes: compressed.as_ptr(),
+        len: compressed.len(),
+    };
     let mut memory = FT_MemoryRec::default();
     let mut source = FT_StreamRec {
-        base: compressed.as_ptr().cast_mut(),
+        base: if callback_source {
+            ptr::null_mut()
+        } else {
+            compressed.as_ptr().cast_mut()
+        },
         size: FT_ULong::try_from(compressed.len()).map_err(|err| err.to_string())?,
         pos: 3,
+        descriptor: if callback_source {
+            FT_StreamDesc {
+                pointer: ptr::from_mut(&mut callback_state).cast(),
+            }
+        } else {
+            FT_StreamDesc::default()
+        },
+        read: if callback_source {
+            bzip2_source_read_pointer()
+        } else {
+            ptr::null_mut()
+        },
         memory: (&mut memory) as *mut FT_MemoryRec,
         ..FT_StreamRec::default()
     };
@@ -74325,8 +74400,11 @@ fn bzip2_stream_success_output(
     } else {
         Vec::new()
     };
-    let source_alive_after_target_close =
-        source.base == compressed.as_ptr().cast_mut() && !source.base.is_null();
+    let source_alive_after_target_close = if callback_source {
+        source.base.is_null() && source.read == bzip2_source_read_pointer()
+    } else {
+        source.base == compressed.as_ptr().cast_mut() && !source.base.is_null()
+    };
     if status == FT_Err_Ok {
         bzip2_stream_close(backend, &mut stream)?;
     }
@@ -74339,6 +74417,7 @@ fn bzip2_stream_success_output(
         "target_after_close": lzw_stream_fields(&stream),
         "wrapper_open_after_close": wrapper_open_after_close,
         "source_close_count": 0,
+        "source_read_class": if source.read.is_null() { "null" } else { "callback" },
         "source_alive_after_target_close": source_alive_after_target_close,
     });
     if status == FT_Err_Ok {

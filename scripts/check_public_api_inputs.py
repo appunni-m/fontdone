@@ -7205,6 +7205,7 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
         and row.case_id
         in {
             "ftbzip2.FT_Stream_OpenBzip2.success_open_valid_bzip2_stream",
+            "ftbzip2.FT_Stream_OpenBzip2.success_open_callback_bzip2_stream",
             "ftbzip2.FT_Stream_OpenBzip2.success_read_decompressed_bytes",
             "ftbzip2.FT_Stream_OpenBzip2.lifecycle_close_does_not_close_source",
             "ftbzip2.FT_Stream_OpenBzip2.error_null_stream_or_source",
@@ -7212,7 +7213,7 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
         }
         and unresolved_assets_reason(row) is None
     ):
-        return "FT_Stream_OpenBzip2 enabled-build open, range-read, backward-seek, close ownership, null validation, and malformed-header behavior validate through an isolated pinned C bzip2 build, pure Rust, the C ABI artifact, and WASM"
+        return "FT_Stream_OpenBzip2 enabled-build open, callback-backed and memory-backed source reads, range-read, backward-seek, close ownership, null validation, and malformed-header behavior validate through an isolated pinned C bzip2 build, pure Rust, the C ABI artifact, and WASM"
     if (
         row.operation == "ftbzip2.stream_open_bzip2"
         and row.case_id
