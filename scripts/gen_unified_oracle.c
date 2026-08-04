@@ -8550,6 +8550,31 @@ static int emit_glyph_to_bitmap_invalid_inputs(void) {
     return 0;
 }
 
+static int emit_glyph_transform_invalid_inputs(void) {
+    FT_Matrix matrix;
+    FT_Vector delta;
+    FT_GlyphRec glyph_rec;
+    FT_Error errors[2];
+
+    FT_ZERO(&matrix);
+    matrix.xx = 65536;
+    matrix.yy = 65536;
+    FT_ZERO(&delta);
+    delta.x = 1;
+    delta.y = 2;
+    FT_ZERO(&glyph_rec);
+
+    errors[0] = FT_Glyph_Transform(NULL, &matrix, &delta);
+    errors[1] = FT_Glyph_Transform(&glyph_rec, &matrix, &delta);
+
+    printf("{");
+    print_status(errors[0]);
+    printf(",\"output\":{\"rows\":[");
+    printf("{\"status\":%d,\"mutation\":\"none\"},", errors[0]);
+    printf("{\"status\":%d,\"mutation\":\"none\"}]}}\n", errors[1]);
+    return 0;
+}
+
 static void print_svg_glyph_record(FT_SvgGlyph glyph,
                                    int document_pointer_independent,
                                    int source_destroyed_before_target) {
@@ -37901,6 +37926,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 2 && streq(argv[1], "--glyph-to-bitmap-invalid-inputs")) {
         return emit_glyph_to_bitmap_invalid_inputs();
+    }
+    if (argc == 2 && streq(argv[1], "--glyph-transform-invalid-inputs")) {
+        return emit_glyph_transform_invalid_inputs();
     }
     if (argc == 3 && streq(argv[1], "--ft-list")) {
         return emit_ft_list(argv[2]);

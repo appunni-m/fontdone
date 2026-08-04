@@ -3044,6 +3044,7 @@ impl BackendComparisonWorker {
                     | "ftglyph.new_glyph"
                     | "ftglyph.glyph_copy"
                     | "ftglyph.get_glyph"
+                    | "ftglyph.glyph_transform"
                     | "ftimage.custom_renderer_lifecycle"
                     | "ftbzip2.stream_open_bzip2"
                     | "ftlzw.stream_open_lzw"
@@ -44130,6 +44131,11 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             Ok(args)
         }
         "ftglyph.glyph_transform"
+            if case.case_id == "ftglyph.FT_Glyph_Transform.error_null_or_bad_glyph" =>
+        {
+            Ok(vec!["--glyph-transform-invalid-inputs".to_string()])
+        }
+        "ftglyph.glyph_transform"
             if case.case_id == "ftglyph.FT_Glyph_Transform.success_svg_transform_accumulates" =>
         {
             let mut args = vec!["--svg-glyph-transform".to_string()];
@@ -45202,6 +45208,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
                 | "ftglyph.new_glyph"
                 | "ftglyph.glyph_copy"
                 | "ftglyph.get_glyph"
+                | "ftglyph.glyph_transform"
                 | "ftimage.custom_renderer_lifecycle"
                 | "ftbzip2.stream_open_bzip2"
                 | "ftlzw.stream_open_lzw"
@@ -45967,6 +45974,14 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             rust_glyph_copy_failure_cleanup()
         }
         "ftglyph.done_glyph" => rust_done_glyph_runtime_output(case),
+        "ftglyph.glyph_transform"
+            if case.case_id == "ftglyph.FT_Glyph_Transform.error_null_or_bad_glyph" =>
+        {
+            Ok(glyph_transform_invalid_inputs_output([
+                FT_Err_Invalid_Argument,
+                FT_Err_Invalid_Argument,
+            ]))
+        }
         "ftglyph.glyph_transform"
             if case.case_id == "ftglyph.FT_Glyph_Transform.success_svg_transform_accumulates" =>
         {
@@ -47444,6 +47459,23 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftglyph.done_glyph" => c_done_glyph_runtime_output(case),
         "ftglyph.glyph_transform"
+            if case.case_id == "ftglyph.FT_Glyph_Transform.error_null_or_bad_glyph" =>
+        {
+            let matrix = c_abi::FT_Matrix {
+                xx: 65_536,
+                xy: 0,
+                yx: 0,
+                yy: 65_536,
+            };
+            let delta = c_abi::FT_Vector { x: 1, y: 2 };
+            let mut glyph_rec = c_abi::FT_GlyphRec::default();
+            let statuses = [
+                c_abi::FT_Glyph_Transform(ptr::null_mut(), &matrix, &delta),
+                c_abi::FT_Glyph_Transform(&mut glyph_rec, &matrix, &delta),
+            ];
+            Ok(glyph_transform_invalid_inputs_output(statuses))
+        }
+        "ftglyph.glyph_transform"
             if case.case_id == "ftglyph.FT_Glyph_Transform.success_svg_transform_accumulates" =>
         {
             c_svg_glyph_transform(case)
@@ -48746,6 +48778,23 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             wasm_glyph_copy_failure_cleanup()
         }
         "ftglyph.done_glyph" => wasm_done_glyph_runtime_output(case),
+        "ftglyph.glyph_transform"
+            if case.case_id == "ftglyph.FT_Glyph_Transform.error_null_or_bad_glyph" =>
+        {
+            let matrix = wasm_abi::FontdoneWasmMatrix {
+                xx: 65_536,
+                xy: 0,
+                yx: 0,
+                yy: 65_536,
+            };
+            let delta = wasm_abi::FontdoneWasmVector { x: 1, y: 2 };
+            let mut glyph = wasm_abi::FontdoneWasmGlyph::default();
+            let statuses = [
+                wasm_abi::fontdone_wasm_glyph_transform(ptr::null_mut(), &matrix, &delta),
+                wasm_abi::fontdone_wasm_glyph_transform(&mut glyph, &matrix, &delta),
+            ];
+            Ok(glyph_transform_invalid_inputs_output(statuses))
+        }
         "ftglyph.glyph_transform"
             if case.case_id == "ftglyph.FT_Glyph_Transform.success_svg_transform_accumulates" =>
         {
@@ -50236,6 +50285,18 @@ fn glyph_transform_row_json(
 
 fn glyph_transform_output(rows: Vec<Value>) -> RunOutput {
     ok(json!({ "rows": rows }))
+}
+
+fn glyph_transform_invalid_inputs_output(statuses: [FT_Error; 2]) -> RunOutput {
+    error_with_output(
+        statuses[0],
+        json!({
+            "rows": statuses
+                .into_iter()
+                .map(|status| json!({ "status": status, "mutation": "none" }))
+                .collect::<Vec<_>>()
+        }),
+    )
 }
 
 fn ftglyph_type_runtime_glyph_index(params: &Value) -> Result<u32, String> {
