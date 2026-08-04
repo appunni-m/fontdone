@@ -18060,21 +18060,10 @@ fn rust_attach_file(case: &InputCase) -> Result<RunOutput, String> {
 
 fn c_attach_file(case: &InputCase) -> Result<RunOutput, String> {
     let (library, face) = c_open_face(case)?;
-    let attachment = required_asset_bytes(case, "attachment")?;
-    let open_args = c_abi::FT_Open_Args {
-        flags: FT_OPEN_MEMORY as c_abi::FT_UInt,
-        memory_base: attachment.as_ptr(),
-        memory_size: attachment
-            .len()
-            .try_into()
-            .map_err(|_| "attachment length does not fit FT_Long".to_string())?,
-        pathname: std::ptr::null_mut(),
-        stream: std::ptr::null_mut(),
-        driver: std::ptr::null_mut(),
-        num_params: 0,
-        params: std::ptr::null_mut(),
-    };
-    let attach_status = c_abi::FT_Attach_Stream(face, &open_args);
+    let attachment_path = required_asset_pathname(case, "attachment")?;
+    let attachment_path = CString::new(attachment_path)
+        .map_err(|err| format!("attachment pathname contains NUL: {err}"))?;
+    let attach_status = c_abi::FT_Attach_File(face, attachment_path.as_ptr());
     let rows = c_attached_afm_kerning_rows(face, &case.inputs.params)?;
     c_done_face(face);
     c_done_library(library);
