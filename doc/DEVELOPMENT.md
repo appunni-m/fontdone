@@ -144,8 +144,8 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `9179524b-915a-44c2-83ac-5bbd8729ee33`: all three processes
-passed 7,530 / 7,530 cases. This source/input-bound managed run took 50.695
+Coverage MCP run `86f900f3-fa3b-4dc0-b5d8-aa3b95a41ac6`: all three processes
+passed 7,535 / 7,535 cases. This source/input-bound managed run took 99.876
 seconds. The preceding warm managed run took 50.842 seconds. The
 preceding source-bound run took 100.333 seconds, including a 48.78-second
 instrumented rebuild; the longest backend execution was 48.24 seconds. The
@@ -258,7 +258,7 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`9179524b-915a-44c2-83ac-5bbd8729ee33`) measured 50.695 seconds
+run (`86f900f3-fa3b-4dc0-b5d8-aa3b95a41ac6`) measured 99.876 seconds
 end-to-end with the source/input-bound refresh. The preceding warm run
 (`fb9ed28c-46d3-4a3d-beb9-1d576ba385cc`) measured 50.842 seconds with the
 warm instrumented binary. The preceding source-bound run
@@ -279,7 +279,19 @@ the mtime of unchanged generated constants and validator overlay sources,
 avoids needless helper rebuilds and relinks, and reuses the FreeType CMake
 configuration when its inputs are unchanged, so repeated oracle builds do not
 recompile all C sources. It runs in requested thorough CI, not on every
-commit. The latest instrumentation
+commit. The parity harness also keeps an ignored per-case oracle cache at
+`tests/fixtures/outputs/unified_oracle_case_cache.jsonl`; when the aggregate
+cache key changes because a maintained input is added or changed, only missing
+case keys are sent to the pinned C batch oracle. A short directory lock
+serializes cache population when split coverage lanes start together. Set
+`FONTDONE_UNIFIED_ORACLE_REFRESH=1` for focused probes that intentionally
+require a fresh C result. In the normal full parity process, worker partitions
+now keep all operations for one content-bound font/face index together; the
+previous round-robin schedule reopened those faces in every worker. On the
+current host this reduced a warm full-matrix run from 227.03 seconds to
+192.75 seconds, with 7,535 / 7,535 runnable comparisons passing; the new run
+opened 924 cached face handles and spent 81.55 seconds in face prewarming.
+The latest instrumentation
 timers were approximately 44.436 seconds Rust FFI, 32.994 seconds C ABI, 32.759
 seconds WASM, and 11 ms comparison per lane; those lanes run concurrently,
 so their sum is not wall time. The remaining wall-time tail is setup,
@@ -288,14 +300,14 @@ route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,568 / 54,173 | 91.50% |
-| Branches | 9,763 / 12,532 | 77.90% |
+| Lines | 49,582 / 54,177 | 91.52% |
+| Branches | 9,773 / 12,534 | 77.97% |
 | Functions | 3,391 / 3,835 | 88.42% |
-| Regions | 68,227 / 75,343 | 90.56% |
+| Regions | 68,250 / 75,357 | 90.57% |
 
-That current run passed all 7,530 runnable parity comparisons with 0 failures;
+That current run passed all 7,535 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`b3b9b6a4-2ff8-44bd-b086-688eb50b2270`. The preceding retained run includes a
+`514392ce-3e68-473b-8c51-865bd55ce454`. The preceding retained run includes a
 source-bound instrumented rebuild; its log reports 48.78 seconds of compilation
 and a 48.24-second longest backend execution. Coverage MCP does not expose
 separate timestamps for report finalization or artifact ingestion. Current
@@ -509,7 +521,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,638 | executable parity tests and public contracts |
-| R04 | 638 | licensed canonical fixture inputs |
+| R04 | 643 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -517,7 +529,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,498** | **all retained paths** |
+| **Total** | **2,503** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

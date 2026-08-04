@@ -3080,7 +3080,7 @@ impl Font {
         if data.starts_with(b"PFR0") {
             return Self::pfr_face(data, face_index, size_pt);
         }
-        if matches!(read_u16_le(data, 0), Some(0x0200 | 0x0300)) {
+        if matches!(read_u16_le(data, 0), Some(0x0200) | Some(0x0300)) {
             return Self::winfnt_face(data, face_index, size_pt);
         }
         if bdf_text(data)
@@ -3101,7 +3101,17 @@ impl Font {
         if type1_cleartext(data).is_some() {
             return Self::type1_face(data, face_index, size_pt);
         }
-        Self::truetype_face(data, face_index, size_pt)
+        match Self::truetype_face(data, face_index, size_pt) {
+            Ok(face) => Ok(face),
+            Err(error) if data.len() >= 118 => {
+                // FreeType's WinFNT driver tries a standalone FNT header
+                // after its MZ/NE probe fails, even when the version is
+                // invalid. Preserve the original SFNT error unless this
+                // fallback actually recognizes a valid FNT face.
+                Self::winfnt_face(data, face_index, size_pt).or(Err(error))
+            }
+            Err(error) => Err(error),
+        }
     }
 
     /// Apply `FT_PARAM_TAG_IGNORE_SBIX`, matching `sfnt/sfobjs.c` parameter

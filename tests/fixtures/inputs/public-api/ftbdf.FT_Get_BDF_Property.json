@@ -18,27 +18,62 @@
       "schema": "api_result",
       "expect_error": false,
       "inputs": {
-        "assets": {
-          "bdf_font": {
-            "kind": "ref",
-            "id": "input/fonts/bdf/properties-atoms-integers-cardinals.bdf",
-            "asset_kind": "font"
+        "variants": [
+          {
+            "id": "baseline-properties",
+            "coverage": [
+              "bdf/property:atom-integer-cardinal-records"
+            ],
+            "assets": {
+              "bdf_font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/properties-atoms-integers-cardinals.bdf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "properties": [
+                "FAMILY_NAME",
+                "POINT_SIZE",
+                "PIXEL_SIZE",
+                "RESOLUTION_X"
+              ],
+              "face_index": 0
+            }
+          },
+          {
+            "id": "duplicate-and-empty-property-controls",
+            "coverage": [
+              "bdf/property:duplicate-replaces-earlier-value",
+              "bdf/property:empty-unknown-property-line"
+            ],
+            "assets": {
+              "bdf_font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/properties-duplicate-and-empty.bdf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "properties": [
+                "FAMILY_NAME",
+                "POINT_SIZE",
+                "PIXEL_SIZE",
+                "RESOLUTION_X"
+              ],
+              "face_index": 0
+            }
           }
-        },
-        "params": {
-          "properties": [
-            "FAMILY_NAME",
-            "POINT_SIZE",
-            "PIXEL_SIZE",
-            "RESOLUTION_X"
-          ],
-          "face_index": 0
-        }
+        ]
       },
       "classifiers": [
         "kind:function",
         "header:ftbdf",
         "area:bdf-properties"
+      ],
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:bdf_parse_properties_",
+        "freetype/src/bdf/bdflib.c:bdf_add_property_"
       ],
       "expectation": {
         "status": "ok",

@@ -29,7 +29,7 @@ use std::cmp::Reverse;
 use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::{CString, OsStr, c_void};
 use std::fs;
-use std::io::{BufRead, Write};
+use std::io::{BufRead, BufWriter, Write};
 use std::mem::{align_of, offset_of, size_of};
 use std::os::raw::c_long;
 use std::path::{Path, PathBuf};
@@ -2446,14 +2446,52 @@ fn partition_backend_pairs<'a>(
     let mut partitions = (0..worker_count)
         .map(|_| Vec::with_capacity(partition_capacity))
         .collect::<Vec<_>>();
+    let mut partition_loads = vec![0usize; worker_count];
+    let mut cached_face_partitions = BTreeMap::<String, usize>::new();
     for (index, (case, oracle)) in cases.iter().copied().zip(oracle_outputs.iter()).enumerate() {
-        let partition_index = index.checked_rem(worker_count).unwrap_or(0);
+        // Keep all operations for one content-bound font face in the same
+        // worker.  Round-robin partitioning opened the same Rust, C-ABI, and
+        // WASM face once per worker, defeating the worker-local face caches
+        // and dominating full-matrix wall time.
+        let partition_index = if case_uses_cached_face(case) {
+            if let Some(group) = partition_face_group_key(case) {
+                if let Some(partition) = cached_face_partitions.get(&group) {
+                    *partition
+                } else {
+                    let partition = least_loaded_partition(&partition_loads);
+                    cached_face_partitions.insert(group, partition);
+                    partition
+                }
+            } else {
+                index.checked_rem(worker_count).unwrap_or(0)
+            }
+        } else {
+            index.checked_rem(worker_count).unwrap_or(0)
+        };
         partitions[partition_index].push((case, oracle));
+        partition_loads[partition_index] = partition_loads[partition_index].saturating_add(1);
     }
     partitions
         .into_iter()
         .filter(|partition| !partition.is_empty())
         .collect()
+}
+
+fn least_loaded_partition(loads: &[usize]) -> usize {
+    loads
+        .iter()
+        .enumerate()
+        .min_by_key(|(index, load)| (*load, *index))
+        .map_or(0, |(index, _)| index)
+}
+
+fn partition_face_group_key(case: &InputCase) -> Option<String> {
+    let font = runtime_font_asset(case)?;
+    let face_index = usize::try_from(face_index_param(&case.inputs.params).ok()?).ok()?;
+    Some(format!(
+        "sha256:{}:face:{face_index}",
+        font_asset_digest(font).ok()?
+    ))
 }
 
 fn compare_backend_outputs_with_oracle_cache(
@@ -39353,10 +39391,105 @@ fn ensure_oracle_cache(cases: &[&InputCase]) -> Result<PathBuf, String> {
         oracle_cache_key(cases, &batch_input)?
     };
     let cache_path = oracle_cache_path(&cache_key);
+    let refresh = std::env::var("FONTDONE_UNIFIED_ORACLE_REFRESH").is_ok();
 
-    if std::env::var("FONTDONE_UNIFIED_ORACLE_REFRESH").is_err() && cache_path.exists() {
+    if !refresh && cache_path.exists() {
+        let case_cache_path = oracle_case_cache_path();
+        let needs_seed = match load_oracle_case_cache(&case_cache_path) {
+            Ok(entries) => entries.len() < cases.len(),
+            Err(err) => {
+                eprintln!("unified_oracle_case_cache: inspect_failed error={err}");
+                true
+            }
+        };
+        if needs_seed && let Ok(_lock) = acquire_oracle_case_cache_lock() {
+            let still_needs_seed = match load_oracle_case_cache(&case_cache_path) {
+                Ok(entries) => entries.len() < cases.len(),
+                Err(err) => {
+                    eprintln!("unified_oracle_case_cache: inspect_failed error={err}");
+                    true
+                }
+            };
+            if still_needs_seed
+                && let Err(err) =
+                    seed_oracle_case_cache_from_full(cases, &cache_path, &case_cache_path)
+            {
+                eprintln!("unified_oracle_case_cache: seed_failed error={err}");
+            }
+        }
         eprintln!(
             "unified_oracle_cache: hit {} cases key={}",
+            cases.len(),
+            cache_key
+        );
+        return Ok(cache_path);
+    }
+
+    if !refresh {
+        let _lock = acquire_oracle_case_cache_lock()?;
+        if cache_path.exists() {
+            eprintln!(
+                "unified_oracle_cache: hit {} cases key={}",
+                cases.len(),
+                cache_key
+            );
+            return Ok(cache_path);
+        }
+        let case_cache_path = oracle_case_cache_path();
+        let mut case_cache = load_oracle_case_cache(&case_cache_path)?;
+        let keys = oracle_case_cache_keys(cases)?;
+        let mut missing_cases = Vec::new();
+        let mut missing_keys = Vec::new();
+        for (case, (key, _batch_line)) in cases.iter().copied().zip(keys.iter()) {
+            if !case_cache.contains_key(key) {
+                missing_cases.push(case);
+                missing_keys.push(key.clone());
+            }
+        }
+        if !missing_cases.is_empty() {
+            let missing_input = oracle_batch_input(&missing_cases)?;
+            let missing_output = run_oracles_batch(&missing_cases, &missing_input)?;
+            let output_lines = missing_output
+                .lines()
+                .map(str::to_string)
+                .collect::<Vec<_>>();
+            if output_lines.len() != missing_cases.len() {
+                return Err(format!(
+                    "incremental oracle output count mismatch: expected={} actual={}",
+                    missing_cases.len(),
+                    output_lines.len()
+                ));
+            }
+            let new_entries = missing_keys
+                .into_iter()
+                .zip(output_lines)
+                .collect::<Vec<_>>();
+            append_oracle_case_cache(&case_cache_path, &new_entries)?;
+            for (key, output) in new_entries {
+                case_cache.insert(key, output);
+            }
+            eprintln!(
+                "unified_oracle_case_cache: computed {} misses of {} cases",
+                missing_cases.len(),
+                cases.len()
+            );
+        } else {
+            eprintln!("unified_oracle_case_cache: hit {} cases", cases.len());
+        }
+        let output = keys
+            .iter()
+            .map(|(key, _)| {
+                case_cache
+                    .get(key)
+                    .cloned()
+                    .ok_or_else(|| format!("oracle case cache is missing key {key}"))
+            })
+            .collect::<Result<Vec<_>, _>>()?
+            .join("\n")
+            + "\n";
+        write_oracle_cache(&cache_path, &output)?;
+        eprintln!(
+            "unified_oracle_cache: wrote {} cases key={}",
             cases.len(),
             cache_key
         );
@@ -39571,6 +39704,226 @@ fn write_oracle_cache(path: &Path, stdout: &str) -> Result<(), String> {
     fs::write(&tmp, stdout)
         .map_err(|err| format!("write oracle cache {}: {err}", tmp.display()))?;
     fs::rename(&tmp, path).map_err(|err| format!("install oracle cache {}: {err}", path.display()))
+}
+
+fn oracle_case_cache_path() -> PathBuf {
+    fixture_dir()
+        .join("outputs")
+        .join("unified_oracle_case_cache.jsonl")
+}
+
+fn oracle_case_cache_lock_path() -> PathBuf {
+    fixture_dir()
+        .join("outputs")
+        .join("unified_oracle_case_cache.lock")
+}
+
+struct OracleCaseCacheLock {
+    path: PathBuf,
+}
+
+impl Drop for OracleCaseCacheLock {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir(&self.path);
+    }
+}
+
+fn acquire_oracle_case_cache_lock() -> Result<OracleCaseCacheLock, String> {
+    let path = oracle_case_cache_lock_path();
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|err| {
+            format!(
+                "create oracle case-cache directory {}: {err}",
+                parent.display()
+            )
+        })?;
+    }
+    let started = Instant::now();
+    loop {
+        match fs::create_dir(&path) {
+            Ok(()) => return Ok(OracleCaseCacheLock { path }),
+            Err(err) if err.kind() == std::io::ErrorKind::AlreadyExists => {
+                let stale = fs::metadata(&path)
+                    .and_then(|metadata| metadata.modified())
+                    .and_then(|modified| modified.elapsed().map_err(std::io::Error::other))
+                    .is_ok_and(|age| age > Duration::from_secs(30 * 60));
+                if stale {
+                    let _ = fs::remove_dir(&path);
+                    continue;
+                }
+                if started.elapsed() > Duration::from_secs(30 * 60) {
+                    return Err(format!(
+                        "timed out waiting for oracle case-cache lock {}",
+                        path.display()
+                    ));
+                }
+                thread::sleep(Duration::from_millis(50));
+            }
+            Err(err) => {
+                return Err(format!(
+                    "create oracle case-cache lock {}: {err}",
+                    path.display()
+                ));
+            }
+        }
+    }
+}
+
+fn load_oracle_case_cache(path: &Path) -> Result<BTreeMap<String, String>, String> {
+    if !path.exists() {
+        return Ok(BTreeMap::new());
+    }
+    let file = fs::File::open(path)
+        .map_err(|err| format!("open oracle case cache {}: {err}", path.display()))?;
+    let mut entries = BTreeMap::new();
+    for (line_index, line) in std::io::BufReader::new(file).lines().enumerate() {
+        let line = line.map_err(|err| {
+            format!(
+                "read oracle case cache {} line {}: {err}",
+                path.display(),
+                line_index + 1
+            )
+        })?;
+        let (key, output) = line.split_once('\t').ok_or_else(|| {
+            format!(
+                "oracle case cache {} line {} has no tab separator",
+                path.display(),
+                line_index + 1
+            )
+        })?;
+        if key.is_empty() || output.is_empty() {
+            return Err(format!(
+                "oracle case cache {} line {} has an empty key or output",
+                path.display(),
+                line_index + 1
+            ));
+        }
+        parse_run_output(output).map_err(|err| {
+            format!(
+                "oracle case cache {} line {} has invalid output: {err}",
+                path.display(),
+                line_index + 1
+            )
+        })?;
+        entries.insert(key.to_string(), output.to_string());
+    }
+    Ok(entries)
+}
+
+fn append_oracle_case_cache(path: &Path, entries: &[(String, String)]) -> Result<(), String> {
+    if entries.is_empty() {
+        return Ok(());
+    }
+    let parent = path
+        .parent()
+        .ok_or_else(|| format!("oracle case cache {} has no parent", path.display()))?;
+    fs::create_dir_all(parent).map_err(|err| {
+        format!(
+            "create oracle case cache directory {}: {err}",
+            parent.display()
+        )
+    })?;
+    let file = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)
+        .map_err(|err| {
+            format!(
+                "open oracle case cache {} for append: {err}",
+                path.display()
+            )
+        })?;
+    let mut writer = BufWriter::new(file);
+    for (key, output) in entries {
+        writeln!(writer, "{key}\t{output}")
+            .map_err(|err| format!("append oracle case cache {}: {err}", path.display()))?;
+    }
+    writer
+        .flush()
+        .map_err(|err| format!("flush oracle case cache {}: {err}", path.display()))
+}
+
+fn oracle_case_cache_keys(cases: &[&InputCase]) -> Result<Vec<(String, String)>, String> {
+    let mut oracle_identities = BTreeMap::<&'static str, String>::new();
+    let mut keys = Vec::with_capacity(cases.len());
+    for case in cases.iter().copied() {
+        let variant = oracle_variant(case);
+        let oracle_identity = if let Some(identity) = oracle_identities.get(variant) {
+            identity.clone()
+        } else {
+            let identity = oracle_identity_hash(&[case])?;
+            oracle_identities.insert(variant, identity.clone());
+            identity
+        };
+        let batch_line = oracle_args(case)?.join("\t");
+        let canonical_case = serde_json::to_vec(case).map_err(|err| err.to_string())?;
+        let asset_identity = oracle_asset_identity_hash(&[case])?;
+        let mut hasher = Sha256::new();
+        hasher.update(b"fontdone-unified-oracle-case-cache-v1\n");
+        hash_framed(&mut hasher, variant.as_bytes());
+        hash_framed(&mut hasher, oracle_identity.as_bytes());
+        hash_framed(&mut hasher, asset_identity.as_bytes());
+        hash_framed(&mut hasher, case.case_id.as_bytes());
+        hash_framed(&mut hasher, &canonical_case);
+        hash_framed(&mut hasher, batch_line.as_bytes());
+        keys.push((hex_bytes(&hasher.finalize()), batch_line));
+    }
+    Ok(keys)
+}
+
+fn read_oracle_cache_lines(path: &Path, expected: usize) -> Result<Vec<String>, String> {
+    let file = fs::File::open(path)
+        .map_err(|err| format!("open oracle cache {}: {err}", path.display()))?;
+    let mut lines = std::io::BufReader::new(file).lines();
+    let mut outputs = Vec::with_capacity(expected);
+    for index in 0..expected {
+        let line = lines.next().ok_or_else(|| {
+            format!(
+                "oracle cache {} ended after {} of {} lines",
+                path.display(),
+                index,
+                expected
+            )
+        })?;
+        let line = line.map_err(|err| format!("read oracle cache {}: {err}", path.display()))?;
+        parse_run_output(&line).map_err(|err| {
+            format!(
+                "oracle cache {} line {} is invalid: {err}",
+                path.display(),
+                index + 1
+            )
+        })?;
+        outputs.push(line);
+    }
+    if lines.next().is_some() {
+        return Err(format!(
+            "oracle cache {} has more than {} lines",
+            path.display(),
+            expected
+        ));
+    }
+    Ok(outputs)
+}
+
+fn seed_oracle_case_cache_from_full(
+    cases: &[&InputCase],
+    full_cache_path: &Path,
+    case_cache_path: &Path,
+) -> Result<(), String> {
+    let lines = read_oracle_cache_lines(full_cache_path, cases.len())?;
+    let keys = oracle_case_cache_keys(cases)?;
+    let entries = keys
+        .into_iter()
+        .zip(lines)
+        .map(|((key, _batch_line), output)| (key, output))
+        .collect::<Vec<_>>();
+    append_oracle_case_cache(case_cache_path, &entries)?;
+    eprintln!(
+        "unified_oracle_case_cache: seeded {} cases from {}",
+        entries.len(),
+        full_cache_path.display()
+    );
+    Ok(())
 }
 
 fn run_oracles_batch(cases: &[&InputCase], batch_input: &str) -> Result<String, String> {

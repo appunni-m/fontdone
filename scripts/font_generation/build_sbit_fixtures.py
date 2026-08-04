@@ -23,7 +23,10 @@ def raw_table(tag: str, data: bytes) -> DefaultTable:
     return table
 
 
-def sfnt_bdf_table() -> bytes:
+def sfnt_bdf_table(
+    version: int = 1,
+    strings_offset_override: int | None = None,
+) -> bytes:
     strings = bytearray()
     offsets: dict[str, int] = {}
 
@@ -53,8 +56,13 @@ def sfnt_bdf_table() -> bytes:
         raw_value = string_offset(value) if isinstance(value, str) else value
         records.extend(struct.pack(">IHI", name_offset, property_type, raw_value))
     strings_offset = 8 + 4 + len(records)
+    stored_strings_offset = (
+        strings_offset
+        if strings_offset_override is None
+        else strings_offset_override
+    )
     return (
-        struct.pack(">HHI", 1, 1, strings_offset)
+        struct.pack(">HHI", version, 1, stored_strings_offset)
         + struct.pack(">HH", 20, len(properties))
         + records
         + strings
@@ -1089,6 +1097,32 @@ def build_sfnt_bdf_strike() -> None:
     if out.exists() or out.is_symlink():
         out.unlink()
     font.save(out, reorderTables=True)
+
+    invalid_font = TTFont(BASE_FONT, recalcTimestamp=False)
+    invalid_font["EBLC"] = raw_table("EBLC", eblc)
+    invalid_font["EBDT"] = raw_table("EBDT", ebdt)
+    invalid_font["BDF "] = raw_table("BDF ", sfnt_bdf_table(version=2))
+    invalid_out = BDF_OUT_DIR / "sfnt-bdf-table-invalid-version.otb"
+    if invalid_out.exists() or invalid_out.is_symlink():
+        invalid_out.unlink()
+    invalid_font.save(invalid_out, reorderTables=True)
+
+    for filename, strings_offset in (
+        ("sfnt-bdf-table-strings-before-directory.otb", 8),
+        ("sfnt-bdf-table-strings-out-of-range.otb", 0xFFFF_FFFF),
+        ("sfnt-bdf-table-properties-beyond-strings.otb", 12),
+    ):
+        malformed_font = TTFont(BASE_FONT, recalcTimestamp=False)
+        malformed_font["EBLC"] = raw_table("EBLC", eblc)
+        malformed_font["EBDT"] = raw_table("EBDT", ebdt)
+        malformed_font["BDF "] = raw_table(
+            "BDF ",
+            sfnt_bdf_table(strings_offset_override=strings_offset),
+        )
+        malformed_out = BDF_OUT_DIR / filename
+        if malformed_out.exists() or malformed_out.is_symlink():
+            malformed_out.unlink()
+        malformed_font.save(malformed_out, reorderTables=True)
 
 
 def build_embedded_strikes() -> None:

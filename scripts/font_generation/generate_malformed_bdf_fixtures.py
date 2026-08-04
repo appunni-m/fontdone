@@ -83,6 +83,43 @@ ENDFONT
 """,
     )
     write_fixture(
+        "input/fonts/bdf/properties-duplicate-and-empty.bdf",
+        """STARTFONT 2.1
+FONT PillowRsPropertiesDuplicateAndEmpty
+SIZE 12 75 75
+FONTBOUNDINGBOX 5 10 0 -2
+STARTPROPERTIES 8
+FONT_ASCENT 8
+FONT_DESCENT 2
+FOUNDRY "PillowRs"
+POINT_SIZE 120
+POINT_SIZE 144
+PIXEL_SIZE 12
+RESOLUTION_X 75
+UNNAMED_PROPERTY_WITHOUT_VALUE
+ENDPROPERTIES
+CHARS 1
+STARTCHAR A
+ENCODING 65
+SWIDTH 500 0
+DWIDTH 5 0
+BBX 5 10 0 -2
+BITMAP
+70
+88
+88
+F8
+88
+88
+88
+00
+00
+00
+ENDCHAR
+ENDFONT
+""",
+    )
+    write_fixture(
         "input/fonts/no-encoding/bdf-or-pcf-encoding-none.bdf",
         """STARTFONT 2.1
 FONT FontdoneEncodingNone

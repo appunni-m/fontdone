@@ -1380,6 +1380,42 @@
             },
             "params": {"face_index": 0, "memory_source": "whole_file"},
             "coverage": ["tt/svg:gzip-document-ignored-at-face-open"]
+          },
+          {
+            "id": "bdf-invalid-version",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/sfnt-bdf-table-invalid-version.otb"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/sfnt-bdf-table-invalid-version.otb"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/bdf:unsupported-version-ignored-at-face-open"]
+          },
+          {
+            "id": "bdf-strings-before-directory",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/sfnt-bdf-table-strings-before-directory.otb"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/sfnt-bdf-table-strings-before-directory.otb"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/bdf:strings-offset-before-strike-directory-ignored-at-face-open"]
+          },
+          {
+            "id": "bdf-strings-out-of-range",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/sfnt-bdf-table-strings-out-of-range.otb"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/sfnt-bdf-table-strings-out-of-range.otb"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/bdf:strings-offset-out-of-range-ignored-at-face-open"]
+          },
+          {
+            "id": "bdf-properties-beyond-strings",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/sfnt-bdf-table-properties-beyond-strings.otb"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/sfnt-bdf-table-properties-beyond-strings.otb"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/bdf:property-records-beyond-strings-offset-ignored-at-face-open"]
           }
         ]
       },
@@ -1405,7 +1441,8 @@
           "freetype/src/sfnt/sfobjs.c:sfnt_open_font",
           "freetype/src/sfnt/ttload.c:tt_face_load_name",
           "freetype/src/sfnt/ttcmap.c:tt_face_build_cmaps",
-          "freetype/src/sfnt/ttsvg.c:tt_face_load_svg"
+          "freetype/src/sfnt/ttsvg.c:tt_face_load_svg",
+          "freetype/src/sfnt/ttbdf.c:tt_face_load_bdf_props"
         ]
       }
     },
