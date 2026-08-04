@@ -1098,7 +1098,7 @@ fn first_glyph_index_arg(params: &Value) -> Result<u32, String> {
 fn glyph_transform_setup_params(params: &Value) -> &Value {
     params
         .get("source_setup")
-        .filter(Value::is_object)
+        .filter(|value| value.is_object())
         .unwrap_or(params)
 }
 
