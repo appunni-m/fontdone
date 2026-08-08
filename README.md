@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`ed3db565-31d3-4a45-8615-eb07c6e57e45`, recorded by
-`94321ad0-c436-4ed0-a5dc-d2f6e91fbfe5` in
+`a55f7f12-832f-4879-b2c1-206f99a548fe`, recorded by
+`fa73451c-5a3d-4803-8231-486cf02d3fef` in
 `doc/runtime_parity_evidence.json` after passing 7,546 / 7,546 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `9634354774e97f4ff5fe91aa85b6c34519e5399452cb782dfa53d47fbdb77b86`.
+Its source-bound parity-tree digest is `6e6df9ea59c4f50c9004ee2cec8871b6c5359dff7476872e7271604a989aa6a0`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -141,9 +141,9 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest source-bound all-lane coverage snapshot was recorded on
-**2026-08-08** for commit `0aec66b80a799738182d7ad6abf38c938cd0e9f4`
-(Coverage MCP run `131fe298-620d-46ef-b649-1df65e56a525`, snapshot
-`f1f48e98-610c-46bd-9a17-9b2217937eb4`):
+**2026-08-08** for commit `96a0053fc44e8a909847d7dc0a943819bf5a467d`
+(Coverage MCP run `c9028b73-e33c-45de-aaae-7854be15fe85`, snapshot
+`51391533-5125-479d-a5b5-8c87bcf340f1`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -152,11 +152,13 @@ The latest source-bound all-lane coverage snapshot was recorded on
 | Functions | 3,410 / 3,848 | 88.62% |
 | Regions | 68,773 / 75,617 | 90.95% |
 
-This source-bound validation completed in 61.445 seconds with the
-default `COVERAGE_UNIFIED_WORKERS=1`. The same-source two-worker comparison
-(`e5dd45f6-d1dc-4c1d-a7ee-8ea143b8441d`) took 115.508 seconds, confirming that
-extra workers contend inside each instrumented lane instead of reducing the
-wall time.
+This source-bound warm validation completed in 28.948 seconds with the
+default `COVERAGE_UNIFIED_WORKERS=1`. The first validation after the build
+marker change took 83.479 seconds, including a 46.78-second instrumented
+rebuild. The same-source two-worker comparison
+(`971f65aa-12b6-4a41-9dcb-cceffdd99199`) took 140.239 seconds, confirming
+that extra workers contend inside each instrumented lane instead of reducing
+the wall time.
 
 The maintained malformed BDF input
 `tests/fixtures/input/fixtures/assets/bdf/missing_font_field.bdf` now includes
@@ -183,6 +185,14 @@ lane times of 24.95, 25.04, and 26.49 seconds. The change primarily removes
 cold instrumented-link overhead; the three parity lanes remain the dominant
 warm cost. LLVM coverage mapping supplies the source locations used by the
 report without requiring DWARF line tables.
+
+The coverage build-state marker now keys reuse to the newest commit touching
+compiler-relevant inputs, rather than every current `HEAD`, and excludes
+`COVERAGE_UNIFIED_WORKERS` and `COVERAGE_UNIFIED_LANE_SPLIT` because they only
+change process orchestration. A dirty compiler-input tree still forces a
+clean rebuild. The warm confirmation above therefore avoids the 46.78-second
+compile after fixture/docs-only commits or worker tuning while retaining the
+same instrumented binary, parity matrix, and coverage totals.
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain

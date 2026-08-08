@@ -44,12 +44,15 @@ CORE_COVERAGE_IGNORE_REGEX := /(fontdone-c-abi|fontdone-wasm)/src/
 ALL_LANES_COVERAGE_IGNORE_REGEX := /tests/
 
 # `--no-report` retains old instrumented workspace artifacts.  Reusing those
-# artifacts is fast only while the source and coverage configuration are
-# unchanged; otherwise llvm-cov can merge coverage maps from two feature/cfg
-# builds of the same source file.  The state marker lets warm repeats reuse the
-# binary while forcing one clean rebuild after a relevant source/config change.
-COVERAGE_SOURCE_STATE := $(shell git rev-parse HEAD 2>/dev/null || printf unknown)-$(shell if test -n "$(shell git status --porcelain --untracked-files=all -- Cargo.toml Cargo.lock Makefile src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs 2>/dev/null)"; then printf dirty; else printf clean; fi)
-COVERAGE_BUILD_STATE := $(COVERAGE_SOURCE_STATE)|toolchain=$(COVERAGE_TOOLCHAIN)|opt=$(COVERAGE_TEST_OPT_LEVEL)|debug=$(COVERAGE_TEST_DEBUG)|workers=$(COVERAGE_UNIFIED_WORKERS)|split=$(COVERAGE_UNIFIED_LANE_SPLIT)|flags=$(COVERAGE_LLVM_COV_FLAGS)
+# artifacts is fast only while the compiler inputs and coverage configuration
+# are unchanged; otherwise llvm-cov can merge coverage maps from two feature/
+# cfg builds of the same source file.  Use the newest commit touching compiler
+# inputs instead of the current HEAD, so fixture/docs-only commits do not
+# discard a reusable instrumented binary.  A dirty compiler-input tree still
+# forces a clean rebuild.  Worker count and lane splitting only change process
+# orchestration; neither changes the compiled coverage map.
+COVERAGE_SOURCE_STATE := $(shell git log -1 --format=%H -- Cargo.toml Cargo.lock Makefile src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs 2>/dev/null || printf unknown)-$(shell if test -n "$(shell git status --porcelain --untracked-files=all -- Cargo.toml Cargo.lock Makefile src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs 2>/dev/null)"; then printf dirty; else printf clean; fi)
+COVERAGE_BUILD_STATE := $(COVERAGE_SOURCE_STATE)|toolchain=$(COVERAGE_TOOLCHAIN)|opt=$(COVERAGE_TEST_OPT_LEVEL)|debug=$(COVERAGE_TEST_DEBUG)|flags=$(COVERAGE_LLVM_COV_FLAGS)
 PLATFORM_TARGET ?=
 PLATFORM_CC ?=
 PLATFORM_NM ?=

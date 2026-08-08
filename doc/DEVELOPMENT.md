@@ -122,8 +122,13 @@ measurement, so repeated local runs reuse the compiled coverage binary without
 merging prior execution data. Because `--no-report` retains old instrumented
 workspace artifacts, the all-lane target also stores a source/configuration
 state marker and runs `cargo llvm-cov clean --workspace` once when that state
-changes. This prevents two feature/cfg builds of the same source file from
-being merged while preserving the fast warm-repeat path. The all-lane target
+changes. The marker keys source reuse to the newest commit touching compiler-
+relevant inputs rather than every `HEAD`, while a dirty compiler-input tree
+still forces a rebuild; fixture/docs-only commits therefore keep the
+instrumented binary warm. Worker count and lane splitting are deliberately
+excluded because they only change process orchestration. This prevents two
+feature/cfg builds of the same source file from being merged while preserving
+the fast warm-repeat path. The all-lane target
 keeps workspace report scope
 for the C-ABI and host-compiled WASM facades but selects only the
 `unified_fixture_parity` integration binary; the workspace's empty unit and
@@ -133,8 +138,8 @@ nightly `coverage(off)` attribute, and the split lanes use the exact default
 test name `parity_fixture::unified_fixture_parity` through
 `COVERAGE_UNIFIED_TEST_NAME`; using the old top-level exact name would run zero
 tests. Its `COVERAGE_ALL_TARGET_DIR` cache is separate from other coverage
-profiles, and its state marker detects source, toolchain, profile, worker, and
-lane-split changes. Run `make coverage-clean` after changing coverage inputs
+profiles, and its state marker detects compiler-input, toolchain, profile, and
+coverage-flag changes. Run `make coverage-clean` after changing coverage inputs
 outside that tracked state or when manually changing the coverage toolchain,
 profile flags, or instrumentation configuration. The ABI-only package
 preflight remains available as `make coverage-abi-preflight`, but the default

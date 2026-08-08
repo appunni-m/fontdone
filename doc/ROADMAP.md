@@ -489,13 +489,14 @@ worktree at that point:
 | 106 | Working tree (coverage worker contention profile) | Revalidated the unchanged all-lane LLVM coverage matrix with the default one-worker split profile: Coverage MCP run `71a6d996-4cc6-437a-a4de-d6decd5fabc5`, snapshot `3d12dece-be1a-4c08-bdad-94a610cf80fb`, completed in 29.881 seconds with 7,542 / 7,542 comparisons in each backend and unchanged totals of 49,975 / 54,387 lines, 9,929 / 12,592 branches, 3,410 / 3,848 functions, and 68,749 / 75,614 regions. Retained lane timers were 22.803s Rust, 20.608s C ABI, and 20.424s WASM. The same-source two-worker comparison `e5dd45f6-d1dc-4c1d-a7ee-8ea143b8441d` took 115.508 seconds; the evidence identifies instrumented counter/cache contention, not MCP ingestion, as the delay. The maintained default remains `COVERAGE_UNIFIED_WORKERS=1`; no parity input or denominator changed. The C-ABI scorecard remains 10 / 12 categories complete, with the Windows import-library item and four fresh target-lane bundles remaining. |
 | 107 | `d9ac1a39e083fb9dfb8bb3c40ba7b18097e09e19` | Added one maintained blank line to `missing_font_field.bdf` to execute the Rust BDF constructor's blank-line skip while pinned C discards the same bytes before its parser callback. Source-bound parity run `1b52e95f-d24b-448e-a966-8b1d121d9a4e` passed 7,542 / 7,542 runnable comparisons with 0 failures and 3 explicitly pending safety-extension cases. All-lane coverage run `8922c0ae-767c-4d62-8dfe-447d352a5b51`, snapshot `5c8acf09-fcb7-498d-95d2-a9c2faab5a7a`, completed in 29.234 seconds and moved totals to 49,976 / 54,387 lines, 9,930 / 12,592 branches, 3,410 / 3,848 functions, and 68,750 / 75,614 regions. A cold-cache coverage run took 80.314 seconds because instrumented compilation consumed 47.59 seconds; the default one-worker split remains the measured speed profile. |
 | 108 | Working tree (`FT_Bitmap_Blend` boundary parity routes) | Added maintained `FT_Bitmap_Blend` inputs for the `FT_PIXEL_MODE_NONE` source no-op, all four coordinate-overflow guards, and the empty-source no-op, with exact pinned-C/Rust FFI/C ABI/WASM execution. Source-bound parity run `92002f82-4fe8-4694-ab2c-e8017e37c5dd` passed 7,545 / 7,545 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending parity routes; all three backend function surfaces remain 218 / 218. All-lane Coverage MCP run `01303fc3-5792-485b-82ba-0f0a84d8cfe4`, snapshot `e4a33be1-aed3-4d80-a165-b078e794e23b`, completed in 61.445 seconds and measured 49,986 / 54,390 lines, 9,941 / 12,594 branches, 3,410 / 3,848 functions, and 68,760 / 75,617 regions. The C-ABI scorecard remains 10 / 12 categories complete with 5,288 / 5,288 runtime contract rows exact; the Windows import-library item and four external platform bundles remain. |
+| 109 | Working tree (coverage build-state reuse) | Refined `make test-coverage-all` so the instrumented binary marker follows the newest compiler-input commit and ignores worker/lane-split orchestration settings; dirty compiler inputs still force a clean rebuild. The first validation after the marker change passed 7,546 / 7,546 in each lane in 83.479 seconds, including a 46.78-second instrumented rebuild; the warm repeat passed the same matrix in 28.948 seconds with unchanged totals of 49,987 / 54,390 lines, 9,942 / 12,594 branches, 3,410 / 3,848 functions, and 68,773 / 75,617 regions. A two-worker comparison took 140.239 seconds, so the default remains one worker per instrumented lane. Full parity run `a55f7f12-832f-4879-b2c1-206f99a548fe`, recorded by `fa73451c-5a3d-4803-8231-486cf02d3fef`, passed 7,546 / 7,546 with 0 failures and 3 pending safety-extension cases. |
 
 The current source-bound parity verification is Coverage MCP parity run
-`92002f82-4fe8-4694-ab2c-e8017e37c5dd`: it passed 7,545 / 7,545 runnable
+`a55f7f12-832f-4879-b2c1-206f99a548fe`: it passed 7,546 / 7,546 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The source-digest attestation was refreshed by record run
-`733b5832-4fad-46bd-9467-46cc18b08966` in `doc/runtime_parity_evidence.json`.
+`fa73451c-5a3d-4803-8231-486cf02d3fef` in `doc/runtime_parity_evidence.json`.
 The companion C-ABI scorecard run `b43454eb-781d-4dab-8c93-0edfa9f0cddb`
 reports **10 / 12 categories complete**, with 5,288 / 5,288 runtime contract
 rows and 684 / 684 strict error routes exact; the remaining contract debt is
@@ -510,13 +511,13 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current source-bound all-lane run `01303fc3-5792-485b-82ba-0f0a84d8cfe4`
-completed in 61.445 seconds with snapshot
-`e4a33be1-aed3-4d80-a165-b078e794e23b`. It measured 49,986 / 54,390 lines,
-9,941 / 12,594 branches, 3,410 / 3,848 functions, and 68,760 / 75,617
-regions; the parity matrix passed 7,545 / 7,545 in each backend. The lanes
+The current source-bound all-lane run `c9028b73-e33c-45de-aaae-7854be15fe85`
+completed in 28.948 seconds with snapshot
+`51391533-5125-479d-a5b5-8c87bcf340f1`. It measured 49,987 / 54,390 lines,
+9,942 / 12,594 branches, 3,410 / 3,848 functions, and 68,773 / 75,617
+regions; the parity matrix passed 7,546 / 7,546 in each backend. The lanes
 already run concurrently; the same-source two-worker comparison
-`e5dd45f6-d1dc-4c1d-a7ee-8ea143b8441d` completed in 115.508 seconds, so the
+`971f65aa-12b6-4a41-9dcb-cceffdd99199` completed in 140.239 seconds, so the
 default remains one worker per lane. The previous combined-lane warm all-lane baseline completed in 1
 minute 53.998 seconds. The split validation completed in 61.827 seconds, and
 the prior execution-only warm measurement with the instrumented binary and
