@@ -144,16 +144,17 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `e068f42a-1f89-4504-b438-fe82602f9777` (snapshot
-`bd628f06-3846-4c7e-8c82-76f26c8d437f`): all three processes passed 7,542 /
-7,542 cases. This source/input-bound managed run took 73.636 seconds,
-including a 40.07-second instrumented test-profile build; the lane executions
-finished in 24.77 seconds (Rust), 24.85 seconds (C ABI), and 26.20 seconds
-(WASM). The same-source warm repeat `4f42b55d-3301-46bc-85b6-560ae948d2a5`
-(snapshot `1063ab34-d0bf-4a2d-9147-bd063f39c502`) took 29.156 seconds. The
-three lanes already run concurrently, so increasing coverage workers is not a
-safe speedup: the current two-worker experiment completed in 87.614 seconds,
-slower than the one-worker warm repeat. The
+Coverage MCP run `71a6d996-4cc6-437a-a4de-d6decd5fabc5` (snapshot
+`3d12dece-be1a-4c08-bdad-94a610cf80fb`): all three processes passed 7,542 /
+7,542 cases. This warm source-matched run took 29.881 seconds with the
+default one-worker lane profile; the retained lane timers were 22.803 seconds
+(Rust), 20.608 seconds (C ABI), and 20.424 seconds (WASM). The same-source
+two-worker comparison `e5dd45f6-d1dc-4c1d-a7ee-8ea143b8441d` took 115.508
+seconds. The three lanes already run concurrently, so increasing coverage
+workers is not a safe speedup: instrumented counter and cache contention
+dominates the extra scheduling. The prior warm repeat
+`4f42b55d-3301-46bc-85b6-560ae948d2a5` (snapshot
+`1063ab34-d0bf-4a2d-9147-bd063f39c502`) took 29.156 seconds. The
 preceding source-bound managed run took 93.856 seconds. The preceding warm managed run took 50.842 seconds. The
 preceding source-bound run took 100.333 seconds, including a 48.78-second
 instrumented rebuild; the longest backend execution was 48.24 seconds. The

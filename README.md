@@ -142,8 +142,8 @@ their exact worktree than the committed release snapshot.
 
 The latest all-lane coverage snapshot was recorded on **2026-08-08**
 for the current source-matched working tree (Coverage MCP run
-`e5dd45f6-d1dc-4c1d-a7ee-8ea143b8441d`, snapshot
-`55b978d6-8073-4afa-8135-5938b10a54e2`):
+`71a6d996-4cc6-437a-a4de-d6decd5fabc5`, snapshot
+`3d12dece-be1a-4c08-bdad-94a610cf80fb`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -152,9 +152,11 @@ for the current source-matched working tree (Coverage MCP run
 | Functions | 3,410 / 3,848 | 88.62% |
 | Regions | 68,749 / 75,614 | 90.92% |
 
-This source-changing validation completed in 115.508 seconds, including the
-instrumented rebuild and an explicit `COVERAGE_UNIFIED_WORKERS=2` override; it
-is not a warm speed comparison.
+This warm source-matched validation completed in 29.881 seconds with the
+default `COVERAGE_UNIFIED_WORKERS=1`. The same-source two-worker comparison
+(`e5dd45f6-d1dc-4c1d-a7ee-8ea143b8441d`) took 115.508 seconds, confirming that
+extra workers contend inside each instrumented lane instead of reducing the
+wall time.
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
