@@ -274,18 +274,32 @@ test-coverage-all:
 	mkdir -p $(dir $(ALL_LANES_COVERAGE_OUTPUT))
 	@set -eu; \
 	state_file='$(COVERAGE_BUILD_STATE_FILE)'; \
+	coverage_state_changed=0; \
 	if test ! -r "$$state_file" || test "$$(cat "$$state_file")" != '$(COVERAGE_BUILD_STATE)'; then \
 		echo "coverage build state changed; clearing stale instrumented workspace artifacts"; \
 		CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --workspace; \
 		rm -f "$$state_file"; \
+		coverage_state_changed=1; \
+	fi; \
+	optional_features_ready=1; \
+	for path in \
+		target/optional-features-disabled/release/examples/optional_feature_probe \
+		target/optional-features-disabled/unified-fixtures/gen_fontdone_external \
+		target/subpixel-rendering-enabled/release/examples/optional_feature_probe \
+		target/subpixel-rendering-enabled/unified-fixtures/gen_fontdone_external; do \
+		test -x "$$path" || optional_features_ready=0; \
+	done; \
+	if test "$$coverage_state_changed" = 1 || test "$$optional_features_ready" = 0; then \
+		echo "coverage optional-feature artifacts missing or stale; preparing isolated bundles"; \
+		$(MAKE) --no-print-directory -j$(COVERAGE_PREPARATION_JOBS) \
+			unified-oracle bzip2-enabled-oracle optional-feature-contract \
+			api-abi-runtime-check \
+			$(if $(filter 1,$(COVERAGE_ABI_PREFLIGHT)),coverage-abi-preflight); \
+	else \
+		$(MAKE) --no-print-directory -j$(COVERAGE_PREPARATION_JOBS) \
+			unified-oracle bzip2-enabled-oracle api-abi-runtime-check \
+			$(if $(filter 1,$(COVERAGE_ABI_PREFLIGHT)),coverage-abi-preflight); \
 	fi
-	# Prepare the default and all maintained optional oracle helpers after a
-	# coverage workspace clean; cargo-llvm-cov may remove shared target state.
-	+$(MAKE) --no-print-directory -j$(COVERAGE_PREPARATION_JOBS) \
-		unified-oracle bzip2-enabled-oracle lzw-disabled-oracle \
-		color-layers-disabled-oracle subpixel-rendering-enabled-oracle \
-		api-abi-runtime-check \
-		$(if $(filter 1,$(COVERAGE_ABI_PREFLIGHT)),coverage-abi-preflight)
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --profraw-only
 	# cargo-llvm-cov only knows its default profile names; remove the explicit
 	# per-lane files before report so stale runs cannot be rescanned or merged.

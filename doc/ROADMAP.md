@@ -335,8 +335,9 @@ complete parity matrix through all three surfaces. Empty root-unit and
 `pipe_trace` targets add no parity inputs and can duplicate cfg-dependent FFI
 source in LLVM's report, so they are intentionally not executed. Independent
 oracle/audit preparation runs after any coherent coverage-workspace clean and
-includes the default plus all four maintained optional oracle helpers; the
-ABI-only package preflight remains a separate
+includes the default plus all four maintained optional oracle helpers. Missing
+or stale isolated optional-feature probe bundles are rebuilt through the
+separate contract target; the ABI-only package preflight remains a separate
 `make coverage-abi-preflight` gate already exercised by `make test-fast`. The
 isolated `COVERAGE_ALL_TARGET_DIR` cache retains warm instrumented builds,
 while its source/configuration state marker cleans the workspace once after a

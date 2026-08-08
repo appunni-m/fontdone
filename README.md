@@ -212,8 +212,10 @@ The
 ABI-only package preflight remains available as `make coverage-abi-preflight`,
 but the default coverage target does not rerun it because `make test-fast`
 already executes that contract before `make ci-thorough`. Optional feature
-profiles are
-verified separately by `make optional-feature-contract`.
+profiles are verified separately by `make optional-feature-contract`; coverage
+also restores all four maintained oracle helpers after a workspace clean and
+rebuilds the isolated optional-feature probe bundles only when their artifacts
+are missing or stale, so warm runs reuse them.
 The newer dirty-worktree validation run `b0194751-8e81-4d73-a17d-d6ae1a636c71`
 (`21949c21-abcd-4b97-b5c8-a9badd976487`) passed 7,537 / 7,537 cases in each
 backend and measured 49,624 / 54,186 lines, 9,815 / 12,538 branches,
