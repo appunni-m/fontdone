@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`3e67e74b-8e61-40e4-b8ca-29363cebd948`, recorded by
-`51f9aab9-cf74-4bc8-a327-4fbb5dbd04cf` in
+`b48bd7a1-918c-4932-abc6-7a389f3f9b5a`, recorded by
+`2a878a19-6ad3-49b5-b065-338e23e6b156` in
 `doc/runtime_parity_evidence.json` after passing 7,542 / 7,542 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `4910111628ed2b0fac4ed49eb1e5c0ab06a3a880b8fa5fbff1f7ec328bf45c70`.
+Its source-bound parity-tree digest is `3b1e2f2eeaf360d436b3b93afd989caad85cd359d9a1a6a987d71d549588eac6`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,15 +142,18 @@ their exact worktree than the committed release snapshot.
 
 The latest all-lane coverage snapshot was recorded on **2026-08-08**
 for the current source-matched working tree (Coverage MCP run
-`6768c91a-3093-42a7-b2b6-c8cf59cc159a`, snapshot
-`7e1858aa-0353-4a19-af2e-6c802b09b916`):
+`782ee38f-0057-418f-b0c4-d3a624ecc798`, snapshot
+`d06e0759-2457-4a5e-a3cf-9e3fdb2ad4af`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,966 / 54,382 | 91.88% |
-| Branches | 9,921 / 12,590 | 78.80% |
+| Lines | 49,967 / 54,382 | 91.88% |
+| Branches | 9,923 / 12,590 | 78.82% |
 | Functions | 3,410 / 3,848 | 88.62% |
-| Regions | 68,742 / 75,611 | 90.92% |
+| Regions | 68,743 / 75,611 | 90.92% |
+
+This source-changing validation completed in 108.210 seconds, including the
+instrumented rebuild; it is not a warm speed comparison.
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -185,7 +188,7 @@ backend and measured 49,624 / 54,186 lines, 9,815 / 12,538 branches,
 3,391 / 3,835 functions, and 68,297 / 75,365 regions; it is retained in
 `doc/DEVELOPMENT.md` and `doc/ROADMAP.md` until a new compatibility snapshot
 is deliberately promoted.
-The current source/input-bound all-lane run `e068f42a-1f89-4504-b438-fe82602f9777`
+The preceding source/input-bound all-lane run `e068f42a-1f89-4504-b438-fe82602f9777`
 (`bd628f06-3846-4c7e-8c82-76f26c8d437f`) passed 7,542 / 7,542 comparisons in
 each backend and measured 49,861 / 54,382 lines, 9,878 / 12,590 branches,
 3,402 / 3,848 functions, and 68,605 / 75,611 regions in 73.636 seconds.
@@ -207,7 +210,7 @@ not rebuilt on every run; unchanged FreeType CMake configuration is reused as
 well. Run `make coverage-clean` after changing coverage
 instrumentation or profile configuration.
 
-The latest source/input-bound coverage run completed in 73.636 seconds,
+The preceding source/input-bound coverage run completed in 73.636 seconds,
 including the 40.07-second instrumented rebuild; its same-source warm repeat
 completed in 29.156 seconds;
 the preceding managed warm source-bound coverage run completed in 50.842 seconds;
@@ -254,7 +257,7 @@ routes remain even when every bare function name has some traced route. The self
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`a84698c1-7473-47c8-a8ae-0dc562bfe2da`.
+`e0b79df7-c784-497f-b81a-752177df2c0e`.
 
 ### 3.5 Performance baseline
 

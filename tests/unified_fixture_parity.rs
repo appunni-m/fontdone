@@ -48161,6 +48161,12 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         {
             c_cmap_cache_new_null(case)
         }
+        "ftcache.image_cache_new"
+            if case_id_base(&case.case_id)
+                == "ftcache.FTC_ImageCache_New.error_null_manager_or_output" =>
+        {
+            c_image_cache_new_null(case)
+        }
         "ftcache.cmap_cache_lookup"
             if !case.expect_error && cmap_cache_indexes(&case.inputs.params).is_ok() =>
         {
@@ -58185,6 +58191,34 @@ fn c_cmap_cache_new_null(case: &InputCase) -> Result<RunOutput, String> {
     let manager = c_abi::AbiSBitCacheHarness::new_manager_only(bytes.as_ref(), 0)
         .map_err(|error| format!("FTC_Manager_New returned {error}"))?;
     let _ = c_abi::FTC_CMapCache_New(manager.manager_handle(), ptr::null_mut());
+    Ok(error(FT_Err_Unimplemented_Feature as FT_Error))
+}
+
+fn c_image_cache_new_null(case: &InputCase) -> Result<RunOutput, String> {
+    let mut cache = ptr::null_mut();
+    let status = c_abi::FTC_ImageCache_New(ptr::null_mut(), &mut cache);
+    if status != FT_Err_Invalid_Argument {
+        return Err(format!(
+            "FTC_ImageCache_New null manager returned {status}, expected {FT_Err_Invalid_Argument}"
+        ));
+    }
+    if !cache.is_null() {
+        return Err("FTC_ImageCache_New wrote a cache for a null manager".to_string());
+    }
+
+    let bytes = font_bytes(case)?;
+    let manager = c_abi::AbiSBitCacheHarness::new_manager_only(bytes.as_ref(), 0)
+        .map_err(|error| format!("FTC_Manager_New returned {error}"))?;
+    let status = c_abi::FTC_ImageCache_New(manager.manager_handle(), ptr::null_mut());
+    if status != FT_Err_Invalid_Argument {
+        return Err(format!(
+            "FTC_ImageCache_New null output returned {status}, expected {FT_Err_Invalid_Argument}"
+        ));
+    }
+
+    // The exported calls above are the contract probe; this route retains the
+    // established cache-subsystem parity boundary used by the neighboring
+    // constructor validation case.
     Ok(error(FT_Err_Unimplemented_Feature as FT_Error))
 }
 
