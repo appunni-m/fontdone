@@ -30,6 +30,10 @@ COVERAGE_TEST_BINARY ?=
 COVERAGE_UNIFIED_TEST_NAME ?= parity_fixture::unified_fixture_parity
 COVERAGE_ABI_PREFLIGHT ?= 0
 COVERAGE_UNIFIED_LANE_SPLIT ?= 1
+# Optional-feature contracts are a separate gate and are already exercised by
+# `make test-parity-smoke`; opt in when an isolated coverage invocation needs
+# to rebuild and verify those non-instrumented bundles as well.
+COVERAGE_PREPARE_OPTIONAL_FEATURES ?= 0
 # Seeding the ignored per-case oracle cache is useful for later focused runs,
 # but it is redundant when each coverage lane already has the exact aggregate
 # cache. Skip that full-file scan in the concurrent coverage lanes by default.
@@ -69,20 +73,8 @@ COVERAGE_BUILD_STATE_MATCHES := $(shell \
 	else \
 		printf 0; \
 	fi)
-COVERAGE_OPTIONAL_FEATURES_READY := $(shell \
-	ready=1; \
-	for path in \
-		target/optional-features-disabled/release/examples/optional_feature_probe \
-		target/optional-features-disabled/unified-fixtures/gen_fontdone_external \
-		target/subpixel-rendering-enabled/release/examples/optional_feature_probe \
-		target/subpixel-rendering-enabled/unified-fixtures/gen_fontdone_external; do \
-		test -x "$$path" || ready=0; \
-	done; \
-	printf '%s' "$$ready")
 COVERAGE_PREPARATION_TARGETS := unified-oracle bzip2-enabled-oracle api-abi-runtime-check
-ifneq ($(COVERAGE_BUILD_STATE_MATCHES),1)
-COVERAGE_PREPARATION_TARGETS += optional-feature-contract
-else ifneq ($(COVERAGE_OPTIONAL_FEATURES_READY),1)
+ifneq ($(COVERAGE_PREPARE_OPTIONAL_FEATURES),0)
 COVERAGE_PREPARATION_TARGETS += optional-feature-contract
 endif
 ifneq ($(COVERAGE_ABI_PREFLIGHT),0)
@@ -320,7 +312,7 @@ test-coverage-all:
 		coverage_state_changed=1; \
 	fi; \
 	if test "$$coverage_state_changed" = 1; then \
-		echo "coverage optional-feature artifacts missing or stale; preparing isolated bundles"; \
+		echo "coverage instrumented build state changed; preparing coverage inputs"; \
 	fi
 	+$(MAKE) --no-print-directory -j$(COVERAGE_PREPARATION_JOBS) $(COVERAGE_PREPARATION_TARGETS)
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --profraw-only
@@ -481,6 +473,7 @@ test-ffi:
 #   COVERAGE_UNIFIED_TEST_NAME          – exact integration-test name used by the split coverage lanes
 #   COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED – skip the redundant aggregate-hit case-cache scan in coverage lanes (1/0)
 #   COVERAGE_ABI_PREFLIGHT               – rerun the standalone ABI unit preflight (1/0)
+#   COVERAGE_PREPARE_OPTIONAL_FEATURES   – include the separate optional-feature contract gate (1/0)
 #   COVERAGE_UNIFIED_LANE_SPLIT          – run Rust, C ABI, and WASM coverage lanes as separate processes (1/0)
 #   FONTDONE_UNIFIED_BACKEND             – internal lane selector: rust, c-abi, or wasm
 #   FONTDONE_UNIFIED_ORACLE_REFRESH    – force skip cache, re-run C oracle

@@ -111,10 +111,12 @@ opt-level 3, with identical parity and coverage totals; the lower level avoids
 the slower optimized/instrumented backend path on this host. Set the coverage
 profile, worker, and `cargo llvm-cov` flag variables only for an explicitly
 measured instrumented profile. Coverage uses the lightweight
-`api-abi-runtime-check` and prepares the default plus all four maintained
-optional oracle helpers after a coverage workspace clean. When the isolated
-optional-feature probe bundles are missing or stale, it also runs
-`make optional-feature-contract`; warm runs reuse those four probe artifacts.
+`api-abi-runtime-check` and prepares only the default oracle needed by the
+instrumented parity matrix. The optional-feature contract is a separate gate
+already exercised by `make test-parity-smoke`; coverage does not rebuild those
+non-instrumented bundles by default. Set
+`COVERAGE_PREPARE_OPTIONAL_FEATURES=1` when an isolated coverage invocation
+explicitly needs that extra contract work.
 The optional-feature C build contract remains isolated from the normal coverage
 report. The coverage recipes retain the instrumented Cargo target with
 `cargo llvm-cov --no-clean` and remove only stale `.profraw` files before each
@@ -357,11 +359,10 @@ previous round-robin schedule reopened those faces in every worker. On the
 current host this reduced a warm full-matrix run from 227.03 seconds to
 192.75 seconds, with 7,535 / 7,535 runnable comparisons passing; the new run
 opened 924 cached face handles and spent 81.55 seconds in face prewarming.
-The latest instrumentation timers were approximately 43.802 seconds Rust FFI,
-32.013 seconds C ABI, 31.892 seconds WASM, and 23–27 ms comparison per lane;
-those lanes run concurrently,
-so their sum is not wall time. The remaining wall-time tail is setup,
-process/report merging, and Coverage MCP ingestion rather than another parity
+The latest coverage lane timers were 31.467 seconds Rust FFI, 28.606 seconds
+C ABI, and 28.461 seconds WASM, with 27–43 ms comparison per lane; those lanes
+run concurrently, so their sum is not wall time. The remaining wall-time tail
+is setup, report merging, and Coverage MCP ingestion rather than another parity
 route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
 The split `make test-coverage-all` lanes set
@@ -373,23 +374,25 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The latest all-lane report's retained lane timers were 26.35 seconds Rust,
-23.70 seconds C ABI, and 23.52 seconds WASM. These are backend execution
-measurements inside the 85.210-second end-to-end run; compilation, report
-finalization, and artifact ingestion are included in the wall time but are not
-separately exposed by Coverage MCP.
+The latest all-lane report's retained lane timers were 31.467 seconds Rust,
+28.606 seconds C ABI, and 28.461 seconds WASM. These are backend execution
+measurements inside the 37.518-second end-to-end run; report finalization and
+artifact ingestion are included in the wall time but are not separately
+exposed by Coverage MCP.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,046 / 54,394 | 92.01% |
-| Branches | 9,964 / 12,594 | 79.12% |
-| Functions | 3,413 / 3,848 | 88.70% |
-| Regions | 68,846 / 75,622 | 91.04% |
+| Lines | 50,070 / 54,416 | 92.01% |
+| Branches | 9,972 / 12,596 | 79.17% |
+| Functions | 3,416 / 3,851 | 88.70% |
+| Regions | 68,877 / 75,647 | 91.05% |
 
-That latest run passed all 7,560 runnable parity comparisons with 0 failures;
+That latest run passed all 7,561 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`5994fb75-9aaf-4d4c-bd54-4482b3e3fd4d`. The source-bound full parity run
-`4cf25299-3965-4726-9159-b76561562270` recorded 7,560 / 7,560 exact
+`97b97a70-09f7-4a3c-bbbd-2bc27fc30a84`, and it completed in 37.518 seconds
+after the instrumented binary was warm. The source-bound full parity run
+`5268c0c2-f9f4-4650-9006-82b8c1cf0bd1`, recorded by
+`cb2c8ef0-dc2f-4fb2-8258-9d8d07990af1`, recorded 7,561 / 7,561 exact
 comparisons. Coverage MCP does not expose
 separate timestamps for compilation, report finalization, or artifact ingestion. Current
 LLVM JSON is accepted directly by Coverage
