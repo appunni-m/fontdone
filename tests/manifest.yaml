@@ -2896,6 +2896,8 @@ subjects:
         description: Missing character codes return glyph index 0 exactly like C.
       - id: success_negative_cmap_index_uses_current_charmap
         description: Negative cmap_index does not change the face charmap and uses the requester-selected/default charmap behavior from C.
+      - id: error_requester_failure_returns_zero
+        description: A requester that returns Invalid_Argument without producing a face makes FTC_CMapCache_Lookup return glyph index 0 and leaves the active charmap unavailable, matching C.
       - id: error_null_cache_returns_zero
         description: Null cache returns 0 without invoking the requester or changing state.
       - id: lifecycle_remove_faceid_and_reset

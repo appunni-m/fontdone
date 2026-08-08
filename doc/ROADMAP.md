@@ -498,12 +498,14 @@ worktree at that point:
 | 115 | `9c675e0534061d49c202c2f339977aefee097158` | Added two maintained PostScript hinting-property controls: an absent property string with an invalid glyph index, and a non-font byte input that exercises the property path before the exact `FT_New_Memory_Face` load error. Full parity run `4cf25299-3965-4726-9159-b76561562270`, recorded by `b0f05272-9aa4-4c10-aeb0-64eee24a4fa4`, passed 7,560 / 7,560 runnable comparisons with 0 failures and 3 pending safety-extension cases; concrete input cases are 7,563 and all three function surfaces retain 218 / 218 route evidence. All-lane Coverage MCP run `c58c98ad-a53c-4a7c-8da2-2b3bcfa009d2`, snapshot `5994fb75-9aaf-4d4c-bd54-4482b3e3fd4d`, completed in 76.282 seconds and measured 50,046 / 54,394 lines, 9,964 / 12,594 branches, 3,413 / 3,848 functions, and 68,846 / 75,622 regions. The C-contract debt remains 10 / 12 scorecard categories, the Windows import-library item, and four external platform bundles. |
 | 116 | Working tree (FTC_Manager_LookupFace requester-failure parity route) | Reused the maintained `ftcache.FTC_Manager_LookupFace.error_requester_failure` input and routed an actual requester callback failure through the pinned C oracle, Rust FFI state, exported C ABI, and WASM harness, asserting exact `FT_Err_Invalid_Argument` status and a null output face. Full parity run `7607b430-736a-4c5d-b524-296a01cb6dad`, recorded by `45f78800-c633-4d07-9744-a72293b6671f`, passed 7,560 / 7,560 runnable comparisons with 0 failures and 3 pending safety-extension cases; the route audit remains at 0 pending and all three function surfaces retain 218 / 218 route evidence. All-lane Coverage MCP run `0a401be7-9adb-4f5d-9af6-48d664c6816c`, snapshot `0ec30696-8535-49ea-b827-e40fec5c585e`, completed in 78.113 seconds and measured 50,069 / 54,416 lines, 9,971 / 12,596 branches, 3,416 / 3,851 functions, and 68,876 / 75,647 regions; the C-ABI requester-error return branch is now covered. C-ABI scorecard run `aa12f407-840a-4f5f-a2c2-b49ffcfaeb83` reports 10 / 12 categories complete, 5,303 / 5,303 runtime contract rows, 686 / 686 exact-error routes, and 7,560 / 7,560 fallback-free routes; the Windows import-library item and four fresh platform bundles remain. |
 
+| 117 | Working tree (FTC_CMapCache_Lookup requester-failure parity route) | Added the maintained `ftcache.FTC_CMapCache_Lookup.error_requester_failure_returns_zero` input and a defined requester callback that returns `FT_Err_Invalid_Argument` without producing a face. The pinned-C oracle, Rust FFI, exported C ABI, and WASM route now agree on glyph index 0, the immediate requester count, final requester count, and unavailable active charmap; the route-audit classifier records it as real parity rather than generic fallback. Full parity run `856f48e6-abf6-45f5-97ad-f0e76cd3fdaf`, recorded by `53decf57-2c4d-4a8c-8e89-0d68b418241f`, passed 7,561 / 7,561 runnable comparisons with 0 failures and 3 pending safety-extension cases; concrete input cases are 7,564 and all three function surfaces retain 218 / 218 route evidence. All-lane Coverage MCP run `8947ed52-2202-4826-84b6-41721050e420`, snapshot `18249c5c-163d-4f7c-aa63-1e079ce94b35`, completed in 78.692 seconds and measured 50,070 / 54,416 lines, 9,972 / 12,596 branches, 3,416 / 3,851 functions, and 68,877 / 75,647 regions; the C-ABI implementation moved to 8,840 / 9,766 lines, 1,489 / 2,086 branches, 693 / 723 functions, and 11,476 / 12,578 regions, with the `FTC_CMapCache_Lookup` requester-error return branch at lines 1992-1993 covered. C-ABI scorecard run `fc3becdb-bc68-41c7-9e3b-9e77bd8a5577` reports 10 / 12 categories complete, 5,304 / 5,304 runtime contract rows, 686 / 686 exact-error routes, and 7,561 / 7,561 fallback-free routes; the Windows import-library item and four fresh target-lane bundles remain. |
+
 The current source-bound parity verification is Coverage MCP parity run
-`7607b430-736a-4c5d-b524-296a01cb6dad`: it passed 7,560 / 7,560 runnable
+`856f48e6-abf6-45f5-97ad-f0e76cd3fdaf`: it passed 7,561 / 7,561 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The source-digest attestation was refreshed by record run
-`45f78800-c633-4d07-9744-a72293b6671f` in `doc/runtime_parity_evidence.json`.
+`53decf57-2c4d-4a8c-8e89-0d68b418241f` in `doc/runtime_parity_evidence.json`.
 The tracked C-ABI scorecard remains **10 / 12 categories complete**; the
 Windows import-library item and four fresh target-lane bundles remain.
 
@@ -516,11 +518,11 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current source-bound all-lane run `c58c98ad-a53c-4a7c-8da2-2b3bcfa009d2`
-completed in 76.282 seconds with snapshot
-`5994fb75-9aaf-4d4c-bd54-4482b3e3fd4d`. It measured 50,046 / 54,394 lines,
-9,964 / 12,594 branches, 3,413 / 3,848 functions, and 68,846 / 75,622
-regions; the parity matrix passed 7,560 / 7,560 in each backend. The lanes
+The current source-bound all-lane run `8947ed52-2202-4826-84b6-41721050e420`
+completed in 78.692 seconds with snapshot
+`18249c5c-163d-4f7c-aa63-1e079ce94b35`. It measured 50,070 / 54,416 lines,
+9,972 / 12,596 branches, 3,416 / 3,851 functions, and 68,877 / 75,647
+regions; the parity matrix passed 7,561 / 7,561 in each backend. The lanes
 already run concurrently; the same-source two-worker comparison
 `971f65aa-12b6-4a41-9dcb-cceffdd99199` completed in 140.239 seconds, so the
 default remains one worker per lane. The previous combined-lane warm all-lane baseline completed in 1

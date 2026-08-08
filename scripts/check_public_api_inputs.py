@@ -2031,6 +2031,7 @@ def ftcache_cmap_lookup_pending_reason(row: ConcreteInput) -> str | None:
         "ftcache.FTC_CMapCache_Lookup.success_lookup_hit_and_repeat_hit",
         "ftcache.FTC_CMapCache_Lookup.success_lookup_miss_returns_zero",
         "ftcache.FTC_CMapCache_Lookup.success_negative_cmap_index_uses_current_charmap",
+        "ftcache.FTC_CMapCache_Lookup.error_requester_failure_returns_zero",
         "ftcache.FTC_CMapCache_Lookup.lifecycle_remove_faceid_and_reset",
     }:
         return None
@@ -6874,6 +6875,7 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
             "ftcache.FTC_CMapCache_Lookup.success_lookup_hit_and_repeat_hit",
             "ftcache.FTC_CMapCache_Lookup.success_lookup_miss_returns_zero",
             "ftcache.FTC_CMapCache_Lookup.success_negative_cmap_index_uses_current_charmap",
+            "ftcache.FTC_CMapCache_Lookup.error_requester_failure_returns_zero",
             "ftcache.FTC_CMapCache_Lookup.lifecycle_remove_faceid_and_reset",
         }
     ):

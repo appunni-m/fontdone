@@ -12029,6 +12029,7 @@ typedef struct CMapCacheRequesterData_ {
     unsigned char* data;
     long data_len;
     int request_count;
+    FT_Error requester_error;
 } CMapCacheRequesterData;
 
 static FT_Error cmap_cache_requester(FTC_FaceID face_id,
@@ -12038,6 +12039,9 @@ static FT_Error cmap_cache_requester(FTC_FaceID face_id,
     (void)req_data;
     CMapCacheRequesterData* data = (CMapCacheRequesterData*)face_id;
     data->request_count++;
+    if (data->requester_error) {
+        return data->requester_error;
+    }
     return FT_New_Memory_Face(library, data->data, data->data_len, 0, aface);
 }
 
@@ -12152,6 +12156,9 @@ static int emit_cmap_cache_lookup(int argc, char** argv) {
     requester.data = data;
     requester.data_len = data_len;
     requester.request_count = 0;
+    requester.requester_error = streq(scenario, "error_requester_failure_returns_zero")
+                                    ? FT_Err_Invalid_Argument
+                                    : FT_Err_Ok;
 
     FTC_Manager manager = NULL;
     FT_Error manager_error = FTC_Manager_New(library, 0, 0, 0,
@@ -12242,6 +12249,7 @@ static int emit_cmap_cache_new_route(int argc, char** argv) {
     requester.data = data;
     requester.data_len = data_len;
     requester.request_count = 0;
+    requester.requester_error = FT_Err_Ok;
 
     FTC_Manager manager = NULL;
     FT_Error manager_error = FTC_Manager_New(library, 0, 0, 0,

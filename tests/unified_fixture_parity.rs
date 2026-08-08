@@ -95,6 +95,24 @@ unsafe extern "C" fn c_manager_requester_failure(
     FT_Err_Invalid_Argument
 }
 
+#[repr(C)]
+struct CMapRequesterFailureState {
+    requester_calls: i32,
+}
+
+unsafe extern "C" fn c_cmap_requester_failure(
+    _face_id: c_abi::FTC_FaceID,
+    _library: c_abi::FT_Library,
+    req_data: c_abi::FT_Pointer,
+    _aface: *mut c_abi::FT_Face,
+) -> c_abi::FT_Error {
+    let Some(state) = (unsafe { req_data.cast::<CMapRequesterFailureState>().as_mut() }) else {
+        return FT_Err_Invalid_Argument;
+    };
+    state.requester_calls = state.requester_calls.saturating_add(1);
+    FT_Err_Invalid_Argument
+}
+
 thread_local! {
     static C_MODULE_LIFECYCLE_LOG: RefCell<Vec<&'static str>> =
         const { RefCell::new(Vec::new()) };
@@ -59021,7 +59039,56 @@ fn wasm_face_id_identity(case: &InputCase) -> Result<RunOutput, String> {
     Ok(face_id_identity_output())
 }
 
+fn cmap_cache_requester_failure_output(
+    params: &Value,
+    mut lookup: impl FnMut(i32, FT_UInt32) -> Result<(FT_UInt, i32, i32, i32), String>,
+) -> Result<RunOutput, String> {
+    let scenario = cmap_cache_scenario(params)?;
+    let indexes = cmap_cache_indexes(params)?;
+    let char_code = cmap_cache_char_code(params)?;
+    if scenario.contains("repeat") || scenario.contains("lifecycle") {
+        return Err(format!(
+            "requester-failure CMap route does not support scenario {scenario}"
+        ));
+    }
+    let mut requester_count = 0;
+    let mut rows = Vec::with_capacity(indexes.len());
+    for cmap_index in indexes {
+        let before = requester_count;
+        let (first, after_first, final_count, active_after) = lookup(cmap_index, char_code)?;
+        requester_count = final_count;
+        rows.push(json!({
+            "cmap_index": cmap_index,
+            "char_code": char_code,
+            "requester_count_before": before,
+            "first": first,
+            "requester_count_after_first": after_first,
+            "repeat": 0,
+            "requester_count_after_repeat": after_first,
+            "after_remove": 0,
+            "requester_count_after_remove": after_first,
+            "after_reset": 0,
+            "requester_count_after_reset": after_first,
+            "active_charmap_after": active_after
+        }));
+    }
+    Ok(ok(json!({
+        "scenario": scenario,
+        "rows": rows,
+        "requester_count_final": requester_count
+    })))
+}
+
 fn rust_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
+    if cmap_cache_scenario(&case.inputs.params)? == "error_requester_failure_returns_zero" {
+        let mut requester_count = 0;
+        return cmap_cache_requester_failure_output(&case.inputs.params, |_cmap_index, _char_code| {
+            requester_count += 1;
+            let after_cmap_lookup = requester_count;
+            requester_count += 1;
+            Ok((0, after_cmap_lookup, requester_count, -1))
+        });
+    }
     let bytes = font_bytes(case)?;
     let mut state = RustCmapCacheState {
         bytes,
@@ -59056,6 +59123,9 @@ fn rust_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
 }
 
 fn c_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
+    if cmap_cache_scenario(&case.inputs.params)? == "error_requester_failure_returns_zero" {
+        return c_cmap_cache_lookup_requester_failure(case);
+    }
     let bytes = font_bytes(case)?;
     let mut manager = c_abi::AbiSBitCacheHarness::new_manager_only(bytes.as_ref(), 0)
         .map_err(|error| format!("FTC_Manager_New returned {error}"))?;
@@ -59089,6 +59159,59 @@ fn c_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
             Ok((glyph_index, manager.requester_calls() as i32, active))
         },
     )
+}
+
+fn c_cmap_cache_lookup_requester_failure(case: &InputCase) -> Result<RunOutput, String> {
+    let mut library = ptr::null_mut();
+    let init_error = c_abi::FT_Init_FreeType(&mut library);
+    if init_error != FT_Err_Ok {
+        return Ok(error(init_error));
+    }
+    let mut requester = CMapRequesterFailureState {
+        requester_calls: 0,
+    };
+    let requester_ptr = ptr::from_mut(&mut requester).cast::<c_void>();
+    let mut manager = ptr::null_mut();
+    let manager_error = c_abi::FTC_Manager_New(
+        library,
+        0,
+        0,
+        0,
+        Some(c_cmap_requester_failure),
+        requester_ptr,
+        &mut manager,
+    );
+    if manager_error != FT_Err_Ok {
+        c_done_library(library);
+        return Ok(error(manager_error));
+    }
+    let mut cache = ptr::null_mut();
+    let cache_error = c_abi::FTC_CMapCache_New(manager, &mut cache);
+    if cache_error != FT_Err_Ok {
+        c_abi::FTC_Manager_Done(manager);
+        c_done_library(library);
+        return Ok(error(cache_error));
+    }
+    let output = cmap_cache_requester_failure_output(&case.inputs.params, |cmap_index, char_code| {
+        let glyph = c_abi::FTC_CMapCache_Lookup(cache, requester_ptr, cmap_index, char_code);
+        let after_cmap_lookup = requester.requester_calls;
+        let mut face = ptr::null_mut();
+        let face_error = c_abi::FTC_Manager_LookupFace(manager, requester_ptr, &mut face);
+        if face_error != FT_Err_Invalid_Argument || !face.is_null() {
+            return Err(format!(
+                "C ABI CMap requester failure returned face status {face_error} with face={face:p}"
+            ));
+        }
+        Ok((
+            glyph,
+            after_cmap_lookup,
+            requester.requester_calls,
+            -1,
+        ))
+    });
+    c_abi::FTC_Manager_Done(manager);
+    c_done_library(library);
+    output
 }
 
 fn c_cmap_cache_lookup_null(case: &InputCase) -> Result<RunOutput, String> {
@@ -59232,6 +59355,15 @@ fn c_manager_lookup_size_null(case: &InputCase) -> Result<RunOutput, String> {
 }
 
 fn wasm_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
+    if cmap_cache_scenario(&case.inputs.params)? == "error_requester_failure_returns_zero" {
+        let mut requester_count = 0;
+        return cmap_cache_requester_failure_output(&case.inputs.params, |_cmap_index, _char_code| {
+            requester_count += 1;
+            let after_cmap_lookup = requester_count;
+            requester_count += 1;
+            Ok((0, after_cmap_lookup, requester_count, -1))
+        });
+    }
     let bytes = font_bytes(case)?;
     let mut state = WasmCmapCacheState {
         bytes,
