@@ -5,7 +5,8 @@
     "value_matches_header",
     "hinting_engine_property_runtime",
     "hinting_engine_invalid_glyph_preserves_error",
-    "hinting_engine_null_string_invalid_glyph"
+    "hinting_engine_null_string_invalid_glyph",
+    "hinting_engine_invalid_face_returns_load_error"
   ],
   "cases": [
     {
@@ -346,6 +347,111 @@
         },
         "fixture_requirements": [
           "Each maintained PostScript control font must leave the environment-property string absent and still reject glyph index 65535 without dereferencing an invalid glyph slot."
+        ]
+      }
+    },
+    {
+      "case_id": "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_face_returns_load_error",
+      "subject": "ftdriver.FT_HINTING_FREETYPE",
+      "case": "hinting_engine_invalid_face_returns_load_error",
+      "operation": "ftdriver.hinting_engine_property",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "cff_font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/malformed/not-a-font.bin",
+            "asset_kind": "binary"
+          },
+          "type1_font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/malformed/not-a-font.bin",
+            "asset_kind": "binary"
+          },
+          "cid_font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/malformed/not-a-font.bin",
+            "asset_kind": "binary"
+          }
+        },
+        "params": {
+          "module_names": [
+            "cff",
+            "type1",
+            "t1cid"
+          ],
+          "property_name": "hinting-engine",
+          "value_symbol": "FT_HINTING_FREETYPE",
+          "value": 0,
+          "string_value": null,
+          "sequence": [
+            "FT_Property_Set",
+            "FT_Property_Get",
+            "FT_New_Memory_Face"
+          ],
+          "invalid_controls": [
+            "bad module",
+            "bad property",
+            "numeric value outside FT_HINTING_*"
+          ],
+          "build_variants": "old FreeType CFF engine support may make FT_HINTING_FREETYPE build-dependent",
+          "runtime_route": "actual_ps_hinting_engine_property",
+          "glyph_index": 0,
+          "load_flags": [
+            "FT_LOAD_NO_SCALE"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:constant",
+        "header:ftdriver",
+        "area:ps-hinting",
+        "path:property",
+        "requires:font",
+        "edge:invalid-face-bytes",
+        "edge:null-property-string"
+      ],
+      "expectation": {
+        "status": "build_dependent",
+        "output_shape": {
+          "modules": [
+            {
+              "module_name": "string",
+              "set_error": "FT_Error",
+              "get_error": "FT_Error",
+              "readback_value": "FT_UInt",
+              "string_value_behavior": "object",
+              "string_get_error": "FT_Error",
+              "glyph": {
+                "load_error": "FT_Error"
+              },
+              "post_error_output_preservation": "null_or_bool"
+            }
+          ]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "modules[*].module_name",
+            "modules[*].set_error",
+            "modules[*].get_error",
+            "modules[*].readback_value",
+            "modules[*].string_value_behavior",
+            "modules[*].string_get_error",
+            "modules[*].glyph",
+            "modules[*].post_error_output_preservation"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftobjs.c:1050-1110",
+          "freetype/src/base/ftinit.c:330-365"
+        ],
+        "fixture_requirements": [
+          "The maintained not-a-font binary must be rejected by FT_New_Memory_Face before any glyph load, while the module property set/get path still reports the pinned C values."
         ]
       }
     }

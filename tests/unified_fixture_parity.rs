@@ -71855,6 +71855,7 @@ fn ps_hinting_engine_runtime_supported(case: &InputCase) -> bool {
             | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime"
             | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_glyph_preserves_error"
             | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_null_string_invalid_glyph"
+            | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_face_returns_load_error"
     ) && assets_are_runtime_resolved(case)
 }
 
@@ -71912,7 +71913,7 @@ fn ps_hinting_module_row(
     string_readback: FT_UInt,
     string: Option<&str>,
     glyph: Value,
-    preserved: bool,
+    preserved: Option<bool>,
 ) -> Value {
     json!({
         "module_name": module_name,
@@ -71985,8 +71986,23 @@ fn rust_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             Some("hinting-engine"),
             Some(&mut string_readback),
         );
-        let face = FT_New_Memory_Face(&library, bytes.as_ref(), 0, 20.0)
-            .map_err(|err| format!("open {module} face: {err}"))?;
+        let face = match FT_New_Memory_Face(&library, bytes.as_ref(), 0, 20.0) {
+            Ok(face) => face,
+            Err(_) => {
+                modules.push(ps_hinting_module_row(
+                    module,
+                    -1,
+                    -1,
+                    0,
+                    string_get_error,
+                    string_readback,
+                    string.as_deref(),
+                    json!(null),
+                    None,
+                ));
+                continue;
+            }
+        };
         let first = FT_Load_Glyph(&face, glyph_index, load_flags);
         let first_slot = first.as_ref().ok().cloned();
         let first_json = match first {
@@ -72021,7 +72037,7 @@ fn rust_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             string_readback,
             string.as_deref(),
             first_json,
-            preserved,
+            Some(preserved),
         ));
     }
     Ok(ok(json!({"modules": modules})))
@@ -72091,14 +72107,14 @@ fn c_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
         if open_error != FT_Err_Ok {
             modules.push(ps_hinting_module_row(
                 module,
-                set_error,
-                get_error,
-                readback,
+                -1,
+                -1,
+                0,
                 string_get_error,
                 string_readback,
                 string.as_deref(),
-                json!({"load_error": open_error}),
-                false,
+                json!(null),
+                None,
             ));
             c_done_library(library);
             continue;
@@ -72149,7 +72165,7 @@ fn c_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             string_readback,
             string.as_deref(),
             first_json,
-            preserved,
+            Some(preserved),
         ));
         c_done_face(face);
         c_done_library(library);
@@ -72191,21 +72207,24 @@ fn wasm_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
                 .map_or(std::ptr::null(), |value| value.as_ptr()),
             &mut result,
         );
+        let invalid_face = status.handle == 0 && result.load_error != FT_Err_Ok;
         let glyph = if status.handle != 0 && result.load_error == FT_Err_Ok {
             wasm_slot_json(status.handle)?
+        } else if invalid_face {
+            json!(null)
         } else {
             json!({"load_error": result.load_error})
         };
         modules.push(ps_hinting_module_row(
             module,
-            result.set_error,
-            result.get_error,
-            result.readback,
+            if invalid_face { -1 } else { result.set_error },
+            if invalid_face { -1 } else { result.get_error },
+            if invalid_face { 0 } else { result.readback },
             result.string_get_error,
             result.string_readback,
             string.as_deref(),
             glyph,
-            result.post_error_preserved != 0,
+            (!invalid_face).then_some(result.post_error_preserved != 0),
         ));
         wasm_done_face(status.handle);
     }

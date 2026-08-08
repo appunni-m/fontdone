@@ -162,11 +162,10 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `2d5d1ec9-2d16-41e6-8e4a-d55589424241` (snapshot
-`042f418f-7735-4e35-9255-af7a882efc21`): all three processes passed 7,559 /
-7,559 cases. This source-bound run took 85.210 seconds with the default
-one-worker lane profile; the retained lane timers were 26.35 seconds (Rust),
-23.70 seconds (C ABI), and 23.52 seconds (WASM). The same-source
+Coverage MCP run `214df235-d170-43a7-b4b8-03ba4c860619` (snapshot
+`a3f0914e-b13f-46ca-ad90-aae3c3b7de36`): all three processes passed 7,560 /
+7,560 cases. This source-bound run took 76.994 seconds with the default
+one-worker lane profile. The same-source
 two-worker comparison `e5dd45f6-d1dc-4c1d-a7ee-8ea143b8441d` took 115.508
 seconds. The three lanes already run concurrently, so increasing coverage
 workers is not a safe speedup: instrumented counter and cache contention
@@ -303,13 +302,12 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest source-bound current-host
-Coverage MCP run (`2d5d1ec9-2d16-41e6-8e4a-d55589424241`, snapshot
-`042f418f-7735-4e35-9255-af7a882efc21`) measured 85.210 seconds end-to-end
-with the default one-worker split profile. Its three lanes passed all 7,559
+Coverage MCP run (`214df235-d170-43a7-b4b8-03ba4c860619`, snapshot
+`a3f0914e-b13f-46ca-ad90-aae3c3b7de36`) measured 76.994 seconds end-to-end
+with the default one-worker split profile. Its three lanes passed all 7,560
 runnable comparisons with 0 failures and retained the three explicitly
-pending safety-extension cases; lane timers were 26.35 seconds Rust, 23.70
-seconds C ABI, and 23.52 seconds WASM. The corresponding source-bound parity
-run is `55db8ee3-67f1-4e6f-85f0-fc9d3b402068`. The focused x-height case
+pending safety-extension cases. The corresponding source-bound parity run is
+`73bcde80-ecf2-4687-be16-7ae4a3405506`. The focused x-height case
 (`91144282-c800-4cd7-b6d6-1b83176f2bdd`) passed 1 / 1; its measured backend
 work was 9.110 seconds Rust, 8.739 seconds C ABI, 8.711 seconds WASM, and
 2.411 ms for comparison.
@@ -383,15 +381,15 @@ separately exposed by Coverage MCP.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,040 / 54,394 | 92.00% |
+| Lines | 50,046 / 54,394 | 92.01% |
 | Branches | 9,964 / 12,594 | 79.12% |
 | Functions | 3,413 / 3,848 | 88.70% |
-| Regions | 68,843 / 75,622 | 91.04% |
+| Regions | 68,846 / 75,622 | 91.04% |
 
-That latest run passed all 7,559 runnable parity comparisons with 0 failures;
+That latest run passed all 7,560 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`042f418f-7735-4e35-9255-af7a882efc21`. The source-bound full parity run
-`55db8ee3-67f1-4e6f-85f0-fc9d3b402068` recorded 7,559 / 7,559 exact
+`a3f0914e-b13f-46ca-ad90-aae3c3b7de36`. The source-bound full parity run
+`73bcde80-ecf2-4687-be16-7ae4a3405506` recorded 7,560 / 7,560 exact
 comparisons. Coverage MCP does not expose
 separate timestamps for compilation, report finalization, or artifact ingestion. Current
 LLVM JSON is accepted directly by Coverage
@@ -445,14 +443,17 @@ The maintained malformed BDF input
 blank line after `STARTFONT` to exercise the Rust constructor's blank-line
 skip. Pinned FreeType's `bdf_readstream_` skips bytes below space before the
 parser callback, so the input remains exact-parity safe. Source-bound parity
-run `55db8ee3-67f1-4e6f-85f0-fc9d3b402068` passed 7,559 / 7,559 comparisons with
-0 failures; all-lane coverage run `2d5d1ec9-2d16-41e6-8e4a-d55589424241`
+run `73bcde80-ecf2-4687-be16-7ae4a3405506` passed 7,560 / 7,560 comparisons with
+0 failures; all-lane coverage run `214df235-d170-43a7-b4b8-03ba4c860619`
 includes the maintained malformed format-13 parser matrix.
 
 The PostScript hinting-property matrix also keeps an out-of-range glyph-index
 case. It verifies that the CFF, Type 1, and CID routes return the pinned
 Invalid_Argument error and preserve that failed load after a rejected property
 value; it is a maintained parity input rather than a coverage-only unit test.
+It also includes a maintained non-font-byte case for the same three modules;
+the face-open failure is compared as the pinned load error with no fabricated
+glyph result.
 
 Before changing a fixture:
 

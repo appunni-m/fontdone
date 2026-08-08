@@ -27,15 +27,15 @@
     "fontdone_pub_enums": 19
   },
   "runtime_parity": {
-    "runnable": 7559,
-    "passed": 7559,
+    "runnable": 7560,
+    "passed": 7560,
     "failed": 0,
     "pending": 3,
-    "covered_manifest": 4197,
+    "covered_manifest": 4198,
     "validated_input_subjects": 1543,
     "validated_input_files": 1537,
-    "logical_input_cases": 4289,
-    "concrete_input_cases": 7562,
+    "logical_input_cases": 4290,
+    "concrete_input_cases": 7563,
     "function_route_evidence": 218,
     "function_total": 218
   },
@@ -43,8 +43,8 @@
     "categories_complete": 10,
     "categories_total": 12,
     "is_complete": false,
-    "runtime_contract_rows_complete": 5302,
-    "runtime_contract_rows_total": 5302,
+    "runtime_contract_rows_complete": 5303,
+    "runtime_contract_rows_total": 5303,
     "runtime_contract_rows_pending": 0,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
@@ -54,23 +54,23 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-08-08",
-    "source_commit": "ca1bc99668531fa8f982df7f0cc581b2fce6a85f",
+    "source_commit": "8a0d10ab08e1d74f2cd32c9f7839978d02bdcdcd",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "2d5d1ec9-2d16-41e6-8e4a-d55589424241",
-    "snapshot_id": "042f418f-7735-4e35-9255-af7a882efc21",
-    "duration_ms": 85210,
+    "run_id": "214df235-d170-43a7-b4b8-03ba4c860619",
+    "snapshot_id": "a3f0914e-b13f-46ca-ad90-aae3c3b7de36",
+    "duration_ms": 76994,
     "exit_code": 0,
     "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with no line-table debuginfo (COVERAGE_TEST_DEBUG=0) and COVERAGE_UNIFIED_WORKERS=1; one instrumented test binary runs directly in three split backend processes; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; source-digest-bound expanded input cache reused across the three processes; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; clean binary preparation uses cargo llvm-cov --no-report -- --list; the build-state marker keys reuse to the newest compiler-input commit and excludes worker/lane-split orchestration settings; raw LLVM JSON is ingested directly, with segment normalization retained only as an opt-in compatibility rewrite; test-harness source excluded",
     "lines": {
-      "covered": 50040,
+      "covered": 50046,
       "total": 54394,
-      "percent": 91.9954406736037
+      "percent": 92.00647130198184
     },
     "branches": {
       "covered": 9964,
       "total": 12594,
-      "percent": 79.11703986025092
+      "percent": 79.11703986025093
     },
     "functions": {
       "covered": 3413,
@@ -78,13 +78,13 @@
       "percent": 88.6954261954262
     },
     "regions": {
-      "covered": 68843,
+      "covered": 68846,
       "total": 75622,
-      "percent": 91.03567744836158
+      "percent": 91.03964454788289
     },
     "runtime_parity": {
-      "runnable": 7559,
-      "passed": 7559,
+      "runnable": 7560,
+      "passed": 7560,
       "failed": 0,
       "pending": 3
     },
@@ -1358,9 +1358,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "2b9441c1576be6fac8bcecdf9f82056f03e7ef2b457eaf24ff040065e5412f1a",
-    "parity_tree_sha256": "0e4a8392e0d4f864384baaefa78bf0cec02e1765bebe31e5021153f7ee15349f",
-    "log_sha256": "56538c0f2c98526b37a44c50213e7a1b858c65f5e5da38cfc8c7ab198b25593f",
+    "sha256": "3aa4333482bd628cba3a05d4445cdf7cb4be9cce31ef9826a4c3e9e4b090d05b",
+    "parity_tree_sha256": "05d2ad532af15b51fb3c52036179f01b169deab8aeec52794ddc4270647fb7a2",
+    "log_sha256": "6ec0ff883a005ee1c6f3f7e5b133214176cf8fef65f5aed806e35cc30fd9ada0",
     "command": "make test-parity"
   }
 }
