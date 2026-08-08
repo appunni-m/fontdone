@@ -41445,7 +41445,10 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         args.push(ps_hinting_engine_glyph(case)?.to_string());
         args.push(ps_hinting_engine_load_flags(case)?.to_string());
         args.push(ps_hinting_engine_value(case)?.to_string());
-        args.push(ps_hinting_engine_string(case)?);
+        args.push(
+            ps_hinting_engine_string(case)?
+                .unwrap_or_else(|| "<null>".to_string()),
+        );
         return Ok(args);
     }
     if property_service_route_pending(case.operation.as_str())
@@ -71851,6 +71854,7 @@ fn ps_hinting_engine_runtime_supported(case: &InputCase) -> bool {
             | "ftdriver.FT_HINTING_ADOBE.hinting_engine_property_runtime"
             | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime"
             | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_glyph_preserves_error"
+            | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_null_string_invalid_glyph"
     ) && assets_are_runtime_resolved(case)
 }
 
@@ -71871,13 +71875,19 @@ fn ps_hinting_engine_value(case: &InputCase) -> Result<FT_UInt, String> {
         .ok_or_else(|| "missing ps hinting-engine value".to_string())
 }
 
-fn ps_hinting_engine_string(case: &InputCase) -> Result<String, String> {
-    case.inputs
+fn ps_hinting_engine_string(case: &InputCase) -> Result<Option<String>, String> {
+    let value = case
+        .inputs
         .params
         .get("string_value")
-        .and_then(Value::as_str)
-        .map(str::to_owned)
-        .ok_or_else(|| "missing ps hinting-engine string value".to_string())
+        .ok_or_else(|| "missing ps hinting-engine string value".to_string())?;
+    if value.is_null() {
+        return Ok(None);
+    }
+    value
+        .as_str()
+        .map(|value| Some(value.to_owned()))
+        .ok_or_else(|| "ps hinting-engine string value is not a string or null".to_string())
 }
 
 fn ps_hinting_engine_glyph(case: &InputCase) -> Result<FT_UInt, String> {
@@ -71900,7 +71910,7 @@ fn ps_hinting_module_row(
     readback: FT_UInt,
     string_get_error: FT_Error,
     string_readback: FT_UInt,
-    string: &str,
+    string: Option<&str>,
     glyph: Value,
     preserved: bool,
 ) -> Value {
@@ -71962,10 +71972,12 @@ fn rust_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             Some("hinting-engine"),
             Some(&mut readback),
         );
-        FT_Set_Default_Properties_From_Env(
-            Some(&mut library),
-            Some(&format!("{module}:hinting-engine={string}")),
-        );
+        if let Some(string) = string.as_deref() {
+            FT_Set_Default_Properties_From_Env(
+                Some(&mut library),
+                Some(&format!("{module}:hinting-engine={string}")),
+            );
+        }
         let mut string_readback = 0;
         let string_get_error = FT_Property_Get(
             Some(&library),
@@ -72007,7 +72019,7 @@ fn rust_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             readback,
             string_get_error,
             string_readback,
-            &string,
+            string.as_deref(),
             first_json,
             preserved,
         ));
@@ -72044,13 +72056,21 @@ fn c_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             property_cstr,
             (&mut readback as *mut FT_UInt).cast(),
         );
-        // SAFETY: the parity harness is single-threaded for this case and
-        // restores the variable immediately after the synchronous call.
-        unsafe {
-            std::env::set_var(
-                "FREETYPE_PROPERTIES",
-                format!("{module}:hinting-engine={string}"),
-            );
+        if let Some(string) = string.as_deref() {
+            // SAFETY: the parity harness is single-threaded for this case and
+            // restores the variable immediately after the synchronous call.
+            unsafe {
+                std::env::set_var(
+                    "FREETYPE_PROPERTIES",
+                    format!("{module}:hinting-engine={string}"),
+                );
+            }
+        } else {
+            // SAFETY: the parity harness is single-threaded and clears the
+            // process-local variable before and after this synchronous call.
+            unsafe {
+                std::env::remove_var("FREETYPE_PROPERTIES");
+            }
         }
         c_abi::FT_Set_Default_Properties(library);
         // SAFETY: same single-threaded harness guarantee as above.
@@ -72076,7 +72096,7 @@ fn c_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
                 readback,
                 string_get_error,
                 string_readback,
-                &string,
+                string.as_deref(),
                 json!({"load_error": open_error}),
                 false,
             ));
@@ -72127,7 +72147,7 @@ fn c_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             readback,
             string_get_error,
             string_readback,
-            &string,
+            string.as_deref(),
             first_json,
             preserved,
         ));
@@ -72154,7 +72174,11 @@ fn wasm_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
     for (module, asset) in ps_hinting_engine_assets() {
         let bytes = required_asset_bytes(case, asset)?;
         let mut result = wasm_abi::FontdoneWasmPsHintingResult::default();
-        let string_c = std::ffi::CString::new(string.as_str()).map_err(|err| err.to_string())?;
+        let string_c = string
+            .as_deref()
+            .map(std::ffi::CString::new)
+            .transpose()
+            .map_err(|err| err.to_string())?;
         let status = wasm_abi::fontdone_wasm_ps_hinting_engine_open(
             ps_hinting_module_selector(module),
             bytes.as_ptr(),
@@ -72162,7 +72186,9 @@ fn wasm_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             glyph_index,
             load_flags,
             value,
-            string_c.as_ptr(),
+            string_c
+                .as_ref()
+                .map_or(std::ptr::null(), |value| value.as_ptr()),
             &mut result,
         );
         let glyph = if status.handle != 0 && result.load_error == FT_Err_Ok {
@@ -72177,7 +72203,7 @@ fn wasm_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             result.readback,
             result.string_get_error,
             result.string_readback,
-            &string,
+            string.as_deref(),
             glyph,
             result.post_error_preserved != 0,
         ));

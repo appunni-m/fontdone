@@ -5371,6 +5371,7 @@ def hinting_engine_property_real_parity_reason(row: ConcreteInput) -> str | None
         "ftdriver.FT_HINTING_ADOBE.hinting_engine_property_runtime",
         "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime",
         "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_glyph_preserves_error",
+        "ftdriver.FT_HINTING_FREETYPE.hinting_engine_null_string_invalid_glyph",
     }
     if (
         row.operation == "ftdriver.hinting_engine_property"

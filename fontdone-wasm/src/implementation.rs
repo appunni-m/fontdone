@@ -1949,15 +1949,15 @@ pub extern "C" fn fontdone_wasm_ps_hinting_engine_open(
             Some(&mut library),
             Some(&format!("{module_name}:hinting-engine={string}")),
         );
-        let mut string_readback = 0;
-        out.string_get_error = rust_ffi::FT_Property_Get(
-            Some(&library),
-            Some(module_name),
-            Some("hinting-engine"),
-            Some(&mut string_readback),
-        );
-        out.string_readback = string_readback;
     }
+    let mut string_readback = 0;
+    out.string_get_error = rust_ffi::FT_Property_Get(
+        Some(&library),
+        Some(module_name),
+        Some("hinting-engine"),
+        Some(&mut string_readback),
+    );
+    out.string_readback = string_readback;
     let opened = rust_ffi::FT_New_Memory_Face(&library, data, 0, 20.0);
     let face = match opened {
         Ok(face) => face,

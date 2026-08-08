@@ -162,11 +162,11 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `f3d45793-9df9-4e63-a38d-3c1de836f423` (snapshot
-`b9ab78bd-1b6d-48e9-a67c-7fef99d691a1`): all three processes passed 7,556 /
-7,556 cases. This source-bound run took 77.350 seconds with the default
-one-worker lane profile; the retained lane timers were 24.60 seconds (Rust),
-24.69 seconds (C ABI), and 25.98 seconds (WASM). The same-source
+Coverage MCP run `2d5d1ec9-2d16-41e6-8e4a-d55589424241` (snapshot
+`042f418f-7735-4e35-9255-af7a882efc21`): all three processes passed 7,559 /
+7,559 cases. This source-bound run took 85.210 seconds with the default
+one-worker lane profile; the retained lane timers were 26.35 seconds (Rust),
+23.70 seconds (C ABI), and 23.52 seconds (WASM). The same-source
 two-worker comparison `e5dd45f6-d1dc-4c1d-a7ee-8ea143b8441d` took 115.508
 seconds. The three lanes already run concurrently, so increasing coverage
 workers is not a safe speedup: instrumented counter and cache contention
@@ -303,13 +303,13 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest source-bound current-host
-Coverage MCP run (`f3d45793-9df9-4e63-a38d-3c1de836f423`, snapshot
-`b9ab78bd-1b6d-48e9-a67c-7fef99d691a1`) measured 77.350 seconds end-to-end
-with the default one-worker split profile. Its three lanes passed all 7,556
+Coverage MCP run (`2d5d1ec9-2d16-41e6-8e4a-d55589424241`, snapshot
+`042f418f-7735-4e35-9255-af7a882efc21`) measured 85.210 seconds end-to-end
+with the default one-worker split profile. Its three lanes passed all 7,559
 runnable comparisons with 0 failures and retained the three explicitly
-pending safety-extension cases; lane timers were 24.60 seconds Rust, 24.69
-seconds C ABI, and 25.98 seconds WASM. The corresponding source-bound parity
-run is `8017f56d-9cab-4503-9e2f-6085d1d9f36f`. The focused x-height case
+pending safety-extension cases; lane timers were 26.35 seconds Rust, 23.70
+seconds C ABI, and 23.52 seconds WASM. The corresponding source-bound parity
+run is `55db8ee3-67f1-4e6f-85f0-fc9d3b402068`. The focused x-height case
 (`91144282-c800-4cd7-b6d6-1b83176f2bdd`) passed 1 / 1; its measured backend
 work was 9.110 seconds Rust, 8.739 seconds C ABI, 8.711 seconds WASM, and
 2.411 ms for comparison.
@@ -375,23 +375,23 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The latest all-lane report's retained lane timers were 24.60 seconds Rust,
-24.69 seconds C ABI, and 25.98 seconds WASM. These are backend execution
-measurements inside the 77.350-second end-to-end run; compilation, report
+The latest all-lane report's retained lane timers were 26.35 seconds Rust,
+23.70 seconds C ABI, and 23.52 seconds WASM. These are backend execution
+measurements inside the 85.210-second end-to-end run; compilation, report
 finalization, and artifact ingestion are included in the wall time but are not
 separately exposed by Coverage MCP.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,035 / 54,390 | 91.99% |
-| Branches | 9,957 / 12,592 | 79.07% |
+| Lines | 50,040 / 54,394 | 92.00% |
+| Branches | 9,964 / 12,594 | 79.12% |
 | Functions | 3,413 / 3,848 | 88.70% |
-| Regions | 68,831 / 75,616 | 91.03% |
+| Regions | 68,843 / 75,622 | 91.04% |
 
-That latest run passed all 7,556 runnable parity comparisons with 0 failures;
+That latest run passed all 7,559 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`b9ab78bd-1b6d-48e9-a67c-7fef99d691a1`. The source-bound full parity run
-`8017f56d-9cab-4503-9e2f-6085d1d9f36f` recorded 7,556 / 7,556 exact
+`042f418f-7735-4e35-9255-af7a882efc21`. The source-bound full parity run
+`55db8ee3-67f1-4e6f-85f0-fc9d3b402068` recorded 7,559 / 7,559 exact
 comparisons. Coverage MCP does not expose
 separate timestamps for compilation, report finalization, or artifact ingestion. Current
 LLVM JSON is accepted directly by Coverage
@@ -445,8 +445,8 @@ The maintained malformed BDF input
 blank line after `STARTFONT` to exercise the Rust constructor's blank-line
 skip. Pinned FreeType's `bdf_readstream_` skips bytes below space before the
 parser callback, so the input remains exact-parity safe. Source-bound parity
-run `8017f56d-9cab-4503-9e2f-6085d1d9f36f` passed 7,556 / 7,556 comparisons with
-0 failures; all-lane coverage run `f3d45793-9df9-4e63-a38d-3c1de836f423`
+run `55db8ee3-67f1-4e6f-85f0-fc9d3b402068` passed 7,559 / 7,559 comparisons with
+0 failures; all-lane coverage run `2d5d1ec9-2d16-41e6-8e4a-d55589424241`
 includes the maintained malformed format-13 parser matrix.
 
 The PostScript hinting-property matrix also keeps an out-of-range glyph-index

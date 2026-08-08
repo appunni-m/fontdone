@@ -34083,7 +34083,7 @@ static int emit_ps_hinting_engine_case(int argc, char** argv) {
     FT_UInt glyph_index = (FT_UInt)strtoul(argv[8], NULL, 10);
     FT_Int32 load_flags = (FT_Int32)strtol(argv[9], NULL, 10);
     FT_UInt property_value = (FT_UInt)strtoul(argv[10], NULL, 10);
-    const char* string_value = argv[11];
+    const char* string_value = streq(argv[11], "<null>") ? NULL : argv[11];
 
     struct ModuleFontPair_ {
         const char* module;
@@ -34140,18 +34140,29 @@ static int emit_ps_hinting_engine_case(int argc, char** argv) {
 
         /* Environment-string property path; errors are ignored by ftinit.c. */
         char env_token[512];
-        snprintf(env_token, sizeof(env_token), "%s:hinting-engine=%s",
-                 pairs[index].module, string_value);
-        setenv("FREETYPE_PROPERTIES", env_token, 1);
+        if (string_value) {
+            snprintf(env_token, sizeof(env_token), "%s:hinting-engine=%s",
+                     pairs[index].module, string_value);
+            setenv("FREETYPE_PROPERTIES", env_token, 1);
+        } else {
+            unsetenv("FREETYPE_PROPERTIES");
+        }
         FT_Set_Default_Properties(library);
         FT_UInt string_readback = 0;
         FT_Error string_get_error = FT_Property_Get(
             library, pairs[index].module, "hinting-engine", &string_readback);
         unsetenv("FREETYPE_PROPERTIES");
-        printf("\"string_value_behavior\":{\"string\":\"%s\","
-               "\"readback_after_string\":%u,\"error_ignored\":true},"
-               "\"string_get_error\":%d,",
-               string_value, string_readback, string_get_error);
+        if (string_value) {
+            printf("\"string_value_behavior\":{\"string\":\"%s\","
+                   "\"readback_after_string\":%u,\"error_ignored\":true},"
+                   "\"string_get_error\":%d,",
+                   string_value, string_readback, string_get_error);
+        } else {
+            printf("\"string_value_behavior\":{\"string\":null,"
+                   "\"readback_after_string\":%u,\"error_ignored\":true},"
+                   "\"string_get_error\":%d,",
+                   string_readback, string_get_error);
+        }
 
         FT_Error first_load = -1;
         FT_Error second_load = -1;
