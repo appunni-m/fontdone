@@ -22,7 +22,9 @@ COVERAGE_LLVM_COV_FLAGS ?= --no-clean
 COVERAGE_NORMALIZE_SEGMENTS ?= 0
 COVERAGE_PREPARATION_JOBS ?= 2
 COVERAGE_ALL_TARGET_DIR ?= target/llvm-cov-all-lanes
-COVERAGE_BUILD_STATE_FILE ?= $(COVERAGE_ALL_TARGET_DIR)/coverage-build-state
+# Keep the marker outside Cargo's target tree: `llvm-cov clean --workspace`
+# removes that tree when a source/configuration transition is detected.
+COVERAGE_BUILD_STATE_FILE ?= target/coverage/unified-runtime-all-lanes.build-state
 COVERAGE_PROFILE_DIR ?= $(COVERAGE_ALL_TARGET_DIR)/llvm-cov-target
 COVERAGE_TEST_BINARY ?=
 COVERAGE_UNIFIED_TEST_NAME ?= parity_fixture::unified_fixture_parity
