@@ -144,11 +144,11 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `71a6d996-4cc6-437a-a4de-d6decd5fabc5` (snapshot
-`3d12dece-be1a-4c08-bdad-94a610cf80fb`): all three processes passed 7,542 /
-7,542 cases. This warm source-matched run took 29.881 seconds with the
-default one-worker lane profile; the retained lane timers were 22.803 seconds
-(Rust), 20.608 seconds (C ABI), and 20.424 seconds (WASM). The same-source
+Coverage MCP run `8922c0ae-767c-4d62-8dfe-447d352a5b51` (snapshot
+`5c8acf09-fcb7-498d-95d2-a9c2faab5a7a`): all three processes passed 7,542 /
+7,542 cases. This warm source-bound run took 29.234 seconds with the default
+one-worker lane profile; the retained lane timers were 24.83 seconds (Rust),
+24.92 seconds (C ABI), and 26.36 seconds (WASM). The same-source
 two-worker comparison `e5dd45f6-d1dc-4c1d-a7ee-8ea143b8441d` took 115.508
 seconds. The three lanes already run concurrently, so increasing coverage
 workers is not a safe speedup: instrumented counter and cache contention
@@ -272,17 +272,24 @@ writes `target/coverage/unified-runtime-all-lanes.json`; test-harness paths are
 the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
-reuse the instrumented target and binary. The latest current-host Coverage MCP
-run (`e068f42a-1f89-4504-b438-fe82602f9777`, snapshot
-`bd628f06-3846-4c7e-8c82-76f26c8d437f`) measured 73.636 seconds end-to-end
-after `FT_Render_Glyph` was changed to refresh the existing glyph slot
-in-place instead of rebuilding its public face metadata. It passed all 7,542
+reuse the instrumented target and binary. The latest source-bound current-host
+Coverage MCP run (`8922c0ae-767c-4d62-8dfe-447d352a5b51`, snapshot
+`5c8acf09-fcb7-498d-95d2-a9c2faab5a7a`) measured 29.234 seconds end-to-end
+with the default one-worker split profile. Its three lanes passed all 7,542
 runnable comparisons with 0 failures and retained the three explicitly
-pending safety-extension cases. The focused x-height case
+pending safety-extension cases; lane timers were 24.83 seconds Rust, 24.92
+seconds C ABI, and 26.36 seconds WASM. The corresponding source-bound parity
+run is `1b52e95f-d24b-448e-a966-8b1d121d9a4e`. The focused x-height case
 (`91144282-c800-4cd7-b6d6-1b83176f2bdd`) passed 1 / 1; its measured backend
 work was 9.110 seconds Rust, 8.739 seconds C ABI, 8.711 seconds WASM, and
-2.411 ms for comparison. The preceding
-image-cache remove-face-ID run (`b8b246c4-a7d9-4d39-8f08-aeb4694679f4`,
+2.411 ms for comparison.
+The latest cache-miss comparison (`90f0239f-93a7-4f66-a758-eb84da5d24b7`)
+took 80.314 seconds because instrumented compilation consumed 47.59 seconds;
+its longest lane was 26.45 seconds and the oracle cache reported 6,211 hits.
+This isolates cold instrumented compilation as the large coverage delay; the
+warm split lanes and report complete in about 29 seconds on this host. The
+preceding image-cache remove-face-ID run
+(`b8b246c4-a7d9-4d39-8f08-aeb4694679f4`,
 snapshot `54a29596-5f12-4598-b272-2ca8df957b63`) measured 89.542 seconds. The
 preceding
 source/input-bound refresh (`b0194751-8e81-4d73-a17d-d6ae1a636c71`, snapshot
@@ -393,6 +400,15 @@ oracle outputs remain ignored under `tests/fixtures/*.json` and
 The canonical input tree currently contains 644 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
+
+The maintained malformed BDF input
+`tests/fixtures/input/fixtures/assets/bdf/missing_font_field.bdf` contains a
+blank line after `STARTFONT` to exercise the Rust constructor's blank-line
+skip. Pinned FreeType's `bdf_readstream_` skips bytes below space before the
+parser callback, so the input remains exact-parity safe. Source-bound parity
+run `1b52e95f-d24b-448e-a966-8b1d121d9a4e` passed 7,542 / 7,542 comparisons with
+0 failures; all-lane coverage run `8922c0ae-767c-4d62-8dfe-447d352a5b51`
+increased coverage by one line, one branch, and one region.
 
 Before changing a fixture:
 

@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`2a86b5f7-2dd7-4211-989b-f6da4640070c`, recorded by
-`ab32b171-441d-4fb5-be54-c2968923290c` in
+`1b52e95f-d24b-448e-a966-8b1d121d9a4e`, recorded by
+`b6219569-f5b9-4fbb-a133-d7ea6ba1f404` in
 `doc/runtime_parity_evidence.json` after passing 7,542 / 7,542 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `05133370c005aa000b0c59c3e3a9512ee2558fcaec5264ef0936d1a631e610cb`.
+Its source-bound parity-tree digest is `fc9f242b48c8469abdf9d0676c246e078310a51cb8509c060ec06d241ff5d2a8`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -140,23 +140,36 @@ their exact worktree than the committed release snapshot.
 
 ### 3.3 Last measured combined coverage
 
-The latest all-lane coverage snapshot was recorded on **2026-08-08**
-for the current source-matched working tree (Coverage MCP run
-`71a6d996-4cc6-437a-a4de-d6decd5fabc5`, snapshot
-`3d12dece-be1a-4c08-bdad-94a610cf80fb`):
+The latest source-bound all-lane coverage snapshot was recorded on
+**2026-08-08** for commit `d9ac1a39e083fb9dfb8bb3c40ba7b18097e09e19`
+(Coverage MCP run `8922c0ae-767c-4d62-8dfe-447d352a5b51`, snapshot
+`5c8acf09-fcb7-498d-95d2-a9c2faab5a7a`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,975 / 54,387 | 91.89% |
-| Branches | 9,929 / 12,592 | 78.85% |
+| Lines | 49,976 / 54,387 | 91.89% |
+| Branches | 9,930 / 12,592 | 78.86% |
 | Functions | 3,410 / 3,848 | 88.62% |
-| Regions | 68,749 / 75,614 | 90.92% |
+| Regions | 68,750 / 75,614 | 90.92% |
 
-This warm source-matched validation completed in 29.881 seconds with the
+This warm source-bound validation completed in 29.234 seconds with the
 default `COVERAGE_UNIFIED_WORKERS=1`. The same-source two-worker comparison
 (`e5dd45f6-d1dc-4c1d-a7ee-8ea143b8441d`) took 115.508 seconds, confirming that
 extra workers contend inside each instrumented lane instead of reducing the
 wall time.
+
+The maintained malformed BDF input
+`tests/fixtures/input/fixtures/assets/bdf/missing_font_field.bdf` now includes
+one blank line after `STARTFONT`. That exercises Rust's blank-line parser path;
+the pinned C reader skips the same byte range before invoking its parser. The
+source-bound parity run `1b52e95f-d24b-448e-a966-8b1d121d9a4e` passed 7,542 /
+7,542 comparisons with 0 failures, and coverage increased by one line, one
+branch, and one region without changing any denominator or function count.
+When the instrumented binary cache is cold, the managed run
+`90f0239f-93a7-4f66-a758-eb84da5d24b7` took 80.314 seconds, including a
+47.59-second instrumented rebuild; its longest lane was 26.45 seconds. This
+identifies cache-miss compilation, not MCP ingestion or the C oracle, as the
+large delay on cold coverage runs.
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
