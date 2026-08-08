@@ -48173,6 +48173,12 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         {
             c_image_cache_new_too_many(case)
         }
+        "ftcache.sbit_cache_new"
+            if case_id_base(&case.case_id)
+                == "ftcache.FTC_SBitCache_New.invalid_arguments_match_c" =>
+        {
+            c_sbit_cache_new_invalid()
+        }
         "ftcache.cmap_cache_lookup"
             if !case.expect_error && cmap_cache_indexes(&case.inputs.params).is_ok() =>
         {
@@ -58264,6 +58270,35 @@ fn c_image_cache_new_too_many(case: &InputCase) -> Result<RunOutput, String> {
     // remains on the cache-subsystem parity boundary used by the pinned
     // oracle until the full cache-registration contract is promoted.
     Ok(error(FT_Err_Unimplemented_Feature as FT_Error))
+}
+
+fn c_sbit_cache_new_invalid() -> Result<RunOutput, String> {
+    let bytes = font_asset_bytes(&Asset::File {
+        path: "input/fonts/DejaVuSans.ttf".to_string(),
+        sha256: None,
+        length: None,
+    })?;
+    let manager = c_abi::AbiSBitCacheHarness::new_manager_only(bytes.as_ref(), 0)
+        .map_err(|error| format!("C ABI cache manager setup returned {error}"))?;
+
+    let mut cache = 1usize as c_abi::FTC_SBitCache;
+    let status = c_abi::FTC_SBitCache_New(ptr::null_mut(), &mut cache);
+    if status != FT_Err_Invalid_Argument || !cache.is_null() {
+        return Err(format!(
+            "FTC_SBitCache_New null manager returned {status} or did not clear cache output"
+        ));
+    }
+
+    let status = c_abi::FTC_SBitCache_New(manager.manager_handle(), ptr::null_mut());
+    if status != FT_Err_Invalid_Argument {
+        return Err(format!(
+            "FTC_SBitCache_New null output returned {status}, expected {FT_Err_Invalid_Argument}"
+        ));
+    }
+
+    // The exported calls above are the contract probe; this maintained
+    // validation case matches the pinned C error exactly.
+    Ok(error(FT_Err_Invalid_Argument))
 }
 
 fn wasm_cmap_cache_new(case: &InputCase) -> Result<RunOutput, String> {

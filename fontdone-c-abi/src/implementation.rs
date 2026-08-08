@@ -2172,6 +2172,12 @@ pub extern "C" fn FTC_ImageCache_LookupScaler(
 
 #[unsafe(no_mangle)]
 pub extern "C" fn FTC_SBitCache_New(manager: FTC_Manager, acache: *mut FTC_SBitCache) -> FT_Error {
+    if !acache.is_null() {
+        // SAFETY: the output pointer is non-null and caller-owned.
+        unsafe {
+            *acache = ptr::null_mut();
+        }
+    }
     if manager.is_null() || acache.is_null() {
         return rust_ffi::FT_Err_Invalid_Argument;
     }

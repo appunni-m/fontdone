@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`97c0bfda-1736-4bc9-af10-e1a1f5603589`, recorded by
-`d7264bbe-1eef-4809-ae18-8110bcc38cd7` in
+`1376d5f7-127c-4de2-a4d6-b20954357ef4`, recorded by
+`f4b99ab0-1b4b-4e77-9207-a6ec5a4191f1` in
 `doc/runtime_parity_evidence.json` after passing 7,542 / 7,542 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `6d80e7af0670b2dd6672bb1e5d28957a6d88cb9cfca5cea015fa2d89038828cb`.
+Its source-bound parity-tree digest is `8357eb8c88d14cda47ef1dc094a22bf5fa249622fd257d6e49ddf53599b89889`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,17 +142,17 @@ their exact worktree than the committed release snapshot.
 
 The latest all-lane coverage snapshot was recorded on **2026-08-08**
 for the current source-matched working tree (Coverage MCP run
-`08237caa-2c54-4264-9e7b-ba72aa8fae4e`, snapshot
-`90d65800-8c5e-4652-9d07-74489a636957`):
+`1e2c11f5-4911-408d-8f55-c0462b08010c`, snapshot
+`9192bd59-abc5-4763-ace5-16603970ac4c`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,968 / 54,382 | 91.88% |
-| Branches | 9,924 / 12,590 | 78.82% |
+| Lines | 49,974 / 54,387 | 91.89% |
+| Branches | 9,928 / 12,592 | 78.84% |
 | Functions | 3,410 / 3,848 | 88.62% |
-| Regions | 68,744 / 75,611 | 90.92% |
+| Regions | 68,748 / 75,614 | 90.92% |
 
-This source-changing validation completed in 96.315 seconds, including the
+This source-changing validation completed in 107.170 seconds, including the
 instrumented rebuild; it is not a warm speed comparison.
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
@@ -257,7 +257,7 @@ routes remain even when every bare function name has some traced route. The self
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`728577dc-3b57-4d3b-9f41-ffb148225816`.
+`0d0fd204-57c5-4a62-a6ed-5b6be2a6782e`.
 
 ### 3.5 Performance baseline
 
