@@ -27,15 +27,15 @@
     "fontdone_pub_enums": 19
   },
   "runtime_parity": {
-    "runnable": 7545,
-    "passed": 7545,
+    "runnable": 7546,
+    "passed": 7546,
     "failed": 0,
     "pending": 3,
     "covered_manifest": 4195,
     "validated_input_subjects": 1543,
     "validated_input_files": 1537,
     "logical_input_cases": 4287,
-    "concrete_input_cases": 7548,
+    "concrete_input_cases": 7549,
     "function_route_evidence": 218,
     "function_total": 218
   },
@@ -43,8 +43,8 @@
     "categories_complete": 10,
     "categories_total": 12,
     "is_complete": false,
-    "runtime_contract_rows_complete": 5288,
-    "runtime_contract_rows_total": 5288,
+    "runtime_contract_rows_complete": 5289,
+    "runtime_contract_rows_total": 5289,
     "runtime_contract_rows_pending": 0,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
@@ -54,23 +54,23 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-08-08",
-    "source_commit": "53a0b66df50267cc1d1e7a767d57c5210ae52349",
+    "source_commit": "0aec66b80a799738182d7ad6abf38c938cd0e9f4",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "01303fc3-5792-485b-82ba-0f0a84d8cfe4",
-    "snapshot_id": "e4a33be1-aed3-4d80-a165-b078e794e23b",
-    "duration_ms": 61445,
+    "run_id": "131fe298-620d-46ef-b649-1df65e56a525",
+    "snapshot_id": "f1f48e98-610c-46bd-9a17-9b2217937eb4",
+    "duration_ms": 79075,
     "exit_code": 0,
     "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with line-table debuginfo=1 and COVERAGE_UNIFIED_WORKERS=1; one instrumented test binary runs directly in three split backend processes; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; source-digest-bound expanded input cache reused across the three processes; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; clean binary preparation uses cargo llvm-cov --no-report -- --list; raw LLVM JSON is ingested directly, with segment normalization retained only as an opt-in compatibility rewrite; test-harness source excluded",
     "lines": {
-      "covered": 49986,
+      "covered": 49987,
       "total": 54390,
-      "percent": 91.90292333149476
+      "percent": 91.9047619047619
     },
     "branches": {
-      "covered": 9941,
+      "covered": 9942,
       "total": 12594,
-      "percent": 78.934413212641
+      "percent": 78.94235350166744
     },
     "functions": {
       "covered": 3410,
@@ -78,13 +78,13 @@
       "percent": 88.61746361746363
     },
     "regions": {
-      "covered": 68760,
+      "covered": 68773,
       "total": 75617,
-      "percent": 90.93193329542298
+      "percent": 90.94912519671502
     },
     "runtime_parity": {
-      "runnable": 7545,
-      "passed": 7545,
+      "runnable": 7546,
+      "passed": 7546,
       "failed": 0,
       "pending": 3
     },
@@ -1358,9 +1358,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "75cdb86d7cfac53368c2627af3b90bc2b8bcc0ff03df66b39c0ceb7b9721b7e8",
-    "parity_tree_sha256": "1df9416946c833b5da1ca3ae007ef92c6bfab7efe2dda8545b129858111a6ac0",
-    "log_sha256": "91a5c92aae977bae84a34598989c22e88444ebef8f910be5faba84e9bd39fc02",
+    "sha256": "66956ae95d6338d611b9cdc725d2112c363a2753d1a7568c1ba1ec43dadf9e47",
+    "parity_tree_sha256": "9634354774e97f4ff5fe91aa85b6c34519e5399452cb782dfa53d47fbdb77b86",
+    "log_sha256": "925a89fe9add6c077f19d8c7ad267e30c3e6e33a9f95c15c6125523ec3fe6ceb",
     "command": "make test-parity"
   }
 }

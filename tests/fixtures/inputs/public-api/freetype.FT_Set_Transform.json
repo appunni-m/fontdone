@@ -432,6 +432,40 @@
               "freetype.set_transform:composite-no-recurse-without-slot-outline",
               "api:load-glyph-transform-no-slot-outline"
             ]
+          },
+          {
+            "id": "sbix-missing-bitmap-transformed",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/sbix/sbix-bitmap-only.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "transform": {
+                "matrix": {
+                  "xx": 32768,
+                  "xy": 16384,
+                  "yx": -8192,
+                  "yy": 98304
+                },
+                "delta": [
+                  64,
+                  -128
+                ]
+              },
+              "glyph_index": 0,
+              "size_ppem": 24,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "coverage": [
+              "freetype.set_transform:sbix-missing-bitmap-transformed",
+              "api:load-glyph-transform-sbix-missing-bitmap"
+            ]
           }
         ]
       },
