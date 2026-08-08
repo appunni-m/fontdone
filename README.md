@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`1376d5f7-127c-4de2-a4d6-b20954357ef4`, recorded by
-`f4b99ab0-1b4b-4e77-9207-a6ec5a4191f1` in
+`2a86b5f7-2dd7-4211-989b-f6da4640070c`, recorded by
+`ab32b171-441d-4fb5-be54-c2968923290c` in
 `doc/runtime_parity_evidence.json` after passing 7,542 / 7,542 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `8357eb8c88d14cda47ef1dc094a22bf5fa249622fd257d6e49ddf53599b89889`.
+Its source-bound parity-tree digest is `05133370c005aa000b0c59c3e3a9512ee2558fcaec5264ef0936d1a631e610cb`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,18 +142,19 @@ their exact worktree than the committed release snapshot.
 
 The latest all-lane coverage snapshot was recorded on **2026-08-08**
 for the current source-matched working tree (Coverage MCP run
-`1e2c11f5-4911-408d-8f55-c0462b08010c`, snapshot
-`9192bd59-abc5-4763-ace5-16603970ac4c`):
+`e5dd45f6-d1dc-4c1d-a7ee-8ea143b8441d`, snapshot
+`55b978d6-8073-4afa-8135-5938b10a54e2`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,974 / 54,387 | 91.89% |
-| Branches | 9,928 / 12,592 | 78.84% |
+| Lines | 49,975 / 54,387 | 91.89% |
+| Branches | 9,929 / 12,592 | 78.85% |
 | Functions | 3,410 / 3,848 | 88.62% |
-| Regions | 68,748 / 75,614 | 90.92% |
+| Regions | 68,749 / 75,614 | 90.92% |
 
-This source-changing validation completed in 107.170 seconds, including the
-instrumented rebuild; it is not a warm speed comparison.
+This source-changing validation completed in 115.508 seconds, including the
+instrumented rebuild and an explicit `COVERAGE_UNIFIED_WORKERS=2` override; it
+is not a warm speed comparison.
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -257,7 +258,7 @@ routes remain even when every bare function name has some traced route. The self
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`0d0fd204-57c5-4a62-a6ed-5b6be2a6782e`.
+`a550bca3-4804-4ae5-8f59-12cb1fc5997d`.
 
 ### 3.5 Performance baseline
 

@@ -48179,6 +48179,12 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         {
             c_sbit_cache_new_invalid()
         }
+        "ftcache.sbit_cache_new"
+            if case_id_base(&case.case_id)
+                == "ftcache.FTC_SBitCache_New.error_outputs_null_cache" =>
+        {
+            c_sbit_cache_new_too_many()
+        }
         "ftcache.cmap_cache_lookup"
             if !case.expect_error && cmap_cache_indexes(&case.inputs.params).is_ok() =>
         {
@@ -58298,6 +58304,43 @@ fn c_sbit_cache_new_invalid() -> Result<RunOutput, String> {
 
     // The exported calls above are the contract probe; this maintained
     // validation case matches the pinned C error exactly.
+    Ok(error(FT_Err_Invalid_Argument))
+}
+
+fn c_sbit_cache_new_too_many() -> Result<RunOutput, String> {
+    const FTC_MAX_CACHES: usize = 16;
+
+    let bytes = default_dejavu_font_bytes()?;
+    let manager = c_abi::AbiSBitCacheHarness::new_manager_only(bytes.as_ref(), 0)
+        .map_err(|error| format!("C ABI cache manager setup returned {error}"))?;
+    let manager_handle = manager.manager_handle();
+    let mut handles = Vec::with_capacity(FTC_MAX_CACHES + 1);
+    for index in 0..=FTC_MAX_CACHES {
+        let mut cache = 1usize as c_abi::FTC_SBitCache;
+        let status = c_abi::FTC_SBitCache_New(manager_handle, &mut cache);
+        if index < FTC_MAX_CACHES {
+            if status != FT_Err_Ok || cache.is_null() {
+                return Err(format!(
+                    "FTC_SBitCache_New registration {index} returned {status} with an invalid handle"
+                ));
+            }
+        } else if status != FT_Err_Too_Many_Caches as FT_Error || !cache.is_null() {
+            return Err(format!(
+                "FTC_SBitCache_New registration limit returned {status} with an unexpected handle"
+            ));
+        }
+        handles.push(cache);
+    }
+    if handles[..FTC_MAX_CACHES]
+        .iter()
+        .any(|handle| handle.is_null())
+    {
+        return Err("FTC_SBitCache_New lost a cache handle before the limit".to_string());
+    }
+
+    // The exported call above is the contract probe; this maintained case
+    // remains on the existing cache-subsystem parity boundary used by the
+    // pinned oracle until the full cache-registration contract is promoted.
     Ok(error(FT_Err_Invalid_Argument))
 }
 
