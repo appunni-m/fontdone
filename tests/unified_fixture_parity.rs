@@ -48227,6 +48227,12 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             manager_lifecycle_output(case, c_manager_done)
         }
         "ftcache.manager_lookup_size"
+            if case_id_base(&case.case_id)
+                == "ftcache.FTC_Manager_LookupSize.error_null_scaler_output_or_manager" =>
+        {
+            c_manager_lookup_size_null(case)
+        }
+        "ftcache.manager_lookup_size"
             if !case.expect_error && cache_scaler_rows(&case.inputs.params).is_ok() =>
         {
             c_manager_lookup_size(case)
@@ -58844,6 +58850,59 @@ fn c_manager_lookup_face_null(case: &InputCase) -> Result<RunOutput, String> {
             FT_Err_Unimplemented_Feature as FT_Error
         },
     ))
+}
+
+fn c_manager_lookup_size_null(case: &InputCase) -> Result<RunOutput, String> {
+    let bytes = font_bytes(case)?;
+    let mut manager = c_abi::AbiSBitCacheHarness::new_manager_only(
+        bytes.as_ref(),
+        face_index_param(&case.inputs.params)?,
+    )
+    .map_err(|error| format!("FTC_Manager_New returned {error}"))?;
+    let manager_handle = manager.manager_handle();
+    let face_id = manager.face_id();
+    let row = cache_scaler_rows(&case.inputs.params)?
+        .first()
+        .copied()
+        .ok_or_else(|| "FTC_Manager_LookupSize null route requires a scaler".to_string())?;
+    let mut scaler = c_abi::FTC_ScalerRec {
+        face_id,
+        width: row.width,
+        height: row.height,
+        pixel: if row.pixel { 1 } else { 0 },
+        x_res: row.x_res,
+        y_res: row.y_res,
+    };
+
+    let mut size = 1usize as c_abi::FT_Size;
+    let status = c_abi::FTC_Manager_LookupSize(manager_handle, ptr::null_mut(), &mut size);
+    if status != FT_Err_Invalid_Argument {
+        return Err(format!(
+            "FTC_Manager_LookupSize null scaler returned {status}, expected {FT_Err_Invalid_Argument}"
+        ));
+    }
+
+    let status =
+        c_abi::FTC_Manager_LookupSize(manager_handle, ptr::from_mut(&mut scaler), ptr::null_mut());
+    if status != FT_Err_Invalid_Argument {
+        return Err(format!(
+            "FTC_Manager_LookupSize null output returned {status}, expected {FT_Err_Invalid_Argument}"
+        ));
+    }
+
+    size = 1usize as c_abi::FT_Size;
+    let status =
+        c_abi::FTC_Manager_LookupSize(ptr::null_mut(), ptr::from_mut(&mut scaler), &mut size);
+    if status != FT_Err_Invalid_Cache_Handle as c_abi::FT_Error {
+        return Err(format!(
+            "FTC_Manager_LookupSize null manager returned {status}, expected {FT_Err_Invalid_Cache_Handle}"
+        ));
+    }
+    if !size.is_null() {
+        return Err("FTC_Manager_LookupSize did not clear null-manager output".to_string());
+    }
+
+    Ok(error(FT_Err_Unimplemented_Feature as FT_Error))
 }
 
 fn wasm_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
