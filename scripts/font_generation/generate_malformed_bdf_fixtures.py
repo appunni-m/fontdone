@@ -188,7 +188,7 @@ ENDFONT
     )
     write_fixture(
         "input/fixtures/assets/bdf/missing_font_field.bdf",
-        "STARTFONT 2.1\nSIZE 8 75 75\nFONTBOUNDINGBOX 8 8 0 -2\nCHARS 0\nENDFONT\n",
+        "STARTFONT 2.1\n\nSIZE 8 75 75\nFONTBOUNDINGBOX 8 8 0 -2\nCHARS 0\nENDFONT\n",
     )
     write_fixture(
         "input/fixtures/assets/bdf/missing_size_field.bdf",
