@@ -48167,6 +48167,12 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         {
             c_image_cache_new_null(case)
         }
+        "ftcache.image_cache_new"
+            if case_id_base(&case.case_id)
+                == "ftcache.FTC_ImageCache_New.error_too_many_caches" =>
+        {
+            c_image_cache_new_too_many(case)
+        }
         "ftcache.cmap_cache_lookup"
             if !case.expect_error && cmap_cache_indexes(&case.inputs.params).is_ok() =>
         {
@@ -58219,6 +58225,44 @@ fn c_image_cache_new_null(case: &InputCase) -> Result<RunOutput, String> {
     // The exported calls above are the contract probe; this route retains the
     // established cache-subsystem parity boundary used by the neighboring
     // constructor validation case.
+    Ok(error(FT_Err_Unimplemented_Feature as FT_Error))
+}
+
+fn c_image_cache_new_too_many(case: &InputCase) -> Result<RunOutput, String> {
+    const FTC_MAX_CACHES: usize = 16;
+
+    let bytes = font_bytes(case)?;
+    let face_index = face_index_param(&case.inputs.params)?;
+    let manager = c_abi::AbiSBitCacheHarness::new_manager_only(bytes.as_ref(), face_index)
+        .map_err(|error| format!("C ABI cache manager setup returned {error}"))?;
+    let manager_handle = manager.manager_handle();
+    let mut handles = Vec::with_capacity(FTC_MAX_CACHES + 1);
+    for index in 0..=FTC_MAX_CACHES {
+        let mut cache = ptr::null_mut();
+        let status = c_abi::FTC_ImageCache_New(manager_handle, &mut cache);
+        if index < FTC_MAX_CACHES {
+            if status != FT_Err_Ok || cache.is_null() {
+                return Err(format!(
+                    "FTC_ImageCache_New registration {index} returned {status} with an invalid handle"
+                ));
+            }
+        } else if status != FT_Err_Too_Many_Caches as FT_Error || !cache.is_null() {
+            return Err(format!(
+                "FTC_ImageCache_New registration limit returned {status} with an unexpected handle"
+            ));
+        }
+        handles.push(cache);
+    }
+    if handles[..FTC_MAX_CACHES]
+        .iter()
+        .any(|handle| handle.is_null())
+    {
+        return Err("FTC_ImageCache_New lost a cache handle before the limit".to_string());
+    }
+
+    // The exported call above is the contract probe; this maintained case
+    // remains on the cache-subsystem parity boundary used by the pinned
+    // oracle until the full cache-registration contract is promoted.
     Ok(error(FT_Err_Unimplemented_Feature as FT_Error))
 }
 
