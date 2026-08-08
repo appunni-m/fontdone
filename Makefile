@@ -53,10 +53,41 @@ ALL_LANES_COVERAGE_IGNORE_REGEX := /tests/
 # cfg builds of the same source file.  Use the newest commit touching compiler
 # inputs instead of the current HEAD, so fixture/docs-only commits do not
 # discard a reusable instrumented binary.  A dirty compiler-input tree still
-# forces a clean rebuild.  Worker count and lane splitting only change process
-# orchestration; neither changes the compiled coverage map.
-COVERAGE_SOURCE_STATE := $(shell git log -1 --format=%H -- Cargo.toml Cargo.lock Makefile src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs 2>/dev/null || printf unknown)-$(shell if test -n "$(shell git status --porcelain --untracked-files=all -- Cargo.toml Cargo.lock Makefile src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs 2>/dev/null)"; then printf dirty; else printf clean; fi)
+# forces a clean rebuild.  The Makefile itself is excluded because coverage
+# compiler settings are recorded below and preparation/lane orchestration does
+# not change the compiled coverage map.
+COVERAGE_SOURCE_STATE := $(shell git log -1 --format=%H -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs 2>/dev/null || printf unknown)-$(shell if test -n "$(shell git status --porcelain --untracked-files=all -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs 2>/dev/null)"; then printf dirty; else printf clean; fi)
 COVERAGE_BUILD_STATE := $(COVERAGE_SOURCE_STATE)|toolchain=$(COVERAGE_TOOLCHAIN)|opt=$(COVERAGE_TEST_OPT_LEVEL)|debug=$(COVERAGE_TEST_DEBUG)|flags=$(COVERAGE_LLVM_COV_FLAGS)
+# Evaluate preparation inputs before the target recipe cleans stale coverage
+# artifacts. This lets the recursive make stay on its own recipe line, where
+# GNU Make can propagate the jobserver instead of falling back to -j1 from a
+# shell compound command.
+COVERAGE_BUILD_STATE_MATCHES := $(shell \
+	if test -r '$(COVERAGE_BUILD_STATE_FILE)' && \
+		test "$$(cat '$(COVERAGE_BUILD_STATE_FILE)')" = '$(COVERAGE_BUILD_STATE)'; then \
+		printf 1; \
+	else \
+		printf 0; \
+	fi)
+COVERAGE_OPTIONAL_FEATURES_READY := $(shell \
+	ready=1; \
+	for path in \
+		target/optional-features-disabled/release/examples/optional_feature_probe \
+		target/optional-features-disabled/unified-fixtures/gen_fontdone_external \
+		target/subpixel-rendering-enabled/release/examples/optional_feature_probe \
+		target/subpixel-rendering-enabled/unified-fixtures/gen_fontdone_external; do \
+		test -x "$$path" || ready=0; \
+	done; \
+	printf '%s' "$$ready")
+COVERAGE_PREPARATION_TARGETS := unified-oracle bzip2-enabled-oracle api-abi-runtime-check
+ifneq ($(COVERAGE_BUILD_STATE_MATCHES),1)
+COVERAGE_PREPARATION_TARGETS += optional-feature-contract
+else ifneq ($(COVERAGE_OPTIONAL_FEATURES_READY),1)
+COVERAGE_PREPARATION_TARGETS += optional-feature-contract
+endif
+ifneq ($(COVERAGE_ABI_PREFLIGHT),0)
+COVERAGE_PREPARATION_TARGETS += coverage-abi-preflight
+endif
 PLATFORM_TARGET ?=
 PLATFORM_CC ?=
 PLATFORM_NM ?=
@@ -288,25 +319,10 @@ test-coverage-all:
 		rm -f "$$state_file"; \
 		coverage_state_changed=1; \
 	fi; \
-	optional_features_ready=1; \
-	for path in \
-		target/optional-features-disabled/release/examples/optional_feature_probe \
-		target/optional-features-disabled/unified-fixtures/gen_fontdone_external \
-		target/subpixel-rendering-enabled/release/examples/optional_feature_probe \
-		target/subpixel-rendering-enabled/unified-fixtures/gen_fontdone_external; do \
-		test -x "$$path" || optional_features_ready=0; \
-	done; \
-	if test "$$coverage_state_changed" = 1 || test "$$optional_features_ready" = 0; then \
+	if test "$$coverage_state_changed" = 1; then \
 		echo "coverage optional-feature artifacts missing or stale; preparing isolated bundles"; \
-		$(MAKE) --no-print-directory -j$(COVERAGE_PREPARATION_JOBS) \
-			unified-oracle bzip2-enabled-oracle optional-feature-contract \
-			api-abi-runtime-check \
-			$(if $(filter 1,$(COVERAGE_ABI_PREFLIGHT)),coverage-abi-preflight); \
-	else \
-		$(MAKE) --no-print-directory -j$(COVERAGE_PREPARATION_JOBS) \
-			unified-oracle bzip2-enabled-oracle api-abi-runtime-check \
-			$(if $(filter 1,$(COVERAGE_ABI_PREFLIGHT)),coverage-abi-preflight); \
 	fi
+	+$(MAKE) --no-print-directory -j$(COVERAGE_PREPARATION_JOBS) $(COVERAGE_PREPARATION_TARGETS)
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --profraw-only
 	# cargo-llvm-cov only knows its default profile names; remove the explicit
 	# per-lane files before report so stale runs cannot be rescanned or merged.
