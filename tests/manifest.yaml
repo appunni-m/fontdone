@@ -2719,13 +2719,17 @@ subjects:
       - id: success_existing_bgra_reallocates_or_preserves
         description: Blending into an existing BGRA target expands or preserves the target rectangle and pixel bytes exactly like C.
       - id: success_source_pixel_modes_and_flow
-        description: MONO, GRAY2, GRAY4, GRAY, LCD, LCD_V, and BGRA sources with positive and negative pitch produce exact C BGRA bytes.
+        description: MONO, GRAY2, GRAY4, GRAY, LCD, LCD_V, BGRA, and NONE sources with positive and negative pitch produce exact C BGRA bytes or the defined no-op.
+      - id: success_empty_source_noop
+        description: A zero-width source returns success without allocating or mutating the empty BGRA target, matching pinned C.
       - id: success_integerizes_offsets
         description: Source and target offsets have their low six 26.6 bits cleared and the returned target offset matches C.
       - id: error_invalid_arguments_or_target_mode
         description: Null library/source/target/atarget_offset and non-empty non-BGRA target modes return C error classifications and write behavior.
       - id: error_overflow_or_flow_mismatch
         description: Coordinate overflow and source/target pitch-flow mismatch return the same C error and preserve/release buffers exactly as C.
+      - id: error_coordinate_overflow
+        description: FT_Long boundary source and pre-existing target offsets take each pinned-C coordinate-overflow guard and return Invalid_Argument without changing the target.
     # needs-input: operation=FT_Bitmap_Blend; fixture_asset=synthetic FT_Bitmap matrices plus rendered glyph bitmaps from input/fonts/DejaVuSans.ttf; params source pixel modes MONO/GRAY2/GRAY4/GRAY/LCD/LCD_V/BGRA, positive and negative pitch, source_offset and target_offset with fractional 26.6 bits, empty and preallocated BGRA targets, null pointers, invalid target mode, overflow coordinates; output shape=FT_Error, target FT_Bitmap fields rows/width/pitch/pixel_mode/num_grays/buffer bytes, updated FT_Vector target_offset, and allocation/free classification; comparison=exact C oracle error, fields, bytes, offset, and write/preservation behavior.
 
   - id: ftbitmap.FT_Bitmap_Convert

@@ -3965,6 +3965,32 @@ static int emit_bitmap_blend(const char* scenario) {
     FT_Vector source_offset = { 31, 95 };
     FT_Vector target_offset = { -33, 130 };
 
+    if (streq(scenario, "success_empty_source_noop")) {
+        unsigned char source_bytes[96];
+        FT_Bitmap source;
+        FT_Bitmap target;
+        FT_Vector empty_target_offset = { -33, 130 };
+
+        bitmap_blend_source(&source, source_bytes, FT_PIXEL_MODE_GRAY, 0);
+        source.width = 0;
+        FT_Bitmap_Init(&target);
+        err = FT_Bitmap_Blend(
+            library, &source, source_offset, &target, &empty_target_offset, color);
+
+        printf("{");
+        print_status(err);
+        if (!err) {
+            printf(",\"output\":{\"runs\":[{");
+            print_status(err);
+            printf(",\"output\":");
+            print_blend_run_output(&target, &empty_target_offset);
+            printf("}]}");
+        }
+        printf("}\n");
+        if (target.buffer) FT_Bitmap_Done(library, &target);
+        FT_Done_FreeType(library);
+        return 0;
+    }
     if (streq(scenario, "error_invalid_arguments_or_target_mode")) {
         FT_Bitmap null_source;
         FT_Bitmap null_target;
@@ -4011,16 +4037,75 @@ static int emit_bitmap_blend(const char* scenario) {
         FT_Done_FreeType(library);
         return 0;
     }
+    if (streq(scenario, "error_coordinate_overflow")) {
+        unsigned char source_bytes[96];
+        FT_Bitmap source;
+        FT_Bitmap target;
+        FT_Vector probe_target_offset;
+        FT_Error first_error = FT_Err_Ok;
+
+        bitmap_blend_source(&source, source_bytes, FT_PIXEL_MODE_GRAY, 0);
+
+        FT_Bitmap_Init(&target);
+        probe_target_offset.x = -33;
+        probe_target_offset.y = 130;
+        err = FT_Bitmap_Blend(
+            library, &source, (FT_Vector){ 31, FT_LONG_MIN },
+            &target, &probe_target_offset, color);
+        if (!first_error && err) first_error = err;
+
+        FT_Bitmap_Init(&target);
+        probe_target_offset.x = -33;
+        probe_target_offset.y = 130;
+        err = FT_Bitmap_Blend(
+            library, &source, (FT_Vector){ FT_LONG_MAX, 95 },
+            &target, &probe_target_offset, color);
+        if (!first_error && err) first_error = err;
+
+        FT_Bitmap_Init(&target);
+        probe_target_offset.x = 64;
+        probe_target_offset.y = 128;
+        err = bitmap_blend_prepopulate(library, &target, &probe_target_offset);
+        if (!err) {
+            probe_target_offset.x = -33;
+            probe_target_offset.y = FT_LONG_MIN;
+            err = FT_Bitmap_Blend(
+                library, &source, (FT_Vector){ 31, 95 },
+                &target, &probe_target_offset, color);
+        }
+        if (!first_error && err) first_error = err;
+        if (target.buffer) FT_Bitmap_Done(library, &target);
+
+        FT_Bitmap_Init(&target);
+        probe_target_offset.x = 64;
+        probe_target_offset.y = 128;
+        err = bitmap_blend_prepopulate(library, &target, &probe_target_offset);
+        if (!err) {
+            probe_target_offset.x = FT_LONG_MAX;
+            probe_target_offset.y = 130;
+            err = FT_Bitmap_Blend(
+                library, &source, (FT_Vector){ 31, 95 },
+                &target, &probe_target_offset, color);
+        }
+        if (!first_error && err) first_error = err;
+        if (target.buffer) FT_Bitmap_Done(library, &target);
+
+        printf("{");
+        print_status(first_error ? first_error : FT_Err_Invalid_Argument);
+        printf("}\n");
+        FT_Done_FreeType(library);
+        return 0;
+    }
 
     printf("{\"status\":{\"kind\":\"ok\",\"error_code\":0},\"output\":{\"runs\":[");
     if (streq(scenario, "success_source_pixel_modes_and_flow")) {
-        FT_Pixel_Mode modes[7] = {
+        FT_Pixel_Mode modes[8] = {
             FT_PIXEL_MODE_MONO, FT_PIXEL_MODE_GRAY2, FT_PIXEL_MODE_GRAY4, FT_PIXEL_MODE_GRAY,
-            FT_PIXEL_MODE_LCD, FT_PIXEL_MODE_LCD_V, FT_PIXEL_MODE_BGRA
+            FT_PIXEL_MODE_LCD, FT_PIXEL_MODE_LCD_V, FT_PIXEL_MODE_BGRA, FT_PIXEL_MODE_NONE
         };
         int first = 1;
         for (int flow = 0; flow < 2; flow++) {
-            for (int i = 0; i < 7; i++) {
+            for (int i = 0; i < 8; i++) {
                 if (!first) {
                     printf(",");
                 }

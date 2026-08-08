@@ -90568,6 +90568,35 @@ struct BitmapBlendSample {
 
 fn bitmap_blend_output(case: &InputCase, backend: BitmapBlendBackend) -> Result<RunOutput, String> {
     let scenario = string_param(&case.inputs.params, "scenario")?;
+    if scenario == "success_empty_source_noop" {
+        let (mut source, source_bytes) =
+            bitmap_blend_source_record(FT_PIXEL_MODE_GRAY, false);
+        source.width = 0;
+        let mut target = FT_Bitmap_C::default();
+        let mut target_offset = FT_Vector { x: -33, y: 130 };
+        let err = bitmap_blend_call(
+            backend,
+            &mut source,
+            source_bytes,
+            FT_Vector { x: 31, y: 95 },
+            &mut target,
+            None,
+            &mut target_offset,
+            BitmapBlendColor {
+                blue: 29,
+                green: 113,
+                red: 211,
+                alpha: 173,
+            },
+            true,
+        );
+        if err != FT_Err_Ok {
+            return Ok(error(err));
+        }
+        return Ok(ok(json!({
+            "runs": [run_output_json(ok(bitmap_blend_json(&target, &target_offset)))]
+        })));
+    }
     if scenario == "error_invalid_arguments_or_target_mode" {
         bitmap_blend_null_argument_errors(backend)?;
         let mut sample = bitmap_blend_default_sample();
@@ -90606,6 +90635,9 @@ fn bitmap_blend_output(case: &InputCase, backend: BitmapBlendBackend) -> Result<
             true,
         );
         return Ok(error(err));
+    }
+    if scenario == "error_coordinate_overflow" {
+        return Ok(error(bitmap_blend_coordinate_overflow(backend)?));
     }
 
     let samples = bitmap_blend_samples(scenario)?;
@@ -90766,6 +90798,77 @@ fn bitmap_blend_null_argument_call(
     }
 }
 
+fn bitmap_blend_coordinate_overflow(
+    backend: BitmapBlendBackend,
+) -> Result<FT_Error, String> {
+    let probes = [
+        (
+            FT_Vector {
+                x: 31,
+                y: FT_Long::MIN,
+            },
+            FT_Vector { x: -33, y: 130 },
+            false,
+        ),
+        (
+            FT_Vector {
+                x: FT_Long::MAX,
+                y: 95,
+            },
+            FT_Vector { x: -33, y: 130 },
+            false,
+        ),
+        (
+            FT_Vector { x: 31, y: 95 },
+            FT_Vector {
+                x: -33,
+                y: FT_Long::MIN,
+            },
+            true,
+        ),
+        (
+            FT_Vector { x: 31, y: 95 },
+            FT_Vector {
+                x: FT_Long::MAX,
+                y: 130,
+            },
+            true,
+        ),
+    ];
+
+    for (source_offset, requested_target_offset, existing_target) in probes {
+        let (mut source, source_bytes) =
+            bitmap_blend_source_record(FT_PIXEL_MODE_GRAY, false);
+        let mut target = FT_Bitmap_C::default();
+        let mut target_offset = requested_target_offset;
+        if existing_target {
+            bitmap_blend_prepopulate(backend, &mut target, &mut target_offset)?;
+            target_offset = requested_target_offset;
+        }
+        let err = bitmap_blend_call(
+            backend,
+            &mut source,
+            source_bytes,
+            source_offset,
+            &mut target,
+            None,
+            &mut target_offset,
+            BitmapBlendColor {
+                blue: 29,
+                green: 113,
+                red: 211,
+                alpha: 173,
+            },
+            true,
+        );
+        if err != FT_Err_Invalid_Argument {
+            return Ok(err);
+        }
+    }
+
+    Ok(FT_Err_Invalid_Argument)
+}
+
 fn run_output_json(output: RunOutput) -> Value {
     json!({
         "status": {
@@ -90819,8 +90922,9 @@ fn bitmap_blend_samples(scenario: &str) -> Result<Vec<BitmapBlendSample>, String
                 FT_PIXEL_MODE_LCD,
                 FT_PIXEL_MODE_LCD_V,
                 FT_PIXEL_MODE_BGRA,
+                FT_PIXEL_MODE_NONE,
             ];
-            let mut samples = Vec::with_capacity(14);
+            let mut samples = Vec::with_capacity(16);
             for negative_source in [false, true] {
                 for mode in modes {
                     samples.push(BitmapBlendSample {
