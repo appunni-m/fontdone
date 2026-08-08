@@ -162,11 +162,11 @@ times. LLVM source-based coverage counters are process-local, so this removes
 the cross-backend counter contention without changing the input matrix or
 oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
 legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `8922c0ae-767c-4d62-8dfe-447d352a5b51` (snapshot
-`5c8acf09-fcb7-498d-95d2-a9c2faab5a7a`): all three processes passed 7,542 /
-7,542 cases. This warm source-bound run took 29.234 seconds with the default
-one-worker lane profile; the retained lane timers were 24.83 seconds (Rust),
-24.92 seconds (C ABI), and 26.36 seconds (WASM). The same-source
+Coverage MCP run `f3d45793-9df9-4e63-a38d-3c1de836f423` (snapshot
+`b9ab78bd-1b6d-48e9-a67c-7fef99d691a1`): all three processes passed 7,556 /
+7,556 cases. This source-bound run took 77.350 seconds with the default
+one-worker lane profile; the retained lane timers were 24.60 seconds (Rust),
+24.69 seconds (C ABI), and 25.98 seconds (WASM). The same-source
 two-worker comparison `e5dd45f6-d1dc-4c1d-a7ee-8ea143b8441d` took 115.508
 seconds. The three lanes already run concurrently, so increasing coverage
 workers is not a safe speedup: instrumented counter and cache contention
@@ -303,13 +303,13 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest source-bound current-host
-Coverage MCP run (`8922c0ae-767c-4d62-8dfe-447d352a5b51`, snapshot
-`5c8acf09-fcb7-498d-95d2-a9c2faab5a7a`) measured 29.234 seconds end-to-end
-with the default one-worker split profile. Its three lanes passed all 7,542
+Coverage MCP run (`f3d45793-9df9-4e63-a38d-3c1de836f423`, snapshot
+`b9ab78bd-1b6d-48e9-a67c-7fef99d691a1`) measured 77.350 seconds end-to-end
+with the default one-worker split profile. Its three lanes passed all 7,556
 runnable comparisons with 0 failures and retained the three explicitly
-pending safety-extension cases; lane timers were 24.83 seconds Rust, 24.92
-seconds C ABI, and 26.36 seconds WASM. The corresponding source-bound parity
-run is `1b52e95f-d24b-448e-a966-8b1d121d9a4e`. The focused x-height case
+pending safety-extension cases; lane timers were 24.60 seconds Rust, 24.69
+seconds C ABI, and 25.98 seconds WASM. The corresponding source-bound parity
+run is `8017f56d-9cab-4503-9e2f-6085d1d9f36f`. The focused x-height case
 (`91144282-c800-4cd7-b6d6-1b83176f2bdd`) passed 1 / 1; its measured backend
 work was 9.110 seconds Rust, 8.739 seconds C ABI, 8.711 seconds WASM, and
 2.411 ms for comparison.
@@ -366,24 +366,24 @@ so their sum is not wall time. The remaining wall-time tail is setup,
 process/report merging, and Coverage MCP ingestion rather than another parity
 route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
-The latest all-lane report's retained lane timers were 24.77 seconds Rust,
-24.85 seconds C ABI, and 26.20 seconds WASM. These are backend execution
-measurements inside the 73.636-second
-end-to-end run; compilation, report finalization, and artifact ingestion are
-included in the wall time but are not separately exposed by Coverage MCP.
+The latest all-lane report's retained lane timers were 24.60 seconds Rust,
+24.69 seconds C ABI, and 25.98 seconds WASM. These are backend execution
+measurements inside the 77.350-second end-to-end run; compilation, report
+finalization, and artifact ingestion are included in the wall time but are not
+separately exposed by Coverage MCP.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,861 / 54,382 | 91.69% |
-| Branches | 9,878 / 12,590 | 78.46% |
-| Functions | 3,402 / 3,848 | 88.41% |
-| Regions | 68,605 / 75,611 | 90.73% |
+| Lines | 50,035 / 54,390 | 91.99% |
+| Branches | 9,957 / 12,592 | 79.07% |
+| Functions | 3,413 / 3,848 | 88.70% |
+| Regions | 68,831 / 75,616 | 91.03% |
 
-That latest run passed all 7,542 runnable parity comparisons with 0 failures;
+That latest run passed all 7,556 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`bd628f06-3846-4c7e-8c82-76f26c8d437f`. The source-bound full parity run
-`3396b820-85b1-4ca1-96f0-fa8767acc000` completed in 136.777 seconds and
-recorded 7,542 / 7,542 exact comparisons. Coverage MCP does not expose
+`b9ab78bd-1b6d-48e9-a67c-7fef99d691a1`. The source-bound full parity run
+`8017f56d-9cab-4503-9e2f-6085d1d9f36f` recorded 7,556 / 7,556 exact
+comparisons. Coverage MCP does not expose
 separate timestamps for compilation, report finalization, or artifact ingestion. Current
 LLVM JSON is accepted directly by Coverage
 MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`
@@ -427,7 +427,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 644 tracked paths and no symlinks.
+The canonical input tree currently contains 645 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -436,9 +436,9 @@ The maintained malformed BDF input
 blank line after `STARTFONT` to exercise the Rust constructor's blank-line
 skip. Pinned FreeType's `bdf_readstream_` skips bytes below space before the
 parser callback, so the input remains exact-parity safe. Source-bound parity
-run `1b52e95f-d24b-448e-a966-8b1d121d9a4e` passed 7,542 / 7,542 comparisons with
-0 failures; all-lane coverage run `8922c0ae-767c-4d62-8dfe-447d352a5b51`
-increased coverage by one line, one branch, and one region.
+run `8017f56d-9cab-4503-9e2f-6085d1d9f36f` passed 7,556 / 7,556 comparisons with
+0 failures; all-lane coverage run `f3d45793-9df9-4e63-a38d-3c1de836f423`
+includes the maintained malformed format-13 parser matrix.
 
 Before changing a fixture:
 
@@ -604,7 +604,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,639 | executable parity tests and public contracts |
-| R04 | 644 | licensed canonical fixture inputs |
+| R04 | 645 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -612,7 +612,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,505** | **all retained paths** |
+| **Total** | **2,506** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

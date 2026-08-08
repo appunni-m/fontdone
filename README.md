@@ -106,29 +106,29 @@ The latest full parity snapshot was recorded on **2026-08-08** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,555 |
-| Passed cases | 7,555 |
+| Runnable exact-comparison cases | 7,556 |
+| Passed cases | 7,556 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
 | Covered manifest cases | 4,195 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,287 |
-| Concrete expanded cases | 7,558 |
+| Concrete expanded cases | 7,559 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,555 / 7,555` means every runnable case in that execution matched; the 3
+`7,556 / 7,556` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`e1d87b1f-2c78-4d62-b29e-ea63249d0ca4`, recorded by
-`8d6d93bc-3619-43b1-99e1-4b9e59016db9` in
-`doc/runtime_parity_evidence.json` after passing 7,555 / 7,555 runnable
+`8017f56d-9cab-4503-9e2f-6085d1d9f36f`, recorded by
+`9c168276-37b5-4390-8291-e55b8cf9c1ee` in
+`doc/runtime_parity_evidence.json` after passing 7,556 / 7,556 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `1e772911f11d5562391f0d616cacc1fd1ec91432cbeecb2507f91161b1915bf4`.
+Its source-bound parity-tree digest is `6039b33acb95bfca9e02618b5122260fbc0575bb54991fe8cd9090677821161d`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -141,18 +141,19 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest source-bound all-lane coverage snapshot was recorded on
-**2026-08-08** for commit `ce3d4922899e07c2db7a536879db903cd781ecc0`
-(Coverage MCP run `1deb8e0e-726c-4771-a11e-7369beeb33ad`, snapshot
-`c0ecb99c-25b2-4eee-8ae6-8e87693b006f`):
+**2026-08-08** for the current worktree based at commit
+`3edf6d1f589618011e51533851cd79305679429c`
+(Coverage MCP run `f3d45793-9df9-4e63-a38d-3c1de836f423`, snapshot
+`b9ab78bd-1b6d-48e9-a67c-7fef99d691a1`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,022 / 54,390 | 91.97% |
-| Branches | 9,952 / 12,594 | 79.02% |
-| Functions | 3,412 / 3,848 | 88.67% |
-| Regions | 68,822 / 75,617 | 91.01% |
+| Lines | 50,035 / 54,390 | 91.99% |
+| Branches | 9,957 / 12,592 | 79.07% |
+| Functions | 3,413 / 3,848 | 88.70% |
+| Regions | 68,831 / 75,616 | 91.03% |
 
-This source-bound validation completed in 28.596 seconds with the default
+This source-bound validation completed in 77.350 seconds with the default
 `COVERAGE_UNIFIED_WORKERS=1`. The first validation after the build-marker change
 took 83.479 seconds, including a 46.78-second instrumented rebuild. The
 same-source two-worker comparison
@@ -162,10 +163,11 @@ the wall time.
 
 The maintained Apple full-Unicode format-13 font is now exercised by the
 `FT_Get_Char_Index`, `FT_Get_First_Char`, and `FT_Get_Next_Char` input matrices.
-The source-bound parity run `e1d87b1f-2c78-4d62-b29e-ea63249d0ca4` passed
-7,555 / 7,555 comparisons with 0 failures; the current coverage snapshot
-measures 50,022 / 54,390 lines, 9,952 / 12,594 branches, and 68,822 / 75,617
-regions.
+The new malformed format-13 matrix also executes the pinned parser's length,
+header, group-order, and physical-short validation routes. The source-bound
+parity run `8017f56d-9cab-4503-9e2f-6085d1d9f36f` passed 7,556 / 7,556
+comparisons with 0 failures; the current coverage snapshot measures
+50,035 / 54,390 lines, 9,957 / 12,592 branches, and 68,831 / 75,616 regions.
 When the instrumented binary cache is cold, the managed run
 `90f0239f-93a7-4f66-a758-eb84da5d24b7` took 80.314 seconds, including a
 47.59-second instrumented rebuild; its longest lane was 26.45 seconds. This
@@ -285,11 +287,11 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,298 / 5,298 pinned-C runtime contract rows exact |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,299 / 5,299 pinned-C runtime contract rows exact |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 686 / 686 expected-error routes compare exact error and output results; 7,555 / 7,555 routes have no generic fallback evidence |
+| Errors | 686 / 686 expected-error routes compare exact error and output results; 7,556 / 7,556 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 

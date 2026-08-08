@@ -886,6 +886,22 @@
             ]
           },
           {
+            "id": "cmap-format13-malformed-matrix-valid-format6",
+            "assets": {
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/charmap/cmap-format13-malformed-matrix.ttf" }
+            },
+            "params": { "face_index": 0, "char_code": 65 },
+            "coverage": [
+              "tt/cmap:format13-length-exceeds-data",
+              "tt/cmap:format13-truncated-header",
+              "tt/cmap:format13-groups-overflow",
+              "tt/cmap:format13-invalid-range",
+              "tt/cmap:format13-end-above-unicode",
+              "tt/cmap:format13-overlapping-groups",
+              "tt/cmap:format13-too-short"
+            ]
+          },
+          {
             "id": "format4-range-offset-zero",
             "assets": {
               "font": { "kind": "ref", "role": "font", "id": "input/fonts/charmap/format4-range-offset.ttf" }

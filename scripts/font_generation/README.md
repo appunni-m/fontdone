@@ -47,7 +47,7 @@ licenses are enforced by `make supply-chain`.
 | `generate_malformed_bdf_fixtures.py` | Synthetic | Project-authored BDF text, including valid atom/integer/cardinal property controls and intentionally malformed variants. |
 | `generate_winfnt_fixtures.py` | Synthetic | Project-authored binary WinFNT records and bitmap data, including short-header and declared-size validation controls. |
 | `build_cpal_palette_fixtures.py` | Derived | `tests/fixtures/input/fonts/DejaVuSans.ttf`; DejaVu/Bitstream terms remain applicable. |
-| `build_cmap_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; only cmap/table mutations. |
+| `build_cmap_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; only cmap/table mutations, including maintained malformed format-13 and format-14 parser matrices beside valid format-6 controls. |
 | `build_gasp_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
 | `build_hinter_edge_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
 | `build_metric_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |

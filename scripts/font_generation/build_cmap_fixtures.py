@@ -197,6 +197,36 @@ def raw_format13_subtable(
     )
 
 
+def format13_length_exceeds_data_subtable() -> bytes:
+    return struct.pack(">HHIII", 13, 0, 0xFFFF_FFFF, 0, 0)
+
+
+def format13_truncated_header_subtable() -> bytes:
+    return struct.pack(">HHIII", 13, 0, 12, 0, 0)
+
+
+def format13_groups_overflow_subtable() -> bytes:
+    return struct.pack(">HHIII", 13, 0, 16, 0, 1)
+
+
+def format13_physically_short_subtable() -> bytes:
+    return struct.pack(">H", 13)
+
+
+def format13_invalid_range_subtable() -> bytes:
+    return raw_format13_subtable([(0x0042, 0x0041, 1)])
+
+
+def format13_end_above_unicode_subtable() -> bytes:
+    return raw_format13_subtable([(0x110000, 0x110000, 1)])
+
+
+def format13_overlapping_groups_subtable() -> bytes:
+    return raw_format13_subtable(
+        [(0x0041, 0x0042, 1), (0x0042, 0x0043, 1)]
+    )
+
+
 def format14_offset_out_of_range_subtable() -> bytes:
     return raw_format14_subtable([(0xFE00, 21, 0)])
 
@@ -292,6 +322,32 @@ def build_malformed_format14_font() -> None:
 
     CHARMAP_OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = CHARMAP_OUT_DIR / "cmap-format14-malformed-matrix.ttf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    font.save(out, reorderTables=True)
+
+
+def build_malformed_format13_font() -> None:
+    font = TTFont(BASE_FONT, recalcTimestamp=False)
+    font["cmap"] = raw_cmap_table(
+        pack_raw_cmap(
+            [
+                (3, 1, format6_subtable()),
+                (0, 6, format13_length_exceeds_data_subtable()),
+                (0, 7, format13_truncated_header_subtable()),
+                (0, 8, format13_groups_overflow_subtable()),
+                (0, 9, format13_invalid_range_subtable()),
+                (0, 10, format13_end_above_unicode_subtable()),
+                (0, 11, format13_overlapping_groups_subtable()),
+                # Keep this last so the parser sees only two bytes after the
+                # format field and reaches its physical-short guard.
+                (0, 12, format13_physically_short_subtable()),
+            ]
+        )
+    )
+
+    CHARMAP_OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = CHARMAP_OUT_DIR / "cmap-format13-malformed-matrix.ttf"
     if out.exists() or out.is_symlink():
         out.unlink()
     font.save(out, reorderTables=True)
@@ -461,6 +517,7 @@ def build_apple_full_unicode_format13_font() -> None:
                     raw_format13_subtable(
                         [
                             (0x0041, 0x0042, 1),
+                            (0x0043, 0x0043, 0),
                             (0x1F600, 0x1F600, 2),
                         ]
                     ),
@@ -478,6 +535,7 @@ def build_apple_full_unicode_format13_font() -> None:
 
 def main() -> None:
     build_matrix_font()
+    build_malformed_format13_font()
     build_malformed_format14_font()
     build_non_unicode_format6_font()
     build_default_charmap_order_fonts()

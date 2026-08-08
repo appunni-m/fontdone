@@ -1476,7 +1476,7 @@ subjects:
             sizes: [20]
             char_codes: [65]
       - id: matrix_char_code
-        description: Resolves character codes from the broad matrix fixture corpus.
+        description: Resolves character codes from the broad matrix fixture corpus, including malformed format-13 subtables beside a valid control charmap.
         # needs-input: concrete fixture input must be added before this case can declare font_variability coverage.
       # needs-input: operation FT_Get_Char_Index; fixture asset font with multiple charmaps including Unicode and non-Unicode charmaps; params selected charmap index/encoding and charcodes for present, absent, zero, BMP edge, and supplementary values; expected output shape FT_UInt glyph index; comparison rule exact glyph index parity and exact 0 for undefined/null/no-active-charmap cases.
       - id: active_charmap_present_and_missing_codes

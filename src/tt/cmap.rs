@@ -910,7 +910,9 @@ fn parse_format13(
         let o = 16 + i * 12;
         let start = u32::from_be_bytes([body[o], body[o + 1], body[o + 2], body[o + 3]]);
         let end = u32::from_be_bytes([body[o + 4], body[o + 5], body[o + 6], body[o + 7]]);
-        if start > end || end > 0x10FFFF || prev_end.is_some_and(|prev| start <= prev) {
+        // The pinned default `tt_cmap13_validate` path checks range order and
+        // group ordering but does not impose a Unicode maximum on `end`.
+        if start > end || prev_end.is_some_and(|prev| start <= prev) {
             return Err(FontError::InvalidFont(
                 "cmap format 13: invalid or unordered groups".into(),
             ));
