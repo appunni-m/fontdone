@@ -102,7 +102,7 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The latest full parity snapshot was recorded on **2026-08-04** (UTC):
+The latest full parity snapshot was recorded on **2026-08-08** (UTC):
 
 | Measurement | Count |
 |---|---:|
@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`3396b820-85b1-4ca1-96f0-fa8767acc000`, recorded by
-`2c5b15eb-c703-47d5-b6d4-9f07b525f45f` in
+`3e67e74b-8e61-40e4-b8ca-29363cebd948`, recorded by
+`51f9aab9-cf74-4bc8-a327-4fbb5dbd04cf` in
 `doc/runtime_parity_evidence.json` after passing 7,542 / 7,542 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `04172b245d105212b90854f8da78d2e4ce384c8f57afe082b98c3049299b8086`.
+Its source-bound parity-tree digest is `4910111628ed2b0fac4ed49eb1e5c0ab06a3a880b8fa5fbff1f7ec328bf45c70`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -140,17 +140,17 @@ their exact worktree than the committed release snapshot.
 
 ### 3.3 Last measured combined coverage
 
-The latest all-lane coverage snapshot was recorded on **2026-08-04**
+The latest all-lane coverage snapshot was recorded on **2026-08-08**
 for the current source-matched working tree (Coverage MCP run
-`e068f42a-1f89-4504-b438-fe82602f9777`, snapshot
-`bd628f06-3846-4c7e-8c82-76f26c8d437f`):
+`6768c91a-3093-42a7-b2b6-c8cf59cc159a`, snapshot
+`7e1858aa-0353-4a19-af2e-6c802b09b916`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 49,861 / 54,382 | 91.69% |
-| Branches | 9,878 / 12,590 | 78.46% |
-| Functions | 3,402 / 3,848 | 88.41% |
-| Regions | 68,605 / 75,611 | 90.73% |
+| Lines | 49,966 / 54,382 | 91.88% |
+| Branches | 9,921 / 12,590 | 78.80% |
+| Functions | 3,410 / 3,848 | 88.62% |
+| Regions | 68,742 / 75,611 | 90.92% |
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain

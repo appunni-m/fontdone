@@ -57813,6 +57813,12 @@ fn c_manager_remove_face_id(case: &InputCase) -> Result<RunOutput, String> {
         let unknown_face_id = ptr::from_mut(&mut unknown_face_id_marker).cast();
         c_abi::FTC_Manager_RemoveFaceID(manager.manager_handle(), unknown_face_id);
         c_abi::FTC_Manager_RemoveFaceID(manager.manager_handle(), ptr::null_mut());
+        if case.case_id == "ftcache.FTC_Manager_RemoveFaceID.success_null_manager_noop" {
+            // This maintained scenario explicitly specifies C's null-manager
+            // no-op.  Call the exported wrapper so the ABI branch is exercised
+            // rather than represented only by the projected result.
+            c_abi::FTC_Manager_RemoveFaceID(ptr::null_mut(), face_id_a);
+        }
         Ok(ManagerRemoveFaceIdObserved {
             a_first,
             b_first,

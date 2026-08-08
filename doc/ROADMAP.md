@@ -476,14 +476,15 @@ per-batch coverage increase is claimed:
 | 98 | Working tree (FTC_CMapCache_New null-argument C-ABI route) | Reused the maintained `ftcache.FTC_CMapCache_New.error_null_manager_or_output` input and routed its C-ABI lane through the exported `FTC_CMapCache_New` validation guard, executing both null-manager and live-manager/null-output calls while preserving the existing `FT_Err_Unimplemented_Feature` parity-boundary status. Source-bound full parity run `83fa4231-31e7-4116-9684-87b5889dba3c`, recorded by `299d3150-debd-411f-a0cb-460e4154c2e1`, passed 7,542 / 7,542 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items; Rust, C ABI, and WASM each retain 218 / 218 function-route evidence. All-lane Coverage MCP run `89810c7a-fe97-4ca5-8266-0209a8eddcdb`, snapshot `a5d4da5c-d884-4ce8-a0ce-d864a217aedc`, completed in 96.023 seconds and measured 49,960 / 54,382 lines, 9,916 / 12,590 branches, 3,410 / 3,848 functions, and 68,733 / 75,611 regions; the C-ABI implementation moved to 8,823 / 9,761 lines, 1,470 / 2,084 branches, and 11,455 / 12,575 regions, with `FTC_CMapCache_New` lines 1965-1966 covered and its null guard at 4 / 4 branches. C-ABI scorecard run `fd0520d3-92e1-4f57-ab25-e0f63ba53441` passed with 10 / 12 categories complete, 5,285 / 5,285 runtime rows, and 684 / 684 strict-error routes; Windows import-library evidence and four fresh target-lane bundles remain. |
 | 99 | Working tree (FTC_Manager_LookupFace null-validation C-ABI route) | Reused the maintained `ftcache.FTC_Manager_LookupFace.error_null_output_or_manager` and `fterrdef.FT_Err_Invalid_Cache_Handle.cache_lookup_rejects_null_manager` inputs and routed the C-ABI lane through the exported `FTC_Manager_LookupFace` guard. The route asserts the real `Invalid_Argument` null-output status, the real `Invalid_Cache_Handle` null-manager status, and output clearing, while preserving the established `FT_Err_Unimplemented_Feature` and `FT_Err_Invalid_Face_Handle` parity-boundary results. Source-bound full parity run `0678b7bf-09b7-4ac1-ae1c-9c411e590884`, recorded by `4e308b8b-524c-446e-b6b4-1fb4d8e05b59`, passed 7,542 / 7,542 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items; Rust, C ABI, and WASM each retain 218 / 218 function-route evidence. All-lane Coverage MCP run `e91fbcc5-9c26-4235-acd0-bdf1f4bac67b`, snapshot `5f5b82b2-57e3-49d3-9009-4a534b6d6450`, completed in 71.817 seconds and measured 49,963 / 54,382 lines, 9,918 / 12,590 branches, 3,410 / 3,848 functions, and 68,737 / 75,611 regions; the C-ABI implementation moved to 8,826 / 9,761 lines, 1,472 / 2,084 branches, and 11,459 / 12,575 regions, with `FTC_Manager_LookupFace` lines 1879-1894 covered and its guard branches at 2 / 2. C-ABI scorecard run `6ca1b15a-ccb9-4740-a781-957bd61f4afe` passed with 10 / 12 categories complete, 5,285 / 5,285 runtime rows, and 684 / 684 strict-error routes; Windows import-library evidence and four fresh target-lane bundles remain. |
 | 100 | Working tree (FTC_Manager_LookupSize null-validation C-ABI route) | Reused the maintained `ftcache.FTC_Manager_LookupSize.error_null_scaler_output_or_manager` input and routed the C-ABI lane through the exported `FTC_Manager_LookupSize` guard. The route asserts the real `Invalid_Argument` null-scaler and null-output statuses, the real `Invalid_Cache_Handle` null-manager status, and null-manager output clearing, while preserving the established `FT_Err_Unimplemented_Feature` parity-boundary result. Source-bound full parity run `61013149-2ac2-4036-a3d6-d9a7b134f76f`, recorded by `eeb35a84-6e15-448e-85a4-504c50fe9dfc`, passed 7,542 / 7,542 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items; Rust, C ABI, and WASM each retain 218 / 218 function-route evidence. All-lane Coverage MCP run `6548ccb3-76cb-4db4-b60c-9395308ab258`, snapshot `d3df37a3-1362-4235-9594-138f9d6e3a68`, completed in 85.074 seconds and measured 49,965 / 54,382 lines, 9,920 / 12,590 branches, 3,410 / 3,848 functions, and 68,741 / 75,611 regions; the C-ABI implementation moved to 8,828 / 9,761 lines, 1,474 / 2,084 branches, and 11,463 / 12,575 regions, with `FTC_Manager_LookupSize` lines 1905 and 1923 covered and its validation guard at 4 / 4 branches. C-ABI scorecard run `917f111a-7ebb-4956-8564-b5c7a189e224` passed with 10 / 12 categories complete, 5,285 / 5,285 runtime rows, and 684 / 684 strict-error routes; Windows import-library evidence and four fresh target-lane bundles remain. |
+| 101 | Working tree (FTC_Manager_RemoveFaceID null-manager C-ABI route) | Reused the maintained `ftcache.FTC_Manager_RemoveFaceID.success_null_manager_noop` input and routed its C-ABI lane through the exported `FTC_Manager_RemoveFaceID` null-manager call, preserving the declared no-op result while executing the real ABI guard. Source-bound full parity run `3e67e74b-8e61-40e4-b8ca-29363cebd948`, recorded by `51f9aab9-cf74-4bc8-a327-4fbb5dbd04cf`, passed 7,542 / 7,542 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending route-audit items; Rust, C ABI, and WASM each retain 218 / 218 function-route evidence. All-lane Coverage MCP run `6768c91a-3093-42a7-b2b6-c8cf59cc159a`, snapshot `7e1858aa-0353-4a19-af2e-6c802b09b916`, completed in 109.445 seconds and measured 49,966 / 54,382 lines, 9,921 / 12,590 branches, 3,410 / 3,848 functions, and 68,742 / 75,611 regions; the C-ABI implementation moved to 8,829 / 9,761 lines, 1,475 / 2,084 branches, and 11,464 / 12,575 regions, with `FTC_Manager_RemoveFaceID` line 1936 covered and its null-manager guard at 2 / 2 branches. C-ABI scorecard run `c42556db-7e03-4f23-979f-f68f46d48fa2` passed with 10 / 12 categories complete, 5,285 / 5,285 runtime contract rows, and 684 / 684 strict-error routes; Windows import-library evidence and four fresh target-lane bundles remain. |
 
 The current source-bound parity verification is Coverage MCP parity run
-`61013149-2ac2-4036-a3d6-d9a7b134f76f`: it passed 7,542 / 7,542 runnable
+`3e67e74b-8e61-40e4-b8ca-29363cebd948`: it passed 7,542 / 7,542 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The source-digest attestation was refreshed by record run
-`eeb35a84-6e15-448e-85a4-504c50fe9dfc` in `doc/runtime_parity_evidence.json`.
-The companion C-ABI scorecard run `917f111a-7ebb-4956-8564-b5c7a189e224`
+`51f9aab9-cf74-4bc8-a327-4fbb5dbd04cf` in `doc/runtime_parity_evidence.json`.
+The companion C-ABI scorecard run `c42556db-7e03-4f23-979f-f68f46d48fa2`
 reports **10 / 12 categories complete**, with 5,285 / 5,285 runtime contract
 rows and 684 / 684 strict error routes exact; the remaining contract debt is
 the Windows import-library item and four fresh target-lane bundles.
@@ -497,10 +498,10 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current source-bound all-lane run `6548ccb3-76cb-4db4-b60c-9395308ab258`
-completed in 85.074 seconds with snapshot
-`d3df37a3-1362-4235-9594-138f9d6e3a68`. It measured 49,965 / 54,382 lines,
-9,920 / 12,590 branches, 3,410 / 3,848 functions, and 68,741 / 75,611
+The current source-bound all-lane run `6768c91a-3093-42a7-b2b6-c8cf59cc159a`
+completed in 109.445 seconds with snapshot
+`7e1858aa-0353-4a19-af2e-6c802b09b916`. It measured 49,966 / 54,382 lines,
+9,921 / 12,590 branches, 3,410 / 3,848 functions, and 68,742 / 75,611
 regions; the parity matrix passed 7,542 / 7,542 in each backend. This source-
 changing validation includes the instrumented rebuild and is not a speed
 comparison against the previous warm snapshot. The lanes already run
@@ -537,7 +538,7 @@ each lane. The prior current-head opt-level-1 speed validation run
 65.332 seconds for the opt-level-3 comparison, with identical coverage totals
 and parity results. Unchanged generated
 oracle inputs preserve their mtimes so the helper/validator C build is not
-repeated. The current source/input-bound run measured 49,953 / 54,382 lines,
+repeated. The preceding source/input-bound run measured 49,953 / 54,382 lines,
 9,907 / 12,590 branches, 3,410 / 3,848 functions, and 68,726 / 75,611
 regions. It passed 7,542 / 7,542 runnable parity comparisons with 0 failures.
 Its Coverage MCP run is `34f340d9-3b35-43c1-97c7-7a0f8295889d`, with snapshot
