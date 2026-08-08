@@ -272,7 +272,7 @@ test-coverage: unified-oracle api-abi-runtime-check
 .PHONY: test-coverage-all
 test-coverage-all:
 	+$(MAKE) --no-print-directory -j$(COVERAGE_PREPARATION_JOBS) \
-		unified-oracle api-abi-runtime-check \
+		unified-oracle bzip2-enabled-oracle api-abi-runtime-check \
 		$(if $(filter 1,$(COVERAGE_ABI_PREFLIGHT)),coverage-abi-preflight)
 	mkdir -p $(dir $(ALL_LANES_COVERAGE_OUTPUT))
 	@set -eu; \
