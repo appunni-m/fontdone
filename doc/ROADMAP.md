@@ -549,7 +549,7 @@ Its Coverage MCP run is `34f340d9-3b35-43c1-97c7-7a0f8295889d`, with snapshot
 `.profraw` files first; use `make coverage-clean` after changing the coverage
 toolchain or instrumentation configuration.
 
-The latest coverage-speed validation (Coverage MCP run
+An earlier coverage-speed validation (Coverage MCP run
 `e068f42a-1f89-4504-b438-fe82602f9777`, snapshot
 `bd628f06-3846-4c7e-8c82-76f26c8d437f`) measured 73.636 seconds end to end
 after avoiding per-render `FT_Face` metadata reconstruction in
@@ -603,7 +603,7 @@ Requested thorough CI records ten samples and retains both JSON and Markdown
 evidence.
 
 <!-- performance-roadmap:start -->
-The most-sampled current environment has **3 / 5 qualifying clean runs**.
+The most-sampled current environment has **4 / 5 qualifying clean runs**.
 <!-- performance-roadmap:end -->
 
 | Measurement | Current state | Completion evidence |
