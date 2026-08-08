@@ -8116,6 +8116,28 @@
             ]
           },
           {
+            "id": "otsvg-vertical-layout",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/svg/otsvg-glyph.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_COLOR",
+                "FT_LOAD_VERTICAL_LAYOUT"
+              ]
+            },
+            "coverage": [
+              "api:glyph-slot-svg-vertical-layout"
+            ]
+          },
+          {
             "id": "cjk-no-scale-vertical-vmtx",
             "assets": {
               "font": {
