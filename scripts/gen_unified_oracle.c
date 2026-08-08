@@ -3929,6 +3929,7 @@ static int emit_bitmap_embolden(const char* scenario) {
         EMIT_ROW("negative-strength", library, FT_PIXEL_MODE_GRAY, 0, -64, 0, 0, 0);
         EMIT_ROW("negative-y-strength", library, FT_PIXEL_MODE_GRAY, 0, 0, -64, 0, 0);
         EMIT_ROW("overflow-strength", library, FT_PIXEL_MODE_GRAY, 0, 137438953472LL, 0, 0, 0);
+        EMIT_ROW("overflow-y-strength", library, FT_PIXEL_MODE_GRAY, 0, 0, 137438953472LL, 0, 0);
     } else if (streq(scenario, "ownership_reallocates_bitmap_buffer")) {
         EMIT_ROW("realloc-positive-pitch", library, FT_PIXEL_MODE_GRAY, 0, 64, 96, 0, 0);
         EMIT_ROW("realloc-negative-pitch", library, FT_PIXEL_MODE_GRAY, 1, 64, 96, 0, 0);

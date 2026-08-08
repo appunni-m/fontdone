@@ -91431,6 +91431,13 @@ fn bitmap_embolden_rows(scenario: &str) -> Result<Vec<BitmapEmboldenRow>, String
                 137_438_953_472,
                 0,
             ));
+            rows.push(BitmapEmboldenRow::new(
+                "overflow-y-strength",
+                FT_PIXEL_MODE_GRAY as u8,
+                false,
+                0,
+                137_438_953_472,
+            ));
         }
         "ownership_reallocates_bitmap_buffer" => {
             rows.push(BitmapEmboldenRow::new(

@@ -2801,7 +2801,7 @@ subjects:
       - id: error_mono_strength_limit
         description: MONO xStrength greater than C's limit returns the pinned error and write behavior.
       - id: error_invalid_arguments_or_modes
-        description: Null library/bitmap and unsupported pixel modes return exact C errors.
+        description: Null library/bitmap, unsupported pixel modes, negative strengths, and strength overflows return exact C errors.
       - id: ownership_reallocates_bitmap_buffer
         description: Successful embolden reallocates buffer and updates rows, width, pitch, and buffer ownership exactly like C.
     # needs-input: operation=FT_Bitmap_Embolden; fixture_asset=synthetic MONO/GRAY2/GRAY4/GRAY bitmaps plus rendered glyph bitmaps; params xStrength/yStrength values 0, 32, 64, 96, 512, MONO over-limit, positive/negative pitch, null library/bitmap, unsupported mode; output shape=FT_Error plus mutated FT_Bitmap fields and buffer bytes with allocation/free events; comparison=exact C oracle error, dimensions, pitch, pixel mode, bytes, and preservation behavior.
