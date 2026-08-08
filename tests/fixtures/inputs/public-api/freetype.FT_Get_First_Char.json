@@ -52,6 +52,17 @@
               "agindex_pointer": "non_null"
             },
             "coverage": [ "tt/cmap:format4-first-char" ]
+          },
+          {
+            "id": "apple-full-unicode-format13",
+            "assets": {
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/charmaps/apple-full-unicode-type13.ttf" }
+            },
+            "params": {
+              "face_index": 0,
+              "agindex_pointer": "non_null"
+            },
+            "coverage": [ "tt/cmap:format13-first-char" ]
           }
         ]
       },

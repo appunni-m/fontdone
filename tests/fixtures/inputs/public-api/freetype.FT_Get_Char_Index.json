@@ -542,6 +542,78 @@
             "coverage": [
               "font:default-unicode-charmap-iso-fallback-order"
             ]
+          },
+          {
+            "id": "apple-full-unicode-format13",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/charmaps/apple-full-unicode-type13.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "char_code": 65
+            },
+            "coverage": [
+              "tt/cmap:format13-char-index"
+            ]
+          },
+          {
+            "id": "apple-full-unicode-format13-before-first",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/charmaps/apple-full-unicode-type13.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "char_code": 64
+            },
+            "coverage": [
+              "tt/cmap:format13-char-index-before-first-group"
+            ]
+          },
+          {
+            "id": "apple-full-unicode-format13-gap",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/charmaps/apple-full-unicode-type13.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "char_code": 66
+            },
+            "coverage": [
+              "tt/cmap:format13-char-index-gap"
+            ]
+          },
+          {
+            "id": "apple-full-unicode-format13-between-groups",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/charmaps/apple-full-unicode-type13.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "char_code": 67
+            },
+            "coverage": [
+              "tt/cmap:format13-char-index-between-groups"
+            ]
           }
         ]
       },
