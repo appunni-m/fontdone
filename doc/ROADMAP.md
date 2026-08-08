@@ -491,15 +491,16 @@ worktree at that point:
 | 108 | Working tree (`FT_Bitmap_Blend` boundary parity routes) | Added maintained `FT_Bitmap_Blend` inputs for the `FT_PIXEL_MODE_NONE` source no-op, all four coordinate-overflow guards, and the empty-source no-op, with exact pinned-C/Rust FFI/C ABI/WASM execution. Source-bound parity run `92002f82-4fe8-4694-ab2c-e8017e37c5dd` passed 7,545 / 7,545 runnable comparisons with 3 explicitly pending safety-extension cases and 0 pending parity routes; all three backend function surfaces remain 218 / 218. All-lane Coverage MCP run `01303fc3-5792-485b-82ba-0f0a84d8cfe4`, snapshot `e4a33be1-aed3-4d80-a165-b078e794e23b`, completed in 61.445 seconds and measured 49,986 / 54,390 lines, 9,941 / 12,594 branches, 3,410 / 3,848 functions, and 68,760 / 75,617 regions. The C-ABI scorecard remains 10 / 12 categories complete with 5,288 / 5,288 runtime contract rows exact; the Windows import-library item and four external platform bundles remain. |
 | 109 | Working tree (coverage build-state reuse) | Refined `make test-coverage-all` so the instrumented binary marker follows the newest compiler-input commit and ignores worker/lane-split orchestration settings; dirty compiler inputs still force a clean rebuild. The first validation after the marker change passed 7,546 / 7,546 in each lane in 83.479 seconds, including a 46.78-second instrumented rebuild; the warm repeat passed the same matrix in 28.948 seconds with unchanged totals of 49,987 / 54,390 lines, 9,942 / 12,594 branches, 3,410 / 3,848 functions, and 68,773 / 75,617 regions. A two-worker comparison took 140.239 seconds, so the default remains one worker per instrumented lane. Full parity run `a55f7f12-832f-4879-b2c1-206f99a548fe`, recorded by `fa73451c-5a3d-4803-8231-486cf02d3fef`, passed 7,546 / 7,546 with 0 failures and 3 pending safety-extension cases. |
 | 110 | Working tree (OT-SVG vertical-layout parity route) | Added the maintained `input/fonts/svg/otsvg-glyph.ttf` variant to `freetype.FT_Load_Glyph.no_scale_no_hinting_and_vertical_flags` with `FT_LOAD_COLOR` and `FT_LOAD_VERTICAL_LAYOUT`, exercising the pure-Rust `GlyphSlot::from_svg` vertical advance branch through Rust FFI, C ABI, and WASM. Source-bound parity run `7dbbbf15-55ec-4e8e-84f8-9274bd9e66de`, recorded by `2ef5efdf-32e1-4f0c-b1ff-c8c287193b50`, passed 7,547 / 7,547 with 0 failures and 3 pending safety-extension cases; all-lane Coverage MCP run `b8eee962-d9dd-457e-bc2e-3bd7ce996fd8`, snapshot `44e3ea6a-02c4-47bb-aa43-25af1b4c9b88`, completed in 77.678 seconds and measured 49,991 / 54,390 lines, 9,943 / 12,594 branches, 3,410 / 3,848 functions, and 68,774 / 75,617 regions. The targeted `src/api.rs` branch at lines 1074-1075 is now fully covered. C-ABI scorecard run `1072c2e3-c905-4bbd-a639-8e99e5a4376c` reports 10 / 12 categories complete, 5,290 / 5,290 runtime rows, and 7,547 / 7,547 no-generic-fallback routes; the Windows import-library item and four fresh platform bundles remain. |
+| 111 | Working tree (OT-SVG missing-hooks render parity route) | Added a maintained `freetype.FT_Render_Glyph.error_unloaded_or_unsupported_slot_format@svg-no-hooks-missing-renderer` variant using `input/fonts/svg/otsvg-glyph.ttf`, `FT_LOAD_COLOR`, and normal rendering with hooks unset. This reaches the pinned C `FT_Err_Missing_SVG_Hooks` behavior through Rust FFI, C ABI, and WASM. Source-bound parity run `66fdb24c-d148-48bb-ac9a-01cfe134d0db`, recorded by `df884a35-8ae2-421a-9919-8ba0a188bde7`, passed 7,548 / 7,548 with 0 failures and 3 pending safety-extension cases; all-lane Coverage MCP run `800756de-e48e-4d00-87fc-391fcc1061a3`, snapshot `d7658f19-7e80-4e33-83e2-67897b0078ec`, completed in 28.470 seconds and measured 49,994 / 54,390 lines, 9,944 / 12,594 branches, 3,410 / 3,848 functions, and 68,775 / 75,617 regions. `src/api.rs:1141` now has both branches covered; the separate defensive no-loaded-outline path at 1146-1147 remains. The C-ABI scorecard remains 10 / 12 categories complete; the Windows import-library item and four fresh platform bundles remain. |
 
 The current source-bound parity verification is Coverage MCP parity run
-`7dbbbf15-55ec-4e8e-84f8-9274bd9e66de`: it passed 7,547 / 7,547 runnable
+`66fdb24c-d148-48bb-ac9a-01cfe134d0db`: it passed 7,548 / 7,548 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The source-digest attestation was refreshed by record run
-`2ef5efdf-32e1-4f0c-b1ff-c8c287193b50` in `doc/runtime_parity_evidence.json`.
-The companion C-ABI scorecard run `1072c2e3-c905-4bbd-a639-8e99e5a4376c`
-reports **10 / 12 categories complete**, with 5,290 / 5,290 runtime contract
+`df884a35-8ae2-421a-9919-8ba0a188bde7` in `doc/runtime_parity_evidence.json`.
+The companion C-ABI scorecard run `282b58c0-1be3-4a49-bbad-ccdcd9587eb7`
+reports **10 / 12 categories complete**, with 5,291 / 5,291 runtime contract
 rows and 684 / 684 strict error routes exact; the remaining contract debt is
 the Windows import-library item and four fresh target-lane bundles.
 
@@ -512,11 +513,11 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current source-bound all-lane run `b8eee962-d9dd-457e-bc2e-3bd7ce996fd8`
-completed in 77.678 seconds with snapshot
-`44e3ea6a-02c4-47bb-aa43-25af1b4c9b88`. It measured 49,991 / 54,390 lines,
-9,943 / 12,594 branches, 3,410 / 3,848 functions, and 68,774 / 75,617
-regions; the parity matrix passed 7,547 / 7,547 in each backend. The lanes
+The current source-bound all-lane run `800756de-e48e-4d00-87fc-391fcc1061a3`
+completed in 28.470 seconds with snapshot
+`d7658f19-7e80-4e33-83e2-67897b0078ec`. It measured 49,994 / 54,390 lines,
+9,944 / 12,594 branches, 3,410 / 3,848 functions, and 68,775 / 75,617
+regions; the parity matrix passed 7,548 / 7,548 in each backend. The lanes
 already run concurrently; the same-source two-worker comparison
 `971f65aa-12b6-4a41-9dcb-cceffdd99199` completed in 140.239 seconds, so the
 default remains one worker per lane. The previous combined-lane warm all-lane baseline completed in 1
