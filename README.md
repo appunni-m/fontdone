@@ -171,12 +171,26 @@ When the instrumented binary cache is cold, the managed run
 identifies cache-miss compilation, not MCP ingestion or the C oracle, as the
 large delay on cold coverage runs.
 
+The coverage-speed validation on the current worktree set
+`COVERAGE_TEST_DEBUG=0`: the cold instrumented profile build fell from about
+66 seconds with the previous line-table setting to 49.40 seconds, while the
+valid coverage totals and all-lane parity stayed unchanged (Coverage MCP run
+`43214315-ba24-44e0-b4f9-fce152052ec5`, snapshot
+`f9469846-d77a-4cfa-b80d-011d9ab87456`). A warm confirmation
+(`5f1b9ccd-8151-4fc7-9be2-045e3ea7a1e8`, snapshot
+`fced0659-ec06-4909-8744-40377010abad`) completed in 29.114 seconds with
+lane times of 24.95, 25.04, and 26.49 seconds. The change primarily removes
+cold instrumented-link overhead; the three parity lanes remain the dominant
+warm cost. LLVM coverage mapping supplies the source locations used by the
+report without requiring DWARF line tables.
+
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
 pending. The maintained `make test-coverage-all` command keeps all workspace
 packages in the report but executes only the `unified_fixture_parity`
-integration target, which already drives the Rust, C-ABI, and host-compiled
-WASM lanes. This avoids empty root-unit and pipe-trace binaries that can make
+integration target, whose exact default test name is
+`parity_fixture::unified_fixture_parity` and which already drives the Rust,
+C-ABI, and host-compiled WASM lanes. This avoids empty root-unit and pipe-trace binaries that can make
 LLVM count cfg-dependent FFI source twice without adding a parity input. The
 default `COVERAGE_UNIFIED_LANE_SPLIT=1` path builds one instrumented binary,
 then runs that binary directly for the Rust FFI, C ABI, and host-WASM lanes in
@@ -215,8 +229,9 @@ is accepted by Coverage MCP without the compatibility-only segment rewrite. The 
 pass over the 28.6 MB JSON artifact; set it to `1` only for an older LLVM JSON
 producer that needs the segment-count clamp. Coverage builds retain the
 instrumented target with `cargo llvm-cov --no-clean`, remove stale `.profraw`
-files before each measurement, and retain line tables while omitting full test
-debuginfo via `COVERAGE_TEST_DEBUG=1`. Face-cache keys now
+files before each measurement, and omit DWARF line tables via
+`COVERAGE_TEST_DEBUG=0`; LLVM's coverage mapping remains sufficient for the
+report. Face-cache keys now
 reuse the preload phase's content digests instead of hashing the same font for
 each expanded case, and read-only SFNT table-load/info routes reuse those
 content-bound handles; the variation-sequence route remains isolated. Oracle

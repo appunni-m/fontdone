@@ -20,6 +20,19 @@
 #![allow(clippy::unwrap_used)]
 #![allow(missing_docs)]
 #![allow(unused_crate_dependencies)]
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
+#[path = "support/generated_constant_lookup.rs"]
+mod generated_constant_lookup;
+
+// The integration harness is an input driver, not part of the runtime
+// coverage denominator. Keep its helpers out of LLVM's instrumented counter
+// set so coverage measures the Rust, C-ABI, and WASM implementations without
+// paying for counters in this report-excluded test code.
+#[cfg_attr(coverage_nightly, coverage(off))]
+#[rustfmt::skip]
+mod parity_fixture {
+
 // The maintained callback probes intentionally cross the raw C callback ABI;
 // their sentinels are never dereferenced by the probe object itself.
 #![allow(unsafe_code)]
@@ -185,9 +198,7 @@ extern "C" fn c_counting_library_free(memory: c_abi::FT_Memory, block: FT_Pointe
         .remove(&block.addr());
 }
 
-#[path = "support/generated_constant_lookup.rs"]
-mod generated_constant_lookup;
-use generated_constant_lookup::generated_rust_constant;
+use super::generated_constant_lookup::generated_rust_constant;
 
 struct RasterizerTraceCoverageLogger;
 
@@ -93871,4 +93882,6 @@ fn djb2_hash(bytes: &[u8]) -> String {
         h.wrapping_mul(33).wrapping_add(u64::from(b))
     });
     format!("{hash:x}")
+}
+
 }

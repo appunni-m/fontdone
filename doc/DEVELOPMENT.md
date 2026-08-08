@@ -120,7 +120,11 @@ merging prior execution data. The all-lane target keeps workspace report scope
 for the C-ABI and host-compiled WASM facades but selects only the
 `unified_fixture_parity` integration binary; the workspace's empty unit and
 pipe-trace targets add no parity inputs and can duplicate cfg-dependent FFI
-coverage. Its `COVERAGE_ALL_TARGET_DIR` cache is separate from other coverage
+coverage. The harness helpers are excluded from LLVM counters with the
+nightly `coverage(off)` attribute, and the split lanes use the exact default
+test name `parity_fixture::unified_fixture_parity` through
+`COVERAGE_UNIFIED_TEST_NAME`; using the old top-level exact name would run zero
+tests. Its `COVERAGE_ALL_TARGET_DIR` cache is separate from other coverage
 profiles, so `--no-clean` cannot reuse stale binaries from a different target
 selection. Run `make coverage-clean` after changing the coverage toolchain,
 profile flags, or coverage instrumentation configuration. The ABI-only package
@@ -165,6 +169,18 @@ warm unchanged-binary baseline remains 50.482 seconds.
 A preceding clean-target run took 109.360 seconds because it rebuilt the
 instrumented binary; the build-only step now uses `--no-report -- --list` so
 profile merging cannot happen before the three lane processes execute.
+
+The current coverage-speed change also sets `COVERAGE_TEST_DEBUG=0`. On the
+same worktree, the cold instrumented profile build measured 49.40 seconds,
+down from about 66 seconds with the previous line-table setting, while the
+valid coverage totals remained identical (Coverage MCP run
+`43214315-ba24-44e0-b4f9-fce152052ec5`, snapshot
+`f9469846-d77a-4cfa-b80d-011d9ab87456`). The warm confirmation
+`5f1b9ccd-8151-4fc7-9be2-045e3ea7a1e8` (snapshot
+`fced0659-ec06-4909-8744-40377010abad`) completed in 29.114 seconds and
+passed all three split lanes. LLVM source coverage mapping provides the
+report's source locations independently of DWARF line tables, so this removes
+link-time debug metadata without changing the measured denominator.
 
 The report names `fontdone`, `fontdone-c-abi`, and `fontdone-wasm` explicitly
 because `cargo llvm-cov report` does not accept the workspace flag; this keeps
@@ -307,9 +323,9 @@ the first source-bound rebuild measured 99.254 seconds, and the prior execution-
 warm measurement was 50.482 seconds with
 warm input and oracle caches. Allow roughly 2 minutes for host variation and
 roughly 4–6 minutes after a cache reset.
-`COVERAGE_TEST_DEBUG=1` keeps line
-tables while omitting full test debuginfo; this reduces the measured end-to-end
-run without changing the coverage totals. Face-cache keys also reuse preloaded
+`COVERAGE_TEST_DEBUG=0` omits DWARF line tables while retaining LLVM source
+coverage mapping; this reduces cold instrumented-link time without changing the
+coverage totals. Face-cache keys also reuse preloaded
 font content digests instead of rehashing every expanded case, and the
 read-only SFNT table-load/info routes reuse those content-bound handles while
 keeping variation-sequence cases isolated. Oracle preparation also preserves

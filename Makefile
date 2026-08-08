@@ -13,7 +13,9 @@ COVERAGE_UNIFIED_WORKERS ?= 1
 # Opt-level 1 is the fastest measured current-host all-lane coverage profile;
 # its coverage totals and parity results match the opt-level-3 comparison.
 COVERAGE_TEST_OPT_LEVEL ?= 1
-COVERAGE_TEST_DEBUG ?= 1
+# LLVM source coverage mapping carries source locations independently of
+# DWARF; omit line tables from coverage builds to shorten instrumented links.
+COVERAGE_TEST_DEBUG ?= 0
 COVERAGE_LLVM_COV_FLAGS ?= --no-clean
 # Current cargo-llvm-cov emits a report accepted directly by Coverage MCP.
 # Keep the compatibility rewrite opt-in for older LLVM JSON producers.
@@ -22,6 +24,7 @@ COVERAGE_PREPARATION_JOBS ?= 2
 COVERAGE_ALL_TARGET_DIR ?= target/llvm-cov-all-lanes
 COVERAGE_PROFILE_DIR ?= $(COVERAGE_ALL_TARGET_DIR)/llvm-cov-target
 COVERAGE_TEST_BINARY ?=
+COVERAGE_UNIFIED_TEST_NAME ?= parity_fixture::unified_fixture_parity
 COVERAGE_ABI_PREFLIGHT ?= 0
 COVERAGE_UNIFIED_LANE_SPLIT ?= 1
 CARGO_DENY_VERSION ?= 0.20.2
@@ -295,17 +298,17 @@ ifeq ($(COVERAGE_UNIFIED_LANE_SPLIT),1)
 	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
 	  FONTDONE_UNIFIED_BACKEND=rust \
 	  LLVM_PROFILE_FILE=$(COVERAGE_PROFILE_DIR)/fontdone-rust-%p-%m.profraw \
-	  "$$test_binary" unified_fixture_parity --exact --nocapture ) & rust_pid=$$!; \
+	  "$$test_binary" "$(COVERAGE_UNIFIED_TEST_NAME)" --exact --nocapture ) & rust_pid=$$!; \
 	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
 	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
 	  FONTDONE_UNIFIED_BACKEND=c-abi \
 	  LLVM_PROFILE_FILE=$(COVERAGE_PROFILE_DIR)/fontdone-c-abi-%p-%m.profraw \
-	  "$$test_binary" unified_fixture_parity --exact --nocapture ) & c_abi_pid=$$!; \
+	  "$$test_binary" "$(COVERAGE_UNIFIED_TEST_NAME)" --exact --nocapture ) & c_abi_pid=$$!; \
 	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
 	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
 	  FONTDONE_UNIFIED_BACKEND=wasm \
 	  LLVM_PROFILE_FILE=$(COVERAGE_PROFILE_DIR)/fontdone-wasm-%p-%m.profraw \
-	  "$$test_binary" unified_fixture_parity --exact --nocapture ) & wasm_pid=$$!; \
+	  "$$test_binary" "$(COVERAGE_UNIFIED_TEST_NAME)" --exact --nocapture ) & wasm_pid=$$!; \
 	wait $$rust_pid || lane_status=1; \
 	wait $$c_abi_pid || lane_status=1; \
 	wait $$wasm_pid || lane_status=1; \
@@ -410,6 +413,7 @@ test-ffi:
 #   COVERAGE_PREPARATION_JOBS           – parallel jobs for independent coverage setup
 #   COVERAGE_ALL_TARGET_DIR             – isolated cached target for all-lane LLVM coverage
 #   COVERAGE_TEST_BINARY                – optional instrumented test binary override; otherwise the newest built binary is used
+#   COVERAGE_UNIFIED_TEST_NAME          – exact integration-test name used by the split coverage lanes
 #   COVERAGE_ABI_PREFLIGHT               – rerun the standalone ABI unit preflight (1/0)
 #   COVERAGE_UNIFIED_LANE_SPLIT          – run Rust, C ABI, and WASM coverage lanes as separate processes (1/0)
 #   FONTDONE_UNIFIED_BACKEND             – internal lane selector: rust, c-abi, or wasm
