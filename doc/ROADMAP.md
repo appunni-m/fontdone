@@ -495,18 +495,16 @@ worktree at that point:
 | 112 | Working tree (active empty-outline gvar coverage route) | Added one maintained `empty-outline-non-default` variant to `ftmm.FT_Set_Var_Design_Coordinates.output_changes_for_design_coordinates` using the existing `gvar-empty-outline-default.ttf` fixture at wght=500. This activates the zero-contour glyph 17 gvar route, so `recompute_outline_bounds` executes its empty-outline branch across Rust FFI, C ABI, and WASM; the malformed-BDF fixture generator now preserves its maintained blank-line parity input. Focused run `f74f8bfb-0728-4399-89f6-a495cb3ae72a` passed 34 / 34; source-bound full parity run `3fe4cad6-6971-416c-82b1-878b5ea27ac6`, recorded by `27f191f8-7247-483b-a720-a6a06d729937`, passed 7,549 / 7,549 with 0 failures and 3 pending safety-extension cases. All-lane Coverage MCP run `81c85800-84df-4b76-9bc3-db9d7bab94ae`, snapshot `79197247-6d87-453b-ad6e-34446ed3ed3c`, completed in 28.419 seconds and measured 50,000 / 54,390 lines, 9,945 / 12,594 branches, 3,410 / 3,848 functions, and 68,781 / 75,617 regions; `src/tt/gvar.rs:535-540` is no longer a gap. C-ABI scorecard run `6b825a3a-6523-472d-b5f1-9907f531cb05` reports 10 / 12 categories complete, 5,292 / 5,292 runtime contract rows, 686 / 686 exact-error routes, and 7,549 / 7,549 no-generic-fallback routes; the Windows import-library item and four fresh target-lane bundles remain. |
 | 113 | `ce3d4922899e07c2db7a536879db903cd781ecc0` | Added the existing `apple-full-unicode-type13.ttf` fixture to the maintained `FT_Get_Char_Index`, `FT_Get_First_Char`, and `FT_Get_Next_Char` matrices, covering format-13 mapped, before-first-group, between-groups, first-character, and next-character behavior across Rust FFI, C ABI, and WASM without adding an asset. Source-bound full parity run `e1d87b1f-2c78-4d62-b29e-ea63249d0ca4`, recorded by `8d6d93bc-3619-43b1-99e1-4b9e59016db9`, passed 7,555 / 7,555 runnable comparisons with 0 failures and 3 pending safety-extension cases; concrete input cases are 7,558 and all three function surfaces retain 218 / 218 route evidence. The clean all-lane Coverage MCP run `1deb8e0e-726c-4771-a11e-7369beeb33ad`, snapshot `c0ecb99c-25b2-4eee-8ae6-8e87693b006f`, completed in 28.596 seconds and measured 50,022 / 54,390 lines, 9,952 / 12,594 branches, 3,412 / 3,848 functions, and 68,822 / 75,617 regions; this is +22 lines, +7 branches, +2 functions, and +41 regions over the prior snapshot. The remaining format-13 gaps are the valid zero-glyph `next_char` branch and malformed-subtable parser diagnostics, which require maintained inputs that do not yet exist. C-ABI scorecard run `769cda25-4805-4337-b7c8-2bf7469d8963` reports 10 / 12 categories complete, 5,298 / 5,298 runtime contract rows, 686 / 686 exact-error routes, and 7,555 / 7,555 no-generic-fallback routes; the Windows import-library item and four fresh target-lane bundles remain. |
 | 114 | Working tree (format-13 parser matrix) | Added a maintained malformed format-13 cmap matrix containing length, truncated-header, group-count, invalid-range, out-of-Unicode, overlapping-group, and physical-short records beside a valid format-6 control. The pinned C validator accepts the out-of-Unicode group under its default validation path, so Rust now matches that behavior and continues to select the malformed format-13 record before returning the same zero glyph as C. The maintained Apple format-13 fixture also adds a zero-glyph group so `FT_Get_Next_Char` matches C when the next character maps to glyph zero. Full parity run `8017f56d-9cab-4503-9e2f-6085d1d9f36f`, recorded by `9c168276-37b5-4390-8291-e55b8cf9c1ee`, passed 7,556 / 7,556 runnable comparisons with 0 failures and 3 pending safety-extension cases; concrete input cases are 7,559 and all three function surfaces retain 218 / 218 route evidence. All-lane Coverage MCP run `f3d45793-9df9-4e63-a38d-3c1de836f423`, snapshot `b9ab78bd-1b6d-48e9-a67c-7fef99d691a1`, completed in 77.350 seconds and measured 50,035 / 54,390 lines, 9,957 / 12,592 branches, 3,413 / 3,848 functions, and 68,831 / 75,616 regions. The remaining C-contract debt is unchanged: 10 / 12 scorecard categories, the Windows import-library item, and four external platform bundles. |
+| 115 | `9c675e0534061d49c202c2f339977aefee097158` | Added two maintained PostScript hinting-property controls: an absent property string with an invalid glyph index, and a non-font byte input that exercises the property path before the exact `FT_New_Memory_Face` load error. Full parity run `4cf25299-3965-4726-9159-b76561562270`, recorded by `b0f05272-9aa4-4c10-aeb0-64eee24a4fa4`, passed 7,560 / 7,560 runnable comparisons with 0 failures and 3 pending safety-extension cases; concrete input cases are 7,563 and all three function surfaces retain 218 / 218 route evidence. All-lane Coverage MCP run `c58c98ad-a53c-4a7c-8da2-2b3bcfa009d2`, snapshot `5994fb75-9aaf-4d4c-bd54-4482b3e3fd4d`, completed in 76.282 seconds and measured 50,046 / 54,394 lines, 9,964 / 12,594 branches, 3,413 / 3,848 functions, and 68,846 / 75,622 regions. The C-contract debt remains 10 / 12 scorecard categories, the Windows import-library item, and four external platform bundles. |
 
 The current source-bound parity verification is Coverage MCP parity run
-`8017f56d-9cab-4503-9e2f-6085d1d9f36f`: it passed 7,556 / 7,556 runnable
+`4cf25299-3965-4726-9159-b76561562270`: it passed 7,560 / 7,560 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The source-digest attestation was refreshed by record run
-`9c168276-37b5-4390-8291-e55b8cf9c1ee` in `doc/runtime_parity_evidence.json`.
-The companion C-ABI scorecard run `c880ab6f-501b-417b-ab2d-34cdf04854c7`
-reports **10 / 12 categories complete**, with 5,299 / 5,299 runtime contract
-rows, 686 / 686 strict error routes, and 7,556 / 7,556 no-generic-fallback
-routes exact; the remaining contract debt is the Windows import-library item
-and four fresh target-lane bundles.
+`b0f05272-9aa4-4c10-aeb0-64eee24a4fa4` in `doc/runtime_parity_evidence.json`.
+The tracked C-ABI scorecard remains **10 / 12 categories complete**; the
+Windows import-library item and four fresh target-lane bundles remain.
 
 The three pending cases are deliberately excluded from the pinned-C parity
 numerator and denominator because their inputs are undefined or
@@ -517,11 +515,11 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current source-bound all-lane run `f3d45793-9df9-4e63-a38d-3c1de836f423`
-completed in 77.350 seconds with snapshot
-`b9ab78bd-1b6d-48e9-a67c-7fef99d691a1`. It measured 50,035 / 54,390 lines,
-9,957 / 12,592 branches, 3,413 / 3,848 functions, and 68,831 / 75,616
-regions; the parity matrix passed 7,556 / 7,556 in each backend. The lanes
+The current source-bound all-lane run `c58c98ad-a53c-4a7c-8da2-2b3bcfa009d2`
+completed in 76.282 seconds with snapshot
+`5994fb75-9aaf-4d4c-bd54-4482b3e3fd4d`. It measured 50,046 / 54,394 lines,
+9,964 / 12,594 branches, 3,413 / 3,848 functions, and 68,846 / 75,622
+regions; the parity matrix passed 7,560 / 7,560 in each backend. The lanes
 already run concurrently; the same-source two-worker comparison
 `971f65aa-12b6-4a41-9dcb-cceffdd99199` completed in 140.239 seconds, so the
 default remains one worker per lane. The previous combined-lane warm all-lane baseline completed in 1

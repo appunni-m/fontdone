@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`73bcde80-ecf2-4687-be16-7ae4a3405506`, recorded by
-`e98bd59b-c40a-41c1-8fe3-ec190feb6121` in
+`4cf25299-3965-4726-9159-b76561562270`, recorded by
+`b0f05272-9aa4-4c10-aeb0-64eee24a4fa4` in
 `doc/runtime_parity_evidence.json` after passing 7,560 / 7,560 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `0e4a8392e0d4f864384baaefa78bf0cec02e1765bebe31e5021153f7ee15349f`.
+Its source-bound parity-tree digest is `05d2ad532af15b51fb3c52036179f01b169deab8aeec52794ddc4270647fb7a2`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,9 +142,9 @@ their exact worktree than the committed release snapshot.
 
 The latest source-bound all-lane coverage snapshot was recorded on
 **2026-08-08** for the current worktree based at commit
-`8a0d10ab08e1d74f2cd32c9f7839978d02bdcdcd`
-(Coverage MCP run `214df235-d170-43a7-b4b8-03ba4c860619`, snapshot
-`a3f0914e-b13f-46ca-ad90-aae3c3b7de36`):
+`9c675e0534061d49c202c2f339977aefee097158`
+(Coverage MCP run `c58c98ad-a53c-4a7c-8da2-2b3bcfa009d2`, snapshot
+`5994fb75-9aaf-4d4c-bd54-4482b3e3fd4d`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -153,7 +153,7 @@ The latest source-bound all-lane coverage snapshot was recorded on
 | Functions | 3,413 / 3,848 | 88.70% |
 | Regions | 68,846 / 75,622 | 91.04% |
 
-This source-bound validation completed in 76.994 seconds with the default
+This source-bound validation completed in 76.282 seconds with the default
 `COVERAGE_UNIFIED_WORKERS=1`. The first validation after the build-marker change
 took 83.479 seconds, including a 46.78-second instrumented rebuild. The
 same-source two-worker comparison
@@ -165,7 +165,7 @@ The maintained Apple full-Unicode format-13 font is now exercised by the
 `FT_Get_Char_Index`, `FT_Get_First_Char`, and `FT_Get_Next_Char` input matrices.
 The new malformed format-13 matrix also executes the pinned parser's length,
 header, group-order, and physical-short validation routes. The source-bound
-parity run `73bcde80-ecf2-4687-be16-7ae4a3405506` passed 7,560 / 7,560
+parity run `4cf25299-3965-4726-9159-b76561562270` passed 7,560 / 7,560
 comparisons with 0 failures; the current coverage snapshot measures
 50,046 / 54,394 lines, 9,964 / 12,594 branches, and 68,846 / 75,622 regions.
 When the instrumented binary cache is cold, the managed run
