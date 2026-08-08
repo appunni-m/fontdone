@@ -30,6 +30,10 @@ COVERAGE_TEST_BINARY ?=
 COVERAGE_UNIFIED_TEST_NAME ?= parity_fixture::unified_fixture_parity
 COVERAGE_ABI_PREFLIGHT ?= 0
 COVERAGE_UNIFIED_LANE_SPLIT ?= 1
+# Seeding the ignored per-case oracle cache is useful for later focused runs,
+# but it is redundant when each coverage lane already has the exact aggregate
+# cache. Skip that full-file scan in the concurrent coverage lanes by default.
+COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED ?= 1
 CARGO_DENY_VERSION ?= 0.20.2
 CARGO_AUDIT_VERSION ?= 0.22.2
 PREFIX ?= /usr/local
@@ -337,16 +341,19 @@ ifeq ($(COVERAGE_UNIFIED_LANE_SPLIT),1)
 	lane_status=0; \
 	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
 	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
+	  FONTDONE_UNIFIED_SKIP_ORACLE_CASE_CACHE_SEED=$(COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED) \
 	  FONTDONE_UNIFIED_BACKEND=rust \
 	  LLVM_PROFILE_FILE=$(COVERAGE_PROFILE_DIR)/fontdone-rust-%p-%m.profraw \
 	  "$$test_binary" "$(COVERAGE_UNIFIED_TEST_NAME)" --exact --nocapture ) & rust_pid=$$!; \
 	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
 	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
+	  FONTDONE_UNIFIED_SKIP_ORACLE_CASE_CACHE_SEED=$(COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED) \
 	  FONTDONE_UNIFIED_BACKEND=c-abi \
 	  LLVM_PROFILE_FILE=$(COVERAGE_PROFILE_DIR)/fontdone-c-abi-%p-%m.profraw \
 	  "$$test_binary" "$(COVERAGE_UNIFIED_TEST_NAME)" --exact --nocapture ) & c_abi_pid=$$!; \
 	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
 	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
+	  FONTDONE_UNIFIED_SKIP_ORACLE_CASE_CACHE_SEED=$(COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED) \
 	  FONTDONE_UNIFIED_BACKEND=wasm \
 	  LLVM_PROFILE_FILE=$(COVERAGE_PROFILE_DIR)/fontdone-wasm-%p-%m.profraw \
 	  "$$test_binary" "$(COVERAGE_UNIFIED_TEST_NAME)" --exact --nocapture ) & wasm_pid=$$!; \
@@ -456,6 +463,7 @@ test-ffi:
 #   COVERAGE_ALL_TARGET_DIR             – isolated cached target for all-lane LLVM coverage
 #   COVERAGE_TEST_BINARY                – optional instrumented test binary override; otherwise the newest built binary is used
 #   COVERAGE_UNIFIED_TEST_NAME          – exact integration-test name used by the split coverage lanes
+#   COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED – skip the redundant aggregate-hit case-cache scan in coverage lanes (1/0)
 #   COVERAGE_ABI_PREFLIGHT               – rerun the standalone ABI unit preflight (1/0)
 #   COVERAGE_UNIFIED_LANE_SPLIT          – run Rust, C ABI, and WASM coverage lanes as separate processes (1/0)
 #   FONTDONE_UNIFIED_BACKEND             – internal lane selector: rust, c-abi, or wasm

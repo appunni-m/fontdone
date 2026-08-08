@@ -366,6 +366,15 @@ so their sum is not wall time. The remaining wall-time tail is setup,
 process/report merging, and Coverage MCP ingestion rather than another parity
 route. Coverage MCP does not expose timestamps for those sub-phases yet:
 
+The split `make test-coverage-all` lanes set
+`FONTDONE_UNIFIED_SKIP_ORACLE_CASE_CACHE_SEED=1`. An aggregate cache hit already
+contains the exact ordered output needed by that lane, so rereading and
+validating the full ignored per-case cache is redundant; the retained profile
+measured roughly 3.3 seconds for that scan in one parity process. Normal parity
+and focused runs leave the setting unset and continue to seed or consult the
+per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
+cache population itself.
+
 The latest all-lane report's retained lane timers were 24.60 seconds Rust,
 24.69 seconds C ABI, and 25.98 seconds WASM. These are backend execution
 measurements inside the 77.350-second end-to-end run; compilation, report

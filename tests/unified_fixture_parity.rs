@@ -39883,28 +39883,37 @@ fn ensure_oracle_cache(cases: &[&InputCase]) -> Result<PathBuf, String> {
     let refresh = std::env::var("FONTDONE_UNIFIED_ORACLE_REFRESH").is_ok();
 
     if !refresh && cache_path.exists() {
-        let case_cache_path = oracle_case_cache_path();
-        let needs_seed = match load_oracle_case_cache(&case_cache_path) {
-            Ok(entries) => entries.len() < cases.len(),
-            Err(err) => {
-                eprintln!("unified_oracle_case_cache: inspect_failed error={err}");
-                true
-            }
-        };
-        if needs_seed && let Ok(_lock) = acquire_oracle_case_cache_lock() {
-            let still_needs_seed = match load_oracle_case_cache(&case_cache_path) {
+        // The aggregate cache is already the exact ordered oracle result for
+        // this batch. Seeding the separate per-case cache is opportunistic;
+        // split coverage lanes can skip its full-file validation scan.
+        if !skip_oracle_case_cache_seed() {
+            let case_cache_path = oracle_case_cache_path();
+            let needs_seed = match load_oracle_case_cache(&case_cache_path) {
                 Ok(entries) => entries.len() < cases.len(),
                 Err(err) => {
                     eprintln!("unified_oracle_case_cache: inspect_failed error={err}");
                     true
                 }
             };
-            if still_needs_seed
-                && let Err(err) =
-                    seed_oracle_case_cache_from_full(cases, &cache_path, &case_cache_path)
-            {
-                eprintln!("unified_oracle_case_cache: seed_failed error={err}");
+            if needs_seed && let Ok(_lock) = acquire_oracle_case_cache_lock() {
+                let still_needs_seed = match load_oracle_case_cache(&case_cache_path) {
+                    Ok(entries) => entries.len() < cases.len(),
+                    Err(err) => {
+                        eprintln!("unified_oracle_case_cache: inspect_failed error={err}");
+                        true
+                    }
+                };
+                if still_needs_seed
+                    && let Err(err) =
+                        seed_oracle_case_cache_from_full(cases, &cache_path, &case_cache_path)
+                {
+                    eprintln!("unified_oracle_case_cache: seed_failed error={err}");
+                }
             }
+        } else {
+            eprintln!(
+                "unified_oracle_case_cache: skipped aggregate-hit seed scan for this lane"
+            );
         }
         eprintln!(
             "unified_oracle_cache: hit {} cases key={}",
@@ -39999,6 +40008,11 @@ fn ensure_oracle_cache(cases: &[&InputCase]) -> Result<PathBuf, String> {
         cache_key
     );
     Ok(cache_path)
+}
+
+fn skip_oracle_case_cache_seed() -> bool {
+    std::env::var("FONTDONE_UNIFIED_SKIP_ORACLE_CASE_CACHE_SEED")
+        .is_ok_and(|value| value == "1")
 }
 
 fn oracle_batch_input(cases: &[&InputCase]) -> Result<String, String> {
