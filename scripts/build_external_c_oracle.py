@@ -1018,6 +1018,10 @@ def main() -> None:
         str(redirects),
         "-I",
         str(pinned_include),
+        # The generated trace reapply header lives beside each external
+        # optional-feature executable, not in the shared constants directory.
+        "-I",
+        str(build_dir),
         "-I",
         str(constants_dir),
         "-c",
