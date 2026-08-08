@@ -270,16 +270,16 @@ bytes against pinned FreeType. Correctness mismatches fail before a
 measurement can qualify.
 
 <!-- performance-baseline:start -->
-The committed ledger contains **4 / 5 clean runs**
+The committed ledger contains **5 / 5 clean runs**
 for its most-sampled current environment. Five runs from the same environment
 are required before regression thresholds can be reviewed.
 
 | Latest clean measurement | Value |
 |---|---:|
-| Source commit | `ae8c5d525351d9599acae23a3d0564e5aa80afa7` |
+| Source commit | `38bba241c1d3df4cb9bfcadc681caf6fb1308476` |
 | Samples | 10 |
-| Weighted latency speedup versus C | 0.322x |
-| Total throughput ratio versus C | 0.438x |
+| Weighted latency speedup versus C | 0.324x |
+| Total throughput ratio versus C | 0.428x |
 | Median peak-RSS ratio versus C | 3.415x |
 | Shared-library byte-size ratio versus C | 2.396x |
 | Fontdone WASM size | 1,245,397 bytes |
