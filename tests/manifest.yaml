@@ -4623,6 +4623,8 @@ subjects:
         description: Numeric value is exactly 0, matching the pinned freetype/ftdriver.h macro.
       - id: hinting_engine_property_runtime
         description: FT_Property_Set/Get on modules "cff", "type1", and "t1cid" property "hinting-engine" accepts or rejects this value exactly as ftpsprop.c for the pinned old-engine configuration.
+      - id: hinting_engine_invalid_glyph_preserves_error
+        description: An out-of-range glyph index returns the pinned Invalid_Argument error on every PostScript module and remains an error after the rejected hinting-engine value, preserving the failed slot state.
     # needs-input: operation=FT_Property_Set and FT_Property_Get; fixture_asset=CFF, Type 1, and CID-keyed Type 1 fonts; params module_name in {"cff","type1","t1cid"}, property_name="hinting-engine", FT_UInt value FT_HINTING_FREETYPE, string value "freetype" when environment-property path is enabled, pinned build variants with and without old-engine support if available; expected output shape=FT_Error plus FT_UInt hinting_engine readback per module and representative glyph load/render status; comparison=exact C oracle macro value, old-engine-dependent acceptance or Unimplemented_Feature, property readback after success/rejection, string-vs-integer behavior, and output preservation on invalid values.
 
   - id: ftdriver.TT_INTERPRETER_VERSION_35

@@ -14591,6 +14591,15 @@ fn ft_load_glyph_core(
         // this core's u16 glyph-index representation.
         return Err(FT_Err_Invalid_Argument);
     };
+    {
+        let inner = face.inner.borrow();
+        // FreeType delegates this public-range check to each font driver.
+        // Keep it at the shared entry point so CID Type 1 cannot turn an
+        // out-of-range CID into its intentional empty-glyph fallback.
+        if glyph_index >= inner.info().num_glyphs {
+            return Err(FT_Err_Invalid_Argument);
+        }
+    }
     // TrueType `TT_Load_Glyph` tries the embedded bitmap path first when the
     // active size matches an `sbix` strike.  The pinned build has PNG support
     // disabled, so a `png ` record returns `Unimplemented_Feature`; because

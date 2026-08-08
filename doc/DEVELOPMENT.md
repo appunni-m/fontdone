@@ -449,6 +449,11 @@ run `8017f56d-9cab-4503-9e2f-6085d1d9f36f` passed 7,556 / 7,556 comparisons with
 0 failures; all-lane coverage run `f3d45793-9df9-4e63-a38d-3c1de836f423`
 includes the maintained malformed format-13 parser matrix.
 
+The PostScript hinting-property matrix also keeps an out-of-range glyph-index
+case. It verifies that the CFF, Type 1, and CID routes return the pinned
+Invalid_Argument error and preserve that failed load after a rejected property
+value; it is a maintained parity input rather than a coverage-only unit test.
+
 Before changing a fixture:
 
 1. read the [font-generation policy](../scripts/font_generation/README.md);

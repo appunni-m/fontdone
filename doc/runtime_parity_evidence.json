@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "evidence_kind": "full_runtime_parity",
-  "recorded_at_utc": "2026-08-08T19:22:05.912978+00:00",
+  "recorded_at_utc": "2026-08-08T20:06:34.841345+00:00",
   "command": "make test-parity",
   "source": {
-    "git_head": "71165f2398f4f071370c80329822204a6a810624",
+    "git_head": "7db4c9521a10fc0b556d43db075a75210f3e749e",
     "git_worktree_dirty": true,
-    "parity_tree_sha256": "5eb9277956343edc65f794562664a1e2f18298f3260b564cd44e0ef16f44f28f",
+    "parity_tree_sha256": "589b1317c74601b5586332d270a7b3c2a4611642612fc77011d1aa067b4ed20f",
     "parity_path_count": 2445
   },
   "toolchain": {
@@ -20,20 +20,20 @@
   },
   "artifacts": {
     "log": "target/parity-evidence/test-parity.log",
-    "log_sha256": "f7ffe45af625208484ffe84bd05fa97c6a16310dbd76ece4468a62eef43dbefe",
+    "log_sha256": "f45d7a832bdead82d2d1f11449f70c91ef9fd463812d453910a40c7c79e9b48a",
     "oracle": "target/unified-fixtures/gen_unified_oracle",
     "oracle_sha256": "83b9528cc0372a7380b7ecea245e8dd187ddb4dafe381d823991c677dd1df8f7"
   },
   "runtime_parity": {
-    "runnable": 7557,
-    "passed": 7557,
+    "runnable": 7558,
+    "passed": 7558,
     "failed": 0,
     "pending": 3,
-    "covered_manifest": 4195,
+    "covered_manifest": 4196,
     "validated_input_subjects": 1543,
     "validated_input_files": 1537,
-    "logical_input_cases": 4287,
-    "concrete_input_cases": 7560,
+    "logical_input_cases": 4288,
+    "concrete_input_cases": 7561,
     "function_route_evidence": 218,
     "function_total": 218
   },

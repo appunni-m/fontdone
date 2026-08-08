@@ -71850,6 +71850,7 @@ fn ps_hinting_engine_runtime_supported(case: &InputCase) -> bool {
             | "ftdriver.FT_CFF_HINTING_FREETYPE.hinting_engine_property_runtime"
             | "ftdriver.FT_HINTING_ADOBE.hinting_engine_property_runtime"
             | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime"
+            | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_glyph_preserves_error"
     ) && assets_are_runtime_resolved(case)
 }
 
