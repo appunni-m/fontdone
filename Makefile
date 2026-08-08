@@ -22,6 +22,7 @@ COVERAGE_LLVM_COV_FLAGS ?= --no-clean
 COVERAGE_NORMALIZE_SEGMENTS ?= 0
 COVERAGE_PREPARATION_JOBS ?= 2
 COVERAGE_ALL_TARGET_DIR ?= target/llvm-cov-all-lanes
+COVERAGE_BUILD_STATE_FILE ?= $(COVERAGE_ALL_TARGET_DIR)/coverage-build-state
 COVERAGE_PROFILE_DIR ?= $(COVERAGE_ALL_TARGET_DIR)/llvm-cov-target
 COVERAGE_TEST_BINARY ?=
 COVERAGE_UNIFIED_TEST_NAME ?= parity_fixture::unified_fixture_parity
@@ -39,6 +40,14 @@ CONDITION_COVERAGE_LINES_OUTPUT ?= target/coverage/unified-condition-missing-lin
 CONDITION_COVERAGE_NORMALIZED_OUTPUT ?= target/coverage/unified-condition-summary-normalized.json
 CORE_COVERAGE_IGNORE_REGEX := /(fontdone-c-abi|fontdone-wasm)/src/
 ALL_LANES_COVERAGE_IGNORE_REGEX := /tests/
+
+# `--no-report` retains old instrumented workspace artifacts.  Reusing those
+# artifacts is fast only while the source and coverage configuration are
+# unchanged; otherwise llvm-cov can merge coverage maps from two feature/cfg
+# builds of the same source file.  The state marker lets warm repeats reuse the
+# binary while forcing one clean rebuild after a relevant source/config change.
+COVERAGE_SOURCE_STATE := $(shell git rev-parse HEAD 2>/dev/null || printf unknown)-$(shell if test -n "$(shell git status --porcelain --untracked-files=all -- Cargo.toml Cargo.lock Makefile src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs 2>/dev/null)"; then printf dirty; else printf clean; fi)
+COVERAGE_BUILD_STATE := $(COVERAGE_SOURCE_STATE)|toolchain=$(COVERAGE_TOOLCHAIN)|opt=$(COVERAGE_TEST_OPT_LEVEL)|debug=$(COVERAGE_TEST_DEBUG)|workers=$(COVERAGE_UNIFIED_WORKERS)|split=$(COVERAGE_UNIFIED_LANE_SPLIT)|flags=$(COVERAGE_LLVM_COV_FLAGS)
 PLATFORM_TARGET ?=
 PLATFORM_CC ?=
 PLATFORM_NM ?=
@@ -264,6 +273,13 @@ test-coverage-all:
 		unified-oracle api-abi-runtime-check \
 		$(if $(filter 1,$(COVERAGE_ABI_PREFLIGHT)),coverage-abi-preflight)
 	mkdir -p $(dir $(ALL_LANES_COVERAGE_OUTPUT))
+	@set -eu; \
+	state_file='$(COVERAGE_BUILD_STATE_FILE)'; \
+	if test ! -r "$$state_file" || test "$$(cat "$$state_file")" != '$(COVERAGE_BUILD_STATE)'; then \
+		echo "coverage build state changed; clearing stale instrumented workspace artifacts"; \
+		CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --workspace; \
+		rm -f "$$state_file"; \
+	fi
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --profraw-only
 	# cargo-llvm-cov only knows its default profile names; remove the explicit
 	# per-lane files before report so stale runs cannot be rescanned or merged.
@@ -277,11 +293,13 @@ ifeq ($(COVERAGE_UNIFIED_LANE_SPLIT),1)
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
 	CARGO_PROFILE_TEST_OPT_LEVEL=$(COVERAGE_TEST_OPT_LEVEL) \
 	CARGO_PROFILE_TEST_DEBUG=$(COVERAGE_TEST_DEBUG) \
-	$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov --branch --workspace \
-		--test unified_fixture_parity --exclude-from-test fontdone-c-abi \
-		--exclude-from-test fontdone-wasm --locked \
-		$(filter-out --no-clean,$(COVERAGE_LLVM_COV_FLAGS)) --no-report \
-		-- --list
+		$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov --branch --workspace \
+			--test unified_fixture_parity --exclude-from-test fontdone-c-abi \
+			--exclude-from-test fontdone-wasm --locked \
+			$(filter-out --no-clean,$(COVERAGE_LLVM_COV_FLAGS)) --no-report \
+			-- --list
+	@mkdir -p $(dir $(COVERAGE_BUILD_STATE_FILE))
+	@printf '%s\n' '$(COVERAGE_BUILD_STATE)' > $(COVERAGE_BUILD_STATE_FILE)
 	@set -u; \
 	test_binary="$(COVERAGE_TEST_BINARY)"; \
 	if [ -z "$$test_binary" ]; then \
@@ -352,6 +370,7 @@ coverage-abi-preflight:
 coverage-clean:
 	$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --workspace
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --workspace
+	rm -f $(COVERAGE_BUILD_STATE_FILE)
 
 .PHONY: test-unified-condition-coverage
 test-unified-condition-coverage: unified-oracle api-abi-runtime-check

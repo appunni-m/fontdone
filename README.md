@@ -204,8 +204,10 @@ times. This avoids the LLVM counter contention measured when all three
 backends share one instrumented process without changing the parity inputs.
 Set
 `COVERAGE_UNIFIED_LANE_SPLIT=0` only for the legacy single-process diagnostic
-path. The all-lane command uses a dedicated `COVERAGE_ALL_TARGET_DIR` cache, so
-its `--no-clean` reuse cannot mix stale binaries from another coverage target.
+path. The all-lane command uses a dedicated `COVERAGE_ALL_TARGET_DIR` cache and
+records a source/configuration state marker; it cleans stale instrumented
+workspace artifacts once after a relevant change and retains the fast warm
+repeat path afterward.
 The
 ABI-only package preflight remains available as `make coverage-abi-preflight`,
 but the default coverage target does not rerun it because `make test-fast`
@@ -229,7 +231,8 @@ is accepted by Coverage MCP without the compatibility-only segment rewrite. The 
 pass over the 28.6 MB JSON artifact; set it to `1` only for an older LLVM JSON
 producer that needs the segment-count clamp. Coverage builds retain the
 instrumented target with `cargo llvm-cov --no-clean`, remove stale `.profraw`
-files before each measurement, and omit DWARF line tables via
+files before each measurement, and clear stale workspace artifacts when the
+source/configuration state changes. They omit DWARF line tables via
 `COVERAGE_TEST_DEBUG=0`; LLVM's coverage mapping remains sufficient for the
 report. Face-cache keys now
 reuse the preload phase's content digests instead of hashing the same font for

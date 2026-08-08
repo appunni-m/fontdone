@@ -336,9 +336,12 @@ complete parity matrix through all three surfaces. Empty root-unit and
 source in LLVM's report, so they are intentionally not executed. Independent
 oracle/audit preparation runs in the setup batch before the coherent coverage
 build; the ABI-only package preflight remains a separate
-`make coverage-abi-preflight` gate already exercised by `make test-fast`. The isolated
-`COVERAGE_ALL_TARGET_DIR` cache keeps `--no-clean` from mixing stale binaries,
-and test-harness paths remain the only filename exclusion. Optional feature
+`make coverage-abi-preflight` gate already exercised by `make test-fast`. The
+isolated `COVERAGE_ALL_TARGET_DIR` cache retains warm instrumented builds,
+while its source/configuration state marker cleans the workspace once after a
+relevant change; this prevents `--no-report`/`--no-clean` from mixing stale
+feature/cfg binaries. Test-harness paths remain the only filename exclusion.
+Optional feature
 profiles remain a separate `make optional-feature-contract` gate so coverage
 never compares a feature-enabled implementation with a default-profile oracle.
 Executing code does not prove FreeType parity, so G02 cannot satisfy any G01

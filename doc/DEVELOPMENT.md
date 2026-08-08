@@ -116,7 +116,12 @@ kept in `make optional-feature-contract` and is not rebuilt on every coverage
 run. The coverage recipes retain the instrumented Cargo target with
 `cargo llvm-cov --no-clean` and remove only stale `.profraw` files before each
 measurement, so repeated local runs reuse the compiled coverage binary without
-merging prior execution data. The all-lane target keeps workspace report scope
+merging prior execution data. Because `--no-report` retains old instrumented
+workspace artifacts, the all-lane target also stores a source/configuration
+state marker and runs `cargo llvm-cov clean --workspace` once when that state
+changes. This prevents two feature/cfg builds of the same source file from
+being merged while preserving the fast warm-repeat path. The all-lane target
+keeps workspace report scope
 for the C-ABI and host-compiled WASM facades but selects only the
 `unified_fixture_parity` integration binary; the workspace's empty unit and
 pipe-trace targets add no parity inputs and can duplicate cfg-dependent FFI
@@ -125,9 +130,10 @@ nightly `coverage(off)` attribute, and the split lanes use the exact default
 test name `parity_fixture::unified_fixture_parity` through
 `COVERAGE_UNIFIED_TEST_NAME`; using the old top-level exact name would run zero
 tests. Its `COVERAGE_ALL_TARGET_DIR` cache is separate from other coverage
-profiles, so `--no-clean` cannot reuse stale binaries from a different target
-selection. Run `make coverage-clean` after changing the coverage toolchain,
-profile flags, or coverage instrumentation configuration. The ABI-only package
+profiles, and its state marker detects source, toolchain, profile, worker, and
+lane-split changes. Run `make coverage-clean` after changing coverage inputs
+outside that tracked state or when manually changing the coverage toolchain,
+profile flags, or instrumentation configuration. The ABI-only package
 preflight remains available as `make coverage-abi-preflight`, but the default
 all-lane coverage command does not rerun it: `make test-fast` already executes
 the same test-support contract, and `make ci-thorough` runs that gate before
