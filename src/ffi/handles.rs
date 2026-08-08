@@ -3155,6 +3155,7 @@ pub struct FTCCacheManagerState {
     face: Option<FT_Face>,
     sbit_cache: Option<FTCSBitCacheState>,
     requester_calls: FT_UInt,
+    requester_error: Option<FT_Error>,
     finalized_faces: FT_UInt,
     done: bool,
 }
@@ -3167,9 +3168,20 @@ impl FTCCacheManagerState {
             face: None,
             sbit_cache: None,
             requester_calls: 0,
+            requester_error: None,
             finalized_faces: 0,
             done: false,
         }
+    }
+
+    /// Creates a manager whose requester returns `requester_error` before a
+    /// face can be cached. This models the callback-failure contract of
+    /// `FTC_Manager_LookupFace` while retaining the same lazy invocation and
+    /// requester-call accounting as the successful manager.
+    pub fn new_with_requester_error(requester_face: FT_Face, requester_error: FT_Error) -> Self {
+        let mut manager = Self::new(requester_face);
+        manager.requester_error = Some(requester_error);
+        manager
     }
 
     fn ensure_face(&mut self) -> Result<(), FT_Error> {
@@ -3177,8 +3189,11 @@ impl FTCCacheManagerState {
             return Err(FT_Err_Invalid_Cache_Handle as FT_Error);
         }
         if self.face.is_none() {
-            self.face = Some(self.requester_face.clone());
             self.requester_calls = self.requester_calls.saturating_add(1);
+            if let Some(error) = self.requester_error {
+                return Err(error);
+            }
+            self.face = Some(self.requester_face.clone());
         }
         Ok(())
     }

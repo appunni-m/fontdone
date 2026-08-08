@@ -21,7 +21,7 @@
     "c_enums": 20,
     "c_enum_variants": 158,
     "c_error_codes": 119,
-    "fontdone_pub_functions": 709,
+    "fontdone_pub_functions": 710,
     "fontdone_pub_consts": 1329,
     "fontdone_pub_structs": 234,
     "fontdone_pub_enums": 19
@@ -1358,9 +1358,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "82cca97848105cb7e194e4838400d228b92509ce4b2fcb797116a97971729ac2",
-    "parity_tree_sha256": "3e32c82c1383020c9c7cfe2096e3c7747f77a41d5b28080250dd63e5e6db6499",
-    "log_sha256": "9005f64ee02c3899cd451260d74c632ea0fdec0a14d15d33445a6eae22b095e5",
+    "sha256": "0facf5f5a7cf9b7802fa744f7c0a09cec5e2c1bdc23b1926264307aad5a4e3cd",
+    "parity_tree_sha256": "3833144c974b40dcfcaf1b5a5fac938068ddf1175d917251c96710e09519d9a6",
+    "log_sha256": "9780d2b2adecdbf03d036c5124258ced0030696da8a83486830bc026d1f97a45",
     "command": "make test-parity"
   }
 }

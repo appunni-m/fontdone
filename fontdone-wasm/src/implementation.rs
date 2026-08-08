@@ -2218,6 +2218,26 @@ impl AbiCacheManagerOwnershipHarness {
         })
     }
 
+    /// Creates a manager whose requester returns the supplied callback error.
+    pub fn new_with_requester_error(
+        face_handle: usize,
+        requester_error: rust_ffi::FT_Error,
+    ) -> Option<Self> {
+        Some(Self {
+            manager: rust_ffi::FTCCacheManagerState::new_with_requester_error(
+                face_ref(face_handle)?.face.clone(),
+                requester_error,
+            ),
+        })
+    }
+
+    /// Invokes the manager requester once and returns its exact error status.
+    pub fn requester_error_status(&mut self) -> rust_ffi::FT_Error {
+        self.manager
+            .lookup_face()
+            .map_or_else(|error| error, |_| rust_ffi::FT_Err_Ok)
+    }
+
     /// Exercises the manager-owned face, size, SBit node, reset, and done path.
     pub fn ownership_snapshot(&mut self) -> AbiCacheManagerOwnershipSnapshot {
         let (face_first_status, face_first_id) = match self.manager.lookup_face() {

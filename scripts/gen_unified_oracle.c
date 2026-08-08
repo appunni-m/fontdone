@@ -12382,6 +12382,7 @@ typedef struct MemoryFaceRequestRec_ {
     long data_len;
     FT_Long face_index;
     unsigned int calls;
+    FT_Error requester_error;
 } MemoryFaceRequestRec;
 
 static int load_oracle_source_bytes(const char* source_kind,
@@ -12409,6 +12410,9 @@ static FT_Error memory_face_requester(FTC_FaceID face_id,
         return FT_Err_Invalid_Argument;
     }
     request->calls++;
+    if (request->requester_error) {
+        return request->requester_error;
+    }
     return FT_New_Memory_Face(library,
                               request->data,
                               request->data_len,
@@ -13479,7 +13483,15 @@ static int emit_manager_lookup_face(int argc, char** argv) {
         return 0;
     }
 
-    MemoryFaceRequestRec request = {data, data_len, face_index, 0};
+    MemoryFaceRequestRec request = {
+        data,
+        data_len,
+        face_index,
+        0,
+        streq(argv[1], "--manager-lookup-face-error")
+            ? FT_Err_Invalid_Argument
+            : FT_Err_Ok,
+    };
     FTC_Manager manager = NULL;
     FT_Error manager_error = FTC_Manager_New(library, 0, 0, 0,
                                              memory_face_requester,
@@ -13489,6 +13501,20 @@ static int emit_manager_lookup_face(int argc, char** argv) {
         printf("{");
         print_status(manager_error);
         printf(",\"output\":null}\n");
+        FT_Done_FreeType(library);
+        free(data);
+        free(sequence_arg);
+        return 0;
+    }
+
+    if (request.requester_error) {
+        FT_Face face = NULL;
+        FT_Error lookup_error = FTC_Manager_LookupFace(
+            manager, (FTC_FaceID)&request, &face);
+        printf("{");
+        print_status(lookup_error);
+        printf(",\"output\":null}\n");
+        FTC_Manager_Done(manager);
         FT_Done_FreeType(library);
         free(data);
         free(sequence_arg);
@@ -38563,7 +38589,9 @@ static int dispatch(int argc, char** argv) {
     if (argc == 7 && streq(argv[1], "--manager-lookup-size")) {
         return emit_manager_lookup_size(argc, argv);
     }
-    if (argc == 6 && streq(argv[1], "--manager-lookup-face")) {
+    if (argc == 6
+        && (streq(argv[1], "--manager-lookup-face")
+            || streq(argv[1], "--manager-lookup-face-error"))) {
         return emit_manager_lookup_face(argc, argv);
     }
     if (argc == 7 && streq(argv[1], "--face-id-identity")) {

@@ -86,6 +86,15 @@ unsafe extern "C" fn c_manager_new_requester(
     FT_Err_Ok
 }
 
+unsafe extern "C" fn c_manager_requester_failure(
+    _face_id: c_abi::FTC_FaceID,
+    _library: c_abi::FT_Library,
+    _req_data: c_abi::FT_Pointer,
+    _aface: *mut c_abi::FT_Face,
+) -> c_abi::FT_Error {
+    FT_Err_Invalid_Argument
+}
+
 thread_local! {
     static C_MODULE_LIFECYCLE_LOG: RefCell<Vec<&'static str>> =
         const { RefCell::new(Vec::new()) };
@@ -45229,6 +45238,16 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             Ok(args)
         }
         "ftcache.manager_lookup_face"
+            if case_id_base(&case.case_id)
+                == "ftcache.FTC_Manager_LookupFace.error_requester_failure" =>
+        {
+            let mut args = vec!["--manager-lookup-face-error".to_string()];
+            push_font_source(case, &mut args)?;
+            args.push(face_index_param(params)?.to_string());
+            args.push(manager_lookup_face_sequence_arg(params)?);
+            Ok(args)
+        }
+        "ftcache.manager_lookup_face"
             if !case.expect_error && manager_lookup_face_sequence(params).is_ok() =>
         {
             let mut args = vec!["--manager-lookup-face".to_string()];
@@ -46709,6 +46728,12 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             if !case.expect_error && cache_scaler_rows(&case.inputs.params).is_ok() =>
         {
             rust_manager_lookup_size(case)
+        }
+        "ftcache.manager_lookup_face"
+            if case_id_base(&case.case_id)
+                == "ftcache.FTC_Manager_LookupFace.error_requester_failure" =>
+        {
+            rust_manager_lookup_face_requester_failure(case)
         }
         "ftcache.manager_lookup_face"
             if !case.expect_error && manager_lookup_face_sequence(&case.inputs.params).is_ok() =>
@@ -48301,6 +48326,12 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_manager_lookup_face_null(case)
         }
         "ftcache.manager_lookup_face"
+            if case_id_base(&case.case_id)
+                == "ftcache.FTC_Manager_LookupFace.error_requester_failure" =>
+        {
+            c_manager_lookup_face_requester_failure()
+        }
+        "ftcache.manager_lookup_face"
             if !case.expect_error && manager_lookup_face_sequence(&case.inputs.params).is_ok() =>
         {
             c_manager_lookup_face(case)
@@ -49621,6 +49652,12 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             if !case.expect_error && cache_scaler_rows(&case.inputs.params).is_ok() =>
         {
             wasm_manager_lookup_size(case)
+        }
+        "ftcache.manager_lookup_face"
+            if case_id_base(&case.case_id)
+                == "ftcache.FTC_Manager_LookupFace.error_requester_failure" =>
+        {
+            wasm_manager_lookup_face_requester_failure(case)
         }
         "ftcache.manager_lookup_face"
             if !case.expect_error && manager_lookup_face_sequence(&case.inputs.params).is_ok() =>
@@ -58788,6 +58825,26 @@ fn rust_manager_lookup_face(case: &InputCase) -> Result<RunOutput, String> {
     })
 }
 
+fn rust_manager_lookup_face_requester_failure(case: &InputCase) -> Result<RunOutput, String> {
+    let bytes = font_bytes(case)?;
+    let face_index = face_index_param(&case.inputs.params)?;
+    let requester_face = rust_new_face_from_bytes(bytes.as_ref(), face_index)?;
+    let mut manager = FTCCacheManagerState::new_with_requester_error(
+        requester_face,
+        FT_Err_Invalid_Argument,
+    );
+    let status = manager
+        .lookup_face()
+        .map_or_else(|error| error, |_| FT_Err_Ok);
+    if status != FT_Err_Invalid_Argument || manager.requester_calls() != 1 {
+        return Err(format!(
+            "Rust requester-failure route returned status {status} after {} requester calls",
+            manager.requester_calls()
+        ));
+    }
+    Ok(error(status))
+}
+
 fn c_manager_lookup_face(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
     let face_index = face_index_param(&case.inputs.params)?;
@@ -58825,6 +58882,42 @@ fn c_manager_lookup_face(case: &InputCase) -> Result<RunOutput, String> {
             }))
         }
     })
+}
+
+fn c_manager_lookup_face_requester_failure() -> Result<RunOutput, String> {
+    let mut library = ptr::null_mut();
+    let init_error = c_abi::FT_Init_FreeType(&mut library);
+    if init_error != FT_Err_Ok {
+        return Ok(error(init_error));
+    }
+    let mut manager = ptr::null_mut();
+    let manager_error = c_abi::FTC_Manager_New(
+        library,
+        0,
+        0,
+        0,
+        Some(c_manager_requester_failure),
+        ptr::null_mut(),
+        &mut manager,
+    );
+    if manager_error != FT_Err_Ok {
+        c_done_library(library);
+        return Ok(error(manager_error));
+    }
+    let mut face = ptr::null_mut();
+    let lookup_error = c_abi::FTC_Manager_LookupFace(
+        manager,
+        ptr::null_mut(),
+        &mut face,
+    );
+    c_abi::FTC_Manager_Done(manager);
+    c_done_library(library);
+    if lookup_error != FT_Err_Invalid_Argument || !face.is_null() {
+        return Err(format!(
+            "C ABI requester-failure route returned status {lookup_error} with face={face:p}"
+        ));
+    }
+    Ok(error(lookup_error))
 }
 
 fn wasm_manager_lookup_face(case: &InputCase) -> Result<RunOutput, String> {
@@ -58866,6 +58959,27 @@ fn wasm_manager_lookup_face(case: &InputCase) -> Result<RunOutput, String> {
         wasm_done_face(cached_handle);
     }
     output
+}
+
+fn wasm_manager_lookup_face_requester_failure(case: &InputCase) -> Result<RunOutput, String> {
+    let bytes = font_bytes(case)?;
+    let face_index = face_index_param(&case.inputs.params)?;
+    let handle = wasm_new_face_from_bytes(bytes.as_ref(), face_index)?;
+    let status = {
+        let mut manager = wasm_abi::AbiCacheManagerOwnershipHarness::new_with_requester_error(
+            handle,
+            FT_Err_Invalid_Argument,
+        )
+        .ok_or_else(|| "missing Wasm manager requester-failure face".to_string())?;
+        manager.requester_error_status()
+    };
+    wasm_done_face(handle);
+    if status != FT_Err_Invalid_Argument {
+        return Err(format!(
+            "Wasm requester-failure route returned status {status}"
+        ));
+    }
+    Ok(error(status))
 }
 
 fn rust_face_id_identity(case: &InputCase) -> Result<RunOutput, String> {
