@@ -271,9 +271,6 @@ test-coverage: unified-oracle api-abi-runtime-check
 
 .PHONY: test-coverage-all
 test-coverage-all:
-	+$(MAKE) --no-print-directory -j$(COVERAGE_PREPARATION_JOBS) \
-		unified-oracle bzip2-enabled-oracle api-abi-runtime-check \
-		$(if $(filter 1,$(COVERAGE_ABI_PREFLIGHT)),coverage-abi-preflight)
 	mkdir -p $(dir $(ALL_LANES_COVERAGE_OUTPUT))
 	@set -eu; \
 	state_file='$(COVERAGE_BUILD_STATE_FILE)'; \
@@ -282,6 +279,13 @@ test-coverage-all:
 		CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --workspace; \
 		rm -f "$$state_file"; \
 	fi
+	# Prepare the default and all maintained optional oracle helpers after a
+	# coverage workspace clean; cargo-llvm-cov may remove shared target state.
+	+$(MAKE) --no-print-directory -j$(COVERAGE_PREPARATION_JOBS) \
+		unified-oracle bzip2-enabled-oracle lzw-disabled-oracle \
+		color-layers-disabled-oracle subpixel-rendering-enabled-oracle \
+		api-abi-runtime-check \
+		$(if $(filter 1,$(COVERAGE_ABI_PREFLIGHT)),coverage-abi-preflight)
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --profraw-only
 	# cargo-llvm-cov only knows its default profile names; remove the explicit
 	# per-lane files before report so stale runs cannot be rescanned or merged.

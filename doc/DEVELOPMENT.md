@@ -111,9 +111,11 @@ opt-level 3, with identical parity and coverage totals; the lower level avoids
 the slower optimized/instrumented backend path on this host. Set the coverage
 profile, worker, and `cargo llvm-cov` flag variables only for an explicitly
 measured instrumented profile. Coverage uses the lightweight
-`api-abi-runtime-check`; the optional-feature build contract is intentionally
-kept in `make optional-feature-contract` and is not rebuilt on every coverage
-run. The coverage recipes retain the instrumented Cargo target with
+`api-abi-runtime-check` and prepares the default plus all four maintained
+optional oracle helpers after a coverage workspace clean; the optional-feature
+C build contract remains isolated in `make optional-feature-contract` and is
+not rebuilt on every coverage run. The coverage recipes retain the
+instrumented Cargo target with
 `cargo llvm-cov --no-clean` and remove only stale `.profraw` files before each
 measurement, so repeated local runs reuse the compiled coverage binary without
 merging prior execution data. Because `--no-report` retains old instrumented
