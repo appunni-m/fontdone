@@ -2762,6 +2762,8 @@ subjects:
         description: Passing the same bitmap as source and target returns success without freeing or changing the bitmap.
       - id: success_null_source_buffer
         description: A source with null buffer copies fields and leaves target buffer null like C.
+      - id: success_zero_rows_non_null_buffer
+        description: A non-null source buffer with zero rows preserves the empty-payload record and C-compatible pointer behavior.
       - id: success_flow_flip
         description: Opposite source and target pitch signs copy rows in reversed order and negate target pitch like C.
       - id: error_null_library_or_bitmaps

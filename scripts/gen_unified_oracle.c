@@ -3621,6 +3621,10 @@ static int emit_bitmap_copy(const char* scenario) {
     } else if (streq(scenario, "success_null_source_buffer")) {
         source.buffer = NULL;
         target.pitch = -1;
+    } else if (streq(scenario, "success_zero_rows_non_null_buffer")) {
+        source.rows = 0;
+        source.width = 0;
+        source.pitch = 4;
     } else if (streq(scenario, "success_flow_flip")) {
         source.pitch = -4;
         target.pitch = 1;

@@ -106,27 +106,27 @@ The latest full parity snapshot was recorded on **2026-08-08** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,542 |
-| Passed cases | 7,542 |
+| Runnable exact-comparison cases | 7,543 |
+| Passed cases | 7,543 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
-| Covered manifest cases | 4,192 |
+| Covered manifest cases | 4,193 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,284 |
-| Concrete expanded cases | 7,545 |
+| Logical declared cases | 4,285 |
+| Concrete expanded cases | 7,546 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,542 / 7,542` means every runnable case in that execution matched; the 3
+`7,543 / 7,543` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`1b52e95f-d24b-448e-a966-8b1d121d9a4e`, recorded by
-`b6219569-f5b9-4fbb-a133-d7ea6ba1f404` in
-`doc/runtime_parity_evidence.json` after passing 7,542 / 7,542 runnable
+`dd78f134-7fbd-4ea9-a12a-452b193ebfc1`, recorded by
+`2be4a36b-a360-489f-8433-14ae5b94c4f2` in
+`doc/runtime_parity_evidence.json` after passing 7,543 / 7,543 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
 Its source-bound parity-tree digest is `fc9f242b48c8469abdf9d0676c246e078310a51cb8509c060ec06d241ff5d2a8`.
 

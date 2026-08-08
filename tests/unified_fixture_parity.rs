@@ -88881,7 +88881,7 @@ fn bitmap_copy_c_abi(setup: &mut BitmapCopySetup) -> FT_Error {
         width: setup.source.width,
         pitch: setup.source.pitch,
         buffer: if source_bytes.is_empty() {
-            ptr::null_mut()
+            setup.source.buffer
         } else {
             source_bytes.as_mut_ptr()
         },
@@ -88945,7 +88945,7 @@ fn bitmap_copy_wasm(setup: &mut BitmapCopySetup) -> FT_Error {
         width: setup.source.width,
         pitch: setup.source.pitch,
         buffer: if source_bytes.is_empty() {
-            ptr::null()
+            setup.source.buffer.cast_const()
         } else {
             source_bytes.as_ptr()
         },
@@ -89015,6 +89015,12 @@ fn bitmap_copy_setup(scenario: &str) -> Result<BitmapCopySetup, String> {
             setup.source.buffer = ptr::null_mut();
             setup.source_bytes = None;
             setup.target.pitch = -1;
+        }
+        "success_zero_rows_non_null_buffer" => {
+            setup.source.rows = 0;
+            setup.source.width = 0;
+            setup.source.pitch = 4;
+            setup.source_bytes = None;
         }
         "success_flow_flip" => {
             setup.source.pitch = -4;

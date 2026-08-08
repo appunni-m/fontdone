@@ -221,6 +221,12 @@ fn bitmap_source_bytes(bitmap: &FT_Bitmap_C) -> Result<Option<Vec<FT_Byte>>, FT_
     let Some(len) = bitmap_buffer_len(bitmap) else {
         return Err(FT_Err_Out_Of_Memory as FT_Error);
     };
+    // FreeType's `FT_MEM_QALLOC_MULT` accepts a non-null source pointer with
+    // zero rows or pitch and produces an empty target allocation.  There is no
+    // source payload to recover from the ownership registry in that case.
+    if len == 0 {
+        return Ok(Some(Vec::new()));
+    }
     let registry = bitmap_buffer_registry()
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
