@@ -69,7 +69,8 @@
                 36,
                 99999
               ],
-              "load_flags": "DEFAULT"
+              "load_flags": "DEFAULT",
+              "anode_output": "null"
             },
             "coverage": [
               "ftcache.image_cache_lookup_scaler:explicit-f1"

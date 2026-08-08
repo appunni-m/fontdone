@@ -10737,7 +10737,7 @@ static int emit_sbit_cache_lookup(int argc, char** argv) {
     return 0;
 }
 
-static void print_image_cache_glyph_object(FT_Glyph glyph) {
+static void print_image_cache_glyph_fields(FT_Glyph glyph) {
     printf("\"glyph\":{");
     printf("\"format\":%ld,", glyph ? (long)glyph->format : 0L);
     printf("\"advance\":{\"x\":%ld,\"y\":%ld},",
@@ -10745,7 +10745,18 @@ static void print_image_cache_glyph_object(FT_Glyph glyph) {
            glyph ? glyph->advance.y : 0L);
     printf("\"library_present\":%s,", (glyph && glyph->library) ? "true" : "false");
     printf("\"clazz_present\":%s", (glyph && glyph->clazz) ? "true" : "false");
-    printf("},\"node\":{\"locked\":false}");
+    printf("}");
+}
+
+static void print_image_cache_glyph_object(FT_Glyph glyph) {
+    print_image_cache_glyph_fields(glyph);
+    printf(",\"node\":{\"locked\":false}");
+}
+
+static void print_image_cache_lookup_glyph_object(FT_Glyph glyph, int anode_output) {
+    print_image_cache_glyph_fields(glyph);
+    printf(",\"node\":{\"locked\":false,\"anode_present\":%s}",
+           anode_output ? "true" : "false");
 }
 
 typedef struct ImageGlyphSnapshot_ {
@@ -10805,11 +10816,18 @@ static void print_image_cache_lookup_scaler_row(FTC_ImageCache cache,
                                                 ImageCacheRequesterData* requester,
                                                 FTC_ScalerRec* scaler,
                                                 FT_UInt glyph_index,
-                                                FT_ULong load_flags_ulong) {
+                                                FT_ULong load_flags_ulong,
+                                                int anode_output) {
     FT_Glyph glyph = NULL;
     FTC_Node node = NULL;
     FT_Int32 load_flags = (FT_Int32)load_flags_ulong;
-    FT_Error error = FTC_ImageCache_LookupScaler(cache, scaler, load_flags, glyph_index, &glyph, &node);
+    FT_Error error = FTC_ImageCache_LookupScaler(
+        cache,
+        scaler,
+        load_flags,
+        glyph_index,
+        &glyph,
+        anode_output ? &node : NULL);
     printf("{\"scaler\":{\"width\":%u,\"height\":%u,\"pixel\":%u,\"x_res\":%u,\"y_res\":%u},"
            "\"glyph_index\":%u,\"effective_load_flags\":%ld,\"status\":%d,\"error\":%d,",
            scaler->width,
@@ -10822,9 +10840,10 @@ static void print_image_cache_lookup_scaler_row(FTC_ImageCache cache,
            error,
            error);
     if (error) {
-        printf("\"glyph\":null,\"node\":{\"locked\":false}}");
+        printf("\"glyph\":null,\"node\":{\"locked\":false,\"anode_present\":%s}}",
+               anode_output ? "true" : "false");
     } else {
-        print_image_cache_glyph_object(glyph);
+        print_image_cache_lookup_glyph_object(glyph, anode_output);
         printf("}");
     }
     if (node) {
@@ -10847,6 +10866,7 @@ static int emit_image_cache_lookup_scaler(int argc, char** argv) {
     memcpy(scalers_arg, argv[5], strlen(argv[5]) + 1);
     memcpy(glyphs_arg, argv[6], strlen(argv[6]) + 1);
     FT_ULong load_flags_ulong = (FT_ULong)strtoull(argv[7], NULL, 0);
+    int anode_output = atoi(argv[8]) != 0;
 
     unsigned char* data = NULL;
     long data_len = 0;
@@ -10957,7 +10977,14 @@ static int emit_image_cache_lookup_scaler(int argc, char** argv) {
             if (!first) {
                 printf(",");
             }
-            print_image_cache_lookup_scaler_row(cache, manager, &requester, &scaler, glyph_index, load_flags_ulong);
+            print_image_cache_lookup_scaler_row(
+                cache,
+                manager,
+                &requester,
+                &scaler,
+                glyph_index,
+                load_flags_ulong,
+                anode_output);
             first = 0;
             glyph_cursor = glyph_next ? glyph_next + 1 : NULL;
         }
@@ -10979,17 +11006,28 @@ static void print_image_cache_lookup_row(FTC_ImageCache cache,
                                          ImageCacheRequesterData* requester,
                                          FTC_ImageTypeRec* image_type,
                                          FT_UInt glyph_index,
-                                         int repeat_lookup) {
+                                         int repeat_lookup,
+                                         int anode_output) {
     FT_Glyph glyph = NULL;
     FTC_Node node = NULL;
     int before_calls = requester->request_count;
-    FT_Error error = FTC_ImageCache_Lookup(cache, image_type, glyph_index, &glyph, &node);
+    FT_Error error = FTC_ImageCache_Lookup(
+        cache,
+        image_type,
+        glyph_index,
+        &glyph,
+        anode_output ? &node : NULL);
     int after_first_calls = requester->request_count;
     FT_Glyph repeat_glyph = NULL;
     FTC_Node repeat_node = NULL;
     FT_Error repeat_error = error;
     if (repeat_lookup) {
-        repeat_error = FTC_ImageCache_Lookup(cache, image_type, glyph_index, &repeat_glyph, &repeat_node);
+        repeat_error = FTC_ImageCache_Lookup(
+            cache,
+            image_type,
+            glyph_index,
+            &repeat_glyph,
+            anode_output ? &repeat_node : NULL);
     }
     printf("{\"glyph_index\":%u,\"image_type\":{\"width\":%u,\"height\":%u,\"flags\":%ld},"
            "\"status\":%d,\"error\":%d,\"repeat_status\":%d,"
@@ -11006,9 +11044,10 @@ static void print_image_cache_lookup_row(FTC_ImageCache cache,
            after_first_calls,
            requester->request_count);
     if (error) {
-        printf("\"glyph\":null,\"node\":{\"locked\":false}}");
+        printf("\"glyph\":null,\"node\":{\"locked\":false,\"anode_present\":%s}}",
+               anode_output ? "true" : "false");
     } else {
-        print_image_cache_glyph_object(glyph);
+        print_image_cache_lookup_glyph_object(glyph, anode_output);
         printf("}");
     }
     if (node) {
@@ -11034,6 +11073,7 @@ static int emit_image_cache_lookup(int argc, char** argv) {
     }
     memcpy(glyphs_arg, argv[9], strlen(argv[9]) + 1);
     int repeat_lookup = atoi(argv[10]) != 0;
+    int anode_output = atoi(argv[11]) != 0;
 
     unsigned char* data = NULL;
     long data_len = 0;
@@ -11114,7 +11154,14 @@ static int emit_image_cache_lookup(int argc, char** argv) {
         if (!first) {
             printf(",");
         }
-        print_image_cache_lookup_row(cache, manager, &requester, &image_type, glyph_index, repeat_lookup);
+        print_image_cache_lookup_row(
+            cache,
+            manager,
+            &requester,
+            &image_type,
+            glyph_index,
+            repeat_lookup,
+            anode_output);
         first = 0;
         cursor = next ? next + 1 : NULL;
     }
@@ -38438,10 +38485,10 @@ static int dispatch(int argc, char** argv) {
     if (argc == 3 && streq(argv[1], "--cache-type-contract")) {
         return emit_cache_type_contract(argc, argv);
     }
-    if (argc == 8 && streq(argv[1], "--image-cache-lookup-scaler")) {
+    if (argc == 9 && streq(argv[1], "--image-cache-lookup-scaler")) {
         return emit_image_cache_lookup_scaler(argc, argv);
     }
-    if (argc == 11 && streq(argv[1], "--image-cache-lookup")) {
+    if (argc == 12 && streq(argv[1], "--image-cache-lookup")) {
         return emit_image_cache_lookup(argc, argv);
     }
     if (argc == 9 && streq(argv[1], "--image-type-descriptor-lifetime")) {

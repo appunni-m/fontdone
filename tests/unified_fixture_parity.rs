@@ -45005,6 +45005,7 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(image_type.flags.to_string());
             args.push(cache_glyph_indexes_arg(params)?);
             args.push(i32::from(bool_param(params, "repeat_lookup", false)?).to_string());
+            args.push(i32::from(cache_anode_output_present(params)).to_string());
             Ok(args)
         }
         "ftcache.image_type_descriptor_lifetime" if !case.expect_error => {
@@ -45038,6 +45039,7 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(cache_scaler_rows_arg(params)?);
             args.push(cache_glyph_indexes_arg(params)?);
             args.push(cache_load_flags_ulong_param(params)?.to_string());
+            args.push(i32::from(cache_anode_output_present(params)).to_string());
             Ok(args)
         }
         "ftcache.sbit_cache_lookup_scaler"
@@ -56889,10 +56891,12 @@ fn rust_image_cache_lookup_scaler(case: &InputCase) -> Result<RunOutput, String>
     let rows = cache_scaler_rows(&case.inputs.params)?;
     let glyph_indexes = cache_glyph_indexes(&case.inputs.params)?;
     let load_flags = cache_effective_load_flags(&case.inputs.params)?;
+    let anode_output = cache_anode_output_present(&case.inputs.params);
     cache_image_scaler_outputs(
         rows,
         glyph_indexes,
         load_flags,
+        anode_output,
         |row, glyph_index, load_flags| {
             let size_err = rust_apply_cache_scaler(&mut face, row);
             if size_err != FT_Err_Ok {
@@ -56915,10 +56919,12 @@ fn rust_image_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
     let image_type = image_cache_type_param(&case.inputs.params)?;
     let glyph_indexes = cache_glyph_indexes(&case.inputs.params)?;
     let repeat_lookup = bool_param(&case.inputs.params, "repeat_lookup", false)?;
+    let anode_output = cache_anode_output_present(&case.inputs.params);
     image_cache_lookup_output(
         &case.inputs.params,
         glyph_indexes,
         repeat_lookup,
+        anode_output,
         |glyph_index| {
             let size_err = rust_apply_cache_scaler(&mut face, image_type.scaler());
             if size_err != FT_Err_Ok {
@@ -57236,10 +57242,12 @@ fn c_image_cache_lookup_scaler(case: &InputCase) -> Result<RunOutput, String> {
     let glyph_indexes = cache_glyph_indexes(&case.inputs.params)?;
     let load_flags = cache_effective_load_flags(&case.inputs.params)?;
     let load_flags_ulong = cache_load_flags_ulong_param(&case.inputs.params)?;
+    let anode_output = cache_anode_output_present(&case.inputs.params);
     let output = cache_image_scaler_outputs(
         rows,
         glyph_indexes,
         load_flags,
+        anode_output,
         |row, glyph_index, _load_flags| {
             let mut scaler = c_abi::FTC_ScalerRec {
                 face_id,
@@ -57257,7 +57265,11 @@ fn c_image_cache_lookup_scaler(case: &InputCase) -> Result<RunOutput, String> {
                 load_flags_ulong as c_abi::FT_ULong,
                 glyph_index,
                 &mut glyph,
-                &mut node,
+                if anode_output {
+                    &mut node
+                } else {
+                    ptr::null_mut()
+                },
             );
             let result = if status == FT_Err_Ok {
                 c_cached_glyph_record(glyph).map(Ok)
@@ -57301,6 +57313,7 @@ fn c_image_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
     }
     let glyph_indexes = cache_glyph_indexes(&case.inputs.params)?;
     let repeat_lookup = bool_param(&case.inputs.params, "repeat_lookup", false)?;
+    let anode_output = cache_anode_output_present(&case.inputs.params);
     let image_type_rec = c_abi::FTC_ImageTypeRec {
         face_id,
         width: image_type.width,
@@ -57311,6 +57324,7 @@ fn c_image_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
         &case.inputs.params,
         glyph_indexes,
         repeat_lookup,
+        anode_output,
         |glyph_index| {
             let mut glyph = ptr::null_mut();
             let mut node = ptr::null_mut();
@@ -57319,7 +57333,11 @@ fn c_image_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
                 ptr::from_ref(&image_type_rec).cast_mut(),
                 glyph_index,
                 &mut glyph,
-                &mut node,
+                if anode_output {
+                    &mut node
+                } else {
+                    ptr::null_mut()
+                },
             );
             let result = if status == FT_Err_Ok {
                 c_cached_glyph_record(glyph).map(Ok)
@@ -57586,10 +57604,12 @@ fn wasm_image_cache_lookup_scaler(case: &InputCase) -> Result<RunOutput, String>
     let rows = cache_scaler_rows(&case.inputs.params)?;
     let glyph_indexes = cache_glyph_indexes(&case.inputs.params)?;
     let load_flags = cache_effective_load_flags(&case.inputs.params)?;
+    let anode_output = cache_anode_output_present(&case.inputs.params);
     let output = cache_image_scaler_outputs(
         rows,
         glyph_indexes,
         load_flags,
+        anode_output,
         |row, glyph_index, load_flags| {
             let size_err = wasm_apply_cache_scaler(handle, row);
             if size_err != FT_Err_Ok {
@@ -57617,10 +57637,12 @@ fn wasm_image_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
     let image_type = image_cache_type_param(&case.inputs.params)?;
     let glyph_indexes = cache_glyph_indexes(&case.inputs.params)?;
     let repeat_lookup = bool_param(&case.inputs.params, "repeat_lookup", false)?;
+    let anode_output = cache_anode_output_present(&case.inputs.params);
     let output = image_cache_lookup_output(
         &case.inputs.params,
         glyph_indexes,
         repeat_lookup,
+        anode_output,
         |glyph_index| {
             let size_err = wasm_apply_cache_scaler(handle, image_type.scaler());
             if size_err != FT_Err_Ok {
@@ -60248,6 +60270,7 @@ fn cache_image_scaler_error_json(
     glyph_index: u32,
     load_flags: i32,
     err: FT_Error,
+    anode_output: bool,
 ) -> Value {
     json!({
         "scaler": cache_scaler_json(row),
@@ -60256,7 +60279,7 @@ fn cache_image_scaler_error_json(
         "status": err,
         "error": err,
         "glyph": Value::Null,
-        "node": {"locked": false}
+        "node": {"locked": false, "anode_present": anode_output}
     })
 }
 
@@ -60265,6 +60288,7 @@ fn cache_image_scaler_glyph_json(
     glyph_index: u32,
     load_flags: i32,
     glyph: Value,
+    anode_output: bool,
 ) -> Value {
     let mut object = serde_json::Map::new();
     object.insert("scaler".to_string(), cache_scaler_json(row));
@@ -60277,7 +60301,10 @@ fn cache_image_scaler_glyph_json(
             object.insert(key.clone(), value.clone());
         }
     }
-    object.insert("node".to_string(), json!({"locked": false}));
+    object.insert(
+        "node".to_string(),
+        json!({"locked": false, "anode_present": anode_output}),
+    );
     Value::Object(object)
 }
 
@@ -60285,14 +60312,19 @@ fn cache_image_scaler_outputs(
     rows: Vec<CacheScalerRow>,
     glyph_indexes: Vec<u32>,
     load_flags: i32,
+    anode_output: bool,
     mut run: impl FnMut(CacheScalerRow, u32, i32) -> Result<Result<Value, FT_Error>, String>,
 ) -> Result<RunOutput, String> {
     let mut outputs = Vec::with_capacity(rows.len().saturating_mul(glyph_indexes.len()));
     for row in rows {
         for glyph_index in glyph_indexes.iter().copied() {
             let output = match run(row, glyph_index, load_flags)? {
-                Ok(glyph) => cache_image_scaler_glyph_json(row, glyph_index, load_flags, glyph),
-                Err(err) => cache_image_scaler_error_json(row, glyph_index, load_flags, err),
+                Ok(glyph) => {
+                    cache_image_scaler_glyph_json(row, glyph_index, load_flags, glyph, anode_output)
+                }
+                Err(err) => {
+                    cache_image_scaler_error_json(row, glyph_index, load_flags, err, anode_output)
+                }
             };
             outputs.push(output);
         }
@@ -60304,6 +60336,7 @@ fn image_cache_lookup_output(
     params: &Value,
     glyph_indexes: Vec<u32>,
     repeat_lookup: bool,
+    anode_output: bool,
     mut run: impl FnMut(u32) -> Result<Result<Value, FT_Error>, String>,
 ) -> Result<RunOutput, String> {
     let scenario = cmap_cache_scenario(params)?;
@@ -60359,7 +60392,10 @@ fn image_cache_lookup_output(
                         object.insert(key.clone(), value.clone());
                     }
                 }
-                object.insert("node".to_string(), json!({"locked": false}));
+                object.insert(
+                    "node".to_string(),
+                    json!({"locked": false, "anode_present": anode_output}),
+                );
                 Value::Object(object)
             }
             Err(err) => json!({
@@ -60376,7 +60412,7 @@ fn image_cache_lookup_output(
                 "requester_count_after_first": after_first,
                 "requester_count_after_repeat": requester_count,
                 "glyph": Value::Null,
-                "node": {"locked": false}
+                "node": {"locked": false, "anode_present": anode_output}
             }),
         };
         rows.push(status);

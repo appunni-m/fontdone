@@ -61,10 +61,7 @@
             36,
             99999
           ],
-          "anode": [
-            "null",
-            "non_null"
-          ],
+          "anode_output": "non_null",
           "repeat_lookup": true
         }
       },
@@ -155,10 +152,7 @@
             36,
             99999
           ],
-          "anode": [
-            "null",
-            "non_null"
-          ],
+          "anode_output": "non_null",
           "repeat_lookup": true
         }
       },
@@ -249,10 +243,7 @@
             36,
             99999
           ],
-          "anode": [
-            "null",
-            "non_null"
-          ],
+          "anode_output": "non_null",
           "repeat_lookup": true
         }
       },
@@ -343,10 +334,7 @@
             36,
             99999
           ],
-          "anode": [
-            "null",
-            "non_null"
-          ],
+          "anode_output": "null",
           "repeat_lookup": true
         }
       },
@@ -437,10 +425,7 @@
             36,
             99999
           ],
-          "anode": [
-            "null",
-            "non_null"
-          ],
+          "anode_output": "non_null",
           "repeat_lookup": true
         }
       },
@@ -532,10 +517,7 @@
             36,
             99999
           ],
-          "anode": [
-            "null",
-            "non_null"
-          ],
+          "anode_output": "non_null",
           "repeat_lookup": true
         }
       },
