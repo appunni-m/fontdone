@@ -194,9 +194,9 @@ impl ItemVariationStore {
                 pos += 1;
                 delta
             };
-            let Some(region) = self.regions.get(region_index) else {
-                continue;
-            };
+            // `parse` validates every region index against `region_count`,
+            // then stores exactly that many regions in this vector.
+            let region = &self.regions[region_index];
             let scalar = region.scalar(normalized_coords);
             if scalar != 0 {
                 value += i64::from(delta) * i64::from(scalar);
@@ -294,9 +294,8 @@ impl DeltaSetIndexMap {
 }
 
 fn mul_div_round(a: i32, b: i32, c: i32) -> i32 {
-    if c == 0 {
-        return i32::MAX;
-    }
+    // `VariationRegion::scalar` calls this only after proving the selected
+    // region slope has a nonzero denominator.
     let sign = if (a < 0) ^ (b < 0) ^ (c < 0) { -1 } else { 1 };
     let a = i64::from(a).abs();
     let b = i64::from(b).abs();
