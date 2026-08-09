@@ -162,6 +162,12 @@ ENDFONT
         ),
     )
     write_fixture(
+        "input/fonts/bdf/charset-registry-iso8859-other.bdf",
+        charset_registry_fixture(
+            "PillowRsCharsetRegistryIso8859Other", "ISO8859", "2"
+        ),
+    )
+    write_fixture(
         "input/fonts/bdf/charset-registry-iso646.bdf",
         charset_registry_fixture(
             "PillowRsCharsetRegistryIso646", "ISO646.1991", "IRV"

@@ -53,6 +53,23 @@
             }
           },
           {
+            "id": "iso8859-other",
+            "coverage": [
+              "bdf/parser:unicode-charmap-iso8859-non-1"
+            ],
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/bdf/charset-registry-iso8859-other.bdf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "output_pointer_sentinels": true
+            }
+          },
+          {
             "id": "iso646",
             "coverage": [
               "bdf/parser:unicode-charmap-iso646-1991-irv"
