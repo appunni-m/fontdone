@@ -8941,16 +8941,35 @@ pub fn FT_Palette_Data_Get(
         return FT_Err_Invalid_Table as FT_Error;
     };
     let cpal = cpal.borrow();
+    // FreeType exposes NULL for the backing pointers of empty CPAL arrays.
+    // `Vec::as_ptr()` is allowed to return a non-null dangling pointer when
+    // the vector is empty, so normalize that representation at this C ABI
+    // boundary.
+    let palette_name_ids = if cpal.palette_name_ids.is_empty() {
+        ptr::null()
+    } else {
+        cpal.palette_name_ids.as_ptr()
+    };
+    let palette_flags = if cpal.palette_flags.is_empty() {
+        ptr::null()
+    } else {
+        cpal.palette_flags.as_ptr()
+    };
+    let palette_entry_name_ids = if cpal.palette_entry_name_ids.is_empty() {
+        ptr::null()
+    } else {
+        cpal.palette_entry_name_ids.as_ptr()
+    };
     *apalette_data = FT_Palette_Data {
         num_palettes: cpal.palettes.len().try_into().unwrap_or(FT_UShort::MAX),
-        palette_name_ids: cpal.palette_name_ids.as_ptr(),
-        palette_flags: cpal.palette_flags.as_ptr(),
+        palette_name_ids,
+        palette_flags,
         num_palette_entries: cpal
             .active_palette
             .len()
             .try_into()
             .unwrap_or(FT_UShort::MAX),
-        palette_entry_name_ids: cpal.palette_entry_name_ids.as_ptr(),
+        palette_entry_name_ids,
     };
     FT_Err_Ok
 }

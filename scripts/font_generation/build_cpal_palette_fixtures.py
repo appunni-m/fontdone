@@ -56,6 +56,22 @@ def build_cpal_font(path: Path) -> None:
     font.save(path, reorderTables=False)
 
 
+def build_cpal_zero_entry_font(path: Path) -> None:
+    """Build a valid CPAL face whose palettes contain no color entries."""
+    font = TTFont(SOURCE_FONT, recalcTimestamp=False)
+    font["head"].modified = CPAL_FIXTURE_HEAD_MODIFIED
+    cpal = newTable("CPAL")
+    cpal.version = 1
+    cpal.numPaletteEntries = 0
+    cpal.palettes = [[], []]
+    cpal.paletteTypes = [0x0001, 0x0002]
+    cpal.paletteLabels = [256, cpal.NO_NAME_ID]
+    cpal.paletteEntryLabels = []
+    font["CPAL"] = cpal
+    path.parent.mkdir(parents=True, exist_ok=True)
+    font.save(path, reorderTables=False)
+
+
 def build_colr_v0_layers_font(path: Path) -> None:
     font = TTFont(SOURCE_FONT, recalcTimestamp=False)
 
@@ -855,6 +871,7 @@ def main() -> None:
         "cpal-palettes-light-dark.ttf",
     ):
         build_cpal_font(OUTPUT_DIR / name)
+    build_cpal_zero_entry_font(OUTPUT_DIR / "cpal-zero-entries.ttf")
     build_colr_v0_layers_font(COLOR_OUTPUT_DIR / "colr-v0-layers-cpal.ttf")
     build_colr_v0_layers_font(COLOR_OUTPUT_DIR / "colr-v0-layer-control.ttf")
     build_colr_v1_composite_font(COLOR_OUTPUT_DIR / "colr_v1_composite_modes.ttf")

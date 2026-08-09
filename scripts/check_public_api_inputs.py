@@ -6786,9 +6786,13 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
         return "FT_Palette_Data_Get null-face/output rejection validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
     if (
         row.operation == "ftcolor.palette_data_get"
-        and row.case_id == "ftcolor.FT_Palette_Data_Get.success_sfnt_cpal_palette_data"
+        and row.case_id
+        in {
+            "ftcolor.FT_Palette_Data_Get.success_sfnt_cpal_palette_data",
+            "ftcolor.FT_Palette_Data_Get.success_cpal_zero_entries",
+        }
     ):
-        return "FT_Palette_Data_Get CPAL palette counts and pointer nullness validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+        return "FT_Palette_Data_Get CPAL palette counts, zero-entry handling, and pointer nullness validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
     if (
         row.operation == "ftcolor.palette_data_get"
         and row.case_id == "ftcolor.FT_Palette_Data_Get.success_non_sfnt_null_palette_data"

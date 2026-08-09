@@ -4144,6 +4144,8 @@ subjects:
     cases:
       - id: success_sfnt_cpal_palette_data
         description: SFNT faces with CPAL data return FT_Err_Ok and write num_palettes, palette_name_ids, palette_flags, num_palette_entries, and palette_entry_name_ids exactly as C exposes them.
+      - id: success_cpal_zero_entries
+        description: A valid CPAL face whose palettes contain zero entries returns the exact C counts and preserves the C-null zero-length entry-label pointer contract.
       - id: success_sfnt_without_cpal
         description: SFNT faces without CPAL return FT_Err_Ok and write C-compatible zero/null FT_Palette_Data values.
       - id: success_non_sfnt_null_palette_data
