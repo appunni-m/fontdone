@@ -271,14 +271,15 @@ the CID service valid and returns a null ordering string for this input. The
 reviewed output is regenerated with `build_cff_fixtures.py` and its SHA-256 is
 recorded in the retention inventory.
 
-The same generator emits four malformed CID CFF derivatives from the maintained
+The same generator emits four malformed and one zero-glyph CID CFF derivatives from the maintained
 OFL-1.1 source: `ot-cff-cid-keyed-missing-charset.otf`,
 `ot-cff-cid-keyed-predefined-charset.otf`,
 `ot-cff-cid-keyed-unsupported-charset-format.otf`, and
-`ot-cff-cid-keyed-truncated-charset-range.otf`. They preserve the source
+`ot-cff-cid-keyed-truncated-charset-range.otf`, plus
+`ot-cff-cid-keyed-zero-glyph.otf`. They preserve the source
 license and exercise the missing, predefined, unsupported-format, and
-truncated-range CID charset guards during face opening. Their output hashes and
-exact byte mutations are recorded in
+truncated-range CID charset guards and the zero-glyph charset short-circuit
+during face opening. Their output hashes and exact byte mutations are recorded in
 `tests/fixtures/input/fonts/cid/FDArrayTest257.PROVENANCE.md`.
 
 `tests/fixtures/input/fonts/cid/ot-cff-non-cid-sentinel-registry.otf` is

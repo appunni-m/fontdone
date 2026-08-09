@@ -1011,7 +1011,7 @@ def patch_cff_charset_top_dict(
 
 
 def write_malformed_cid_cff_faces() -> None:
-    """Derive CID CFF faces that stop at malformed charset boundaries."""
+    """Derive CID CFF faces for charset boundary and zero-glyph paths."""
     CID_OUT_DIR.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory() as tmp:
         base = Path(tmp) / "base.otf"
@@ -1020,6 +1020,26 @@ def write_malformed_cid_cff_faces() -> None:
         font.save(base, reorderTables=True)
         serialized = TTFont(base, recalcTimestamp=False).getTableData("CFF ")
         source_charset_offset = font["CFF "].cff.topDictIndex[0].rawDict["charset"]
+
+        base_data = base.read_bytes()
+        num_tables = int.from_bytes(base_data[4:6], "big")
+        maxp_payload: bytearray | None = None
+        for index in range(num_tables):
+            record = 12 + index * 16
+            if base_data[record : record + 4] == b"maxp":
+                offset = int.from_bytes(base_data[record + 8 : record + 12], "big")
+                length = int.from_bytes(base_data[record + 12 : record + 16], "big")
+                maxp_payload = bytearray(base_data[offset : offset + length])
+                break
+        if maxp_payload is None or len(maxp_payload) < 6:
+            raise ValueError("CID source has no complete maxp table")
+        maxp_payload[4:6] = b"\0\0"
+        replace_sfnt_table(
+            base,
+            CID_OUT_DIR / "ot-cff-cid-keyed-zero-glyph.otf",
+            b"maxp",
+            bytes(maxp_payload),
+        )
 
         missing_charset = bytearray(serialized)
         patch_cff_charset_top_dict(missing_charset, operator_replacement=14)

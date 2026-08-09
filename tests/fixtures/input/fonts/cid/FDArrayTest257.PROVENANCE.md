@@ -84,3 +84,12 @@ Derived maintained fixture: `ot-cff-cid-keyed-truncated-charset-range.otf`
   its final three bytes, and writes a format-1 range prefix without its
   required `nLeft` field. This reaches the pinned stream-limit rejection and
   retains the source OFL.
+
+Derived maintained fixture: `ot-cff-cid-keyed-zero-glyph.otf`
+
+- Generator: `scripts/font_generation/build_cff_fixtures.py`
+- Source: the stored `ot-cff-cid-keyed.otf` above
+- SHA-256: `9c1f8e880e6b135a2795b2c33405a75867f3a9996561b05c3eed30fcb5a01c15`
+- The generator sets the SFNT `maxp.numGlyphs` field to zero while preserving
+  the CFF CID data. The pinned loader accepts the face and reaches its
+  zero-glyph charset short-circuit; it retains the source OFL.
