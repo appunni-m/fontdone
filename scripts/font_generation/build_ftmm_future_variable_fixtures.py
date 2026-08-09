@@ -16,6 +16,7 @@ MVAR_FONT = ROOT / "tests" / "fixtures" / "input" / "fonts" / "variation" / "mva
 OUT_DIR = ROOT / "tests" / "fixtures" / "input" / "fonts" / "variable"
 
 GVAR_EMBEDDED_PEAK_TUPLE = 0x8000
+GVAR_INTERMEDIATE_REGION = 0x4000
 GVAR_PRIVATE_POINT_NUMBERS = 0x2000
 
 
@@ -489,6 +490,77 @@ def embedded_peak_short_gvar_payload() -> bytes:
     return short_glyph_record_gvar_payload(glyph_data)
 
 
+def tuple_header_after_embedded_peak_short_gvar_payload() -> bytes:
+    """Build a second tuple whose header follows an embedded peak.
+
+    The generic tuple-header length check accounts for four bytes per tuple,
+    but not for embedded coordinates.  The first tuple therefore consumes the
+    complete record and the second tuple's variation-size read is the first
+    runtime bounds failure.
+    """
+
+    glyph_data = bytearray(12)
+    put_u16(glyph_data, 0, 2)
+    put_u16(glyph_data, 2, 12)
+    put_u16(glyph_data, 4, 0)
+    put_u16(glyph_data, 6, GVAR_EMBEDDED_PEAK_TUPLE)
+    put_u16(glyph_data, 8, 0)
+    put_u16(glyph_data, 10, 0)
+    return short_glyph_record_gvar_payload(bytes(glyph_data))
+
+
+def shared_tuple_index_invalid_gvar_payload() -> bytes:
+    """Build a tuple that selects a shared tuple that does not exist."""
+
+    glyph_data = bytearray(8)
+    put_u16(glyph_data, 0, 1)
+    put_u16(glyph_data, 2, 8)
+    put_u16(glyph_data, 4, 0)
+    put_u16(glyph_data, 6, 1)
+    return short_glyph_record_gvar_payload(bytes(glyph_data))
+
+
+def intermediate_start_short_gvar_payload() -> bytes:
+    """Build an embedded/intermediate tuple without its start coordinates."""
+
+    glyph_data = bytearray(12)
+    put_u16(glyph_data, 0, 1)
+    put_u16(glyph_data, 2, 12)
+    put_u16(glyph_data, 4, 0)
+    put_u16(glyph_data, 6, GVAR_EMBEDDED_PEAK_TUPLE | GVAR_INTERMEDIATE_REGION)
+    put_u16(glyph_data, 8, 0)
+    put_u16(glyph_data, 10, 0)
+    return short_glyph_record_gvar_payload(bytes(glyph_data))
+
+
+def intermediate_end_short_gvar_payload() -> bytes:
+    """Build an embedded/intermediate tuple without its end coordinates."""
+
+    glyph_data = bytearray(16)
+    put_u16(glyph_data, 0, 1)
+    put_u16(glyph_data, 2, 16)
+    put_u16(glyph_data, 4, 0)
+    put_u16(glyph_data, 6, GVAR_EMBEDDED_PEAK_TUPLE | GVAR_INTERMEDIATE_REGION)
+    put_u16(glyph_data, 8, 0)
+    put_u16(glyph_data, 10, 0)
+    put_u16(glyph_data, 12, 0)
+    put_u16(glyph_data, 14, 0)
+    return short_glyph_record_gvar_payload(bytes(glyph_data))
+
+
+def tuple_header_exceeds_data_offset_gvar_payload() -> bytes:
+    """Build a complete tuple header whose coordinates exceed data offset."""
+
+    glyph_data = bytearray(12)
+    put_u16(glyph_data, 0, 1)
+    put_u16(glyph_data, 2, 8)
+    put_u16(glyph_data, 4, 0)
+    put_u16(glyph_data, 6, GVAR_EMBEDDED_PEAK_TUPLE)
+    put_u16(glyph_data, 8, 0)
+    put_u16(glyph_data, 10, 0)
+    return short_glyph_record_gvar_payload(bytes(glyph_data))
+
+
 def packed_edge_gvar_payload(*, shared_points: bool, default_active: bool = False) -> bytes:
     """Build a valid two-axis gvar record for glyph 10.
 
@@ -674,6 +746,31 @@ def write_gvar_fixtures() -> None:
     write_gvar_payload(
         "gvar-embedded-peak-short-runtime.ttf",
         embedded_peak_short_gvar_payload(),
+        remove_hvar=True,
+    )
+    write_gvar_payload(
+        "gvar-tuple-header-after-embedded-peak-short-runtime.ttf",
+        tuple_header_after_embedded_peak_short_gvar_payload(),
+        remove_hvar=True,
+    )
+    write_gvar_payload(
+        "gvar-shared-tuple-index-invalid-runtime.ttf",
+        shared_tuple_index_invalid_gvar_payload(),
+        remove_hvar=True,
+    )
+    write_gvar_payload(
+        "gvar-intermediate-start-short-runtime.ttf",
+        intermediate_start_short_gvar_payload(),
+        remove_hvar=True,
+    )
+    write_gvar_payload(
+        "gvar-intermediate-end-short-runtime.ttf",
+        intermediate_end_short_gvar_payload(),
+        remove_hvar=True,
+    )
+    write_gvar_payload(
+        "gvar-tuple-header-exceeds-data-offset-runtime.ttf",
+        tuple_header_exceeds_data_offset_gvar_payload(),
         remove_hvar=True,
     )
 
