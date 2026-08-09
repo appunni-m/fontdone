@@ -266,13 +266,16 @@ impl Default for TopDict {
 impl TopDict {
     fn font_info(&self, strings: &[&[u8]]) -> Type1FontInfo {
         Type1FontInfo {
-            version: self.version_sid.and_then(|sid| sid_string(sid, strings)),
-            notice: self.notice_sid.and_then(|sid| sid_string(sid, strings)),
-            full_name: self.full_name_sid.and_then(|sid| sid_string(sid, strings)),
-            family_name: self
-                .family_name_sid
-                .and_then(|sid| sid_string(sid, strings)),
-            weight: self.weight_sid.and_then(|sid| sid_string(sid, strings)),
+            // FreeType initializes absent Top DICT string SIDs to 0xFFFF and
+            // lets `cff_index_get_sid_string` turn that sentinel into a null
+            // pointer. Preserve the same internal route instead of treating
+            // the missing operator as an early return; the public record is
+            // unchanged, while the sentinel remains part of the C contract.
+            version: sid_string(self.version_sid.unwrap_or(0xFFFF), strings),
+            notice: sid_string(self.notice_sid.unwrap_or(0xFFFF), strings),
+            full_name: sid_string(self.full_name_sid.unwrap_or(0xFFFF), strings),
+            family_name: sid_string(self.family_name_sid.unwrap_or(0xFFFF), strings),
+            weight: sid_string(self.weight_sid.unwrap_or(0xFFFF), strings),
             italic_angle: self.italic_angle,
             is_fixed_pitch: self.is_fixed_pitch,
             underline_position: self.underline_position,
@@ -286,11 +289,9 @@ impl TopDict {
         strings: &[&[u8]],
         glyph_count: usize,
     ) -> Result<Option<CffCidInfo>, FontError> {
-        let Some(registry_sid) = self.cid_registry_sid else {
-            return Ok(None);
-        };
-        let Some(ordering_sid) = self.cid_ordering_sid else {
-            return Ok(None);
+        let (registry_sid, ordering_sid) = match (self.cid_registry_sid, self.cid_ordering_sid) {
+            (Some(registry_sid), Some(ordering_sid)) => (registry_sid, ordering_sid),
+            _ => return Ok(None),
         };
         // CFF uses 0xFFFF as the absent CID registry sentinel.  Any other
         // registry SID keeps the CID service active, even when its custom
@@ -362,13 +363,18 @@ fn parse_top_dict(data: &[u8]) -> Result<TopDict, FontError> {
                 let sid = stack
                     .last()
                     .and_then(|value| u16::try_from(value.integer).ok());
-                match op {
-                    0 => dict.version_sid = sid,
-                    1 => dict.notice_sid = sid,
-                    2 => dict.full_name_sid = sid,
-                    3 => dict.family_name_sid = sid,
-                    4 => dict.weight_sid = sid,
-                    _ => {}
+                if op == 0 {
+                    dict.version_sid = sid;
+                } else if op == 1 {
+                    dict.notice_sid = sid;
+                } else if op == 2 {
+                    dict.full_name_sid = sid;
+                } else if op == 3 {
+                    dict.family_name_sid = sid;
+                } else {
+                    // The surrounding range check restricts this operator
+                    // family to 0..=4, so the final member is Weight.
+                    dict.weight_sid = sid;
                 }
                 dict.consumed_non_charstrings_operands = true;
             } else if matches!(op, 0x0C01..=0x0C04) {
@@ -376,27 +382,27 @@ fn parse_top_dict(data: &[u8]) -> Result<TopDict, FontError> {
                     .last()
                     .copied()
                     .unwrap_or_else(|| DictNumber::from_integer(0));
-                match op {
-                    0x0C01 => dict.is_fixed_pitch = value.integer != 0,
+                if op == 0x0C01 {
+                    dict.is_fixed_pitch = value.integer != 0;
+                } else if op == 0x0C02 {
                     // CFF_FIELD_FIXED invokes cff_parse_fixed, so an
                     // integer operand is returned as 16.16, unlike the
                     // integer-valued underline fields beside it.
-                    0x0C02 => dict.italic_angle = value.fixed,
-                    0x0C03 => {
-                        dict.underline_position =
-                            i16::try_from(value.integer).unwrap_or_else(|_| {
-                                if value.integer.is_negative() {
-                                    i16::MIN
-                                } else {
-                                    i16::MAX
-                                }
-                            });
-                    }
-                    0x0C04 => {
-                        dict.underline_thickness =
-                            u16::try_from(value.integer.max(0)).unwrap_or(u16::MAX);
-                    }
-                    _ => {}
+                    dict.italic_angle = value.fixed;
+                } else if op == 0x0C03 {
+                    dict.underline_position = i16::try_from(value.integer).unwrap_or_else(|_| {
+                        if value.integer.is_negative() {
+                            i16::MIN
+                        } else {
+                            i16::MAX
+                        }
+                    });
+                } else {
+                    // The surrounding range check restricts this operator
+                    // family to 0x0C01..=0x0C04, so the final member is
+                    // UnderlineThickness.
+                    dict.underline_thickness =
+                        u16::try_from(value.integer.max(0)).unwrap_or(u16::MAX);
                 }
                 dict.consumed_non_charstrings_operands = true;
             } else if !stack.is_empty() {
@@ -478,10 +484,8 @@ fn push_charset_range(
     first: u16,
     n_left: u16,
 ) -> Result<(), FontError> {
-    for delta in 0..=n_left {
-        if cids.len() == glyph_count {
-            break;
-        }
+    let remaining = glyph_count.saturating_sub(cids.len());
+    for delta in (0..=n_left).take(remaining) {
         cids.push(
             first
                 .checked_add(delta)
@@ -899,16 +903,16 @@ fn sid_string(sid: u16, strings: &[&[u8]]) -> Option<String> {
     if sid == 0xFFFF {
         return None;
     }
-    if let Some(value) = CFF_STANDARD_STRINGS.get(usize::from(sid)) {
-        return Some((*value).to_owned());
+    if sid < 391 {
+        // The standard-string table is complete for every SID below the
+        // custom String INDEX base, so indexing is total after the sentinel
+        // check and does not introduce a second impossible `None` route.
+        return Some(CFF_STANDARD_STRINGS[usize::from(sid)].to_owned());
     }
-    if sid >= 391 {
-        return strings
-            .get(usize::from(sid - 391))
-            .and_then(|bytes| std::str::from_utf8(bytes).ok())
-            .map(ToOwned::to_owned);
-    }
-    None
+    strings
+        .get(usize::from(sid - 391))
+        .and_then(|bytes| std::str::from_utf8(bytes).ok())
+        .map(ToOwned::to_owned)
 }
 
 fn read_index(data: &[u8], pos: usize) -> Result<(Vec<&[u8]>, usize), FontError> {

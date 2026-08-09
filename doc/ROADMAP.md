@@ -504,13 +504,15 @@ worktree at that point:
 
 | 118 | Working tree (coverage optional-contract preparation speed) | Removed the redundant optional-feature bundle rebuild from default `make test-coverage-all` preparation; `make test-parity-smoke` already exercises that separate contract gate, and isolated coverage can opt in with `COVERAGE_PREPARE_OPTIONAL_FEATURES=1`. The cold validation `d88cfb01-9526-4a19-b5b6-495895bed267` took 115.583 seconds while rebuilding the 46.08-second instrumented test profile and optional bundles; the warm post-change run `da1f3842-c269-4f55-8d7a-a83afdc2f07a`, snapshot `97b97a70-09f7-4a3c-bbbd-2bc27fc30a84`, passed all three lanes in 37.518 seconds with unchanged totals of 50,070 / 54,416 lines, 9,972 / 12,596 branches, 3,416 / 3,851 functions, and 68,877 / 75,647 regions. Full parity run `5268c0c2-f9f4-4650-9006-82b8c1cf0bd1`, recorded by `cb2c8ef0-dc2f-4fb2-8258-9d8d07990af1`, passed 7,561 / 7,561 runnable comparisons with 0 failures and 3 pending safety-extension cases; no parity input or denominator changed. |
 
+| 119 | Working tree (CFF coverage-path cleanup) | Aligned absent Top DICT string SIDs with the pinned `0xFFFF` sentinel resolver, collapsed equivalent CID-info absence returns, removed impossible operator wildcard arms, and bounded charset-range iteration without changing public results or adding a unit-only route. Full parity run `45853181-8825-4efc-8cd3-4ecdf99f98e2`, recorded by `a0e63c83-4e78-41b7-87fb-704398854c0a`, passed 7,566 / 7,566 runnable comparisons with 0 failures; concrete cases remain 7,569, route audit remains at 0 pending, and all three function surfaces retain 218 / 218 evidence. All-lane Coverage MCP run `90325770-2b7c-48f0-868f-a0f7950d006a`, snapshot `fd9fb0b0-e7ca-426a-8b96-99da93895678`, completed in 32.180 seconds and measured 50,087 / 54,423 lines, 9,985 / 12,602 branches, 3,411 / 3,846 functions, and 68,882 / 75,644 regions; `src/tt/cff.rs` is at 873 / 923 lines and 129 / 132 branches. The current C-ABI scorecard is 8 / 12 categories complete with C01.7 at 5,308 / 5,309 and C08.3 at 7,565 / 7,566; the SVG generic-fallback row, Windows import-library item, and four fresh target-lane bundles remain. |
+
 The current source-bound parity verification is Coverage MCP parity run
-`856f48e6-abf6-45f5-97ad-f0e76cd3fdaf`: it passed 7,561 / 7,561 runnable
+`45853181-8825-4efc-8cd3-4ecdf99f98e2`: it passed 7,566 / 7,566 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes** with 218 / 218 function routes present
 in each ABI surface. The source-digest attestation was refreshed by record run
-`53decf57-2c4d-4a8c-8e89-0d68b418241f` in `doc/runtime_parity_evidence.json`.
-The tracked C-ABI scorecard remains **10 / 12 categories complete**; the
+`a0e63c83-4e78-41b7-87fb-704398854c0a` in `doc/runtime_parity_evidence.json`.
+The tracked C-ABI scorecard is **8 / 12 categories complete**; the
 Windows import-library item and four fresh target-lane bundles remain.
 
 The three pending cases are deliberately excluded from the pinned-C parity
@@ -522,11 +524,11 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current source-bound all-lane run `8947ed52-2202-4826-84b6-41721050e420`
-completed in 78.692 seconds with snapshot
-`18249c5c-163d-4f7c-aa63-1e079ce94b35`. It measured 50,070 / 54,416 lines,
-9,972 / 12,596 branches, 3,416 / 3,851 functions, and 68,877 / 75,647
-regions; the parity matrix passed 7,561 / 7,561 in each backend. The lanes
+The current source-bound all-lane run `90325770-2b7c-48f0-868f-a0f7950d006a`
+completed in 32.180 seconds with snapshot
+`fd9fb0b0-e7ca-426a-8b96-99da93895678`. It measured 50,087 / 54,423 lines,
+9,985 / 12,602 branches, 3,411 / 3,846 functions, and 68,882 / 75,644
+regions; the parity matrix passed 7,566 / 7,566 in each backend. The lanes
 already run concurrently; the same-source two-worker comparison
 `971f65aa-12b6-4a41-9dcb-cceffdd99199` completed in 140.239 seconds, so the
 default remains one worker per lane. The previous combined-lane warm all-lane baseline completed in 1

@@ -374,25 +374,25 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The latest all-lane report's retained lane timers were 31.467 seconds Rust,
-28.606 seconds C ABI, and 28.461 seconds WASM. These are backend execution
-measurements inside the 37.518-second end-to-end run; report finalization and
+The latest all-lane report's retained lane timers were 22.248 seconds Rust,
+20.190 seconds C ABI, and 20.096 seconds WASM. These are backend execution
+measurements inside the 32.180-second end-to-end run; report finalization and
 artifact ingestion are included in the wall time but are not separately
 exposed by Coverage MCP.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,070 / 54,416 | 92.01% |
-| Branches | 9,972 / 12,596 | 79.17% |
-| Functions | 3,416 / 3,851 | 88.70% |
-| Regions | 68,877 / 75,647 | 91.05% |
+| Lines | 50,087 / 54,423 | 92.03% |
+| Branches | 9,985 / 12,602 | 79.23% |
+| Functions | 3,411 / 3,846 | 88.69% |
+| Regions | 68,882 / 75,644 | 91.06% |
 
-That latest run passed all 7,561 runnable parity comparisons with 0 failures;
+That latest run passed all 7,566 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`97b97a70-09f7-4a3c-bbbd-2bc27fc30a84`, and it completed in 37.518 seconds
+`fd9fb0b0-e7ca-426a-8b96-99da93895678`, and it completed in 32.180 seconds
 after the instrumented binary was warm. The source-bound full parity run
-`5268c0c2-f9f4-4650-9006-82b8c1cf0bd1`, recorded by
-`cb2c8ef0-dc2f-4fb2-8258-9d8d07990af1`, recorded 7,561 / 7,561 exact
+`45853181-8825-4efc-8cd3-4ecdf99f98e2`, recorded by
+`a0e63c83-4e78-41b7-87fb-704398854c0a`, recorded 7,566 / 7,566 exact
 comparisons. Coverage MCP does not expose
 separate timestamps for compilation, report finalization, or artifact ingestion. Current
 LLVM JSON is accepted directly by Coverage
@@ -437,7 +437,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 645 tracked paths and no symlinks.
+The canonical input tree currently contains 648 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
