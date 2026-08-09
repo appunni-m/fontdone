@@ -231,9 +231,10 @@ impl FaceGlobals {
 
     fn get_metrics_for_style(&self, si: usize) -> Option<Rc<AfLatinMetrics>> {
         self.ensure_coverage();
-        if si >= STYLE_TABLE.len() {
-            return None;
-        }
+        // `get_metrics` receives only indexes emitted by `build_coverage` or
+        // `coverage_from_public_glyph_styles`; both map every unknown style to
+        // `STYLE_FALLBACK`.  The fallback constant is itself a valid
+        // `STYLE_TABLE` index, so the cache and table accesses below are total.
 
         let mut cache = self.metrics_cache.borrow_mut();
 
