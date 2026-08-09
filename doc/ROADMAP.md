@@ -515,14 +515,16 @@ worktree at that point:
 
 | 127 | Working tree (coverage preparation cache and WASM allocator parity route) | Moved the existing WASM allocator zero-size, impossible-layout, and null-pointer lifecycle checks from an ABI-only unit test into the maintained `ftsystem.FT_Memory.custom_allocator_runtime_events` parity route without changing normalized output. Added an independent preparation-state marker so unchanged oracle and API-audit inputs are reused by `make test-coverage-all`. Full parity run `93c342f3-0e88-461a-a2df-fcb7e1953206`, recorded by `f7f02456-2664-41f4-840f-66b307f4e918`, passed 7,573 / 7,573 runnable comparisons with 0 failures and 3 pending safety-extension cases. Warm all-lane Coverage MCP run `dde899f4-160b-48cd-9430-918ec809cfa2`, snapshot `a4a0619e-4cb5-4b35-8e3e-3b090cccbc3c`, completed in 17.349 seconds; the preceding cold run took 84.484 seconds, including a 67-second instrumented rebuild. Coverage is 50,143 / 54,394 lines, 10,000 / 12,599 branches, 3,412 / 3,822 functions, and 68,905 / 75,572 regions. C-ABI status remains 10 / 12 categories: C01.7 5,316 / 5,316, C08.3 7,573 / 7,573, C11.3 7 / 8, and C12.3 1 / 5. The invalid-layout free arm at `fontdone-wasm/src/implementation.rs:2754` remains uncovered; remaining contract debt is the Windows import library and four platform bundles. |
 
+| 128 | Working tree (host-width ABI conversion cleanup) | Removed conversion failure arms that are unreachable on the supported 64-bit C ABIs from the C-ABI gzip/bzip2/LZW wrappers, and kept checked conversions under the 32-bit WASM target configuration. Reordered the WASM free-layout check so the existing null/impossible-size parity route also executes the invalid-layout no-op without changing its result. Full parity run `de24be3d-d6b0-467e-97f2-7d0ef1b5e540`, recorded by `4097a02e-f298-4bc6-ae25-9f98d56e84ba`, passed 7,573 / 7,573 runnable comparisons with 0 failures and 3 pending safety-extension cases. All-lane Coverage MCP run `fefab873-83b3-4cab-98d2-ef4c61ddcb47`, snapshot `cf88f243-6cd5-4477-93f3-b830e477e033`, completed in 52.488 seconds after reusing preparation inputs and measured 50,145 / 54,385 lines, 9,991 / 12,579 branches, 3,412 / 3,822 functions, and 68,908 / 75,564 regions. The C-ABI contract run `924b6f17-2300-4f8a-8cc9-0dc5d4d18f3e` passed in 34.708 seconds and retains 10 / 12 categories: C01.7 5,316 / 5,316, C08.3 7,573 / 7,573, C11.3 7 / 8, and C12.3 1 / 5. The fast workspace gate `f5fe8082-7982-49a3-8c14-0822b53b5196` also passed; remaining contract debt is unchanged. |
+
 The current source-bound parity verification is Coverage MCP parity run
-`93c342f3-0e88-461a-a2df-fcb7e1953206`: it passed 7,573 / 7,573 runnable
+`de24be3d-d6b0-467e-97f2-7d0ef1b5e540`: it passed 7,573 / 7,573 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes and 0 generic-fallback rows**, with
 218 / 218 function routes present in each ABI surface. The source-digest
 attestation was refreshed in `doc/runtime_parity_evidence.json` by
 `make record-parity-snapshot`; its current parity-tree digest is
-`d601426ca3d2a0b28e471c4d4f8ecfa524168369461326760cd8b24a67c15551`.
+`b4a0cbd2a3b35ff432b407c4e8bb14495fd08459ce4569e476debed169cdc88f`.
 The tracked C-ABI scorecard is **10 / 12 categories complete**; C01.7 is
 5,316 / 5,316, C08.3 is 7,573 / 7,573, C11.3 is 7 / 8, and C12.3 is 1 / 5.
 The Windows import-library item and four fresh target-lane bundles remain.
@@ -536,19 +538,18 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current source-bound all-lane run `9a39257b-66fb-4dd2-ab29-46835cae54a3`
-completed in 63.799 seconds with snapshot
-`04c522e6-da5a-43c2-8d98-19ccf176be8e`. It measured 50,122 / 54,388 lines,
-9,989 / 12,599 branches, 3,410 / 3,822 functions, and 68,864 / 75,559
-regions; two shards per backend passed 3,784 / 3,784 cases each. The cold
-instrumented build took 45.60 seconds. Warm repeat
-`a7c92ef5-c657-4d77-8586-256e1505f770`, snapshot
-`c3af13b1-e969-4538-aeaf-8bbe171dd66e`, completed in 17.498 seconds. The
-default `COVERAGE_UNIFIED_SHARDS=2` runs six process-local profile writers and
-merges them with `cargo llvm-cov report`; `COVERAGE_UNIFIED_SHARDS=1` restores
-the earlier three-process split. The build-state marker excludes worker,
-lane-split, and shard settings because they only change orchestration, while
-compiler-input or instrumentation changes still force a clean rebuild.
+The current source-bound all-lane run `fefab873-83b3-4cab-98d2-ef4c61ddcb47`
+completed in 52.488 seconds with snapshot
+`cf88f243-6cd5-4477-93f3-b830e477e033`. It measured 50,145 / 54,385 lines,
+9,991 / 12,579 branches, 3,412 / 3,822 functions, and 68,908 / 75,564
+regions; the nine process-local shard writers each finished in 10.32–14.16
+seconds before report generation. Preparation reused unchanged oracle and
+API-audit inputs. The default `COVERAGE_UNIFIED_SHARDS=2` runs six
+process-local profile writers and merges them with `cargo llvm-cov report`;
+`COVERAGE_UNIFIED_SHARDS=1` restores the earlier three-process split. The
+build-state marker excludes worker, lane-split, and shard settings because
+they only change orchestration, while compiler-input or instrumentation
+changes still force a clean rebuild.
 The historical optimized-profile validation run `79f4439e-2db4-4ee2-8746-c101d8db2925`
 completed in 53.316 seconds with 7,479 / 7,479 runnable comparisons passing in
 each lane. The prior current-head opt-level-1 speed validation run

@@ -54,23 +54,23 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-08-09",
-    "source_commit": "997bca310ff71c5289567cffb4566ef13b4be70b",
+    "source_commit": "d955848a06c3ed18cc6f5dbcbb39a024dc2736f6",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "dde899f4-160b-48cd-9430-918ec809cfa2",
-    "snapshot_id": "a4a0619e-4cb5-4b35-8e3e-3b090cccbc3c",
-    "duration_ms": 17349,
+    "run_id": "fefab873-83b3-4cab-98d2-ef4c61ddcb47",
+    "snapshot_id": "cf88f243-6cd5-4477-93f3-b830e477e033",
+    "duration_ms": 52488,
     "exit_code": 0,
     "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; the optional-feature contract is a separate make test-parity-smoke gate and is not rebuilt by coverage unless COVERAGE_PREPARE_OPTIONAL_FEATURES=1; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with no line-table debuginfo (COVERAGE_TEST_DEBUG=0) and COVERAGE_UNIFIED_WORKERS=1; one instrumented test binary runs in three independent shards per backend (nine shard processes total), each shard compares a disjoint 2,524- or 2,525-case slice and writes a distinct raw profile; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; the report merges every shard profile; source-digest-bound expanded input cache reused across the nine processes; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; clean binary preparation uses cargo llvm-cov --no-report -- --list; build-state and independent preparation-state markers reuse unchanged compiler and oracle/API-audit inputs while excluding worker/lane-split/shard orchestration settings; raw LLVM JSON is ingested directly, with segment normalization retained only as an opt-in compatibility rewrite; test-harness source excluded",
     "lines": {
-      "covered": 50143,
-      "total": 54394,
-      "percent": 92.18479979409494
+      "covered": 50145,
+      "total": 54385,
+      "percent": 92.20373264686954
     },
     "branches": {
-      "covered": 10000,
-      "total": 12599,
-      "percent": 79.37137868084768
+      "covered": 9991,
+      "total": 12579,
+      "percent": 79.42602750616106
     },
     "functions": {
       "covered": 3412,
@@ -78,9 +78,9 @@
       "percent": 89.27263212977499
     },
     "regions": {
-      "covered": 68905,
-      "total": 75572,
-      "percent": 91.17794950510771
+      "covered": 68908,
+      "total": 75564,
+      "percent": 91.19157270657985
     },
     "runtime_parity": {
       "runnable": 7573,
@@ -1358,9 +1358,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "506f15cc7599a4909a818aa0f55e3650e295152328e9b565f32c668d640dd028",
-    "parity_tree_sha256": "d601426ca3d2a0b28e471c4d4f8ecfa524168369461326760cd8b24a67c15551",
-    "log_sha256": "7c3dac117486b10c41cde183d76cf329393e9be73d7033860c7f44591bed3fec",
+    "sha256": "ec4b5c80417f60f11fbd1e956dbc0833d94eb46333db9d15fe6eb37f146f4032",
+    "parity_tree_sha256": "b4a0cbd2a3b35ff432b407c4e8bb14495fd08459ce4569e476debed169cdc88f",
+    "log_sha256": "555f30237469ac39eb3cde0df80e65d6431c24c71226e59789948b846393f1af",
     "command": "make test-parity"
   }
 }

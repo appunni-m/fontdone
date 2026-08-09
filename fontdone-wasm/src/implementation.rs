@@ -2747,12 +2747,12 @@ pub extern "C" fn fontdone_wasm_malloc(size: usize) -> *mut c_void {
 /// already-freed pointer, or a mismatched size violates the ABI precondition
 /// and can trap or corrupt the instance; it is not converted to `FT_Error`.
 pub extern "C" fn fontdone_wasm_free(ptr: *mut c_void, size: usize) {
-    if ptr.is_null() {
-        return;
-    }
     let Ok(layout) = Layout::from_size_align(size.max(1), 8) else {
         return;
     };
+    if ptr.is_null() {
+        return;
+    }
     // SAFETY: callers pass a pointer returned by `fontdone_wasm_malloc` with the same size.
     unsafe { dealloc(ptr.cast::<u8>(), layout) };
 }
@@ -2768,12 +2768,18 @@ pub extern "C" fn fontdone_wasm_gzip_uncompress(
     if memory.is_null() || output.is_null() || output_len.is_null() {
         return rust_ffi::FT_Err_Invalid_Argument;
     }
+    #[cfg(target_pointer_width = "64")]
+    let input_len = input_len as usize;
+    #[cfg(target_pointer_width = "32")]
     let Ok(input_len) = usize::try_from(input_len) else {
         return rust_ffi::FT_Err_Invalid_Table;
     };
     // SAFETY: `output_len` is non-null and is exclusively borrowed for this
     // synchronous WASM ABI call.
     let output_len_ref = unsafe { &mut *output_len };
+    #[cfg(target_pointer_width = "64")]
+    let output_capacity = *output_len_ref as usize;
+    #[cfg(target_pointer_width = "32")]
     let Ok(output_capacity) = usize::try_from(*output_len_ref) else {
         return rust_ffi::FT_Err_Array_Too_Large as FT_Error;
     };
@@ -2810,6 +2816,9 @@ pub extern "C" fn fontdone_wasm_stream_open_gzip(
     if source_ref.base.is_null() {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     }
+    #[cfg(target_pointer_width = "64")]
+    let source_len = source_ref.size as usize;
+    #[cfg(target_pointer_width = "32")]
     let Ok(source_len) = usize::try_from(source_ref.size) else {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     };
@@ -2878,6 +2887,9 @@ pub extern "C" fn fontdone_wasm_stream_open_bzip2(
         let Some(source_ref) = (unsafe { source.as_ref() }) else {
             return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
         };
+        #[cfg(target_pointer_width = "64")]
+        let source_len = source_ref.size as usize;
+        #[cfg(target_pointer_width = "32")]
         let Ok(source_len) = usize::try_from(source_ref.size) else {
             return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
         };
@@ -2921,6 +2933,9 @@ pub extern "C" fn fontdone_wasm_stream_open_lzw(
     if source_ref.base.is_null() {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     }
+    #[cfg(target_pointer_width = "64")]
+    let source_len = source_ref.size as usize;
+    #[cfg(target_pointer_width = "32")]
     let Ok(source_len) = usize::try_from(source_ref.size) else {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     };
@@ -6608,6 +6623,7 @@ pub fn abi_support_custom_memory_lifecycle(
     assert!(!zero_allocation.is_null());
     assert!(impossible_allocation.is_null());
     fontdone_wasm_free(zero_allocation, 0);
+    fontdone_wasm_free(ptr::null_mut(), 0);
     fontdone_wasm_free(ptr::null_mut(), usize::MAX);
 
     AbiCustomMemorySnapshot {

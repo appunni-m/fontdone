@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`93c342f3-0e88-461a-a2df-fcb7e1953206`, whose passing report was recorded in
+`de24be3d-d6b0-467e-97f2-7d0ef1b5e540`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
 7,573 / 7,573 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `d601426ca3d2a0b28e471c4d4f8ecfa524168369461326760cd8b24a67c15551`.
+Its source-bound parity-tree digest is `b4a0cbd2a3b35ff432b407c4e8bb14495fd08459ce4569e476debed169cdc88f`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,18 +142,21 @@ their exact worktree than the committed release snapshot.
 
 The latest source-bound all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`997bca310ff71c5289567cffb4566ef13b4be70b`
-(Coverage MCP run `dde899f4-160b-48cd-9430-918ec809cfa2`, snapshot
-`a4a0619e-4cb5-4b35-8e3e-3b090cccbc3c`):
+`d955848a06c3ed18cc6f5dbcbb39a024dc2736f6`
+(Coverage MCP run `fefab873-83b3-4cab-98d2-ef4c61ddcb47`, snapshot
+`cf88f243-6cd5-4477-93f3-b830e477e033`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,143 / 54,394 | 92.18% |
-| Branches | 10,000 / 12,599 | 79.37% |
+| Lines | 50,145 / 54,385 | 92.20% |
+| Branches | 9,991 / 12,579 | 79.43% |
 | Functions | 3,412 / 3,822 | 89.27% |
-| Regions | 68,905 / 75,572 | 91.18% |
+| Regions | 68,908 / 75,564 | 91.19% |
 
-The latest warm validation completed in 17.349 seconds with
+The latest source-bound validation completed in 52.488 seconds after reusing
+the oracle/API-audit preparation cache. Its nine shard processes each finished
+in 10.32–14.16 seconds before report generation. The earlier warm validation
+completed in 17.349 seconds with
 `COVERAGE_UNIFIED_WORKERS=1`, `COVERAGE_UNIFIED_LANE_SPLIT=1`, and the
 adaptive three-shard default on this 12-logical-CPU host. Nine shard processes
 ran concurrently—three each for Rust FFI, C ABI, and WASM—and each compared
@@ -178,6 +181,11 @@ line tables while retaining LLVM source mapping; its historical cold build was
 run retains that setting and additionally removes the remaining cross-backend
 counter contention by using process-local shard profiles. LLVM coverage mapping
 supplies the report's source locations without requiring DWARF line tables.
+
+The current host-width cleanup removes conversion branches that cannot occur on
+the supported 64-bit ABI while retaining checked conversions for 32-bit WASM.
+It preserved all 7,573 runnable parity results and reduced the measured
+coverage denominator without weakening a fixture or parity comparison.
 
 The coverage build-state marker now keys reuse to the newest commit touching
 compiler-relevant inputs, rather than every current `HEAD`, and excludes

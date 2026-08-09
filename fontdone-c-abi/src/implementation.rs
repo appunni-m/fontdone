@@ -1403,15 +1403,13 @@ pub extern "C" fn FT_Gzip_Uncompress(
     if memory.is_null() || output.is_null() || output_len.is_null() {
         return rust_ffi::FT_Err_Invalid_Argument;
     }
-    let Ok(input_len) = usize::try_from(input_len) else {
-        return rust_ffi::FT_Err_Invalid_Table;
-    };
+    // `FT_ULong` is the platform C `unsigned long`; on the supported target
+    // ABIs it is never wider than `usize`, so this conversion cannot fail.
+    let input_len = input_len as usize;
     // SAFETY: `output_len` was checked for null above and is only borrowed for
     // the duration of this C ABI call.
     let output_len_ref = unsafe { &mut *output_len };
-    let Ok(output_capacity) = usize::try_from(*output_len_ref) else {
-        return rust_ffi::FT_Err_Array_Too_Large as FT_Error;
-    };
+    let output_capacity = *output_len_ref as usize;
     // SAFETY: `output` is non-null and the caller-provided `*output_len`
     // defines the writable output buffer length, matching FreeType's ABI.
     let output_slice = unsafe { slice::from_raw_parts_mut(output, output_capacity) };
@@ -1482,9 +1480,7 @@ pub extern "C" fn FT_Stream_OpenBzip2(stream: FT_Stream, source: FT_Stream) -> F
         let Some(source_ref) = (unsafe { source.as_ref() }) else {
             return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
         };
-        let Ok(source_len) = usize::try_from(source_ref.size) else {
-            return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
-        };
+        let source_len = source_ref.size as usize;
         (source_ref.base, source_ref.read, source_len)
     };
     if source_base.is_null() && source_len != 0 && source_read.is_null() {
@@ -1572,9 +1568,7 @@ pub extern "C" fn FT_Stream_OpenLZW(stream: FT_Stream, source: FT_Stream) -> FT_
     if source_ref.base.is_null() {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     }
-    let Ok(source_len) = usize::try_from(source_ref.size) else {
-        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
-    };
+    let source_len = source_ref.size as usize;
     // SAFETY: the maintained C ABI route supplies a memory-backed source
     // stream whose caller-owned `base` remains readable for `size` bytes.
     let source_bytes = unsafe { slice::from_raw_parts(source_ref.base.cast_const(), source_len) };
@@ -4484,9 +4478,7 @@ pub extern "C" fn FT_Stream_OpenGzip(stream: FT_Stream, source: FT_Stream) -> FT
     if source_ref.base.is_null() {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     }
-    let Ok(source_len) = usize::try_from(source_ref.size) else {
-        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
-    };
+    let source_len = source_ref.size as usize;
     // SAFETY: this thin ABI wrapper supports the memory-backed stream shape
     // used by the parity fixtures; `base` and `size` are caller-provided.
     let source_bytes = unsafe { slice::from_raw_parts(source_ref.base.cast_const(), source_len) };
