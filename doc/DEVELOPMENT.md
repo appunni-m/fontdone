@@ -293,7 +293,9 @@ Repeated local runs reuse the instrumented target and binary. The latest
 source-bound current-host warm runs are Coverage MCP
 `f422f061-f58a-4084-8339-347bf31ba296` and
 `076f95b7-1b71-4e70-9b3c-d72e27b25a6d`, which took 16.411 and 16.377 seconds
-with three shards per backend. This is faster than the two-shard baseline
+with three shards per backend. The final run `3a435c00-9b3e-4abe-9070-89a4f3566e7f`
+(snapshot `ecc4a9dd-efe6-4db7-9c82-32cdf7f1bdf3`) took 15.414 seconds. This is
+faster than the two-shard baseline
 `6a2c26b8-2afd-485e-9ced-3f660cf4e9cf` at 19.747 seconds. The clean cold run
 `9df27f92-54ba-46a3-8755-c0cf61dddb4b` took 64.242 seconds, including a
 45-second instrumented build, so cache-miss compilation remains the dominant

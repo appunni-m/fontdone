@@ -142,9 +142,9 @@ their exact worktree than the committed release snapshot.
 
 The latest source-bound all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`29f22055683644374478e07e897dc59165846e85`
-(Coverage MCP run `d9ba5ed2-51e7-4eda-a6b3-0e30a742ca3a`, snapshot
-`7dc56b88-dbe6-4daf-94ff-7726fea0ad75`):
+`85665b21eec46fa5655aaeeb54f912be6d3b1cfd`
+(Coverage MCP run `3a435c00-9b3e-4abe-9070-89a4f3566e7f`, snapshot
+`ecc4a9dd-efe6-4db7-9c82-32cdf7f1bdf3`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -153,7 +153,7 @@ The latest source-bound all-lane coverage snapshot was recorded on
 | Functions | 3,410 / 3,822 | 89.22% |
 | Regions | 68,870 / 75,559 | 91.15% |
 
-The latest validation completed in 15.283 seconds with
+The latest validation completed in 15.414 seconds with
 `COVERAGE_UNIFIED_WORKERS=1`, `COVERAGE_UNIFIED_LANE_SPLIT=1`, and the
 adaptive three-shard default on this 12-logical-CPU host. Nine shard processes
 ran concurrently—three each for Rust FFI, C ABI, and WASM—and each compared
