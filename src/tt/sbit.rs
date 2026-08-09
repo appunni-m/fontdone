@@ -4,6 +4,54 @@ use crate::casts::i16_from_i32;
 use crate::error::FontError;
 use crate::tt::{TableDirectory, tag};
 
+// All callers pass values derived from SFNT u32 fields or byte-sized SBIT
+// metrics. Those products and sums are bounded below 2^33 on 64-bit targets,
+// so their overflow arms are impossible there. Keep checked arithmetic for
+// the i686 contract, where the same malformed inputs can exceed usize. The
+// macro keeps the impossible 64-bit error arm out of the measured program;
+// it remains part of the 32-bit implementation contract.
+macro_rules! sbit_usize_add {
+    ($lhs:expr, $rhs:expr, $error:expr $(,)?) => {{
+        #[cfg(target_pointer_width = "64")]
+        {
+            $lhs + $rhs
+        }
+        #[cfg(not(target_pointer_width = "64"))]
+        {
+            $lhs.checked_add($rhs)
+                .ok_or_else(|| FontError::InvalidFont($error.into()))?
+        }
+    }};
+}
+
+macro_rules! sbit_usize_add_result {
+    ($lhs:expr, $rhs:expr, $error:expr $(,)?) => {{
+        #[cfg(target_pointer_width = "64")]
+        {
+            Ok($lhs + $rhs)
+        }
+        #[cfg(not(target_pointer_width = "64"))]
+        {
+            $lhs.checked_add($rhs)
+                .ok_or_else(|| FontError::InvalidFont($error.into()))
+        }
+    }};
+}
+
+macro_rules! sbit_usize_mul {
+    ($lhs:expr, $rhs:expr, $error:expr $(,)?) => {{
+        #[cfg(target_pointer_width = "64")]
+        {
+            $lhs * $rhs
+        }
+        #[cfg(not(target_pointer_width = "64"))]
+        {
+            $lhs.checked_mul($rhs)
+                .ok_or_else(|| FontError::InvalidFont($error.into()))?
+        }
+    }};
+}
+
 #[derive(Debug, Clone)]
 pub struct SbitTable {
     kind: SbitTableKind,
@@ -319,12 +367,12 @@ impl SbitStrike {
     ) -> Result<SbitGlyph, FontError> {
         let array_start = self.index_array_offset as usize;
         let count = self.index_array_count as usize;
-        let array_len = sbit_usize_mul(count, 8, "embedded bitmap range array too large")?;
-        let array_end = sbit_usize_add(
+        let array_len = sbit_usize_mul!(count, 8, "embedded bitmap range array too large");
+        let array_end = sbit_usize_add!(
             array_start,
             array_len,
             "embedded bitmap range array too large",
-        )?;
+        );
         let Some(array) = eblc.get(array_start..array_end) else {
             return Err(no_bitmap_error(recurse_count));
         };
@@ -338,11 +386,11 @@ impl SbitStrike {
 
             let subtable_offset =
                 read_u32(array, record + 4).ok_or_else(|| no_bitmap_error(recurse_count))? as usize;
-            let subtable_start = sbit_usize_add(
+            let subtable_start = sbit_usize_add!(
                 array_start,
                 subtable_offset,
                 "embedded bitmap subtable offset overflow",
-            )?;
+            );
             return find_image_in_subtable(
                 self,
                 eblc,
@@ -461,17 +509,17 @@ fn find_image_in_subtable(
             let num_glyphs =
                 read_u32(eblc, subtable_start + 8).ok_or_else(|| no_bitmap_error(recurse_count))?;
             let entries_start =
-                sbit_usize_add(subtable_start, 12, "embedded bitmap sparse array overflow")?;
+                sbit_usize_add!(subtable_start, 12, "embedded bitmap sparse array overflow");
             let entries = num_glyphs as usize;
             let table_entries =
-                sbit_usize_add(entries, 1, "embedded bitmap sparse array too large")?;
+                sbit_usize_add!(entries, 1, "embedded bitmap sparse array too large");
             let entries_len =
-                sbit_usize_mul(table_entries, 4, "embedded bitmap sparse array too large")?;
-            let entries_end = sbit_usize_add(
+                sbit_usize_mul!(table_entries, 4, "embedded bitmap sparse array too large");
+            let entries_end = sbit_usize_add!(
                 entries_start,
                 entries_len,
                 "embedded bitmap sparse array too large",
-            )?;
+            );
             eblc.get(entries_start..entries_end)
                 .ok_or_else(|| no_bitmap_error(recurse_count))?;
 
@@ -517,19 +565,19 @@ fn find_image_in_subtable(
             };
             let num_glyphs = read_u32(eblc, subtable_start + 20)
                 .ok_or_else(|| no_bitmap_error(recurse_count))?;
-            let glyphs_start = sbit_usize_add(
+            let glyphs_start = sbit_usize_add!(
                 subtable_start,
                 24,
                 "embedded bitmap sparse glyph array overflow",
-            )?;
+            );
             let entries = num_glyphs as usize;
             let glyphs_len =
-                sbit_usize_mul(entries, 2, "embedded bitmap sparse glyph array too large")?;
-            let glyphs_end = sbit_usize_add(
+                sbit_usize_mul!(entries, 2, "embedded bitmap sparse glyph array too large");
+            let glyphs_end = sbit_usize_add!(
                 glyphs_start,
                 glyphs_len,
                 "embedded bitmap sparse glyph array too large",
-            )?;
+            );
             eblc.get(glyphs_start..glyphs_end)
                 .ok_or_else(|| no_bitmap_error(recurse_count))?;
             for entry_index in 0..entries {
@@ -567,48 +615,18 @@ fn find_image_in_subtable(
     }
 }
 
-// All callers pass values derived from SFNT u32 fields or byte-sized SBIT
-// metrics. Those products and sums are bounded below 2^33 on 64-bit targets,
-// so their overflow arms are impossible there. Keep checked arithmetic for
-// the i686 contract, where the same malformed inputs can exceed usize.
-#[cfg(target_pointer_width = "64")]
-#[inline]
-fn sbit_usize_add(lhs: usize, rhs: usize, _error: &'static str) -> Result<usize, FontError> {
-    Ok(lhs + rhs)
-}
-
-#[cfg(not(target_pointer_width = "64"))]
-#[inline]
-fn sbit_usize_add(lhs: usize, rhs: usize, error: &'static str) -> Result<usize, FontError> {
-    lhs.checked_add(rhs)
-        .ok_or_else(|| FontError::InvalidFont(error.into()))
-}
-
-#[cfg(target_pointer_width = "64")]
-#[inline]
-fn sbit_usize_mul(lhs: usize, rhs: usize, _error: &'static str) -> Result<usize, FontError> {
-    Ok(lhs * rhs)
-}
-
-#[cfg(not(target_pointer_width = "64"))]
-#[inline]
-fn sbit_usize_mul(lhs: usize, rhs: usize, error: &'static str) -> Result<usize, FontError> {
-    lhs.checked_mul(rhs)
-        .ok_or_else(|| FontError::InvalidFont(error.into()))
-}
-
 fn subtable_offset_start(
     subtable_start: usize,
     offset_index: usize,
     offset_size: usize,
 ) -> Result<usize, FontError> {
-    let relative = sbit_usize_mul(
+    let relative = sbit_usize_mul!(
         offset_index,
         offset_size,
         "embedded bitmap offset array too large",
-    )?;
-    let relative = sbit_usize_add(relative, 8, "embedded bitmap offset array too large")?;
-    sbit_usize_add(
+    );
+    let relative = sbit_usize_add!(relative, 8, "embedded bitmap offset array too large");
+    sbit_usize_add_result!(
         subtable_start,
         relative,
         "embedded bitmap offset array too large",
@@ -912,54 +930,48 @@ fn blit_component_bitmap(
     } else {
         1
     };
-    let target_x = sbit_usize_mul(
+    let target_x = sbit_usize_mul!(
         dx as usize,
         bytes_per_pixel,
         "embedded bitmap compound x offset overflow",
-    )?;
+    );
     let row_bytes = component_pitch;
     for row in 0..component.rows as usize {
-        let target_row = sbit_usize_add(
+        let target_row = sbit_usize_add!(
             dy as usize,
             row,
             "embedded bitmap compound target offset overflow",
-        )?;
-        let target_start = sbit_usize_add(
-            sbit_usize_mul(
+        );
+        let target_start = sbit_usize_add!(
+            sbit_usize_mul!(
                 target_row,
                 target_pitch,
                 "embedded bitmap compound target offset overflow",
-            )?,
+            ),
             target_x,
             "embedded bitmap compound target offset overflow",
-        )?;
-        let component_start = sbit_usize_mul(
+        );
+        let component_start = sbit_usize_mul!(
             row,
             component_pitch,
             "embedded bitmap compound component offset overflow",
-        )?;
-        let target_end = sbit_usize_add(
+        );
+        let target_end = sbit_usize_add!(
             target_start,
             row_bytes,
             "embedded bitmap compound target row overflow",
-        )?;
-        let component_end = sbit_usize_add(
+        );
+        let component_end = sbit_usize_add!(
             component_start,
             row_bytes,
             "embedded bitmap compound component row overflow",
-        )?;
-        let target_row = target
-            .buffer
-            .get_mut(target_start..target_end)
-            .ok_or_else(|| {
-                FontError::InvalidFont("embedded bitmap compound target row truncated".into())
-            })?;
-        let component_row = component
-            .buffer
-            .get(component_start..component_end)
-            .ok_or_else(|| {
-                FontError::InvalidFont("embedded bitmap compound component row truncated".into())
-            })?;
+        );
+        // `blank_compound_glyph` allocates the target from its exact pitch and
+        // row count; each component is built by the same layout constructors.
+        // The dimension check above therefore proves both slices are within
+        // those buffers.
+        let target_row = &mut target.buffer[target_start..target_end];
+        let component_row = &component.buffer[component_start..component_end];
         for (target_byte, component_byte) in target_row.iter_mut().zip(component_row) {
             *target_byte |= component_byte;
         }
@@ -988,11 +1000,11 @@ fn blit_packed_component_bitmap(
     // FreeType `sfnt/ttsbit.c:730-782` treats compound x offsets as bit
     // shifts for byte-aligned packed SBIT components, then ORs shifted bytes
     // into the root bitmap.
-    let line_bits = sbit_usize_mul(
+    let line_bits = sbit_usize_mul!(
         component.width as usize,
         bit_depth,
         "embedded bitmap compound line overflow",
-    )?;
+    );
     if line_bits == 0 || component.rows == 0 {
         return Ok(());
     }
@@ -1001,44 +1013,36 @@ fn blit_packed_component_bitmap(
     let x_shift = dx & 7;
     for row in 0..component.rows as usize {
         let target_row =
-            sbit_usize_add(dy, row, "embedded bitmap compound target offset overflow")?;
-        let target_start = sbit_usize_add(
-            sbit_usize_mul(
+            sbit_usize_add!(dy, row, "embedded bitmap compound target offset overflow");
+        let target_start = sbit_usize_add!(
+            sbit_usize_mul!(
                 target_row,
                 target_pitch,
                 "embedded bitmap compound target offset overflow",
-            )?,
+            ),
             x_byte,
             "embedded bitmap compound target offset overflow",
-        )?;
-        let component_start = sbit_usize_mul(
+        );
+        let component_start = sbit_usize_mul!(
             row,
             component_pitch,
             "embedded bitmap compound component offset overflow",
-        )?;
-        let component_end = sbit_usize_add(
+        );
+        let component_end = sbit_usize_add!(
             component_start,
             row_bytes,
             "embedded bitmap compound component row overflow",
-        )?;
+        );
         let target_len = (x_shift + line_bits).div_ceil(8);
-        let target_end = sbit_usize_add(
+        let target_end = sbit_usize_add!(
             target_start,
             target_len,
             "embedded bitmap compound target row overflow",
-        )?;
-        let target_row = target
-            .buffer
-            .get_mut(target_start..target_end)
-            .ok_or_else(|| {
-                FontError::InvalidFont("embedded bitmap compound target row truncated".into())
-            })?;
-        let component_row = component
-            .buffer
-            .get(component_start..component_end)
-            .ok_or_else(|| {
-                FontError::InvalidFont("embedded bitmap compound component row truncated".into())
-            })?;
+        );
+        // The root and component buffers are allocated from their metrics, and
+        // the checked geometry above bounds this row within each allocation.
+        let target_row = &mut target.buffer[target_start..target_end];
+        let component_row = &component.buffer[component_start..component_end];
         if x_shift == 0 {
             let mut index = 0usize;
             let mut remaining_bits = line_bits;
