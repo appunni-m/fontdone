@@ -3043,24 +3043,34 @@ pub fn abi_support_lzw_stream_close(stream: *mut rust_ffi::FT_StreamRec) {
     }
 }
 
-fn wasm_alloc_zeroed_array<T>(count: usize) -> *mut u8 {
+fn wasm_outline_array_layout<T>(count: FT_UShort) -> Layout {
+    let count = usize::from(count);
+    // SAFETY: the only callers are the outline owner paths below. The public
+    // FT_Outline_New contract rejects counts above USHRT_MAX, and these paths
+    // use only the fixed-size, non-zero FT_Vector, FT_Byte, and FT_UShort
+    // element types, so multiplication and alignment are always representable.
+    unsafe {
+        Layout::from_size_align_unchecked(
+            std::mem::size_of::<T>().saturating_mul(count),
+            std::mem::align_of::<T>(),
+        )
+    }
+}
+
+fn wasm_alloc_zeroed_array<T>(count: FT_UShort) -> *mut u8 {
     if count == 0 {
         return ptr::null_mut();
     }
-    let Ok(layout) = Layout::array::<T>(count) else {
-        return ptr::null_mut();
-    };
+    let layout = wasm_outline_array_layout::<T>(count);
     // SAFETY: `layout` describes a non-zero array allocation.
     unsafe { alloc_zeroed(layout) }
 }
 
-fn wasm_dealloc_array<T>(ptr: *mut u8, count: usize) {
+fn wasm_dealloc_array<T>(ptr: *mut u8, count: FT_UShort) {
     if ptr.is_null() || count == 0 {
         return;
     }
-    let Ok(layout) = Layout::array::<T>(count) else {
-        return;
-    };
+    let layout = wasm_outline_array_layout::<T>(count);
     // SAFETY: outline lifecycle allocations in this module use the same layout.
     unsafe { dealloc(ptr, layout) };
 }
@@ -5590,8 +5600,10 @@ pub extern "C" fn fontdone_wasm_outline_new(
     {
         return rust_ffi::FT_Err_Invalid_Argument;
     }
-    let point_count = usize::try_from(num_points).unwrap_or(usize::MAX);
-    let contour_count = usize::try_from(num_contours).unwrap_or(usize::MAX);
+    let point_count = num_points as FT_UShort;
+    // SAFETY: the preceding validation returns for every negative contour
+    // count, so this conversion is known to be `Ok` here.
+    let contour_count = unsafe { u32::try_from(num_contours).unwrap_unchecked() } as FT_UShort;
     let points: *mut FontdoneWasmVector =
         wasm_alloc_zeroed_array::<FontdoneWasmVector>(point_count).cast();
     let tags: *mut FT_Byte = wasm_alloc_zeroed_array::<FT_Byte>(point_count).cast();
@@ -5605,8 +5617,8 @@ pub extern "C" fn fontdone_wasm_outline_new(
         return rust_ffi::FT_Err_Out_Of_Memory;
     }
     *outline = FontdoneWasmOutline {
-        n_contours: FT_UShort::try_from(num_contours).unwrap_or(FT_UShort::MAX),
-        n_points: FT_UShort::try_from(num_points).unwrap_or(FT_UShort::MAX),
+        n_contours: contour_count,
+        n_points: point_count,
         points,
         tags,
         contours,
@@ -5627,12 +5639,9 @@ pub extern "C" fn fontdone_wasm_outline_done(
         return rust_ffi::FT_Err_Invalid_Outline as FT_Error;
     };
     if outline.flags & rust_ffi::FT_OUTLINE_OWNER as FT_Int != 0 {
-        wasm_dealloc_array::<FontdoneWasmVector>(
-            outline.points.cast(),
-            usize::from(outline.n_points),
-        );
-        wasm_dealloc_array::<FT_Byte>(outline.tags.cast(), usize::from(outline.n_points));
-        wasm_dealloc_array::<FT_UShort>(outline.contours.cast(), usize::from(outline.n_contours));
+        wasm_dealloc_array::<FontdoneWasmVector>(outline.points.cast(), outline.n_points);
+        wasm_dealloc_array::<FT_Byte>(outline.tags.cast(), outline.n_points);
+        wasm_dealloc_array::<FT_UShort>(outline.contours.cast(), outline.n_contours);
     }
     *outline = FontdoneWasmOutline::default();
     rust_ffi::FT_Err_Ok

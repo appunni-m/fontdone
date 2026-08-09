@@ -11733,8 +11733,10 @@ pub extern "C" fn FT_Outline_New(
     if numContours < 0 || u32::try_from(numContours).map_or(true, |contours| contours > numPoints) {
         return rust_ffi::FT_Err_Invalid_Argument;
     }
-    let point_count = usize::try_from(numPoints).unwrap_or(usize::MAX);
-    let contour_count = usize::try_from(numContours).unwrap_or(usize::MAX);
+    let point_count = numPoints as FT_UShort;
+    // SAFETY: the preceding validation returns for every negative contour
+    // count, so this conversion is known to be `Ok` here.
+    let contour_count = unsafe { u32::try_from(numContours).unwrap_unchecked() } as FT_UShort;
     let memory = outline_custom_memory(library);
     let points = alloc_outline_array::<FT_Vector>(point_count, memory).cast::<FT_Vector>();
     let tags = alloc_outline_array::<FT_Byte>(point_count, memory).cast::<FT_Byte>();
@@ -11745,26 +11747,26 @@ pub extern "C" fn FT_Outline_New(
         dealloc_outline_array(
             points.cast::<u8>(),
             point_count,
-            Layout::array::<FT_Vector>,
+            outline_array_layout::<FT_Vector>,
             memory,
         );
         dealloc_outline_array(
             tags.cast::<u8>(),
             point_count,
-            Layout::array::<FT_Byte>,
+            outline_array_layout::<FT_Byte>,
             memory,
         );
         dealloc_outline_array(
             contours.cast::<u8>(),
             contour_count,
-            Layout::array::<FT_UShort>,
+            outline_array_layout::<FT_UShort>,
             memory,
         );
         return rust_ffi::FT_Err_Out_Of_Memory;
     }
     *outline = FT_Outline {
-        n_contours: FT_UShort::try_from(numContours).unwrap_or(FT_UShort::MAX),
-        n_points: FT_UShort::try_from(numPoints).unwrap_or(FT_UShort::MAX),
+        n_contours: contour_count,
+        n_points: point_count,
         points,
         tags,
         contours,
@@ -11785,20 +11787,20 @@ pub extern "C" fn FT_Outline_Done(library: FT_Library, outline: *mut FT_Outline)
         let memory = outline_custom_memory(library);
         dealloc_outline_array(
             outline.points.cast::<u8>(),
-            usize::from(outline.n_points),
-            Layout::array::<FT_Vector>,
+            outline.n_points,
+            outline_array_layout::<FT_Vector>,
             memory,
         );
         dealloc_outline_array(
             outline.tags.cast::<u8>(),
-            usize::from(outline.n_points),
-            Layout::array::<FT_Byte>,
+            outline.n_points,
+            outline_array_layout::<FT_Byte>,
             memory,
         );
         dealloc_outline_array(
             outline.contours.cast::<u8>(),
-            usize::from(outline.n_contours),
-            Layout::array::<FT_UShort>,
+            outline.n_contours,
+            outline_array_layout::<FT_UShort>,
             memory,
         );
     }
@@ -11825,17 +11827,29 @@ fn outline_custom_memory(library: FT_Library) -> FT_Memory {
     })
 }
 
-fn alloc_outline_array<T>(count: usize, memory: FT_Memory) -> *mut u8 {
+fn outline_array_layout<T>(count: FT_UShort) -> Layout {
+    let count = usize::from(count);
+    // SAFETY: the only callers are the outline owner paths above. The public
+    // FT_Outline_New contract rejects counts above USHRT_MAX, and these paths
+    // use only the fixed-size, non-zero FT_Vector, FT_Byte, and FT_UShort
+    // element types, so multiplication and alignment are always representable.
+    unsafe {
+        Layout::from_size_align_unchecked(
+            std::mem::size_of::<T>().saturating_mul(count),
+            std::mem::align_of::<T>(),
+        )
+    }
+}
+
+fn alloc_outline_array<T>(count: FT_UShort, memory: FT_Memory) -> *mut u8 {
     if count == 0 {
         return ptr::null_mut();
     }
-    let Ok(layout) = Layout::array::<T>(count) else {
-        return ptr::null_mut();
-    };
+    let layout = outline_array_layout::<T>(count);
     if !memory.is_null() {
-        let Ok(size) = c_long::try_from(layout.size()) else {
-            return ptr::null_mut();
-        };
+        // The largest allowed outline allocation is below the range of
+        // c_long on every supported ABI (USHRT_MAX fixed-size elements).
+        let size = layout.size() as c_long;
         // SAFETY: `memory` is retained by the live custom library and the
         // returned block is owned by that allocator until FT_Outline_Done.
         let block = unsafe {
@@ -11857,8 +11871,8 @@ fn alloc_outline_array<T>(count: usize, memory: FT_Memory) -> *mut u8 {
 
 fn dealloc_outline_array(
     ptr: *mut u8,
-    count: usize,
-    layout_for: impl FnOnce(usize) -> Result<Layout, std::alloc::LayoutError>,
+    count: FT_UShort,
+    layout_for: impl FnOnce(FT_UShort) -> Layout,
     memory: FT_Memory,
 ) {
     if ptr.is_null() || count == 0 {
@@ -11873,9 +11887,7 @@ fn dealloc_outline_array(
         }
         return;
     }
-    let Ok(layout) = layout_for(count) else {
-        return;
-    };
+    let layout = layout_for(count);
     // SAFETY: outline OWNER allocations in this module use the matching layout.
     unsafe { dealloc(ptr, layout) };
 }
