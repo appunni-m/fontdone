@@ -283,11 +283,11 @@ Coverage and parity answer different questions. Executing a line or branch
 does not prove that its result matches C.
 
 The latest source-bound all-lane Coverage MCP run is
-`aa20f5ff-5a52-41c9-b4e5-33b3fdddf133` (snapshot
-`d9d4ceb1-4dd9-4e9c-8994-67b579247af0`). It completed in 15.356 seconds and
+`13fa70b0-31dc-4d3d-8d0e-ff7bb7ab2530` (snapshot
+`be3f43da-74b3-44bc-863b-25b3f5060bd6`). It completed in 60.630 seconds and
 passed 7,582 / 7,582 runnable parity comparisons in the three split backends.
-The overall report is 50,179 / 54,345 lines, 10,026 / 12,587 branches,
-3,433 / 3,824 functions, and 68,935 / 75,488 regions. The dominant cold-run cost remains
+The overall report is 50,180 / 54,346 lines, 10,025 / 12,585 branches,
+3,433 / 3,824 functions, and 68,937 / 75,490 regions. The dominant cold-run cost remains
 instrumented compilation; warm shard execution and report ingestion are much
 smaller.
 
@@ -350,21 +350,21 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The current managed run completed in 60.380 seconds. Shard timers run
+The current managed run completed in 60.630 seconds. Shard timers run
 concurrently, so their sum is not wall time; report finalization and artifact
 ingestion are included in the wall time but are not separately exposed by
 Coverage MCP. Instrumented compilation remains the dominant cold component.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,179 / 54,345 | 92.33% |
-| Branches | 10,026 / 12,587 | 79.65% |
+| Lines | 50,180 / 54,346 | 92.33% |
+| Branches | 10,025 / 12,585 | 79.66% |
 | Functions | 3,433 / 3,824 | 89.78% |
-| Regions | 68,935 / 75,488 | 91.32% |
+| Regions | 68,937 / 75,490 | 91.32% |
 
 That latest run passed all 7,582 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`d9d4ceb1-4dd9-4e9c-8994-67b579247af0`. Coverage MCP accepts the current LLVM
+`be3f43da-74b3-44bc-863b-25b3f5060bd6`. Coverage MCP accepts the current LLVM
 JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
 rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
 apply only to the named source commit, suite, and toolchain. They are not a
