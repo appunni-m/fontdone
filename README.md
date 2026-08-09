@@ -106,29 +106,29 @@ The latest full parity snapshot was recorded on **2026-08-09** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,578 |
-| Passed cases | 7,578 |
+| Runnable exact-comparison cases | 7,579 |
+| Passed cases | 7,579 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
 | Covered manifest cases | 4,204 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,297 |
-| Concrete expanded cases | 7,581 |
+| Concrete expanded cases | 7,582 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,578 / 7,578` means every runnable case in that execution matched; the 3
+`7,579 / 7,579` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`f576ec60-d92d-43c5-a66f-801670ab12e0`, whose passing report was recorded in
+`6ecb9dba-1b8c-4535-a821-10c5d5ab1edd`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-7,578 / 7,578 runnable comparisons with 0 failures and 3 explicitly pending
+7,579 / 7,579 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `1459957e96b11e83e212aa3dceef24401c6c986e6ec9c4beff72b9d87ece29e8`.
+Its source-bound parity-tree digest is `b7d3c94a3df3fd42d5e0f07010a49a052b589661605b86218d82a8b3bb2e0a54`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,19 +142,20 @@ their exact worktree than the committed release snapshot.
 
 The latest source-bound all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`07cdc3d69b2bafffc491151ef2c8bc4685770968`
-(Coverage MCP run `c66b0344-1065-4aea-b1a1-57c0c9ae7d65`, snapshot
-`3f0d317d-edd9-43e1-9f8b-07eea0e8ee5c`):
+`99ba43ed4fbf65d41edc1371d632a3e656874fbc`
+(Coverage MCP run `bb4b4c70-1192-41dc-9eda-042eb9babe63`, snapshot
+`d8c61f2e-9e13-48b9-9cc2-0389976a4fd8`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,117 / 54,329 | 92.25% |
-| Branches | 10,021 / 12,599 | 79.54% |
-| Functions | 3,414 / 3,822 | 89.32% |
-| Regions | 68,869 / 75,494 | 91.22% |
+| Lines | 50,162 / 54,324 | 92.34% |
+| Branches | 10,016 / 12,579 | 79.62% |
+| Functions | 3,431 / 3,822 | 89.77% |
+| Regions | 68,910 / 75,461 | 91.32% |
 
-The current managed validation completed in 57.829 seconds; its three split
-backends passed all 7,578 runnable comparisons. An earlier source-bound validation completed in 67.412 seconds after a
+The current managed validation completed in 15.140 seconds; its three split
+backends passed all 7,579 runnable comparisons. Its nine shard processes each
+compared 2,526 or 2,527 cases before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
 shard processes each compared 2,525 or 2,526 cases before report generation.
 The earlier warm validation completed in 17.349 seconds with
@@ -163,7 +164,7 @@ adaptive three-shard default on this 12-logical-CPU host. Nine shard processes
 ran concurrently—three each for Rust FFI, C ABI, and WASM—and each compared
 2,524 or 2,525 cases before the raw profiles were merged. A repeat completed
 in 16.377 seconds; the two-shard baseline took 19.747 seconds. The coverage
-totals and current parity evidence are based on 7,578 / 7,578 runnable
+totals and current parity evidence are based on 7,579 / 7,579 runnable
 comparisons.
 
 The maintained Apple full-Unicode format-13 font and malformed format-13
@@ -297,11 +298,11 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,321 / 5,321 pinned-C runtime contract rows exact; 0 pending |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,322 / 5,322 pinned-C runtime contract rows exact; 0 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 691 / 691 expected-error routes compare exact error and output results; 7,578 / 7,578 routes have no generic fallback evidence |
+| Errors | 691 / 691 expected-error routes compare exact error and output results; 7,579 / 7,579 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 
@@ -314,7 +315,7 @@ routes remain even when every bare function name has some traced route. The self
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`98d2b1a8-9e14-46f0-980c-a18aa32f6aee`.
+`36c9e8a8-8013-4494-ae8d-e4b113a98c9d`.
 
 ### 3.5 Performance baseline
 
