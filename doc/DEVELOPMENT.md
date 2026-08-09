@@ -283,11 +283,11 @@ Coverage and parity answer different questions. Executing a line or branch
 does not prove that its result matches C.
 
 The latest source-bound all-lane Coverage MCP run is
-`13fa70b0-31dc-4d3d-8d0e-ff7bb7ab2530` (snapshot
-`be3f43da-74b3-44bc-863b-25b3f5060bd6`). It completed in 60.630 seconds and
-passed 7,582 / 7,582 runnable parity comparisons in the three split backends.
-The overall report is 50,180 / 54,346 lines, 10,025 / 12,585 branches,
-3,433 / 3,824 functions, and 68,937 / 75,490 regions. The dominant cold-run cost remains
+`95238268-bdfb-4a3f-bc4c-ffb9fe302fa4` (snapshot
+`2585e294-15c6-4f33-8587-584e509cc3d9`). It completed in 15.488 seconds and
+passed 7,595 / 7,595 runnable parity comparisons in the three split backends.
+The overall report is 50,216 / 54,299 lines, 10,026 / 12,573 branches,
+3,441 / 3,820 functions, and 68,965 / 75,428 regions. The dominant cold-run cost remains
 instrumented compilation; warm shard execution and report ingestion are much
 smaller.
 
@@ -350,21 +350,21 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The current managed run completed in 60.630 seconds. Shard timers run
+The current managed run completed in 15.488 seconds. Shard timers run
 concurrently, so their sum is not wall time; report finalization and artifact
 ingestion are included in the wall time but are not separately exposed by
 Coverage MCP. Instrumented compilation remains the dominant cold component.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,180 / 54,346 | 92.33% |
-| Branches | 10,025 / 12,585 | 79.66% |
-| Functions | 3,433 / 3,824 | 89.78% |
-| Regions | 68,937 / 75,490 | 91.32% |
+| Lines | 50,216 / 54,299 | 92.48% |
+| Branches | 10,026 / 12,573 | 79.74% |
+| Functions | 3,441 / 3,820 | 90.08% |
+| Regions | 68,965 / 75,428 | 91.43% |
 
-That latest run passed all 7,582 runnable parity comparisons with 0 failures;
+That latest run passed all 7,595 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`be3f43da-74b3-44bc-863b-25b3f5060bd6`. Coverage MCP accepts the current LLVM
+`2585e294-15c6-4f33-8587-584e509cc3d9`. Coverage MCP accepts the current LLVM
 JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
 rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
 apply only to the named source commit, suite, and toolchain. They are not a
@@ -404,7 +404,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 665 tracked paths and no symlinks.
+The canonical input tree currently contains 670 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
