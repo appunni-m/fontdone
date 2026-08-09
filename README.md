@@ -106,29 +106,29 @@ The latest full parity snapshot was recorded on **2026-08-09** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,574 |
-| Passed cases | 7,574 |
+| Runnable exact-comparison cases | 7,576 |
+| Passed cases | 7,576 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
 | Covered manifest cases | 4,202 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,295 |
-| Concrete expanded cases | 7,577 |
+| Concrete expanded cases | 7,579 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,574 / 7,574` means every runnable case in that execution matched; the 3
+`7,576 / 7,576` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`6d03e853-f471-464d-be48-56004a9c2e60`, whose passing report was recorded in
+`0dbc28c2-9a4f-4859-9446-c5235f0d878d`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-7,574 / 7,574 runnable comparisons with 0 failures and 3 explicitly pending
+7,576 / 7,576 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `84021514fd0f77fd054abeaa0b2fc9cb93ad580ebc48e641adcfde065c77ddb8`.
+Its source-bound parity-tree digest is `80cff8cd7eaeefb265a6ce92d7d390f1d402ff337872f658c2c8e742234dae64`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,18 +142,18 @@ their exact worktree than the committed release snapshot.
 
 The latest source-bound all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`829e681fcbac91b4b031760b9b4d897155ff7ec8`
-(Coverage MCP run `6b6544d4-fdec-452f-af0e-844c2984bc64`, snapshot
-`2e0992b1-56db-48c1-bab2-575d887a3ec4`):
+`bf32b0b163db6267232b331e8b8eaf4e1894efd5`
+(Coverage MCP run `cf437df8-c06b-4786-a447-d5d8d2016805`, snapshot
+`4f3cc90d-0565-4e72-9626-49d1c6c3f121`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,147 / 54,385 | 92.21% |
-| Branches | 9,993 / 12,579 | 79.44% |
+| Lines | 50,153 / 54,385 | 92.22% |
+| Branches | 9,995 / 12,579 | 79.46% |
 | Functions | 3,412 / 3,822 | 89.27% |
-| Regions | 68,912 / 75,564 | 91.20% |
+| Regions | 68,914 / 75,564 | 91.20% |
 
-The latest source-bound validation completed in 66.435 seconds after rebuilding
+The latest source-bound validation completed in 63.311 seconds after rebuilding
 the coverage state for the new maintained input and contract. Its nine shard
 processes each compared 2,524 or 2,525 cases before report generation. The earlier warm validation
 completed in 17.349 seconds with
@@ -162,7 +162,7 @@ adaptive three-shard default on this 12-logical-CPU host. Nine shard processes
 ran concurrently—three each for Rust FFI, C ABI, and WASM—and each compared
 2,524 or 2,525 cases before the raw profiles were merged. A repeat completed
 in 16.377 seconds; the two-shard baseline took 19.747 seconds. The coverage
-totals and current parity evidence are based on 7,574 / 7,574 runnable
+totals and current parity evidence are based on 7,576 / 7,576 runnable
 comparisons.
 
 The maintained Apple full-Unicode format-13 font and malformed format-13
@@ -293,11 +293,11 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,317 / 5,317 pinned-C runtime contract rows exact; 0 pending |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,319 / 5,319 pinned-C runtime contract rows exact; 0 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 689 / 689 expected-error routes compare exact error and output results; 7,574 / 7,574 routes have no generic fallback evidence |
+| Errors | 691 / 691 expected-error routes compare exact error and output results; 7,576 / 7,576 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 

@@ -6196,6 +6196,50 @@
             ]
           },
           {
+            "id": "glyf-malformed-composite-instruction-length-overflow-hinted",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/glyf-malformed-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 15,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "expect_error": true,
+            "coverage": [
+              "tt/glyf:pinned-c-hinted-composite-instruction-length-overflow"
+            ]
+          },
+          {
+            "id": "glyf-malformed-composite-instructions-overflow-hinted",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/glyf-malformed-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 16,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ]
+            },
+            "expect_error": true,
+            "coverage": [
+              "tt/glyf:pinned-c-hinted-composite-instructions-overflow"
+            ]
+          },
+          {
             "id": "glyf-depth-nine-no-scale",
             "assets": {
               "font": {
