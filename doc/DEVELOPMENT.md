@@ -307,14 +307,14 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest source-bound current-host
-Coverage MCP run (`7b5e462d-9156-4d1a-802b-e5c0951b3524`, snapshot
-`9f6d512f-c0a4-42c4-bdaa-531065011aac`) measured 75.372 seconds end-to-end
+Coverage MCP run (`cfa3fcac-b5b6-4939-ba35-904ac08bc5f8`, snapshot
+`afe5d428-3b0e-4684-af4d-655637182d2e`) measured 75.320 seconds end-to-end
 with the default one-worker split profile. Its three lanes passed all 7,567
 runnable comparisons with 0 failures and retained the three explicitly
 pending safety-extension cases. The corresponding source-bound parity run is
-`b19d9b98-134f-4e4d-9178-6ac73af98559`. This source-bound run rebuilt the
-instrumented state after the parity input change; its measured lane timers
-were 22.212s Rust FFI, 20.165s C ABI, and 20.057s WASM. The focused x-height case
+`07f71e18-873e-4c92-973b-a918993ba75c`. This source-bound run rebuilt the
+instrumented state after the SBIT arithmetic change; its measured lane timers
+were 24.260s Rust FFI, 24.360s C ABI, and 25.690s WASM. The focused x-height case
 (`91144282-c800-4cd7-b6d6-1b83176f2bdd`) passed 1 / 1; its measured backend
 work was 9.110 seconds Rust, 8.739 seconds C ABI, 8.711 seconds WASM, and
 2.411 ms for comparison.
@@ -379,25 +379,26 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The latest all-lane report's retained lane timers were 23.129 seconds Rust,
-21.143 seconds C ABI, and 21.042 seconds WASM. These are backend execution
-measurements inside the 75.578-second end-to-end run; the cold instrumented
-build took 45.70 seconds. Report finalization and artifact ingestion are
-included in the wall time but are not separately exposed by Coverage MCP.
+The latest all-lane report's retained lane timers were 24.260 seconds Rust,
+24.360 seconds C ABI, and 25.690 seconds WASM. These are backend execution
+measurements inside the 75.320-second end-to-end run; the instrumented state
+was rebuilt after the SBIT arithmetic change. Report finalization and artifact
+ingestion are included in the wall time but are not separately exposed by
+Coverage MCP.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,088 / 54,423 | 92.03% |
-| Branches | 9,986 / 12,602 | 79.24% |
-| Functions | 3,411 / 3,846 | 88.69% |
-| Regions | 68,883 / 75,644 | 91.06% |
+| Lines | 50,119 / 54,388 | 92.15% |
+| Branches | 9,988 / 12,599 | 79.28% |
+| Functions | 3,410 / 3,822 | 89.22% |
+| Regions | 68,865 / 75,559 | 91.14% |
 
 That latest run passed all 7,567 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`6ee35125-01a5-48a6-a666-4d3feeda859f`, and it completed in 75.578 seconds
-after the instrumented binary was warm. The source-bound full parity run
-`a10d82c4-e3df-46f7-b09b-fe018a0f7889`, recorded by
-`3679b402-18ef-4909-ab0b-af94fbca930f`, recorded 7,567 / 7,567 exact
+`afe5d428-3b0e-4684-af4d-655637182d2e`, and it completed in 75.320 seconds
+after rebuilding the instrumented state for the SBIT arithmetic change. The
+source-bound full parity run `07f71e18-873e-4c92-973b-a918993ba75c`, recorded by
+`10bb23af-3d88-4996-a857-977592cd2407`, recorded 7,567 / 7,567 exact
 comparisons. Coverage MCP does not expose
 separate timestamps for compilation, report finalization, or artifact ingestion. Current
 LLVM JSON is accepted directly by Coverage
