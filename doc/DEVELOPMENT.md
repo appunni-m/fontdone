@@ -283,11 +283,11 @@ Coverage and parity answer different questions. Executing a line or branch
 does not prove that its result matches C.
 
 The latest source-bound all-lane Coverage MCP run is
-`95238268-bdfb-4a3f-bc4c-ffb9fe302fa4` (snapshot
-`2585e294-15c6-4f33-8587-584e509cc3d9`). It completed in 15.488 seconds and
-passed 7,595 / 7,595 runnable parity comparisons in the three split backends.
-The overall report is 50,216 / 54,299 lines, 10,026 / 12,573 branches,
-3,441 / 3,820 functions, and 68,965 / 75,428 regions. The dominant cold-run cost remains
+`30029373-a59e-4729-b45a-7049150095b2` (snapshot
+`db1f618d-4d21-404e-8e7c-c66c43eacc7c`). It completed in 14.395 seconds and
+passed 7,600 / 7,600 runnable parity comparisons in the three split backends.
+The overall report is 50,229 / 54,299 lines, 10,030 / 12,573 branches,
+3,444 / 3,820 functions, and 68,979 / 75,428 regions. The dominant cold-run cost remains
 instrumented compilation; warm shard execution and report ingestion are much
 smaller.
 
@@ -350,21 +350,21 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The current managed run completed in 15.488 seconds. Shard timers run
+The current managed run completed in 14.395 seconds. Shard timers run
 concurrently, so their sum is not wall time; report finalization and artifact
 ingestion are included in the wall time but are not separately exposed by
 Coverage MCP. Instrumented compilation remains the dominant cold component.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,216 / 54,299 | 92.48% |
-| Branches | 10,026 / 12,573 | 79.74% |
-| Functions | 3,441 / 3,820 | 90.08% |
-| Regions | 68,965 / 75,428 | 91.43% |
+| Lines | 50,229 / 54,299 | 92.50% |
+| Branches | 10,030 / 12,573 | 79.77% |
+| Functions | 3,444 / 3,820 | 90.16% |
+| Regions | 68,979 / 75,428 | 91.45% |
 
-That latest run passed all 7,595 runnable parity comparisons with 0 failures;
+That latest run passed all 7,600 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`2585e294-15c6-4f33-8587-584e509cc3d9`. Coverage MCP accepts the current LLVM
+`db1f618d-4d21-404e-8e7c-c66c43eacc7c`. Coverage MCP accepts the current LLVM
 JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
 rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
 apply only to the named source commit, suite, and toolchain. They are not a
