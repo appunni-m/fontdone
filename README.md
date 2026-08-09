@@ -140,20 +140,20 @@ their exact worktree than the committed release snapshot.
 
 ### 3.3 Last measured combined coverage
 
-The latest source-bound all-lane coverage snapshot was recorded on
+The latest pushed-head all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`1a1ca6dfa0f58978149c43402dd498de6a39093e`
-(Coverage MCP run `a03c1c33-c3bb-4f37-970a-a40e21f5aac2`, snapshot
-`dd7d2984-75cf-4918-961c-b5948f6e24b8`):
+`ca96d7769b1421068b24dd3285d5f0df5f132786`
+(Coverage MCP run `ef1479d6-4f27-408d-95f4-4fed6b1204d5`, snapshot
+`2f5be76d-af78-4bac-897a-dc746299012b`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,186 / 54,346 | 92.35% |
+| Lines | 50,168 / 54,293 | 92.40% |
 | Branches | 10,027 / 12,585 | 79.67% |
-| Functions | 3,433 / 3,824 | 89.78% |
-| Regions | 68,940 / 75,490 | 91.32% |
+| Functions | 3,431 / 3,818 | 89.86% |
+| Regions | 68,926 / 75,434 | 91.37% |
 
-The current managed validation completed in 22.736 seconds; its three split
+The current managed validation completed in 61.481 seconds; its three split
 backends passed all 7,583 runnable comparisons. Its nine shard processes split
 the same exact matrix before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
