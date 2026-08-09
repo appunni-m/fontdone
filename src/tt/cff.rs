@@ -1470,22 +1470,14 @@ impl<'a> Type2Decoder<'a> {
                 let dx2 = args[1];
                 let dy2 = args[2];
                 let dy3 = args[3];
-                let dx3 = if last_delta {
-                    self.stack[index + 4]
-                } else {
-                    0
-                };
+                let dx3 = if last_delta { self.stack[index + 4] } else { 0 };
                 self.curve_to(dx1, 0, dx2, dy2, dx3, dy3);
             } else {
                 let dy1 = args[0];
                 let dx2 = args[1];
                 let dy2 = args[2];
                 let dx3 = args[3];
-                let dy3 = if last_delta {
-                    self.stack[index + 4]
-                } else {
-                    0
-                };
+                let dy3 = if last_delta { self.stack[index + 4] } else { 0 };
                 self.curve_to(0, dy1, dx2, dy2, dx3, dy3);
             }
             index += usize::from(last_delta);
