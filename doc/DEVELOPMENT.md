@@ -219,6 +219,9 @@ Success requires `passed == runnable` and `failed == 0`. Pending cases are not
 passes. A function with a null-validation or narrow success route has runtime
 evidence, but not necessarily complete behavior. The root README and
 committed compatibility files contain the last recorded measurement.
+Missing service or optional-module behavior should be represented by a
+maintained oracle-backed matrix input that names the setup state (such as a
+valid face opened without `gxvalid`), rather than by a unit-only coverage call.
 
 The wrapper also writes `target/parity-evidence/test-parity.log` and
 `target/parity-evidence/runtime_parity.json`. The JSON binds the measurement to
@@ -304,12 +307,14 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest source-bound current-host
-Coverage MCP run (`5c30e674-e514-43a0-914f-c5aa8e30866a`, snapshot
-`6ee35125-01a5-48a6-a666-4d3feeda859f`) measured 75.578 seconds end-to-end
+Coverage MCP run (`7b5e462d-9156-4d1a-802b-e5c0951b3524`, snapshot
+`9f6d512f-c0a4-42c4-bdaa-531065011aac`) measured 75.372 seconds end-to-end
 with the default one-worker split profile. Its three lanes passed all 7,567
 runnable comparisons with 0 failures and retained the three explicitly
 pending safety-extension cases. The corresponding source-bound parity run is
-`a10d82c4-e3df-46f7-b09b-fe018a0f7889`. The focused x-height case
+`b19d9b98-134f-4e4d-9178-6ac73af98559`. This source-bound run rebuilt the
+instrumented state after the parity input change; its measured lane timers
+were 22.212s Rust FFI, 20.165s C ABI, and 20.057s WASM. The focused x-height case
 (`91144282-c800-4cd7-b6d6-1b83176f2bdd`) passed 1 / 1; its measured backend
 work was 9.110 seconds Rust, 8.739 seconds C ABI, 8.711 seconds WASM, and
 2.411 ms for comparison.

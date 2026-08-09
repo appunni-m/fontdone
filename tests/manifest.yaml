@@ -6869,7 +6869,7 @@ subjects:
       - id: rejects_invalid_arguments
         description: Null face reports Invalid_Face_Handle and null ckern_table output pointer reports Invalid_Argument.
       - id: reports_unimplemented_or_invalid_table
-        description: Fonts without validator support or incompatible kern dialects return the same public error as C.
+        description: Fonts without validator support or incompatible kern dialects return the same public error as C; the maintained matrix includes a valid classic-kern face opened without the gxvalid module so the unimplemented-feature path is executable.
     # needs-input: operation=FT_ClassicKern_Validate; fixture_asset=fonts with valid MS classic kern, valid Apple classic kern, no kern table, malformed/truncated kern table, and non-SFNT face; params validation_flags=FT_VALIDATE_MS, FT_VALIDATE_APPLE, FT_VALIDATE_CKERN, and unsupported flag combinations; expected output shape=FT_Error plus ckern_table null/non-null and bytes/hash; comparison=exact C oracle error code, output pointer presence class, copied table bytes/hash, and output preservation on errors.
 
   - id: ftgxval.FT_TrueTypeGX_Free

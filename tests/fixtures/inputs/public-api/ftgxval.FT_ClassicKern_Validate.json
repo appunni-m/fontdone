@@ -171,6 +171,10 @@
       "expect_error": true,
       "inputs": {
         "assets": {
+          "unimplemented_face": {
+            "kind": "ref",
+            "id": "input/fonts/kern/classic-ms-kern.ttf"
+          },
           "no_kern_font": {
             "kind": "ref",
             "id": "input/fonts/truetype/no-kern.ttf"
@@ -222,6 +226,7 @@
           "FT_Err_Invalid_Table"
         ],
         "fixture_requirements": [
+          "input/fonts/kern/classic-ms-kern.ttf must be opened without the gxvalid module to exercise FT_Err_Unimplemented_Feature",
           "input/fonts/kern/malformed-classic-kern.ttf must contain truncated or internally inconsistent classic kern data"
         ],
         "source_refs": [

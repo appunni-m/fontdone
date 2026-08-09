@@ -507,18 +507,19 @@ worktree at that point:
 | 119 | Working tree (CFF coverage-path cleanup) | Aligned absent Top DICT string SIDs with the pinned `0xFFFF` sentinel resolver, collapsed equivalent CID-info absence returns, removed impossible operator wildcard arms, and bounded charset-range iteration without changing public results or adding a unit-only route. Full parity run `45853181-8825-4efc-8cd3-4ecdf99f98e2`, recorded by `a0e63c83-4e78-41b7-87fb-704398854c0a`, passed 7,566 / 7,566 runnable comparisons with 0 failures; concrete cases remain 7,569, route audit remains at 0 pending, and all three function surfaces retain 218 / 218 evidence. All-lane Coverage MCP run `90325770-2b7c-48f0-868f-a0f7950d006a`, snapshot `fd9fb0b0-e7ca-426a-8b96-99da93895678`, completed in 32.180 seconds and measured 50,087 / 54,423 lines, 9,985 / 12,602 branches, 3,411 / 3,846 functions, and 68,882 / 75,644 regions; `src/tt/cff.rs` is at 873 / 923 lines and 129 / 132 branches. The current C-ABI scorecard is 8 / 12 categories complete with C01.7 at 5,308 / 5,309 and C08.3 at 7,565 / 7,566; the SVG generic-fallback row, Windows import-library item, and four fresh target-lane bundles remain. |
 | 120 | Working tree (OT-SVG invalid-glyph renderer callback parity route) | Added the maintained `otsvg.FT_SVG_Document.renderer_callback_zeroes_after_invalid_glyph` input for the pinned callback's invalid-glyph-load behavior. Rust and C harness probes now reset callback captures per case and preserve the pinned `FT_Err_Ok` callback status with zeroed document fields when glyph loading fails; this is an executable parity input, not a unit-only coverage route. Focused run `ff0129b6-a015-471e-acb3-a76b986d0652` passed 2 / 2 comparisons; full parity run `a10d82c4-e3df-46f7-b09b-fe018a0f7889`, recorded by `3679b402-18ef-4909-ab0b-af94fbca930f`, passed 7,567 / 7,567 runnable comparisons with 0 failures and 3 pending safety-extension cases. The route audit has 7,570 concrete cases, 5,300 real-parity rows, 1 generic fallback, and 0 pending routes; Rust, C ABI, and WASM each retain 218 / 218 function evidence. All-lane Coverage MCP run `5c30e674-e514-43a0-914f-c5aa8e30866a`, snapshot `6ee35125-01a5-48a6-a666-4d3feeda859f`, completed in 75.578 seconds and measured 50,088 / 54,423 lines, 9,986 / 12,602 branches, 3,411 / 3,846 functions, and 68,883 / 75,644 regions; the cold instrumented build took 45.70 seconds and the lane timers were 23.129s Rust, 21.143s C ABI, and 21.042s WASM. The C-ABI scorecard remains 8 / 12 categories complete with C01.7 at 5,309 / 5,310 and C08.3 at 7,566 / 7,567; the remaining contract debt is the known SVG generic-fallback row, the Windows import-library item, and four fresh target-lane bundles. |
 | 121 | Working tree (OT-SVG missing-document route classification) | Promoted the maintained `ftimage.FT_GLYPH_FORMAT_SVG.missing_svg_document_rejected` case from the generic-fallback bucket to explicit real parity in `scripts/check_public_api_inputs.py`. The case already compared the pinned C load result, empty SVG slot state, Rust FFI, C ABI, and WASM outputs for the existing SVG range-gap fixture, so no runtime behavior, fixture, or denominator changed. Full parity run `6e4d3eda-9104-4af2-b72c-77b54c862a3d` passed 7,567 / 7,567 runnable comparisons with 0 failures and 3 pending safety-extension cases; the route audit now has 7,570 concrete cases, 5,301 real-parity rows, 0 generic-fallback rows, and 0 pending routes, with 218 / 218 function evidence in each surface. C-ABI contract run `ccde80fe-407a-4d12-a4f7-a0fe5c5cee3b` reports 10 / 12 categories complete, C01.7 at 5,310 / 5,310, and C08.3 at 7,567 / 7,567; the remaining contract debt is the Windows import-library item and four fresh target-lane bundles. The measured coverage snapshot is unchanged at 50,088 / 54,423 lines, 9,986 / 12,602 branches, 3,411 / 3,846 functions, and 68,883 / 75,644 regions because this was a classifier/docs-only change. |
+| 122 | Working tree (classic-kern no-validator parity route) | Added the maintained `unimplemented_face` variant to `ftgxval.FT_ClassicKern_Validate.reports_unimplemented_or_invalid_table`, opening `classic-ms-kern.ttf` without the optional `gxvalid` module. The pinned C oracle, Rust FFI, C ABI, and WASM routes now all execute and preserve the exact `FT_Err_Unimplemented_Feature` result and sentinel output. Full parity run `b19d9b98-134f-4e4d-9178-6ac73af98559` passed 7,567 / 7,567 runnable comparisons with 0 failures and 3 pending safety-extension cases; the route audit remains at 7,570 concrete cases, 5,301 real-parity rows, 0 generic-fallback rows, 0 pending routes, and 218 / 218 function evidence per surface. All-lane Coverage MCP run `7b5e462d-9156-4d1a-802b-e5c0951b3524`, snapshot `9f6d512f-c0a4-42c4-bdaa-531065011aac`, completed in 75.372 seconds and measured 50,085 / 54,415 lines, 9,988 / 12,599 branches, 3,411 / 3,846 functions, and 68,882 / 75,637 regions; the WASM wrapper branch at `fontdone-wasm/src/implementation.rs:1606` is now 6 / 6. C-ABI contract run `e100a6cc-aa71-4563-96f5-b0ccb2eb840b` passed and retains 10 / 12 categories complete; C11.3 is 7 / 8 and C12.3 is 1 / 5, leaving the Windows import-library item and four fresh platform bundles. |
 
 The current source-bound parity verification is Coverage MCP parity run
-`6e4d3eda-9104-4af2-b72c-77b54c862a3d`: it passed 7,567 / 7,567 runnable
+`b19d9b98-134f-4e4d-9178-6ac73af98559`: it passed 7,567 / 7,567 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes and 0 generic-fallback rows**, with
 218 / 218 function routes present in each ABI surface. The source-digest
 attestation was refreshed in `doc/runtime_parity_evidence.json` by
 `make record-parity-snapshot`; its current parity-tree digest is
-`e7c0f89bf1311b05bf101d8adb0d03f699b472120174a3db18f614e24e41b509`.
-The tracked C-ABI scorecard is **10 / 12 categories complete**; C01.7 is
-5,310 / 5,310 and C08.3 is 7,567 / 7,567. The Windows import-library item
-and four fresh target-lane bundles remain.
+`efb1ad669c11ec768f7b112d99a5f00ccd0273d3971c34908821a2b9ecfbb175`.
+The tracked C-ABI scorecard is **10 / 12 categories complete**; C11.3 is
+7 / 8 and C12.3 is 1 / 5. The Windows import-library item and four fresh
+target-lane bundles remain.
 
 The three pending cases are deliberately excluded from the pinned-C parity
 numerator and denominator because their inputs are undefined or
@@ -529,13 +530,14 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current source-bound all-lane run `5c30e674-e514-43a0-914f-c5aa8e30866a`
-completed in 75.578 seconds with snapshot
-`6ee35125-01a5-48a6-a666-4d3feeda859f`. It measured 50,088 / 54,423 lines,
-9,986 / 12,602 branches, 3,411 / 3,846 functions, and 68,883 / 75,644
-regions; the parity matrix passed 7,567 / 7,567 in each backend. The cold
-instrumented build took 45.70 seconds and the retained lane timers were
-23.129s Rust, 21.143s C ABI, and 21.042s WASM. The lanes
+The current source-bound all-lane run `7b5e462d-9156-4d1a-802b-e5c0951b3524`
+completed in 75.372 seconds with snapshot
+`9f6d512f-c0a4-42c4-bdaa-531065011aac`. It measured 50,085 / 54,415 lines,
+9,988 / 12,599 branches, 3,411 / 3,846 functions, and 68,882 / 75,637
+regions; the parity matrix passed 7,567 / 7,567 in each backend. This
+source-bound run rebuilt the instrumented state after the parity input change;
+the retained lane timers were 22.212s Rust FFI, 20.165s C ABI, and 20.057s
+WASM, with roughly 11ms comparison work per lane. The lanes
 already run concurrently; the same-source two-worker comparison
 `971f65aa-12b6-4a41-9dcb-cceffdd99199` completed in 140.239 seconds, so the
 default remains one worker per lane. The previous combined-lane warm all-lane baseline completed in 1

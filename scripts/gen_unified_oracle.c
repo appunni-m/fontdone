@@ -20878,10 +20878,12 @@ static int emit_classic_kern_matrix(int argc, char** argv) {
             int opened = open_oracle_face(
                 source_kind, source_value, face_index, &face);
             if (opened != 0) return opened;
-            FT_Error module_error = enable_gx_validator(face.library);
-            if (module_error) {
-                close_oracle_face(&face);
-                return 2;
+            if (!streq(kind, "no_validator")) {
+                FT_Error module_error = enable_gx_validator(face.library);
+                if (module_error) {
+                    close_oracle_face(&face);
+                    return 2;
+                }
             }
             error = FT_ClassicKern_Validate(
                 face.face,

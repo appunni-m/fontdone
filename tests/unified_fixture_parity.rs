@@ -12826,6 +12826,11 @@ enum ClassicKernCall {
         asset_index: Option<usize>,
         flags: FT_UInt,
     },
+    NoValidator {
+        label: String,
+        asset: String,
+        flags: FT_UInt,
+    },
     NullFace {
         label: String,
         flags: FT_UInt,
@@ -13190,6 +13195,11 @@ fn classic_kern_calls(case: &InputCase) -> Result<Vec<ClassicKernCall>, String> 
         "ftgxval.FT_ClassicKern_Validate.reports_unimplemented_or_invalid_table" => {
             let mut calls = Vec::new();
             for flags in validation_flags_matrix_param(params)? {
+                calls.push(ClassicKernCall::NoValidator {
+                    label: format!("unimplemented_{flags}"),
+                    asset: "unimplemented_face".to_string(),
+                    flags,
+                });
                 for (label, asset) in [
                     ("missing", "no_kern_font"),
                     ("malformed", "malformed_kern_font"),
@@ -13841,6 +13851,31 @@ fn rust_classic_kern_validation(case: &InputCase) -> Result<RunOutput, String> {
                     usize::from(freed),
                 ));
             }
+            ClassicKernCall::NoValidator {
+                label,
+                asset,
+                flags,
+            } => {
+                let bytes = gx_asset_bytes(case, &asset, None)?;
+                let library = FT_Init_FreeType();
+                let face = FT_New_Memory_Face(
+                    &library,
+                    bytes.as_ref(),
+                    face_index_param(&case.inputs.params)?,
+                    20.0,
+                )
+                .map_err(|error| format!("FT_New_Memory_Face without gxvalid returned {error}"))?;
+                let mut table = GX_VALIDATION_SENTINEL;
+                let err = FT_ClassicKern_Validate(Some(&face), flags, Some(&mut table));
+                rows.push(classic_kern_row(
+                    &label,
+                    flags,
+                    err,
+                    table,
+                    classic_kern_table_output(table),
+                    0,
+                ));
+            }
         }
     }
     Ok(ok(json!({"rows": rows})))
@@ -13862,6 +13897,7 @@ fn c_classic_kern_validation(case: &InputCase) -> Result<RunOutput, String> {
             ));
             continue;
         }
+        let enable_validator = !matches!(&call, ClassicKernCall::NoValidator { .. });
         let (label, asset, asset_index, flags, null_output) = match call {
             ClassicKernCall::Font {
                 label,
@@ -13869,6 +13905,11 @@ fn c_classic_kern_validation(case: &InputCase) -> Result<RunOutput, String> {
                 asset_index,
                 flags,
             } => (label, asset, asset_index, flags, false),
+            ClassicKernCall::NoValidator {
+                label,
+                asset,
+                flags,
+            } => (label, asset, None, flags, false),
             ClassicKernCall::NullOutput {
                 label,
                 asset,
@@ -13881,7 +13922,9 @@ fn c_classic_kern_validation(case: &InputCase) -> Result<RunOutput, String> {
             format!("FT_New_Library failed for classic kern validation: {error}")
         })?;
         c_abi::FT_Add_Default_Modules(library);
-        let _validator_class = c_enable_gx_validator(library)?;
+        if enable_validator {
+            let _validator_class = c_enable_gx_validator(library)?;
+        }
         let mut face = ptr::null_mut();
         let open = c_abi::FT_New_Memory_Face(
             library,
@@ -13941,6 +13984,7 @@ fn wasm_classic_kern_validation(case: &InputCase) -> Result<RunOutput, String> {
             ));
             continue;
         }
+        let enable_validator = !matches!(&call, ClassicKernCall::NoValidator { .. });
         let (label, asset, asset_index, flags, null_output) = match call {
             ClassicKernCall::Font {
                 label,
@@ -13948,6 +13992,11 @@ fn wasm_classic_kern_validation(case: &InputCase) -> Result<RunOutput, String> {
                 asset_index,
                 flags,
             } => (label, asset, asset_index, flags, false),
+            ClassicKernCall::NoValidator {
+                label,
+                asset,
+                flags,
+            } => (label, asset, None, flags, false),
             ClassicKernCall::NullOutput {
                 label,
                 asset,
@@ -13958,7 +14007,7 @@ fn wasm_classic_kern_validation(case: &InputCase) -> Result<RunOutput, String> {
         let bytes = gx_asset_bytes(case, &asset, asset_index)?;
         let handle =
             wasm_new_face_from_bytes(bytes.as_ref(), face_index_param(&case.inputs.params)?)?;
-        if !wasm_abi::abi_support_enable_gx_validator(handle) {
+        if enable_validator && !wasm_abi::abi_support_enable_gx_validator(handle) {
             wasm_done_face(handle);
             return Err("failed to enable WASM GX validator".to_string());
         }
@@ -42831,6 +42880,14 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                     } => {
                         args.extend(["font".to_string(), label, flags.to_string()]);
                         push_gx_asset_source(case, &asset, asset_index, &mut args)?;
+                    }
+                    ClassicKernCall::NoValidator {
+                        label,
+                        asset,
+                        flags,
+                    } => {
+                        args.extend(["no_validator".to_string(), label, flags.to_string()]);
+                        push_gx_asset_source(case, &asset, None, &mut args)?;
                     }
                     ClassicKernCall::NullFace { label, flags } => {
                         args.extend([
