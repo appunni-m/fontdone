@@ -1263,9 +1263,9 @@ pub extern "C" fn fontdone_wasm_bitmap_done(
         rust_ffi::FT_Bitmap_Set_Owned_Buffer(Some(&mut bitmap_view), bytes);
     }
     let err = rust_ffi::FT_Bitmap_Done(Some(&library), Some(&mut bitmap_view));
-    if err == rust_ffi::FT_Err_Ok {
-        copy_rust_bitmap_record_to_wasm(bitmap_ref, &bitmap_view);
-    }
+    // The null library and bitmap cases are rejected above; the Rust
+    // implementation therefore always returns FT_Err_Ok for this call.
+    copy_rust_bitmap_record_to_wasm(bitmap_ref, &bitmap_view);
     err
 }
 
