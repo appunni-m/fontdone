@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`6ecb9dba-1b8c-4535-a821-10c5d5ab1edd`, whose passing report was recorded in
+`23996cfa-4247-4826-9a88-68eca62c6234`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
 7,579 / 7,579 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `b7d3c94a3df3fd42d5e0f07010a49a052b589661605b86218d82a8b3bb2e0a54`.
+Its source-bound parity-tree digest is `b53da1057318880bcbf904efd1af5579e60cb63b2d262b5420bf54a4cb6b64da`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,18 +142,18 @@ their exact worktree than the committed release snapshot.
 
 The latest source-bound all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`99ba43ed4fbf65d41edc1371d632a3e656874fbc`
-(Coverage MCP run `bb4b4c70-1192-41dc-9eda-042eb9babe63`, snapshot
-`d8c61f2e-9e13-48b9-9cc2-0389976a4fd8`):
+`64523ff01bdaa4d0f93e39b37bd5443de057a707`
+(Coverage MCP run `550d245c-3dc1-4882-9bf4-6736e27771cc`, snapshot
+`2608b391-3c99-4de3-8fa6-31c8c1292e6c`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,162 / 54,324 | 92.34% |
-| Branches | 10,016 / 12,579 | 79.62% |
-| Functions | 3,431 / 3,822 | 89.77% |
-| Regions | 68,910 / 75,461 | 91.32% |
+| Lines | 50,179 / 54,345 | 92.33% |
+| Branches | 10,022 / 12,587 | 79.62% |
+| Functions | 3,433 / 3,824 | 89.78% |
+| Regions | 68,933 / 75,488 | 91.32% |
 
-The current managed validation completed in 15.140 seconds; its three split
+The current managed validation completed in 60.380 seconds; its three split
 backends passed all 7,579 runnable comparisons. Its nine shard processes each
 compared 2,526 or 2,527 cases before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
@@ -186,7 +186,7 @@ supplies the report's source locations without requiring DWARF line tables.
 
 The current host-width cleanup removes conversion branches that cannot occur on
 the supported 64-bit ABI while retaining checked conversions for 32-bit WASM.
-It preserved all 7,578 runnable parity results and reduced the measured
+It preserved all 7,579 runnable parity results and reduced the measured
 coverage denominator without weakening a fixture or parity comparison. The
 latest `glyf` cleanup folds the independently scaled no-hinting composite walk
 into the validated loader, removing duplicate parsing while preserving the
