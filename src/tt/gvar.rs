@@ -233,7 +233,6 @@ impl GvarTable {
                     .iter()
                     .enumerate()
                     .all(|(index, point)| *point == index);
-            let interpolate = iup_outline.is_some() && !all_points;
             let mut tuple_deltas = vec![(0i32, 0i32); point_count_with_phantoms];
             let mut has_delta = vec![false; point_count_with_phantoms];
             for ((point_index, dx), dy) in points.into_iter().zip(x_deltas).zip(y_deltas) {
@@ -244,8 +243,8 @@ impl GvarTable {
                 tuple_delta.1 += ft_mul_fix(dy << 16, scalar);
                 has_delta[point_index] = true;
             }
-            if interpolate {
-                if let Some((original_points, contour_ends)) = iup_outline {
+            if let Some((original_points, contour_ends)) = iup_outline {
+                if !all_points {
                     interpolate_gvar_deltas(
                         &mut tuple_deltas,
                         &has_delta,
@@ -567,7 +566,9 @@ fn tuple_scalar(peak: &[i16], intermediate: Option<&(Vec<i16>, Vec<i16>)>, coord
             || (peak_coord.min(0), peak_coord.max(0)),
             |(start, end)| (start[axis_index], end[axis_index]),
         );
-        if coord < start || coord > end || (coord == 0 && peak_coord != 0) {
+        // Zero peaks are skipped above, so the origin check is only reached
+        // for a non-zero peak coordinate.
+        if coord < start || coord > end || coord == 0 {
             return 0;
         }
         let factor = if coord == peak_coord {

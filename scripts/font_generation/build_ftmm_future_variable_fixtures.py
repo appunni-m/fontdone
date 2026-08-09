@@ -452,6 +452,8 @@ def short_glyph_record_for_glyph_gvar_payload(
     axis_count = 2
     offsets_start = 20
     data_offset = offsets_start + (glyph_count + 1) * 2
+    if len(glyph_data) % 2:
+        glyph_data += b"\0"
     payload = bytearray(data_offset + len(glyph_data))
     put_u16(payload, 0, 1)
     put_u16(payload, 4, axis_count)
@@ -632,7 +634,7 @@ def empty_outline_partial_gvar_payload() -> bytes:
 
     # One private point with zero X/Y deltas is enough to select IUP while
     # keeping the public empty-outline metrics and outline bytes unchanged.
-    tuple_data = bytes((1, 0, 0, 0, 0, 0, 0))
+    tuple_data = bytes((1, 0, 0, 0x80, 0x80))
     glyph_data = bytearray(12)
     put_u16(glyph_data, 0, 1)
     put_u16(glyph_data, 2, 12)
