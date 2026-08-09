@@ -42172,7 +42172,10 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             Ok(args)
         }
         "ftbdf.get_bdf_charset_id" if bdf_charset_case_supported(case) => {
-            let mut args = vec!["--bdf-charset-case".to_string(), case.case_id.clone()];
+            let mut args = vec![
+                "--bdf-charset-case".to_string(),
+                case_id_base(&case.case_id).to_string(),
+            ];
             push_font_source(case, &mut args)?;
             args.push(face_index_param(params)?.to_string());
             Ok(args)
