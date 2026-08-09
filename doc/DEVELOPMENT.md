@@ -283,14 +283,14 @@ Coverage and parity answer different questions. Executing a line or branch
 does not prove that its result matches C.
 
 The latest source-bound all-lane Coverage MCP run is
-`2488c2da-1779-40ee-ad20-08b866079466` (snapshot
-`4bb7c0ba-6428-41ff-b3d0-316769ed2e46`). It completed in 67.412 seconds after
-a 50.13-second instrumented rebuild and passed 7,576 / 7,576 runnable parity
-comparisons in the three split backends. The consolidated `glyf` loader leaves
-94 / 94 branches covered in `src/tt/glyf.rs`; the overall report is 50,040 /
-54,266 lines, 9,991 / 12,573 branches, 3,410 / 3,819 functions, and 68,755 /
-75,394 regions. The dominant cold-run cost remains instrumented compilation;
-the warm shard execution and report ingestion are much smaller.
+`b3c3a062-260f-4a13-aa7a-63a43d13e998` (snapshot
+`6f9ae739-f2be-4e99-b44f-e01b163de7b4`). It completed in 67.251 seconds and
+passed 7,577 / 7,577 runnable parity comparisons in the three split backends.
+The consolidated `glyf` loader remains fully branch-covered; the overall
+report is 50,067 / 54,275 lines, 10,003 / 12,579 branches, 3,411 / 3,819
+functions, and 68,788 / 75,409 regions. The dominant cold-run cost remains
+instrumented compilation; warm shard execution and report ingestion are much
+smaller.
 
 ```bash
 make test-coverage
@@ -351,22 +351,21 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The current cold run's longest shard was 8.323 seconds (Rust); C ABI and WASM
-shards were below 8 seconds. These shard timers run concurrently, so their sum
-is not wall time. The 50.13-second instrumented build is the dominant cold
-component; report finalization and artifact ingestion are included in the
-67.412-second wall time but are not separately exposed by Coverage MCP.
+The current clean run completed in 67.251 seconds. Shard timers run
+concurrently, so their sum is not wall time; report finalization and artifact
+ingestion are included in the wall time but are not separately exposed by
+Coverage MCP. Instrumented compilation remains the dominant cold component.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,040 / 54,266 | 92.21% |
-| Branches | 9,991 / 12,573 | 79.46% |
-| Functions | 3,410 / 3,819 | 89.29% |
-| Regions | 68,755 / 75,394 | 91.19% |
+| Lines | 50,067 / 54,275 | 92.25% |
+| Branches | 10,003 / 12,579 | 79.52% |
+| Functions | 3,411 / 3,819 | 89.32% |
+| Regions | 68,788 / 75,409 | 91.22% |
 
-That latest run passed all 7,576 runnable parity comparisons with 0 failures;
+That latest run passed all 7,577 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`4bb7c0ba-6428-41ff-b3d0-316769ed2e46`. Coverage MCP accepts the current LLVM
+`6f9ae739-f2be-4e99-b44f-e01b163de7b4`. Coverage MCP accepts the current LLVM
 JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
 rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
 apply only to the named source commit, suite, and toolchain. They are not a
@@ -406,7 +405,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 652 tracked paths and no symlinks.
+The canonical input tree currently contains 653 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -591,7 +590,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,639 | executable parity tests and public contracts |
-| R04 | 652 | licensed canonical fixture inputs |
+| R04 | 653 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -599,7 +598,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,513** | **all retained paths** |
+| **Total** | **2,514** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
