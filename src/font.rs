@@ -1048,9 +1048,10 @@ fn parse_bdf_metadata(text: &str) -> Result<BdfMetadata, FontError> {
         }
     }
 
-    let Some((pixel_width, pixel_height, x_offset, y_offset)) = bbox else {
-        return Err(FontError::BdfMissingFontboundingboxField);
-    };
+    // `parse_bdf_constructor_error` rejects a missing FONTBOUNDINGBOX before
+    // this metadata parser is called from `bdf_face`.
+    let (pixel_width, pixel_height, x_offset, y_offset) =
+        bbox.expect("BDF metadata requires a constructor-validated bounding box");
     let property_atom = |name: &str| {
         properties.iter().find_map(|property| {
             (property.name == name)
