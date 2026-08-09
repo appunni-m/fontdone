@@ -1019,7 +1019,9 @@ def write_malformed_cid_cff_faces() -> None:
         font.recalcTimestamp = False
         font.save(base, reorderTables=True)
         serialized = TTFont(base, recalcTimestamp=False).getTableData("CFF ")
-        source_charset_offset = font["CFF "].cff.topDictIndex[0].rawDict["charset"]
+        top_dict = font["CFF "].cff.topDictIndex[0].rawDict
+        source_charset_offset = top_dict["charset"]
+        charstrings_offset = top_dict["CharStrings"]
 
         base_data = base.read_bytes()
         num_tables = int.from_bytes(base_data[4:6], "big")
@@ -1034,8 +1036,17 @@ def write_malformed_cid_cff_faces() -> None:
         if maxp_payload is None or len(maxp_payload) < 6:
             raise ValueError("CID source has no complete maxp table")
         maxp_payload[4:6] = b"\0\0"
+        zero_charstrings = bytearray(serialized)
+        zero_charstrings[charstrings_offset : charstrings_offset + 2] = b"\0\0"
+        zero_charstrings_path = Path(tmp) / "zero-charstrings.otf"
         replace_sfnt_table(
             base,
+            zero_charstrings_path,
+            b"CFF ",
+            bytes(zero_charstrings),
+        )
+        replace_sfnt_table(
+            zero_charstrings_path,
             CID_OUT_DIR / "ot-cff-cid-keyed-zero-glyph.otf",
             b"maxp",
             bytes(maxp_payload),

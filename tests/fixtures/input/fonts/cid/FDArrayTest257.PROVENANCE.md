@@ -89,7 +89,8 @@ Derived maintained fixture: `ot-cff-cid-keyed-zero-glyph.otf`
 
 - Generator: `scripts/font_generation/build_cff_fixtures.py`
 - Source: the stored `ot-cff-cid-keyed.otf` above
-- SHA-256: `9c1f8e880e6b135a2795b2c33405a75867f3a9996561b05c3eed30fcb5a01c15`
-- The generator sets the SFNT `maxp.numGlyphs` field to zero while preserving
-  the CFF CID data. The pinned loader accepts the face and reaches its
-  zero-glyph charset short-circuit; it retains the source OFL.
+- SHA-256: `5393b6912e613c238740dcf68a3792b5577c812e459608bd276aa9c395e41466`
+- The generator sets the CFF CharStrings INDEX count and SFNT `maxp.numGlyphs`
+  field to zero while preserving the CFF CID data. The pinned loader accepts
+  the face and reaches its zero-glyph charset short-circuit; it retains the
+  source OFL.

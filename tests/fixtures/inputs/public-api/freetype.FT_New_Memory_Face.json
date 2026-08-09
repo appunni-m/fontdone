@@ -761,7 +761,7 @@
                 "id": "input/fonts/cid/ot-cff-cid-keyed-zero-glyph.otf",
                 "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
                 "generator": "scripts/font_generation/build_cff_fixtures.py",
-                "sha256": "9c1f8e880e6b135a2795b2c33405a75867f3a9996561b05c3eed30fcb5a01c15",
+                "sha256": "5393b6912e613c238740dcf68a3792b5577c812e459608bd276aa9c395e41466",
                 "license": "OFL-1.1"
               },
               "font": {
@@ -770,7 +770,7 @@
                 "id": "input/fonts/cid/ot-cff-cid-keyed-zero-glyph.otf",
                 "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
                 "generator": "scripts/font_generation/build_cff_fixtures.py",
-                "sha256": "9c1f8e880e6b135a2795b2c33405a75867f3a9996561b05c3eed30fcb5a01c15",
+                "sha256": "5393b6912e613c238740dcf68a3792b5577c812e459608bd276aa9c395e41466",
                 "license": "OFL-1.1"
               }
             },
