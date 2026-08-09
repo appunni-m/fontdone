@@ -67946,7 +67946,11 @@ fn probe_wasm_bitmap_accessors_if_requested(
 }
 
 fn assert_wasm_bitmap_accessors(handle: usize) -> Result<(), String> {
+    let slot_snapshot = wasm_abi::abi_slot_snapshot(handle);
     let expected = if handle == 0 {
+        if slot_snapshot.is_some() {
+            return Err("WASM slot snapshot unexpectedly resolved handle zero".to_string());
+        }
         json!({
             "buffer_is_null": true,
             "len": 0,
@@ -67955,7 +67959,7 @@ fn assert_wasm_bitmap_accessors(handle: usize) -> Result<(), String> {
             "pitch": 0
         })
     } else {
-        let slot = wasm_abi::abi_slot_snapshot(handle)
+        let slot = slot_snapshot
             .ok_or_else(|| "missing wasm bitmap-accessor slot snapshot".to_string())?;
         slot.bitmap.as_ref().map_or_else(
             || {
@@ -90603,6 +90607,12 @@ fn glyphslot_own_bitmap_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         return glyphslot_own_bitmap_allocation_failure_c_abi(case);
     }
     if scenario == "success_non_bitmap_or_null_slot_noop" {
+        let helper_err = c_abi::abi_glyphslot_set_own_bitmap_from_face(ptr::null_mut(), false);
+        if helper_err != FT_Err_Invalid_Argument {
+            return Err(format!(
+                "C ABI glyph-slot ownership helper returned {helper_err} for a null face"
+            ));
+        }
         let null_err = c_abi::FT_GlyphSlot_Own_Bitmap(ptr::null_mut());
         if null_err != FT_Err_Ok {
             return Ok(error(null_err));
@@ -90656,6 +90666,12 @@ fn glyphslot_own_bitmap_wasm(case: &InputCase) -> Result<RunOutput, String> {
         return glyphslot_own_bitmap_allocation_failure_wasm(case);
     }
     if scenario == "success_non_bitmap_or_null_slot_noop" {
+        let helper_err = wasm_abi::abi_glyphslot_set_own_bitmap(0, false);
+        if helper_err != FT_Err_Invalid_Argument {
+            return Err(format!(
+                "WASM glyph-slot ownership helper returned {helper_err} for handle zero"
+            ));
+        }
         let null_err = wasm_abi::fontdone_wasm_glyphslot_own_bitmap(0);
         if null_err != FT_Err_Ok {
             return Ok(error(null_err));
