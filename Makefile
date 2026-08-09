@@ -25,6 +25,10 @@ COVERAGE_ALL_TARGET_DIR ?= target/llvm-cov-all-lanes
 # Keep the marker outside Cargo's target tree: `llvm-cov clean --workspace`
 # removes that tree when a source/configuration transition is detected.
 COVERAGE_BUILD_STATE_FILE ?= target/coverage/unified-runtime-all-lanes.build-state
+# Oracle and API-audit preparation is independent of the instrumented Cargo
+# target. Keep its marker separate so warm coverage runs can reuse both caches
+# without rebuilding the coverage binary.
+COVERAGE_PREPARATION_STATE_FILE ?= target/coverage/unified-runtime-all-lanes.preparation-state
 COVERAGE_PROFILE_DIR ?= $(COVERAGE_ALL_TARGET_DIR)/llvm-cov-target
 COVERAGE_TEST_BINARY ?=
 COVERAGE_UNIFIED_TEST_NAME ?= parity_fixture::unified_fixture_parity
@@ -70,6 +74,8 @@ ALL_LANES_COVERAGE_IGNORE_REGEX := /tests/
 # not change the compiled coverage map.
 COVERAGE_SOURCE_STATE := $(shell git log -1 --format=%H -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs 2>/dev/null || printf unknown)-$(shell if test -n "$(shell git status --porcelain --untracked-files=all -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs 2>/dev/null)"; then printf dirty; else printf clean; fi)
 COVERAGE_BUILD_STATE := $(COVERAGE_SOURCE_STATE)|toolchain=$(COVERAGE_TOOLCHAIN)|opt=$(COVERAGE_TEST_OPT_LEVEL)|debug=$(COVERAGE_TEST_DEBUG)|flags=$(COVERAGE_LLVM_COV_FLAGS)
+COVERAGE_PREPARATION_SOURCE_STATE := $(shell git log -1 --format=%H -- Makefile Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs tests/manifest.yaml tests/data tests/fixtures scripts 2>/dev/null || printf unknown)-$(shell if test -n "$(shell git status --porcelain --untracked-files=all -- Makefile Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs tests/manifest.yaml tests/data tests/fixtures scripts 2>/dev/null)"; then printf dirty; else printf clean; fi)
+COVERAGE_PREPARATION_STATE := $(COVERAGE_PREPARATION_SOURCE_STATE)|optional=$(COVERAGE_PREPARE_OPTIONAL_FEATURES)|abi_preflight=$(COVERAGE_ABI_PREFLIGHT)
 # Evaluate preparation inputs before the target recipe cleans stale coverage
 # artifacts. This lets the recursive make stay on its own recipe line, where
 # GNU Make can propagate the jobserver instead of falling back to -j1 from a
@@ -77,6 +83,13 @@ COVERAGE_BUILD_STATE := $(COVERAGE_SOURCE_STATE)|toolchain=$(COVERAGE_TOOLCHAIN)
 COVERAGE_BUILD_STATE_MATCHES := $(shell \
 	if test -r '$(COVERAGE_BUILD_STATE_FILE)' && \
 		test "$$(cat '$(COVERAGE_BUILD_STATE_FILE)')" = '$(COVERAGE_BUILD_STATE)'; then \
+		printf 1; \
+	else \
+		printf 0; \
+	fi)
+COVERAGE_PREPARATION_STATE_MATCHES := $(shell \
+	if test -r '$(COVERAGE_PREPARATION_STATE_FILE)' && \
+		test "$$(cat '$(COVERAGE_PREPARATION_STATE_FILE)')" = '$(COVERAGE_PREPARATION_STATE)'; then \
 		printf 1; \
 	else \
 		printf 0; \
@@ -322,7 +335,13 @@ test-coverage-all:
 	if test "$$coverage_state_changed" = 1; then \
 		echo "coverage instrumented build state changed; preparing coverage inputs"; \
 	fi
+ifeq ($(COVERAGE_PREPARATION_STATE_MATCHES),0)
 	+$(MAKE) --no-print-directory -j$(COVERAGE_PREPARATION_JOBS) $(COVERAGE_PREPARATION_TARGETS)
+	@mkdir -p $(dir $(COVERAGE_PREPARATION_STATE_FILE))
+	@printf '%s\n' '$(COVERAGE_PREPARATION_STATE)' > $(COVERAGE_PREPARATION_STATE_FILE)
+else
+	@echo "coverage preparation state unchanged; reusing oracle and API-audit inputs"
+endif
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --profraw-only
 	# cargo-llvm-cov only knows its default profile names; remove the explicit
 	# per-lane files before report so stale runs cannot be rescanned or merged.
@@ -414,7 +433,7 @@ coverage-abi-preflight:
 coverage-clean:
 	$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --workspace
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) $(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov clean --workspace
-	rm -f $(COVERAGE_BUILD_STATE_FILE)
+	rm -f $(COVERAGE_BUILD_STATE_FILE) $(COVERAGE_PREPARATION_STATE_FILE)
 
 .PHONY: test-unified-condition-coverage
 test-unified-condition-coverage: unified-oracle api-abi-runtime-check
@@ -475,6 +494,7 @@ test-ffi:
 #   COVERAGE_LLVM_COV_FLAGS             – extra cargo-llvm-cov flags for coverage builds
 #   COVERAGE_PREPARATION_JOBS           – parallel jobs for independent coverage setup
 #   COVERAGE_ALL_TARGET_DIR             – isolated cached target for all-lane LLVM coverage
+#   COVERAGE_PREPARATION_STATE_FILE     – marker for reusable oracle/API-audit preparation
 #   COVERAGE_TEST_BINARY                – optional instrumented test binary override; otherwise the newest built binary is used
 #   COVERAGE_UNIFIED_TEST_NAME          – exact integration-test name used by the split coverage lanes
 #   COVERAGE_UNIFIED_SHARDS              – independent process shards per backend (default 3 on >=12 logical CPUs, otherwise 2)

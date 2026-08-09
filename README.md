@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`98c898f8-8edc-4cb1-877d-708dd5943926`, whose passing report was recorded in
+`93c342f3-0e88-461a-a2df-fcb7e1953206`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
 7,573 / 7,573 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `54906e63f49dc4816e7525387637530eb60dd5303f4dc3125be6360021d1e555`.
+Its source-bound parity-tree digest is `d601426ca3d2a0b28e471c4d4f8ecfa524168369461326760cd8b24a67c15551`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,18 +142,18 @@ their exact worktree than the committed release snapshot.
 
 The latest source-bound all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`85665b21eec46fa5655aaeeb54f912be6d3b1cfd`
-(Coverage MCP run `3a435c00-9b3e-4abe-9070-89a4f3566e7f`, snapshot
-`ecc4a9dd-efe6-4db7-9c82-32cdf7f1bdf3`):
+`997bca310ff71c5289567cffb4566ef13b4be70b`
+(Coverage MCP run `dde899f4-160b-48cd-9430-918ec809cfa2`, snapshot
+`a4a0619e-4cb5-4b35-8e3e-3b090cccbc3c`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,125 / 54,388 | 92.16% |
-| Branches | 9,995 / 12,599 | 79.33% |
-| Functions | 3,410 / 3,822 | 89.22% |
-| Regions | 68,870 / 75,559 | 91.15% |
+| Lines | 50,143 / 54,394 | 92.18% |
+| Branches | 10,000 / 12,599 | 79.37% |
+| Functions | 3,412 / 3,822 | 89.27% |
+| Regions | 68,905 / 75,572 | 91.18% |
 
-The latest validation completed in 15.414 seconds with
+The latest warm validation completed in 17.349 seconds with
 `COVERAGE_UNIFIED_WORKERS=1`, `COVERAGE_UNIFIED_LANE_SPLIT=1`, and the
 adaptive three-shard default on this 12-logical-CPU host. Nine shard processes
 ran concurrently—three each for Rust FFI, C ABI, and WASM—and each compared
@@ -167,7 +167,10 @@ matrix remain exercised by their existing character-index and parser routes.
 The current variable-font inputs also exercise HVAR/MVAR variation-store guard
 behavior through the same parity-backed face-open and glyph-load routes. The
 latest run continues to identify cache-miss instrumented compilation, rather
-than MCP ingestion or the C oracle, as the largest cold-run delay.
+than MCP ingestion or the C oracle, as the largest cold-run delay. The cold
+comparison run `9da2059c-8e05-424a-85f6-30e0b6e0c432` took 84.484 seconds,
+including a 67-second instrumented rebuild; the warm run above reused that
+binary.
 
 The earlier coverage-speed change set `COVERAGE_TEST_DEBUG=0`, removing DWARF
 line tables while retaining LLVM source mapping; its historical cold build was
@@ -181,9 +184,14 @@ compiler-relevant inputs, rather than every current `HEAD`, and excludes
 `COVERAGE_UNIFIED_WORKERS`, `COVERAGE_UNIFIED_LANE_SPLIT`, and
 `COVERAGE_UNIFIED_SHARDS` because they only change process orchestration. A
 dirty compiler-input tree still forces a
-clean rebuild. The warm confirmation above therefore avoids the 45-second
+clean rebuild. The warm confirmation above therefore avoids the 67-second
 instrumented compile after fixture/docs-only commits or worker tuning while
 retaining the same instrumented binary, parity matrix, and coverage totals.
+
+Oracle and API-audit preparation now has an independent state marker. When its
+tracked inputs and preparation options are unchanged, `make test-coverage-all`
+reuses those artifacts instead of rerunning the phony preparation targets;
+`make coverage-clean` removes both the build and preparation markers.
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
@@ -294,7 +302,7 @@ routes remain even when every bare function name has some traced route. The self
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`a3336edb-f814-4b33-9241-22d1d8d1cf1b`.
+`ff552062-42e4-4578-ac10-a0c722054e7d`.
 
 ### 3.5 Performance baseline
 

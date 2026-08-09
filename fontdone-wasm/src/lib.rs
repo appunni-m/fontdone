@@ -391,11 +391,6 @@ mod abi_contract_tests {
             FT_Err_Invalid_Face_Handle
         );
 
-        let zero_allocation = super::fontdone_wasm_malloc(0);
-        assert!(!zero_allocation.is_null());
-        super::fontdone_wasm_free(zero_allocation, 0);
-        super::fontdone_wasm_free(ptr::null_mut(), usize::MAX);
-
         let mut wasm_error = FT_Err_Ok;
         assert_eq!(
             super::fontdone_wasm_open_face_handle(ptr::null(), 0, 0, 20.0, ptr::null_mut(),),

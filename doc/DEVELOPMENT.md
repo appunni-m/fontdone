@@ -150,6 +150,14 @@ the same test-support contract, and `make ci-thorough` runs that gate before
 coverage. Set `COVERAGE_ABI_PREFLIGHT=1` when an isolated coverage invocation
 also needs the extra preflight.
 
+Oracle and API-audit preparation has its own state marker because those inputs
+are independent of the instrumented Cargo target. A warm `make
+test-coverage-all` therefore reuses the generated oracle and route-audit
+artifacts instead of rerunning the phony preparation targets; the marker keys
+the tracked fixture, manifest, contract, script, source, and coverage-option
+state. A changed preparation input or either optional-preparation flag reruns
+the preparation, and `make coverage-clean` removes both state markers.
+
 By default, `COVERAGE_UNIFIED_LANE_SPLIT=1` builds one instrumented
 `unified_fixture_parity` binary, then runs it in three independent shards on
 hosts with at least 12 logical CPUs, or two shards on smaller runners, for each

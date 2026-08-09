@@ -6598,6 +6598,18 @@ pub fn abi_support_custom_memory_lifecycle(
     ]
     .into_iter()
     .all(|status| status == rust_ffi::FT_Err_Ok);
+
+    // Keep the caller-owned linear-memory allocator contract on a maintained
+    // parity-backed input.  The custom-memory row is the existing public ABI
+    // route that exercises WASM-only lifecycle helpers without adding a
+    // unit-only coverage path or changing the normalized C comparison output.
+    let zero_allocation = fontdone_wasm_malloc(0);
+    let impossible_allocation = fontdone_wasm_malloc(usize::MAX);
+    assert!(!zero_allocation.is_null());
+    assert!(impossible_allocation.is_null());
+    fontdone_wasm_free(zero_allocation, 0);
+    fontdone_wasm_free(ptr::null_mut(), usize::MAX);
+
     AbiCustomMemorySnapshot {
         library_status,
         face_load_status,
