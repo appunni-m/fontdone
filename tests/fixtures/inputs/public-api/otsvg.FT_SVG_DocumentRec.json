@@ -4,6 +4,7 @@
   "manifest_cases": [
     "layout_matches_c",
     "document_range_and_payload_fields",
+    "document_range_gap_selects_later_record",
     "transform_and_metrics_fields"
   ],
   "cases": [
@@ -133,6 +134,71 @@
         ],
         "fixture_requirements": [
           "input/fonts/svg/otsvg-glyph.ttf is the project-authored SVG fixture with a document range covering glyph 1."
+        ]
+      }
+    },
+    {
+      "case_id": "otsvg.FT_SVG_DocumentRec.document_range_gap_selects_later_record",
+      "subject": "otsvg.FT_SVG_DocumentRec",
+      "case": "document_range_gap_selects_later_record",
+      "operation": "otsvg.svg_document_capture",
+      "schema": "api_result",
+      "expect_error": false,
+      "abi": {
+        "header": "freetype/otsvg.h",
+        "symbol": "FT_SVG_DocumentRec",
+        "producer": "OT-SVG glyph load/render hook"
+      },
+      "inputs": {
+        "assets": {
+          "otsvg_font": {
+            "kind": "ref",
+            "id": "input/fonts/svg/otsvg-glyph-range-gap.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_source": "otsvg_font",
+          "glyph_index": 3,
+          "load_flags": [
+            "FT_LOAD_COLOR"
+          ],
+          "capture_from": "glyph_slot_other"
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:otsvg",
+        "format:otsvg",
+        "coverage:document-range-gap-later-record"
+      ],
+      "expectation": {
+        "status": "build_dependent",
+        "output_shape": {
+          "svg_document": "non-null FT_Byte* when SVG module is enabled",
+          "svg_document_length": "FT_ULong",
+          "units_per_EM": "FT_UShort",
+          "start_glyph_id": "FT_UShort",
+          "end_glyph_id": "FT_UShort",
+          "unsupported_status": "explicit unsupported SVG module classification"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "document_length",
+            "units_per_EM",
+            "start_glyph_id",
+            "end_glyph_id",
+            "document_bytes_hash"
+          ]
+        },
+        "source_refs": [
+          "freetype/include/freetype/otsvg.h:263-280",
+          "freetype/include/freetype/otsvg.h:300-314"
+        ],
+        "fixture_requirements": [
+          "input/fonts/svg/otsvg-glyph-range-gap.ttf must contain valid SVG records for glyphs 1 and 3 so glyph 3 selects the later record after a range gap."
         ]
       }
     },

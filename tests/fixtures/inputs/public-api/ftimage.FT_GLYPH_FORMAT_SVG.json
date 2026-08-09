@@ -4,6 +4,7 @@
   "manifest_cases": [
     "value_matches_header",
     "produced_by_svg_glyph_load_when_enabled",
+    "missing_svg_document_rejected",
     "unsupported_svg_build_classification"
   ],
   "cases": [
@@ -119,6 +120,57 @@
         },
         "fixture_requirements": [
           "Requires an OT-SVG font asset and a build with SVG support."
+        ]
+      }
+    },
+    {
+      "case_id": "ftimage.FT_GLYPH_FORMAT_SVG.missing_svg_document_rejected",
+      "subject": "ftimage.FT_GLYPH_FORMAT_SVG",
+      "case": "missing_svg_document_rejected",
+      "operation": "freetype.load_svg_glyph",
+      "schema": "glyph_slot",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "svg_font": {
+            "kind": "ref",
+            "id": "input/fonts/svg/otsvg-glyph-range-gap.ttf"
+          }
+        },
+        "params": {
+          "glyph_index": 0,
+          "inspect_svg_document": true,
+          "load_flags": [
+            "FT_LOAD_COLOR",
+            "FT_LOAD_SVG_ONLY"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:enum_variant",
+        "header:ftimage",
+        "path:runtime",
+        "coverage:svg-document-range-gap-missing"
+      ],
+      "expectation": {
+        "status": "build_dependent",
+        "output_shape": {
+          "status": "FT_Error",
+          "slot_format": "FT_GLYPH_FORMAT_NONE",
+          "svg_document_length": "FT_ULong",
+          "svg_document_hash": "hash"
+        },
+        "compare": {
+          "mode": "hash",
+          "paths": [
+            "status",
+            "slot_format",
+            "svg_document_length",
+            "svg_document_hash"
+          ]
+        },
+        "fixture_requirements": [
+          "Requires the maintained SVG font whose document records begin at glyph 1, leaving glyph 0 without a document."
         ]
       }
     },

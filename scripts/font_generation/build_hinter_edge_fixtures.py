@@ -6,7 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables._g_l_y_f import Glyph
+from fontTools.ttLib.tables._g_l_y_f import Glyph, GlyphComponent
 from fontTools.ttLib.tables.ttProgram import Program
 
 
@@ -83,6 +83,33 @@ def write_invalid_composite_attachment_points() -> None:
         # out-of-range point (`src/truetype/ttgload.c:1059-1071`).
         setattr(font["glyf"]["attachPoint"].components[1], field, value)
         save_font(name, font)
+
+
+def write_composite_depth_overflow() -> None:
+    font = TTFont(BASE_FONT, recalcTimestamp=False, recalcBBoxes=False)
+    previous = "base"
+    # Keep the chain above the runtime recursion guard while remaining a valid
+    # TrueType composite tree so the public load path reaches the pinned C
+    # Invalid_Composite result.
+    for index in range(102):
+        name = f"depthOverflow{index}"
+        glyph = Glyph()
+        glyph.numberOfContours = -1
+        glyph.xMin = 0
+        glyph.yMin = 0
+        glyph.xMax = 0
+        glyph.yMax = 0
+        component = GlyphComponent()
+        component.glyphName = previous
+        component.x = 0
+        component.y = 0
+        component.flags = 0
+        glyph.components = [component]
+        font["glyf"][name] = glyph
+        font["hmtx"].metrics[name] = font["hmtx"].metrics["base"]
+        previous = name
+    font["maxp"].maxComponentDepth = 102
+    save_font("hinter-composite-depth-overflow.ttf", font)
 
 
 def write_prep_definitions() -> None:
@@ -400,6 +427,7 @@ def main() -> None:
     write_empty_glyph_iup()
     write_invalid_contour_endpoints()
     write_invalid_composite_attachment_points()
+    write_composite_depth_overflow()
     write_prep_definitions()
     write_prep_idef()
     write_prep_redefine_defs()

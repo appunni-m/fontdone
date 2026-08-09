@@ -336,6 +336,23 @@ def write_preferred_family_distinct() -> None:
     )
 
 
+def write_preferred_family_os2_version_ffff() -> None:
+    records = [
+        NameRecordSpec(3, 1, 0x0409, 1, utf16be("LegacyFamily")),
+        NameRecordSpec(3, 1, 0x0409, 2, utf16be("Regular")),
+        NameRecordSpec(3, 1, 0x0409, 6, utf16be("LegacyFamily-Regular")),
+        NameRecordSpec(3, 1, 0x0409, 16, utf16be("PreferredFamily")),
+        NameRecordSpec(3, 1, 0x0409, 17, utf16be("Regular")),
+    ]
+    path = NAME_OUT_DIR / "preferred-family-os2-version-ffff.ttf"
+    write_name_payload(BASE_STATIC, path, build_name_table(records))
+    os2 = bytearray(table_payload(path, b"OS/2"))
+    os2[0:2] = (0xFFFF).to_bytes(2, "big")
+    fs_selection = int.from_bytes(os2[62:64], "big") | 256
+    os2[62:64] = fs_selection.to_bytes(2, "big")
+    replace_table_bytes(path, b"OS/2", bytes(os2))
+
+
 def write_preferred_subfamily_distinct() -> None:
     records = [
         NameRecordSpec(3, 1, 0x0409, 1, utf16be("Family")),
@@ -905,6 +922,7 @@ def main() -> None:
     write_missing_name_table()
     write_bad_storage_name_table()
     write_preferred_family_distinct()
+    write_preferred_family_os2_version_ffff()
     write_preferred_subfamily_distinct()
     write_preferred_family_subfamily_distinct()
     write_variable_apple_prefix()

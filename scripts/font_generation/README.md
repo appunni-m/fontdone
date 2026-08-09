@@ -49,7 +49,7 @@ licenses are enforced by `make supply-chain`.
 | `build_cpal_palette_fixtures.py` | Derived | `tests/fixtures/input/fonts/DejaVuSans.ttf`; DejaVu/Bitstream terms remain applicable. |
 | `build_cmap_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; only cmap/table mutations, including maintained malformed format-13 and format-14 parser matrices beside valid format-6 controls. |
 | `build_gasp_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
-| `build_hinter_edge_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
+| `build_hinter_edge_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`, including a 102-level composite chain for the pinned recursion-depth guard. |
 | `build_metric_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
 | `build_post_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
 | `build_sbit_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; bitmap outputs add project-authored EBLC/EBDT records, including the maintained `embedded-strikes.ttf` face-record input, valid and malformed SFNT-BDF derivatives, and a CBLC/CBDT strike-metrics normalization matrix. |
@@ -57,12 +57,12 @@ licenses are enforced by `make supply-chain`.
 | `build_interpreter_version_fixtures.py` | Synthetic | Project-authored off-grid TrueType outlines and GETINFO-branching glyph programs (`MDAP`), plus a no-instruction control font. Loaded with `FT_LOAD_RENDER`, the hinted outlines and advances differ between interpreter versions 35 and 40 exactly as pinned FreeType reports. |
 | `build_pcf_fixtures.py` | Synthetic | Project-authored PCF directory, properties, accelerators, metrics, bitmap, and encoding tables. |
 | `build_pfr_fixtures.py` | Synthetic | Project-authored PFR v4 logical/physical font records, fixed and proportional character advances, all descriptor-width flags, optional logical fields, and narrow/wide kerning pairs; no third-party font material. |
-| `build_svg_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; adds one project-authored plain-XML OpenType SVG document, deterministic vertical metrics, and malformed optional-table controls for list offsets, records, document ranges, gzip rejection, and short tables. |
+| `build_svg_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; adds project-authored plain-XML OpenType SVG documents, including a later-record range-gap lookup control, deterministic vertical metrics, and malformed optional-table controls for list offsets, records, document ranges, gzip rejection, and short tables. |
 | `build_sfnt_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; the seven valid OpenType fixtures contain only project-authored BASE/GDEF/GPOS/GSUB/JSTF/MATH data. Seven malformed variants replace selected tables with deterministic one-byte payloads; `partial-malformed-layout.otf` retains valid GDEF/GPOS/GSUB and fails on the later MATH validation step. No third-party font is used. |
 | `build_ftmm_future_variable_fixtures.py` | Synthetic derivative | Repository-generated compact variable, `avar`, packed `gvar`, HVAR store/map and active mixed-width delta fixtures, and MVAR guard/record fixtures, including malformed optional-table face-open controls, private all-point and partial-point IUP runs, and empty-outline variation loads. |
 | `build_fvar_fixtures.py` | Synthetic derivative | Repository-generated `compact-variable.ttf`. |
 | `build_mvar_fixtures.py` | Synthetic derivative | Repository-generated `compact-variable.ttf`. |
-| `build_name_fixtures.py` | Synthetic derivative | Repository-generated static and variable base fixtures. |
+| `build_name_fixtures.py` | Synthetic derivative | Repository-generated static and variable base fixtures, including the OS/2 version-sentinel WWS-selection control. |
 
 The active third-party fixture families and their license classes are recorded
 in `tests/fixtures/THIRD_PARTY_NOTICES.md`.

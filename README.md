@@ -102,33 +102,33 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The latest full parity snapshot was recorded on **2026-08-08** (UTC):
+The latest full parity snapshot was recorded on **2026-08-09** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,561 |
-| Passed cases | 7,561 |
+| Runnable exact-comparison cases | 7,566 |
+| Passed cases | 7,566 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
-| Covered manifest cases | 4,199 |
+| Covered manifest cases | 4,201 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,291 |
-| Concrete expanded cases | 7,564 |
+| Logical declared cases | 4,293 |
+| Concrete expanded cases | 7,569 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,561 / 7,561` means every runnable case in that execution matched; the 3
+`7,566 / 7,566` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`856f48e6-abf6-45f5-97ad-f0e76cd3fdaf`, recorded by
-`53decf57-2c4d-4a8c-8e89-0d68b418241f` in
-`doc/runtime_parity_evidence.json` after passing 7,561 / 7,561 runnable
+`1cdadbc4-807b-4fa6-8a8c-0c91d314dfd4`, recorded by
+`aff1d53d-dc37-4348-9035-16c8a3eaad7d` in
+`doc/runtime_parity_evidence.json` after passing 7,566 / 7,566 runnable
 comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `48f60839956a41f02ff8393c34938f93ade8a4f4508160506ba74677f9dfec8b`.
+Its source-bound parity-tree digest is `2641758eb29a7214022f62a4ee9ecbe11439f91d8e8ab8c0011790999a8134b7`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -141,19 +141,19 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest source-bound all-lane coverage snapshot was recorded on
-**2026-08-08** for the current worktree based at commit
-`0a711620a5bec648ea230de77f326b68fbdce0fa`
-(Coverage MCP run `8947ed52-2202-4826-84b6-41721050e420`, snapshot
-`18249c5c-163d-4f7c-aa63-1e079ce94b35`):
+**2026-08-09** for the current worktree based at commit
+`1633e33aae21b857d240c87944782d1855c7f913`
+(Coverage MCP run `30b7e018-69aa-4ba8-b1a5-a8e76836cf13`, snapshot
+`f9ba161e-df6b-487c-beb4-d1e2a857e9bd`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,070 / 54,416 | 92.01% |
-| Branches | 9,972 / 12,596 | 79.17% |
+| Lines | 50,073 / 54,416 | 92.02% |
+| Branches | 9,975 / 12,596 | 79.19% |
 | Functions | 3,416 / 3,851 | 88.70% |
-| Regions | 68,877 / 75,647 | 91.05% |
+| Regions | 68,878 / 75,647 | 91.05% |
 
-This source-bound validation completed in 78.692 seconds with the default
+This source-bound validation completed in 29.052 seconds with the default
 `COVERAGE_UNIFIED_WORKERS=1`. The first validation after the build-marker change
 took 83.479 seconds, including a 46.78-second instrumented rebuild. The
 same-source two-worker comparison
@@ -165,9 +165,9 @@ The maintained Apple full-Unicode format-13 font is now exercised by the
 `FT_Get_Char_Index`, `FT_Get_First_Char`, and `FT_Get_Next_Char` input matrices.
 The new malformed format-13 matrix also executes the pinned parser's length,
 header, group-order, and physical-short validation routes. The source-bound
-parity run `856f48e6-abf6-45f5-97ad-f0e76cd3fdaf` passed 7,561 / 7,561
+parity run `1cdadbc4-807b-4fa6-8a8c-0c91d314dfd4` passed 7,566 / 7,566
 comparisons with 0 failures; the current coverage snapshot measures
-50,070 / 54,416 lines, 9,972 / 12,596 branches, and 68,877 / 75,647 regions.
+50,073 / 54,416 lines, 9,975 / 12,596 branches, and 68,878 / 75,647 regions.
 When the instrumented binary cache is cold, the managed run
 `90f0239f-93a7-4f66-a758-eb84da5d24b7` took 80.314 seconds, including a
 47.59-second instrumented rebuild; its longest lane was 26.45 seconds. This

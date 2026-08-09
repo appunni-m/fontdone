@@ -6306,6 +6306,50 @@
             ]
           },
           {
+            "id": "glyf-depth-overflow-no-scale",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-composite-depth-overflow.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 161,
+              "load_flags": [
+                "FT_LOAD_NO_SCALE"
+              ]
+            },
+            "expect_error": true,
+            "coverage": [
+              "tt/glyf:composite-depth-overflow-unscaled"
+            ]
+          },
+          {
+            "id": "glyf-depth-overflow-no-hinting",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-composite-depth-overflow.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 161,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ]
+            },
+            "expect_error": true,
+            "coverage": [
+              "tt/glyf:composite-depth-overflow-scaled"
+            ]
+          },
+          {
             "id": "loca-short-record-truncated",
             "assets": {
               "font": {

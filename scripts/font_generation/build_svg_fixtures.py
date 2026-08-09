@@ -66,17 +66,28 @@ def add_vertical_metrics(font: TTFont) -> None:
     font["vhea"] = vhea
 
 
+def svg_payload_records(records: tuple[tuple[int, int, bytes], ...]) -> bytes:
+    """Return an SVG document list with the supplied inclusive glyph ranges."""
+
+    document_list_offset = 10
+    document_offset = 2 + 12 * len(records)
+    data = bytearray()
+    data.extend(struct.pack(">HLL", 0, document_list_offset, 0))
+    data.extend(struct.pack(">H", len(records)))
+    for start_glyph, end_glyph, document in records:
+        data.extend(
+            struct.pack(">HHLL", start_glyph, end_glyph, document_offset, len(document))
+        )
+        document_offset += len(document)
+    for _, _, document in records:
+        data.extend(document)
+    return bytes(data)
+
+
 def svg_payload(document: bytes = SVG_DOCUMENT) -> bytes:
     """Return one SVG document-list record covering glyph index 1."""
 
-    document_list_offset = 10
-    document_offset = 2 + 12
-    data = bytearray()
-    data.extend(struct.pack(">HLL", 0, document_list_offset, 0))
-    data.extend(struct.pack(">H", 1))
-    data.extend(struct.pack(">HHLL", 1, 1, document_offset, len(document)))
-    data.extend(document)
-    return bytes(data)
+    return svg_payload_records(((1, 1, document),))
 
 
 def svg_table(data: bytes | None = None) -> DefaultTable:
@@ -133,6 +144,10 @@ def write_font(path: Path, payload: bytes) -> None:
 
 def main() -> None:
     write_font(OUTPUT, svg_payload())
+    write_font(
+        OUTPUT.parent / "otsvg-glyph-range-gap.ttf",
+        svg_payload_records(((1, 1, SVG_DOCUMENT), (3, 3, SVG_DOCUMENT))),
+    )
     for name, payload in malformed_svg_payloads().items():
         write_font(OUTPUT.parent / name, payload)
 

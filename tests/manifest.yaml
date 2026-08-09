@@ -7241,6 +7241,8 @@ subjects:
         description: Value matches FT_IMAGE_TAG('S','V','G',' ') from the pinned C header.
       - id: produced_by_svg_glyph_load_when_enabled
         description: FT_Load_Glyph with SVG support and SVG-capable font sets slot.format to SVG before rendering, matching C.
+      - id: missing_svg_document_rejected
+        description: FT_LOAD_SVG_ONLY rejects a glyph outside every SVG document range without fabricating an SVG slot document.
       - id: unsupported_svg_build_classification
         description: Builds without SVG support keep the C oracle's NONE/error behavior for the same font and load flags.
     # needs-input: operation=load_glyph and FT_Get_Glyph on OpenType-SVG font; fixture_asset=SVG table font plus non-SVG control; params={load_flags:FT_LOAD_COLOR/FT_LOAD_SVG_ONLY/default, glyph_index with SVG doc}; output shape={FT_Error, slot.format, SVG document length/bytes hash, detached glyph format}; comparison=exact C oracle tag, SVG payload metadata/bytes, and build-disabled error or fallback classification.
@@ -11815,6 +11817,8 @@ subjects:
         description: Size, alignment, and field offsets match the pinned C header for svg_document, svg_document_length, metrics, units_per_EM, glyph range, transform, and delta.
       - id: document_range_and_payload_fields
         description: The record preserves document pointer, byte length, start/end glyph ids, and units_per_EM exactly for an SVG table document.
+      - id: document_range_gap_selects_later_record
+        description: A later SVG document record remains selectable after an earlier record's inclusive range ends before the requested glyph.
       - id: transform_and_metrics_fields
         description: Metrics, transform matrix, and delta fields are exposed with the same nested public layouts as FT_Size_Metrics, FT_Matrix, and FT_Vector.
     # needs-input: operation=OT-SVG glyph load/render hook capture; fixture_asset=OpenType SVG font with at least one SVG document range; params={font, glyph_index, ppem, transform}; expected output shape={sizeof, alignof, field_offsets, document_length, glyph_range, metrics, units_per_EM, transform, delta}; comparison=exact C oracle record fields and ABI layout.
