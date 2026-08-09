@@ -43,8 +43,8 @@
     "categories_complete": 10,
     "categories_total": 12,
     "is_complete": false,
-    "runtime_contract_rows_complete": 5325,
-    "runtime_contract_rows_total": 5325,
+    "runtime_contract_rows_complete": 5326,
+    "runtime_contract_rows_total": 5326,
     "runtime_contract_rows_pending": 0,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
@@ -54,23 +54,23 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-08-09",
-    "source_commit": "429ba2607d2d4225510ea94b886464dd81667b10",
+    "source_commit": "1a1ca6dfa0f58978149c43402dd498de6a39093e",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "98717651-8cdc-40ac-a52c-6d2d8a386b82",
-    "snapshot_id": "2715737c-4c0e-41ce-a303-f01f728558fc",
-    "duration_ms": 70638,
+    "run_id": "a03c1c33-c3bb-4f37-970a-a40e21f5aac2",
+    "snapshot_id": "dd7d2984-75cf-4918-961c-b5948f6e24b8",
+    "duration_ms": 22736,
     "exit_code": 0,
-    "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; the optional-feature contract is a separate make test-parity-smoke gate and is not rebuilt by coverage unless COVERAGE_PREPARE_OPTIONAL_FEATURES=1; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with no line-table debuginfo (COVERAGE_TEST_DEBUG=0) and COVERAGE_UNIFIED_WORKERS=1; one instrumented test binary runs in three independent shards per backend (nine shard processes total), each shard compares a disjoint 2,526- or 2,527-case slice and writes a distinct raw profile; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; the report merges every shard profile; source-digest-bound expanded input cache reused across the nine processes; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; clean binary preparation uses cargo llvm-cov --no-report -- --list; build-state and independent preparation-state markers reuse unchanged compiler and oracle/API-audit inputs while excluding worker/lane-split/shard orchestration settings; raw LLVM JSON is ingested directly, with segment normalization retained only as an opt-in compatibility rewrite; test-harness source excluded",
+    "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; the optional-feature contract is a separate make test-parity-smoke gate and is not rebuilt by coverage unless COVERAGE_PREPARE_OPTIONAL_FEATURES=1; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with no line-table debuginfo (COVERAGE_TEST_DEBUG=0) and COVERAGE_UNIFIED_WORKERS=1; one instrumented test binary runs in three independent shards per backend (nine shard processes total), each shard compares a disjoint 2,527- or 2,528-case slice and writes a distinct raw profile; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; the report merges every shard profile; source-digest-bound expanded input cache reused across the nine processes; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; clean binary preparation uses cargo llvm-cov --no-report -- --list; build-state and independent preparation-state markers reuse unchanged compiler and oracle/API-audit inputs while excluding worker/lane-split/shard orchestration settings; raw LLVM JSON is ingested directly, with segment normalization retained only as an opt-in compatibility rewrite; test-harness source excluded",
     "lines": {
-      "covered": 50185,
+      "covered": 50186,
       "total": 54346,
-      "percent": 92.34350274169212
+      "percent": 92.34534280351819
     },
     "branches": {
-      "covered": 10026,
+      "covered": 10027,
       "total": 12585,
-      "percent": 79.66626936829562
+      "percent": 79.67421533571712
     },
     "functions": {
       "covered": 3433,
@@ -78,13 +78,13 @@
       "percent": 89.77510460251047
     },
     "regions": {
-      "covered": 68939,
+      "covered": 68940,
       "total": 75490,
-      "percent": 91.32202940786858
+      "percent": 91.32335408663399
     },
     "runtime_parity": {
-      "runnable": 7582,
-      "passed": 7582,
+      "runnable": 7583,
+      "passed": 7583,
       "failed": 0,
       "pending": 3
     },
