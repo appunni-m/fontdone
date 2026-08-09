@@ -96,6 +96,11 @@ def metrics_table() -> bytes:
     return align4(struct.pack("<IH", PCF_COMPRESSED_METRICS, 1) + metric)
 
 
+def zero_metrics_table() -> bytes:
+    # FreeType rejects a PCF metrics table with no glyph metrics.
+    return align4(struct.pack("<IH", PCF_COMPRESSED_METRICS, 0))
+
+
 def uncompressed_metrics_table() -> bytes:
     # Uncompressed metrics use a 32-bit glyph count followed by six signed
     # 16-bit fields.  Keep this alongside the compressed control so the
@@ -173,6 +178,14 @@ def main() -> None:
         (PCF_BDF_ENCODINGS, 0, encodings_table()),
     ]
     data = build_pcf(tables)
+    zero_metrics_tables = [
+        (PCF_PROPERTIES, 0, properties_table()),
+        (PCF_ACCELERATORS, 0, accelerators_table()),
+        (PCF_METRICS, PCF_COMPRESSED_METRICS, zero_metrics_table()),
+        (PCF_BITMAPS, 0, bitmaps_table()),
+        (PCF_BDF_ENCODINGS, 0, encodings_table()),
+    ]
+    zero_metrics_data = build_pcf(zero_metrics_tables)
     uncompressed_tables = [
         (PCF_PROPERTIES, 0, properties_table()),
         (PCF_ACCELERATORS, 0, accelerators_table()),
@@ -217,6 +230,11 @@ def main() -> None:
     if uncompressed_output.exists() or uncompressed_output.is_symlink():
         uncompressed_output.unlink()
     uncompressed_output.write_bytes(uncompressed_data)
+
+    zero_metrics_output = OUT_DIR / "zero-metrics-count.pcf"
+    if zero_metrics_output.exists() or zero_metrics_output.is_symlink():
+        zero_metrics_output.unlink()
+    zero_metrics_output.write_bytes(zero_metrics_data)
 
     invalid_version_output = OUT_DIR / "invalid-version.pcf"
     if invalid_version_output.exists() or invalid_version_output.is_symlink():

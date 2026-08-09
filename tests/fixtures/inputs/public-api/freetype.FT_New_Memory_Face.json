@@ -2086,6 +2086,31 @@
             ]
           },
           {
+            "id": "pcf-zero-metrics-count",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/zero-metrics-count.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/zero-metrics-count.pcf"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pcf:zero-metrics-count-invalid-table"
+            ]
+          },
+          {
             "id": "winfnt-short-header",
             "assets": {
               "font_bytes": {
