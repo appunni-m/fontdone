@@ -142,9 +142,9 @@ their exact worktree than the committed release snapshot.
 
 The latest source-bound all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`56655aa123d27de2c7cf029a23e499e61d2edf5d`
-(Coverage MCP run `e9e57a65-220d-4094-b5b6-a9f9d8fd050b`, snapshot
-`d9ff95ec-abc9-478f-9e0c-e7062d51a7a4`):
+`3ddaf0ae376b86487081e073099376c2459d4cf5`
+(Coverage MCP run `9a39257b-66fb-4dd2-ab29-46835cae54a3`, snapshot
+`04c522e6-da5a-43c2-8d98-19ccf176be8e`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -153,16 +153,16 @@ The latest source-bound all-lane coverage snapshot was recorded on
 | Functions | 3,410 / 3,822 | 89.22% |
 | Regions | 68,864 / 75,559 | 91.14% |
 
-The cold validation completed in 59.995 seconds with the default
+The cold validation completed in 63.799 seconds with the default
 `COVERAGE_UNIFIED_WORKERS=1`, `COVERAGE_UNIFIED_LANE_SPLIT=1`, and
-`COVERAGE_UNIFIED_SHARDS=2`; its instrumented build took 38.85 seconds. Six
+`COVERAGE_UNIFIED_SHARDS=2`; its instrumented build took 45.60 seconds. Six
 processes ran concurrently—two shards each for Rust FFI, C ABI, and WASM—and
 each shard compared 3,784 / 3,784 cases before the raw profiles were merged.
-The warm repeat (Coverage MCP run `f9a5093f-2102-4609-845b-5216210cb5a0`,
-snapshot `a4853650-5aa2-4065-8f87-84c58dc6947f`) completed in 18.383 seconds
-with a 0.07-second profile setup. Compared with the prior 79.695-second
-three-process cold run, the new default is about 25% faster; compared with the
-prior 28.339-second warm run, it is about 35% faster. The coverage totals and
+The warm repeat (Coverage MCP run `a7c92ef5-c657-4d77-8586-256e1505f770`,
+snapshot `c3af13b1-e969-4538-aeaf-8bbe171dd66e`) completed in 17.498 seconds
+with a 0.05-second profile setup. Compared with the prior 79.695-second
+three-process cold run, the new default is about 20% faster; compared with the
+prior 28.339-second warm run, it is about 38% faster. The coverage totals and
 all 7,568 runnable parity cases are unchanged.
 
 The maintained Apple full-Unicode format-13 font and malformed format-13
@@ -170,8 +170,8 @@ matrix remain exercised by their existing character-index and parser routes.
 The new `sbix` recursive-target input adds one real `FT_Load_Glyph` parity case
 for an out-of-range `dupe` target; the source-bound parity run
 `6f98a0f9-4a8a-4a5c-b785-7d8a1f9004ce` passed 7,568 / 7,568 comparisons with
-0 failures. The all-lane run rebuilt the instrumented profile in 38.85 seconds
-and its longest shard was about 13.42 seconds. This continues to identify
+0 failures. The all-lane run rebuilt the instrumented profile in 45.60 seconds
+and its longest shard was about 13.02 seconds. This continues to identify
 cache-miss instrumented compilation, rather than MCP ingestion or the C oracle,
 as the largest cold-run delay.
 

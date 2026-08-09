@@ -167,12 +167,12 @@ changing the input matrix or oracle comparison. Set
 `COVERAGE_UNIFIED_LANE_SPLIT=0` for the legacy single-process diagnostic path.
 
 The latest cold validation is Coverage MCP run
-`e9e57a65-220d-4094-b5b6-a9f9d8fd050b` (snapshot
-`d9ff95ec-abc9-478f-9e0c-e7062d51a7a4`): it took 59.995 seconds, including a
-38.85-second instrumented build, and all six shard processes passed their
-3,784 / 3,784 slices. The warm repeat `f9a5093f-2102-4609-845b-5216210cb5a0`
-(snapshot `a4853650-5aa2-4065-8f87-84c58dc6947f`) took 18.383 seconds with a
-0.07-second profile setup. The coverage totals remain 50,122 / 54,388 lines,
+`9a39257b-66fb-4dd2-ab29-46835cae54a3` (snapshot
+`04c522e6-da5a-43c2-8d98-19ccf176be8e`): it took 63.799 seconds, including a
+45.60-second instrumented build, and all six shard processes passed their
+3,784 / 3,784 slices. The warm repeat `a7c92ef5-c657-4d77-8586-256e1505f770`
+(snapshot `c3af13b1-e969-4538-aeaf-8bbe171dd66e`) took 17.498 seconds with a
+0.05-second profile setup. The coverage totals remain 50,122 / 54,388 lines,
 9,989 / 12,599 branches, 3,410 / 3,822 functions, and 68,864 / 75,559
 regions. The default build-state marker excludes worker, lane-split, and shard
 settings because they only change process orchestration; changing compiler
@@ -284,11 +284,11 @@ same LLVM source path.
 
 Repeated local runs reuse the instrumented target and binary. The latest
 source-bound current-host run is Coverage MCP run
-`e9e57a65-220d-4094-b5b6-a9f9d8fd050b` (snapshot
-`d9ff95ec-abc9-478f-9e0c-e7062d51a7a4`): 59.995 seconds end-to-end, including
-a 38.85-second instrumented build, with six shards passing 3,784 / 3,784 cases
-each. Its warm repeat `f9a5093f-2102-4609-845b-5216210cb5a0` (snapshot
-`a4853650-5aa2-4065-8f87-84c58dc6947f`) took 18.383 seconds. This isolates the
+`9a39257b-66fb-4dd2-ab29-46835cae54a3` (snapshot
+`04c522e6-da5a-43c2-8d98-19ccf176be8e`): 63.799 seconds end-to-end, including
+a 45.60-second instrumented build, with six shards passing 3,784 / 3,784 cases
+each. Its warm repeat `a7c92ef5-c657-4d77-8586-256e1505f770` (snapshot
+`c3af13b1-e969-4538-aeaf-8bbe171dd66e`) took 17.498 seconds. This isolates the
 remaining cold delay in instrumented compilation; the shard executions run
 concurrently and report/ingestion are small. Use `COVERAGE_UNIFIED_SHARDS=1`
 for a three-process comparison, or allow roughly two minutes for host
@@ -324,11 +324,11 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The current cold run's longest shard was 13.425 seconds (Rust); C ABI and WASM
+The current cold run's longest shard was 13.02 seconds (Rust); C ABI and WASM
 shards were below 12 seconds. These shard timers run concurrently, so their sum
-is not wall time. The 38.85-second instrumented build is the dominant cold
+is not wall time. The 45.60-second instrumented build is the dominant cold
 component; report finalization and artifact ingestion are included in the
-59.995-second wall time but are not separately exposed by Coverage MCP.
+63.799-second wall time but are not separately exposed by Coverage MCP.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -339,8 +339,8 @@ component; report finalization and artifact ingestion are included in the
 
 That latest run passed all 7,568 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`d9ff95ec-abc9-478f-9e0c-e7062d51a7a4`, and the warm confirmation snapshot is
-`a4853650-5aa2-4065-8f87-84c58dc6947f`. Coverage MCP accepts the current LLVM
+`04c522e6-da5a-43c2-8d98-19ccf176be8e`, and the warm confirmation snapshot is
+`c3af13b1-e969-4538-aeaf-8bbe171dd66e`. Coverage MCP accepts the current LLVM
 JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
 rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
 apply only to the named source commit, suite, and toolchain. They are not a
