@@ -117,18 +117,18 @@ The latest full parity snapshot was recorded on **2026-08-09** (UTC):
 | Concrete expanded cases | 7,607 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,600 / 7,600` means every runnable case in that execution matched; the 3
+`7,604 / 7,604` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest pushed-head verification is Coverage MCP parity run
-`5e17ea7f-e242-448c-9f5f-355a25f08b70`, whose passing report was recorded in
+`0f78fbb2-57f0-4691-b879-8b31242da7ad`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-7,600 / 7,600 runnable comparisons with 0 failures and 3 explicitly pending
+7,604 / 7,604 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `6bc56507bc3818e37b7bb0892ce7955ecd38c86a9b53cc74fb9a8603aff27fe8`.
+Its source-bound parity-tree digest is `28b899f0a75d3053687b9f65778466a98e4f2c66811a33783e98e86c072b6887`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,19 +142,19 @@ their exact worktree than the committed release snapshot.
 
 The latest pushed-head all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`af86ffb1931ad1876373774dff42b3e2daa1c4ab`
-(Coverage MCP run `30029373-a59e-4729-b45a-7049150095b2`, snapshot
-`db1f618d-4d21-404e-8e7c-c66c43eacc7c`):
+`46c27d9e2043977b20d3efd3bddbd92f90b3a7fd`
+(Coverage MCP run `c57f9583-1820-43ef-8480-9bcc1e2f05af`, snapshot
+`6d05eeea-3d80-45ff-81ed-9449d9ea6dd0`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,229 / 54,299 | 92.50% |
-| Branches | 10,030 / 12,573 | 79.77% |
+| Lines | 50,233 / 54,298 | 92.51% |
+| Branches | 10,032 / 12,569 | 79.82% |
 | Functions | 3,444 / 3,820 | 90.16% |
-| Regions | 68,979 / 75,428 | 91.45% |
+| Regions | 68,978 / 75,423 | 91.45% |
 
-The current managed validation completed in 14.395 seconds; its three split
-backends passed all 7,600 runnable comparisons. Its nine shard processes split
+The current managed validation completed in 63.928 seconds; its three split
+backends passed all 7,604 runnable comparisons. Its nine shard processes split
 the same exact matrix into disjoint slices before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
 shard processes each compared 2,525 or 2,526 cases before report generation.
@@ -164,7 +164,7 @@ adaptive three-shard default on this 12-logical-CPU host. Nine shard processes
 ran concurrently—three each for Rust FFI, C ABI, and WASM—and each compared
 2,524 or 2,525 cases before the raw profiles were merged. A repeat completed
 in 16.377 seconds; the two-shard baseline took 19.747 seconds. The coverage
-totals and current parity evidence are based on 7,600 / 7,600 runnable
+totals and current parity evidence are based on 7,604 / 7,604 runnable
 comparisons.
 
 The maintained Apple full-Unicode format-13 font and malformed format-13
@@ -186,7 +186,7 @@ supplies the report's source locations without requiring DWARF line tables.
 
 The current host-width cleanup removes conversion branches that cannot occur on
 the supported 64-bit ABI while retaining checked conversions for 32-bit WASM.
-It preserved all 7,600 runnable parity results and reduced the measured
+It preserved all 7,604 runnable parity results and reduced the measured
 coverage denominator without weakening a fixture or parity comparison. The
 latest `glyf` cleanup folds the independently scaled no-hinting composite walk
 into the validated loader, removing duplicate parsing while preserving the
@@ -298,11 +298,11 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,343 / 5,343 pinned-C runtime contract rows exact; 0 pending |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,347 / 5,347 pinned-C runtime contract rows exact; 0 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 698 / 698 expected-error routes compare exact error and output results; 7,600 / 7,600 routes have no generic fallback evidence |
+| Errors | 698 / 698 expected-error routes compare exact error and output results; 7,604 / 7,604 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 
