@@ -66,10 +66,9 @@ pub fn FT_Error_String(error_code: FT_Error) -> Option<&'static CStr> {
         return None;
     }
     // Pinned FreeType is built with FT_ENABLE_ERROR_STRINGS=OFF, so
-    // `src/base/fterrors.c` returns NULL after the range check.
-    if !FT_CONFIG_OPTION_ERROR_STRINGS_ENABLED {
-        return None;
-    }
+    // `src/base/fterrors.c` returns NULL after the range check.  The matching
+    // configuration constant is compile-time false; keep this route direct
+    // instead of carrying an unreachable enabled-string branch into runtime.
     None
 }
 
