@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest pushed-head verification is Coverage MCP parity run
-`c5ea877e-ffa5-4933-8873-afb8a8cf35c2`, whose passing report was recorded in
+`0fc4bec4-34fa-4281-9d3e-3d2c87a46c22`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
 7,604 / 7,604 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `508e9aaf95f82e865b00098bb74ebd8db45065728ab0f752b20150b5cda91384`.
+Its source-bound parity-tree digest is `29788444e916dc537f2584231306757e18d93b61f14b4283a5344094ebe680cd`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,18 +142,18 @@ their exact worktree than the committed release snapshot.
 
 The latest pushed-head all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`684ee32eb43cf3f486a0af07116efd37be9661df`
-(Coverage MCP run `026f8157-9e9b-4ddf-a52f-27b2d0263d44`, snapshot
-`39fa81a1-735b-4cf3-9356-986f4c87a8d1`):
+`ccf43bade789bada9bc7dcd2a026623babd6a227`
+(Coverage MCP run `4edbfeb7-11f4-49dd-ac40-2cf3201a4e3e`, snapshot
+`859f6032-60a5-4472-b6d2-fac06ba158f3`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,215 / 54,264 | 92.54% |
-| Branches | 10,022 / 12,549 | 79.86% |
+| Lines | 50,213 / 54,260 | 92.54% |
+| Branches | 10,020 / 12,545 | 79.87% |
 | Functions | 3,444 / 3,819 | 90.18% |
-| Regions | 68,950 / 75,381 | 91.47% |
+| Regions | 68,947 / 75,376 | 91.47% |
 
-The current managed validation completed in 64.712 seconds; its three split
+The current managed validation completed in 60.743 seconds; its three split
 backends passed all 7,604 runnable comparisons. Its nine shard processes split
 the same exact matrix into disjoint slices before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
@@ -192,7 +192,11 @@ route. The gvar invariant cleanup removes defensive branches whose callers
 already prove valid normalized-coordinate, glyph-offset, contour-endpoint,
 divisor, and axis-extent inputs. It preserved all 7,604 runnable parity
 results and reduced the measured coverage denominator without weakening a
-fixture or parity comparison. The earlier host-width cleanup removes conversion branches that cannot occur on
+fixture or parity comparison. The current varstore cleanup removes the
+parser-proven region-index fallback and zero-denominator guard after verifying
+the store and scalar invariants. It preserved all 7,604 runnable parity results
+and left only the real parser, sentinel, and sign edge paths in
+`src/tt/varstore.rs`. The earlier host-width cleanup removes conversion branches that cannot occur on
 the supported 64-bit ABI while retaining checked conversions for 32-bit WASM.
 It preserved all 7,604 runnable parity results and reduced the measured
 coverage denominator without weakening a fixture or parity comparison. The
