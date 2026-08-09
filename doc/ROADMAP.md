@@ -528,18 +528,19 @@ worktree at that point:
 | 137 | `b29d323` (palette reselect invariant cleanup) | Removed the redundant repeated-selection success checks from the C-ABI and WASM palette mutation helpers. The helper reaches this block only after a non-empty snapshot for the same live face/handle and valid palette index, so the second selection cannot fail; the outer out-of-range mutation no-op remains intact. Clean source-matched parity run `b99251fb-2a5e-4fc8-be34-f9911d109b91`, recorded by `394ab20a-2369-4807-9667-f13d334cd483`, passed 7,578 / 7,578 runnable comparisons with 0 failures and 3 pending safety-extension cases; the route audit remains at 0 pending routes and 218 / 218 function routes per ABI surface. All-lane Coverage MCP run `5bcb5f48-e05f-455c-a501-830c045bc1e7`, snapshot `6ec674f3-1e4a-4c4b-a729-548623b2d36e`, completed in 88.027 seconds and measured 50,162 / 54,324 lines, 10,015 / 12,579 branches, 3,431 / 3,822 functions, and 68,909 / 75,461 regions. Relative to entry 136, uncovered branches and regions each fell by 2; uncovered lines were unchanged. Lint passed in `3ac624aa-57ad-4682-bae8-6e091dfabd85`; the C-ABI scorecard remains 10 / 12 with C11.3 at 7 / 8 and C12.3 at 1 / 5, leaving the Windows import-library item and four fresh target-lane bundles. |
 | 138 | `a9fb071` + `99ba43e` (negative BDF parity and deterministic compressed fixtures) | Added the maintained BDF `ENCODING -1` input and public `FT_Get_BDF_Property` variants, routing the unmapped encoding through pinned C, Rust FFI, C ABI, and WASM; focused parity run `5a2e8cfb-87f9-49d0-b49c-7913d1d26a8a` passed 3 / 3 and clean full parity run `6ecb9dba-1b8c-4535-a821-10c5d5ab1edd`, recorded by `c76bb4ea-a2a8-43d9-97ae-86ead4f66f05`, passed 7,579 / 7,579 runnable comparisons with 0 failures and 3 pending safety-extension cases. The compressed-fixture generator now emits platform-independent gzip headers, keeping repeated parity runs clean across hosts. The route audit remains at 0 pending routes and 218 / 218 function routes per ABI surface. Clean all-lane Coverage MCP run `bb4b4c70-1192-41dc-9eda-042eb9babe63`, snapshot `d8c61f2e-9e13-48b9-9cc2-0389976a4fd8`, completed in 15.140 seconds and measured 50,162 / 54,324 lines, 10,016 / 12,579 branches, 3,431 / 3,822 functions, and 68,910 / 75,461 regions. Relative to entry 137, uncovered branches and regions each fell by 1; uncovered lines and functions were unchanged. The C-ABI contract run `36c9e8a8-8013-4494-ae8d-e4b113a98c9d` retains 10 / 12 categories: C01.7 at 5,322 / 5,322, C08.3 at 7,579 / 7,579, C11.3 at 7 / 8, and C12.3 at 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
 | 139 | `db3ca93` (invalid outline points-pointer parity route) | Expanded the maintained `ftglyph.FT_Glyph_To_Bitmap.error_invalid_outline_record_rejected` input to cover both nonzero contour-count/null-contours and nonzero point-count/null-points records. The latter exercises pinned smooth-renderer rejection before point dereference through Rust FFI, C ABI, and WASM; it adds no unit-only route and does not change the concrete-case denominator. Focused parity run `cbc60f74-aa77-49b3-abe7-ae94badb4dbe` passed; clean full parity run `23996cfa-4247-4826-9a88-68eca62c6234`, recorded by `99cc83d0-6314-4078-af6a-d84458fd0a29`, passed 7,579 / 7,579 runnable comparisons with 0 failures and 3 pending safety-extension cases. The route audit remains at 0 pending routes and all three function surfaces retain 218 / 218 route evidence. Clean all-lane Coverage MCP run `550d245c-3dc1-4882-9bf4-6736e27771cc`, snapshot `2608b391-3c99-4de3-8fa6-31c8c1292e6c`, completed in 60.380 seconds and measured 50,179 / 54,345 lines, 10,022 / 12,587 branches, 3,433 / 3,824 functions, and 68,933 / 75,488 regions; the targeted WASM `sync_core_from_record` branch at line 447 is now 3 / 4. The C-ABI contract run `d4ad2aa5-82be-4bc7-b088-ad82b44c81e6` retains 10 / 12 categories: C01.7 at 5,322 / 5,322, C08.3 at 7,579 / 7,579, C11.3 at 7 / 8, and C12.3 at 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
+| 140 | `094e392` + `57931d3` + `aa13bd9` (BDF charset classification parity) | Added maintained `ISO8859/1`, `ISO646.1991/IRV`, and non-Unicode `ISO8859/2` BDF controls, and normalized variant-suffixed case IDs in the charset parity route. Clean full parity run `ac677118-22f5-4f61-94f9-96fedfb4c796`, recorded by `2eb8471b-c2a6-4cdd-b507-7f277ad6d253`, passed 7,582 / 7,582 runnable comparisons with 0 failures and 3 pending safety-extension cases; the route audit reports 7,585 concrete cases, 0 pending routes, and 218 / 218 function evidence per ABI surface. Clean all-lane Coverage MCP run `aa20f5ff-5a52-41c9-b4e5-33b3fdddf133`, snapshot `d9d4ceb1-4dd9-4e9c-8994-67b579247af0`, completed in 15.356 seconds and measured 50,179 / 54,345 lines, 10,026 / 12,587 branches, 3,433 / 3,824 functions, and 68,935 / 75,488 regions; `src/font.rs:1069` is now 4 / 4 branches. The C-ABI contract run `3767ec3e-9acc-4033-ad73-53a54e6ab3cd` retains 10 / 12 categories: C01.7 at 5,325 / 5,325, C08.3 at 7,582 / 7,582, C11.3 at 7 / 8, and C12.3 at 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
 
 The current source-bound parity verification is Coverage MCP parity run
-`23996cfa-4247-4826-9a88-68eca62c6234`, recorded by
-`99cc83d0-6314-4078-af6a-d84458fd0a29`: it passed 7,579 / 7,579 runnable
+`ac677118-22f5-4f61-94f9-96fedfb4c796`, recorded by
+`2eb8471b-c2a6-4cdd-b507-7f277ad6d253`: it passed 7,582 / 7,582 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes and 0 generic-fallback rows**, with
 218 / 218 function routes present in each ABI surface. The source-digest
 attestation was refreshed in `doc/runtime_parity_evidence.json`; its current
 parity-tree digest is
-`b53da1057318880bcbf904efd1af5579e60cb63b2d262b5420bf54a4cb6b64da`.
+`bd35d36e705ee6e08e9db483021830b9c62e1700016cf943d1c68531119b1564`.
 The tracked C-ABI scorecard is **10 / 12 categories complete**; C01.7 is
-5,322 / 5,322, C08.3 is 7,579 / 7,579, C11.3 is 7 / 8, and C12.3 is 1 / 5.
+5,325 / 5,325, C08.3 is 7,582 / 7,582, C11.3 is 7 / 8, and C12.3 is 1 / 5.
 The Windows import-library item and four fresh target-lane bundles remain.
 
 The three pending cases are deliberately excluded from the pinned-C parity
@@ -551,12 +552,12 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current source-bound all-lane run `550d245c-3dc1-4882-9bf4-6736e27771cc`
-completed in 60.380 seconds with snapshot
-`2608b391-3c99-4de3-8fa6-31c8c1292e6c`. It measured 50,179 / 54,345 lines,
-10,022 / 12,587 branches, 3,433 / 3,824 functions, and 68,933 / 75,488
-regions; the nine process-local shard writers each compared 2,526 or 2,527
-cases before report generation. On this 12-logical-CPU host the adaptive
+The current source-bound all-lane run `aa20f5ff-5a52-41c9-b4e5-33b3fdddf133`
+completed in 15.356 seconds with snapshot
+`d9d4ceb1-4dd9-4e9c-8994-67b579247af0`. It measured 50,179 / 54,345 lines,
+10,026 / 12,587 branches, 3,433 / 3,824 functions, and 68,935 / 75,488
+regions; the nine process-local shard writers split the 7,582 exact cases
+before report generation. On this 12-logical-CPU host the adaptive
 default uses three shards per backend; constrained runners use two, and
 `COVERAGE_UNIFIED_SHARDS=1` restores the earlier three-process split. The
 build-state marker excludes worker, lane-split, and shard settings because
