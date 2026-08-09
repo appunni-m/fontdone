@@ -63,6 +63,28 @@
               ],
               "face_index": 0
             }
+          },
+          {
+            "id": "negative-encoding-property-controls",
+            "coverage": [
+              "bdf/parser:negative-encoding-is-unmapped"
+            ],
+            "assets": {
+              "bdf_font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/negative-encoding-property-controls.bdf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "properties": [
+                "FAMILY_NAME",
+                "POINT_SIZE",
+                "PIXEL_SIZE",
+                "RESOLUTION_X"
+              ],
+              "face_index": 0
+            }
           }
         ]
       },
