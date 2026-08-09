@@ -282,6 +282,16 @@ checkout normally runs `make c-abi-contract`.
 Coverage and parity answer different questions. Executing a line or branch
 does not prove that its result matches C.
 
+The latest source-bound all-lane Coverage MCP run is
+`2488c2da-1779-40ee-ad20-08b866079466` (snapshot
+`4bb7c0ba-6428-41ff-b3d0-316769ed2e46`). It completed in 67.412 seconds after
+a 50.13-second instrumented rebuild and passed 7,576 / 7,576 runnable parity
+comparisons in the three split backends. The consolidated `glyf` loader leaves
+94 / 94 branches covered in `src/tt/glyf.rs`; the overall report is 50,040 /
+54,266 lines, 9,991 / 12,573 branches, 3,410 / 3,819 functions, and 68,755 /
+75,394 regions. The dominant cold-run cost remains instrumented compilation;
+the warm shard execution and report ingestion are much smaller.
+
 ```bash
 make test-coverage
 make test-coverage-all
@@ -297,7 +307,7 @@ Optional feature profiles remain a separate `make optional-feature-contract`
 gate so the default report does not attribute multiple runtime contracts to the
 same LLVM source path.
 
-Repeated local runs reuse the instrumented target and binary. The latest
+Repeated local runs reuse the instrumented target and binary. Recent
 source-bound current-host warm runs are Coverage MCP
 `f422f061-f58a-4084-8339-347bf31ba296` and
 `076f95b7-1b71-4e70-9b3c-d72e27b25a6d`, which took 16.411 and 16.377 seconds
@@ -341,23 +351,22 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The current cold run's longest shard was 13.02 seconds (Rust); C ABI and WASM
-shards were below 12 seconds. These shard timers run concurrently, so their sum
-is not wall time. The 45.60-second instrumented build is the dominant cold
+The current cold run's longest shard was 8.323 seconds (Rust); C ABI and WASM
+shards were below 8 seconds. These shard timers run concurrently, so their sum
+is not wall time. The 50.13-second instrumented build is the dominant cold
 component; report finalization and artifact ingestion are included in the
-63.799-second wall time but are not separately exposed by Coverage MCP.
+67.412-second wall time but are not separately exposed by Coverage MCP.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,122 / 54,388 | 92.16% |
-| Branches | 9,989 / 12,599 | 79.28% |
-| Functions | 3,410 / 3,822 | 89.22% |
-| Regions | 68,864 / 75,559 | 91.14% |
+| Lines | 50,040 / 54,266 | 92.21% |
+| Branches | 9,991 / 12,573 | 79.46% |
+| Functions | 3,410 / 3,819 | 89.29% |
+| Regions | 68,755 / 75,394 | 91.19% |
 
-That latest run passed all 7,568 runnable parity comparisons with 0 failures;
+That latest run passed all 7,576 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`04c522e6-da5a-43c2-8d98-19ccf176be8e`, and the warm confirmation snapshot is
-`c3af13b1-e969-4538-aeaf-8bbe171dd66e`. Coverage MCP accepts the current LLVM
+`4bb7c0ba-6428-41ff-b3d0-316769ed2e46`. Coverage MCP accepts the current LLVM
 JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
 rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
 apply only to the named source commit, suite, and toolchain. They are not a
