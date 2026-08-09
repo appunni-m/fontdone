@@ -304,12 +304,12 @@ the only filename exclusion in the final report.
 
 The all-lane run is still intentionally expensive, but repeated local runs
 reuse the instrumented target and binary. The latest source-bound current-host
-Coverage MCP run (`c58c98ad-a53c-4a7c-8da2-2b3bcfa009d2`, snapshot
-`5994fb75-9aaf-4d4c-bd54-4482b3e3fd4d`) measured 76.282 seconds end-to-end
-with the default one-worker split profile. Its three lanes passed all 7,560
+Coverage MCP run (`5c30e674-e514-43a0-914f-c5aa8e30866a`, snapshot
+`6ee35125-01a5-48a6-a666-4d3feeda859f`) measured 75.578 seconds end-to-end
+with the default one-worker split profile. Its three lanes passed all 7,567
 runnable comparisons with 0 failures and retained the three explicitly
 pending safety-extension cases. The corresponding source-bound parity run is
-`4cf25299-3965-4726-9159-b76561562270`. The focused x-height case
+`a10d82c4-e3df-46f7-b09b-fe018a0f7889`. The focused x-height case
 (`91144282-c800-4cd7-b6d6-1b83176f2bdd`) passed 1 / 1; its measured backend
 work was 9.110 seconds Rust, 8.739 seconds C ABI, 8.711 seconds WASM, and
 2.411 ms for comparison.
@@ -374,25 +374,25 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The latest all-lane report's retained lane timers were 22.248 seconds Rust,
-20.190 seconds C ABI, and 20.096 seconds WASM. These are backend execution
-measurements inside the 32.180-second end-to-end run; report finalization and
-artifact ingestion are included in the wall time but are not separately
-exposed by Coverage MCP.
+The latest all-lane report's retained lane timers were 23.129 seconds Rust,
+21.143 seconds C ABI, and 21.042 seconds WASM. These are backend execution
+measurements inside the 75.578-second end-to-end run; the cold instrumented
+build took 45.70 seconds. Report finalization and artifact ingestion are
+included in the wall time but are not separately exposed by Coverage MCP.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,087 / 54,423 | 92.03% |
-| Branches | 9,985 / 12,602 | 79.23% |
+| Lines | 50,088 / 54,423 | 92.03% |
+| Branches | 9,986 / 12,602 | 79.24% |
 | Functions | 3,411 / 3,846 | 88.69% |
-| Regions | 68,882 / 75,644 | 91.06% |
+| Regions | 68,883 / 75,644 | 91.06% |
 
-That latest run passed all 7,566 runnable parity comparisons with 0 failures;
+That latest run passed all 7,567 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`fd9fb0b0-e7ca-426a-8b96-99da93895678`, and it completed in 32.180 seconds
+`6ee35125-01a5-48a6-a666-4d3feeda859f`, and it completed in 75.578 seconds
 after the instrumented binary was warm. The source-bound full parity run
-`45853181-8825-4efc-8cd3-4ecdf99f98e2`, recorded by
-`a0e63c83-4e78-41b7-87fb-704398854c0a`, recorded 7,566 / 7,566 exact
+`a10d82c4-e3df-46f7-b09b-fe018a0f7889`, recorded by
+`3679b402-18ef-4909-ab0b-af94fbca930f`, recorded 7,567 / 7,567 exact
 comparisons. Coverage MCP does not expose
 separate timestamps for compilation, report finalization, or artifact ingestion. Current
 LLVM JSON is accepted directly by Coverage

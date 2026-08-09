@@ -4562,6 +4562,7 @@ def otsvg_document_real_parity_reason(row: ConcreteInput) -> str | None:
             "otsvg.FT_SVG_DocumentRec.document_range_and_payload_fields",
             "otsvg.FT_SVG_DocumentRec.transform_and_metrics_fields",
             "otsvg.FT_SVG_Document.renderer_callback_observes_document",
+            "otsvg.FT_SVG_Document.renderer_callback_zeroes_after_invalid_glyph",
         }
         and row.operation
         in {

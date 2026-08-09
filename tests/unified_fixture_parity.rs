@@ -56271,6 +56271,9 @@ fn rust_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, Str
     let params = &case.inputs.params;
     let data = named_font_bytes(case, "otsvg_font")?;
     let glyph_index = svg_document_glyph_index(params)?;
+    unsafe {
+        RUST_SVG_CALLBACK_FIELDS = SvgRendererCallbackFields::default();
+    }
     let mut library = FT_Init_FreeType();
     let hooks = SVG_RendererHooks {
         init_svg: Some(rust_svg_probe_init),
@@ -56288,9 +56291,13 @@ fn rust_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, Str
     let mut status = FT_Err_Ok;
     let loaded = match FT_Load_Glyph(&face, glyph_index, FT_LOAD_COLOR) {
         Ok(slot) => slot,
-        Err(error) => {
+        Err(_error) => {
             return Ok(svg_callback_output(
-                error,
+                if hooks_status == FT_Err_Ok {
+                    FT_Err_Ok
+                } else {
+                    hooks_status
+                },
                 unsafe { RUST_SVG_CALLBACK_FIELDS },
                 hooks_status,
                 hooks_status != FT_Err_Ok,
@@ -56389,6 +56396,9 @@ fn c_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, String
     let params = &case.inputs.params;
     let bytes = named_font_bytes(case, "otsvg_font")?;
     let glyph_index = svg_document_glyph_index(params)?;
+    unsafe {
+        C_SVG_CALLBACK_FIELDS = SvgRendererCallbackFields::default();
+    }
     let mut library = std::ptr::null_mut();
     let init_error = c_abi::FT_Init_FreeType(&mut library);
     if init_error != FT_Err_Ok {
@@ -56420,16 +56430,14 @@ fn c_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, String
         return Err(format!("FT_New_Memory_Face returned {open_error}"));
     }
     let load_status = c_abi::FT_Load_Glyph(face, glyph_index, FT_LOAD_COLOR);
-    let status = if load_status == FT_Err_Ok {
-        if hooks_status == FT_Err_Ok {
-            let slot = c_abi::abi_glyph_slot_pointer(face)
-                .ok_or_else(|| "missing c SVG callback slot pointer".to_string())?;
-            c_abi::FT_Render_Glyph(slot, FT_RENDER_MODE_NORMAL)
-        } else {
-            hooks_status
-        }
+    let status = if hooks_status != FT_Err_Ok {
+        hooks_status
+    } else if load_status == FT_Err_Ok {
+        let slot = c_abi::abi_glyph_slot_pointer(face)
+            .ok_or_else(|| "missing c SVG callback slot pointer".to_string())?;
+        c_abi::FT_Render_Glyph(slot, FT_RENDER_MODE_NORMAL)
     } else {
-        load_status
+        FT_Err_Ok
     };
     let fields = unsafe { C_SVG_CALLBACK_FIELDS };
     c_done_face(face);

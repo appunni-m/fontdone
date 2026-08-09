@@ -157,6 +157,69 @@
           "input/fonts/svg/otsvg-glyph.ttf is the project-authored SVG fixture with a document range covering glyph 1; the runner installs the four SVG renderer hooks and renders through FT_Render_Glyph, with the missing-hooks state classified explicitly as unsupported."
         ]
       }
+    },
+    {
+      "case_id": "otsvg.FT_SVG_Document.renderer_callback_zeroes_after_invalid_glyph",
+      "subject": "otsvg.FT_SVG_Document",
+      "case": "renderer_callback_observes_document",
+      "operation": "otsvg.svg_renderer_callback_capture",
+      "schema": "api_result",
+      "expect_error": false,
+      "abi": {
+        "header": "freetype/otsvg.h",
+        "symbol": "FT_SVG_Document",
+        "callback_source": "slot->other"
+      },
+      "inputs": {
+        "assets": {
+          "otsvg_font": {
+            "kind": "ref",
+            "id": "input/fonts/svg/otsvg-glyph.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_source": "otsvg_font",
+          "glyph_index": 65535,
+          "hook_behavior": "capture_slot_other_as_FT_SVG_Document",
+          "render_path": "FT_Render_Glyph",
+          "hooks": "installed"
+        }
+      },
+      "classifiers": [
+        "kind:type",
+        "header:otsvg",
+        "format:otsvg",
+        "coverage:invalid-glyph-load-error"
+      ],
+      "expectation": {
+        "status": "build_dependent",
+        "output_shape": {
+          "status": "FT_Error",
+          "callback_document_fields": "zeroed when glyph loading fails",
+          "unsupported_status": "explicit unsupported SVG module classification"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "callback_document_fields.svg_document_length",
+            "callback_document_fields.units_per_EM",
+            "callback_document_fields.start_glyph_id",
+            "callback_document_fields.end_glyph_id",
+            "callback_document_fields.transform",
+            "callback_document_fields.delta"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftobjs.c",
+          "freetype/src/otvalid/ftotvalid.c"
+        ],
+        "fixture_requirements": [
+          "The maintained OT-SVG font is opened with an out-of-range glyph index; the pinned C callback probe keeps its renderer status at FT_Err_Ok and returns zero document fields when glyph loading fails.",
+          "The valid callback case remains the source of document-field observations."
+        ]
+      }
     }
   ]
 }
