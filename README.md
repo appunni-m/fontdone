@@ -124,11 +124,13 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest pushed-head verification is Coverage MCP parity run
-`7450f53a-3a58-4ed0-93cb-862a1465a09d`, whose passing report was recorded in
+`61f8f35e-4895-45a7-941a-6fb9ec6cb347`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
 7,617 / 7,617 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `3b644805886bc02df66086b0ed284ce154479ac376e5ec4cb82c4d549e461a82`.
+The record operation was run `9766b7b0-91fe-4705-813f-cfbc156f7f03`; its
+source-bound parity-tree digest is
+`ea065fa0005e2326f3fcc279f1fddf0bf4c3d1f224df818add707bb07c35e27c`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,18 +144,18 @@ their exact worktree than the committed release snapshot.
 
 The latest pushed-head all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`f4bbf0a8954b546c5b8bab52e41b3aefc4eab920`
-(Coverage MCP run `0fe3e822-f82b-4471-9258-e24295509659`, snapshot
-`ad0f4c33-dcb1-41ed-b761-a68268e6dfc2`):
+`fb45e10ad19fbb9fd5d3fc81a4dc33c6f3609547`
+(Coverage MCP run `d85c78b7-311b-45a4-9b1b-e3a70a3f45fb`, snapshot
+`51ead77a-fd52-4896-bd2e-7f9177d5c4df`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,219 / 54,250 | 92.57% |
-| Branches | 10,037 / 12,543 | 80.02% |
+| Lines | 50,218 / 54,249 | 92.57% |
+| Branches | 10,036 / 12,541 | 80.03% |
 | Functions | 3,444 / 3,819 | 90.18% |
-| Regions | 68,963 / 75,375 | 91.49% |
+| Regions | 68,957 / 75,368 | 91.49% |
 
-The current managed validation completed in 30.929 seconds; its three split
+The current managed validation completed in 64.593 seconds; its three split
 backends passed all 7,617 runnable comparisons. Its nine shard processes split
 the same exact matrix into disjoint slices before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
@@ -192,11 +194,13 @@ route. The gvar invariant cleanup removes defensive branches whose callers
 already prove valid normalized-coordinate, glyph-offset, contour-endpoint,
 divisor, and axis-extent inputs. It preserved all 7,604 runnable parity
 results and reduced the measured coverage denominator without weakening a
-fixture or parity comparison. The current varstore cleanup removes the
-parser-proven region-index fallback and zero-denominator guard after verifying
-the store and scalar invariants. It preserved all 7,604 runnable parity results
-and left only the real parser, sentinel, and sign edge paths in
-`src/tt/varstore.rs`. The earlier host-width cleanup removes conversion branches that cannot occur on
+fixture or parity comparison. The varstore invariant cleanups remove the
+parser-proven region-index fallback and zero-denominator guard, and now the
+unreachable sign-selection branch, after verifying the store, slope, and scalar
+invariants. The current pushed-head result preserves all 7,617 runnable parity
+comparisons and leaves only the checked multiplication overflow lines
+relevantly uncovered; `src/tt/varstore.rs` now reports 66 / 66 branches. The
+earlier host-width cleanup removes conversion branches that cannot occur on
 the supported 64-bit ABI while retaining checked conversions for 32-bit WASM.
 It preserved all 7,604 runnable parity results and reduced the measured
 coverage denominator without weakening a fixture or parity comparison. The
@@ -327,7 +331,7 @@ routes remain even when every bare function name has some traced route. The self
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`f53f0621-7639-426f-8f1d-cfa735ddb60f`.
+`77eb0854-6abe-4ed6-9171-64a0f68b424e`.
 
 ### 3.5 Performance baseline
 
