@@ -40,12 +40,12 @@
     "function_total": 218
   },
   "c_contract": {
-    "categories_complete": 8,
+    "categories_complete": 10,
     "categories_total": 12,
     "is_complete": false,
-    "runtime_contract_rows_complete": 5309,
+    "runtime_contract_rows_complete": 5310,
     "runtime_contract_rows_total": 5310,
-    "runtime_contract_rows_pending": 1,
+    "runtime_contract_rows_pending": 0,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
     "platform_lanes_complete": 1,
@@ -1358,9 +1358,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "6ac199fe2a7e14b058404897a4356e99b0137ac8400bc22ef6ca3ae1b8142efd",
-    "parity_tree_sha256": "39a0e5c6afaa47b03e763b8214b40b8c6fff43e833824472251da0e4eb1724c1",
-    "log_sha256": "b7943d0019fb6c4bfba63e432dbd86cbeb27794b768a03849b86bde8c5dd2663",
+    "sha256": "5102b759fe5c417d18b386a7fbea0e8512dc58049bce226b6644b621f0d0e4a5",
+    "parity_tree_sha256": "e7c0f89bf1311b05bf101d8adb0d03f699b472120174a3db18f614e24e41b509",
+    "log_sha256": "8522d054681ae09c390aa905597f04b6b266b94a728d3f84ed7b904a25847faf",
     "command": "make test-parity"
   }
 }

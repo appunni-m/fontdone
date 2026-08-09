@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`a10d82c4-e3df-46f7-b09b-fe018a0f7889`, recorded by
-`3679b402-18ef-4909-ab0b-af94fbca930f` in
-`doc/runtime_parity_evidence.json` after passing 7,567 / 7,567 runnable
-comparisons with 0 failures and 3 explicitly pending safety-extension cases.
-Its source-bound parity-tree digest is `39a0e5c6afaa47b03e763b8214b40b8c6fff43e833824472251da0e4eb1724c1`.
+`6e4d3eda-9104-4af2-b72c-77b54c862a3d`, whose passing report was recorded in
+`doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
+7,567 / 7,567 runnable comparisons with 0 failures and 3 explicitly pending
+safety-extension cases.
+Its source-bound parity-tree digest is `e7c0f89bf1311b05bf101d8adb0d03f699b472120174a3db18f614e24e41b509`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -284,15 +284,15 @@ measurement provenance is retained in the compatibility snapshot.
 
 ### 3.4 C ABI completion contract
 
-The latest committed scorecard has **8 / 12 categories complete**:
+The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,309 / 5,310 pinned-C runtime contract rows exact; 1 pending |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,310 / 5,310 pinned-C runtime contract rows exact; 0 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 688 / 688 expected-error routes compare exact error and output results; 7,566 / 7,567 routes have no generic fallback evidence |
+| Errors | 688 / 688 expected-error routes compare exact error and output results; 7,567 / 7,567 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 
@@ -305,7 +305,7 @@ routes remain even when every bare function name has some traced route. The self
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`c756766a-331c-4446-ab20-e870a492bbf6`.
+`ccde80fe-407a-4d12-a4f7-a0fe5c5cee3b`.
 
 ### 3.5 Performance baseline
 

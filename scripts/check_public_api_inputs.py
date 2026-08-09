@@ -4379,6 +4379,16 @@ def ftimage_glyph_format_emitter_real_parity_reason(row: ConcreteInput) -> str |
 
 def ftimage_svg_glyph_load_real_parity_reason(row: ConcreteInput) -> str | None:
     if (
+        row.case_id == "ftimage.FT_GLYPH_FORMAT_SVG.missing_svg_document_rejected"
+        and row.operation == "freetype.load_svg_glyph"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_GLYPH_FORMAT_SVG missing-document behavior compares the pinned "
+            "C load result, empty SVG slot state, Rust FFI, C ABI, and WASM "
+            "outputs for the maintained SVG range-gap fixture"
+        )
+    if (
         row.case_id
         == "ftimage.FT_GLYPH_FORMAT_SVG.produced_by_svg_glyph_load_when_enabled"
         and row.variant_id in {"f1", "f2"}
