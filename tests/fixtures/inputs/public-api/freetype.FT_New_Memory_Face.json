@@ -2334,6 +2334,31 @@
             "coverage": [
               "winfnt:face-name-offset-out-of-range"
             ]
+          },
+          {
+            "id": "pfr-invalid-header-version",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/malformed-header-version.pfr"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/malformed-header-version.pfr"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pfr:invalid-header-version"
+            ]
           }
         ]
       },

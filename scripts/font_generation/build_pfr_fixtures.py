@@ -207,6 +207,16 @@ def build_extended_fixtures() -> None:
     )
 
 
+def build_malformed_fixtures() -> None:
+    """Write malformed PFR probes used by the public face-open matrix."""
+    header = bytearray(58)
+    header[0:4] = b"PFR0"
+    header[4:6] = u16(5)  # PFR 2.14.3 rejects versions above four as unknown.
+    header[6:8] = u16(0x0D0A)
+    header[8:10] = u16(58)
+    (OUT_DIR / "malformed-header-version.pfr").write_bytes(header)
+
+
 def build_basic_metrics_and_kerning(path: Path) -> None:
     """Write one proportional two-glyph PFR face with two kerning pairs."""
     header_size = 58
@@ -307,6 +317,7 @@ def build_basic_metrics_and_kerning(path: Path) -> None:
 def main() -> None:
     build_basic_metrics_and_kerning(OUT_DIR / "basic-metrics-and-kerning.pfr")
     build_extended_fixtures()
+    build_malformed_fixtures()
 
 
 if __name__ == "__main__":

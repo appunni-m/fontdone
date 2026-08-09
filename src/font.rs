@@ -3419,8 +3419,16 @@ impl Font {
     }
 
     fn pfr_face(data: &[u8], face_index: usize, size_pt: f32) -> Result<Self, FontError> {
-        let pfr = PfrFont::parse(data, face_index)
-            .map_err(|reason| FontError::InvalidFont(reason.into()))?;
+        let pfr = PfrFont::parse(data, face_index).map_err(|reason| {
+            // `pfr_face_init` converts any failed PFR header probe back to
+            // `Unknown_File_Format`; deeper recognized-PFR failures remain
+            // `Invalid_File_Format` through the generic face-open mapping.
+            if reason == "invalid PFR header" {
+                FontError::UnknownFileFormat(reason.into())
+            } else {
+                FontError::InvalidFont(reason.into())
+            }
+        })?;
         let metadata = Type1Metadata {
             version: None,
             notice: None,
