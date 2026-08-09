@@ -70,7 +70,7 @@
     "branches": {
       "covered": 9991,
       "total": 12573,
-      "percent": 79.46393064503301
+      "percent": 79.46393064503302
     },
     "functions": {
       "covered": 3410,
@@ -1358,9 +1358,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "dd864c2b687e898a393150c72a1a506fcb60e29a2707f9935bee9d8b2f10b15b",
-    "parity_tree_sha256": "1f681841c498912f7cd94e5c8e77e7f3774ec0489467704117078c58897e72d0",
-    "log_sha256": "7cc2aa1ba48a88350e227a9efa74a72313c5fcb12ecca5c715b318f8fbf6bcb4",
+    "sha256": "2c0fab140ef7170d5aacccfc82cd6140530aa8b149023ba791b9b0eebadbba11",
+    "parity_tree_sha256": "c4a7a7a966b132db8d3b774b82a3cef60bd7c9732505cd514605de17a2b8df36",
+    "log_sha256": "10e7442ff6a5d0a9eb6747c07b5dec9621bc1a44ad2c27e9a81136db31a3bc96",
     "command": "make test-parity"
   }
 }

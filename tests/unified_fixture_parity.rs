@@ -67380,6 +67380,48 @@ fn wasm_open_face_non_driver(case: &InputCase) -> Result<RunOutput, String> {
     ))
 }
 
+fn wasm_open_face_handle_contract(
+    file_base: *const u8,
+    file_size: usize,
+    face_index: i64,
+    expected_error: FT_Error,
+) -> Result<(), String> {
+    let mut reported_error = FT_Err_Invalid_Argument;
+    let handle = wasm_abi::fontdone_wasm_open_face_handle(
+        file_base,
+        file_size,
+        face_index,
+        20.0,
+        &mut reported_error,
+    );
+    if reported_error != expected_error {
+        return Err(format!(
+            "fontdone_wasm_open_face_handle reported {reported_error}, expected {expected_error}"
+        ));
+    }
+    let expected_open = expected_error == FT_Err_Ok;
+    if (handle != 0) != expected_open {
+        return Err(format!(
+            "fontdone_wasm_open_face_handle returned handle {handle:#x} for error {reported_error}"
+        ));
+    }
+    wasm_done_face(handle);
+
+    let null_output_handle = wasm_abi::fontdone_wasm_open_face_handle(
+        file_base,
+        file_size,
+        face_index,
+        20.0,
+        ptr::null_mut(),
+    );
+    if null_output_handle != 0 {
+        return Err(format!(
+            "fontdone_wasm_open_face_handle opened {null_output_handle:#x} with null output"
+        ));
+    }
+    Ok(())
+}
+
 fn wasm_new_memory_face(case: &InputCase) -> Result<RunOutput, String> {
     if memory_face_uses_variant_route(&case.inputs.params) {
         return wasm_new_memory_face_variants(case);
@@ -67387,12 +67429,14 @@ fn wasm_new_memory_face(case: &InputCase) -> Result<RunOutput, String> {
     if lifecycle_handle_param(&case.inputs.params, "file_base") == Some("null") {
         let file_size = usize::try_from(i64_param(&case.inputs.params, "file_size")?)
             .map_err(|err| err.to_string())?;
+        let face_index = face_index_param(&case.inputs.params)?;
         let status = wasm_abi::fontdone_wasm_open_face(
             ptr::null(),
             file_size,
-            face_index_param(&case.inputs.params)?,
+            face_index,
             20.0,
         );
+        wasm_open_face_handle_contract(ptr::null(), file_size, face_index, status.error)?;
         return if status.error == FT_Err_Ok {
             wasm_done_face(status.handle);
             Ok(ok(json!({"opened": true})))
@@ -67401,12 +67445,14 @@ fn wasm_new_memory_face(case: &InputCase) -> Result<RunOutput, String> {
         };
     }
     let bytes = font_bytes(case)?;
+    let face_index = face_index_param(&case.inputs.params)?;
     let status = wasm_abi::fontdone_wasm_open_face(
         bytes.as_ptr(),
         bytes.len(),
-        face_index_param(&case.inputs.params)?,
+        face_index,
         20.0,
     );
+    wasm_open_face_handle_contract(bytes.as_ptr(), bytes.len(), face_index, status.error)?;
     if status.error == FT_Err_Ok {
         wasm_done_face(status.handle);
         Ok(ok(json!({"opened": true})))
