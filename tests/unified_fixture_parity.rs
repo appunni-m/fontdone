@@ -73440,6 +73440,21 @@ fn wasm_interpreter_version_glyph_case(case: &InputCase) -> Result<RunOutput, St
             return Ok(error(status.error));
         }
         let handle = status.handle;
+        let null_readback_status = wasm_abi::fontdone_wasm_interpreter_version_open(
+            bytes.as_ptr(),
+            bytes.len(),
+            0,
+            20.0,
+            value,
+            std::ptr::null_mut(),
+        );
+        if null_readback_status.error != status.error {
+            return Err(format!(
+                "interpreter-version null readback status diverged: normal={} null={}",
+                status.error, null_readback_status.error
+            ));
+        }
+        wasm_done_face(null_readback_status.handle);
         for ppem in &ppems {
             let size_error = wasm_abi::fontdone_wasm_set_pixel_sizes(handle, 0, *ppem);
             for glyph in &glyphs {
