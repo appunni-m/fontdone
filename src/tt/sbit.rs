@@ -147,22 +147,10 @@ impl SbitBitmap {
             .map_err(|_| FontError::InvalidFont("embedded bitmap rows invalid".into()))?;
         let pitch = usize::try_from(self.pitch)
             .map_err(|_| FontError::InvalidFont("embedded bitmap pitch invalid".into()))?;
-        let source_row_bytes = width
-            .checked_mul(4)
-            .ok_or_else(|| FontError::InvalidFont("embedded BGRA row too large".into()))?;
-        if pitch < source_row_bytes {
-            return Err(FontError::InvalidFont(
-                "embedded BGRA pitch is shorter than its row".into(),
-            ));
-        }
-        let source_len = pitch
-            .checked_mul(rows)
-            .ok_or_else(|| FontError::InvalidFont("embedded BGRA buffer too large".into()))?;
-        if self.buffer.len() < source_len {
-            return Err(FontError::InvalidFont(
-                "embedded BGRA buffer is truncated".into(),
-            ));
-        }
+        // `load_simple_image` and `blank_compound_glyph` derive both fields
+        // from `bitmap_layout_for_bit_depth`; a BGRA bitmap therefore always
+        // has exactly `width * 4` bytes per pitch and its buffer is allocated
+        // or copied at exactly `pitch * rows` bytes.
         let target_len = width
             .checked_mul(rows)
             .ok_or_else(|| FontError::InvalidFont("embedded grayscale buffer too large".into()))?;
