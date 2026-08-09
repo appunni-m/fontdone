@@ -1105,9 +1105,11 @@ pub extern "C" fn fontdone_wasm_list_up(list: FT_List, node: FT_ListNode) {
 
     node_ref.prev = ptr::null_mut();
     node_ref.next = list_ref.head;
-    if let Some(head_ref) = unsafe { list_ref.head.as_mut() } {
-        head_ref.prev = node;
-    }
+    // SAFETY: The pinned C implementation reaches this write only after a
+    // non-head node has a predecessor, which requires a non-null list head
+    // for a valid FT_List topology. A null head here is outside C's defined
+    // behavior because FT_List_Up dereferences it unconditionally.
+    unsafe { (*list_ref.head).prev = node };
     list_ref.head = node;
 }
 
