@@ -18,6 +18,7 @@ OUT_DIR = ROOT / "tests" / "fixtures" / "input" / "fonts" / "variable"
 GVAR_EMBEDDED_PEAK_TUPLE = 0x8000
 GVAR_INTERMEDIATE_REGION = 0x4000
 GVAR_PRIVATE_POINT_NUMBERS = 0x2000
+GVAR_TUPLES_SHARE_POINT_NUMBERS = 0x8000
 
 
 def save_font(path: Path, font: TTFont) -> None:
@@ -561,6 +562,79 @@ def tuple_header_exceeds_data_offset_gvar_payload() -> bytes:
     return short_glyph_record_gvar_payload(bytes(glyph_data))
 
 
+def shared_points_empty_gvar_payload() -> bytes:
+    """Build an active tuple with no bytes for its shared point list."""
+
+    glyph_data = bytearray(12)
+    put_u16(glyph_data, 0, GVAR_TUPLES_SHARE_POINT_NUMBERS | 1)
+    put_u16(glyph_data, 2, 12)
+    put_u16(glyph_data, 4, 0)
+    put_u16(glyph_data, 6, GVAR_EMBEDDED_PEAK_TUPLE)
+    put_u16(glyph_data, 8, 0)
+    put_u16(glyph_data, 10, 0)
+    return short_glyph_record_gvar_payload(bytes(glyph_data))
+
+
+def embedded_private_point_gvar_payload(tuple_data: bytes) -> bytes:
+    """Build a default-active embedded tuple with private point data."""
+
+    glyph_data = bytearray(12)
+    put_u16(glyph_data, 0, 1)
+    put_u16(glyph_data, 2, 12)
+    put_u16(glyph_data, 4, len(tuple_data))
+    put_u16(
+        glyph_data,
+        6,
+        GVAR_EMBEDDED_PEAK_TUPLE | GVAR_PRIVATE_POINT_NUMBERS,
+    )
+    put_u16(glyph_data, 8, 0)
+    put_u16(glyph_data, 10, 0)
+    glyph_data.extend(tuple_data)
+    if len(glyph_data) % 2:
+        glyph_data.append(0)
+    return short_glyph_record_gvar_payload(bytes(glyph_data))
+
+
+def private_point_byte_short_gvar_payload() -> bytes:
+    """Build a private point run whose byte point index is truncated."""
+
+    # One point, one byte-sized run, but no byte-sized point delta follows the
+    # run control byte.
+    return embedded_private_point_gvar_payload(bytes((1, 0)))
+
+
+def private_point_index_invalid_gvar_payload() -> bytes:
+    """Build a private point run that names a point beyond the outline."""
+
+    # Glyph 10 has 30 outline points plus four phantom points.  The packed
+    # point run below names point 35, then supplies one byte X/Y delta each.
+    return embedded_private_point_gvar_payload(bytes((1, 0, 0x23, 0, 1, 0, 1)))
+
+
+def long_offset_array_short_gvar_payload() -> bytes:
+    """Build a long-offset table whose final offset is truncated."""
+
+    glyph_count = 20
+    payload = bytearray(100)
+    put_u16(payload, 0, 1)
+    put_u16(payload, 4, 2)
+    put_u16(payload, 6, 0)
+    put_u32(payload, 8, 104)
+    put_u16(payload, 12, glyph_count)
+    put_u16(payload, 14, 1)
+    put_u32(payload, 16, 104)
+    return bytes(payload)
+
+
+def unsupported_minor_gvar_payload() -> bytes:
+    """Build a gvar header with a supported major but unsupported minor."""
+
+    payload = bytearray(20)
+    put_u16(payload, 0, 1)
+    put_u16(payload, 2, 1)
+    return bytes(payload)
+
+
 def packed_edge_gvar_payload(*, shared_points: bool, default_active: bool = False) -> bytes:
     """Build a valid two-axis gvar record for glyph 10.
 
@@ -772,6 +846,29 @@ def write_gvar_fixtures() -> None:
         "gvar-tuple-header-exceeds-data-offset-runtime.ttf",
         tuple_header_exceeds_data_offset_gvar_payload(),
         remove_hvar=True,
+    )
+    write_gvar_payload(
+        "gvar-shared-points-empty-runtime.ttf",
+        shared_points_empty_gvar_payload(),
+        remove_hvar=True,
+    )
+    write_gvar_payload(
+        "gvar-private-point-byte-short-runtime.ttf",
+        private_point_byte_short_gvar_payload(),
+        remove_hvar=True,
+    )
+    write_gvar_payload(
+        "gvar-private-point-index-invalid-runtime.ttf",
+        private_point_index_invalid_gvar_payload(),
+        remove_hvar=True,
+    )
+    write_gvar_payload(
+        "gvar-long-offset-array-short.ttf",
+        long_offset_array_short_gvar_payload(),
+    )
+    write_gvar_payload(
+        "gvar-minor-version-1.ttf",
+        unsupported_minor_gvar_payload(),
     )
 
 
