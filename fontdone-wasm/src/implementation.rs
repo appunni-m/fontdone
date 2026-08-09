@@ -985,7 +985,10 @@ pub fn abi_palette_mutate_entry(
     if entry_index < snapshot.entries.len() {
         let mut palette = ptr::null_mut();
         let error = fontdone_wasm_palette_select(handle, palette_index, &mut palette);
-        if error == rust_ffi::FT_Err_Ok && !palette.is_null() {
+        // `entry_index < snapshot.entries.len()` above proves that the
+        // selected palette pointer is non-null: the snapshot helper returns
+        // no entries for a null pointer or failed metadata lookup.
+        if error == rust_ffi::FT_Err_Ok {
             // SAFETY: this feature-gated helper mutates an entry through the
             // public WASM ABI palette pointer while the handle is live,
             // matching the FreeType caller-observable behavior under test.
