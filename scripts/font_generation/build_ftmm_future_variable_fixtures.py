@@ -437,7 +437,9 @@ def clamped_offsets_gvar_payload() -> bytes:
     return bytes(payload)
 
 
-def short_glyph_record_gvar_payload(glyph_data: bytes) -> bytes:
+def short_glyph_record_for_glyph_gvar_payload(
+    glyph_index: int, glyph_data: bytes
+) -> bytes:
     """Build a gvar table with a selected glyph record shorter than its header.
 
     The matching FTMM route selects the font's default design tuple. Pinned
@@ -448,7 +450,6 @@ def short_glyph_record_gvar_payload(glyph_data: bytes) -> bytes:
 
     glyph_count = 20
     axis_count = 2
-    glyph_index = 10
     offsets_start = 20
     data_offset = offsets_start + (glyph_count + 1) * 2
     payload = bytearray(data_offset + len(glyph_data))
@@ -464,6 +465,10 @@ def short_glyph_record_gvar_payload(glyph_data: bytes) -> bytes:
         put_u16(payload, offsets_start + index * 2, glyph_offset // 2)
     payload[data_offset:] = glyph_data
     return bytes(payload)
+
+
+def short_glyph_record_gvar_payload(glyph_data: bytes) -> bytes:
+    return short_glyph_record_for_glyph_gvar_payload(10, glyph_data)
 
 
 def embedded_peak_short_gvar_payload() -> bytes:
@@ -562,6 +567,17 @@ def tuple_header_exceeds_data_offset_gvar_payload() -> bytes:
     return short_glyph_record_gvar_payload(bytes(glyph_data))
 
 
+def glyph_data_offset_out_of_range_gvar_payload() -> bytes:
+    """Build a tuple record whose data offset exceeds the record length."""
+
+    glyph_data = bytearray(8)
+    put_u16(glyph_data, 0, 1)
+    put_u16(glyph_data, 2, 10)
+    put_u16(glyph_data, 4, 0)
+    put_u16(glyph_data, 6, 0)
+    return short_glyph_record_gvar_payload(bytes(glyph_data))
+
+
 def shared_points_empty_gvar_payload() -> bytes:
     """Build an active tuple with no bytes for its shared point list."""
 
@@ -609,6 +625,27 @@ def private_point_index_invalid_gvar_payload() -> bytes:
     # Glyph 10 has 30 outline points plus four phantom points.  The packed
     # point run below names point 35, then supplies one byte X/Y delta each.
     return embedded_private_point_gvar_payload(bytes((1, 0, 0x23, 0, 1, 0, 1)))
+
+
+def empty_outline_partial_gvar_payload() -> bytes:
+    """Build a partial-point tuple for the empty glyph-17 outline."""
+
+    # One private point with zero X/Y deltas is enough to select IUP while
+    # keeping the public empty-outline metrics and outline bytes unchanged.
+    tuple_data = bytes((1, 0, 0, 0, 0, 0, 0))
+    glyph_data = bytearray(12)
+    put_u16(glyph_data, 0, 1)
+    put_u16(glyph_data, 2, 12)
+    put_u16(glyph_data, 4, len(tuple_data))
+    put_u16(
+        glyph_data,
+        6,
+        GVAR_EMBEDDED_PEAK_TUPLE | GVAR_PRIVATE_POINT_NUMBERS,
+    )
+    put_u16(glyph_data, 8, 0)
+    put_u16(glyph_data, 10, 0)
+    glyph_data.extend(tuple_data)
+    return short_glyph_record_for_glyph_gvar_payload(17, bytes(glyph_data))
 
 
 def long_offset_array_short_gvar_payload() -> bytes:
@@ -848,6 +885,11 @@ def write_gvar_fixtures() -> None:
         remove_hvar=True,
     )
     write_gvar_payload(
+        "gvar-glyph-data-offset-out-of-range-runtime.ttf",
+        glyph_data_offset_out_of_range_gvar_payload(),
+        remove_hvar=True,
+    )
+    write_gvar_payload(
         "gvar-shared-points-empty-runtime.ttf",
         shared_points_empty_gvar_payload(),
         remove_hvar=True,
@@ -860,6 +902,11 @@ def write_gvar_fixtures() -> None:
     write_gvar_payload(
         "gvar-private-point-index-invalid-runtime.ttf",
         private_point_index_invalid_gvar_payload(),
+        remove_hvar=True,
+    )
+    write_gvar_payload(
+        "gvar-empty-outline-partial-runtime.ttf",
+        empty_outline_partial_gvar_payload(),
         remove_hvar=True,
     )
     write_gvar_payload(
