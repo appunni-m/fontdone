@@ -773,6 +773,9 @@ fn assert_unified_fixture_cases_match_runtime_c_oracle(all_cases: &[InputCase]) 
     }
 
     let total_failures = failures.len().saturating_add(runtime_failures.count);
+    let compared_case_count = unified_shard().map_or(cases.len(), |(index, count)| {
+        shard_case_count(cases.len(), index, count)
+    });
     eprintln!(
         "runtime_cases: runnable={} pending={} pending_reasons={}",
         runtime_case_count, runtime_model_only, pending_report
@@ -781,7 +784,7 @@ fn assert_unified_fixture_cases_match_runtime_c_oracle(all_cases: &[InputCase]) 
         "runtime_parity: passed={} failed={} total={} covered_manifest_cases={} failure_buckets={}",
         passed,
         total_failures,
-        cases.len(),
+        compared_case_count,
         covered.len(),
         format_operation_counts(
             &runtime_failures.buckets,
@@ -2649,15 +2652,35 @@ fn compare_backend_outputs_with_oracle_cache(
             project_incremental_metrics_vertical_override(case, output)
         })
         .collect::<Result<Arc<[_]>, _>>()?;
+    let (comparison_cases, comparison_outputs): (Vec<_>, Vec<_>) = if let Some((index, count)) = unified_shard() {
+        let mut selected_cases = Vec::new();
+        let mut selected_outputs = Vec::new();
+        for (case_index, (case, output)) in cases.iter().zip(oracle_outputs.iter()).enumerate() {
+            if case_index % count == index {
+                selected_cases.push(*case);
+                selected_outputs.push(output.clone());
+            }
+        }
+        eprintln!(
+            "runtime_shard: index={} count={} compared={} total={}",
+            index,
+            count,
+            selected_cases.len(),
+            cases.len()
+        );
+        (selected_cases, selected_outputs)
+    } else {
+        (cases.to_vec(), oracle_outputs.iter().cloned().collect())
+    };
     let result = {
         let _profile = ProfileStage::new("runtime.compare_backend_outputs");
-        compare_backend_outputs(cases, oracle_outputs.as_ref())
+        compare_backend_outputs(&comparison_cases, &comparison_outputs)
     };
-    write_strict_expected_error_ledger(cases, &result)?;
+    write_strict_expected_error_ledger(&comparison_cases, &result)?;
     eprintln!(
         "runtime_parity_progress: compared={} total={} passed={} failed={} rust_ns={} c_abi_ns={} wasm_ns={} compare_ns={} rust_ms={:.3} c_abi_ms={:.3} wasm_ms={:.3} compare_ms={:.3}",
-        cases.len(),
-        cases.len(),
+        comparison_cases.len(),
+        comparison_cases.len(),
         result.passed,
         result.failures.count,
         duration_ns(result.profile.rust_ffi),
@@ -2679,7 +2702,11 @@ fn write_strict_expected_error_ledger(
     if !strict_expected_errors() || !expected_error_only() {
         return Ok(());
     }
-    if case_filter().is_some() || operation_filter().is_some() || case_limit().is_some() {
+    if case_filter().is_some()
+        || operation_filter().is_some()
+        || case_limit().is_some()
+        || unified_shard().is_some()
+    {
         eprintln!(
             "strict_error_ledger: not updated by a focused run; run `make audit-exact-errors` without CASE/OP/limit to refresh the complete ledger"
         );
@@ -38595,6 +38622,36 @@ fn case_limit() -> Option<usize> {
                 .parse::<usize>()
                 .unwrap_or_else(|err| panic!("FONTDONE_UNIFIED_CASE_LIMIT must be usize: {err}"))
         })
+}
+
+fn unified_shard() -> Option<(usize, usize)> {
+    let index = std::env::var("FONTDONE_UNIFIED_SHARD_INDEX").ok();
+    let count = std::env::var("FONTDONE_UNIFIED_SHARD_COUNT").ok();
+    match (index, count) {
+        (None, None) => None,
+        (Some(index), Some(count)) => {
+            let index = index.parse::<usize>().unwrap_or_else(|err| {
+                panic!("FONTDONE_UNIFIED_SHARD_INDEX must be usize: {err}")
+            });
+            let count = count.parse::<usize>().unwrap_or_else(|err| {
+                panic!("FONTDONE_UNIFIED_SHARD_COUNT must be usize: {err}")
+            });
+            assert!(count > 0, "FONTDONE_UNIFIED_SHARD_COUNT must be positive");
+            assert!(index < count, "FONTDONE_UNIFIED_SHARD_INDEX must be less than count");
+            Some((index, count))
+        }
+        _ => panic!(
+            "FONTDONE_UNIFIED_SHARD_INDEX and FONTDONE_UNIFIED_SHARD_COUNT must be set together"
+        ),
+    }
+}
+
+fn shard_case_count(total: usize, index: usize, count: usize) -> usize {
+    if index >= total {
+        0
+    } else {
+        (total - index - 1) / count + 1
+    }
 }
 
 fn case_matches_filter(case: &InputCase, filter: Option<&str>) -> bool {

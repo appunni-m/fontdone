@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`6f98a0f9-4a8a-4a5c-b785-7d8a1f9004ce`, whose passing report was recorded in
+`4ee46052-4dab-414b-9402-dc0304f5c3d4`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
 7,568 / 7,568 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `9ecd2a25bb8fb3bee79fff2d373c2bb5af4882afe9adde0aa56ee8498cdaf34d`.
+Its source-bound parity-tree digest is `38b0df565125b23fe572a377a0dee7654aba85d70c27bfae4f46d831c5fc77e3`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,9 +142,9 @@ their exact worktree than the committed release snapshot.
 
 The latest source-bound all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`8114ece162f5c9aaa657123d17e8c913606ee3f2`
-(Coverage MCP run `a181a590-26c0-44fb-9049-980ecc041269`, snapshot
-`b2baeef5-49a7-4fa2-adc0-40f25d27f2b6`):
+`56655aa123d27de2c7cf029a23e499e61d2edf5d`
+(Coverage MCP run `e9e57a65-220d-4094-b5b6-a9f9d8fd050b`, snapshot
+`d9ff95ec-abc9-478f-9e0c-e7062d51a7a4`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -153,44 +153,40 @@ The latest source-bound all-lane coverage snapshot was recorded on
 | Functions | 3,410 / 3,822 | 89.22% |
 | Regions | 68,864 / 75,559 | 91.14% |
 
-This source-bound validation completed in 79.695 seconds with the default
-`COVERAGE_UNIFIED_WORKERS=1`; its cold instrumented build took 50.53 seconds,
-and the retained Rust, C ABI, and WASM lane times were 24.20s, 24.31s, and
-25.62s.
-The first validation after the build-marker change
-took 83.479 seconds, including a 46.78-second instrumented rebuild. The
-same-source two-worker comparison
-(`971f65aa-12b6-4a41-9dcb-cceffdd99199`) took 140.239 seconds, confirming
-that extra workers contend inside each instrumented lane instead of reducing
-the wall time.
+The cold validation completed in 59.995 seconds with the default
+`COVERAGE_UNIFIED_WORKERS=1`, `COVERAGE_UNIFIED_LANE_SPLIT=1`, and
+`COVERAGE_UNIFIED_SHARDS=2`; its instrumented build took 38.85 seconds. Six
+processes ran concurrently—two shards each for Rust FFI, C ABI, and WASM—and
+each shard compared 3,784 / 3,784 cases before the raw profiles were merged.
+The warm repeat (Coverage MCP run `f9a5093f-2102-4609-845b-5216210cb5a0`,
+snapshot `a4853650-5aa2-4065-8f87-84c58dc6947f`) completed in 18.383 seconds
+with a 0.07-second profile setup. Compared with the prior 79.695-second
+three-process cold run, the new default is about 25% faster; compared with the
+prior 28.339-second warm run, it is about 35% faster. The coverage totals and
+all 7,568 runnable parity cases are unchanged.
 
 The maintained Apple full-Unicode format-13 font and malformed format-13
 matrix remain exercised by their existing character-index and parser routes.
 The new `sbix` recursive-target input adds one real `FT_Load_Glyph` parity case
 for an out-of-range `dupe` target; the source-bound parity run
 `6f98a0f9-4a8a-4a5c-b785-7d8a1f9004ce` passed 7,568 / 7,568 comparisons with
-0 failures. The all-lane run rebuilt the instrumented profile in 50.53 seconds
-and its longest lane was 25.62 seconds. This continues to identify cache-miss
-compilation, rather than MCP ingestion or the C oracle, as the largest cold-run
-delay.
+0 failures. The all-lane run rebuilt the instrumented profile in 38.85 seconds
+and its longest shard was about 13.42 seconds. This continues to identify
+cache-miss instrumented compilation, rather than MCP ingestion or the C oracle,
+as the largest cold-run delay.
 
-The coverage-speed validation on the current worktree set
-`COVERAGE_TEST_DEBUG=0`: the cold instrumented profile build fell from about
-66 seconds with the previous line-table setting to 49.40 seconds, while the
-valid coverage totals and all-lane parity stayed unchanged (Coverage MCP run
-`43214315-ba24-44e0-b4f9-fce152052ec5`, snapshot
-`f9469846-d77a-4cfa-b80d-011d9ab87456`). A warm confirmation
-(`5f1b9ccd-8151-4fc7-9be2-045e3ea7a1e8`, snapshot
-`fced0659-ec06-4909-8744-40377010abad`) completed in 29.114 seconds with
-lane times of 24.95, 25.04, and 26.49 seconds. The change primarily removes
-cold instrumented-link overhead; the three parity lanes remain the dominant
-warm cost. LLVM coverage mapping supplies the source locations used by the
-report without requiring DWARF line tables.
+The earlier coverage-speed change set `COVERAGE_TEST_DEBUG=0`, removing DWARF
+line tables while retaining LLVM source mapping; its historical cold build was
+49.40 seconds (run `43214315-ba24-44e0-b4f9-fce152052ec5`). The current sharded
+run retains that setting and additionally removes the remaining cross-backend
+counter contention by using process-local shard profiles. LLVM coverage mapping
+supplies the report's source locations without requiring DWARF line tables.
 
 The coverage build-state marker now keys reuse to the newest commit touching
 compiler-relevant inputs, rather than every current `HEAD`, and excludes
-`COVERAGE_UNIFIED_WORKERS` and `COVERAGE_UNIFIED_LANE_SPLIT` because they only
-change process orchestration. A dirty compiler-input tree still forces a
+`COVERAGE_UNIFIED_WORKERS`, `COVERAGE_UNIFIED_LANE_SPLIT`, and
+`COVERAGE_UNIFIED_SHARDS` because they only change process orchestration. A
+dirty compiler-input tree still forces a
 clean rebuild. The warm confirmation above therefore avoids the 46.78-second
 compile after fixture/docs-only commits or worker tuning while retaining the
 same instrumented binary, parity matrix, and coverage totals.

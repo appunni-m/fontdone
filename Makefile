@@ -30,6 +30,11 @@ COVERAGE_TEST_BINARY ?=
 COVERAGE_UNIFIED_TEST_NAME ?= parity_fixture::unified_fixture_parity
 COVERAGE_ABI_PREFLIGHT ?= 0
 COVERAGE_UNIFIED_LANE_SPLIT ?= 1
+# Run each backend in two independent processes by default. LLVM profile
+# counters are process-local; sharding avoids the counter contention measured
+# when one instrumented process uses multiple workers, while the report step
+# merges every shard's raw profile.
+COVERAGE_UNIFIED_SHARDS ?= 2
 # Optional-feature contracts are a separate gate and are already exercised by
 # `make test-parity-smoke`; opt in when an isolated coverage invocation needs
 # to rebuild and verify those non-instrumented bundles as well.
@@ -346,28 +351,26 @@ ifeq ($(COVERAGE_UNIFIED_LANE_SPLIT),1)
 	  echo "coverage test binary not found under $(COVERAGE_ALL_TARGET_DIR)/llvm-cov-target/debug/deps" >&2; \
 	  exit 1; \
 	fi; \
+	case "$(COVERAGE_UNIFIED_SHARDS)" in ''|*[!0-9]*) echo "COVERAGE_UNIFIED_SHARDS must be a positive integer" >&2; exit 1;; esac; \
+	if [ "$(COVERAGE_UNIFIED_SHARDS)" -lt 1 ]; then echo "COVERAGE_UNIFIED_SHARDS must be a positive integer" >&2; exit 1; fi; \
 	lane_status=0; \
-	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
-	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
-	  FONTDONE_UNIFIED_SKIP_ORACLE_CASE_CACHE_SEED=$(COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED) \
-	  FONTDONE_UNIFIED_BACKEND=rust \
-	  LLVM_PROFILE_FILE=$(COVERAGE_PROFILE_DIR)/fontdone-rust-%p-%m.profraw \
-	  "$$test_binary" "$(COVERAGE_UNIFIED_TEST_NAME)" --exact --nocapture ) & rust_pid=$$!; \
-	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
-	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
-	  FONTDONE_UNIFIED_SKIP_ORACLE_CASE_CACHE_SEED=$(COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED) \
-	  FONTDONE_UNIFIED_BACKEND=c-abi \
-	  LLVM_PROFILE_FILE=$(COVERAGE_PROFILE_DIR)/fontdone-c-abi-%p-%m.profraw \
-	  "$$test_binary" "$(COVERAGE_UNIFIED_TEST_NAME)" --exact --nocapture ) & c_abi_pid=$$!; \
-	( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
-	  FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
-	  FONTDONE_UNIFIED_SKIP_ORACLE_CASE_CACHE_SEED=$(COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED) \
-	  FONTDONE_UNIFIED_BACKEND=wasm \
-	  LLVM_PROFILE_FILE=$(COVERAGE_PROFILE_DIR)/fontdone-wasm-%p-%m.profraw \
-	  "$$test_binary" "$(COVERAGE_UNIFIED_TEST_NAME)" --exact --nocapture ) & wasm_pid=$$!; \
-	wait $$rust_pid || lane_status=1; \
-	wait $$c_abi_pid || lane_status=1; \
-	wait $$wasm_pid || lane_status=1; \
+	pids=""; \
+	for backend in rust c-abi wasm; do \
+	  shard=0; \
+	  while [ "$$shard" -lt "$(COVERAGE_UNIFIED_SHARDS)" ]; do \
+	    ( CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
+	      FONTDONE_UNIFIED_WORKERS=$(COVERAGE_UNIFIED_WORKERS) \
+	      FONTDONE_UNIFIED_SKIP_ORACLE_CASE_CACHE_SEED=$(COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED) \
+	      FONTDONE_UNIFIED_BACKEND=$$backend \
+	      FONTDONE_UNIFIED_SHARD_INDEX=$$shard \
+	      FONTDONE_UNIFIED_SHARD_COUNT=$(COVERAGE_UNIFIED_SHARDS) \
+	      LLVM_PROFILE_FILE=$(COVERAGE_PROFILE_DIR)/fontdone-$$backend-shard-$$shard-%p-%m.profraw \
+	      "$$test_binary" "$(COVERAGE_UNIFIED_TEST_NAME)" --exact --nocapture ) & \
+	      pids="$$pids $$!"; \
+	    shard=$$((shard + 1)); \
+	  done; \
+	done; \
+	for pid in $$pids; do wait $$pid || lane_status=1; done; \
 	exit $$lane_status
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
 	$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov report \
@@ -471,6 +474,7 @@ test-ffi:
 #   COVERAGE_ALL_TARGET_DIR             – isolated cached target for all-lane LLVM coverage
 #   COVERAGE_TEST_BINARY                – optional instrumented test binary override; otherwise the newest built binary is used
 #   COVERAGE_UNIFIED_TEST_NAME          – exact integration-test name used by the split coverage lanes
+#   COVERAGE_UNIFIED_SHARDS              – independent process shards per backend in split coverage (default 2)
 #   COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED – skip the redundant aggregate-hit case-cache scan in coverage lanes (1/0)
 #   COVERAGE_ABI_PREFLIGHT               – rerun the standalone ABI unit preflight (1/0)
 #   COVERAGE_PREPARE_OPTIONAL_FEATURES   – include the separate optional-feature contract gate (1/0)

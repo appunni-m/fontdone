@@ -151,51 +151,32 @@ coverage. Set `COVERAGE_ABI_PREFLIGHT=1` when an isolated coverage invocation
 also needs the extra preflight.
 
 By default, `COVERAGE_UNIFIED_LANE_SPLIT=1` builds one instrumented
-`unified_fixture_parity` binary, then runs that binary directly for the Rust
-FFI, C ABI, and host-WASM comparisons in three separate processes.
-`FONTDONE_UNIFIED_BACKEND` selects the single backend for each process, and
-each process writes a distinct `LLVM_PROFILE_FILE`; the final `cargo llvm-cov
-report` merges those raw profiles. The split lanes must write those files under
+`unified_fixture_parity` binary, then runs it in two independent shards for each
+of the Rust FFI, C ABI, and host-WASM backends. `FONTDONE_UNIFIED_BACKEND`
+selects the backend, `FONTDONE_UNIFIED_SHARD_INDEX` and
+`FONTDONE_UNIFIED_SHARD_COUNT` select a disjoint case slice, and every process
+writes a distinct `LLVM_PROFILE_FILE`; the final `cargo llvm-cov report` merges
+all six raw profiles. The shard profiles must live under
 `$(COVERAGE_ALL_TARGET_DIR)/llvm-cov-target`, the nested target directory that
-`cargo llvm-cov report` scans; placing them beside that directory makes the
-report reuse an older `fontdone.profdata`. Reusing the binary avoids reacquiring
-Cargo's build lock and repeating the `cargo llvm-cov` test-profile setup three
-times. LLVM source-based coverage counters are process-local, so this removes
-the cross-backend counter contention without changing the input matrix or
-oracle comparison. Set `COVERAGE_UNIFIED_LANE_SPLIT=0` only to reproduce the
-legacy single-process diagnostic path. The latest measured validation is
-Coverage MCP run `c58c98ad-a53c-4a7c-8da2-2b3bcfa009d2` (snapshot
-`5994fb75-9aaf-4d4c-bd54-4482b3e3fd4d`): all three processes passed 7,560 /
-7,560 cases. This source-bound run took 76.282 seconds with the default
-one-worker lane profile. The same-source
-two-worker comparison `e5dd45f6-d1dc-4c1d-a7ee-8ea143b8441d` took 115.508
-seconds. The three lanes already run concurrently, so increasing coverage
-workers is not a safe speedup: instrumented counter and cache contention
-dominates the extra scheduling. The prior warm repeat
-`4f42b55d-3301-46bc-85b6-560ae948d2a5` (snapshot
-`1063ab34-d0bf-4a2d-9147-bd063f39c502`) took 29.156 seconds. The
-preceding source-bound managed run took 93.856 seconds. The preceding warm managed run took 50.842 seconds. The
-preceding source-bound run took 100.333 seconds, including a 48.78-second
-instrumented rebuild; the longest backend execution was 48.24 seconds. The
-preceding managed warm run took 51.653 seconds; the prior managed warm run took
-50.861 seconds; the first source-bound run after the code change took 99.254
-seconds because it rebuilt the instrumented binary. The prior execution-only
-warm unchanged-binary baseline remains 50.482 seconds.
-A preceding clean-target run took 109.360 seconds because it rebuilt the
-instrumented binary; the build-only step now uses `--no-report -- --list` so
-profile merging cannot happen before the three lane processes execute.
+`cargo llvm-cov report` scans. Reusing the binary avoids reacquiring Cargo's
+build lock and repeating the test-profile setup. LLVM source-based coverage
+counters are process-local, so the extra process-level parallelism removes the
+counter contention measured with multiple workers in one process without
+changing the input matrix or oracle comparison. Set
+`COVERAGE_UNIFIED_SHARDS=1` to reproduce the three-process split, or
+`COVERAGE_UNIFIED_LANE_SPLIT=0` for the legacy single-process diagnostic path.
 
-The current coverage-speed change also sets `COVERAGE_TEST_DEBUG=0`. On the
-same worktree, the cold instrumented profile build measured 49.40 seconds,
-down from about 66 seconds with the previous line-table setting, while the
-valid coverage totals remained identical (Coverage MCP run
-`43214315-ba24-44e0-b4f9-fce152052ec5`, snapshot
-`f9469846-d77a-4cfa-b80d-011d9ab87456`). The warm confirmation
-`5f1b9ccd-8151-4fc7-9be2-045e3ea7a1e8` (snapshot
-`fced0659-ec06-4909-8744-40377010abad`) completed in 29.114 seconds and
-passed all three split lanes. LLVM source coverage mapping provides the
-report's source locations independently of DWARF line tables, so this removes
-link-time debug metadata without changing the measured denominator.
+The latest cold validation is Coverage MCP run
+`e9e57a65-220d-4094-b5b6-a9f9d8fd050b` (snapshot
+`d9ff95ec-abc9-478f-9e0c-e7062d51a7a4`): it took 59.995 seconds, including a
+38.85-second instrumented build, and all six shard processes passed their
+3,784 / 3,784 slices. The warm repeat `f9a5093f-2102-4609-845b-5216210cb5a0`
+(snapshot `a4853650-5aa2-4065-8f87-84c58dc6947f`) took 18.383 seconds with a
+0.07-second profile setup. The coverage totals remain 50,122 / 54,388 lines,
+9,989 / 12,599 branches, 3,410 / 3,822 functions, and 68,864 / 75,559
+regions. The default build-state marker excludes worker, lane-split, and shard
+settings because they only change process orchestration; changing compiler
+inputs or instrumentation still forces a clean instrumented rebuild.
 
 The report names `fontdone`, `fontdone-c-abi`, and `fontdone-wasm` explicitly
 because `cargo llvm-cov report` does not accept the workspace flag; this keeps
@@ -293,55 +274,25 @@ make test-coverage-all
 ```
 
 The focused command writes core Rust JSON. The all-lane command schedules the
-independent oracle/audit preparation, then uses nightly branch coverage for
-every non-ignored root unit and integration target under the default feature
-profile, including the complete parity matrix. The split path builds and
-instruments the core, native C ABI, and host-compiled WASM facade once, executes
-each backend lane in its own process, and merges the three raw profiles into one
-report. Compiling a facade again under a second feature set would make LLVM
-attribute two object variants to the same source path. Optional feature profiles
-are verified by `make optional-feature-contract`; mixing them into the default
-parity process would compare different runtime contracts. The coverage command
-writes `target/coverage/unified-runtime-all-lanes.json`; test-harness paths are
-the only filename exclusion in the final report.
+independent oracle/audit preparation, then uses nightly branch coverage for the
+complete parity matrix. It builds and instruments the core, native C ABI, and
+host-compiled WASM facade once, executes two disjoint shards for each backend,
+and merges the six raw profiles into `target/coverage/unified-runtime-all-lanes.json`.
+Optional feature profiles remain a separate `make optional-feature-contract`
+gate so the default report does not attribute multiple runtime contracts to the
+same LLVM source path.
 
-The all-lane run is still intentionally expensive, but repeated local runs
-reuse the instrumented target and binary. The latest source-bound current-host
-Coverage MCP run (`cfa3fcac-b5b6-4939-ba35-904ac08bc5f8`, snapshot
-`afe5d428-3b0e-4684-af4d-655637182d2e`) measured 75.320 seconds end-to-end
-with the default one-worker split profile. Its three lanes passed all 7,567
-runnable comparisons with 0 failures and retained the three explicitly
-pending safety-extension cases. The corresponding source-bound parity run is
-`07f71e18-873e-4c92-973b-a918993ba75c`. This source-bound run rebuilt the
-instrumented state after the SBIT arithmetic change; its measured lane timers
-were 24.260s Rust FFI, 24.360s C ABI, and 25.690s WASM. The focused x-height case
-(`91144282-c800-4cd7-b6d6-1b83176f2bdd`) passed 1 / 1; its measured backend
-work was 9.110 seconds Rust, 8.739 seconds C ABI, 8.711 seconds WASM, and
-2.411 ms for comparison.
-The latest cache-miss comparison (`90f0239f-93a7-4f66-a758-eb84da5d24b7`)
-took 80.314 seconds because instrumented compilation consumed 47.59 seconds;
-its longest lane was 26.45 seconds and the oracle cache reported 6,211 hits.
-This isolates cold instrumented compilation as the large coverage delay; the
-warm split lanes and report complete in about 29 seconds on this host. The
-preceding image-cache remove-face-ID run
-(`b8b246c4-a7d9-4d39-8f08-aeb4694679f4`,
-snapshot `54a29596-5f12-4598-b272-2ca8df957b63`) measured 89.542 seconds. The
-preceding
-source/input-bound refresh (`b0194751-8e81-4d73-a17d-d6ae1a636c71`, snapshot
-`21949c21-abcd-4b97-b5c8-a9badd976487`) measured 89.100 seconds. The
-preceding source-bound run
-(`c1bc9991-b54f-405c-bf03-22b83752a230`, snapshot
-`934ff05d-8c38-4c56-96ca-d5477f27576e`) measured 93.856 seconds including a
-39.79-second instrumented rebuild. The preceding warm run
-(`fb9ed28c-46d3-4a3d-beb9-1d576ba385cc`) measured 50.842 seconds with the
-warm instrumented binary. The preceding source-bound run
-measured 100.333 seconds including a 48.78-second instrumented rebuild; the
-longest backend execution was 48.24 seconds. The preceding managed warm run
-measured 51.653 seconds; the prior managed warm run measured 50.861 seconds,
-the first source-bound rebuild measured 99.254 seconds, and the prior execution-only
-warm measurement was 50.482 seconds with
-warm input and oracle caches. Allow roughly 2 minutes for host variation and
-roughly 4–6 minutes after a cache reset.
+Repeated local runs reuse the instrumented target and binary. The latest
+source-bound current-host run is Coverage MCP run
+`e9e57a65-220d-4094-b5b6-a9f9d8fd050b` (snapshot
+`d9ff95ec-abc9-478f-9e0c-e7062d51a7a4`): 59.995 seconds end-to-end, including
+a 38.85-second instrumented build, with six shards passing 3,784 / 3,784 cases
+each. Its warm repeat `f9a5093f-2102-4609-845b-5216210cb5a0` (snapshot
+`a4853650-5aa2-4065-8f87-84c58dc6947f`) took 18.383 seconds. This isolates the
+remaining cold delay in instrumented compilation; the shard executions run
+concurrently and report/ingestion are small. Use `COVERAGE_UNIFIED_SHARDS=1`
+for a three-process comparison, or allow roughly two minutes for host
+variation and four to six minutes after a cache reset.
 `COVERAGE_TEST_DEBUG=0` omits DWARF line tables while retaining LLVM source
 coverage mapping; this reduces cold instrumented-link time without changing the
 coverage totals. Face-cache keys also reuse preloaded
@@ -364,12 +315,6 @@ previous round-robin schedule reopened those faces in every worker. On the
 current host this reduced a warm full-matrix run from 227.03 seconds to
 192.75 seconds, with 7,535 / 7,535 runnable comparisons passing; the new run
 opened 924 cached face handles and spent 81.55 seconds in face prewarming.
-The latest coverage lane timers were 31.467 seconds Rust FFI, 28.606 seconds
-C ABI, and 28.461 seconds WASM, with 27–43 ms comparison per lane; those lanes
-run concurrently, so their sum is not wall time. The remaining wall-time tail
-is setup, report merging, and Coverage MCP ingestion rather than another parity
-route. Coverage MCP does not expose timestamps for those sub-phases yet:
-
 The split `make test-coverage-all` lanes set
 `FONTDONE_UNIFIED_SKIP_ORACLE_CASE_CACHE_SEED=1`. An aggregate cache hit already
 contains the exact ordered output needed by that lane, so rereading and
@@ -379,36 +324,28 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The latest all-lane report's retained lane timers were 24.260 seconds Rust,
-24.360 seconds C ABI, and 25.690 seconds WASM. These are backend execution
-measurements inside the 75.320-second end-to-end run; the instrumented state
-was rebuilt after the SBIT arithmetic change. Report finalization and artifact
-ingestion are included in the wall time but are not separately exposed by
-Coverage MCP.
+The current cold run's longest shard was 13.425 seconds (Rust); C ABI and WASM
+shards were below 12 seconds. These shard timers run concurrently, so their sum
+is not wall time. The 38.85-second instrumented build is the dominant cold
+component; report finalization and artifact ingestion are included in the
+59.995-second wall time but are not separately exposed by Coverage MCP.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,119 / 54,388 | 92.15% |
-| Branches | 9,988 / 12,599 | 79.28% |
+| Lines | 50,122 / 54,388 | 92.16% |
+| Branches | 9,989 / 12,599 | 79.28% |
 | Functions | 3,410 / 3,822 | 89.22% |
-| Regions | 68,865 / 75,559 | 91.14% |
+| Regions | 68,864 / 75,559 | 91.14% |
 
-That latest run passed all 7,567 runnable parity comparisons with 0 failures;
+That latest run passed all 7,568 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`afe5d428-3b0e-4684-af4d-655637182d2e`, and it completed in 75.320 seconds
-after rebuilding the instrumented state for the SBIT arithmetic change. The
-source-bound full parity run `07f71e18-873e-4c92-973b-a918993ba75c`, recorded by
-`10bb23af-3d88-4996-a857-977592cd2407`, recorded 7,567 / 7,567 exact
-comparisons. Coverage MCP does not expose
-separate timestamps for compilation, report finalization, or artifact ingestion. Current
-LLVM JSON is accepted directly by Coverage
-MCP, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only `jq`
-rewrite; set it to `1` only for an older LLVM JSON producer that needs the
-segment-count clamp. The report-only rewrite was measured at about 2.9 seconds
-for the 28.6 MB artifact and does not change the coverage totals. The
-percentages apply only to the named source commit, suite, and toolchain. They
-are not a FreeType-parity percentage, and a covered line or branch does not
-prove an exact result.
+`d9ff95ec-abc9-478f-9e0c-e7062d51a7a4`, and the warm confirmation snapshot is
+`a4853650-5aa2-4065-8f87-84c58dc6947f`. Coverage MCP accepts the current LLVM
+JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
+rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
+apply only to the named source commit, suite, and toolchain. They are not a
+FreeType-parity percentage, and a covered line or branch does not prove an exact
+result.
 Generate a new report for the worktree being reviewed. LLVM JSON segments are
 normalized to segment start lines by the coverage parser; aggregate region
 coverage is preserved from LLVM summaries.
