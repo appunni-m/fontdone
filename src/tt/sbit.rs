@@ -869,10 +869,12 @@ fn blit_component_bitmap(
         );
     }
 
-    let bytes_per_pixel = match target.pixel_mode {
-        SbitPixelMode::Bgra => 4,
-        SbitPixelMode::Gray => 1,
-        SbitPixelMode::Mono | SbitPixelMode::Gray2 | SbitPixelMode::Gray4 => unreachable!(),
+    // Packed modes return through `blit_packed_component_bitmap` above, so
+    // only the byte-aligned grayscale and BGRA modes can reach this path.
+    let bytes_per_pixel = if target.pixel_mode == SbitPixelMode::Bgra {
+        4
+    } else {
+        1
     };
     let target_x = (dx as usize).checked_mul(bytes_per_pixel).ok_or_else(|| {
         FontError::InvalidFont("embedded bitmap compound x offset overflow".into())
