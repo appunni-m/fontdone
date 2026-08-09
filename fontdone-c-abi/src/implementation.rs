@@ -1269,11 +1269,12 @@ pub struct AbiPaletteDataSnapshot {
 
 #[cfg(feature = "abi-test-support")]
 fn abi_ushort_slice(ptr: *const FT_UShort, len: FT_UShort) -> Vec<FT_UShort> {
-    if ptr.is_null() || len == 0 {
+    if ptr.is_null() {
         return Vec::new();
     }
     // SAFETY: test callers pass live FreeType-shaped array pointers returned
-    // by `FT_Palette_Data_Get`; this helper immediately copies `len` elements.
+    // by `FT_Palette_Data_Get`; a non-null zero-length slice is valid and
+    // copies no elements.
     unsafe { slice::from_raw_parts(ptr, usize::from(len)).to_vec() }
 }
 
