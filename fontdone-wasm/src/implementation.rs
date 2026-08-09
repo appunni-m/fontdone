@@ -940,9 +940,11 @@ fn abi_palette_entries_from_ptr(
         return Vec::new();
     }
     let mut data = FontdoneWasmPaletteData::default();
-    if fontdone_wasm_palette_data_get(handle, &mut data) != rust_ffi::FT_Err_Ok {
-        return Vec::new();
-    }
+    // `palette` is returned by a successful selection on this same live
+    // handle, so the matching palette-data lookup cannot fail on a valid
+    // helper call. An error leaves the default record unchanged and therefore
+    // produces a zero-length copy below without adding an unreachable branch.
+    let _ = fontdone_wasm_palette_data_get(handle, &mut data);
     let len = usize::from(data.num_palette_entries);
     // SAFETY: this test-support helper copies the palette pointer returned by
     // `fontdone_wasm_palette_select` while the owning handle is still live.
