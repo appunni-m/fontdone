@@ -1173,6 +1173,15 @@
             "coverage": ["tt/varstore:axis-count-mismatch-ignored-at-face-open"]
           },
           {
+            "id": "hvar-store-invalid-region-axis",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-invalid-region-axis.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-invalid-region-axis.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:invalid-region-axis-peak-repaired-at-face-open"]
+          },
+          {
             "id": "hvar-store-region-count-limit",
             "assets": {
               "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-region-count-limit.ttf"},
@@ -1189,6 +1198,15 @@
             },
             "params": {"face_index": 0, "memory_source": "whole_file"},
             "coverage": ["tt/varstore:invalid-delta-counts-ignored-at-face-open"]
+          },
+          {
+            "id": "hvar-store-region-index-count-too-large",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-region-index-count-too-large.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-region-index-count-too-large.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:region-index-count-too-large-ignored-at-face-open"]
           },
           {
             "id": "hvar-store-region-index-out-of-range",
@@ -1306,6 +1324,15 @@
             },
             "params": {"face_index": 0, "memory_source": "whole_file"},
             "coverage": ["tt/mvar:record-array-truncated-ignored-at-face-open"]
+          },
+          {
+            "id": "mvar-record-outer-index-out-of-range",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-record-outer-index-out-of-range.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-record-outer-index-out-of-range.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:outer-index-out-of-range-returns-zero"]
           },
           {
             "id": "mvar-unknown-record",

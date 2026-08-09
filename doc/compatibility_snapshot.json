@@ -27,15 +27,15 @@
     "fontdone_pub_enums": 19
   },
   "runtime_parity": {
-    "runnable": 7568,
-    "passed": 7568,
+    "runnable": 7573,
+    "passed": 7573,
     "failed": 0,
     "pending": 3,
     "covered_manifest": 4201,
     "validated_input_subjects": 1543,
     "validated_input_files": 1537,
     "logical_input_cases": 4294,
-    "concrete_input_cases": 7571,
+    "concrete_input_cases": 7576,
     "function_route_evidence": 218,
     "function_total": 218
   },
@@ -43,8 +43,8 @@
     "categories_complete": 10,
     "categories_total": 12,
     "is_complete": false,
-    "runtime_contract_rows_complete": 5311,
-    "runtime_contract_rows_total": 5311,
+    "runtime_contract_rows_complete": 5316,
+    "runtime_contract_rows_total": 5316,
     "runtime_contract_rows_pending": 0,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
@@ -54,23 +54,23 @@
   "coverage": {
     "measured": true,
     "snapshot_date": "2026-08-09",
-    "source_commit": "3ddaf0ae376b86487081e073099376c2459d4cf5",
+    "source_commit": "b9810f91969759cade337a195d591c27d5aecead",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "9a39257b-66fb-4dd2-ab29-46835cae54a3",
-    "snapshot_id": "04c522e6-da5a-43c2-8d98-19ccf176be8e",
-    "duration_ms": 63799,
+    "run_id": "aa7546f0-48ff-41a6-b95d-a57ba333bec1",
+    "snapshot_id": "fbcde92b-efc0-474d-a2f0-48baa3e8e38d",
+    "duration_ms": 23470,
     "exit_code": 0,
-    "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; the optional-feature contract is a separate make test-parity-smoke gate and is not rebuilt by coverage unless COVERAGE_PREPARE_OPTIONAL_FEATURES=1; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with no line-table debuginfo (COVERAGE_TEST_DEBUG=0) and COVERAGE_UNIFIED_WORKERS=1; one instrumented test binary runs in two independent shards per backend (six shard processes total), each shard compares a disjoint 3,784-case slice and writes a distinct raw profile; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; the report merges every shard profile; source-digest-bound expanded input cache reused across the six processes; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; clean binary preparation uses cargo llvm-cov --no-report -- --list; the build-state marker keys reuse to the newest compiler-input commit and excludes worker/lane-split/shard orchestration settings; raw LLVM JSON is ingested directly, with segment normalization retained only as an opt-in compatibility rewrite; test-harness source excluded",
+    "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; the optional-feature contract is a separate make test-parity-smoke gate and is not rebuilt by coverage unless COVERAGE_PREPARE_OPTIONAL_FEATURES=1; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with no line-table debuginfo (COVERAGE_TEST_DEBUG=0) and COVERAGE_UNIFIED_WORKERS=1; one instrumented test binary runs in two independent shards per backend (six shard processes total), each shard compares a disjoint 3,788-case slice and writes a distinct raw profile; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; the report merges every shard profile; source-digest-bound expanded input cache reused across the six processes; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; clean binary preparation uses cargo llvm-cov --no-report -- --list; the build-state marker keys reuse to the newest compiler-input commit and excludes worker/lane-split/shard orchestration settings; raw LLVM JSON is ingested directly, with segment normalization retained only as an opt-in compatibility rewrite; test-harness source excluded",
     "lines": {
-      "covered": 50122,
+      "covered": 50125,
       "total": 54388,
-      "percent": 92.15635802015152
+      "percent": 92.16187394278149
     },
     "branches": {
-      "covered": 9989,
+      "covered": 9995,
       "total": 12599,
-      "percent": 79.28407016429875
+      "percent": 79.33169299150726
     },
     "functions": {
       "covered": 3410,
@@ -78,13 +78,13 @@
       "percent": 89.2203035060178
     },
     "regions": {
-      "covered": 68864,
+      "covered": 68870,
       "total": 75559,
-      "percent": 91.13937452851414
+      "percent": 91.14731534297701
     },
     "runtime_parity": {
-      "runnable": 7568,
-      "passed": 7568,
+      "runnable": 7573,
+      "passed": 7573,
       "failed": 0,
       "pending": 3
     },
@@ -1358,9 +1358,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "e449b0bfc28fd834bc322d1ef96a33cef03f9eef86a1402dfda5a2ada262e745",
-    "parity_tree_sha256": "38b0df565125b23fe572a377a0dee7654aba85d70c27bfae4f46d831c5fc77e3",
-    "log_sha256": "85a512098e0a8f4eb17ddefc5d933fe3865955f6e411f044d414cd3de4628fdf",
+    "sha256": "a1a5f49ac117dc265691a679563104959db9ae5fc376b918d5dcea896fff06e7",
+    "parity_tree_sha256": "54906e63f49dc4816e7525387637530eb60dd5303f4dc3125be6360021d1e555",
+    "log_sha256": "8b4a9a4d8605732f22e0c16b3480eecf5d18817120ce782b23edee7e9f6eebed",
     "command": "make test-parity"
   }
 }

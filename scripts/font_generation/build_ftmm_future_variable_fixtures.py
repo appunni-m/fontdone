@@ -764,6 +764,31 @@ def write_hvar_fixtures() -> None:
         bytes(store_axis_mismatch),
     )
 
+    # Keep the region list structurally valid while forcing invalid
+    # start/peak/end triplets for each repair predicate.  FreeType repairs the
+    # peak to zero instead of rejecting the optional HVAR table; the public
+    # face-open route therefore reaches the same defensive normalization in
+    # the Rust parser.
+    store_invalid_region_axis = bytearray(base)
+    # start > peak
+    put_u16(store_invalid_region_axis, region_list + 4, 0x2000)
+    put_u16(store_invalid_region_axis, region_list + 6, 0)
+    put_u16(store_invalid_region_axis, region_list + 8, 0)
+    # start < 0 && end > 0
+    put_u16(store_invalid_region_axis, region_list + 10, 0xE000)
+    put_u16(store_invalid_region_axis, region_list + 12, 0)
+    put_u16(store_invalid_region_axis, region_list + 14, 0x2000)
+    # peak > end
+    put_u16(store_invalid_region_axis, region_list + 16, 0)
+    put_u16(store_invalid_region_axis, region_list + 18, 0x2000)
+    put_u16(store_invalid_region_axis, region_list + 20, 0)
+    write_table_payload(
+        BASE_FONT,
+        "HVAR",
+        "hvar-store-invalid-region-axis.ttf",
+        bytes(store_invalid_region_axis),
+    )
+
     store_region_limit = bytearray(base)
     put_u16(store_region_limit, region_list + 2, 0x8000)
     write_table_payload(
@@ -780,6 +805,19 @@ def write_hvar_fixtures() -> None:
         "HVAR",
         "hvar-store-invalid-delta-counts.ttf",
         bytes(store_delta_counts),
+    )
+
+    # Exercise the other half of the item-variation delta-count guard: the
+    # region-index array is larger than the parsed region list while the word
+    # delta count itself remains valid.
+    store_region_index_count = bytearray(base)
+    put_u16(store_region_index_count, first_start + 2, 0)
+    put_u16(store_region_index_count, first_start + 4, region_count + 1)
+    write_table_payload(
+        BASE_FONT,
+        "HVAR",
+        "hvar-store-region-index-count-too-large.ttf",
+        bytes(store_region_index_count),
     )
 
     store_region_index = bytearray(base)
@@ -906,6 +944,18 @@ def write_mvar_fixtures() -> None:
     put_u16(overflow, 8, 7)
     write_table_payload(
         MVAR_FONT, "MVAR", "mvar-record-array-short.ttf", bytes(overflow)
+    )
+
+    # Keep the MVAR record structurally valid but point one supported tag at
+    # an outer variation-data block that does not exist.  FreeType retains the
+    # record and returns a zero delta when the item is queried.
+    outer_index = bytearray(base)
+    put_u16(outer_index, 16, 1)
+    write_table_payload(
+        MVAR_FONT,
+        "MVAR",
+        "mvar-record-outer-index-out-of-range.ttf",
+        bytes(outer_index),
     )
 
     # Preserve the six supported records and append an unknown tag.  The

@@ -106,29 +106,29 @@ The latest full parity snapshot was recorded on **2026-08-09** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,568 |
-| Passed cases | 7,568 |
+| Runnable exact-comparison cases | 7,573 |
+| Passed cases | 7,573 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
 | Covered manifest cases | 4,201 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,294 |
-| Concrete expanded cases | 7,571 |
+| Concrete expanded cases | 7,576 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,568 / 7,568` means every runnable case in that execution matched; the 3
+`7,573 / 7,573` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`4ee46052-4dab-414b-9402-dc0304f5c3d4`, whose passing report was recorded in
+`98c898f8-8edc-4cb1-877d-708dd5943926`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-7,568 / 7,568 runnable comparisons with 0 failures and 3 explicitly pending
+7,573 / 7,573 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `38b0df565125b23fe572a377a0dee7654aba85d70c27bfae4f46d831c5fc77e3`.
+Its source-bound parity-tree digest is `54906e63f49dc4816e7525387637530eb60dd5303f4dc3125be6360021d1e555`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,38 +142,30 @@ their exact worktree than the committed release snapshot.
 
 The latest source-bound all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`3ddaf0ae376b86487081e073099376c2459d4cf5`
-(Coverage MCP run `9a39257b-66fb-4dd2-ab29-46835cae54a3`, snapshot
-`04c522e6-da5a-43c2-8d98-19ccf176be8e`):
+`b9810f91969759cade337a195d591c27d5aecead`
+(Coverage MCP run `aa7546f0-48ff-41a6-b95d-a57ba333bec1`, snapshot
+`fbcde92b-efc0-474d-a2f0-48baa3e8e38d`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,122 / 54,388 | 92.16% |
-| Branches | 9,989 / 12,599 | 79.28% |
+| Lines | 50,125 / 54,388 | 92.16% |
+| Branches | 9,995 / 12,599 | 79.33% |
 | Functions | 3,410 / 3,822 | 89.22% |
-| Regions | 68,864 / 75,559 | 91.14% |
+| Regions | 68,870 / 75,559 | 91.15% |
 
-The cold validation completed in 63.799 seconds with the default
+The latest validation completed in 23.470 seconds with the default
 `COVERAGE_UNIFIED_WORKERS=1`, `COVERAGE_UNIFIED_LANE_SPLIT=1`, and
-`COVERAGE_UNIFIED_SHARDS=2`; its instrumented build took 45.60 seconds. Six
-processes ran concurrently—two shards each for Rust FFI, C ABI, and WASM—and
-each shard compared 3,784 / 3,784 cases before the raw profiles were merged.
-The warm repeat (Coverage MCP run `a7c92ef5-c657-4d77-8586-256e1505f770`,
-snapshot `c3af13b1-e969-4538-aeaf-8bbe171dd66e`) completed in 17.498 seconds
-with a 0.05-second profile setup. Compared with the prior 79.695-second
-three-process cold run, the new default is about 20% faster; compared with the
-prior 28.339-second warm run, it is about 38% faster. The coverage totals and
-all 7,568 runnable parity cases are unchanged.
+`COVERAGE_UNIFIED_SHARDS=2`. Six shard processes ran concurrently—two shards
+each for Rust FFI, C ABI, and WASM—and each shard compared 3,788 / 3,788
+cases before the raw profiles were merged. The coverage totals and current
+parity evidence are based on 7,573 / 7,573 runnable comparisons.
 
 The maintained Apple full-Unicode format-13 font and malformed format-13
 matrix remain exercised by their existing character-index and parser routes.
-The new `sbix` recursive-target input adds one real `FT_Load_Glyph` parity case
-for an out-of-range `dupe` target; the source-bound parity run
-`6f98a0f9-4a8a-4a5c-b785-7d8a1f9004ce` passed 7,568 / 7,568 comparisons with
-0 failures. The all-lane run rebuilt the instrumented profile in 45.60 seconds
-and its longest shard was about 13.02 seconds. This continues to identify
-cache-miss instrumented compilation, rather than MCP ingestion or the C oracle,
-as the largest cold-run delay.
+The current variable-font inputs also exercise HVAR/MVAR variation-store guard
+behavior through the same parity-backed face-open and glyph-load routes. The
+latest run continues to identify cache-miss instrumented compilation, rather
+than MCP ingestion or the C oracle, as the largest cold-run delay.
 
 The earlier coverage-speed change set `COVERAGE_TEST_DEBUG=0`, removing DWARF
 line tables while retaining LLVM source mapping; its historical cold build was
@@ -283,11 +275,11 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,311 / 5,311 pinned-C runtime contract rows exact; 0 pending |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,316 / 5,316 pinned-C runtime contract rows exact; 0 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 689 / 689 expected-error routes compare exact error and output results; 7,568 / 7,568 routes have no generic fallback evidence |
+| Errors | 689 / 689 expected-error routes compare exact error and output results; 7,573 / 7,573 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 
