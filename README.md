@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest pushed-head verification is Coverage MCP parity run
-`ec4cc0bd-6fee-4adc-b2fe-5b3e56feeace`, whose passing report was recorded in
+`696a4260-2bbe-41f5-b350-af1365ffccfb`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
 7,584 / 7,584 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `6b0cf8e7b6097740bdd482278a9d9cbabd477be3eeb03b86ede996813ca0d64f`.
+Its source-bound parity-tree digest is `3bd2b7c7c8b696a7c78dcb6bad8f4243a74714c94c052eba56580936bbc82ecb`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,18 +142,18 @@ their exact worktree than the committed release snapshot.
 
 The latest pushed-head all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`cef7db8c8283407cb799af08cc1a7f348a8f3039`
-(Coverage MCP run `f43d973f-f3b3-4d40-beb3-213a66f254f1`, snapshot
-`a420bc64-a028-4c75-ae38-20701618413d`):
+`cdb61419ba8b67a53616c07a55f49a0a7530ad0f`
+(Coverage MCP run `a86a62bf-d587-4110-8787-3d5484a3444f`, snapshot
+`79aeb81b-626b-4cf8-a517-4b437ff480c1`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,169 / 54,293 | 92.40% |
-| Branches | 10,027 / 12,583 | 79.69% |
-| Functions | 3,432 / 3,818 | 89.89% |
-| Regions | 68,928 / 75,431 | 91.38% |
+| Lines | 50,178 / 54,297 | 92.41% |
+| Branches | 10,022 / 12,573 | 79.71% |
+| Functions | 3,434 / 3,820 | 89.90% |
+| Regions | 68,930 / 75,428 | 91.39% |
 
-The current managed validation completed in 72.055 seconds; its three split
+The current managed validation completed in 59.583 seconds; its three split
 backends passed all 7,584 runnable comparisons. Its nine shard processes split
 the same exact matrix before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
@@ -315,7 +315,7 @@ routes remain even when every bare function name has some traced route. The self
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
 The latest scorecard run is Coverage MCP run
-`03727778-4cf4-4c3a-86a1-99c946bb0314`.
+`3972f887-c3cc-4927-94d2-5c8ac578849d`.
 
 ### 3.5 Performance baseline
 
