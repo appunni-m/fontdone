@@ -509,18 +509,19 @@ worktree at that point:
 | 121 | Working tree (OT-SVG missing-document route classification) | Promoted the maintained `ftimage.FT_GLYPH_FORMAT_SVG.missing_svg_document_rejected` case from the generic-fallback bucket to explicit real parity in `scripts/check_public_api_inputs.py`. The case already compared the pinned C load result, empty SVG slot state, Rust FFI, C ABI, and WASM outputs for the existing SVG range-gap fixture, so no runtime behavior, fixture, or denominator changed. Full parity run `6e4d3eda-9104-4af2-b72c-77b54c862a3d` passed 7,567 / 7,567 runnable comparisons with 0 failures and 3 pending safety-extension cases; the route audit now has 7,570 concrete cases, 5,301 real-parity rows, 0 generic-fallback rows, and 0 pending routes, with 218 / 218 function evidence in each surface. C-ABI contract run `ccde80fe-407a-4d12-a4f7-a0fe5c5cee3b` reports 10 / 12 categories complete, C01.7 at 5,310 / 5,310, and C08.3 at 7,567 / 7,567; the remaining contract debt is the Windows import-library item and four fresh target-lane bundles. The measured coverage snapshot is unchanged at 50,088 / 54,423 lines, 9,986 / 12,602 branches, 3,411 / 3,846 functions, and 68,883 / 75,644 regions because this was a classifier/docs-only change. |
 | 122 | Working tree (classic-kern no-validator parity route) | Added the maintained `unimplemented_face` variant to `ftgxval.FT_ClassicKern_Validate.reports_unimplemented_or_invalid_table`, opening `classic-ms-kern.ttf` without the optional `gxvalid` module. The pinned C oracle, Rust FFI, C ABI, and WASM routes now all execute and preserve the exact `FT_Err_Unimplemented_Feature` result and sentinel output. Full parity run `b19d9b98-134f-4e4d-9178-6ac73af98559` passed 7,567 / 7,567 runnable comparisons with 0 failures and 3 pending safety-extension cases; the route audit remains at 7,570 concrete cases, 5,301 real-parity rows, 0 generic-fallback rows, 0 pending routes, and 218 / 218 function evidence per surface. All-lane Coverage MCP run `7b5e462d-9156-4d1a-802b-e5c0951b3524`, snapshot `9f6d512f-c0a4-42c4-bdaa-531065011aac`, completed in 75.372 seconds and measured 50,085 / 54,415 lines, 9,988 / 12,599 branches, 3,411 / 3,846 functions, and 68,882 / 75,637 regions; the WASM wrapper branch at `fontdone-wasm/src/implementation.rs:1606` is now 6 / 6. C-ABI contract run `e100a6cc-aa71-4563-96f5-b0ccb2eb840b` passed and retains 10 / 12 categories complete; C11.3 is 7 / 8 and C12.3 is 1 / 5, leaving the Windows import-library item and four fresh platform bundles. |
 | 123 | Working tree (SBIT host-width overflow-arm cleanup) | Replaced SBIT arithmetic overflow closures whose inputs are bounded below 2^33 on 64-bit hosts with target-width helpers: the host removes only impossible overflow arms, while i686 retains the original checked failures for malformed SFNT values. No parity input or expected result changed. Full parity run `07f71e18-873e-4c92-973b-a918993ba75c` passed 7,567 / 7,567 runnable comparisons with 0 failures and 3 explicitly excluded safety-extension cases; the route audit remains at 7,570 concrete cases, 5,301 real-parity rows, 0 generic-fallback rows, 0 pending routes, and 218 / 218 function evidence per surface. All-lane Coverage MCP run `cfa3fcac-b5b6-4939-ba35-904ac08bc5f8`, snapshot `afe5d428-3b0e-4684-af4d-655637182d2e`, completed in 75.320 seconds and measured 50,119 / 54,388 lines, 9,988 / 12,599 branches, 3,410 / 3,822 functions, and 68,865 / 75,559 regions; SBIT moved to 813 / 897 lines and 1,170 / 1,373 regions. C-ABI contract run `ff813fbe-fcea-4955-a5f4-e0d66b859212` passed with the scorecard still at 10 / 12 categories, C11.3 at 7 / 8, and C12.3 at 1 / 5. |
+| 124 | Working tree (sbix recursive target parity route) | Added a maintained `sbix-dupe-invalid-target` variant to `freetype.FT_Load_Glyph.sbix_bitmap_error_paths`; a valid outer glyph now references a target outside `maxp`, exercising the recursive glyph-range guard through Rust FFI, C ABI, and WASM. Focused parity run `272ad921-3b3e-4ea1-99b0-77ed4d8e949a` passed 17 / 17; source-bound full parity run `6f98a0f9-4a8a-4a5c-b785-7d8a1f9004ce`, recorded by `c7f83846-2479-428e-82c8-aa74be2d31c2`, passed 7,568 / 7,568 runnable comparisons with 0 failures and 3 explicitly excluded safety-extension cases. The route audit now has 7,571 concrete cases, 5,302 real-parity rows, 0 generic-fallback rows, 0 pending routes, and 218 / 218 function evidence per surface. All-lane Coverage MCP run `a181a590-26c0-44fb-9049-980ecc041269`, snapshot `b2baeef5-49a7-4fa2-adc0-40f25d27f2b6`, completed in 79.695 seconds and measured 50,122 / 54,388 lines, 9,989 / 12,599 branches, 3,410 / 3,822 functions, and 68,864 / 75,559 regions; `src/tt/sbix.rs:117-118` is now covered, leaving only the defensive no-selected-strike branch. C-ABI contract run `a3336edb-f814-4b33-9241-22d1d8d1cf1b` reports 10 / 12 categories complete, C01.7 at 5,311 / 5,311 and C08.3 at 7,568 / 7,568; C11.3 remains 7 / 8 and C12.3 remains 1 / 5. |
 
 The current source-bound parity verification is Coverage MCP parity run
-`07f71e18-873e-4c92-973b-a918993ba75c`: it passed 7,567 / 7,567 runnable
+`6f98a0f9-4a8a-4a5c-b785-7d8a1f9004ce`: it passed 7,568 / 7,568 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **0 pending routes and 0 generic-fallback rows**, with
 218 / 218 function routes present in each ABI surface. The source-digest
 attestation was refreshed in `doc/runtime_parity_evidence.json` by
 `make record-parity-snapshot`; its current parity-tree digest is
-`85f509b7e5d15f641413db274a7ffb5d22ea15cdf1197a1ab4784651a40cdaa9`.
-The tracked C-ABI scorecard is **10 / 12 categories complete**; C11.3 is
-7 / 8 and C12.3 is 1 / 5. The Windows import-library item and four fresh
-target-lane bundles remain.
+`9ecd2a25bb8fb3bee79fff2d373c2bb5af4882afe9adde0aa56ee8498cdaf34d`.
+The tracked C-ABI scorecard is **10 / 12 categories complete**; C01.7 is
+5,311 / 5,311, C08.3 is 7,568 / 7,568, C11.3 is 7 / 8, and C12.3 is 1 / 5.
+The Windows import-library item and four fresh target-lane bundles remain.
 
 The three pending cases are deliberately excluded from the pinned-C parity
 numerator and denominator because their inputs are undefined or
@@ -531,14 +532,14 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current source-bound all-lane run `cfa3fcac-b5b6-4939-ba35-904ac08bc5f8`
-completed in 75.320 seconds with snapshot
-`afe5d428-3b0e-4684-af4d-655637182d2e`. It measured 50,119 / 54,388 lines,
-9,988 / 12,599 branches, 3,410 / 3,822 functions, and 68,865 / 75,559
-regions; the parity matrix passed 7,567 / 7,567 in each backend. This
-source-bound run rebuilt the instrumented state after the SBIT arithmetic change;
-the retained lane timers were 24.260s Rust FFI, 24.360s C ABI, and 25.690s
-WASM, with roughly 11ms comparison work per lane. The lanes
+The current source-bound all-lane run `a181a590-26c0-44fb-9049-980ecc041269`
+completed in 79.695 seconds with snapshot
+`b2baeef5-49a7-4fa2-adc0-40f25d27f2b6`. It measured 50,122 / 54,388 lines,
+9,989 / 12,599 branches, 3,410 / 3,822 functions, and 68,864 / 75,559
+regions; the parity matrix passed 7,568 / 7,568 in each backend. This
+source-bound run rebuilt the instrumented state after the maintained `sbix`
+fixture change; the retained lane timers were 24.20s Rust FFI, 24.31s C ABI,
+and 25.62s WASM, with roughly 11ms comparison work per lane. The lanes
 already run concurrently; the same-source two-worker comparison
 `971f65aa-12b6-4a41-9dcb-cceffdd99199` completed in 140.239 seconds, so the
 default remains one worker per lane. The previous combined-lane warm all-lane baseline completed in 1

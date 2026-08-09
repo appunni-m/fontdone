@@ -177,6 +177,9 @@ def write_error_fixtures() -> None:
         # payload read; pinned C treats the missing target as a missing bitmap
         # and falls back to the outline on this scalable companion font.
         15: graphic_record(b"dupe"),
+        # A valid outer glyph may still reference a target outside maxp; the
+        # recursive loader validates that target before looking up its record.
+        16: reference_record(b"dupe", 0xFFFF),
     }
     save_sbix_font("sbix-error-matrix.ttf", flags=1, records=records)
 

@@ -8574,6 +8574,23 @@
             "coverage": ["tt/sbix:dupe-recursion-depth-limit"]
           },
           {
+            "id": "sbix-dupe-invalid-target",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/sbix/sbix-error-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 24,
+              "glyph_index": 16,
+              "load_flags": ["FT_LOAD_DEFAULT"]
+            },
+            "coverage": ["tt/sbix:dupe-target-glyph-out-of-range"]
+          },
+          {
             "id": "sbix-glyph-index-out-of-range",
             "assets": {
               "font": {
