@@ -26001,7 +26001,7 @@ fn bdf_property_names_for_case(case: &InputCase) -> Result<Vec<String>, String> 
 
 fn bdf_charset_case_supported(case: &InputCase) -> bool {
     matches!(
-        case.case_id.as_str(),
+        case_id_base(&case.case_id),
         "ftbdf.FT_Get_BDF_Charset_ID.error_non_bdf_face"
             | "ftbdf.FT_Get_BDF_Charset_ID.success_bdf_face_charset"
             | "ftbdf.FT_Get_BDF_Charset_ID.success_sfnt_bdf_table_selected_strike"
