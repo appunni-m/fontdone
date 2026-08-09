@@ -464,6 +464,31 @@ def short_glyph_record_gvar_payload(glyph_data: bytes) -> bytes:
     return bytes(payload)
 
 
+def embedded_peak_short_gvar_payload() -> bytes:
+    """Build an active tuple whose embedded peak tuple is truncated.
+
+    The tuple header itself is present, but a two-axis embedded peak contains
+    only one coordinate.  This reaches the runtime tuple-coordinate guard
+    after the generic tuple-header bounds check has already succeeded.
+    """
+
+    glyph_data = bytes(
+        [
+            0x00,
+            0x01,  # one tuple
+            0x00,
+            0x0A,  # tuple data begins after the truncated peak bytes
+            0x00,
+            0x00,  # empty variation payload
+            0x80,
+            0x00,  # embedded peak tuple
+            0x00,
+            0x00,  # only one of the two required axis coordinates
+        ]
+    )
+    return short_glyph_record_gvar_payload(glyph_data)
+
+
 def packed_edge_gvar_payload(*, shared_points: bool, default_active: bool = False) -> bytes:
     """Build a valid two-axis gvar record for glyph 10.
 
@@ -644,6 +669,11 @@ def write_gvar_fixtures() -> None:
     write_gvar_payload(
         "gvar-tuple-header-short-runtime.ttf",
         short_glyph_record_gvar_payload(b"\0\1\0\0"),
+        remove_hvar=True,
+    )
+    write_gvar_payload(
+        "gvar-embedded-peak-short-runtime.ttf",
+        embedded_peak_short_gvar_payload(),
         remove_hvar=True,
     )
 
