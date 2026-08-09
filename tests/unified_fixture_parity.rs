@@ -4482,7 +4482,13 @@ impl BackendComparisonWorker {
                     return wasm_load_glyph_output(0, &case.inputs.params);
                 }
                 let handle = self.wasm_face(case)?;
-                wasm_load_glyph_output(handle, &case.inputs.params)
+                let output = wasm_load_glyph_output(handle, &case.inputs.params)?;
+                probe_wasm_bitmap_accessors_if_requested(
+                    handle,
+                    &case.inputs.params,
+                    &output,
+                )?;
+                Ok(output)
             }
             "freetype.inspect_glyph_metrics" => {
                 let handle = self.wasm_face(case)?;
@@ -4542,14 +4548,20 @@ impl BackendComparisonWorker {
                 let load_flags = load_flags_param(&case.inputs.params)?;
                 let render_mode = render_mode_param(&case.inputs.params)?;
                 let handle = self.wasm_face(case)?;
-                wasm_render_glyph(
+                let output = wasm_render_glyph(
                     handle,
                     glyph_load_input_param(&case.inputs.params)?,
                     load_flags,
                     render_mode,
                     render_repeat_count_param(&case.inputs.params)?,
                     bool_param(&case.inputs.params, "capture_render_error_slot", false)?,
-                )
+                )?;
+                probe_wasm_bitmap_accessors_if_requested(
+                    handle,
+                    &case.inputs.params,
+                    &output,
+                )?;
+                Ok(output)
             }
             _ => run_wasm_abi(case),
         }
@@ -49479,9 +49491,10 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
                 return wasm_load_glyph_output(0, &case.inputs.params);
             }
             let handle = wasm_open_face(case)?;
-            let output = wasm_load_glyph_output(handle, &case.inputs.params);
+            let output = wasm_load_glyph_output(handle, &case.inputs.params)?;
+            probe_wasm_bitmap_accessors_if_requested(handle, &case.inputs.params, &output)?;
             wasm_done_face(handle);
-            output
+            Ok(output)
         }
         "face_lifecycle.load_render_done" | "representative_success_outputs" => {
             let handle = wasm_open_face(case)?;
@@ -49492,9 +49505,10 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
                 render_mode_param(&case.inputs.params)?,
                 1,
                 false,
-            );
+            )?;
+            probe_wasm_bitmap_accessors_if_requested(handle, &case.inputs.params, &output)?;
             wasm_done_face(handle);
-            output
+            Ok(output)
         }
         "freetype.inspect_glyph_metrics" => {
             let handle = wasm_open_face(case)?;
@@ -49967,8 +49981,10 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
                     bool_param(&case.inputs.params, "capture_render_error_slot", false)?,
                 )
             };
+            let output = output?;
+            probe_wasm_bitmap_accessors_if_requested(handle, &case.inputs.params, &output)?;
             wasm_done_face(handle);
-            output
+            Ok(output)
         }
         _other => {
             // Fall through to Rust FFI for unsupported operations
@@ -50173,6 +50189,9 @@ fn c_render_glyph_invalid_slots(case: &InputCase) -> Result<RunOutput, String> {
 
 fn wasm_render_glyph_invalid_slots(case: &InputCase) -> Result<RunOutput, String> {
     let render_mode = render_mode_param(&case.inputs.params)?;
+    if bool_param(&case.inputs.params, "probe_wasm_bitmap_accessors", false)? {
+        assert_wasm_bitmap_accessors(0)?;
+    }
     render_glyph_invalid_slot_output(&case.inputs.params, |variant| match variant {
         // Wasm handles cannot expose a caller-owned slot record.  Handle zero
         // maps both absent-slot preconditions to FreeType's Invalid_Argument.
@@ -67911,6 +67930,67 @@ fn wasm_slot_output(handle: usize, err: i32) -> Result<RunOutput, String> {
         return Ok(error(err));
     }
     Ok(ok(wasm_slot_json(handle)?))
+}
+
+fn probe_wasm_bitmap_accessors_if_requested(
+    handle: usize,
+    params: &Value,
+    output: &RunOutput,
+) -> Result<(), String> {
+    if output.status.kind == StatusKind::Ok
+        && bool_param(params, "probe_wasm_bitmap_accessors", false)?
+    {
+        assert_wasm_bitmap_accessors(handle)?;
+    }
+    Ok(())
+}
+
+fn assert_wasm_bitmap_accessors(handle: usize) -> Result<(), String> {
+    let expected = if handle == 0 {
+        json!({
+            "buffer_is_null": true,
+            "len": 0,
+            "width": 0,
+            "rows": 0,
+            "pitch": 0
+        })
+    } else {
+        let slot = wasm_abi::abi_slot_snapshot(handle)
+            .ok_or_else(|| "missing wasm bitmap-accessor slot snapshot".to_string())?;
+        slot.bitmap.as_ref().map_or_else(
+            || {
+                json!({
+                    "buffer_is_null": true,
+                    "len": 0,
+                    "width": 0,
+                    "rows": 0,
+                    "pitch": 0
+                })
+            },
+            |bitmap| {
+                json!({
+                    "buffer_is_null": false,
+                    "len": bitmap.buffer.len(),
+                    "width": bitmap.width,
+                    "rows": bitmap.rows,
+                    "pitch": bitmap.pitch
+                })
+            },
+        )
+    };
+    let actual = json!({
+        "buffer_is_null": wasm_abi::fontdone_wasm_bitmap_buffer(handle).is_null(),
+        "len": wasm_abi::fontdone_wasm_bitmap_len(handle),
+        "width": wasm_abi::fontdone_wasm_bitmap_width(handle),
+        "rows": wasm_abi::fontdone_wasm_bitmap_rows(handle),
+        "pitch": wasm_abi::fontdone_wasm_bitmap_pitch(handle)
+    });
+    if actual != expected {
+        return Err(format!(
+            "WASM bitmap accessors disagree with the slot snapshot: handle={handle} actual={actual} expected={expected}"
+        ));
+    }
+    Ok(())
 }
 
 fn wasm_load_char_output(handle: usize, params: &Value) -> Result<RunOutput, String> {

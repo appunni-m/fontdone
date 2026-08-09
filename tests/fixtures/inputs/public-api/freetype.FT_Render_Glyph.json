@@ -2358,7 +2358,8 @@
               "slot": "synthetic_without_face"
             }
           ],
-          "render_mode": "FT_RENDER_MODE_NORMAL"
+          "render_mode": "FT_RENDER_MODE_NORMAL",
+          "probe_wasm_bitmap_accessors": true
         }
       },
       "classifiers": [

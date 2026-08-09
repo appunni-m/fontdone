@@ -426,6 +426,12 @@ It also includes a maintained non-font-byte case for the same three modules;
 the face-open failure is compared as the pinned load error with no fabricated
 glyph result.
 
+Maintained glyph-slot and render inputs may set `probe_wasm_bitmap_accessors`.
+Those cases keep the normal slot result in the pinned-C comparison while the
+WASM route additionally checks the five exported bitmap accessors against its
+slot snapshot, including the null-handle contract. This keeps ABI accessor
+evidence on an oracle-backed parity input instead of a unit-only coverage call.
+
 Before changing a fixture:
 
 1. read the [font-generation policy](../scripts/font_generation/README.md);

@@ -31,7 +31,8 @@
               "glyph_index": 36,
               "load_flags": [
                 "FT_LOAD_DEFAULT"
-              ]
+              ],
+              "probe_wasm_bitmap_accessors": true
             },
             "coverage": [
               "load_glyph:explicit-g36-f1"
@@ -52,7 +53,8 @@
               "glyph_index": 36,
               "load_flags": [
                 "FT_LOAD_NO_HINTING"
-              ]
+              ],
+              "probe_wasm_bitmap_accessors": true
             },
             "coverage": [
               "load_glyph:explicit-g36-f2"
@@ -73,7 +75,8 @@
               "glyph_index": 36,
               "load_flags": [
                 "FT_LOAD_NO_SCALE"
-              ]
+              ],
+              "probe_wasm_bitmap_accessors": true
             },
             "coverage": [
               "load_glyph:explicit-g36-f3"
@@ -94,7 +97,8 @@
               "glyph_index": 57,
               "load_flags": [
                 "FT_LOAD_DEFAULT"
-              ]
+              ],
+              "probe_wasm_bitmap_accessors": true
             },
             "coverage": [
               "load_glyph:explicit-g57-f4"
@@ -115,7 +119,8 @@
               "glyph_index": 57,
               "load_flags": [
                 "FT_LOAD_NO_HINTING"
-              ]
+              ],
+              "probe_wasm_bitmap_accessors": true
             },
             "coverage": [
               "load_glyph:explicit-g57-f5"
@@ -136,7 +141,8 @@
               "glyph_index": 57,
               "load_flags": [
                 "FT_LOAD_NO_SCALE"
-              ]
+              ],
+              "probe_wasm_bitmap_accessors": true
             },
             "coverage": [
               "load_glyph:explicit-g57-f6"
@@ -260,7 +266,8 @@
               "load_flags": [
                 "FT_LOAD_DEFAULT"
               ],
-              "render_mode": "FT_RENDER_MODE_NORMAL"
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "probe_wasm_bitmap_accessors": true
             },
             "coverage": [
               "render_glyph:explicit-m1"
@@ -282,7 +289,8 @@
               "load_flags": [
                 "FT_LOAD_DEFAULT"
               ],
-              "render_mode": "FT_RENDER_MODE_MONO"
+              "render_mode": "FT_RENDER_MODE_MONO",
+              "probe_wasm_bitmap_accessors": true
             },
             "coverage": [
               "render_glyph:explicit-m2"
@@ -304,7 +312,8 @@
               "load_flags": [
                 "FT_LOAD_DEFAULT"
               ],
-              "render_mode": "FT_RENDER_MODE_LCD"
+              "render_mode": "FT_RENDER_MODE_LCD",
+              "probe_wasm_bitmap_accessors": true
             },
             "coverage": [
               "render_glyph:explicit-m3"

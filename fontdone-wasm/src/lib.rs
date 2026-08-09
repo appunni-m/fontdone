@@ -369,23 +369,18 @@ document_wasm_test_support!(
 
 #[cfg(all(test, feature = "abi-test-support"))]
 mod abi_contract_tests {
-    //! ABI-only checks for raw helpers without a pinned-C parity analogue.
+    //! ABI-only checks for raw lifecycle helpers without a pinned-C parity analogue.
     //!
     //! These run in the package preflight and are excluded from the unified
-    //! coverage matrix; they protect the direct WASM handle and allocator
-    //! contract without counting unit-only execution as parity evidence.
+    //! coverage matrix; bitmap accessor behavior is exercised by the maintained
+    //! unified parity inputs instead of counting unit-only execution as evidence.
 
     use std::ptr;
 
     use fontdone::ffi::{FT_Err_Invalid_Argument, FT_Err_Invalid_Face_Handle, FT_Err_Ok};
 
     #[test]
-    fn raw_helper_lifecycle_and_null_contract() {
-        assert!(super::fontdone_wasm_bitmap_buffer(0).is_null());
-        assert_eq!(super::fontdone_wasm_bitmap_len(0), 0);
-        assert_eq!(super::fontdone_wasm_bitmap_width(0), 0);
-        assert_eq!(super::fontdone_wasm_bitmap_rows(0), 0);
-        assert_eq!(super::fontdone_wasm_bitmap_pitch(0), 0);
+    fn raw_helper_lifecycle_and_null_open_contract() {
         assert_eq!(
             i64::from(super::fontdone_wasm_done_face(0)),
             FT_Err_Invalid_Face_Handle
@@ -412,11 +407,6 @@ mod abi_contract_tests {
         );
         assert_ne!(handle, 0);
         assert_eq!(wasm_error, FT_Err_Ok);
-        assert!(super::fontdone_wasm_bitmap_buffer(handle).is_null());
-        assert_eq!(super::fontdone_wasm_bitmap_len(handle), 0);
-        assert_eq!(super::fontdone_wasm_bitmap_width(handle), 0);
-        assert_eq!(super::fontdone_wasm_bitmap_rows(handle), 0);
-        assert_eq!(super::fontdone_wasm_bitmap_pitch(handle), 0);
         assert_eq!(super::fontdone_wasm_done_face(handle), FT_Err_Ok);
     }
 }
