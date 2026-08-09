@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest pushed-head verification is Coverage MCP parity run
-`82a7f66e-6a9a-48f3-8572-9439ed5444a3`, whose passing report was recorded in
+`bc5cd6c2-d959-4179-8863-c4d77c983020`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
 7,589 / 7,589 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `aace610bdf40e8f64b535940ffe79532b8c694f069d04d6c370f8e6f56e8a801`.
+Its source-bound parity-tree digest is `b3244e2c6064b66647861bd3d6cada673a018a453b304c15f895784c64dbad4c`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,20 +142,20 @@ their exact worktree than the committed release snapshot.
 
 The latest pushed-head all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`cdb61419ba8b67a53616c07a55f49a0a7530ad0f`
-(Coverage MCP run `a86a62bf-d587-4110-8787-3d5484a3444f`, snapshot
-`79aeb81b-626b-4cf8-a517-4b437ff480c1`):
+`916d0c855ff1364b6061443ab66f7fab0789d5a9`
+(Coverage MCP run `60273137-3245-44c6-8803-d1b209642237`, snapshot
+`9293936c-2314-4d74-877f-d288b597253b`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,178 / 54,297 | 92.41% |
-| Branches | 10,022 / 12,573 | 79.71% |
-| Functions | 3,434 / 3,820 | 89.90% |
-| Regions | 68,930 / 75,428 | 91.39% |
+| Lines | 50,192 / 54,299 | 92.44% |
+| Branches | 10,025 / 12,573 | 79.73% |
+| Functions | 3,435 / 3,820 | 89.92% |
+| Regions | 68,940 / 75,428 | 91.40% |
 
-The current managed validation completed in 59.583 seconds; its three split
-backends passed all 7,584 runnable comparisons. Its nine shard processes split
-the same exact matrix before report generation. An earlier source-bound validation completed in 67.412 seconds after a
+The current managed validation completed in 15.731 seconds; its three split
+backends passed all 7,589 runnable comparisons. Its nine shard processes split
+the same exact matrix into 2,529- or 2,530-case slices before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
 shard processes each compared 2,525 or 2,526 cases before report generation.
 The earlier warm validation completed in 17.349 seconds with
@@ -164,7 +164,7 @@ adaptive three-shard default on this 12-logical-CPU host. Nine shard processes
 ran concurrently—three each for Rust FFI, C ABI, and WASM—and each compared
 2,524 or 2,525 cases before the raw profiles were merged. A repeat completed
 in 16.377 seconds; the two-shard baseline took 19.747 seconds. The coverage
-totals and current parity evidence are based on 7,584 / 7,584 runnable
+totals and current parity evidence are based on 7,589 / 7,589 runnable
 comparisons.
 
 The maintained Apple full-Unicode format-13 font and malformed format-13
@@ -186,7 +186,7 @@ supplies the report's source locations without requiring DWARF line tables.
 
 The current host-width cleanup removes conversion branches that cannot occur on
 the supported 64-bit ABI while retaining checked conversions for 32-bit WASM.
-It preserved all 7,584 runnable parity results and reduced the measured
+It preserved all 7,589 runnable parity results and reduced the measured
 coverage denominator without weakening a fixture or parity comparison. The
 latest `glyf` cleanup folds the independently scaled no-hinting composite walk
 into the validated loader, removing duplicate parsing while preserving the
