@@ -106,7 +106,8 @@
           "glyph_index": 1,
           "load_flags": [
             "FT_LOAD_NO_SCALE"
-          ]
+          ],
+          "invalid_module_selector": 99
         }
       },
       "classifiers": [
@@ -114,7 +115,8 @@
         "header:ftdriver",
         "area:ps-hinting",
         "path:property",
-        "requires:font"
+        "requires:font",
+        "edge:invalid-module-selector"
       ],
       "expectation": {
         "status": "build_dependent",
@@ -130,7 +132,8 @@
               "glyph": "FT_GlyphSlot public fields or {load_error}",
               "post_error_output_preservation": "bool"
             }
-          ]
+          ],
+          "invalid_module_error": "FT_Error"
         },
         "compare": {
           "mode": "exact",
@@ -142,11 +145,13 @@
             "modules[*].string_value_behavior",
             "modules[*].string_get_error",
             "modules[*].glyph",
-            "modules[*].post_error_output_preservation"
+            "modules[*].post_error_output_preservation",
+            "invalid_module_error"
           ]
         },
         "fixture_requirements": [
-          "CFF, Type 1, and CID-keyed Type 1 fixtures with glyphs whose outlines or metrics change under old FreeType vs Adobe hinting where the pinned build supports both engines."
+          "CFF, Type 1, and CID-keyed Type 1 fixtures with glyphs whose outlines or metrics change under old FreeType vs Adobe hinting where the pinned build supports both engines.",
+          "The WASM module selector 99 must be rejected before font bytes are inspected, with the same Invalid_Argument contract as a null module name in the C API."
         ]
       }
     },

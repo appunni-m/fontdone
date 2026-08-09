@@ -34182,7 +34182,7 @@ static int slot_outputs_equal_captured(
 }
 
 static int emit_ps_hinting_engine_case(int argc, char** argv) {
-    if (argc != 13) {
+    if (argc != 13 && argc != 14) {
         fprintf(stderr,
                 "--ps-hinting-engine-case requires three source pairs, "
                 "GLYPH_INDEX, LOAD_FLAGS, VALUE, STRING, RENDER_PIXEL_SIZE\n");
@@ -34193,6 +34193,7 @@ static int emit_ps_hinting_engine_case(int argc, char** argv) {
     FT_UInt property_value = (FT_UInt)strtoul(argv[10], NULL, 10);
     const char* string_value = streq(argv[11], "<null>") ? NULL : argv[11];
     FT_UInt render_pixel_size = (FT_UInt)strtoul(argv[12], NULL, 10);
+    const int invalid_module_selector_present = argc == 14;
 
     struct ModuleFontPair_ {
         const char* module;
@@ -34333,7 +34334,19 @@ static int emit_ps_hinting_engine_case(int argc, char** argv) {
         FT_Done_FreeType(library);
         free(data);
     }
-    printf("]}}\n");
+    printf("]");
+    if (invalid_module_selector_present) {
+        FT_Library invalid_library = NULL;
+        FT_Error invalid_error = FT_Init_FreeType(&invalid_library);
+        if (!invalid_error) {
+            FT_UInt invalid_value = property_value;
+            invalid_error = FT_Property_Set(
+                invalid_library, NULL, "hinting-engine", &invalid_value);
+            FT_Done_FreeType(invalid_library);
+        }
+        printf(",\"invalid_module_error\":%d", invalid_error);
+    }
+    printf("}}\n");
     return 0;
 }
 
@@ -38305,7 +38318,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 6 && streq(argv[1], "--sbix-params-case")) {
         return emit_sbix_params_case(argc, argv);
     }
-    if (argc == 13 && streq(argv[1], "--ps-hinting-engine-case")) {
+    if ((argc == 13 || argc == 14) && streq(argv[1], "--ps-hinting-engine-case")) {
         return emit_ps_hinting_engine_case(argc, argv);
     }
     if (argc == 6 && streq(argv[1], "--stem-darkening-case")) {

@@ -41607,6 +41607,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                 .unwrap_or_else(|| "<null>".to_string()),
         );
         args.push(ps_hinting_engine_render_size(case)?.to_string());
+        if let Some(selector) = ps_hinting_invalid_module_selector(case)? {
+            args.push(selector.to_string());
+        }
         return Ok(args);
     }
     if property_service_route_pending(case.operation.as_str())
@@ -72524,6 +72527,33 @@ fn ps_hinting_engine_render_size(case: &InputCase) -> Result<FT_UInt, String> {
         .map_err(|_| "ps hinting-engine render_pixel_size is out of range".to_string())
 }
 
+fn ps_hinting_invalid_module_selector(case: &InputCase) -> Result<Option<i32>, String> {
+    let Some(value) = case.inputs.params.get("invalid_module_selector") else {
+        return Ok(None);
+    };
+    let value = value
+        .as_i64()
+        .ok_or_else(|| "ps hinting-engine invalid_module_selector must be an integer".to_string())?;
+    let selector = i32::try_from(value)
+        .map_err(|_| "ps hinting-engine invalid_module_selector is out of range".to_string())?;
+    if matches!(selector, 5..=7) {
+        return Err(format!(
+            "ps hinting-engine invalid_module_selector {selector} names a valid module"
+        ));
+    }
+    Ok(Some(selector))
+}
+
+fn ps_hinting_output(modules: Vec<Value>, invalid_module_error: Option<FT_Error>) -> Value {
+    let mut output = json!({"modules": modules});
+    if let Some(error) = invalid_module_error
+        && let Some(output) = output.as_object_mut()
+    {
+        output.insert("invalid_module_error".to_string(), json!(error));
+    }
+    output
+}
+
 fn ps_hinting_module_row(
     module_name: &str,
     set_error: FT_Error,
@@ -72670,7 +72700,18 @@ fn rust_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             Some(preserved),
         ));
     }
-    Ok(ok(json!({"modules": modules})))
+    let invalid_module_error = if ps_hinting_invalid_module_selector(case)?.is_some() {
+        let mut library = FT_Init_FreeType();
+        Some(FT_Property_Set(
+            Some(&mut library),
+            None,
+            Some("hinting-engine"),
+            Some(value),
+        ))
+    } else {
+        None
+    };
+    Ok(ok(ps_hinting_output(modules, invalid_module_error)))
 }
 
 fn c_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
@@ -72814,7 +72855,26 @@ fn c_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
         c_done_face(face);
         c_done_library(library);
     }
-    Ok(ok(json!({"modules": modules})))
+    let invalid_module_error = if ps_hinting_invalid_module_selector(case)?.is_some() {
+        let mut library = std::ptr::null_mut();
+        let init_error = c_abi::FT_Init_FreeType(&mut library);
+        if init_error != FT_Err_Ok {
+            Some(init_error)
+        } else {
+            let value_storage = value;
+            let error = c_abi::FT_Property_Set(
+                library,
+                property_module_cstr(0),
+                property_name_cstr(5),
+                (&value_storage as *const FT_UInt).cast(),
+            );
+            c_done_library(library);
+            Some(error)
+        }
+    } else {
+        None
+    };
+    Ok(ok(ps_hinting_output(modules, invalid_module_error)))
 }
 
 fn ps_hinting_module_selector(module: &str) -> i32 {
@@ -72874,7 +72934,23 @@ fn wasm_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
         ));
         wasm_done_face(status.handle);
     }
-    Ok(ok(json!({"modules": modules})))
+    let invalid_module_error = if let Some(selector) = ps_hinting_invalid_module_selector(case)? {
+        let status = wasm_abi::fontdone_wasm_ps_hinting_engine_open(
+            selector,
+            std::ptr::null(),
+            0,
+            0,
+            0,
+            0,
+            value,
+            std::ptr::null(),
+            std::ptr::null_mut(),
+        );
+        Some(status.error)
+    } else {
+        None
+    };
+    Ok(ok(ps_hinting_output(modules, invalid_module_error)))
 }
 
 fn stem_darkening_runtime_supported(case: &InputCase) -> bool {

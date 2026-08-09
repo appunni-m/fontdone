@@ -425,6 +425,11 @@ It also includes a maintained non-font-byte case for the same three modules;
 the face-open failure is compared as the pinned load error with no fabricated
 glyph result.
 
+The runtime row additionally sends selector `99` through the WASM
+PS-hinting entry point. The wrapper must reject that unknown selector before
+reading font bytes, matching the pinned `FT_Err_Invalid_Argument` result from
+the equivalent null-module C property call.
+
 Maintained glyph-slot and render inputs may set `probe_wasm_bitmap_accessors`.
 Those cases keep the normal slot result in the pinned-C comparison while the
 WASM route additionally checks the five exported bitmap accessors against its
