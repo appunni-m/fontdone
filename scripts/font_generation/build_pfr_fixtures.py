@@ -59,7 +59,13 @@ def build_kerning_item(wide_characters: bool, wide_adjustment: bool) -> bytes:
     return bytes(item)
 
 
-def build_physical(flags: int, wide_kerning: bool) -> bytes:
+def build_physical(
+    flags: int,
+    wide_kerning: bool,
+    *,
+    character_count: int = 2,
+    unknown_extra_item: bool = False,
+) -> bytes:
     """Build a valid physical record covering the selected descriptor flags."""
     physical = bytearray(15)
     physical[2:4] = u16(1000)
@@ -74,7 +80,10 @@ def build_physical(flags: int, wide_kerning: bool) -> bytes:
         physical.extend(i16(700))
     if flags & PFR_PHY_EXTRA_ITEMS:
         item = build_kerning_item(wide_kerning, wide_kerning)
-        physical.extend([1, len(item), 4])
+        physical.append(2 if unknown_extra_item else 1)
+        if unknown_extra_item:
+            physical.extend([1, 9, 0xAA])
+        physical.extend([len(item), 4])
         physical.extend(item)
 
     # No auxiliary records, no blue values, and zero vertical/horizontal
@@ -82,9 +91,12 @@ def build_physical(flags: int, wide_kerning: bool) -> bytes:
     physical.extend(u24(0))
     physical.append(0)
     physical.extend(bytes(6))
-    physical.extend(u16(2))
+    physical.extend(u16(character_count))
 
-    for code, advance, gps_size, gps_offset in ((65, 500, 1, 1), (66, 600, 2, 2)):
+    for code, advance, gps_size, gps_offset in (
+        (65, 500, 1, 1),
+        (66, 600, 2, 2),
+    )[:character_count]:
         if flags & PFR_PHY_2BYTE_CHARCODE:
             physical.extend(u16(code))
         else:
@@ -103,7 +115,13 @@ def build_physical(flags: int, wide_kerning: bool) -> bytes:
     return bytes(physical)
 
 
-def build_pfr_stream(logical_flags: int, physical: bytes, high_size: bool) -> bytes:
+def build_pfr_stream(
+    logical_flags: int,
+    physical: bytes,
+    high_size: bool,
+    *,
+    malformed_logical_extra: bool = False,
+) -> bytes:
     """Build a PFR0/PFR1 stream around one generated logical font."""
     header_size = 58
     logical_directory_offset = header_size
@@ -122,7 +140,10 @@ def build_pfr_stream(logical_flags: int, physical: bytes, high_size: bool) -> by
         if logical_flags & PFR_LOG_2BYTE_BOLD:
             logical.append(2)
     if logical_flags & PFR_LOG_EXTRA_ITEMS:
-        logical.extend([1, 2, 9, 0xAA, 0xBB])
+        if malformed_logical_extra:
+            logical.extend([1, 0xFF, 9])
+        else:
+            logical.extend([1, 2, 9, 0xAA, 0xBB])
 
     physical_size_offset = len(logical)
     logical.extend(bytes(5))
@@ -189,7 +210,7 @@ def build_extended_fixtures() -> None:
         | PFR_LOG_2BYTE_BOLD
         | PFR_LOG_EXTRA_ITEMS
     )
-    all_flags = build_physical(all_physical_flags, True)
+    all_flags = build_physical(all_physical_flags, True, unknown_extra_item=True)
     (OUT_DIR / "all-descriptor-flags.pfr").write_bytes(
         build_pfr_stream(all_logical_flags, all_flags, False)
     )
@@ -209,15 +230,53 @@ def build_extended_fixtures() -> None:
 
 def build_malformed_fixtures() -> None:
     """Write malformed PFR probes used by the public face-open matrix."""
-    header = bytearray(58)
-    header[0:4] = b"PFR0"
-    header[4:6] = u16(5)  # PFR 2.14.3 rejects versions above four as unknown.
-    header[6:8] = u16(0x0D0A)
-    header[8:10] = u16(58)
-    (OUT_DIR / "malformed-header-version.pfr").write_bytes(header)
+    def header_probe(version: int, marker: bytes = b"\r\n", size: int = 58) -> bytes:
+        header = bytearray(58)
+        header[0:4] = b"PFR0"
+        header[4:6] = u16(version)
+        header[6:8] = marker
+        header[8:10] = u16(size)
+        return bytes(header)
+
+    (OUT_DIR / "malformed-header-version.pfr").write_bytes(header_probe(5))
+    (OUT_DIR / "malformed-header-marker.pfr").write_bytes(
+        header_probe(4, marker=b"\0\0")
+    )
+    (OUT_DIR / "malformed-header-size.pfr").write_bytes(header_probe(4, size=57))
+
+    fixed = build_physical(0, False)
+    (OUT_DIR / "short-header.pfr").write_bytes(b"PFR0")
+    (OUT_DIR / "truncated-physical-header.pfr").write_bytes(
+        build_pfr_stream(0, bytes([0]), False)
+    )
+
+    zero_resolution = bytearray(fixed)
+    zero_resolution[2:4] = u16(0)
+    (OUT_DIR / "zero-resolution.pfr").write_bytes(
+        build_pfr_stream(0, bytes(zero_resolution), False)
+    )
+    (OUT_DIR / "zero-character-count.pfr").write_bytes(
+        build_pfr_stream(0, build_physical(0, False, character_count=0), False)
+    )
+
+    truncated_logical = bytearray(build_pfr_stream(0, fixed, False))
+    truncated_logical[60:62] = u16(17)
+    (OUT_DIR / "truncated-logical-font.pfr").write_bytes(truncated_logical)
+
+    (OUT_DIR / "truncated-character-descriptor.pfr").write_bytes(
+        build_pfr_stream(0, fixed[:30], False)
+    )
+    (OUT_DIR / "malformed-logical-extra-item.pfr").write_bytes(
+        build_pfr_stream(
+            PFR_LOG_EXTRA_ITEMS,
+            fixed,
+            False,
+            malformed_logical_extra=True,
+        )
+    )
 
 
-def build_basic_metrics_and_kerning(path: Path) -> None:
+def build_basic_metrics_and_kerning(path: Path) -> tuple[bytes, int]:
     """Write one proportional two-glyph PFR face with two kerning pairs."""
     header_size = 58
     logical_directory_offset = header_size
@@ -312,10 +371,16 @@ def build_basic_metrics_and_kerning(path: Path) -> None:
     if path.exists() or path.is_symlink():
         path.unlink()
     path.write_bytes(data)
+    return data, physical_record_offset
 
 
 def main() -> None:
-    build_basic_metrics_and_kerning(OUT_DIR / "basic-metrics-and-kerning.pfr")
+    basic_data, physical_record_offset = build_basic_metrics_and_kerning(
+        OUT_DIR / "basic-metrics-and-kerning.pfr"
+    )
+    malformed_kerning = bytearray(basic_data)
+    malformed_kerning[physical_record_offset + 16] = 3
+    (OUT_DIR / "malformed-kerning-item.pfr").write_bytes(malformed_kerning)
     build_extended_fixtures()
     build_malformed_fixtures()
 

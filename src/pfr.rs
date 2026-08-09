@@ -47,7 +47,6 @@ struct PfrKerningPair {
 impl PfrFont {
     pub(crate) fn parse(data: &[u8], face_index: usize) -> Result<Self, &'static str> {
         if data.len() < PFR_HEADER_SIZE
-            || data.get(..4) != Some(b"PFR0")
             || be_u16(data, 4).is_none_or(|version| version > 4)
             || be_u16(data, 6) != Some(0x0D0A)
             || be_u16(data, 8).is_none_or(|size| usize::from(size) < PFR_HEADER_SIZE)
@@ -163,12 +162,9 @@ impl PfrFont {
 
         let blue_count = usize::from(*physical.get(cursor).ok_or("missing PFR blue-value count")?);
         cursor = checked_skip(cursor, 1)?;
-        cursor = checked_skip(
-            cursor,
-            blue_count
-                .checked_mul(2)
-                .ok_or("PFR blue-value size overflow")?,
-        )?;
+        // The count is read from one byte, so doubling it cannot overflow
+        // the supported 32-bit or 64-bit usize.
+        cursor = checked_skip(cursor, blue_count * 2)?;
         // blue fuzz, blue scale, vertical standard, horizontal standard
         cursor = checked_skip(cursor, 6)?;
 

@@ -2384,6 +2384,281 @@
             "coverage": [
               "pfr:invalid-header-version"
             ]
+          },
+          {
+            "id": "pfr-short-header",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/short-header.pfr"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/short-header.pfr"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pfr:short-header"
+            ]
+          },
+          {
+            "id": "pfr-invalid-header-marker",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/malformed-header-marker.pfr"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/malformed-header-marker.pfr"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pfr:invalid-header-marker"
+            ]
+          },
+          {
+            "id": "pfr-invalid-header-size",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/malformed-header-size.pfr"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/malformed-header-size.pfr"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pfr:invalid-header-size"
+            ]
+          },
+          {
+            "id": "pfr-face-index-out-of-range",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 1
+                }
+              ]
+            },
+            "coverage": [
+              "pfr:face-index-out-of-range"
+            ]
+          },
+          {
+            "id": "pfr-truncated-logical-font",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/truncated-logical-font.pfr"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/truncated-logical-font.pfr"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pfr:truncated-logical-font"
+            ]
+          },
+          {
+            "id": "pfr-truncated-physical-header",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/truncated-physical-header.pfr"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/truncated-physical-header.pfr"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pfr:truncated-physical-header"
+            ]
+          },
+          {
+            "id": "pfr-zero-resolution",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/zero-resolution.pfr"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/zero-resolution.pfr"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pfr:zero-resolution"
+            ]
+          },
+          {
+            "id": "pfr-zero-character-count",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/zero-character-count.pfr"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/zero-character-count.pfr"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pfr:zero-character-count"
+            ]
+          },
+          {
+            "id": "pfr-truncated-character-descriptor",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/truncated-character-descriptor.pfr"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/truncated-character-descriptor.pfr"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pfr:truncated-character-descriptor"
+            ]
+          },
+          {
+            "id": "pfr-malformed-kerning-item",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/malformed-kerning-item.pfr"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/malformed-kerning-item.pfr"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pfr:malformed-kerning-item"
+            ]
+          },
+          {
+            "id": "pfr-malformed-logical-extra-item",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/malformed-logical-extra-item.pfr"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/malformed-logical-extra-item.pfr"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pfr:malformed-logical-extra-item"
+            ]
           }
         ]
       },

@@ -26,7 +26,11 @@
           "face_index": 0,
           "pairs": [
             "gid:1/gid:2",
-            "gid:2/gid:1"
+            "gid:2/gid:1",
+            "gid:0/gid:1",
+            "gid:1/gid:0",
+            "gid:3/gid:1",
+            "gid:1/gid:3"
           ],
           "avector_pointer_class": "valid",
           "abi": {
