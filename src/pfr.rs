@@ -198,22 +198,18 @@ impl PfrFont {
             if flags & PFR_PHY_ASCII_CODE != 0 {
                 cursor = checked_skip(cursor, 1)?;
             }
-            cursor = checked_skip(
-                cursor,
-                if flags & PFR_PHY_2BYTE_GPS_SIZE != 0 {
-                    2
-                } else {
-                    1
-                },
-            )?;
-            cursor = checked_skip(
-                cursor,
-                if flags & PFR_PHY_3BYTE_GPS_OFFSET != 0 {
-                    3
-                } else {
-                    2
-                },
-            )?;
+            let gps_size = if flags & PFR_PHY_2BYTE_GPS_SIZE != 0 {
+                2
+            } else {
+                1
+            };
+            cursor = checked_skip(cursor, gps_size)?;
+            let gps_offset = if flags & PFR_PHY_3BYTE_GPS_OFFSET != 0 {
+                3
+            } else {
+                2
+            };
+            cursor = checked_skip(cursor, gps_offset)?;
             if cursor > physical.len() {
                 return Err("truncated PFR character descriptor");
             }

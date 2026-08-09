@@ -2561,6 +2561,31 @@
             ]
           },
           {
+            "id": "pfr-zero-metrics-resolution",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/zero-metrics-resolution.pfr"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pfr/zero-metrics-resolution.pfr"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "pfr:zero-metrics-resolution"
+            ]
+          },
+          {
             "id": "pfr-zero-character-count",
             "assets": {
               "font_bytes": {

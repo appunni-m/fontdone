@@ -255,6 +255,11 @@ def build_malformed_fixtures() -> None:
     (OUT_DIR / "zero-resolution.pfr").write_bytes(
         build_pfr_stream(0, bytes(zero_resolution), False)
     )
+    zero_metrics_resolution = bytearray(fixed)
+    zero_metrics_resolution[4:6] = u16(0)
+    (OUT_DIR / "zero-metrics-resolution.pfr").write_bytes(
+        build_pfr_stream(0, bytes(zero_metrics_resolution), False)
+    )
     (OUT_DIR / "zero-character-count.pfr").write_bytes(
         build_pfr_stream(0, build_physical(0, False, character_count=0), False)
     )
