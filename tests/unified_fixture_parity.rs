@@ -3159,6 +3159,9 @@ impl BackendComparisonWorker {
         if case.case_id == "freetype.FT_Render_Glyph.error_null_or_unowned_slot" {
             return rust_render_glyph_invalid_slots(case);
         }
+        if is_gzip_stream_invalid_handle_case(case) {
+            return gzip_stream_open_invalid_handle_output(GzipStreamBackend::Rust);
+        }
         if is_gzip_uncompress_error_case(case) {
             return gzip_uncompress_error_output(case, GzipBackend::Rust);
         }
@@ -3677,6 +3680,9 @@ impl BackendComparisonWorker {
         if case.case_id == "freetype.FT_Render_Glyph.error_null_or_unowned_slot" {
             return c_render_glyph_invalid_slots(case);
         }
+        if is_gzip_stream_invalid_handle_case(case) {
+            return gzip_stream_open_invalid_handle_output(GzipStreamBackend::CAbi);
+        }
         // Handle null-face tests: return expected result directly
         if has_no_font_assets(case)
             && lifecycle_handle_param(&case.inputs.params, "face") == Some("null")
@@ -4118,6 +4124,9 @@ impl BackendComparisonWorker {
     fn run_wasm_abi(&mut self, case: &InputCase) -> Result<RunOutput, String> {
         if case.case_id == "freetype.FT_Render_Glyph.error_null_or_unowned_slot" {
             return wasm_render_glyph_invalid_slots(case);
+        }
+        if is_gzip_stream_invalid_handle_case(case) {
+            return gzip_stream_open_invalid_handle_output(GzipStreamBackend::Wasm);
         }
         // Handle null-face tests: return expected result directly
         if has_no_font_assets(case)
@@ -41674,6 +41683,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         }
         return Ok(args);
     }
+    if case.case_id == "ftgzip.FT_Stream_OpenGzip.rejects_invalid_stream_handles" {
+        return Ok(vec!["--gzip-stream-open-errors".to_string()]);
+    }
     if case.case_id == "ftgzip.FT_Stream_OpenGzip.opens_valid_gzip_stream" {
         let manifest = gzip_stream_manifest(case)?;
         let mut args = vec!["--gzip-stream-open".to_string()];
@@ -45826,7 +45838,14 @@ fn is_gzip_uncompress_error_case(case: &InputCase) -> bool {
     )
 }
 
+fn is_gzip_stream_invalid_handle_case(case: &InputCase) -> bool {
+    case.case_id == "ftgzip.FT_Stream_OpenGzip.rejects_invalid_stream_handles"
+}
+
 fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
+    if is_gzip_stream_invalid_handle_case(case) {
+        return gzip_stream_open_invalid_handle_output(GzipStreamBackend::Rust);
+    }
     if is_gzip_uncompress_error_case(case) {
         return gzip_uncompress_error_output(case, GzipBackend::Rust);
     }
@@ -47171,6 +47190,9 @@ fn catch_font_error(err: String) -> Result<RunOutput, String> {
 }
 
 fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
+    if is_gzip_stream_invalid_handle_case(case) {
+        return gzip_stream_open_invalid_handle_output(GzipStreamBackend::CAbi);
+    }
     if is_gzip_uncompress_error_case(case) {
         return gzip_uncompress_error_output(case, GzipBackend::CAbi);
     }
@@ -48618,6 +48640,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
 }
 
 fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
+    if is_gzip_stream_invalid_handle_case(case) {
+        return gzip_stream_open_invalid_handle_output(GzipStreamBackend::Wasm);
+    }
     if is_gzip_uncompress_error_case(case) {
         return gzip_uncompress_error_output(case, GzipBackend::Wasm);
     }
@@ -76881,6 +76906,33 @@ fn gzip_stream_open_output(
         }
     }
     Ok(ok(json!({ "rows": rows })))
+}
+
+fn gzip_stream_open_invalid_handle_output(
+    backend: GzipStreamBackend,
+) -> Result<RunOutput, String> {
+    let mut source = FT_StreamRec::default();
+    let mut stream = FT_StreamRec::default();
+    let null_target = match backend {
+        GzipStreamBackend::Rust => FT_Stream_OpenGzip(None, Some(&source), Some(&[])),
+        GzipStreamBackend::CAbi => c_abi::FT_Stream_OpenGzip(ptr::null_mut(), &mut source),
+        GzipStreamBackend::Wasm => {
+            wasm_abi::fontdone_wasm_stream_open_gzip(ptr::null_mut(), &source)
+        }
+    };
+    let null_source = match backend {
+        GzipStreamBackend::Rust => FT_Stream_OpenGzip(Some(&mut stream), None, Some(&[])),
+        GzipStreamBackend::CAbi => c_abi::FT_Stream_OpenGzip(&mut stream, ptr::null_mut()),
+        GzipStreamBackend::Wasm => {
+            wasm_abi::fontdone_wasm_stream_open_gzip(&mut stream, ptr::null())
+        }
+    };
+    Ok(ok(json!({
+        "rows": [
+            {"variant": "null_target", "status": null_target},
+            {"variant": "null_source", "status": null_source}
+        ]
+    })))
 }
 
 fn gzip_stream_open_row(

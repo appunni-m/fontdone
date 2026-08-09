@@ -813,6 +813,30 @@ static int emit_gzip_stream_open(int argc, char** argv) {
     return 0;
 }
 
+static int emit_gzip_stream_open_errors(void) {
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{\"status\":{\"kind\":\"ok\",\"error_code\":0},\"output\":{\"rows\":[{\"variant\":\"null_target\",\"status\":%d},{\"variant\":\"null_source\",\"status\":%d}]}}\n",
+               init_error,
+               init_error);
+        return 0;
+    }
+
+    FT_StreamRec source;
+    FT_StreamRec stream;
+    memset(&source, 0, sizeof(source));
+    memset(&stream, 0, sizeof(stream));
+    source.memory = library->memory;
+    FT_Error null_target = FT_Stream_OpenGzip(NULL, &source);
+    FT_Error null_source = FT_Stream_OpenGzip(&stream, NULL);
+    printf("{\"status\":{\"kind\":\"ok\",\"error_code\":0},\"output\":{\"rows\":[{\"variant\":\"null_target\",\"status\":%d},{\"variant\":\"null_source\",\"status\":%d}]}}\n",
+           null_target,
+           null_source);
+    FT_Done_FreeType(library);
+    return 0;
+}
+
 static void init_lzw_stream_sentinel(FT_StreamRec* stream) {
     memset(stream, 0, sizeof(*stream));
     stream->base = (FT_Byte*)(uintptr_t)1;
@@ -38406,6 +38430,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc >= 5 && streq(argv[1], "--gzip-stream-open")) {
         return emit_gzip_stream_open(argc, argv);
+    }
+    if (argc == 2 && streq(argv[1], "--gzip-stream-open-errors")) {
+        return emit_gzip_stream_open_errors();
     }
     if (argc >= 3 && streq(argv[1], "--lzw-stream-case")) {
         return emit_lzw_stream_case(argc, argv);
