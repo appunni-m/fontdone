@@ -77,17 +77,9 @@ impl GvarTable {
         normalized_coords: &[i16],
         iup_outline: Option<GvarIupOutline<'_>>,
     ) -> Result<Option<Vec<(i32, i32)>>, FontError> {
-        if normalized_coords.len() < self.axis_count {
-            return Ok(None);
-        }
         let glyph_index = usize::from(glyph_index);
-        let Some((&start, &end)) = self
-            .glyph_offsets
-            .get(glyph_index)
-            .zip(self.glyph_offsets.get(glyph_index + 1))
-        else {
-            return Ok(None);
-        };
+        let start = self.glyph_offsets[glyph_index];
+        let end = self.glyph_offsets[glyph_index + 1];
         if start == end {
             return Ok(None);
         }
@@ -294,13 +286,7 @@ fn interpolate_gvar_deltas(
     }
     let mut first_point = 0usize;
     for &contour_end in contour_ends {
-        if first_point >= real_point_count {
-            break;
-        }
         let end_point = usize::from(contour_end);
-        if end_point < first_point || end_point >= real_point_count {
-            break;
-        }
         let mut point = first_point;
         while point <= end_point && !has_delta.get(point).copied().unwrap_or(false) {
             point += 1;
@@ -584,9 +570,6 @@ fn tuple_scalar(peak: &[i16], intermediate: Option<&(Vec<i16>, Vec<i16>)>, coord
 }
 
 fn div_to_fixed(num: i32, den: i32) -> i32 {
-    if den == 0 {
-        return 0;
-    }
     (((i64::from(num)) << 16) / i64::from(den)) as i32
 }
 
@@ -732,8 +715,5 @@ pub fn normalize_axis_coord(design: i32, min: i32, default: i32, max: i32) -> i1
 }
 
 fn normalize_axis_delta(delta: i32, extent: i32) -> i32 {
-    if extent <= 0 {
-        return 0;
-    }
     (((i64::from(delta)) * i64::from(F2DOT14_ONE)) / i64::from(extent)) as i32
 }
