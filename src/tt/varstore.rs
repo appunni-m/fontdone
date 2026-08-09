@@ -295,13 +295,14 @@ impl DeltaSetIndexMap {
 
 fn mul_div_round(a: i32, b: i32, c: i32) -> i32 {
     // `VariationRegion::scalar` calls this only after proving the selected
-    // region slope has a nonzero denominator.
-    let sign = if (a < 0) ^ (b < 0) ^ (c < 0) { -1 } else { 1 };
-    let a = i64::from(a).abs();
-    let b = i64::from(b).abs();
-    let c = i64::from(c).abs();
+    // region slope has positive numerator and denominator. The running scalar
+    // starts positive and remains non-negative, so all three operands are
+    // non-negative for every parsed region.
+    let a = i64::from(a);
+    let b = i64::from(b);
+    let c = i64::from(c);
     let value = (a * b + (c >> 1)) / c;
-    (value as i32) * sign
+    value as i32
 }
 
 fn read_u16(data: &[u8], offset: usize) -> Result<u16, FontError> {
