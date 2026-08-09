@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest pushed-head verification is Coverage MCP parity run
-`beba6760-2a7c-4c7e-9c16-476be69b14ff`, whose passing report was recorded in
+`c5ea877e-ffa5-4933-8873-afb8a8cf35c2`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
 7,604 / 7,604 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `5ddc85bb7422b6d405d798317d7cf90eac7010b2febbc718dde96c2f99b4e36d`.
+Its source-bound parity-tree digest is `508e9aaf95f82e865b00098bb74ebd8db45065728ab0f752b20150b5cda91384`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,18 +142,18 @@ their exact worktree than the committed release snapshot.
 
 The latest pushed-head all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`5087ad93b46498d2ae536230eb4ea10f225617b0`
-(Coverage MCP run `84d612b6-deb2-4cb8-aa06-9fb3181532ce`, snapshot
-`92da4ce0-9bbc-4b7b-81ef-17ebd5116f2a`):
+`684ee32eb43cf3f486a0af07116efd37be9661df`
+(Coverage MCP run `026f8157-9e9b-4ddf-a52f-27b2d0263d44`, snapshot
+`39fa81a1-735b-4cf3-9356-986f4c87a8d1`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,211 / 54,262 | 92.53% |
-| Branches | 10,023 / 12,551 | 79.86% |
-| Functions | 3,444 / 3,818 | 90.20% |
-| Regions | 68,949 / 75,380 | 91.47% |
+| Lines | 50,215 / 54,264 | 92.54% |
+| Branches | 10,022 / 12,549 | 79.86% |
+| Functions | 3,444 / 3,819 | 90.18% |
+| Regions | 68,950 / 75,381 | 91.47% |
 
-The current managed validation completed in 62.981 seconds; its three split
+The current managed validation completed in 64.712 seconds; its three split
 backends passed all 7,604 runnable comparisons. Its nine shard processes split
 the same exact matrix into disjoint slices before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
@@ -184,11 +184,11 @@ run retains that setting and additionally removes the remaining cross-backend
 counter contention by using process-local shard profiles. LLVM coverage mapping
 supplies the report's source locations without requiring DWARF line tables.
 
-The current SBIT invariant cleanup removes defensive BGRA shape guards whose
-constructors derive both pitch and buffer length from the same validated bitmap
-layout. It preserved all 7,604 runnable parity results and closed the remaining
-relevant SBIT branch gaps without adding a unit-only coverage route. The gvar
-invariant cleanup removes defensive branches whose callers
+The current SBIT and SBIX invariant cleanups remove defensive bitmap shape and
+strike-selection guards whose callers prove exact internal layout and selected
+strike invariants. They preserved all 7,604 runnable parity results and closed
+the remaining relevant SBIT/SBIX branch gaps without adding a unit-only coverage
+route. The gvar invariant cleanup removes defensive branches whose callers
 already prove valid normalized-coordinate, glyph-offset, contour-endpoint,
 divisor, and axis-extent inputs. It preserved all 7,604 runnable parity
 results and reduced the measured coverage denominator without weakening a
