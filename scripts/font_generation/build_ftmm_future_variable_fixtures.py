@@ -1231,6 +1231,19 @@ def write_mvar_fixtures() -> None:
         bytes(outer_index),
     )
 
+    # Keep the supported record structurally valid but use MVAR's all-ones
+    # outer index with a non-sentinel inner index.  This is distinct from the
+    # DeltaSetIndexMap all-ones pair and reaches the short-circuit branch in
+    # the shared item-delta lookup through the public face-open route.
+    sentinel_outer_index = bytearray(base)
+    put_u16(sentinel_outer_index, 16, 0xFFFF)
+    write_table_payload(
+        MVAR_FONT,
+        "MVAR",
+        "mvar-record-sentinel-outer-index.ttf",
+        bytes(sentinel_outer_index),
+    )
+
     # Preserve the six supported records and append an unknown tag.  The
     # public vertical-header route ignores the unknown record, exercising the
     # same default match arm as FreeType's tag switch.

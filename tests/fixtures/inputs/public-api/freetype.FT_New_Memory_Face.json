@@ -1360,6 +1360,15 @@
             "coverage": ["tt/varstore:outer-index-out-of-range-returns-zero"]
           },
           {
+            "id": "mvar-record-sentinel-outer-index",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-record-sentinel-outer-index.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-record-sentinel-outer-index.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:sentinel-outer-index-with-non-sentinel-inner-returns-zero"]
+          },
+          {
             "id": "mvar-unknown-record",
             "assets": {
               "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/mvar-unknown-record.ttf"},
