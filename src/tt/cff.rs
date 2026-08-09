@@ -1471,9 +1471,7 @@ impl<'a> Type2Decoder<'a> {
                 let dy2 = args[2];
                 let dy3 = args[3];
                 let dx3 = if last_delta {
-                    *self.stack.get(index + 4).ok_or_else(|| {
-                        FontError::InvalidOutline("CFF: hvcurveto/vhcurveto argument count".into())
-                    })?
+                    self.stack[index + 4]
                 } else {
                     0
                 };
@@ -1484,9 +1482,7 @@ impl<'a> Type2Decoder<'a> {
                 let dy2 = args[2];
                 let dx3 = args[3];
                 let dy3 = if last_delta {
-                    *self.stack.get(index + 4).ok_or_else(|| {
-                        FontError::InvalidOutline("CFF: hvcurveto/vhcurveto argument count".into())
-                    })?
+                    self.stack[index + 4]
                 } else {
                     0
                 };
