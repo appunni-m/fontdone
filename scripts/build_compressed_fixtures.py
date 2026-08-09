@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import bz2
 import gzip
+import io
 import json
 from pathlib import Path
 import zlib
@@ -36,6 +37,14 @@ def write_if_changed(path: Path, data: bytes) -> None:
     path.write_bytes(data)
 
 
+def deterministic_gzip(data: bytes) -> bytes:
+    """Return a gzip stream with a platform-independent header."""
+    output = io.BytesIO()
+    with gzip.GzipFile(fileobj=output, mode="wb", compresslevel=9, mtime=0) as stream:
+        stream.write(data)
+    return output.getvalue()
+
+
 def literal_unix_compress(data: bytes) -> bytes:
     """Encode bytes as valid 9-bit literal LZW codes in `.Z` bit order."""
     # 0x90 selects the traditional 16-bit maximum and block mode.  This small
@@ -64,7 +73,7 @@ def build_gzip() -> None:
         gzip_path = GZIP_OUT / f"{stem}.gz"
         zlib_path = GZIP_OUT / f"{stem}.zlib"
         write_if_changed(raw_path, raw)
-        write_if_changed(gzip_path, gzip.compress(raw, compresslevel=9, mtime=0))
+        write_if_changed(gzip_path, deterministic_gzip(raw))
         write_if_changed(zlib_path, zlib.compress(raw, level=9))
         manifest_payloads.append(
             {
@@ -90,7 +99,7 @@ def build_gzip() -> None:
         raw_path = GZIP_OUT / f"{stem}.raw"
         gzip_path = GZIP_OUT / f"{stem}.gz"
         write_if_changed(raw_path, raw)
-        write_if_changed(gzip_path, gzip.compress(raw, compresslevel=9, mtime=0))
+        write_if_changed(gzip_path, deterministic_gzip(raw))
         stream_manifest_payloads.append(
             {
                 "id": payload_id,
