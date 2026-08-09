@@ -710,6 +710,31 @@ impl<'a> Worker<'a> {
         }
     }
 
+    /// Split one cubic axis with the exact shift order used by
+    /// `gray_split_cubic` in `src/smooth/ftgrays.c`.
+    ///
+    /// The algebraically equivalent de Casteljau form rounds intermediate
+    /// midpoints too early.  That changes a control coordinate by one
+    /// subpixel at some fractional CFF sizes and, in turn, changes a few
+    /// antialias coverage bytes.
+    #[inline]
+    fn split_cubic_axis(to: i64, control2: i64, control1: i64, from: i64) -> ([i64; 4], [i64; 4]) {
+        let a = to.wrapping_add(control2);
+        let b = control2.wrapping_add(control1);
+        let mut c = control1.wrapping_add(from);
+        let left_control1 = c >> 1;
+        c = c.wrapping_add(b);
+        let left_control2 = c >> 2;
+        let right_control2 = a >> 1;
+        let a = a.wrapping_add(b);
+        let right_control1 = a >> 2;
+        let midpoint = a.wrapping_add(c) >> 3;
+        (
+            [to, right_control2, right_control1, midpoint],
+            [midpoint, left_control2, left_control1, from],
+        )
+    }
+
     // ── gray_render_cubic (ftgrays.c:1280) ────────────────────────────────
     fn render_cubic(&mut self, c1x: i64, c1y: i64, c2x: i64, c2y: i64, to_x: i64, to_y: i64) {
         let mut stack: Vec<[i64; 8]> = Vec::with_capacity(64);
@@ -745,26 +770,20 @@ impl<'a> Worker<'a> {
                 || (a0x - 3 * a2x + 2 * a3x).abs() > ONE_PIXEL / 2
                 || (a0y - 3 * a2y + 2 * a3y).abs() > ONE_PIXEL / 2
             {
-                // de Casteljau split at t=0.5. FreeType's gray_split_cubic
-                // processes the right sub-arc first, then the left sub-arc.
-                // Preserve that stack order because it changes accumulated
-                // cells when subdivision boundaries fall on scanline edges.
-                let m01x = (a0x + a1x) / 2;
-                let m01y = (a0y + a1y) / 2;
-                let m12x = (a1x + a2x) / 2;
-                let m12y = (a1y + a2y) / 2;
-                let m23x = (a2x + a3x) / 2;
-                let m23y = (a2y + a3y) / 2;
-                let m012x = (m01x + m12x) / 2;
-                let m012y = (m01y + m12y) / 2;
-                let m123x = (m12x + m23x) / 2;
-                let m123y = (m12y + m23y) / 2;
-                let mx = (m012x + m123x) / 2;
-                let my = (m012y + m123y) / 2;
-                // Push left sub-arc first (p0→midpoint), then right sub-arc (midpoint→to).
-                // LIFO pop gives right first, matching C's arc+=3 advancement.
-                stack.push([a0x, a0y, m01x, m01y, m012x, m012y, mx, my]);
-                stack.push([mx, my, m123x, m123y, m23x, m23y, a3x, a3y]);
+                let (right_x, left_x) = Self::split_cubic_axis(a0x, a1x, a2x, a3x);
+                let (right_y, left_y) = Self::split_cubic_axis(a0y, a1y, a2y, a3y);
+                // Push the geometric right sub-arc first, then the left
+                // sub-arc.  LIFO pop preserves the C rasterizer's
+                // left-then-right traversal order for the current cell
+                // accumulator.
+                stack.push([
+                    right_x[0], right_y[0], right_x[1], right_y[1], right_x[2], right_y[2],
+                    right_x[3], right_y[3],
+                ]);
+                stack.push([
+                    left_x[0], left_y[0], left_x[1], left_y[1], left_x[2], left_y[2], left_x[3],
+                    left_y[3],
+                ]);
                 continue;
             }
             self.render_line(a0x, a0y);

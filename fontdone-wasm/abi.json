@@ -540,6 +540,10 @@
           "type": "FT_Int32"
         },
         {
+          "name": "render_pixel_size",
+          "type": "FT_UInt"
+        },
+        {
           "name": "value",
           "type": "FT_UInt"
         },

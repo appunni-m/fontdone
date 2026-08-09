@@ -4,6 +4,7 @@
   "manifest_cases": [
     "value_matches_header",
     "hinting_engine_property_runtime",
+    "hinting_engine_property_runtime_rendered",
     "hinting_engine_invalid_glyph_preserves_error",
     "hinting_engine_null_string_invalid_glyph",
     "hinting_engine_invalid_face_returns_load_error"
@@ -146,6 +147,107 @@
         },
         "fixture_requirements": [
           "CFF, Type 1, and CID-keyed Type 1 fixtures with glyphs whose outlines or metrics change under old FreeType vs Adobe hinting where the pinned build supports both engines."
+        ]
+      }
+    },
+    {
+      "case_id": "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime_rendered",
+      "subject": "ftdriver.FT_HINTING_FREETYPE",
+      "case": "hinting_engine_property_runtime_rendered",
+      "operation": "ftdriver.hinting_engine_property",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "cff_font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/cff/pure-cff-cubic.otf",
+            "asset_kind": "font"
+          },
+          "type1_font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/type1/simple-type1.pfb",
+            "asset_kind": "font"
+          },
+          "cid_font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/cid/fontinfo-populated.cid",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "module_names": [
+            "cff",
+            "type1",
+            "t1cid"
+          ],
+          "property_name": "hinting-engine",
+          "value_symbol": "FT_HINTING_FREETYPE",
+          "value": 0,
+          "string_value": "freetype",
+          "sequence": [
+            "FT_Property_Set",
+            "FT_Property_Get",
+            "FT_New_Face",
+            "FT_Set_Pixel_Sizes",
+            "FT_Load_Glyph"
+          ],
+          "invalid_controls": [
+            "bad module",
+            "bad property",
+            "numeric value outside FT_HINTING_*"
+          ],
+          "build_variants": "old FreeType CFF engine support may make FT_HINTING_FREETYPE build-dependent",
+          "runtime_route": "actual_ps_hinting_engine_property",
+          "glyph_index": 1,
+          "load_flags": [
+            "FT_LOAD_RENDER"
+          ],
+          "render_pixel_size": 20
+        }
+      },
+      "classifiers": [
+        "kind:constant",
+        "header:ftdriver",
+        "area:ps-hinting",
+        "path:property",
+        "requires:font",
+        "format:bitmap"
+      ],
+      "expectation": {
+        "status": "build_dependent",
+        "output_shape": {
+          "modules": [
+            {
+              "module_name": "string",
+              "set_error": "FT_Error",
+              "get_error": "FT_Error",
+              "readback_value": "FT_UInt",
+              "string_value_behavior": "object",
+              "string_get_error": "FT_Error",
+              "glyph": "rendered FT_GlyphSlot public fields or {load_error}",
+              "post_error_output_preservation": "bool"
+            }
+          ]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "modules[*].module_name",
+            "modules[*].set_error",
+            "modules[*].get_error",
+            "modules[*].readback_value",
+            "modules[*].string_value_behavior",
+            "modules[*].string_get_error",
+            "modules[*].glyph",
+            "modules[*].post_error_output_preservation"
+          ]
+        },
+        "fixture_requirements": [
+          "The maintained CFF, Type 1, and CID-keyed Type 1 fixtures must load glyph 1 through FT_LOAD_RENDER so exact bitmap metadata, bytes, and metrics are compared across all ABI lanes."
         ]
       }
     },

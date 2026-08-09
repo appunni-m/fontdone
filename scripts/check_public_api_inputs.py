@@ -3425,6 +3425,7 @@ def ftdriver_subsystem_pending_reason(row: ConcreteInput) -> str | None:
             "ftdriver.FT_CFF_HINTING_FREETYPE.hinting_engine_property_runtime",
             "ftdriver.FT_HINTING_ADOBE.hinting_engine_property_runtime",
             "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime",
+            "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime_rendered",
             "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_face_returns_load_error",
         }
         and row.operation == "ftdriver.hinting_engine_property"
@@ -5383,6 +5384,7 @@ def hinting_engine_property_real_parity_reason(row: ConcreteInput) -> str | None
         "ftdriver.FT_CFF_HINTING_FREETYPE.hinting_engine_property_runtime",
         "ftdriver.FT_HINTING_ADOBE.hinting_engine_property_runtime",
         "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime",
+        "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime_rendered",
         "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_glyph_preserves_error",
         "ftdriver.FT_HINTING_FREETYPE.hinting_engine_null_string_invalid_glyph",
         "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_face_returns_load_error",

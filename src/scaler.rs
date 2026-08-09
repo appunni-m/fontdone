@@ -90,6 +90,22 @@ fn scale_unrounded_fdot6(value: i32, scale: i32) -> i32 {
     ft_mul_fix(value, scale).wrapping_add(32) >> 6
 }
 
+/// Scale one CFF coordinate through FreeType's Adobe CFF2 path.
+///
+/// `cf2_getScaleAndHintFlag` rounds the public 16.16 size scale to a
+/// 26.6-per-font-unit transform before the Adobe interpreter emits its
+/// outline.  The generic `ps_builder_add_point` then truncates that result
+/// from 16.16 to 26.6 with `>> 10`.  Applying `FT_MulFix` directly to the
+/// integer design coordinate is subtly different at fractional pixel
+/// boundaries (for example, 240 units at 22 ppem becomes 337 in CFF and 338
+/// with the generic path).
+#[inline]
+fn scale_cff_adobe_coordinate(value: i32, scale: i32) -> i32 {
+    let cf2_scale = scale.wrapping_add(32) / 64;
+    let cf2_value = value.wrapping_shl(16);
+    ft_mul_fix(cf2_scale, cf2_value) >> 10
+}
+
 pub(crate) fn prepare_native_bytecode_context(
     data: &FontData,
     scale: ScaleMetrics,
@@ -1085,14 +1101,26 @@ fn scale_glyph_impl_with_scale(
             }
             scaled
         } else {
-            // No-hinting or bytecode-only: simplest scaling loop.
+            // No-hinting or bytecode-only: simplest scaling loop.  Scaled
+            // CFF faces use the Adobe interpreter's quantized transform;
+            // `FT_LOAD_NO_HINTING` takes the direct scale path above.
             // Unconditional per-point path avoids branches inside the loop.
             let shift_x = no_hinting_origin_shift_x;
+            let use_cff_adobe_scale = data.has_cff_outlines() && allow_bytecode;
             let mut scaled = Vec::with_capacity(outline_raw.points.len());
             let mut tags = Vec::with_capacity(outline_raw.points.len());
             for (index, p) in outline_raw.points.iter().enumerate() {
                 let (x, y) = outline_raw.unrounded_points.as_ref().map_or_else(
-                    || (scale.scale_x(p.x), ft_mul_fix(p.y, y_adj)),
+                    || {
+                        if use_cff_adobe_scale {
+                            (
+                                scale_cff_adobe_coordinate(p.x, scale.x_scale),
+                                scale_cff_adobe_coordinate(p.y, y_adj),
+                            )
+                        } else {
+                            (scale.scale_x(p.x), ft_mul_fix(p.y, y_adj))
+                        }
+                    },
                     |unrounded| {
                         let point = unrounded.get(index).copied().unwrap_or({
                             crate::tt::glyf::UnroundedPoint {
@@ -1346,6 +1374,11 @@ fn scale_glyph_impl_with_scale(
     // outlines below 24 ppem before the black rasterizer sees them
     // (`src/truetype/ttgload.c:2569-2577`).
     let mut outline_flags = outline_raw.outline_flags | tt_outline_flags;
+    if data.has_cff_outlines() && allow_bytecode {
+        // CFF/CFF2 `cff_slot_load` always marks recursive outlines as
+        // reverse-fill before handing them to the rasterizer.
+        outline_flags |= crate::outline::OUTLINE_REVERSE_FILL;
+    }
     if scale.ppem < 24 {
         outline_flags |= OUTLINE_HIGH_PRECISION;
     }

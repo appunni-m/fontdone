@@ -41594,6 +41594,7 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             ps_hinting_engine_string(case)?
                 .unwrap_or_else(|| "<null>".to_string()),
         );
+        args.push(ps_hinting_engine_render_size(case)?.to_string());
         return Ok(args);
     }
     if property_service_route_pending(case.operation.as_str())
@@ -72332,6 +72333,7 @@ fn ps_hinting_engine_runtime_supported(case: &InputCase) -> bool {
             | "ftdriver.FT_CFF_HINTING_FREETYPE.hinting_engine_property_runtime"
             | "ftdriver.FT_HINTING_ADOBE.hinting_engine_property_runtime"
             | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime"
+            | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime_rendered"
             | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_glyph_preserves_error"
             | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_null_string_invalid_glyph"
             | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_face_returns_load_error"
@@ -72381,6 +72383,17 @@ fn ps_hinting_engine_glyph(case: &InputCase) -> Result<FT_UInt, String> {
 
 fn ps_hinting_engine_load_flags(case: &InputCase) -> Result<i32, String> {
     load_flags_param(&case.inputs.params)
+}
+
+fn ps_hinting_engine_render_size(case: &InputCase) -> Result<FT_UInt, String> {
+    let Some(value) = case.inputs.params.get("render_pixel_size") else {
+        return Ok(0);
+    };
+    let value = value
+        .as_u64()
+        .ok_or_else(|| "ps hinting-engine render_pixel_size is not an integer".to_string())?;
+    FT_UInt::try_from(value)
+        .map_err(|_| "ps hinting-engine render_pixel_size is out of range".to_string())
 }
 
 fn ps_hinting_module_row(
@@ -72435,6 +72448,7 @@ fn rust_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
     let string = ps_hinting_engine_string(case)?;
     let glyph_index = ps_hinting_engine_glyph(case)?;
     let load_flags = ps_hinting_engine_load_flags(case)?;
+    let render_pixel_size = ps_hinting_engine_render_size(case)?;
     let mut modules = Vec::new();
     for (module, asset) in ps_hinting_engine_assets() {
         let bytes = required_asset_bytes(case, asset)?;
@@ -72465,7 +72479,7 @@ fn rust_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             Some("hinting-engine"),
             Some(&mut string_readback),
         );
-        let face = match FT_New_Memory_Face(&library, bytes.as_ref(), 0, 20.0) {
+        let mut face = match FT_New_Memory_Face(&library, bytes.as_ref(), 0, 20.0) {
             Ok(face) => face,
             Err(_) => {
                 modules.push(ps_hinting_module_row(
@@ -72482,7 +72496,16 @@ fn rust_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
                 continue;
             }
         };
-        let first = FT_Load_Glyph(&face, glyph_index, load_flags);
+        let size_error = if render_pixel_size == 0 {
+            FT_Err_Ok
+        } else {
+            FT_Set_Pixel_Sizes(&mut face, 0, render_pixel_size)
+        };
+        let first = if size_error == FT_Err_Ok {
+            FT_Load_Glyph(&face, glyph_index, load_flags)
+        } else {
+            Err(size_error)
+        };
         let first_slot = first.as_ref().ok().cloned();
         let first_json = match first {
             Ok(slot) => slot_json(&slot),
@@ -72527,6 +72550,7 @@ fn c_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
     let string = ps_hinting_engine_string(case)?;
     let glyph_index = ps_hinting_engine_glyph(case)?;
     let load_flags = ps_hinting_engine_load_flags(case)?;
+    let render_pixel_size = ps_hinting_engine_render_size(case)?;
     let mut modules = Vec::new();
     for (module, asset) in ps_hinting_engine_assets() {
         let bytes = required_asset_bytes(case, asset)?;
@@ -72598,7 +72622,16 @@ fn c_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             c_done_library(library);
             continue;
         }
-        let first = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
+        let size_error = if render_pixel_size == 0 {
+            FT_Err_Ok
+        } else {
+            c_abi::FT_Set_Pixel_Sizes(face, 0, render_pixel_size)
+        };
+        let first = if size_error == FT_Err_Ok {
+            c_abi::FT_Load_Glyph(face, glyph_index, load_flags)
+        } else {
+            size_error
+        };
         let first_json = if first == FT_Err_Ok {
             c_slot_json(face)?
         } else {
@@ -72613,7 +72646,11 @@ fn c_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             property_cstr,
             (&invalid_storage as *const FT_UInt).cast(),
         );
-        let second = c_abi::FT_Load_Glyph(face, glyph_index, load_flags);
+        let second = if size_error == FT_Err_Ok {
+            c_abi::FT_Load_Glyph(face, glyph_index, load_flags)
+        } else {
+            size_error
+        };
         let preserved = if first == FT_Err_Ok && second == FT_Err_Ok {
             let second_snapshot = c_abi::abi_slot_snapshot(face)
                 .ok_or_else(|| "missing c second slot snapshot".to_string())?;
@@ -72665,6 +72702,7 @@ fn wasm_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
     let string = ps_hinting_engine_string(case)?;
     let glyph_index = ps_hinting_engine_glyph(case)?;
     let load_flags = ps_hinting_engine_load_flags(case)?;
+    let render_pixel_size = ps_hinting_engine_render_size(case)?;
     let mut modules = Vec::new();
     for (module, asset) in ps_hinting_engine_assets() {
         let bytes = required_asset_bytes(case, asset)?;
@@ -72680,6 +72718,7 @@ fn wasm_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             bytes.len(),
             glyph_index,
             load_flags,
+            render_pixel_size,
             value,
             string_c
                 .as_ref()

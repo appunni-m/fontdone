@@ -330,6 +330,8 @@ struct Type1GlyphProgram {
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 struct Type1GlyphOutline {
     points: Vec<OutlinePoint>,
+    /// Exact `FT_Outline` curve tags; Type 1 CharStrings emit cubic controls.
+    tags: Vec<u8>,
     contours: Vec<i16>,
 }
 
@@ -2001,6 +2003,7 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
                         y,
                         on_curve: false,
                     });
+                    outline.tags.push(2);
                     x = x.saturating_add(curve[2]);
                     y = y.saturating_add(curve[3]);
                     outline.points.push(OutlinePoint {
@@ -2008,6 +2011,7 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
                         y,
                         on_curve: false,
                     });
+                    outline.tags.push(2);
                     x = x.saturating_add(curve[4]);
                     y = y.saturating_add(curve[5]);
                     type1_push_point(&mut outline, x, y);
@@ -2113,6 +2117,7 @@ fn type1_push_point(outline: &mut Type1GlyphOutline, x: i32, y: i32) {
         y,
         on_curve: true,
     });
+    outline.tags.push(1);
 }
 
 fn type1_finish_contour(
@@ -2173,13 +2178,18 @@ fn type1_next_byte(bytes: &[u8], offset: &mut usize) -> Result<u8, FontError> {
     Ok(byte)
 }
 
-fn type1_scale_font_unit(value: i32, scale: i32) -> i32 {
-    // FreeType's Type 1 loader scales decrypted CharString coordinates through
-    // the PS hinter/decoder path before slot metric grid fitting.  For the
-    // maintained Type 1 MM fixture this behaves as a truncating 16.16 multiply;
-    // using the rounded TrueType `FT_MulFix` path shifts right/top fractional
-    // edges by one 26.6 unit and changes smooth-raster coverage.
-    ((i64::from(value) * i64::from(scale)) >> 16) as i32
+fn type1_scale_font_unit(value: i32, scale: i32, mm_variation_active: bool) -> i32 {
+    if mm_variation_active {
+        // The maintained Adobe MM path interpolates its active design before
+        // the Type 1 slot scaler.  Its resulting 16.16 coordinate is
+        // truncated by the pinned C pipeline before rasterization; retaining
+        // that order preserves the existing MM glyph contract.
+        ((i64::from(value) * i64::from(scale)) >> 16) as i32
+    } else {
+        // Ordinary Type 1 coordinates use FreeType's rounded `FT_MulFix` in
+        // both the Adobe-hinted and unhinted slot paths.
+        ft_mul_fix(value, scale)
+    }
 }
 
 fn type1_exact_key_tail<'a>(text: &'a str, key: &str) -> Option<&'a str> {
@@ -5621,6 +5631,12 @@ impl Font {
                 MetricsGridFit::Horizontal,
             );
         }
+        if self.is_empty_cid_type1_face() {
+            // `t1cid` accepts a CID with no CharString as an empty outline
+            // slot, including for scaled/rendered loads
+            // (`src/cid/cidgload.c`).
+            return Ok(empty_outline_glyph_slot());
+        }
         let scaled = self.scale_glyph_for_metrics_default_with_mode_and_hdmx_and_pedantic(
             glyph,
             native_hint_mode,
@@ -5809,8 +5825,7 @@ impl Font {
         if self.is_type1_face() {
             return self.glyph_slot_load_type1_no_scale(glyph, vertical_layout);
         }
-        if matches!(self.face_kind, FaceKind::CidType1 { .. }) && self.type1_charstrings.is_empty()
-        {
+        if self.is_empty_cid_type1_face() {
             // `t1cid` loads an empty CID CharString as an empty outline slot
             // with zero metrics and advance (`src/cid/cidgload.c`).
             return Ok(empty_outline_glyph_slot());
@@ -6594,6 +6609,10 @@ impl Font {
         matches!(self.face_kind, FaceKind::Type1 { .. })
     }
 
+    fn is_empty_cid_type1_face(&self) -> bool {
+        matches!(self.face_kind, FaceKind::CidType1 { .. }) && self.type1_charstrings.is_empty()
+    }
+
     fn type1_glyph_program(&self, glyph: u16) -> Result<Type1GlyphProgram, FontError> {
         let charstring = self
             .type1_charstrings
@@ -6618,12 +6637,16 @@ impl Font {
             .points
             .iter()
             .map(|point| OutlinePoint {
-                x: type1_scale_font_unit(point.x, scale.x_scale),
-                y: type1_scale_font_unit(point.y, scale.y_scale),
+                x: type1_scale_font_unit(point.x, scale.x_scale, self.type1_mm_variation_active),
+                y: type1_scale_font_unit(point.y, scale.y_scale, self.type1_mm_variation_active),
                 on_curve: point.on_curve,
             })
             .collect::<Vec<_>>();
-        let advance_width = type1_scale_font_unit(program.advance_width, scale.x_scale);
+        let advance_width = type1_scale_font_unit(
+            program.advance_width,
+            scale.x_scale,
+            self.type1_mm_variation_active,
+        );
         if scaled_points.is_empty() || program.outline.contours.is_empty() {
             let mut metrics = GlyphSlotMetrics {
                 width: 0,
@@ -6729,7 +6752,7 @@ impl Font {
                 n_contours: i32::try_from(program.outline.contours.len()).unwrap_or(i32::MAX),
                 contours: program.outline.contours.clone(),
                 points: slot_points,
-                tags: Vec::new(),
+                tags: program.outline.tags.clone(),
                 contour_dropouts: Vec::new(),
                 flags: 0,
                 cbox_x_min: x_min,
@@ -6742,7 +6765,7 @@ impl Font {
                     n_contours: i32::try_from(program.outline.contours.len()).unwrap_or(i32::MAX),
                     contours: program.outline.contours,
                     points: scaled_points,
-                    tags: Vec::new(),
+                    tags: program.outline.tags,
                     contour_dropouts: Vec::new(),
                     flags: 0,
                     cbox_x_min: 0,
@@ -6833,7 +6856,7 @@ impl Font {
                 n_contours: i32::try_from(program.outline.contours.len()).unwrap_or(i32::MAX),
                 contours: program.outline.contours.clone(),
                 points: program.outline.points.clone(),
-                tags: Vec::new(),
+                tags: program.outline.tags.clone(),
                 contour_dropouts: Vec::new(),
                 flags: 0,
                 cbox_x_min: x_min,
@@ -6846,7 +6869,7 @@ impl Font {
                     n_contours: i32::try_from(program.outline.contours.len()).unwrap_or(i32::MAX),
                     contours: program.outline.contours,
                     points: program.outline.points,
-                    tags: Vec::new(),
+                    tags: program.outline.tags,
                     contour_dropouts: Vec::new(),
                     flags: 0,
                     cbox_x_min: x_min,

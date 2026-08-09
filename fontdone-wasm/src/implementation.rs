@@ -1896,6 +1896,7 @@ pub extern "C" fn fontdone_wasm_ps_hinting_engine_open(
     file_size: usize,
     glyph_index: FT_UInt,
     load_flags: FT_Int32,
+    render_pixel_size: FT_UInt,
     value: FT_UInt,
     string_value: *const std::ffi::c_char,
     out: *mut FontdoneWasmPsHintingResult,
@@ -1961,7 +1962,7 @@ pub extern "C" fn fontdone_wasm_ps_hinting_engine_open(
     );
     out.string_readback = string_readback;
     let opened = rust_ffi::FT_New_Memory_Face(&library, data, 0, 20.0);
-    let face = match opened {
+    let mut face = match opened {
         Ok(face) => face,
         Err(error) => {
             out.load_error = error;
@@ -1971,7 +1972,16 @@ pub extern "C" fn fontdone_wasm_ps_hinting_engine_open(
             };
         }
     };
-    let first_load = rust_ffi::FT_Load_Glyph(&face, glyph_index, load_flags);
+    let size_error = if render_pixel_size == 0 {
+        rust_ffi::FT_Err_Ok
+    } else {
+        rust_ffi::FT_Set_Pixel_Sizes(&mut face, 0, render_pixel_size)
+    };
+    let first_load = if size_error == rust_ffi::FT_Err_Ok {
+        rust_ffi::FT_Load_Glyph(&face, glyph_index, load_flags)
+    } else {
+        Err(size_error)
+    };
     out.load_error = first_load
         .as_ref()
         .map_or_else(|error| *error, |_| rust_ffi::FT_Err_Ok);
@@ -1982,7 +1992,11 @@ pub extern "C" fn fontdone_wasm_ps_hinting_engine_open(
         Some("hinting-engine"),
         Some(2),
     );
-    let second_load = rust_ffi::FT_Load_Glyph(&face, glyph_index, load_flags);
+    let second_load = if size_error == rust_ffi::FT_Err_Ok {
+        rust_ffi::FT_Load_Glyph(&face, glyph_index, load_flags)
+    } else {
+        Err(size_error)
+    };
     out.post_error_preserved = if let Some(first_slot) = first_slot {
         if second_load
             .as_ref()
@@ -1996,7 +2010,11 @@ pub extern "C" fn fontdone_wasm_ps_hinting_engine_open(
         if second_load.is_err() { 1 } else { 0 }
     };
     // Re-load so the registered face exposes the final slot for the lane.
-    let final_load = rust_ffi::FT_Load_Glyph(&face, glyph_index, load_flags);
+    let final_load = if size_error == rust_ffi::FT_Err_Ok {
+        rust_ffi::FT_Load_Glyph(&face, glyph_index, load_flags)
+    } else {
+        Err(size_error)
+    };
     if out.load_error == rust_ffi::FT_Err_Ok {
         out.load_error = final_load
             .as_ref()

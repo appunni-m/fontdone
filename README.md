@@ -106,29 +106,29 @@ The latest full parity snapshot was recorded on **2026-08-09** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,577 |
-| Passed cases | 7,577 |
+| Runnable exact-comparison cases | 7,578 |
+| Passed cases | 7,578 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
-| Covered manifest cases | 4,203 |
+| Covered manifest cases | 4,204 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,296 |
-| Concrete expanded cases | 7,580 |
+| Logical declared cases | 4,297 |
+| Concrete expanded cases | 7,581 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,577 / 7,577` means every runnable case in that execution matched; the 3
+`7,578 / 7,578` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`1668a8aa-5520-4f59-9bf4-0cdc77d051d0`, whose passing report was recorded in
+`f576ec60-d92d-43c5-a66f-801670ab12e0`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-7,577 / 7,577 runnable comparisons with 0 failures and 3 explicitly pending
+7,578 / 7,578 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `10982e39cc208ba6e6db22441a56ca587ed38a68bb7e98fdc2845ff9bba3717f`.
+Its source-bound parity-tree digest is `1459957e96b11e83e212aa3dceef24401c6c986e6ec9c4beff72b9d87ece29e8`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,18 +142,19 @@ their exact worktree than the committed release snapshot.
 
 The latest source-bound all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`0ecd3ef2561ce0633324a24f792acf0d682d3962`
-(Coverage MCP run `b3c3a062-260f-4a13-aa7a-63a43d13e998`, snapshot
-`6f9ae739-f2be-4e99-b44f-e01b163de7b4`):
+`07cdc3d69b2bafffc491151ef2c8bc4685770968`
+(Coverage MCP run `c66b0344-1065-4aea-b1a1-57c0c9ae7d65`, snapshot
+`3f0d317d-edd9-43e1-9f8b-07eea0e8ee5c`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,067 / 54,275 | 92.25% |
-| Branches | 10,003 / 12,579 | 79.52% |
-| Functions | 3,411 / 3,819 | 89.32% |
-| Regions | 68,788 / 75,409 | 91.22% |
+| Lines | 50,117 / 54,329 | 92.25% |
+| Branches | 10,021 / 12,599 | 79.54% |
+| Functions | 3,414 / 3,822 | 89.32% |
+| Regions | 68,869 / 75,494 | 91.22% |
 
-The latest source-bound validation completed in 67.412 seconds after a
+The current managed validation completed in 57.829 seconds; its three split
+backends passed all 7,578 runnable comparisons. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
 shard processes each compared 2,525 or 2,526 cases before report generation.
 The earlier warm validation completed in 17.349 seconds with
@@ -162,7 +163,7 @@ adaptive three-shard default on this 12-logical-CPU host. Nine shard processes
 ran concurrently—three each for Rust FFI, C ABI, and WASM—and each compared
 2,524 or 2,525 cases before the raw profiles were merged. A repeat completed
 in 16.377 seconds; the two-shard baseline took 19.747 seconds. The coverage
-totals and current parity evidence are based on 7,577 / 7,577 runnable
+totals and current parity evidence are based on 7,578 / 7,578 runnable
 comparisons.
 
 The maintained Apple full-Unicode format-13 font and malformed format-13
@@ -184,7 +185,7 @@ supplies the report's source locations without requiring DWARF line tables.
 
 The current host-width cleanup removes conversion branches that cannot occur on
 the supported 64-bit ABI while retaining checked conversions for 32-bit WASM.
-It preserved all 7,577 runnable parity results and reduced the measured
+It preserved all 7,578 runnable parity results and reduced the measured
 coverage denominator without weakening a fixture or parity comparison. The
 latest `glyf` cleanup folds the independently scaled no-hinting composite walk
 into the validated loader, removing duplicate parsing while preserving the
@@ -296,11 +297,11 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,320 / 5,320 pinned-C runtime contract rows exact; 0 pending |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,321 / 5,321 pinned-C runtime contract rows exact; 0 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 691 / 691 expected-error routes compare exact error and output results; 7,577 / 7,577 routes have no generic fallback evidence |
+| Errors | 691 / 691 expected-error routes compare exact error and output results; 7,578 / 7,578 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 

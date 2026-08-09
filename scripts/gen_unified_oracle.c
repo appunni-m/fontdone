@@ -34182,16 +34182,17 @@ static int slot_outputs_equal_captured(
 }
 
 static int emit_ps_hinting_engine_case(int argc, char** argv) {
-    if (argc != 12) {
+    if (argc != 13) {
         fprintf(stderr,
                 "--ps-hinting-engine-case requires three source pairs, "
-                "GLYPH_INDEX, LOAD_FLAGS, VALUE, STRING\n");
+                "GLYPH_INDEX, LOAD_FLAGS, VALUE, STRING, RENDER_PIXEL_SIZE\n");
         return 2;
     }
     FT_UInt glyph_index = (FT_UInt)strtoul(argv[8], NULL, 10);
     FT_Int32 load_flags = (FT_Int32)strtol(argv[9], NULL, 10);
     FT_UInt property_value = (FT_UInt)strtoul(argv[10], NULL, 10);
     const char* string_value = streq(argv[11], "<null>") ? NULL : argv[11];
+    FT_UInt render_pixel_size = (FT_UInt)strtoul(argv[12], NULL, 10);
 
     struct ModuleFontPair_ {
         const char* module;
@@ -34281,7 +34282,12 @@ static int emit_ps_hinting_engine_case(int argc, char** argv) {
         long first_buffer_len = 0;
         printf("\"glyph\":");
         if (!open_error) {
-            first_load = FT_Load_Glyph(face, glyph_index, load_flags);
+            FT_Error size_error = FT_Err_Ok;
+            if (render_pixel_size != 0) {
+                size_error = FT_Set_Pixel_Sizes(face, 0, render_pixel_size);
+            }
+            first_load = size_error ? size_error
+                                    : FT_Load_Glyph(face, glyph_index, load_flags);
             if (first_load == FT_Err_Ok) {
                 first_metrics = face->glyph->metrics;
                 first_bitmap = face->glyph->bitmap;
@@ -34308,7 +34314,8 @@ static int emit_ps_hinting_engine_case(int argc, char** argv) {
             FT_UInt invalid_value = 2;
             (void)FT_Property_Set(
                 library, pairs[index].module, "hinting-engine", &invalid_value);
-            second_load = FT_Load_Glyph(face, glyph_index, load_flags);
+            second_load = size_error ? size_error
+                                     : FT_Load_Glyph(face, glyph_index, load_flags);
             preserved = first_load == second_load &&
                         (first_load != FT_Err_Ok ||
                          slot_outputs_equal_captured(
@@ -38298,7 +38305,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 6 && streq(argv[1], "--sbix-params-case")) {
         return emit_sbix_params_case(argc, argv);
     }
-    if (argc == 12 && streq(argv[1], "--ps-hinting-engine-case")) {
+    if (argc == 13 && streq(argv[1], "--ps-hinting-engine-case")) {
         return emit_ps_hinting_engine_case(argc, argv);
     }
     if (argc == 6 && streq(argv[1], "--stem-darkening-case")) {
