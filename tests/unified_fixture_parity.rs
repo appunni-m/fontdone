@@ -73426,6 +73426,21 @@ fn wasm_interpreter_version_glyph_case(case: &InputCase) -> Result<RunOutput, St
     let load_flags = interpreter_version_load_flags(case)?;
     let mut rows = Vec::new();
     let mut wasm_readback = 0u32;
+    let invalid_bytes = required_asset_bytes(case, "font")?;
+    let invalid_status = wasm_abi::fontdone_wasm_interpreter_version_open(
+        invalid_bytes.as_ptr(),
+        invalid_bytes.len(),
+        0,
+        20.0,
+        41,
+        std::ptr::null_mut(),
+    );
+    if invalid_status.error != FT_Err_Unimplemented_Feature || invalid_status.handle != 0 {
+        return Err(format!(
+            "interpreter-version invalid control diverged: error={} handle={}",
+            invalid_status.error, invalid_status.handle
+        ));
+    }
     for (label, asset) in [("main", "font"), ("control", "control_font")] {
         let bytes = required_asset_bytes(case, asset)?;
         let status = wasm_abi::fontdone_wasm_interpreter_version_open(
