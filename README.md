@@ -124,11 +124,11 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest source-bound verification is Coverage MCP parity run
-`6c05f089-e3c5-4279-9aa3-6374284572f1`, whose passing report was recorded in
+`39f10028-6bdd-4495-a1fb-00c5d78a3853`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
 7,582 / 7,582 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-Its source-bound parity-tree digest is `727c90f073d963501e684b2ec28bccd20c3cd54ad20d8044e6faaa4d22f56422`.
+Its source-bound parity-tree digest is `2a7fde7a6ff5cf8fa926c389d891c13cc363e5e45730af1e2eb4c67e204d73bf`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,18 +142,18 @@ their exact worktree than the committed release snapshot.
 
 The latest source-bound all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`ae2ce18fd1274b9520268cb9ef5703e17a2ee1d7`
-(Coverage MCP run `13fa70b0-31dc-4d3d-8d0e-ff7bb7ab2530`, snapshot
-`be3f43da-74b3-44bc-863b-25b3f5060bd6`):
+`429ba2607d2d4225510ea94b886464dd81667b10`
+(Coverage MCP run `98717651-8cdc-40ac-a52c-6d2d8a386b82`, snapshot
+`2715737c-4c0e-41ce-a303-f01f728558fc`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,180 / 54,346 | 92.33% |
-| Branches | 10,025 / 12,585 | 79.66% |
+| Lines | 50,185 / 54,346 | 92.34% |
+| Branches | 10,026 / 12,585 | 79.67% |
 | Functions | 3,433 / 3,824 | 89.78% |
-| Regions | 68,937 / 75,490 | 91.32% |
+| Regions | 68,939 / 75,490 | 91.32% |
 
-The current managed validation completed in 60.630 seconds; its three split
+The current managed validation completed in 70.638 seconds; its three split
 backends passed all 7,582 runnable comparisons. Its nine shard processes split
 the same exact matrix before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
