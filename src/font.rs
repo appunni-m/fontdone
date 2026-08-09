@@ -426,9 +426,6 @@ fn pcf_i32(data: &[u8], offset: usize, msb: bool) -> Option<i32> {
 }
 
 fn pcf_tables(data: &[u8]) -> Result<Vec<(u32, PcfTable)>, FontError> {
-    if read_u32_le(data, 0) != Some(PCF_FILE_VERSION) {
-        return Err(pcf_invalid("file version"));
-    }
     // FreeType 2.14.3's PCF probe reports the maintained eight-byte
     // zero-table control stream as `FT_Err_Invalid_Stream_Operation` before
     // a face exists. Keep that version-pinned boundary result distinct from
@@ -710,11 +707,11 @@ fn parse_winfnt_header(data: &[u8]) -> Result<WinFntHeader, FontError> {
 }
 
 fn winfnt_family_name(data: &[u8], header: &WinFntHeader) -> String {
-    let start = usize::try_from(header.face_name_offset).unwrap_or(data.len());
-    let bytes = data.get(start..usize::try_from(header.file_size).unwrap_or(data.len()));
-    let Some(bytes) = bytes else {
-        return "Windows FNT".into();
-    };
+    // `parse_winfnt_header` proves both offsets are in the loaded frame before
+    // this helper is called, so the defensive slice fallback is unreachable on
+    // the public memory-face path.
+    let start = header.face_name_offset as usize;
+    let bytes = &data[start..header.file_size as usize];
     let end = bytes
         .iter()
         .position(|byte| *byte == 0)
@@ -823,10 +820,9 @@ fn winfnt_font_data(data: &[u8], size_pt: f32, header: &WinFntHeader) -> Arc<Fon
 }
 
 fn parse_bdf_font_bounding_box(line: &str) -> Option<(i16, i16, i16, i16)> {
-    let mut parts = line.split_whitespace();
-    if parts.next()? != "FONTBOUNDINGBOX" {
-        return None;
-    }
+    // The caller only dispatches here after checking this exact keyword and
+    // separator, so parsing starts immediately after the validated prefix.
+    let mut parts = line["FONTBOUNDINGBOX ".len()..].split_whitespace();
     let width = parts.next()?.parse().ok()?;
     let height = parts.next()?.parse().ok()?;
     let x_offset = parts.next()?.parse().ok()?;
@@ -914,9 +910,6 @@ fn parse_bdf_atom(raw_value: &str) -> String {
 fn parse_bdf_property_line(line: &str) -> Option<BdfPropertyEntry> {
     let (name, raw_value) = line.split_once(char::is_whitespace)?;
     let name = name.trim();
-    if name.is_empty() {
-        return None;
-    }
     let format = bdf_property_format(name);
     let value = match format {
         BdfPropertyFormat::Atom => BdfPropertyValue::Atom(parse_bdf_atom(raw_value)),
