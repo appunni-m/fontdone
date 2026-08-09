@@ -539,14 +539,16 @@ worktree at that point:
 
 | 145 | `cca7ed4` (malformed PFR header parity route) | Added the maintained `pfr/malformed-header-version.pfr` fixture and a real `FT_New_Memory_Face` variant for the unsupported PFR version. The Rust face-open path now preserves pinned `Unknown_File_Format` for the PFR header probe while deeper recognized-PFR failures remain generic invalid-format errors; the route is exercised through Rust FFI, C ABI, and WASM without a unit-only test. Clean pushed-head parity run `aa583f84-8f17-4536-9fc5-8312606b2248`, recorded by `ada8ecdf-5a2c-4d85-a869-38b470dde1b5`, passed 7,584 / 7,584 runnable comparisons with 0 failures and 3 pending safety-extension cases; the route audit reports 7,587 concrete cases, 0 pending routes, and 218 / 218 function evidence per ABI surface. Clean pushed-head Coverage MCP run `4cccfd34-7855-4223-aa2a-ffec8110c03a`, snapshot `82418968-7c6c-463f-9e17-95cbcd7a351a`, completed in 59.256 seconds and measured 50,173 / 54,297 lines, 10,029 / 12,587 branches, 3,432 / 3,818 functions, and 68,932 / 75,437 regions; `src/pfr.rs` is now 280 / 295 lines, 55 / 72 branches, 23 / 23 functions, and 535 / 628 regions, with remaining gaps in deeper malformed-stream guards. The C-ABI scorecard remains 10 / 12 categories: C01.7 5,327 / 5,327, C08.3 7,584 / 7,584, C11.3 7 / 8, and C12.3 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
 
+| 146 | `cef7db8` (FT_List_Up C-head invariant cleanup) | Removed the defensive `list->head` optional branches from the C-ABI and WASM `FT_List_Up` wrappers after verifying pinned `ftutil.c` dereferences `list->head->prev` unconditionally once a non-head node has a predecessor. The malformed null-head topology is therefore outside C's defined behavior, so no unit-only or invalid parity case was added. Pushed-head full parity run `ec4cc0bd-6fee-4adc-b2fe-5b3e56feeace`, recorded by `9e1e5f9f-f179-4910-949d-d608e0b54838`, passed 7,584 / 7,584 runnable comparisons with 0 failures and 3 pending safety-extension cases; the route audit remains at 7,587 concrete cases, 0 pending routes, and 218 / 218 function evidence per ABI surface. Clean pushed-head Coverage MCP run `f43d973f-f3b3-4d40-beb3-213a66f254f1`, snapshot `a420bc64-a028-4c75-ae38-20701618413d`, completed in 72.055 seconds and measured 50,169 / 54,293 lines, 10,027 / 12,583 branches, 3,432 / 3,818 functions, and 68,928 / 75,431 regions; relative to entry 145, the branch denominator lost four impossible entries and uncovered branches fell by two, while uncovered lines stayed unchanged and uncovered regions fell by two. Fast tests passed 6 / 6, lint passed, and the C-ABI scorecard remains 10 / 12 categories: C01.7 5,327 / 5,327, C08.3 7,584 / 7,584, C11.3 7 / 8, and C12.3 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
+
 The current pushed-head parity verification is Coverage MCP parity run
-`aa583f84-8f17-4536-9fc5-8312606b2248`: it passed 7,584 / 7,584 runnable
+`ec4cc0bd-6fee-4adc-b2fe-5b3e56feeace`: it passed 7,584 / 7,584 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **7,587 concrete cases, 0 pending routes and 0 generic-fallback rows**, with
 218 / 218 function routes present in each ABI surface. The source-digest
 attestation was refreshed in `doc/runtime_parity_evidence.json`; its current
 parity-tree digest is
-`3d0d589d1ac86b24e017ca20f63104cb40e9a10524c4d0eb49de21254d021610`.
+`6b0cf8e7b6097740bdd482278a9d9cbabd477be3eeb03b86ede996813ca0d64f`.
 The tracked C-ABI scorecard is **10 / 12 categories complete**; C01.7 is
 5,327 / 5,327, C08.3 is 7,584 / 7,584, C11.3 is 7 / 8, and C12.3 is 1 / 5.
 The Windows import-library item and four fresh target-lane bundles remain.
@@ -560,10 +562,10 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current pushed-head all-lane run `4cccfd34-7855-4223-aa2a-ffec8110c03a`
-completed in 59.256 seconds with snapshot
-`82418968-7c6c-463f-9e17-95cbcd7a351a`. It measured 50,173 / 54,297 lines,
-10,029 / 12,587 branches, 3,432 / 3,818 functions, and 68,932 / 75,437
+The current pushed-head all-lane run `f43d973f-f3b3-4d40-beb3-213a66f254f1`
+completed in 72.055 seconds with snapshot
+`a420bc64-a028-4c75-ae38-20701618413d`. It measured 50,169 / 54,293 lines,
+10,027 / 12,583 branches, 3,432 / 3,818 functions, and 68,928 / 75,431
 regions; the nine process-local shard writers split the 7,584 exact cases
 before report generation. On this 12-logical-CPU host the adaptive
 default uses three shards per backend; constrained runners use two, and
