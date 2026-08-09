@@ -109,11 +109,15 @@ impl SbixTable {
         ppem: u16,
         recurse_count: u32,
     ) -> Result<(), FontError> {
-        let Some(strike) = self.strikes.iter().find(|strike| strike.ppem == ppem) else {
-            return Err(FontError::InvalidArgument(
-                "embedded bitmap strike not selected".into(),
-            ));
-        };
+        // `Font::sbix_active_strike_load_error` and
+        // `Font::sbix_missing_bitmap_glyph` select this method only after
+        // `has_strike(ppem)` succeeds; recursive `dupe`/`flip` calls preserve
+        // the same selected ppem.
+        let strike = self
+            .strikes
+            .iter()
+            .find(|strike| strike.ppem == ppem)
+            .expect("sbix glyph load requires a selected strike");
         if glyph_index > num_glyphs {
             return Err(FontError::InvalidArgument(
                 "glyph index out of range".into(),
