@@ -2415,6 +2415,23 @@ pub fn abi_support_corrupt_outline_glyph_for_record_sync(glyph_handle: usize) ->
 }
 
 #[cfg(feature = "abi-test-support")]
+pub fn abi_support_corrupt_outline_glyph_points_for_record_sync(glyph_handle: usize) -> bool {
+    let glyph = ptr::with_exposed_provenance_mut::<FontdoneWasmGlyph>(glyph_handle);
+    let Some(owned) = wasm_owned_outline_glyph_from_root_mut(glyph) else {
+        return false;
+    };
+    if owned.core.outline.points.is_empty() {
+        return false;
+    }
+    // Keep the public count non-zero while removing the required point
+    // storage.  The handle wrapper must reject this record before rendering,
+    // matching pinned FreeType's public-record validation.
+    owned.record.outline.n_points = 1;
+    owned.record.outline.points = ptr::null_mut();
+    true
+}
+
+#[cfg(feature = "abi-test-support")]
 pub fn abi_bitmap_glyph_snapshot(glyph_handle: usize) -> Option<AbiBitmapGlyphSnapshot> {
     let glyph = ptr::with_exposed_provenance::<FontdoneWasmGlyph>(glyph_handle);
     let owned = wasm_owned_bitmap_glyph_from_root(glyph)?;

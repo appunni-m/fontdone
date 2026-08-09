@@ -7418,6 +7418,22 @@ pub fn abi_support_corrupt_outline_glyph_for_record_sync(glyph: FT_Glyph) -> boo
 }
 
 #[cfg(feature = "abi-test-support")]
+pub fn abi_support_corrupt_outline_glyph_points_for_record_sync(glyph: FT_Glyph) -> bool {
+    let Some(owned) = owned_outline_glyph_from_root_mut(glyph) else {
+        return false;
+    };
+    if owned.core.outline.points.is_empty() {
+        return false;
+    }
+    // Keep the public count non-zero while removing the required point
+    // storage.  The pinned smooth renderer rejects this record before it
+    // reads the point array.
+    owned.record.outline.n_points = 1;
+    owned.record.outline.points = ptr::null_mut();
+    true
+}
+
+#[cfg(feature = "abi-test-support")]
 pub fn abi_bitmap_glyph_snapshot(glyph: FT_Glyph) -> Option<AbiBitmapGlyphSnapshot> {
     let owned = owned_bitmap_glyph_from_root(glyph)?;
     Some(AbiBitmapGlyphSnapshot {

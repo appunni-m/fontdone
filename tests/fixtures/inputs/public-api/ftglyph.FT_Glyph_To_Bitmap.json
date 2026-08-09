@@ -256,7 +256,10 @@
           "load_flags": ["FT_LOAD_NO_BITMAP"],
           "render_mode": "FT_RENDER_MODE_NORMAL",
           "destroy_values": [false, true],
-          "corruption": "nonzero_contour_count_null_contours"
+          "corruptions": [
+            "nonzero_contour_count_null_contours",
+            "nonzero_point_count_null_points"
+          ]
         }
       },
       "classifiers": [
@@ -290,7 +293,7 @@
           "freetype/src/smooth/ftgrays.c:1989-1994"
         ],
         "fixture_requirements": [
-          "The owned outline glyph's public FT_Outline contours pointer is made null while n_contours remains non-zero before FT_Glyph_To_Bitmap."
+          "The owned outline glyph's public FT_Outline contours pointer is made null while n_contours remains non-zero before FT_Glyph_To_Bitmap, and its points pointer is made null while n_points remains non-zero."
         ]
       }
     },
