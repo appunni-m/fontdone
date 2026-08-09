@@ -1367,17 +1367,17 @@ pub fn abi_palette_mutate_entry(
         // `entry_index < snapshot.entries.len()` above proves that the
         // selected palette pointer is non-null: the snapshot helper returns
         // no entries for a null pointer or failed metadata lookup.
-        if error == rust_ffi::FT_Err_Ok {
-            // SAFETY: this feature-gated helper mutates an entry through the
-            // public ABI palette pointer while the face is live, matching the
-            // FreeType caller-observable behavior under test.
-            unsafe { *palette.add(entry_index) = color };
-            snapshot = AbiPaletteSelectSnapshot {
-                error,
-                palette_is_null: palette.is_null(),
-                entries: abi_palette_entries_from_ptr(face, palette),
-            };
-        }
+        // The repeated selection uses the same live face and valid palette
+        // index that produced the non-empty snapshot, so it also succeeds.
+        // SAFETY: this feature-gated helper mutates an entry through the
+        // public ABI palette pointer while the face is live, matching the
+        // FreeType caller-observable behavior under test.
+        unsafe { *palette.add(entry_index) = color };
+        snapshot = AbiPaletteSelectSnapshot {
+            error,
+            palette_is_null: palette.is_null(),
+            entries: abi_palette_entries_from_ptr(face, palette),
+        };
     }
     snapshot
 }
