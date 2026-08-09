@@ -30,11 +30,14 @@ COVERAGE_TEST_BINARY ?=
 COVERAGE_UNIFIED_TEST_NAME ?= parity_fixture::unified_fixture_parity
 COVERAGE_ABI_PREFLIGHT ?= 0
 COVERAGE_UNIFIED_LANE_SPLIT ?= 1
-# Run each backend in two independent processes by default. LLVM profile
+# Three shards are faster on the current 12-logical-CPU host; keep the smaller
+# two-shard default on constrained CI runners. LLVM profile
 # counters are process-local; sharding avoids the counter contention measured
 # when one instrumented process uses multiple workers, while the report step
 # merges every shard's raw profile.
-COVERAGE_UNIFIED_SHARDS ?= 2
+COVERAGE_CPU_COUNT := $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || printf 2)
+COVERAGE_DEFAULT_SHARDS := $(shell if test '$(COVERAGE_CPU_COUNT)' -ge 12 2>/dev/null; then printf 3; else printf 2; fi)
+COVERAGE_UNIFIED_SHARDS ?= $(COVERAGE_DEFAULT_SHARDS)
 # Optional-feature contracts are a separate gate and are already exercised by
 # `make test-parity-smoke`; opt in when an isolated coverage invocation needs
 # to rebuild and verify those non-instrumented bundles as well.
@@ -474,7 +477,7 @@ test-ffi:
 #   COVERAGE_ALL_TARGET_DIR             – isolated cached target for all-lane LLVM coverage
 #   COVERAGE_TEST_BINARY                – optional instrumented test binary override; otherwise the newest built binary is used
 #   COVERAGE_UNIFIED_TEST_NAME          – exact integration-test name used by the split coverage lanes
-#   COVERAGE_UNIFIED_SHARDS              – independent process shards per backend in split coverage (default 2)
+#   COVERAGE_UNIFIED_SHARDS              – independent process shards per backend (default 3 on >=12 logical CPUs, otherwise 2)
 #   COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED – skip the redundant aggregate-hit case-cache scan in coverage lanes (1/0)
 #   COVERAGE_ABI_PREFLIGHT               – rerun the standalone ABI unit preflight (1/0)
 #   COVERAGE_PREPARE_OPTIONAL_FEATURES   – include the separate optional-feature contract gate (1/0)

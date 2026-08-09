@@ -142,9 +142,9 @@ their exact worktree than the committed release snapshot.
 
 The latest source-bound all-lane coverage snapshot was recorded on
 **2026-08-09** for the current worktree based at commit
-`b9810f91969759cade337a195d591c27d5aecead`
-(Coverage MCP run `aa7546f0-48ff-41a6-b95d-a57ba333bec1`, snapshot
-`fbcde92b-efc0-474d-a2f0-48baa3e8e38d`):
+`29f22055683644374478e07e897dc59165846e85`
+(Coverage MCP run `d9ba5ed2-51e7-4eda-a6b3-0e30a742ca3a`, snapshot
+`7dc56b88-dbe6-4daf-94ff-7726fea0ad75`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
@@ -153,12 +153,14 @@ The latest source-bound all-lane coverage snapshot was recorded on
 | Functions | 3,410 / 3,822 | 89.22% |
 | Regions | 68,870 / 75,559 | 91.15% |
 
-The latest validation completed in 23.470 seconds with the default
-`COVERAGE_UNIFIED_WORKERS=1`, `COVERAGE_UNIFIED_LANE_SPLIT=1`, and
-`COVERAGE_UNIFIED_SHARDS=2`. Six shard processes ran concurrently—two shards
-each for Rust FFI, C ABI, and WASM—and each shard compared 3,788 / 3,788
-cases before the raw profiles were merged. The coverage totals and current
-parity evidence are based on 7,573 / 7,573 runnable comparisons.
+The latest validation completed in 15.283 seconds with
+`COVERAGE_UNIFIED_WORKERS=1`, `COVERAGE_UNIFIED_LANE_SPLIT=1`, and the
+adaptive three-shard default on this 12-logical-CPU host. Nine shard processes
+ran concurrently—three each for Rust FFI, C ABI, and WASM—and each compared
+2,524 or 2,525 cases before the raw profiles were merged. A repeat completed
+in 16.377 seconds; the two-shard baseline took 19.747 seconds. The coverage
+totals and current parity evidence are based on 7,573 / 7,573 runnable
+comparisons.
 
 The maintained Apple full-Unicode format-13 font and malformed format-13
 matrix remain exercised by their existing character-index and parser routes.
@@ -179,9 +181,9 @@ compiler-relevant inputs, rather than every current `HEAD`, and excludes
 `COVERAGE_UNIFIED_WORKERS`, `COVERAGE_UNIFIED_LANE_SPLIT`, and
 `COVERAGE_UNIFIED_SHARDS` because they only change process orchestration. A
 dirty compiler-input tree still forces a
-clean rebuild. The warm confirmation above therefore avoids the 46.78-second
-compile after fixture/docs-only commits or worker tuning while retaining the
-same instrumented binary, parity matrix, and coverage totals.
+clean rebuild. The warm confirmation above therefore avoids the 45-second
+instrumented compile after fixture/docs-only commits or worker tuning while
+retaining the same instrumented binary, parity matrix, and coverage totals.
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
 ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain

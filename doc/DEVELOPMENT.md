@@ -151,32 +151,38 @@ coverage. Set `COVERAGE_ABI_PREFLIGHT=1` when an isolated coverage invocation
 also needs the extra preflight.
 
 By default, `COVERAGE_UNIFIED_LANE_SPLIT=1` builds one instrumented
-`unified_fixture_parity` binary, then runs it in two independent shards for each
+`unified_fixture_parity` binary, then runs it in three independent shards on
+hosts with at least 12 logical CPUs, or two shards on smaller runners, for each
 of the Rust FFI, C ABI, and host-WASM backends. `FONTDONE_UNIFIED_BACKEND`
 selects the backend, `FONTDONE_UNIFIED_SHARD_INDEX` and
 `FONTDONE_UNIFIED_SHARD_COUNT` select a disjoint case slice, and every process
 writes a distinct `LLVM_PROFILE_FILE`; the final `cargo llvm-cov report` merges
-all six raw profiles. The shard profiles must live under
+all shard profiles. The shard profiles must live under
 `$(COVERAGE_ALL_TARGET_DIR)/llvm-cov-target`, the nested target directory that
 `cargo llvm-cov report` scans. Reusing the binary avoids reacquiring Cargo's
 build lock and repeating the test-profile setup. LLVM source-based coverage
 counters are process-local, so the extra process-level parallelism removes the
 counter contention measured with multiple workers in one process without
 changing the input matrix or oracle comparison. Set
+`COVERAGE_UNIFIED_SHARDS=2` to reproduce the six-process baseline,
 `COVERAGE_UNIFIED_SHARDS=1` to reproduce the three-process split, or
 `COVERAGE_UNIFIED_LANE_SPLIT=0` for the legacy single-process diagnostic path.
 
-The latest cold validation is Coverage MCP run
-`9a39257b-66fb-4dd2-ab29-46835cae54a3` (snapshot
-`04c522e6-da5a-43c2-8d98-19ccf176be8e`): it took 63.799 seconds, including a
-45.60-second instrumented build, and all six shard processes passed their
-3,784 / 3,784 slices. The warm repeat `a7c92ef5-c657-4d77-8586-256e1505f770`
-(snapshot `c3af13b1-e969-4538-aeaf-8bbe171dd66e`) took 17.498 seconds with a
-0.05-second profile setup. The coverage totals remain 50,122 / 54,388 lines,
-9,989 / 12,599 branches, 3,410 / 3,822 functions, and 68,864 / 75,559
-regions. The default build-state marker excludes worker, lane-split, and shard
-settings because they only change process orchestration; changing compiler
-inputs or instrumentation still forces a clean instrumented rebuild.
+The clean cold baseline Coverage MCP run `9df27f92-54ba-46a3-8755-c0cf61dddb4b`
+(snapshot `abf119b0-7acf-4e69-8378-d3c2c2ddc2cf`) took 64.242 seconds,
+including the 45-second instrumented rebuild. With the binary warm, the
+two-shard baseline `6a2c26b8-2afd-485e-9ced-3f660cf4e9cf` took 19.747 seconds;
+the adaptive three-shard runs `f422f061-f58a-4084-8339-347bf31ba296`
+(snapshot `1ccbe0d4-b870-4abf-b09e-b97ae187a06e`) and
+`076f95b7-1b71-4e70-9b3c-d72e27b25a6d` took 16.411 and 16.377 seconds; the
+final run `d9ba5ed2-51e7-4eda-a6b3-0e30a742ca3a` took 15.283 seconds.
+All nine shard processes passed their disjoint 2,524 / 2,525 comparisons, and
+the current snapshot remains 50,125 / 54,388 lines, 9,995 / 12,599 branches,
+3,410 / 3,822 functions, and 68,870 / 75,559 regions. A four-shard trial
+passed but expanded to 26.974 seconds under sustained load, so it is not the
+default. The build-state marker excludes worker, lane-split, and shard settings
+because they only change process orchestration; compiler-input or
+instrumentation changes still force a clean instrumented rebuild.
 
 The report names `fontdone`, `fontdone-c-abi`, and `fontdone-wasm` explicitly
 because `cargo llvm-cov report` does not accept the workspace flag; this keeps
@@ -276,23 +282,24 @@ make test-coverage-all
 The focused command writes core Rust JSON. The all-lane command schedules the
 independent oracle/audit preparation, then uses nightly branch coverage for the
 complete parity matrix. It builds and instruments the core, native C ABI, and
-host-compiled WASM facade once, executes two disjoint shards for each backend,
-and merges the six raw profiles into `target/coverage/unified-runtime-all-lanes.json`.
+host-compiled WASM facade once, executes the adaptive shard count for each
+backend, and merges the raw profiles into
+`target/coverage/unified-runtime-all-lanes.json`.
 Optional feature profiles remain a separate `make optional-feature-contract`
 gate so the default report does not attribute multiple runtime contracts to the
 same LLVM source path.
 
 Repeated local runs reuse the instrumented target and binary. The latest
-source-bound current-host run is Coverage MCP run
-`9a39257b-66fb-4dd2-ab29-46835cae54a3` (snapshot
-`04c522e6-da5a-43c2-8d98-19ccf176be8e`): 63.799 seconds end-to-end, including
-a 45.60-second instrumented build, with six shards passing 3,784 / 3,784 cases
-each. Its warm repeat `a7c92ef5-c657-4d77-8586-256e1505f770` (snapshot
-`c3af13b1-e969-4538-aeaf-8bbe171dd66e`) took 17.498 seconds. This isolates the
-remaining cold delay in instrumented compilation; the shard executions run
-concurrently and report/ingestion are small. Use `COVERAGE_UNIFIED_SHARDS=1`
-for a three-process comparison, or allow roughly two minutes for host
-variation and four to six minutes after a cache reset.
+source-bound current-host warm runs are Coverage MCP
+`f422f061-f58a-4084-8339-347bf31ba296` and
+`076f95b7-1b71-4e70-9b3c-d72e27b25a6d`, which took 16.411 and 16.377 seconds
+with three shards per backend. This is faster than the two-shard baseline
+`6a2c26b8-2afd-485e-9ced-3f660cf4e9cf` at 19.747 seconds. The clean cold run
+`9df27f92-54ba-46a3-8755-c0cf61dddb4b` took 64.242 seconds, including a
+45-second instrumented build, so cache-miss compilation remains the dominant
+cold delay; shard execution is concurrent and report/ingestion are small. Use
+`COVERAGE_UNIFIED_SHARDS=1` for a three-process comparison, or allow roughly
+two minutes for host variation and four to six minutes after a cache reset.
 `COVERAGE_TEST_DEBUG=0` omits DWARF line tables while retaining LLVM source
 coverage mapping; this reduces cold instrumented-link time without changing the
 coverage totals. Face-cache keys also reuse preloaded
@@ -380,7 +387,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 648 tracked paths and no symlinks.
+The canonical input tree currently contains 651 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -565,7 +572,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,639 | executable parity tests and public contracts |
-| R04 | 648 | licensed canonical fixture inputs |
+| R04 | 651 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -573,7 +580,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,509** | **all retained paths** |
+| **Total** | **2,512** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
