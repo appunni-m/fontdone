@@ -117,7 +117,7 @@ impl SbixTable {
             .strikes
             .iter()
             .find(|strike| strike.ppem == ppem)
-            .expect("sbix glyph load requires a selected strike");
+            .unwrap_or_else(|| unreachable!("sbix glyph load requires a selected strike"));
         if glyph_index > num_glyphs {
             return Err(FontError::InvalidArgument(
                 "glyph index out of range".into(),
