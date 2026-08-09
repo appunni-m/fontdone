@@ -4,6 +4,7 @@
   "manifest_cases": [
     "layout_matches_c",
     "typographic_name_params_match_c",
+    "wws_only_typographic_name_params_match_c",
     "ignored_open_params_match_c",
     "incremental_null_data_matches_c",
     "tag_data_parameters_match_c_behavior"
@@ -146,6 +147,100 @@
             "results[*].style_name"
           ]
         }
+      }
+    },
+    {
+      "case_id": "freetype.FT_Parameter.wws_only_typographic_name_params_match_c",
+      "subject": "freetype.FT_Parameter",
+      "case": "wws_only_typographic_name_params_match_c",
+      "operation": "freetype.open_face_with_params",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "file",
+            "role": "font",
+            "path": "input/fonts/names/wws-only-name-selection.ttf"
+          }
+        },
+        "params": {
+          "face_index": 0,
+          "scenarios": [
+            {
+              "num_params": 0,
+              "params": []
+            },
+            {
+              "num_params": 1,
+              "params": [
+                {
+                  "tag": "FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_FAMILY",
+                  "data": null
+                }
+              ]
+            },
+            {
+              "num_params": 1,
+              "params": [
+                {
+                  "tag": "FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_SUBFAMILY",
+                  "data": null
+                }
+              ]
+            },
+            {
+              "num_params": 2,
+              "params": [
+                {
+                  "tag": "FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_FAMILY",
+                  "data": null
+                },
+                {
+                  "tag": "FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_SUBFAMILY",
+                  "data": null
+                }
+              ]
+            }
+          ],
+          "observe": [
+            "family_name",
+            "style_name"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "fixture_requirements": [
+          "SFNT font with OS/2 fsSelection WWS-only bit set and distinct legacy and typographic family/subfamily names."
+        ],
+        "output_shape": {
+          "results": [
+            {
+              "return": "FT_Error",
+              "family_name": "string|null",
+              "style_name": "string|null"
+            }
+          ]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "results[*].return",
+            "results[*].family_name",
+            "results[*].style_name"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/sfnt/sfobjs.c:829-843",
+          "freetype/include/freetype/tttables.h:450-454"
+        ]
       }
     },
     {

@@ -68045,6 +68045,7 @@ fn open_face_name_options_runtime_supported(case: &InputCase) -> bool {
             | "ftparams.FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_SUBFAMILY.open_face_uses_legacy_subfamily_name"
             | "ftparams.FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_SUBFAMILY.null_data_accepted"
             | "freetype.FT_Parameter.typographic_name_params_match_c"
+            | "freetype.FT_Parameter.wws_only_typographic_name_params_match_c"
     ) && has_runtime_font_source(case)
         && assets_are_runtime_resolved(case)
         && open_face_name_option_rows(&case.inputs.params).is_ok_and(|rows| !rows.is_empty())

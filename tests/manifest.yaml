@@ -2408,6 +2408,8 @@ subjects:
         description: Size, alignment, and offsets match the pinned C field order tag, data with FT_ULong and FT_Pointer field types.
       - id: typographic_name_params_match_c
         description: FT_Open_Face consumes FT_Parameter typographic family/subfamily tags with null data exactly like pinned C.
+      - id: wws_only_typographic_name_params_match_c
+        description: FT_Open_Face applies typographic family/subfamily ignore tags to an OS/2 WWS-only face exactly like pinned C.
       - id: ignored_open_params_match_c
         description: FT_Open_Face accepts ignored or deprecated FT_Parameter tags without changing public face/glyph output.
       - id: incremental_null_data_matches_c

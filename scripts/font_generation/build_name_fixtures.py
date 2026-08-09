@@ -353,6 +353,22 @@ def write_preferred_family_os2_version_ffff() -> None:
     replace_table_bytes(path, b"OS/2", bytes(os2))
 
 
+def write_wws_only_name_selection() -> None:
+    records = [
+        NameRecordSpec(3, 1, 0x0409, 1, utf16be("WwsLegacyFamily")),
+        NameRecordSpec(3, 1, 0x0409, 2, utf16be("WwsLegacySubfamily")),
+        NameRecordSpec(3, 1, 0x0409, 6, utf16be("WwsLegacyFamily-WwsLegacySubfamily")),
+        NameRecordSpec(3, 1, 0x0409, 16, utf16be("WwsTypographicFamily")),
+        NameRecordSpec(3, 1, 0x0409, 17, utf16be("WwsTypographicSubfamily")),
+    ]
+    path = NAME_OUT_DIR / "wws-only-name-selection.ttf"
+    write_name_payload(BASE_STATIC, path, build_name_table(records))
+    os2 = bytearray(table_payload(path, b"OS/2"))
+    fs_selection = int.from_bytes(os2[62:64], "big") | 256
+    os2[62:64] = fs_selection.to_bytes(2, "big")
+    replace_table_bytes(path, b"OS/2", bytes(os2))
+
+
 def write_preferred_subfamily_distinct() -> None:
     records = [
         NameRecordSpec(3, 1, 0x0409, 1, utf16be("Family")),
@@ -923,6 +939,7 @@ def main() -> None:
     write_bad_storage_name_table()
     write_preferred_family_distinct()
     write_preferred_family_os2_version_ffff()
+    write_wws_only_name_selection()
     write_preferred_subfamily_distinct()
     write_preferred_family_subfamily_distinct()
     write_variable_apple_prefix()
