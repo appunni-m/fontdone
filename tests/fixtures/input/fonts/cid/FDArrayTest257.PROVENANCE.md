@@ -45,3 +45,42 @@ Derived maintained fixture: `ot-cff-cid-keyed-format1.otf`
 - The generator renames the source glyphs into two contiguous CID ranges,
   each within the one-byte `nLeft` limit, making CFF charset format 1 the
   compact representation. It remains distributed under the source OFL.
+
+Derived maintained fixture: `ot-cff-cid-keyed-missing-charset.otf`
+
+- Generator: `scripts/font_generation/build_cff_fixtures.py`
+- Source: the stored `ot-cff-cid-keyed.otf` above
+- SHA-256: `7f8f63d7286f5255c2b332e5c69091645a1aa89873c01f170e27ed91119a4f1b`
+- The generator replaces the CFF Top DICT `charset` operator with an unrelated
+  one-byte dictionary operator, leaving the CID face without a charset
+  mapping. This reaches the pinned missing-CID-charset rejection while
+  retaining the source OFL.
+
+Derived maintained fixture: `ot-cff-cid-keyed-predefined-charset.otf`
+
+- Generator: `scripts/font_generation/build_cff_fixtures.py`
+- Source: the stored `ot-cff-cid-keyed.otf` above
+- SHA-256: `be52582cd078e194d5980ec4fdda84ff5bdee3cb5e49933ac2f155f50725330d`
+- The generator changes the Top DICT `charset` offset to the CFF predefined
+  charset range `0`, which cannot supply the CID mapping required by this
+  ROS face. It retains the source OFL and reaches the pinned predefined-
+  charset rejection.
+
+Derived maintained fixture: `ot-cff-cid-keyed-unsupported-charset-format.otf`
+
+- Generator: `scripts/font_generation/build_cff_fixtures.py`
+- Source: the stored `ot-cff-cid-keyed.otf` above
+- SHA-256: `5d37292b7f16ba5065ff4e797e31a648655b3056951869a2593e4a6c712ede39`
+- The generator changes the first byte at the maintained charset offset to
+  format `3`, reaching the pinned unsupported-CFF-charset-format rejection.
+  It remains distributed under the source OFL.
+
+Derived maintained fixture: `ot-cff-cid-keyed-truncated-charset-range.otf`
+
+- Generator: `scripts/font_generation/build_cff_fixtures.py`
+- Source: the stored `ot-cff-cid-keyed.otf` above
+- SHA-256: `bbd19f8d6bfc686b651f852587ae72c317ba369332cab4476162d73edfa4ba13`
+- The generator moves the CFF table to the end of the SFNT, points `charset` at
+  its final three bytes, and writes a format-1 range prefix without its
+  required `nLeft` field. This reaches the pinned stream-limit rejection and
+  retains the source OFL.

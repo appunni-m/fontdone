@@ -147,3 +147,17 @@ The applicable license texts are retained in `tests/fixtures/licenses/`.
 | `svg/svg-list-offset-before-header.ttf` | `scripts/font_generation/build_svg_fixtures.py` via `make font-fixture-svg` | 5,300 | `fdc8795596d15cb0ff465f08f24c0a6240fd31f356436579e8b252f268ab636d` | Malformed synthetic derivative; the SVG document-list offset points before the table header. |
 | `svg/svg-list-offset-out-of-range.ttf` | `scripts/font_generation/build_svg_fixtures.py` via `make font-fixture-svg` | 5,300 | `85c76496e592d29a381904e07420f22dcf9bcb92c479e5345249244decf46de1` | Malformed synthetic derivative; the SVG document-list offset lies beyond the table. |
 | `svg/svg-short-table.ttf` | `scripts/font_generation/build_svg_fixtures.py` via `make font-fixture-svg` | 5,148 | `1ee3919c484d0eb8a00204740080f564d3782a548cadfb846977f67a2af237be` | Malformed synthetic derivative; a two-byte SVG table is ignored at face open. |
+
+## 2. Third-party-derived generated input
+
+The CID CFF derivatives below are generated from the maintained
+`FDArrayTest257.otf` source. They retain the source SIL Open Font License 1.1;
+the upstream commit, source hash, standalone license, and byte-level mutations
+are recorded in `cid/FDArrayTest257.PROVENANCE.md`.
+
+| File | Generator | Bytes | SHA-256 | Classification and license |
+|---|---|---:|---|---|
+| `cid/ot-cff-cid-keyed-missing-charset.otf` | `scripts/font_generation/build_cff_fixtures.py` via `make font-fixture-cff` | 145,212 | `7f8f63d7286f5255c2b332e5c69091645a1aa89873c01f170e27ed91119a4f1b` | Malformed derivative of the OFL-1.1 CID CFF source; Top DICT `charset` is absent. |
+| `cid/ot-cff-cid-keyed-predefined-charset.otf` | `scripts/font_generation/build_cff_fixtures.py` via `make font-fixture-cff` | 145,212 | `be52582cd078e194d5980ec4fdda84ff5bdee3cb5e49933ac2f155f50725330d` | Malformed derivative of the OFL-1.1 CID CFF source; Top DICT `charset` points to a predefined range. |
+| `cid/ot-cff-cid-keyed-unsupported-charset-format.otf` | `scripts/font_generation/build_cff_fixtures.py` via `make font-fixture-cff` | 145,212 | `5d37292b7f16ba5065ff4e797e31a648655b3056951869a2593e4a6c712ede39` | Malformed derivative of the OFL-1.1 CID CFF source; charset format byte is unsupported. |
+| `cid/ot-cff-cid-keyed-truncated-charset-range.otf` | `scripts/font_generation/build_cff_fixtures.py` via `make font-fixture-cff` | 145,212 | `bbd19f8d6bfc686b651f852587ae72c317ba369332cab4476162d73edfa4ba13` | Malformed derivative of the OFL-1.1 CID CFF source; the final CFF format-1 charset range omits `nLeft`. |

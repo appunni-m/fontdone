@@ -40,7 +40,7 @@ licenses are enforced by `make supply-chain`.
 | Generator | Classification | Input or provenance |
 |---|---|---|
 | `build_autohint_script_fixtures.py` | Synthetic | Project-authored outlines and tables; one internal copy remains within the generated synthetic family, including malformed `loca` boundary controls. |
-| `build_cff_fixtures.py` | Synthetic | Project-authored CFF1/CFF2, TrueType control, and malformed CFF1/CFF2 table and INDEX data. |
+| `build_cff_fixtures.py` | Synthetic and derived | Project-authored CFF1/CFF2, TrueType control, and malformed CFF1/CFF2 table and INDEX data, plus malformed CID CFF derivatives of the maintained OFL-1.1 `FDArrayTest257` face. |
 | `build_render_fixtures.py` | Synthetic | Project-authored outlines and TrueType programs. |
 | `build_type1_fixtures.py` | Synthetic | Project-authored Type 1 charstrings, dictionaries, AFM data, notices, and a naked CID-keyed Type 1 resource. |
 | `build_type42_fixtures.py` | Synthetic | Project-authored embedded TrueType tables, outlines, names, and Type 42 wrapper. |
@@ -270,6 +270,16 @@ ordering SID with `800`, outside the face's String INDEX. Pinned FreeType keeps
 the CID service valid and returns a null ordering string for this input. The
 reviewed output is regenerated with `build_cff_fixtures.py` and its SHA-256 is
 recorded in the retention inventory.
+
+The same generator emits four malformed CID CFF derivatives from the maintained
+OFL-1.1 source: `ot-cff-cid-keyed-missing-charset.otf`,
+`ot-cff-cid-keyed-predefined-charset.otf`,
+`ot-cff-cid-keyed-unsupported-charset-format.otf`, and
+`ot-cff-cid-keyed-truncated-charset-range.otf`. They preserve the source
+license and exercise the missing, predefined, unsupported-format, and
+truncated-range CID charset guards during face opening. Their output hashes and
+exact byte mutations are recorded in
+`tests/fixtures/input/fonts/cid/FDArrayTest257.PROVENANCE.md`.
 
 `tests/fixtures/input/fonts/cid/ot-cff-non-cid-sentinel-registry.otf` is
 derived from the same source with the ROS registry set to CFF's `0xFFFF`

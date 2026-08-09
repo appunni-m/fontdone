@@ -27,15 +27,15 @@
     "fontdone_pub_enums": 19
   },
   "runtime_parity": {
-    "runnable": 7584,
-    "passed": 7584,
+    "runnable": 7588,
+    "passed": 7588,
     "failed": 0,
     "pending": 3,
     "covered_manifest": 4204,
     "validated_input_subjects": 1543,
     "validated_input_files": 1537,
     "logical_input_cases": 4297,
-    "concrete_input_cases": 7587,
+    "concrete_input_cases": 7591,
     "function_route_evidence": 218,
     "function_total": 218
   },
@@ -43,8 +43,8 @@
     "categories_complete": 10,
     "categories_total": 12,
     "is_complete": false,
-    "runtime_contract_rows_complete": 5327,
-    "runtime_contract_rows_total": 5327,
+    "runtime_contract_rows_complete": 5331,
+    "runtime_contract_rows_total": 5331,
     "runtime_contract_rows_pending": 0,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
@@ -1358,9 +1358,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "6c2a09939224c0cbe30752ba4567d618be53e2547782417ba03c82affd752410",
-    "parity_tree_sha256": "3bd2b7c7c8b696a7c78dcb6bad8f4243a74714c94c052eba56580936bbc82ecb",
-    "log_sha256": "c26e285c7e79eda126e08696b386414941ed06c70cf30f1e093f1ad587acfa7f",
+    "sha256": "1bb9a33f8080116f0cd191eb10dffb9e5f5cc5f7bef6b686616e0f6ff6463bb2",
+    "parity_tree_sha256": "75c667e6d1385b3f533c8b08bc5f2f6cf0854dd62d71847ebc14a87a9ab08b6b",
+    "log_sha256": "8d01a64f85cdee71b44701eea00aed6ac854ab7e8c2e2c54af42fbb209b820e0",
     "command": "make test-parity"
   }
 }

@@ -434,12 +434,20 @@ fn parse_cff_charset_cids(
         return Ok(cids);
     }
     let Some(offset) = charset_offset else {
-        return Err(FontError::InvalidTable("CFF: CID charset missing".into()));
+        // FreeType's CFF loader leaves the absent Top DICT charset at its
+        // predefined ISOAdobe value. A CID face with this many glyphs then
+        // fails `cff_charset_load` with Invalid_File_Format rather than the
+        // generic Invalid_Table used by other bounded table readers.
+        return Err(FontError::InvalidFileFormat(
+            "CFF: CID charset missing".into(),
+        ));
     };
     // ISOAdobe, Expert, and ExpertSubset are name-keyed predefined charsets.
     // They are not valid CID mappings for the ROS route.
     if let 0..=2 = offset {
-        return Err(FontError::InvalidTable(
+        // `cff_charset_load` rejects an implicit charset that is smaller than
+        // this 257-glyph CID face with FT_Err_Invalid_File_Format.
+        return Err(FontError::InvalidFileFormat(
             "CFF: predefined charset cannot supply CID mapping".into(),
         ));
     }
@@ -457,7 +465,10 @@ fn parse_cff_charset_cids(
             1 => {
                 let first = read_u16(data, cursor, "CFF: charset format 1 first CID overflow")?;
                 let n_left = u16::from(*data.get(cursor + 2).ok_or_else(|| {
-                    FontError::InvalidTable("CFF: charset format 1 range overflow".into())
+                    // `cff_charset_load` reaches the SFNT stream limit here;
+                    // the pinned CFF driver exposes that face-open probe as
+                    // Unknown_File_Format rather than Invalid_Table.
+                    FontError::UnknownFileFormat("CFF: charset format 1 range overflow".into())
                 })?);
                 cursor += 3;
                 push_charset_range(&mut cids, glyph_count, first, n_left)?;
@@ -469,7 +480,9 @@ fn parse_cff_charset_cids(
                 push_charset_range(&mut cids, glyph_count, first, n_left)?;
             }
             _ => {
-                return Err(FontError::InvalidTable(
+                // The CFF loader's default branch returns
+                // FT_Err_Invalid_File_Format for unsupported charset formats.
+                return Err(FontError::InvalidFileFormat(
                     "CFF: unsupported charset format".into(),
                 ));
             }

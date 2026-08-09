@@ -952,6 +952,119 @@ def write_cid_cff_single_glyph() -> None:
     font.save(out, reorderTables=True)
 
 
+def patch_cff_charset_top_dict(
+    data: bytearray,
+    *,
+    charset_offset: int | None = None,
+    operator_replacement: int | None = None,
+) -> None:
+    """Patch the CFF Top DICT charset operand without resizing the table."""
+    header_size = data[2]
+    _, cursor = cff_index_ranges(data, header_size)
+    top_dict_ranges, _ = cff_index_ranges(data, cursor)
+    if len(top_dict_ranges) != 1:
+        raise ValueError("expected one CFF Top DICT")
+    start, end = top_dict_ranges[0]
+    top_dict = bytearray(data[start:end])
+    operands: list[tuple[int, int]] = []
+    pos = 0
+    while pos < len(top_dict):
+        byte = top_dict[pos]
+        if byte <= 21:
+            if byte == 12:
+                operator = 0x0C00 | top_dict[pos + 1]
+                operator_length = 2
+            else:
+                operator = byte
+                operator_length = 1
+            if operator == 15:
+                if charset_offset is not None:
+                    if len(operands) != 1:
+                        raise ValueError("CFF charset does not have one operand")
+                    operand_start, operand_end = operands[0]
+                    encoded = encode_cff_dict_integer(charset_offset)
+                    operand_width = operand_end - operand_start
+                    if charset_offset == 0 and operand_width == 3:
+                        # Keep the source's two-byte integer width so all
+                        # following Top DICT offsets remain stable.
+                        encoded = b"\x1c\x00\x00"
+                    elif charset_offset == 0 and operand_width == 5:
+                        encoded = b"\x1d\x00\x00\x00\x00"
+                    if len(encoded) != operand_width:
+                        raise ValueError(
+                            "CFF charset replacement changed operand width"
+                        )
+                    top_dict[operand_start:operand_end] = encoded
+                if operator_replacement is not None:
+                    if operator_replacement > 21:
+                        raise ValueError("CFF charset replacement must be one byte")
+                    top_dict[pos] = operator_replacement
+                data[start:end] = top_dict
+                return
+            operands.clear()
+            pos += operator_length
+            continue
+        length = cff_dict_number_length(top_dict, pos)
+        operands.append((pos, pos + length))
+        pos += length
+    raise ValueError("CFF Top DICT has no charset operator")
+
+
+def write_malformed_cid_cff_faces() -> None:
+    """Derive CID CFF faces that stop at malformed charset boundaries."""
+    CID_OUT_DIR.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory() as tmp:
+        base = Path(tmp) / "base.otf"
+        font = TTFont(CID_SOURCE, recalcTimestamp=False)
+        font.recalcTimestamp = False
+        font.save(base, reorderTables=True)
+        serialized = TTFont(base, recalcTimestamp=False).getTableData("CFF ")
+        source_charset_offset = font["CFF "].cff.topDictIndex[0].rawDict["charset"]
+
+        missing_charset = bytearray(serialized)
+        patch_cff_charset_top_dict(missing_charset, operator_replacement=14)
+        replace_sfnt_table(
+            base,
+            CID_OUT_DIR / "ot-cff-cid-keyed-missing-charset.otf",
+            b"CFF ",
+            bytes(missing_charset),
+        )
+
+        predefined_charset = bytearray(serialized)
+        patch_cff_charset_top_dict(predefined_charset, charset_offset=0)
+        replace_sfnt_table(
+            base,
+            CID_OUT_DIR / "ot-cff-cid-keyed-predefined-charset.otf",
+            b"CFF ",
+            bytes(predefined_charset),
+        )
+
+        unsupported_format = bytearray(serialized)
+        unsupported_format[source_charset_offset] = 3
+        replace_sfnt_table(
+            base,
+            CID_OUT_DIR / "ot-cff-cid-keyed-unsupported-charset-format.otf",
+            b"CFF ",
+            bytes(unsupported_format),
+        )
+
+        truncated_range = bytearray(serialized)
+        # Place the CFF table at the end of the SFNT and align its payload so
+        # the C reader's stream limit falls immediately after the malformed
+        # format-1 prefix. The Rust parser is intentionally bounded by the
+        # CFF table length, while FreeType reads this public stream boundary.
+        truncated_range.extend(b"\0" * ((4 - len(truncated_range) % 4) % 4))
+        truncated_offset = len(truncated_range) - 3
+        patch_cff_charset_top_dict(truncated_range, charset_offset=truncated_offset)
+        truncated_range[truncated_offset:] = b"\x01\x00\x01"
+        relocate_sfnt_table_to_end(
+            base,
+            CID_OUT_DIR / "ot-cff-cid-keyed-truncated-charset-range.otf",
+            b"CFF ",
+            bytes(truncated_range),
+        )
+
+
 def cff_index_ranges(data: bytes | bytearray, pos: int) -> tuple[list[tuple[int, int]], int]:
     """Return object byte ranges and the byte after one CFF INDEX."""
     count = int.from_bytes(data[pos : pos + 2], "big")
@@ -1263,6 +1376,45 @@ def replace_sfnt_table(source: Path, dest: Path, tag: bytes, payload: bytes) -> 
     raise ValueError(f"missing table {tag!r} in {source}")
 
 
+def relocate_sfnt_table_to_end(
+    source: Path, dest: Path, tag: bytes, payload: bytes
+) -> None:
+    """Rewrite an SFNT so one replacement table is the final file payload."""
+    data = bytearray(source.read_bytes())
+    num_tables = int.from_bytes(data[4:6], "big")
+    records: list[tuple[bytes, bytes]] = []
+    for index in range(num_tables):
+        record = 12 + index * 16
+        table_tag = bytes(data[record : record + 4])
+        offset = int.from_bytes(data[record + 8 : record + 12], "big")
+        length = int.from_bytes(data[record + 12 : record + 16], "big")
+        records.append((table_tag, bytes(data[offset : offset + length])))
+    if not any(table_tag == tag for table_tag, _ in records):
+        raise ValueError(f"missing table {tag!r} in {source}")
+
+    payloads = dict(records)
+    payloads[tag] = payload
+    table_indexes = {table_tag: index for index, (table_tag, _) in enumerate(records)}
+    order = [table_tag for table_tag, _ in records if table_tag != tag] + [tag]
+    output = bytearray(data[:12] + b"\0" * (16 * num_tables))
+    for table_tag in order:
+        while len(output) % 4:
+            output.append(0)
+        offset = len(output)
+        table_payload = payloads[table_tag]
+        output.extend(table_payload)
+        record = 12 + table_indexes[table_tag] * 16
+        output[record : record + 4] = table_tag
+        output[record + 4 : record + 8] = sfnt_checksum(table_payload).to_bytes(4, "big")
+        output[record + 8 : record + 12] = offset.to_bytes(4, "big")
+        output[record + 12 : record + 16] = len(table_payload).to_bytes(4, "big")
+    while len(output) % 4:
+        output.append(0)
+    if dest.exists() or dest.is_symlink():
+        dest.unlink()
+    dest.write_bytes(output)
+
+
 def cff_index(objects: list[bytes]) -> bytes:
     if not objects:
         return b"\0\0"
@@ -1491,6 +1643,7 @@ def main() -> None:
     write_cid_cff_format2()
     write_cid_cff_charset_variants()
     write_cid_cff_single_glyph()
+    write_malformed_cid_cff_faces()
     write_cid_cff_unresolved_ordering()
     write_cid_cff_absent_registry()
     write_cid_cff_standard_ros()

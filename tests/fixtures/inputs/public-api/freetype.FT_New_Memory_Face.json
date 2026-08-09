@@ -2474,6 +2474,106 @@
             "coverage": [ "tt/cff:top-dict-ros-operands-missing-error" ]
           },
           {
+            "id": "cid-cff-missing-charset",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cid/ot-cff-cid-keyed-missing-charset.otf",
+                "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
+                "generator": "scripts/font_generation/build_cff_fixtures.py",
+                "sha256": "7f8f63d7286f5255c2b332e5c69091645a1aa89873c01f170e27ed91119a4f1b",
+                "license": "OFL-1.1"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cid/ot-cff-cid-keyed-missing-charset.otf",
+                "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
+                "generator": "scripts/font_generation/build_cff_fixtures.py",
+                "sha256": "7f8f63d7286f5255c2b332e5c69091645a1aa89873c01f170e27ed91119a4f1b",
+                "license": "OFL-1.1"
+              }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff:cid-charset-missing-error" ]
+          },
+          {
+            "id": "cid-cff-predefined-charset",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cid/ot-cff-cid-keyed-predefined-charset.otf",
+                "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
+                "generator": "scripts/font_generation/build_cff_fixtures.py",
+                "sha256": "be52582cd078e194d5980ec4fdda84ff5bdee3cb5e49933ac2f155f50725330d",
+                "license": "OFL-1.1"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cid/ot-cff-cid-keyed-predefined-charset.otf",
+                "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
+                "generator": "scripts/font_generation/build_cff_fixtures.py",
+                "sha256": "be52582cd078e194d5980ec4fdda84ff5bdee3cb5e49933ac2f155f50725330d",
+                "license": "OFL-1.1"
+              }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff:cid-predefined-charset-error" ]
+          },
+          {
+            "id": "cid-cff-unsupported-charset-format",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cid/ot-cff-cid-keyed-unsupported-charset-format.otf",
+                "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
+                "generator": "scripts/font_generation/build_cff_fixtures.py",
+                "sha256": "5d37292b7f16ba5065ff4e797e31a648655b3056951869a2593e4a6c712ede39",
+                "license": "OFL-1.1"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cid/ot-cff-cid-keyed-unsupported-charset-format.otf",
+                "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
+                "generator": "scripts/font_generation/build_cff_fixtures.py",
+                "sha256": "5d37292b7f16ba5065ff4e797e31a648655b3056951869a2593e4a6c712ede39",
+                "license": "OFL-1.1"
+              }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff:cid-unsupported-charset-format-error" ]
+          },
+          {
+            "id": "cid-cff-truncated-charset-range",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cid/ot-cff-cid-keyed-truncated-charset-range.otf",
+                "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
+                "generator": "scripts/font_generation/build_cff_fixtures.py",
+                "sha256": "bbd19f8d6bfc686b651f852587ae72c317ba369332cab4476162d73edfa4ba13",
+                "license": "OFL-1.1"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cid/ot-cff-cid-keyed-truncated-charset-range.otf",
+                "derived_from": "input/fonts/cid/ot-cff-cid-keyed.otf",
+                "generator": "scripts/font_generation/build_cff_fixtures.py",
+                "sha256": "bbd19f8d6bfc686b651f852587ae72c317ba369332cab4476162d73edfa4ba13",
+                "license": "OFL-1.1"
+              }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff:cid-truncated-charset-range-error" ]
+          },
+          {
             "id": "cff-top-dict-longint-operand-missing-charstrings",
             "assets": {
               "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-longint-operand-missing-charstrings.otf" },
