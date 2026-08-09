@@ -550,18 +550,19 @@ worktree at that point:
 | 153 | `5087ad9` (SBIT shape-invariant cleanup) | Removed the defensive BGRA pitch and buffer-length guards from `SbitBitmap::flatten_bgra_to_gray` after tracing `load_simple_image` and `blank_compound_glyph` to exact `bitmap_layout_for_bit_depth` allocations. No parity input or expected result changed, and the relevant SBIT branch gaps closed without a unit-only coverage route. Clean pushed-head parity run `beba6760-2a7c-4c7e-9c16-476be69b14ff`, recorded by `9dd4a9d0-b665-402c-9b1d-dcc485391bd4`, passed 7,604 / 7,604 runnable comparisons with 0 failures and 3 pending safety-extension cases; the route audit remains at 7,607 concrete cases, 0 pending routes, 0 generic-fallback rows, and 218 / 218 function evidence in each ABI surface. Clean all-lane Coverage MCP run `84d612b6-deb2-4cb8-aa06-9fb3181532ce`, snapshot `92da4ce0-9bbc-4b7b-81ef-17ebd5116f2a`, completed in 62.981 seconds and measured 50,211 / 54,262 lines, 10,023 / 12,551 branches, 3,444 / 3,818 functions, and 68,949 / 75,380 regions; `src/tt/sbit.rs` now reports 96 / 96 branches. The C-ABI contract remains 10 / 12 categories: C01.7 5,347 / 5,347, C08.3 7,604 / 7,604, C11.3 7 / 8, and C12.3 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
 | 154 | `684ee32` (SBIX strike-invariant cleanup) | Removed the defensive SBIX strike-selection fallback after tracing both runtime callers and recursive `dupe`/`flip` calls to an already validated active `ppem`; no parity input or expected result changed. Clean pushed-head parity run `c5ea877e-ffa5-4933-8873-afb8a8cf35c2`, recorded by `9eb2ecd7-5e89-4949-a4dd-65ede2c58f41`, passed 7,604 / 7,604 runnable comparisons with 0 failures and 3 pending safety-extension cases; the route audit remains at 7,607 concrete cases, 0 pending routes, 0 generic-fallback rows, and 218 / 218 function evidence in each ABI surface. Clean all-lane Coverage MCP run `026f8157-9e9b-4ddf-a52f-27b2d0263d44`, snapshot `39fa81a1-735b-4cf3-9356-986f4c87a8d1`, completed in 64.712 seconds and measured 50,215 / 54,264 lines, 10,022 / 12,549 branches, 3,444 / 3,819 functions, and 68,950 / 75,381 regions; `src/tt/sbix.rs` now reports 22 / 22 branches with no relevant gaps. The C-ABI contract run `8fce9159-7e8b-40e8-ad02-628fdaf35dc1` retains 10 / 12 categories: C01.7 5,347 / 5,347, C08.3 7,604 / 7,604, C11.3 7 / 8, and C12.3 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
 | 155 | `ccf43ba` (varstore invariant cleanup) | Removed the parser-proven region-index fallback and zero-denominator guard from the variation store after verifying that parsing stores exactly the validated region count and scalar calculation proves a nonzero slope denominator. No parity input or expected result changed. Clean pushed-head parity run `0fc4bec4-34fa-4281-9d3e-3d2c87a46c22`, recorded by `f0dd4f8e-c67b-4b6d-9839-ac4cdd13a5b4`, passed 7,604 / 7,604 runnable comparisons with 0 failures and 3 pending safety-extension cases; the route audit remains at 7,607 concrete cases, 0 pending routes, 0 generic-fallback rows, and 218 / 218 function evidence in each ABI surface. Clean all-lane Coverage MCP run `4edbfeb7-11f4-49dd-ac40-2cf3201a4e3e`, snapshot `859f6032-60a5-4472-b6d2-fac06ba158f3`, completed in 60.743 seconds and measured 50,213 / 54,260 lines, 10,020 / 12,545 branches, 3,444 / 3,819 functions, and 68,947 / 75,376 regions; `src/tt/varstore.rs` now has only four relevant uncovered or partial-branch lines (the checked multiplication overflow plus sentinel/sign edge paths). The current C-ABI contract run `41e3e44c-9b1b-47cb-bc50-3bd699683e03` retains 10 / 12 categories: C01.7 5,347 / 5,347, C08.3 7,604 / 7,604, C11.3 7 / 8, and C12.3 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
+| 156 | `5781f54` + `76554f5` (PFR malformed-input coverage cluster) | Added maintained PFR inputs for short headers, invalid header marker/size, truncated logical and physical records, zero outline/metrics resolution, zero character count, truncated character descriptors, malformed kerning/logical extra items, and unknown descriptor items; added invalid PFR kerning glyph pairs and the generated zero-metrics-resolution fixture. The parser's unreachable PFR magic and blue-count overflow defenses were removed only after tracing the validated caller and one-byte field bounds, and descriptor GPS skips were flattened to make their real branches measurable. Clean pushed-head parity run `44405248-4d2a-4d16-aa24-4c34007a11b9`, recorded by `1b48c2ec-4952-47c1-b4da-0ad26ab050c0`, passed 7,616 / 7,616 runnable comparisons with 0 failures and 3 pending safety-extension cases; the route audit reports 7,619 concrete cases, 0 pending routes, 0 generic-fallback rows, and 218 / 218 function evidence in each ABI surface. Clean all-lane Coverage MCP run `267c2648-951b-4956-92bb-0ef539343f0a`, snapshot `94019b2a-c1f6-4021-a388-3b20c078272a`, completed in 65.725 seconds and measured 50,219 / 54,250 lines, 10,036 / 12,543 branches, 3,444 / 3,819 functions, and 68,963 / 75,375 regions; `src/pfr.rs` is now 285 / 285 lines, 70 / 70 branches, 23 / 23 functions, and 550 / 627 regions with no relevant line or branch gaps. Fast tests passed 6 / 6 in `42e8471f-4824-4690-a431-cf0f7dbfcc85`, lint passed in `05b6f407-405b-415e-a9d0-bfca875fe266`, and the C-ABI contract run `f53f0621-7639-426f-8f1d-cfa735ddb60f` retains 10 / 12 categories: C01.7 5,359 / 5,359, C08.3 7,616 / 7,616, C11.3 7 / 8, and C12.3 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
 
 The current pushed-head parity verification is Coverage MCP parity run
-`0fc4bec4-34fa-4281-9d3e-3d2c87a46c22`, recorded by
-`f0dd4f8e-c67b-4b6d-9839-ac4cdd13a5b4`: it passed 7,604 / 7,604 runnable
+`44405248-4d2a-4d16-aa24-4c34007a11b9`, recorded by
+`1b48c2ec-4952-47c1-b4da-0ad26ab050c0`: it passed 7,616 / 7,616 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
-route audit reports **7,607 concrete cases, 0 pending routes and 0 generic-fallback rows**, with
+route audit reports **7,619 concrete cases, 0 pending routes and 0 generic-fallback rows**, with
 218 / 218 function routes present in each ABI surface. The source-digest
 attestation was refreshed in `doc/runtime_parity_evidence.json`; its current
 parity-tree digest is
-`29788444e916dc537f2584231306757e18d93b61f14b4283a5344094ebe680cd`.
+`fa42fa7a94765dfb4c7d38ecbf82ca3a2c969efd36d3482fe47ea830f9f17974`.
 The tracked C-ABI scorecard is **10 / 12 categories complete**; C01.7 is
-5,347 / 5,347, C08.3 is 7,604 / 7,604, C11.3 is 7 / 8, and C12.3 is 1 / 5.
+5,359 / 5,359, C08.3 is 7,616 / 7,616, C11.3 is 7 / 8, and C12.3 is 1 / 5.
 The Windows import-library item and four fresh target-lane bundles remain.
 
 The three pending cases are deliberately excluded from the pinned-C parity
@@ -573,11 +574,11 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current pushed-head all-lane run `4edbfeb7-11f4-49dd-ac40-2cf3201a4e3e`
-completed in 60.743 seconds with snapshot
-`859f6032-60a5-4472-b6d2-fac06ba158f3`. It measured 50,213 / 54,260 lines,
-10,020 / 12,545 branches, 3,444 / 3,819 functions, and 68,947 / 75,376
-regions; the nine process-local shard writers split the 7,604 runnable cases
+The current pushed-head all-lane run `267c2648-951b-4956-92bb-0ef539343f0a`
+completed in 65.725 seconds with snapshot
+`94019b2a-c1f6-4021-a388-3b20c078272a`. It measured 50,219 / 54,250 lines,
+10,036 / 12,543 branches, 3,444 / 3,819 functions, and 68,963 / 75,375
+regions; the nine process-local shard writers split the 7,616 runnable cases
 before report generation. On this 12-logical-CPU host the adaptive
 default uses three shards per backend; constrained runners use two, and
 `COVERAGE_UNIFIED_SHARDS=1` restores the earlier three-process split. The
