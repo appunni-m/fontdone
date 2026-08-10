@@ -398,6 +398,12 @@ The current managed run completed in 71.430 seconds. Shard timers run
 concurrently, so their sum is not wall time; report finalization and artifact
 ingestion are included in the wall time but are not separately exposed by
 Coverage MCP. Instrumented compilation remains the dominant cold component.
+The coverage build-state marker intentionally excludes
+`tests/unified_fixture_parity.rs`: harness-only coverage probes are ignored
+from the report denominator, so Cargo can rebuild the changed integration test
+executable while reusing unchanged instrumented runtime libraries and maps.
+Runtime source, dependency, toolchain, and coverage-profile changes still
+invalidate the instrumented workspace.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|

@@ -611,6 +611,11 @@ test-profile compilation, while the nine concurrent shard executions each took
 validation took 14.428 seconds, confirming that the larger cold-run
 delay is cache-miss compilation rather than Coverage MCP ingestion or pinned-C
 oracle execution.
+The coverage build-state marker now excludes `tests/unified_fixture_parity.rs`:
+harness-only coverage probes are ignored from the report denominator, so Cargo
+can rebuild the changed integration test executable while reusing unchanged
+instrumented runtime libraries and maps. Runtime source, dependency, toolchain,
+and coverage-profile changes still invalidate the instrumented workspace.
 The historical optimized-profile validation run `79f4439e-2db4-4ee2-8746-c101d8db2925`
 completed in 53.316 seconds with 7,479 / 7,479 runnable comparisons passing in
 each lane. The prior current-head opt-level-1 speed validation run

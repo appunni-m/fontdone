@@ -69,12 +69,15 @@ ALL_LANES_COVERAGE_IGNORE_REGEX := /tests/
 # cfg builds of the same source file.  Use the newest commit touching compiler
 # inputs instead of the current HEAD, so fixture/docs-only commits do not
 # discard a reusable instrumented binary.  A dirty compiler-input tree still
-# forces a clean rebuild.  The Makefile itself is excluded because coverage
+# forces a clean rebuild. The Makefile itself is excluded because coverage
 # compiler settings are recorded below and preparation/lane orchestration does
-# not change the compiled coverage map.
-COVERAGE_SOURCE_STATE := $(shell git log -1 --format=%H -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs 2>/dev/null || printf unknown)-$(shell if test -n "$(shell git status --porcelain --untracked-files=all -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs 2>/dev/null)"; then printf dirty; else printf clean; fi)
+# not change the compiled coverage map. The integration harness is also
+# excluded: it is ignored from the report denominator, and harness-only edits
+# rebuild the test executable while reusing unchanged instrumented runtime
+# libraries and coverage maps.
+COVERAGE_SOURCE_STATE := $(shell git log -1 --format=%H -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm 2>/dev/null || printf unknown)-$(shell if test -n "$(shell git status --porcelain --untracked-files=all -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm 2>/dev/null)"; then printf dirty; else printf clean; fi)
 COVERAGE_BUILD_STATE := $(COVERAGE_SOURCE_STATE)|toolchain=$(COVERAGE_TOOLCHAIN)|opt=$(COVERAGE_TEST_OPT_LEVEL)|debug=$(COVERAGE_TEST_DEBUG)|flags=$(COVERAGE_LLVM_COV_FLAGS)
-COVERAGE_PREPARATION_SOURCE_STATE := $(shell git log -1 --format=%H -- Makefile Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs tests/manifest.yaml tests/data tests/fixtures scripts 2>/dev/null || printf unknown)-$(shell if test -n "$(shell git status --porcelain --untracked-files=all -- Makefile Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/unified_fixture_parity.rs tests/manifest.yaml tests/data tests/fixtures scripts 2>/dev/null)"; then printf dirty; else printf clean; fi)
+COVERAGE_PREPARATION_SOURCE_STATE := $(shell git log -1 --format=%H -- Makefile Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/manifest.yaml tests/data tests/fixtures scripts 2>/dev/null || printf unknown)-$(shell if test -n "$(shell git status --porcelain --untracked-files=all -- Makefile Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/manifest.yaml tests/data tests/fixtures scripts 2>/dev/null)"; then printf dirty; else printf clean; fi)
 COVERAGE_PREPARATION_STATE := $(COVERAGE_PREPARATION_SOURCE_STATE)|optional=$(COVERAGE_PREPARE_OPTIONAL_FEATURES)|abi_preflight=$(COVERAGE_ABI_PREFLIGHT)
 # Evaluate preparation inputs before the target recipe cleans stale coverage
 # artifacts. This lets the recursive make stay on its own recipe line, where
