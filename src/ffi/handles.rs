@@ -9832,10 +9832,16 @@ pub fn FT_Get_Colorline_Stops(
     1
 }
 
+#[allow(
+    clippy::cast_possible_truncation,
+    reason = "COLRv1 PaintColrLayers stores NumLayers in one byte and FT_UInt is at least 32-bit"
+)]
 fn colr_v1_layer_iterator(paints: &[ColrV1Paint], layer: usize) -> FT_LayerIterator {
     FT_LayerIterator {
-        num_layers: paints.len().try_into().unwrap_or(FT_UInt::MAX),
-        layer: layer.try_into().unwrap_or(FT_UInt::MAX),
+        // The parser obtains `paints.len()` from the one-byte NumLayers field;
+        // the terminal cursor is at most one element past that bounded list.
+        num_layers: paints.len() as FT_UInt,
+        layer: layer as FT_UInt,
         p: paints
             .as_ptr()
             .wrapping_add(layer)
@@ -9860,8 +9866,11 @@ fn colr_v1_find_layer_paints_by_iterator_in_node<'a>(
 ) -> Option<&'a [ColrV1Paint]> {
     match paint {
         ColrV1Paint::Layers { paints } => {
-            let layer_index = usize::try_from(iterator.layer).ok()?;
-            if iterator.num_layers != paints.len().try_into().ok()? || layer_index > paints.len() {
+            // `FT_LayerIterator.layer` and `.num_layers` are FT_UInt fields;
+            // supported targets are at least 32-bit, and the COLRv1 list is
+            // bounded by its one-byte NumLayers field.
+            let layer_index = iterator.layer as usize;
+            if iterator.num_layers != paints.len() as FT_UInt || layer_index > paints.len() {
                 return None;
             }
             let expected_p = paints.as_ptr().wrapping_add(layer_index).cast::<FT_Byte>();
