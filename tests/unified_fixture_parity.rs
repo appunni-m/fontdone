@@ -82093,6 +82093,7 @@ fn wasm_outline_render_runtime_output(case: &InputCase) -> Result<RunOutput, Str
         return outline_render_synthetic_error_output(case);
     }
     if case.case_id == "ftoutln.FT_Outline_Render.renderer_fallback_and_errors" {
+        wasm_outline_render_pointer_probe(case)?;
         return outline_render_renderer_fallback_output(case);
     }
     if case.case_id == "ftimage.FT_Raster_Params.clip_box_matches_c" {
@@ -82194,13 +82195,25 @@ fn wasm_outline_render_once(
                 yMax: clip_box.yMax,
             }),
         );
+        let gray_spans_present = outline_render_gray_spans_present(&case.inputs.params);
+        params.gray_spans = if gray_spans_present {
+            std::ptr::dangling::<c_void>()
+        } else {
+            ptr::null()
+        };
+        let exported_err = wasm_abi::fontdone_wasm_outline_render(1, outline_ptr, &mut params);
         let (err, spans, user_seen) = wasm_abi::abi_support_outline_render_direct_spans(
             1,
             outline_ptr,
             &mut params,
-            outline_render_gray_spans_present(&case.inputs.params),
+            gray_spans_present,
             OUTLINE_RENDER_USER_TOKEN as *mut c_void,
         );
+        if exported_err != err {
+            return Err(format!(
+                "WASM exported direct render returned {exported_err}, span probe returned {err}"
+            ));
+        }
         return if err == FT_Err_Ok {
             Ok(ok(outline_render_direct_payload(
                 spans,
@@ -82240,6 +82253,75 @@ fn wasm_outline_render_once(
     } else {
         Ok(error(err))
     }
+}
+
+fn wasm_outline_render_pointer_probe(case: &InputCase) -> Result<(), String> {
+    let outline_model = outline_render_outline(case)?;
+    let mut outline = WasmRenderOutlineStorage::new(&outline_model);
+    let outline_ptr = outline.as_ptr();
+    let invalid_argument = |label: &str, status: FT_Error| {
+        if status != FT_Err_Invalid_Argument {
+            return Err(format!(
+                "WASM {label} returned {status}, expected {FT_Err_Invalid_Argument}"
+            ));
+        }
+        Ok(())
+    };
+
+    let status = wasm_abi::fontdone_wasm_outline_render(1, outline_ptr, ptr::null_mut());
+    invalid_argument("null params", status)?;
+
+    let mut bytes = vec![0_u8; 16];
+    let mut target = wasm_abi::FontdoneWasmBitmap {
+        rows: 4,
+        width: 4,
+        pitch: 4,
+        buffer: bytes.as_mut_ptr(),
+        buffer_len: bytes.len(),
+        num_grays: 256,
+        pixel_mode: FT_PIXEL_MODE_GRAY,
+        palette_mode: 0,
+        palette: ptr::null(),
+    };
+    let mut params = wasm_abi::FontdoneWasmRasterParams {
+        target: &mut target,
+        source: ptr::null(),
+        ..wasm_abi::FontdoneWasmRasterParams::default()
+    };
+    let status = wasm_abi::fontdone_wasm_outline_render(0, outline_ptr, &mut params);
+    let invalid_library_handle = FT_Err_Invalid_Library_Handle as FT_Error;
+    if status != invalid_library_handle {
+        return Err(format!(
+            "WASM null library returned {status}, expected {invalid_library_handle}"
+        ));
+    }
+
+    let status = wasm_abi::fontdone_wasm_outline_render(1, ptr::null(), &mut params);
+    if status != FT_Err_Invalid_Outline {
+        return Err(format!(
+            "WASM null outline returned {status}, expected {FT_Err_Invalid_Outline}"
+        ));
+    }
+
+    let mut null_target_params = wasm_abi::FontdoneWasmRasterParams::default();
+    let status =
+        wasm_abi::fontdone_wasm_outline_render(1, outline_ptr, &mut null_target_params);
+    invalid_argument("null target", status)?;
+
+    let mut null_buffer_target = target;
+    null_buffer_target.buffer = ptr::null();
+    null_buffer_target.buffer_len = 0;
+    let mut null_buffer_params = wasm_abi::FontdoneWasmRasterParams {
+        target: &mut null_buffer_target,
+        source: ptr::null(),
+        ..wasm_abi::FontdoneWasmRasterParams::default()
+    };
+    let status = wasm_abi::fontdone_wasm_outline_render(
+        1,
+        outline_ptr,
+        &mut null_buffer_params,
+    );
+    invalid_argument("null bitmap buffer", status)
 }
 
 fn outline_render_error_output_available(_flags: i32, pixel_mode: i32) -> bool {

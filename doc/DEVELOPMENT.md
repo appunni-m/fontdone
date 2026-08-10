@@ -306,7 +306,10 @@ fixtures; focused and full parity remain exact.
 The maintained `ftoutln.FT_Outline_Decompose` callback cases now exercise the
 exported C-ABI wrapper itself, including callback event delivery, callback
 error propagation, missing callbacks, null interfaces, and malformed outlines;
-the C oracle remains the independent callback-event reference.
+the C oracle remains the independent callback-event reference. The existing
+WASM outline-render parity cases likewise invoke the exported facade for
+DIRECT rendering and pointer-validation scenarios, while the support helper
+retains span capture for exact output comparison.
 
 ```bash
 make test-coverage
