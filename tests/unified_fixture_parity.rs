@@ -42036,7 +42036,8 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
     if is_lzw_stream_case(case) {
         let mut args = vec!["--lzw-stream-case".to_string(), case.case_id.clone()];
         match case.case_id.as_str() {
-            "ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream" => {
+            "ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream"
+            | "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams" => {
                 for payload in lzw_stream_manifest(case)?.payloads {
                     args.push(payload.id);
                     args.push(
@@ -77017,6 +77018,7 @@ fn is_lzw_stream_case(case: &InputCase) -> bool {
     matches!(
         case.case_id.as_str(),
         "ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream"
+            | "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams"
             | "ftlzw.FT_Stream_OpenLZW.invalid_header_error"
             | "ftlzw.FT_Stream_OpenLZW.null_stream_or_source_error"
             | "ftlzw.FT_Stream_OpenLZW.unsupported_build_error"
@@ -77026,6 +77028,9 @@ fn is_lzw_stream_case(case: &InputCase) -> bool {
 fn lzw_stream_output(case: &InputCase, backend: LzwStreamBackend) -> Result<RunOutput, String> {
     match case.case_id.as_str() {
         "ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream" => {
+            lzw_stream_success_output(case, backend)
+        }
+        "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams" => {
             lzw_stream_success_output(case, backend)
         }
         "ftlzw.FT_Stream_OpenLZW.invalid_header_error" => {
@@ -77216,6 +77221,8 @@ fn lzw_stream_success_output(
     backend: LzwStreamBackend,
 ) -> Result<RunOutput, String> {
     let manifest = lzw_stream_manifest(case)?;
+    let sequential_reads =
+        case.case_id == "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams";
     let mut rows = Vec::new();
     for payload in manifest.payloads {
         let raw = cached_file_bytes(&payload.raw)?;
@@ -77228,6 +77235,7 @@ fn lzw_stream_success_output(
                 initial_pos,
                 raw.as_ref(),
                 lzw.as_ref(),
+                sequential_reads,
             )?);
         }
     }
@@ -77241,6 +77249,7 @@ fn lzw_stream_success_row(
     initial_pos: FT_ULong,
     raw: &[u8],
     lzw: &[u8],
+    sequential_reads: bool,
 ) -> Result<Value, String> {
     let mut source = FT_StreamRec {
         base: lzw.as_ptr().cast_mut(),
@@ -77253,7 +77262,7 @@ fn lzw_stream_success_row(
     let mut stream = lzw_stream_sentinel();
     let status = lzw_stream_open(backend, Some(&mut stream), Some(&mut source), Some(lzw));
     let decoded_reads = if status == FT_Err_Ok {
-        lzw_stream_read_ranges(backend, &stream, raw)?
+        lzw_stream_read_ranges(backend, &stream, raw, sequential_reads)?
     } else {
         Vec::new()
     };
@@ -77348,8 +77357,14 @@ fn lzw_stream_read_ranges(
     backend: LzwStreamBackend,
     stream: &FT_StreamRec,
     raw: &[u8],
+    sequential_reads: bool,
 ) -> Result<Vec<Value>, String> {
-    [(0usize, 0usize), (1, 1), (32, 64), (0, raw.len())]
+    let ranges = if sequential_reads {
+        [(0usize, 0usize), (0, 64), (64, 64), (0, raw.len())]
+    } else {
+        [(0usize, 0usize), (1, 1), (32, 64), (0, raw.len())]
+    };
+    ranges
         .into_iter()
         .map(|(offset, requested)| {
             let bytes = match backend {

@@ -64,6 +64,103 @@ def literal_unix_compress(data: bytes) -> bytes:
     return bytes(output)
 
 
+def unix_compress(data: bytes, *, clear_after: int | None = None) -> bytes:
+    """Encode deterministic block-mode Unix-compress data.
+
+    The encoder follows the pinned FreeType decoder's 9-bit start, dictionary
+    growth, LSB-first bit order, and fixed-width input blocks.  A single
+    optional CLEAR code makes the maintained reset fixture exercise block-mode
+    dictionary reinitialization without relying on a platform `compress`
+    implementation.
+    """
+    if not data:
+        return bytes((0x1F, 0x9D, 0x90))
+
+    clear_code = 256
+    max_bits = 16
+    max_code = 1 << max_bits
+    dictionary = {bytes((value,)): value for value in range(256)}
+    next_code = 257
+    width = 9
+    decoder_free = 1
+    data_codes = 0
+    records: list[tuple[int, int, bool]] = []
+    emitted = 0
+    pending_clear = clear_after
+    phrase = bytes((data[0],))
+
+    for value in data[1:]:
+        candidate = phrase + bytes((value,))
+        if candidate in dictionary:
+            phrase = candidate
+            continue
+
+        records.append((dictionary[phrase], width, False))
+        emitted += 1
+        if data_codes > 0 and decoder_free < max_code - 256:
+            decoder_free += 1
+        data_codes += 1
+        if decoder_free >= (1 << width) - 256 and width < max_bits:
+            width += 1
+        if next_code < max_code:
+            dictionary[candidate] = next_code
+            next_code += 1
+
+        if pending_clear is not None and emitted >= pending_clear:
+            records.append((clear_code, width, True))
+            dictionary = {bytes((value,)): value for value in range(256)}
+            next_code = 257
+            width = 9
+            decoder_free = 0
+            data_codes = 0
+            pending_clear = None
+
+        phrase = bytes((value,))
+
+    records.append((dictionary[phrase], width, False))
+
+    output = bytearray((0x1F, 0x9D, 0x90))
+    block_width = 9
+    block = 0
+    block_bits = 0
+
+    def flush_block(width_bits: int, value: int) -> None:
+        for _ in range(width_bits):
+            output.append(value & 0xFF)
+            value >>= 8
+
+    for code, code_width, reset_after in records:
+        if code_width != block_width:
+            if block_bits:
+                flush_block(block_width, block)
+                block = 0
+                block_bits = 0
+            block_width = code_width
+
+        if block_bits + code_width > block_width * 8:
+            flush_block(block_width, block)
+            block = 0
+            block_bits = 0
+
+        block |= code << block_bits
+        block_bits += code_width
+        if block_bits == block_width * 8:
+            flush_block(block_width, block)
+            block = 0
+            block_bits = 0
+
+        if reset_after:
+            if block_bits:
+                flush_block(block_width, block)
+            block = 0
+            block_bits = 0
+            block_width = 9
+
+    if block_bits:
+        flush_block((block_bits + 7) // 8, block)
+    return bytes(output)
+
+
 def build_gzip() -> None:
     GZIP_OUT.mkdir(parents=True, exist_ok=True)
     manifest_payloads = []
@@ -147,6 +244,26 @@ def build_lzw() -> None:
     raw = RAW_PCF.read_bytes()
     write_if_changed(LZW_OUT / "small-valid-pcf.Z", literal_unix_compress(raw))
     write_if_changed(LZW_OUT / "invalid-header.bin", b"fontdone-invalid-lzw-header\n")
+
+    dictionary_raw = (
+        (bytes(range(256)) * 8)
+        + bytes(((index * 73 + 19) & 0xFF) for index in range(4096))
+        + (b"ABRACADABRA!" * 128)
+    )
+    clear_raw = (
+        bytes(((index * 37 + 11) & 0xFF) for index in range(2048))
+        + (b"clear-block-reset-fontdone\n" * 96)
+    )
+    write_if_changed(LZW_OUT / "dictionary-growth.raw", dictionary_raw)
+    write_if_changed(
+        LZW_OUT / "dictionary-growth.Z",
+        unix_compress(dictionary_raw),
+    )
+    write_if_changed(LZW_OUT / "block-reset.raw", clear_raw)
+    write_if_changed(
+        LZW_OUT / "block-reset.Z",
+        unix_compress(clear_raw, clear_after=64),
+    )
     manifest = {
         "version": 1,
         "source": "scripts/build_compressed_fixtures.py",
@@ -160,6 +277,24 @@ def build_lzw() -> None:
     }
     encoded = json.dumps(manifest, indent=2, sort_keys=True).encode("utf-8") + b"\n"
     write_if_changed(LZW_OUT / "small-streams.json", encoded)
+    dictionary_manifest = {
+        "version": 1,
+        "source": "scripts/build_compressed_fixtures.py",
+        "payloads": [
+            {
+                "id": "dictionary_growth",
+                "raw": "compressed/lzw/dictionary-growth.raw",
+                "lzw": "compressed/lzw/dictionary-growth.Z",
+            },
+            {
+                "id": "block_reset",
+                "raw": "compressed/lzw/block-reset.raw",
+                "lzw": "compressed/lzw/block-reset.Z",
+            },
+        ],
+    }
+    encoded = json.dumps(dictionary_manifest, indent=2, sort_keys=True).encode("utf-8") + b"\n"
+    write_if_changed(LZW_OUT / "dictionary-streams.json", encoded)
 
 
 def main() -> None:

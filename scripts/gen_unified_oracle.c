@@ -859,14 +859,23 @@ static void print_lzw_stream_fields(const FT_StreamRec* stream) {
 static void print_lzw_stream_reads(
     FT_Stream stream,
     const unsigned char* raw,
-    long raw_len) {
-    unsigned long offsets[4] = {0UL, 1UL, 32UL, 0UL};
-    unsigned long counts[4] = {0UL, 1UL, 64UL, (unsigned long)raw_len};
+    long raw_len,
+    int sequential_case) {
+    const unsigned long sequential_offsets[4] = {0UL, 0UL, 64UL, 0UL};
+    const unsigned long legacy_offsets[4] = {0UL, 1UL, 32UL, 0UL};
+    const unsigned long sequential_counts[4] = {0UL, 64UL, 64UL, (unsigned long)raw_len};
+    const unsigned long legacy_counts[4] = {0UL, 1UL, 64UL, (unsigned long)raw_len};
+    const unsigned long* offsets = sequential_case ? sequential_offsets : legacy_offsets;
+    const unsigned long* counts = sequential_case ? sequential_counts : legacy_counts;
     const int null_buffers[4] = {1, 0, 0, 0};
     printf("[");
     for (int index = 0; index < 4; index++) {
-        unsigned char buffer[64];
-        memset(buffer, 0, sizeof(buffer));
+        size_t buffer_size = counts[index] ? (size_t)counts[index] : 1U;
+        unsigned char* buffer = (unsigned char*)calloc(buffer_size, 1U);
+        if (!buffer) {
+            fprintf(stderr, "LZW oracle read buffer allocation failed\n");
+            exit(2);
+        }
         unsigned long read_count =
             stream->read(stream, offsets[index],
                          null_buffers[index] ? NULL : buffer, counts[index]);
@@ -887,6 +896,7 @@ static void print_lzw_stream_reads(
                                    : (unsigned long)raw_len),
                         (long)expected_count);
         printf("\"}");
+        free(buffer);
     }
     printf("]");
 }
@@ -906,7 +916,8 @@ static int emit_lzw_stream_case(int argc, char** argv) {
         return 0;
     }
 
-    if (streq(case_id, "ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream")) {
+    if (streq(case_id, "ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream") ||
+        streq(case_id, "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams")) {
         if (argc < 6 || ((argc - 3) % 3) != 0) {
             fprintf(stderr, "LZW success requires PAYLOAD_ID RAW LZW groups\n");
             FT_Done_FreeType(library);
@@ -946,7 +957,11 @@ static int emit_lzw_stream_case(int argc, char** argv) {
                 if (status) {
                     printf("[]");
                 } else {
-                    print_lzw_stream_reads(&stream, raw, raw_len);
+                    print_lzw_stream_reads(
+                        &stream,
+                        raw,
+                        raw_len,
+                        streq(case_id, "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams"));
                 }
                 printf(",\"close_events\":{\"wrapper\":%d,\"source\":0}}", status ? 0 : 1);
                 first = 0;

@@ -1,0 +1,16 @@
+{
+  "payloads": [
+    {
+      "id": "dictionary_growth",
+      "lzw": "compressed/lzw/dictionary-growth.Z",
+      "raw": "compressed/lzw/dictionary-growth.raw"
+    },
+    {
+      "id": "block_reset",
+      "lzw": "compressed/lzw/block-reset.Z",
+      "raw": "compressed/lzw/block-reset.raw"
+    }
+  ],
+  "source": "scripts/build_compressed_fixtures.py",
+  "version": 1
+}
