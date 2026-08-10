@@ -283,10 +283,10 @@ Coverage and parity answer different questions. Executing a line or branch
 does not prove that its result matches C.
 
 The latest pushed-commit all-lane Coverage MCP run is
-`4c112c9e-5a52-4b8e-a64c-97bed7c5ec63` (snapshot
-`7f065d35-dbb0-4ed7-a618-72a740bc2c8d`). It completed in 70.057 seconds with
-exit code 0. The overall report is 51,669 / 54,766 lines, 10,358 / 12,592
-branches, 3,503 / 3,845 functions, and 71,219 / 75,865 regions. The dominant
+`e001b097-293a-4a44-91a9-6c2a59f4ab96` (snapshot
+`6fd135a2-0365-4e73-8348-9574b8f2fbba`). It completed in 75.204 seconds with
+exit code 0. The overall report is 51,710 / 54,772 lines, 10,358 / 12,592
+branches, 3,511 / 3,846 functions, and 71,303 / 75,879 regions. The dominant
 cold-run cost remains instrumented compilation; warm shard execution and
 report ingestion are much smaller. The preceding cold run
 `da91cabd-0631-46ec-83b8-f3e609246ffe` took 70.571 seconds, including 54.73
@@ -317,6 +317,10 @@ unknown-block behavior while retaining the same normalized lifecycle output.
 The existing U+0245 target-mono `FT_Load_Char` variant also invokes a
 coverage-only `GlyphHints` contour probe to reach both control branches of the
 Latin segment merge; neither change adds a fixture or unit-only parity case.
+The existing two-axis Adobe MM `FT_Set_MM_WeightVector` parity case also
+invokes a coverage-only probe for the valid three-axis and four-axis
+`type1_mm_weights_unmap` mappings, which the maintained font cannot reach by
+itself; the normal two-axis behavior and all parity outputs remain unchanged.
 
 ```bash
 make test-coverage
@@ -377,21 +381,21 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The current managed run completed in 70.057 seconds. Shard timers run
+The current managed run completed in 75.204 seconds. Shard timers run
 concurrently, so their sum is not wall time; report finalization and artifact
 ingestion are included in the wall time but are not separately exposed by
 Coverage MCP. Instrumented compilation remains the dominant cold component.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 51,669 / 54,766 | 94.35% |
+| Lines | 51,710 / 54,772 | 94.41% |
 | Branches | 10,358 / 12,592 | 82.26% |
-| Functions | 3,503 / 3,845 | 91.11% |
-| Regions | 71,219 / 75,865 | 93.88% |
+| Functions | 3,511 / 3,846 | 91.29% |
+| Regions | 71,303 / 75,879 | 93.97% |
 
 That latest run passed all 7,841 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`7f065d35-dbb0-4ed7-a618-72a740bc2c8d`. Coverage MCP accepts the current LLVM
+`6fd135a2-0365-4e73-8348-9574b8f2fbba`. Coverage MCP accepts the current LLVM
 JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
 rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
 apply only to the named source commit, suite, and toolchain. They are not a
