@@ -76,6 +76,14 @@ The control therefore exercises rejection at the root lookup without relying
 on a truncated file or an unreviewed external font.  Its SHA-256 is
 `e6c68052444afec852031d662ecebe08ca587070c4bdcc253f4832b097774052`.
 
+The `malformed/colr-v1-paint-format-unsupported.ttf` and
+`malformed/colr-v1-paint-format-max-and-above.ttf` controls are deterministic
+derivatives of `colr-v1-all-paints.ttf`.  They replace only the first two root
+Paint format bytes with `(33, 255)` and `(33, 34)`, respectively, while
+retaining the third valid control glyph.  This keeps face opening and
+`FT_Get_Color_Glyph_Paint` successful, then exercises lazy `FT_Get_Paint`
+rejection for formats at or above `FT_COLR_PAINT_FORMAT_MAX`.
+
 ## 3. Review requirements
 
 Before adding or changing a generator:

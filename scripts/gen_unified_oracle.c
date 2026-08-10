@@ -21377,6 +21377,102 @@ static void print_opaque_paint_json(FT_OpaquePaint opaque) {
            opaque.insert_root_transform);
 }
 
+typedef struct MalformedColrPaintProbe_ {
+    FT_Bool root_return;
+    FT_OpaquePaint opaque;
+    FT_Bool paint_return;
+    FT_COLR_Paint before;
+    FT_COLR_Paint after;
+} MalformedColrPaintProbe;
+
+static FT_COLR_Paint malformed_colr_paint_sentinel(void) {
+    FT_COLR_Paint paint;
+    memset(&paint, 0, sizeof(paint));
+    paint.format = FT_COLR_PAINTFORMAT_SOLID;
+    paint.u.solid.color.palette_index = 0xBEEF;
+    paint.u.solid.color.alpha = (FT_F2Dot14)-0x123;
+    return paint;
+}
+
+static void print_malformed_colr_paint_json(const FT_COLR_Paint* paint) {
+    printf("{\"format\":%d,\"solid\":{\"palette_index\":%u,\"alpha\":%d}}",
+           paint->format,
+           (unsigned)paint->u.solid.color.palette_index,
+           (int)paint->u.solid.color.alpha);
+}
+
+static int malformed_colr_paint_preserved(const FT_COLR_Paint* before,
+                                          const FT_COLR_Paint* after) {
+    return before->format == after->format &&
+           before->u.solid.color.palette_index == after->u.solid.color.palette_index &&
+           before->u.solid.color.alpha == after->u.solid.color.alpha;
+}
+
+static MalformedColrPaintProbe probe_malformed_colr_paint(FT_Face face, FT_UInt base_glyph) {
+    MalformedColrPaintProbe probe;
+    memset(&probe, 0, sizeof(probe));
+    probe.root_return = FT_Get_Color_Glyph_Paint(
+        face,
+        base_glyph,
+        FT_COLOR_NO_ROOT_TRANSFORM,
+        &probe.opaque);
+    probe.before = malformed_colr_paint_sentinel();
+    probe.after = probe.before;
+    probe.paint_return = FT_Get_Paint(face, probe.opaque, &probe.after);
+    return probe;
+}
+
+static void print_malformed_colr_paint_row_json(const char* label,
+                                                FT_UInt base_glyph,
+                                                const MalformedColrPaintProbe* probe) {
+    printf("{\"label\":\"%s\",\"base_glyph\":%u,\"root_return\":%u,\"root_opaque\":",
+           label,
+           base_glyph,
+           probe->root_return);
+    print_opaque_paint_json(probe->opaque);
+    printf(",\"return\":%u,\"before\":", probe->paint_return);
+    print_malformed_colr_paint_json(&probe->before);
+    printf(",\"after\":");
+    print_malformed_colr_paint_json(&probe->after);
+    printf(",\"preserved\":%s}",
+           malformed_colr_paint_preserved(&probe->before, &probe->after) ? "true" : "false");
+}
+
+static int emit_color_paint_malformed_case(int argc, char** argv) {
+    if (argc != 6) {
+        fprintf(stderr, "--color-paint-malformed-case requires CASE SOURCE_KIND SOURCE FACE_INDEX\n");
+        return 2;
+    }
+    const char* case_id = argv[2];
+    OracleFace face;
+    int opened = open_oracle_face(argv[3], argv[4], atol(argv[5]), &face);
+    if (opened != 0) {
+        return opened;
+    }
+    const char* second_label =
+        streq(case_id, "ftcolor.FT_COLR_PAINTFORMAT_UNSUPPORTED.invalid_format_returns_false")
+            ? "paint_format_255"
+            : "paint_format_34";
+    MalformedColrPaintProbe first = probe_malformed_colr_paint(face.face, 36);
+    MalformedColrPaintProbe second = probe_malformed_colr_paint(face.face, 37);
+    MalformedColrPaintProbe control = probe_malformed_colr_paint(face.face, 38);
+
+    printf("{");
+    print_status(FT_Err_Invalid_Table);
+    printf(",\"output\":{\"return\":[%u,%u],\"paint_before_after\":[",
+           first.paint_return,
+           second.paint_return);
+    print_malformed_colr_paint_row_json("paint_format_33", 36, &first);
+    printf(",");
+    print_malformed_colr_paint_row_json(second_label, 37, &second);
+    printf("],\"control_return\":%u,\"control_root_return\":%u}",
+           control.paint_return,
+           control.root_return);
+    printf("}\n");
+    close_oracle_face(&face);
+    return 0;
+}
+
 static void print_colr_paint_node_json(FT_Face face, FT_OpaquePaint opaque, int depth) {
     if (depth > 8) {
         printf("{\"return\":0,\"depth_limit\":true}");
@@ -37842,6 +37938,9 @@ static int dispatch(int argc, char** argv) {
     }
     if ((argc == 7 || argc == 15) && streq(argv[1], "--color-glyph-clipbox-case")) {
         return emit_color_glyph_clipbox_case(argc, argv);
+    }
+    if (argc == 6 && streq(argv[1], "--color-paint-malformed-case")) {
+        return emit_color_paint_malformed_case(argc, argv);
     }
     if (argc == 6 && streq(argv[1], "--color-paint-graph-case")) {
         return emit_color_paint_graph_case(argc, argv);

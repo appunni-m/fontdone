@@ -587,6 +587,55 @@ def build_colr_v1_malformed_paints_font(path: Path) -> None:
     path.write_bytes(data)
 
 
+def build_colr_v1_malformed_paint_formats_font(path: Path, formats: tuple[int, ...]) -> None:
+    """Build a COLRv1 control with malformed root paint-format bytes.
+
+    The canonical all-paints fixture supplies three adjacent base glyph
+    records.  Replace only the first records' format byte so the face remains
+    openable and the final valid control record remains available for the
+    lazy ``FT_Get_Color_Glyph_Paint``/``FT_Get_Paint`` comparison.
+    """
+    if not formats or any(not 0 <= value <= 0xFF for value in formats):
+        raise ValueError(f"paint formats must be non-empty bytes: {formats!r}")
+    source = COLOR_OUTPUT_DIR / "colr-v1-all-paints.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    table = font.reader.tables.get(b"COLR")
+    if table is None or table.length < 18:
+        raise RuntimeError(f"canonical COLRv1 fixture has no usable COLR table: {source}")
+
+    data = bytearray(source.read_bytes())
+    table_offset = table.offset
+    table_end = table_offset + table.length
+    base_offset = int.from_bytes(data[table_offset + 14 : table_offset + 18], "big")
+    base_start = table_offset + base_offset
+    base_count = int.from_bytes(data[base_start : base_start + 4], "big")
+    if len(formats) > base_count:
+        raise ValueError(
+            f"canonical COLRv1 fixture has only {base_count} base records, "
+            f"cannot mutate {len(formats)}"
+        )
+
+    for record_index, format_byte in enumerate(formats):
+        record_start = base_start + 4 + record_index * 6
+        glyph_id = int.from_bytes(data[record_start : record_start + 2], "big")
+        expected_glyph_id = 36 + record_index
+        if glyph_id != expected_glyph_id:
+            raise RuntimeError(
+                f"unexpected canonical COLRv1 glyph at record {record_index}: "
+                f"{glyph_id} != {expected_glyph_id}"
+            )
+        paint_offset = int.from_bytes(data[record_start + 2 : record_start + 6], "big")
+        paint_position = base_start + paint_offset
+        if not table_offset <= paint_position < table_end:
+            raise RuntimeError(
+                f"canonical COLRv1 paint offset leaves table: {paint_position:#x}"
+            )
+        data[paint_position] = format_byte
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
 def color_line(extend: ot.ExtendMode, stops: list[tuple[float, int, float]]) -> dict[str, object]:
     return {
         "Extend": int(extend),
@@ -876,6 +925,14 @@ def main() -> None:
     build_colr_v1_root_transform_font(COLOR_OUTPUT_DIR / "colr-v1-root-transform.ttf")
     build_colr_v1_all_paints_font(COLOR_OUTPUT_DIR / "colr-v1-all-paints.ttf")
     build_colr_v1_malformed_paints_font(COLOR_OUTPUT_DIR / "malformed-colr-v1-paints.ttf")
+    build_colr_v1_malformed_paint_formats_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-paint-format-unsupported.ttf",
+        (33, 255),
+    )
+    build_colr_v1_malformed_paint_formats_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-paint-format-max-and-above.ttf",
+        (33, 34),
+    )
     build_colr_v1_static_gradients_font(COLOR_OUTPUT_DIR / "colr-v1-static-gradients.ttf")
     build_colr_v1_variable_gradients_font(COLOR_OUTPUT_DIR / "colr-v1-variable-gradients.ttf")
     build_colr_v1_clipbox_font(COLOR_OUTPUT_DIR / "colr-v1-clipbox-format1-format2.ttf", True)

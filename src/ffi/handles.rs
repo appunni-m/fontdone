@@ -1526,6 +1526,11 @@ struct ColrV1ColorLine {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum ColrV1Paint {
+    /// A root paint record that FreeType exposes opaquely but rejects when
+    /// `FT_Get_Paint` lazily decodes its format or payload.
+    Malformed {
+        format: FT_Int,
+    },
     Layers {
         paints: Vec<ColrV1Paint>,
     },
@@ -8524,7 +8529,14 @@ fn parse_colr_v1_table(data: &[u8], variation_axis_count: usize) -> Option<ColrV
         let glyph_index = FT_UInt::from(read_u16_be(data, record_offset)?);
         let paint_offset = usize::try_from(read_u32_be(data, record_offset + 2)?).ok()?;
         let paint_start = base_glyph_list_offset.checked_add(paint_offset)?;
-        let paint = parse_colr_v1_paint(data, paint_start, 0, layer_list_offset, &layer_offsets)?;
+        // FreeType keeps a valid base-glyph record addressable through
+        // `FT_Get_Color_Glyph_Paint` and defers paint decoding to
+        // `FT_Get_Paint`. Preserve that public two-step behavior for a
+        // malformed root record instead of discarding the whole COLR state.
+        let paint = parse_colr_v1_paint(data, paint_start, 0, layer_list_offset, &layer_offsets)
+            .unwrap_or(ColrV1Paint::Malformed {
+                format: FT_COLR_PAINTFORMAT_UNSUPPORTED as FT_Int,
+            });
         root_paints.insert(glyph_index, paint);
     }
     Some(ColrV1State {
@@ -8903,7 +8915,9 @@ fn parse_colr_v1_paint(
                 )?),
             })
         }
-        _ => None,
+        _ => Some(ColrV1Paint::Malformed {
+            format: FT_Int::from(format),
+        }),
     }
 }
 
@@ -9134,6 +9148,7 @@ fn colr_v1_find_paint_by_ptr_in_node(
             ..
         } => colr_v1_find_paint_by_ptr_in_node(source_paint, ptr)
             .or_else(|| colr_v1_find_paint_by_ptr_in_node(backdrop_paint, ptr)),
+        ColrV1Paint::Malformed { .. } => None,
     }
 }
 
@@ -9283,6 +9298,12 @@ pub fn FT_Get_Paint(
     };
 
     match node {
+        ColrV1Paint::Malformed { format } => {
+            // FreeType's lazy reader records the invalid format byte in the
+            // public destination before rejecting the paint payload.
+            paint_out.format = *format;
+            return 0;
+        }
         ColrV1Paint::Layers { paints } => {
             paint_out.format = FT_COLR_PAINTFORMAT_COLR_LAYERS as _;
             paint_out.u = FT_COLR_PaintUnion {
@@ -9519,6 +9540,7 @@ fn colr_v1_find_colorline_by_iterator_in_node<'a>(
             ..
         } => colr_v1_find_colorline_by_iterator_in_node(source_paint, iterator)
             .or_else(|| colr_v1_find_colorline_by_iterator_in_node(backdrop_paint, iterator)),
+        ColrV1Paint::Malformed { .. } => None,
     }
 }
 
@@ -9640,6 +9662,7 @@ fn colr_v1_find_layer_paints_by_iterator_in_node<'a>(
             ..
         } => colr_v1_find_layer_paints_by_iterator_in_node(source_paint, iterator)
             .or_else(|| colr_v1_find_layer_paints_by_iterator_in_node(backdrop_paint, iterator)),
+        ColrV1Paint::Malformed { .. } => None,
     }
 }
 
@@ -9796,6 +9819,7 @@ fn colr_v1_paint_format(paint: &ColrV1Paint) -> FT_PaintFormat {
         ColrV1Paint::Rotate { .. } => FT_COLR_PAINTFORMAT_ROTATE as FT_PaintFormat,
         ColrV1Paint::Skew { .. } => FT_COLR_PAINTFORMAT_SKEW as FT_PaintFormat,
         ColrV1Paint::Composite { .. } => FT_COLR_PAINTFORMAT_COMPOSITE as FT_PaintFormat,
+        ColrV1Paint::Malformed { format } => *format as FT_PaintFormat,
     }
 }
 
@@ -10037,6 +10061,15 @@ fn colr_v1_snapshot_paint(
             colr_v1_snapshot_paint(source_paint, depth + 1, nodes);
             colr_v1_snapshot_paint(backdrop_paint, depth + 1, nodes);
         }
+        ColrV1Paint::Malformed { format } => nodes.push(FT_ColrV1_PaintNode_Snapshot {
+            depth,
+            format: (*format).try_into().unwrap_or(FT_UShort::MAX),
+            palette_index: 0,
+            alpha: 0,
+            glyph_index: 0,
+            composite_mode: 0,
+            values: [0; 6],
+        }),
     }
 }
 

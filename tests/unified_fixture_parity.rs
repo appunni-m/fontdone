@@ -3332,6 +3332,16 @@ impl BackendComparisonWorker {
             "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
                 rust_color_glyph_layer_case(case)
             }
+            "ftcolor.get_paint_malformed" => {
+                let face = self.rust_face(case)?;
+                color_paint_malformed_output_for_open_face(
+                    case,
+                    ColorPaintBackend::Rust,
+                    Some(face),
+                    ptr::null_mut(),
+                    0,
+                )
+            }
             "ftcolor.get_color_glyph_clipbox" if color_glyph_clipbox_route_supported(case) => {
                 rust_color_glyph_clipbox_case(case)
             }
@@ -3765,6 +3775,16 @@ impl BackendComparisonWorker {
             }
             "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
                 c_color_glyph_layer_case(case)
+            }
+            "ftcolor.get_paint_malformed" => {
+                let face = self.c_face(case)?;
+                color_paint_malformed_output_for_open_face(
+                    case,
+                    ColorPaintBackend::CAbi,
+                    None,
+                    face,
+                    0,
+                )
             }
             "ftcolor.get_color_glyph_clipbox" if color_glyph_clipbox_route_supported(case) => {
                 c_color_glyph_clipbox_case(case)
@@ -4206,6 +4226,16 @@ impl BackendComparisonWorker {
             }
             "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
                 wasm_color_glyph_layer_case(case)
+            }
+            "ftcolor.get_paint_malformed" => {
+                let handle = self.wasm_face(case)?;
+                color_paint_malformed_output_for_open_face(
+                    case,
+                    ColorPaintBackend::Wasm,
+                    None,
+                    ptr::null_mut(),
+                    handle,
+                )
             }
             "ftcolor.get_color_glyph_clipbox" if color_glyph_clipbox_route_supported(case) => {
                 wasm_color_glyph_clipbox_case(case)
@@ -15717,14 +15747,202 @@ fn get_paint_call(
     opaque: FT_OpaquePaint,
 ) -> (FT_Bool, FT_COLR_Paint) {
     let mut paint = FT_COLR_Paint::default();
-    let result = match backend {
-        ColorPaintBackend::Rust => FT_Get_Paint(rust_face, opaque, Some(&mut paint)),
-        ColorPaintBackend::CAbi => c_abi::FT_Get_Paint(c_face, opaque, &mut paint),
-        ColorPaintBackend::Wasm => {
-            wasm_abi::fontdone_wasm_get_paint(wasm_handle, opaque, &mut paint)
-        }
-    };
+    let result = get_paint_call_into(
+        backend,
+        rust_face,
+        c_face,
+        wasm_handle,
+        opaque,
+        &mut paint,
+    );
     (result, paint)
+}
+
+fn get_paint_call_into(
+    backend: ColorPaintBackend,
+    rust_face: Option<&FT_Face>,
+    c_face: c_abi::FT_Face,
+    wasm_handle: usize,
+    opaque: FT_OpaquePaint,
+    paint: &mut FT_COLR_Paint,
+) -> FT_Bool {
+    match backend {
+        ColorPaintBackend::Rust => FT_Get_Paint(rust_face, opaque, Some(paint)),
+        ColorPaintBackend::CAbi => c_abi::FT_Get_Paint(c_face, opaque, paint),
+        ColorPaintBackend::Wasm => {
+            wasm_abi::fontdone_wasm_get_paint(wasm_handle, opaque, paint)
+        }
+    }
+}
+
+fn malformed_colr_paint_sentinel() -> FT_COLR_Paint {
+    FT_COLR_Paint {
+        format: FT_COLR_PAINTFORMAT_SOLID as FT_PaintFormat,
+        u: FT_COLR_PaintUnion {
+            solid: FT_PaintSolid {
+                color: FT_ColorIndex {
+                    palette_index: 0xBEEF,
+                    alpha: -0x123,
+                },
+            },
+        },
+    }
+}
+
+fn malformed_colr_paint_json(paint: &FT_COLR_Paint) -> Value {
+    // The invalid FT_Get_Paint path must leave the caller's union untouched.
+    // Read only the solid arm initialized by our sentinel.
+    let solid = unsafe { paint.u.solid };
+    json!({
+        "format": paint.format,
+        "solid": {
+            "palette_index": solid.color.palette_index,
+            "alpha": solid.color.alpha,
+        },
+    })
+}
+
+fn malformed_colr_paint_preserved(before: &FT_COLR_Paint, after: &FT_COLR_Paint) -> bool {
+    let before_solid = unsafe { before.u.solid };
+    let after_solid = unsafe { after.u.solid };
+    before.format == after.format && before_solid == after_solid
+}
+
+fn malformed_colr_paint_labels(case: &InputCase) -> Result<Vec<String>, String> {
+    case.inputs
+        .params
+        .get("base_glyphs")
+        .and_then(Value::as_array)
+        .ok_or_else(|| "malformed COLRv1 case is missing base_glyphs".to_string())?
+        .iter()
+        .map(|value| {
+            value
+                .as_str()
+                .map(str::to_owned)
+                .ok_or_else(|| "malformed COLRv1 base_glyphs must be strings".to_string())
+        })
+        .collect::<Result<Vec<_>, _>>()
+}
+
+fn malformed_colr_paint_row_json(
+    backend: ColorPaintBackend,
+    rust_face: Option<&FT_Face>,
+    c_face: c_abi::FT_Face,
+    wasm_handle: usize,
+    label: &str,
+    base_glyph: FT_UInt,
+) -> Value {
+    let (root_return, opaque) = color_paint_call(
+        backend,
+        rust_face,
+        c_face,
+        wasm_handle,
+        base_glyph,
+        FT_COLOR_NO_ROOT_TRANSFORM as FT_UInt,
+    );
+    let before = malformed_colr_paint_sentinel();
+    let mut after = before;
+    let paint_return = get_paint_call_into(
+        backend,
+        rust_face,
+        c_face,
+        wasm_handle,
+        opaque,
+        &mut after,
+    );
+    json!({
+        "label": label,
+        "base_glyph": base_glyph,
+        "root_return": root_return,
+        "root_opaque": opaque_paint_json(opaque),
+        "return": paint_return,
+        "before": malformed_colr_paint_json(&before),
+        "after": malformed_colr_paint_json(&after),
+        "preserved": malformed_colr_paint_preserved(&before, &after),
+    })
+}
+
+fn color_paint_malformed_output_for_open_face(
+    case: &InputCase,
+    backend: ColorPaintBackend,
+    rust_face: Option<&FT_Face>,
+    c_face: c_abi::FT_Face,
+    wasm_handle: usize,
+) -> Result<RunOutput, String> {
+    let labels = malformed_colr_paint_labels(case)?;
+    if labels.len() != 3 {
+        return Err(format!(
+            "malformed COLRv1 case needs two malformed labels and one control, got {}",
+            labels.len()
+        ));
+    }
+    let rows = [
+        malformed_colr_paint_row_json(backend, rust_face, c_face, wasm_handle, &labels[0], 36),
+        malformed_colr_paint_row_json(backend, rust_face, c_face, wasm_handle, &labels[1], 37),
+    ];
+    let (control_root_return, control_opaque) = color_paint_call(
+        backend,
+        rust_face,
+        c_face,
+        wasm_handle,
+        38,
+        FT_COLOR_NO_ROOT_TRANSFORM as FT_UInt,
+    );
+    let (control_return, _control_paint) = get_paint_call(
+        backend,
+        rust_face,
+        c_face,
+        wasm_handle,
+        control_opaque,
+    );
+    let output = json!({
+        "return": rows.iter().map(|row| row["return"].clone()).collect::<Vec<_>>(),
+        "paint_before_after": rows,
+        "control_return": control_return,
+        "control_root_return": control_root_return,
+    });
+    // The public bool APIs have no FT_Error result.  The aggregate parity
+    // route reports Invalid_Table so the manifest's expected-error contract
+    // can compare the full mutation matrix while retaining the bool returns.
+    Ok(error_with_output(FT_Err_Invalid_Table, output))
+}
+
+fn rust_color_paint_malformed_case(case: &InputCase) -> Result<RunOutput, String> {
+    let face = open_face(case)?;
+    color_paint_malformed_output_for_open_face(
+        case,
+        ColorPaintBackend::Rust,
+        Some(&face),
+        ptr::null_mut(),
+        0,
+    )
+}
+
+fn c_color_paint_malformed_case(case: &InputCase) -> Result<RunOutput, String> {
+    let (library, face) = c_open_face(case)?;
+    let output = color_paint_malformed_output_for_open_face(
+        case,
+        ColorPaintBackend::CAbi,
+        None,
+        face,
+        0,
+    );
+    c_done_face(face);
+    c_done_library(library);
+    output
+}
+
+fn wasm_color_paint_malformed_case(case: &InputCase) -> Result<RunOutput, String> {
+    let handle = wasm_open_face(case)?;
+    let output = color_paint_malformed_output_for_open_face(
+        case,
+        ColorPaintBackend::Wasm,
+        None,
+        ptr::null_mut(),
+        handle,
+    );
+    wasm_done_face(handle);
+    output
 }
 
 fn get_paint_layers_call(
@@ -43051,6 +43269,12 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(color_glyph_layer_base_glyph(case)?.to_string());
             Ok(args)
         }
+        "ftcolor.get_paint_malformed" => {
+            let mut args = vec!["--color-paint-malformed-case".to_string(), case.case_id.clone()];
+            push_font_source(case, &mut args)?;
+            args.push(face_index_param(params)?.to_string());
+            Ok(args)
+        }
         "ftcolor.get_color_glyph_clipbox" if color_glyph_clipbox_route_supported(case) => {
             let mut args = vec![
                 "--color-glyph-clipbox-case".to_string(),
@@ -47126,6 +47350,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
             rust_color_glyph_layer_case(case)
         }
+        "ftcolor.get_paint_malformed" => rust_color_paint_malformed_case(case),
         operation
             if operation.starts_with("ftcolor.") && color_paint_success_route_supported(case) =>
         {
@@ -47340,6 +47565,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
             c_color_glyph_layer_case(case)
         }
+        "ftcolor.get_paint_malformed" => c_color_paint_malformed_case(case),
         operation
             if operation.starts_with("ftcolor.") && color_paint_success_route_supported(case) =>
         {
@@ -48793,6 +49019,7 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
             wasm_color_glyph_layer_case(case)
         }
+        "ftcolor.get_paint_malformed" => wasm_color_paint_malformed_case(case),
         operation
             if operation.starts_with("ftcolor.") && color_paint_success_route_supported(case) =>
         {
