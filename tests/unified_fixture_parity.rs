@@ -56,8 +56,8 @@ use std::time::{Duration, Instant};
 use fontdone::autohint::coverage as autohint_coverage;
 use fontdone::ffi::*;
 use fontdone::{
-    CharmapInfo, Face as ApiFace, Font, FontError, GlyphSlot as ApiGlyphSlot, LoadMode, PixelMode,
-    RenderMode, RenderedBitmap,
+    CharmapInfo, Face as ApiFace, Font, FontError, GlyphSlot as ApiGlyphSlot, LoadFlags, LoadMode,
+    PixelMode, RenderMode, RenderedBitmap,
 };
 use fontdone_c_abi as c_abi;
 use fontdone_wasm as wasm_abi;
@@ -130,6 +130,21 @@ fn coverage_probe_select_size_variants() {
         sbix_face.select_size(1),
         Err(fontdone::font::SelectSizeError::InvalidArgument)
     );
+}
+
+#[cfg(coverage_nightly)]
+fn coverage_probe_cblc_missing_glyph() {
+    let cblc = cached_file_bytes("input/fixtures/assets/fonts/sbit_cblc_cbdt_gray_format1.ttf")
+        .expect("maintained CBLC coverage input should load");
+    let mut face = ApiFace::from_memory(&cblc, 0, 12.0)
+        .expect("maintained CBLC coverage input should open");
+    face.set_pixel_sizes(20, 20);
+    let slot = face
+        .load_glyph(0, LoadFlags::SBITS_ONLY)
+        .expect("missing CBLC glyph should use the empty bitmap fallback");
+    assert!(slot.bitmap.is_none());
+    assert_eq!(slot.metrics.width, 0);
+    assert_eq!(slot.metrics.height, 0);
 }
 
 extern "C" fn debug_hook_a(_arg: FT_Pointer) -> FT_Error {
@@ -47345,6 +47360,10 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "load_glyph" => {
             if lifecycle_handle_param_is_null(&case.inputs.params, "face") {
                 return Ok(error(FT_Err_Invalid_Face_Handle as FT_Error));
+            }
+            #[cfg(coverage_nightly)]
+            if case.case_id == "freetype.FT_Load_Glyph.default_load" {
+                coverage_probe_cblc_missing_glyph();
             }
             let face = open_face(case)?;
             let glyph_index = rust_resolved_glyph_index(&face, &case.inputs.params)?;
