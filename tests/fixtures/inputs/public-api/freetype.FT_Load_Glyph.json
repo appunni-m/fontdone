@@ -9269,6 +9269,545 @@
               "tt/hinter:composite-shpix-compatibility",
               "tt/hinter:composite-deltap-compatibility"
             ]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-00",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 60, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-00"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-01",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 61, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-01"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-02",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 62, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-02"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-03",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 63, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-03"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-04",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 64, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-04"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-05",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 65, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-05"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-06",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 66, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-06"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-07",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 67, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-07"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-08",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 68, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-08"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-09",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 69, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-09"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-10",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 70, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-10"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-11",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 71, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-11"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-12",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 72, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-12"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-13",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 73, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-13"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-14",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 74, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-14"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-15",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 75, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-15"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-16",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 76, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-16"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-17",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 77, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-17"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-18",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 78, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-18"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-19",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 79, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-19"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-20",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 80, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-20"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-21",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 81, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-21"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-22",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 82, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-22"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-23",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 83, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-23"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-24",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 84, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-24"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-25",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 85, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-25"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-26",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 86, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-26"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-27",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 87, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-27"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-28",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 88, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-28"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-29",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 89, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-29"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-30",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 90, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-30"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-31",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 91, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-31"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-32",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 92, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-32"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-33",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 93, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-33"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-34",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 94, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-34"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-35",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 95, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-35"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-36",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 96, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-36"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-37",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 97, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-37"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-38",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 98, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-38"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-39",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 99, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-39"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-40",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 100, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-40"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-41",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 101, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-41"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-42",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 102, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-42"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-43",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 103, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-43"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-44",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 104, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-44"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-45",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 105, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-45"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-46",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 106, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-46"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-47",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 107, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-47"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-48",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 108, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-48"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-49",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 109, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-49"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-50",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 110, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-50"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-51",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 111, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-51"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-52",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 112, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-52"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-53",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 113, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-53"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-54",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 114, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-54"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-55",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 115, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-55"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-56",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 116, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-56"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-57",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 117, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-57"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-58",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 118, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-58"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-59",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 119, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-59"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-60",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 120, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-60"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-61",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 121, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-61"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-62",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 122, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-62"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-63",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 123, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-63"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-64",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 124, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-64"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-65",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 125, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-65"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-66",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 126, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-66"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-67",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 127, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-67"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-68",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 128, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-68"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-69",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 129, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-69"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-70",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 130, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-70"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-71",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 131, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-71"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-72",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 132, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-72"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-73",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 133, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-73"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-74",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 134, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-74"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-75",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 135, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-75"]
+          },
+          {
+            "id": "hinter-opcode-stack-underflow-76",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-opcode-stack-underflow-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 136, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:opcode-stack-underflow-76"]
           }
         ]
       },

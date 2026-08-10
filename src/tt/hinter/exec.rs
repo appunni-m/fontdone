@@ -329,12 +329,12 @@ impl ExecContext {
     }
 
     /// Peek at the top of the stack without removing it.
-    #[allow(dead_code)]
     pub fn top(&self) -> Result<i32, FontError> {
-        self.stack
-            .last()
-            .copied()
-            .ok_or(FontError::InvalidOutline("bytecode: stack empty".into()))
+        match self.stack.last().copied() {
+            Some(value) => Ok(value),
+            None if self.pedantic_hinting => Err(FontError::BytecodeTooFewArguments),
+            None => Ok(0),
+        }
     }
 
     /// Read one byte from the active code range and advance the instruction pointer.

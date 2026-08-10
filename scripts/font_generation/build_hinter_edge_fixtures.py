@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
 
 from fontTools.ttLib import TTFont
@@ -422,6 +423,123 @@ def write_fpgm_unterminated_idef() -> None:
     save_font("hinter-fpgm-unterminated-idef.ttf", font)
 
 
+def write_opcode_stack_underflow_matrix() -> None:
+    """Build one glyph per unvisited TrueType VM operand-pop entry point.
+
+    These are real glyph-load inputs rather than unit probes.  Minimal fpgm/prep
+    programs initialize the TrueType execution context while leaving the
+    operand stack empty; each glyph's one-byte instruction is then the first
+    glyph-program action. FT_LOAD_PEDANTIC makes the pinned C and Rust interpreters expose the
+    same ``Too_Few_Arguments`` error and execute the corresponding dispatch
+    arm.  Copying the project-authored ``base`` outline keeps every row a
+    non-empty simple glyph, so the instruction stream is not skipped by the
+    empty-glyph shortcut.
+    """
+    font = TTFont(BASE_FONT, recalcTimestamp=False)
+    # A truly empty fpgm/prep makes pinned FreeType skip glyph instructions.
+    # SVTCA[0] is stack-neutral and keeps the control programs valid while
+    # forcing the glyph interpreter to run each underflow probe.
+    font["fpgm"].program = program_from_bytes(bytes([0x00]))
+    font["prep"].program = program_from_bytes(bytes([0x00]))
+    base_glyph = deepcopy(font["glyf"]["base"])
+    base_metrics = font["hmtx"].metrics["base"]
+
+    # Keep the order stable: the generated glyph IDs are 60 onward, directly
+    # after the maintained hinter-control-matrix glyphs.  Each opcode is the
+    # first VM instruction and therefore intentionally runs with an empty
+    # operand stack.  Adjacent opcode families need only one representative to
+    # reach their shared match arm.
+    opcodes = (
+        0x20,  # DUP
+        0x21,  # POP
+        0x23,  # SWAP
+        0x60,  # ADD
+        0x61,  # SUB
+        0x62,  # DIV
+        0x63,  # MUL
+        0x64,  # ABS
+        0x65,  # NEG
+        0x66,  # FLOOR
+        0x67,  # CEILING
+        0x42,  # WS
+        0x43,  # RS
+        0x44,  # WCVTP
+        0x45,  # RCVT
+        0x10,  # SRP0
+        0x11,  # SRP1
+        0x12,  # SRP2
+        0x49,  # MD[0]
+        0x46,  # GC[0]
+        0x47,  # GC[1]
+        0x48,  # SCFS
+        0x2E,  # MDAP[0]
+        0x3E,  # MIAP[0]
+        0xC0,  # MDRP
+        0xE0,  # MIRP
+        0x3C,  # ALIGNRP
+        0x32,  # SHP[0]
+        0x34,  # SHC[0]
+        0x36,  # SHZ[0]
+        0x17,  # SLOOP
+        0x2A,  # LOOPCALL
+        0x2B,  # CALL
+        0x38,  # SHPIX
+        0x27,  # ALIGNPTS
+        0x25,  # CINDEX
+        0x26,  # MINDEX
+        0x1A,  # SMD
+        0x80,  # FLIPPT
+        0x1C,  # JMPR
+        0x78,  # JROT
+        0x79,  # JROF
+        0x08,  # SFVTL[0]
+        0x0A,  # SPVFS
+        0x0B,  # SFVFS
+        0x06,  # SPVTL[0]
+        0x0F,  # ISECT
+        0x7E,  # SANGW
+        0x76,  # SROUND
+        0x77,  # S45ROUND
+        0x70,  # WCVTF
+        0x88,  # GETINFO
+        0x29,  # UTP
+        0x3A,  # MSIRP[0]
+        0x5A,  # AND
+        0x5E,  # SDB
+        0x5F,  # SDS
+        0x86,  # SDPVTL[0]
+        0x5D,  # DELTAP1
+        0x73,  # DELTAC1
+        0x13,  # SZP0
+        0x14,  # SZP1
+        0x15,  # SZP2
+        0x16,  # SZPS
+        0x1D,  # SCVTCI
+        0x1E,  # SSWCI
+        0x1F,  # SSW
+        0x56,  # ODD
+        0x57,  # EVEN
+        0x5C,  # NOT
+        0x68,  # ROUND[0]
+        0x6C,  # NROUND[0]
+        0x8B,  # MAX
+        0x8C,  # MIN
+        0x8D,  # SCANTYPE
+        0x89,  # IDEF
+        0x7B,  # undefined custom instruction
+    )
+    glyph_order = font.getGlyphOrder()
+    for index, opcode in enumerate(opcodes):
+        name = f"opcodeUnderflow{index:02d}"
+        glyph_order.append(name)
+        glyph = deepcopy(base_glyph)
+        glyph.program = program_from_bytes(bytes([opcode]))
+        font["glyf"][name] = glyph
+        font["hmtx"].metrics[name] = base_metrics
+    font.setGlyphOrder(glyph_order)
+    save_font("hinter-opcode-stack-underflow-matrix.ttf", font)
+
+
 def main() -> None:
     write_empty_fpgm()
     write_empty_glyph_iup()
@@ -455,6 +573,7 @@ def main() -> None:
     write_fpgm_nested_idef()
     write_fpgm_unterminated_fdef()
     write_fpgm_unterminated_idef()
+    write_opcode_stack_underflow_matrix()
 
 
 if __name__ == "__main__":
