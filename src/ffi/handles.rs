@@ -9080,26 +9080,28 @@ pub fn FT_Get_Color_Glyph_ClipBox(
     let mut y_max = FT_MulFix(FT_Long::from(record.y_max), face.size_metrics.y_scale);
 
     if let Some(var_index_base) = record.var_index_base {
-        let Some(var_store) = &colr.var_store else {
-            return 0;
-        };
-        let normalized_coords = face.inner.borrow();
-        let normalized_coords = normalized_coords.font().normalized_variation_coords();
-        let outer_index = (var_index_base >> 16) as u16;
-        let inner_index = var_index_base as u16;
-        let delta = |index: u16| {
-            var_store
-                .item_delta(
-                    outer_index,
-                    inner_index.saturating_add(index),
-                    normalized_coords,
-                )
-                .clamp(i32::from(i16::MIN), i32::from(i16::MAX)) as FT_Long
-        };
-        x_min = x_min.saturating_add(FT_MulFix(delta(0), face.size_metrics.x_scale));
-        y_min = y_min.saturating_add(FT_MulFix(delta(1), face.size_metrics.y_scale));
-        x_max = x_max.saturating_add(FT_MulFix(delta(2), face.size_metrics.x_scale));
-        y_max = y_max.saturating_add(FT_MulFix(delta(3), face.size_metrics.y_scale));
+        // FreeType's variation service returns zero deltas when a format-2
+        // ClipBox has no usable VarStore, so the static box still gets
+        // transformed and written to the caller's output record.
+        if let Some(var_store) = &colr.var_store {
+            let normalized_coords = face.inner.borrow();
+            let normalized_coords = normalized_coords.font().normalized_variation_coords();
+            let outer_index = (var_index_base >> 16) as u16;
+            let inner_index = var_index_base as u16;
+            let delta = |index: u16| {
+                var_store
+                    .item_delta(
+                        outer_index,
+                        inner_index.saturating_add(index),
+                        normalized_coords,
+                    )
+                    .clamp(i32::from(i16::MIN), i32::from(i16::MAX)) as FT_Long
+            };
+            x_min = x_min.saturating_add(FT_MulFix(delta(0), face.size_metrics.x_scale));
+            y_min = y_min.saturating_add(FT_MulFix(delta(1), face.size_metrics.y_scale));
+            x_max = x_max.saturating_add(FT_MulFix(delta(2), face.size_metrics.x_scale));
+            y_max = y_max.saturating_add(FT_MulFix(delta(3), face.size_metrics.y_scale));
+        }
     }
 
     let mut corners = [

@@ -921,10 +921,9 @@ def build_colr_v1_clipbox_font(path: Path, include_clip_list: bool) -> None:
     """Build deterministic COLRv1 ClipList fixtures for FT_Get_Color_Glyph_ClipBox.
 
     The success fixture includes a tested format 1 ClipBox plus a format 2
-    record.  Both records are serialized into the ClipList so face-open
-    parsing exercises the static and variable ClipBox layouts, while the
-    routed parity cases call the format 1 glyph until the variable row has a
-    dedicated expected-output case.
+    record. Both records are serialized into the ClipList, and the maintained
+    parity matrix routes one case through each layout so face-open parsing and
+    public ClipBox output cover both static and variable records.
     """
     font = TTFont(SOURCE_FONT, recalcTimestamp=False)
     glyph_order = font.getGlyphOrder()

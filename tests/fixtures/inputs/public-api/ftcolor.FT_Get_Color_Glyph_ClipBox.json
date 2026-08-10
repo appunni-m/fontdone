@@ -84,6 +84,40 @@
             "coverage": [
               "ftcolor.get_color_glyph_clipbox:explicit-s37"
             ]
+          },
+          {
+            "id": "format2",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/color/colr-v1-clipbox-format1-format2.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "symbol_under_test": "FT_Get_Color_Glyph_ClipBox",
+              "base_glyph": "glyph_with_variable_clipbox",
+              "prefill_clip_box": "sentinel-vectors",
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "set_transform": {
+                "matrix": {
+                  "xx": 65536,
+                  "xy": 0,
+                  "yx": 0,
+                  "yy": 65536
+                },
+                "delta_26_6": {
+                  "x": 0,
+                  "y": 0
+                }
+              }
+            },
+            "coverage": [
+              "ftcolor.get_color_glyph_clipbox:format2-without-varstore"
+            ]
           }
         ]
       },

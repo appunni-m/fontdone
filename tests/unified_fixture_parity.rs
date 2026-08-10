@@ -15376,6 +15376,7 @@ fn color_glyph_clipbox_route_supported(case: &InputCase) -> bool {
         "ftcolor.FT_ClipBox.color_glyph_clipbox_values"
             | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@s12"
             | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@s37"
+            | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@format2"
             | "ftcolor.FT_Get_Color_Glyph_ClipBox.no_clipbox_returns_false_preserves_output"
     )
 }
@@ -15385,6 +15386,9 @@ fn color_glyph_clipbox_base_glyph(case: &InputCase) -> Result<FT_UInt, String> {
         "ftcolor.FT_ClipBox.color_glyph_clipbox_values"
         | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@s12"
         | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@s37" => Ok(36),
+        "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@format2" => {
+            Ok(37)
+        }
         "ftcolor.FT_Get_Color_Glyph_ClipBox.no_clipbox_returns_false_preserves_output" => Ok(37),
         other => Err(format!("unsupported color glyph clipbox case {other}")),
     }
