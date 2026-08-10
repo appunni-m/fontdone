@@ -815,9 +815,10 @@ def build_colr_v1_clipbox_font(path: Path, include_clip_list: bool) -> None:
     """Build deterministic COLRv1 ClipList fixtures for FT_Get_Color_Glyph_ClipBox.
 
     The success fixture includes a tested format 1 ClipBox plus a format 2
-    record kept as an explicit future variation row input.  The current routed
-    parity cases call the format 1 glyph because no variable ClipBox row is
-    classified as real parity until it has a dedicated expected-output case.
+    record.  Both records are serialized into the ClipList so face-open
+    parsing exercises the static and variable ClipBox layouts, while the
+    routed parity cases call the format 1 glyph until the variable row has a
+    dedicated expected-output case.
     """
     font = TTFont(SOURCE_FONT, recalcTimestamp=False)
     glyph_order = font.getGlyphOrder()
@@ -849,16 +850,10 @@ def build_colr_v1_clipbox_font(path: Path, include_clip_list: bool) -> None:
         glyph_map = font.getReverseGlyphMap()
         clip_list = ot.ClipList()
         clip_list.Format = 1
-        clip_list.ClipRecord = []
-        for glyph_name, box in (
-            (base_names[0], clip_box(-120, -80, 340, 510)),
-            (base_names[1], clip_box(-64, -32, 256, 384, fmt=2)),
-        ):
-            record = ot.ClipRecord()
-            record.StartGlyphID = glyph_map[glyph_name]
-            record.EndGlyphID = glyph_map[glyph_name]
-            record.ClipBox = box
-            clip_list.ClipRecord.append(record)
+        clip_list.clips = {
+            base_names[0]: clip_box(-120, -80, 340, 510),
+            base_names[1]: clip_box(-64, -32, 256, 384, fmt=2),
+        }
         font["COLR"].table.ClipList = clip_list
 
     path.parent.mkdir(parents=True, exist_ok=True)
