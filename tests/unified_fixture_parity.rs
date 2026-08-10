@@ -142,7 +142,14 @@ fn coverage_probe_cblc_missing_glyph() {
     let slot = face
         .load_glyph(0, fontdone::LoadFlags::SBITS_ONLY)
         .expect("missing CBLC glyph should use the empty bitmap fallback");
-    assert!(slot.bitmap.is_none());
+    let bitmap = slot
+        .bitmap
+        .as_ref()
+        .expect("missing CBLC glyph should retain a zero-sized bitmap slot");
+    assert_eq!(bitmap.width, 0);
+    assert_eq!(bitmap.rows, 0);
+    assert_eq!(bitmap.pitch, 0);
+    assert!(bitmap.buffer.is_empty());
     assert_eq!(slot.metrics.width, 0);
     assert_eq!(slot.metrics.height, 0);
 }
