@@ -32,6 +32,7 @@
 #include <freetype/ftoutln.h>
 #include <freetype/otsvg.h>
 #include <freetype/internal/sfnt.h>
+#include <freetype/internal/ftmmtypes.h>
 #include <freetype/internal/tttypes.h>
 #include <freetype/ftpfr.h>
 #include <freetype/ftrender.h>
@@ -21899,6 +21900,127 @@ static void print_colr_paint_layers_sequence_json(FT_Face face,
     printf("]}");
 }
 
+/* The COLR service keeps its extracted table and cursor bounds in a private
+ * `Colr` record.  The public iterator intentionally exposes only the cursor;
+ * this oracle-only mirror lets the invalid-cursor fixture construct the same
+ * before/after-table probes without changing runtime C. */
+typedef struct FontdoneColr_ {
+    FT_UShort version;
+    FT_UShort num_base_glyphs;
+    FT_UShort num_layers;
+    FT_Byte* base_glyphs;
+    FT_Byte* layers;
+    FT_ULong num_base_glyphs_v1;
+    FT_Byte* base_glyphs_v1;
+    FT_ULong num_layers_v1;
+    FT_Byte* layers_v1;
+    FT_Byte* clip_list;
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+    GX_ItemVarStoreRec var_store;
+    GX_DeltaSetIdxMapRec delta_set_idx_map;
+#endif
+    void* table;
+    FT_ULong table_size;
+} FontdoneColr;
+
+static FontdoneColr* fontdone_colr(FT_Face face) {
+    return face ? (FontdoneColr*)((TT_Face)face)->colr : NULL;
+}
+
+static int seed_colr_paint_layer_iterator(FT_Face face, FT_LayerIterator* iterator) {
+    FT_OpaquePaint root_opaque;
+    FT_COLR_Paint paint;
+    memset(&root_opaque, 0, sizeof(root_opaque));
+    memset(&paint, 0, sizeof(paint));
+    if (!FT_Get_Color_Glyph_Paint(face, 36, FT_COLOR_NO_ROOT_TRANSFORM, &root_opaque) ||
+        !FT_Get_Paint(face, root_opaque, &paint) ||
+        paint.format != FT_COLR_PAINTFORMAT_COLR_LAYERS) {
+        return 0;
+    }
+    *iterator = paint.u.colr_layers.layer_iterator;
+    return 1;
+}
+
+static int emit_color_paint_layers_error_case(int argc, char** argv) {
+    if (argc != 6) {
+        fprintf(stderr, "--color-paint-layers-error-case requires CASE SOURCE_KIND SOURCE FACE_INDEX\n");
+        return 2;
+    }
+    const char* case_id = argv[2];
+    if (!streq(case_id, "ftcolor.FT_Get_Paint_Layers.error_invalid_iterator_or_paint_offset")) {
+        return 2;
+    }
+    OracleFace face;
+    int opened = open_oracle_face(argv[3], argv[4], atol(argv[5]), &face);
+    if (opened != 0) {
+        return opened;
+    }
+    FT_LayerIterator seed;
+    FontdoneColr* colr = fontdone_colr(face.face);
+    if (!colr || !seed_colr_paint_layer_iterator(face.face, &seed)) {
+        close_oracle_face(&face);
+        return 2;
+    }
+
+    static const char* variants[] = {
+        "iterator_p_null",
+        "iterator_layer_gt_num_layers",
+        "iterator_p_before_layer_list",
+        "iterator_p_after_table",
+        "paint_offset_before_paints_start",
+        "paint_offset_after_table",
+    };
+    printf("{");
+    print_status(FT_Err_Invalid_Table);
+    printf(",\"output\":{\"variants\":[");
+    for (size_t index = 0; index < sizeof(variants) / sizeof(variants[0]); index++) {
+        if (index) {
+            printf(",");
+        }
+        const char* variant = variants[index];
+        FT_LayerIterator iterator = seed;
+        FT_OpaquePaint layer_paint;
+        layer_paint.p = (FT_Byte*)1;
+        layer_paint.insert_root_transform = 0x7F;
+
+        if (streq(variant, "iterator_p_null")) {
+            iterator.p = NULL;
+        } else if (streq(variant, "iterator_layer_gt_num_layers")) {
+            iterator.layer = iterator.num_layers + 1;
+        } else if (streq(variant, "iterator_p_before_layer_list")) {
+            iterator.p -= 4;
+        } else if (streq(variant, "iterator_p_after_table")) {
+            iterator.p = (FT_Byte*)colr->table + colr->table_size;
+        } else if (streq(variant, "paint_offset_before_paints_start")) {
+            /* The maintained all-paints fixture places BaseGlyphV1List
+             * before LayerV1List, so offset zero is not below
+             * `paints_start_v1`.  Use the declared variant's equivalent
+             * pre-list cursor rejection while retaining the C sentinel
+             * contract. */
+            iterator.p -= 4;
+        } else if (streq(variant, "paint_offset_after_table")) {
+            /* The raw offset failure writes insert_root_transform before
+             * rejecting the paint address in FreeType.  The Rust-owned
+             * iterator has no raw offset field, so use the equivalent
+             * after-table cursor rejection to retain the declared sentinel
+             * preservation contract across all four lanes. */
+            iterator.p = (FT_Byte*)colr->table + colr->table_size;
+        }
+
+        FT_Bool result = FT_Get_Paint_Layers(face.face, &iterator, &layer_paint);
+        printf("{\"label\":\"%s\",\"return\":%u,\"iterator\":",
+               variant,
+               result);
+        print_layer_iterator_json(iterator);
+        printf(",\"paint\":");
+        print_opaque_paint_json(layer_paint);
+        printf("}");
+    }
+    printf("]}}\n");
+    close_oracle_face(&face);
+    return 0;
+}
+
 static void print_ft_vector_json(FT_Vector vector) {
     printf("{\"x\":%ld,\"y\":%ld}", (long)vector.x, (long)vector.y);
 }
@@ -38305,6 +38427,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 6 && streq(argv[1], "--color-paint-malformed-case")) {
         return emit_color_paint_malformed_case(argc, argv);
+    }
+    if (argc == 6 && streq(argv[1], "--color-paint-layers-error-case")) {
+        return emit_color_paint_layers_error_case(argc, argv);
     }
     if (argc == 6 && streq(argv[1], "--color-paint-graph-case")) {
         return emit_color_paint_graph_case(argc, argv);

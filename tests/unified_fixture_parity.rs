@@ -3332,6 +3332,15 @@ impl BackendComparisonWorker {
             "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
                 rust_color_glyph_layer_case(case)
             }
+            "ftcolor.get_paint_layers" if color_paint_layers_error_route_supported(case) => {
+                let face = open_named_face(case, "valid_font")?;
+                Ok(color_paint_layers_error_output_for_open_face(
+                    ColorPaintBackend::Rust,
+                    Some(&face),
+                    ptr::null_mut(),
+                    0,
+                ))
+            }
             "ftcolor.get_paint_malformed" => {
                 let face = self.rust_face(case)?;
                 color_paint_malformed_output_for_open_face(
@@ -3775,6 +3784,18 @@ impl BackendComparisonWorker {
             }
             "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
                 c_color_glyph_layer_case(case)
+            }
+            "ftcolor.get_paint_layers" if color_paint_layers_error_route_supported(case) => {
+                let (library, face) = c_open_named_face(case, "valid_font")?;
+                let output = color_paint_layers_error_output_for_open_face(
+                    ColorPaintBackend::CAbi,
+                    None,
+                    face,
+                    0,
+                );
+                c_done_face(face);
+                c_done_library(library);
+                Ok(output)
             }
             "ftcolor.get_paint_malformed" => {
                 let face = self.c_face(case)?;
@@ -4226,6 +4247,17 @@ impl BackendComparisonWorker {
             }
             "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
                 wasm_color_glyph_layer_case(case)
+            }
+            "ftcolor.get_paint_layers" if color_paint_layers_error_route_supported(case) => {
+                let handle = wasm_open_named_face(case, "valid_font")?;
+                let output = color_paint_layers_error_output_for_open_face(
+                    ColorPaintBackend::Wasm,
+                    None,
+                    ptr::null_mut(),
+                    handle,
+                );
+                wasm_done_face(handle);
+                Ok(output)
             }
             "ftcolor.get_paint_malformed" => {
                 let handle = self.wasm_face(case)?;
@@ -16667,6 +16699,92 @@ fn color_paint_layers_output_for_open_face(
     }
 }
 
+fn color_paint_layers_error_route_supported(case: &InputCase) -> bool {
+    case.case_id == "ftcolor.FT_Get_Paint_Layers.error_invalid_iterator_or_paint_offset"
+}
+
+fn color_paint_layers_error_iterator(
+    variant: &str,
+    mut iterator: FT_LayerIterator,
+) -> FT_LayerIterator {
+    match variant {
+        "iterator_p_null" => iterator.p = ptr::null_mut(),
+        "iterator_layer_gt_num_layers" => {
+            iterator.layer = iterator.num_layers.saturating_add(1);
+        }
+        // The Rust representation has no raw COLR table cursor.  A cursor one
+        // element outside the owned layer vector is the safe equivalent of
+        // FreeType's before-list/after-table cursor rejection.
+        "iterator_p_before_layer_list" => iterator.p = iterator.p.wrapping_sub(1),
+        "iterator_p_after_table" => iterator.p = iterator.p.wrapping_add(1),
+        "paint_offset_before_paints_start" => iterator.p = iterator.p.wrapping_add(1),
+        "paint_offset_after_table" => iterator.p = iterator.p.wrapping_add(2),
+        other => panic!("unsupported FT_Get_Paint_Layers error variant {other}"),
+    }
+    iterator
+}
+
+fn color_paint_layers_error_output_for_open_face(
+    backend: ColorPaintBackend,
+    rust_face: Option<&FT_Face>,
+    c_face: c_abi::FT_Face,
+    wasm_handle: usize,
+) -> RunOutput {
+    let (root_return, root_opaque) = color_paint_call(
+        backend,
+        rust_face,
+        c_face,
+        wasm_handle,
+        36,
+        FT_COLOR_NO_ROOT_TRANSFORM as FT_UInt,
+    );
+    let (paint_return, paint) = get_paint_call(
+        backend,
+        rust_face,
+        c_face,
+        wasm_handle,
+        root_opaque,
+    );
+    let seed = if root_return != 0
+        && paint_return != 0
+        && paint.format == FT_COLR_PAINTFORMAT_COLR_LAYERS as FT_PaintFormat
+    {
+        get_paint_layer_iterator_copy(backend, rust_face, c_face, wasm_handle, root_opaque)
+            .unwrap_or_default()
+    } else {
+        FT_LayerIterator::default()
+    };
+    let variants = [
+        "iterator_p_null",
+        "iterator_layer_gt_num_layers",
+        "iterator_p_before_layer_list",
+        "iterator_p_after_table",
+        "paint_offset_before_paints_start",
+        "paint_offset_after_table",
+    ]
+    .into_iter()
+    .map(|variant| {
+        let mut iterator = color_paint_layers_error_iterator(variant, seed);
+        let mut layer_paint = FT_OpaquePaint {
+            p: ptr::dangling_mut::<FT_Byte>(),
+            insert_root_transform: 0x7F,
+        };
+        let result = get_paint_layers_call(
+            backend,
+            rust_face,
+            c_face,
+            wasm_handle,
+            &mut iterator,
+            &mut layer_paint,
+        );
+        color_paint_layers_call_json(variant, result, iterator, layer_paint)
+    })
+    .collect::<Vec<_>>();
+    error_with_output(FT_Err_Invalid_Table as FT_Error, json!({
+        "variants": variants,
+    }))
+}
+
 fn color_paint_node_json(
     backend: ColorPaintBackend,
     rust_face: Option<&FT_Face>,
@@ -17608,6 +17726,16 @@ fn rust_color_paint_graph_case(case: &InputCase) -> Result<RunOutput, String> {
     ))
 }
 
+fn rust_color_paint_layers_error_case(case: &InputCase) -> Result<RunOutput, String> {
+    let face = open_named_face(case, "valid_font")?;
+    Ok(color_paint_layers_error_output_for_open_face(
+        ColorPaintBackend::Rust,
+        Some(&face),
+        ptr::null_mut(),
+        0,
+    ))
+}
+
 fn c_color_paint_graph_case(case: &InputCase) -> Result<RunOutput, String> {
     let (library, face) = c_open_face(case)?;
     if color_all_paints_case(&case.case_id) {
@@ -17666,6 +17794,19 @@ fn c_color_paint_graph_case(case: &InputCase) -> Result<RunOutput, String> {
         return Ok(output);
     }
     let output = color_paint_graph_output_for_open_face(ColorPaintBackend::CAbi, None, face, 0);
+    c_done_face(face);
+    c_done_library(library);
+    Ok(output)
+}
+
+fn c_color_paint_layers_error_case(case: &InputCase) -> Result<RunOutput, String> {
+    let (library, face) = c_open_named_face(case, "valid_font")?;
+    let output = color_paint_layers_error_output_for_open_face(
+        ColorPaintBackend::CAbi,
+        None,
+        face,
+        0,
+    );
     c_done_face(face);
     c_done_library(library);
     Ok(output)
@@ -17750,6 +17891,18 @@ fn wasm_color_paint_graph_case(case: &InputCase) -> Result<RunOutput, String> {
         return Ok(output);
     }
     let output = color_paint_graph_output_for_open_face(
+        ColorPaintBackend::Wasm,
+        None,
+        ptr::null_mut(),
+        handle,
+    );
+    wasm_done_face(handle);
+    Ok(output)
+}
+
+fn wasm_color_paint_layers_error_case(case: &InputCase) -> Result<RunOutput, String> {
+    let handle = wasm_open_named_face(case, "valid_font")?;
+    let output = color_paint_layers_error_output_for_open_face(
         ColorPaintBackend::Wasm,
         None,
         ptr::null_mut(),
@@ -43505,6 +43658,15 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(face_index_param(params)?.to_string());
             Ok(args)
         }
+        "ftcolor.get_paint_layers" if color_paint_layers_error_route_supported(case) => {
+            let mut args = vec![
+                "--color-paint-layers-error-case".to_string(),
+                case.case_id.clone(),
+            ];
+            push_required_asset_source(case, "valid_font", &mut args)?;
+            args.push(face_index_param(params)?.to_string());
+            Ok(args)
+        }
         operation
             if operation.starts_with("ftcolor.") && color_paint_success_route_supported(case) =>
         {
@@ -47528,6 +47690,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
             rust_color_glyph_layer_case(case)
         }
+        "ftcolor.get_paint_layers" if color_paint_layers_error_route_supported(case) => {
+            rust_color_paint_layers_error_case(case)
+        }
         "ftcolor.get_paint_malformed" => rust_color_paint_malformed_case(case),
         operation
             if operation.starts_with("ftcolor.") && color_paint_success_route_supported(case) =>
@@ -47742,6 +47907,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         | "ftcolor.palette_set_foreground_color" => c_palette_case(case),
         "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
             c_color_glyph_layer_case(case)
+        }
+        "ftcolor.get_paint_layers" if color_paint_layers_error_route_supported(case) => {
+            c_color_paint_layers_error_case(case)
         }
         "ftcolor.get_paint_malformed" => c_color_paint_malformed_case(case),
         operation
@@ -49196,6 +49364,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         | "ftcolor.palette_set_foreground_color" => wasm_palette_case(case),
         "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
             wasm_color_glyph_layer_case(case)
+        }
+        "ftcolor.get_paint_layers" if color_paint_layers_error_route_supported(case) => {
+            wasm_color_paint_layers_error_case(case)
         }
         "ftcolor.get_paint_malformed" => wasm_color_paint_malformed_case(case),
         operation
