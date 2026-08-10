@@ -3964,7 +3964,7 @@ static int emit_bitmap_blend_same_bounds_success_run(FT_Library library, FT_Colo
 }
 
 static int emit_bitmap_blend_negative_target_reallocate_success_run(
-    FT_Library library, FT_Color color) {
+    FT_Library library, FT_Color color, FT_Pixel_Mode mode, int source_pitch) {
     unsigned char source_bytes[96];
     FT_Bitmap source;
     FT_Bitmap target;
@@ -3972,10 +3972,10 @@ static int emit_bitmap_blend_negative_target_reallocate_success_run(
     FT_Vector target_offset = { 64, 128 };
 
     FT_Bitmap_Init(&target);
-    bitmap_blend_source(&source, source_bytes, FT_PIXEL_MODE_GRAY, 1);
+    bitmap_blend_source(&source, source_bytes, mode, source_pitch < 0);
     source.width = 2;
     source.rows = 2;
-    source.pitch = -2;
+    source.pitch = source_pitch;
 
     FT_Error err = bitmap_blend_prepopulate(library, &target, &target_offset);
     if (!err) {
@@ -4288,7 +4288,11 @@ static int emit_bitmap_blend(const char* scenario) {
     } else if (streq(scenario, "success_existing_bgra_same_bounds_preserves")) {
         emit_bitmap_blend_same_bounds_success_run(library, color);
     } else if (streq(scenario, "success_existing_bgra_reallocates_negative_flow")) {
-        emit_bitmap_blend_negative_target_reallocate_success_run(library, color);
+        emit_bitmap_blend_negative_target_reallocate_success_run(
+            library, color, FT_PIXEL_MODE_GRAY, -2);
+    } else if (streq(scenario, "success_existing_bgra_reallocates_negative_non_gray_flow")) {
+        emit_bitmap_blend_negative_target_reallocate_success_run(
+            library, color, FT_PIXEL_MODE_GRAY4, -3);
     } else if (streq(scenario, "success_integerizes_offsets")) {
         FT_Vector frac_source = { 127, -65 };
         FT_Vector frac_target = { 95, 193 };

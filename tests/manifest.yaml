@@ -2726,6 +2726,8 @@ subjects:
         description: Blending into an existing BGRA target expands or preserves the target rectangle and pixel bytes exactly like C.
       - id: success_existing_bgra_reallocates_negative_flow
         description: Reallocating an existing BGRA target with negative pitch preserves C's negative-flow allocation and no-op blend behavior.
+      - id: success_existing_bgra_reallocates_negative_non_gray_flow
+        description: A non-GRAY source on the negative-target-pitch path is converted before C's documented no-op blend branch, with exact target fields and offset.
       - id: success_existing_bgra_same_bounds_preserves
         description: Blending into an existing BGRA target with identical bounds preserves its allocation shape and updates pixels exactly like C.
       - id: success_source_pixel_modes_and_flow
