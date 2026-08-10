@@ -227,11 +227,12 @@ extern "C" fn c_counting_library_free(memory: c_abi::FT_Memory, block: FT_Pointe
 
 use super::generated_constant_lookup::generated_rust_constant;
 
-struct RasterizerTraceCoverageLogger;
+struct AutohintTraceCoverageLogger;
 
-impl log::Log for RasterizerTraceCoverageLogger {
+impl log::Log for AutohintTraceCoverageLogger {
     fn enabled(&self, metadata: &log::Metadata<'_>) -> bool {
-        metadata.target() == "autohint::rasterizer" && metadata.level() <= log::Level::Trace
+        matches!(metadata.target(), "autohint::pipeline" | "autohint::rasterizer")
+            && metadata.level() <= log::Level::Trace
     }
 
     fn log(&self, _record: &log::Record<'_>) {}
@@ -240,7 +241,7 @@ impl log::Log for RasterizerTraceCoverageLogger {
 }
 
 fn enable_rasterizer_trace_coverage() {
-    static LOGGER: RasterizerTraceCoverageLogger = RasterizerTraceCoverageLogger;
+    static LOGGER: AutohintTraceCoverageLogger = AutohintTraceCoverageLogger;
     static INSTALLED: OnceLock<()> = OnceLock::new();
 
     if std::env::var_os("FONTDONE_ENABLE_SILENT_TRACE_LOGGER").is_none() {
