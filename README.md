@@ -124,13 +124,13 @@ can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest pushed-commit verification is Coverage MCP parity run
-`72d8beb1-9503-4ae2-86bd-749cb4336abf`, whose passing report was recorded in
+`2ca79658-a6b5-409d-b1c2-0766d5c40924`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
 7,646 / 7,646 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-The record operation was run `aa2021aa-143f-4888-a30e-3c5a89133dbf`; its
+The record operation was run `b83a232e-0dbb-4cd9-847e-08e226ab9925`; its
 source-bound parity-tree digest is
-`eb87a066f39580d9f9e29a98e6c0a2dcea397ad607cc0aeb16c67f240cd2d3aa`.
+`5b81f0a54e481c444080af3f9ee0386191c0ce25c8b995e94a0bbf5013997680`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -144,18 +144,18 @@ their exact worktree than the committed release snapshot.
 
 The latest pushed-commit all-lane coverage snapshot was recorded on
 **2026-08-10** for the worktree based at commit
-`76a4530e0fee0491a767e753833e72ca44242bf1`
-(Coverage MCP run `b2ee24de-5c6c-42b5-bb79-0a66e731d0c8`, snapshot
-`94eda3d1-849e-490a-a605-05140d85c612`):
+`f6eb41bad41cc0ddd43c8c1fa1f05786191002b0`
+(Coverage MCP run `c6968b69-eaab-4193-ac74-5eb22c1222ac`, snapshot
+`70068174-e02b-4f7e-b063-3f6dd549f043`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,318 / 54,278 | 92.70% |
-| Branches | 10,078 / 12,537 | 80.39% |
-| Functions | 3,448 / 3,819 | 90.29% |
-| Regions | 69,087 / 75,337 | 91.70% |
+| Lines | 50,523 / 54,373 | 92.92% |
+| Branches | 10,079 / 12,537 | 80.39% |
+| Functions | 3,478 / 3,832 | 90.76% |
+| Regions | 69,374 / 75,474 | 91.92% |
 
-The current managed validation completed in 49.631 seconds; its three split
+The current managed validation completed in 62.777 seconds; its three split
 backends passed all 7,646 runnable comparisons. Its nine shard processes split
 the same exact matrix into disjoint slices before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
