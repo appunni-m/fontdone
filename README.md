@@ -144,18 +144,18 @@ their exact worktree than the committed release snapshot.
 
 The latest current-worktree all-lane coverage snapshot was recorded on
 **2026-08-10** for the worktree based at commit
-`948d24625df79db9a2836124afda50facbc2ea9c`
-(Coverage MCP run `c44982bc-d500-4ddc-8de8-7dbbccd90d20`, snapshot
-`131c54db-5620-4ca2-9f88-7d3c121fe224`):
+`18e3e259e542477432647f8d5910e12a2341cc06`
+(Coverage MCP run `00e32832-5102-451b-8bae-f329f6c17b91`, snapshot
+`c64eaee9-bb5e-4cdd-bffa-65e567d30d92`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,307 / 54,284 | 92.67% |
-| Branches | 10,051 / 12,541 | 80.15% |
+| Lines | 50,304 / 54,278 | 92.68% |
+| Branches | 10,049 / 12,537 | 80.15% |
 | Functions | 3,448 / 3,819 | 90.29% |
-| Regions | 69,077 / 75,347 | 91.68% |
+| Regions | 69,069 / 75,337 | 91.68% |
 
-The current managed validation completed in 60.568 seconds; its three split
+The current managed validation completed in 68.258 seconds; its three split
 backends passed all 7,620 runnable comparisons. Its nine shard processes split
 the same exact matrix into disjoint slices before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
@@ -179,11 +179,12 @@ comparison run `9da2059c-8e05-424a-85f6-30e0b6e0c432` took 84.484 seconds,
 including a 67-second instrumented rebuild; the warm run above reused that
 binary.
 
-The new maintained `MONO` plus x-only-strength row for
-`FT_Bitmap_Embolden` closes the packed-bit tail-mask branch in
-`src/ffi/handles.rs`; focused, full-parity, and C-ABI contract evidence all
-remain oracle-backed. The measured aggregate change was +5 lines, +2
-branches, and +7 regions; function coverage was unchanged.
+The maintained `MONO` plus x-only-strength row for `FT_Bitmap_Embolden`
+closes the packed-bit tail-mask branch in `src/ffi/handles.rs`; focused,
+full-parity, and C-ABI contract evidence remain oracle-backed. The follow-up
+invariant cleanup removed six unreachable bitmap-buffer bounds-check lines,
+four branch entries, and ten regions without changing any parity result; the
+function denominator is unchanged.
 
 The earlier coverage-speed change set `COVERAGE_TEST_DEBUG=0`, removing DWARF
 line tables while retaining LLVM source mapping; its historical cold build was

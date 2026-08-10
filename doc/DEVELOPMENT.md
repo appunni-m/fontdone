@@ -283,18 +283,20 @@ Coverage and parity answer different questions. Executing a line or branch
 does not prove that its result matches C.
 
 The latest source-bound all-lane Coverage MCP run is
-`c44982bc-d500-4ddc-8de8-7dbbccd90d20` (snapshot
-`131c54db-5620-4ca2-9f88-7d3c121fe224`). It completed in 60.568 seconds and
+`00e32832-5102-451b-8bae-f329f6c17b91` (snapshot
+`c64eaee9-bb5e-4cdd-bffa-65e567d30d92`). It completed in 68.258 seconds and
 passed 7,620 / 7,620 runnable parity comparisons in the three split backends.
-The overall report is 50,307 / 54,284 lines, 10,051 / 12,541 branches,
-3,448 / 3,819 functions, and 69,077 / 75,347 regions. The dominant cold-run cost remains
+The overall report is 50,304 / 54,278 lines, 10,049 / 12,537 branches,
+3,448 / 3,819 functions, and 69,069 / 75,337 regions. The dominant cold-run cost remains
 instrumented compilation; warm shard execution and report ingestion are much
 smaller.
 
 The measured MONO plus x-only-strength `FT_Bitmap_Embolden` parity row now
 reaches the packed-bit tail-mask branch in `src/ffi/handles.rs`; the focused
 case, full matrix, and C-ABI contract all pass without a unit-only coverage
-route.
+route. The follow-up cleanup removed bitmap-buffer bounds exits that are
+unreachable after the helper validates `bytes.len() >= pitch * rows` and uses
+checked row arithmetic; it preserved the same exact parity outputs.
 
 ```bash
 make test-coverage
