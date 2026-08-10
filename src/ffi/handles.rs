@@ -836,17 +836,11 @@ fn ft_bitmap_assure_buffer(bitmap: &mut FT_Bitmap_C, x_pixels: usize, y_pixels: 
                 };
                 let mut write = line;
                 if shift > 0 {
-                    if write >= bytes.len() {
-                        return FT_Err_Invalid_Argument;
-                    }
                     let mask = (0xFF00u16 >> shift) as u8;
                     bytes[write] &= mask;
                     write += 1;
                 }
                 if write < end {
-                    if end > bytes.len() {
-                        return FT_Err_Invalid_Argument;
-                    }
                     bytes[write..end].fill(0);
                 }
             }
