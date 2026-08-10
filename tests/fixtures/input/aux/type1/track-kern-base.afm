@@ -15,9 +15,9 @@ C 65 ; WX 500 ; N A ; B 50 0 450 700 ;
 EndCharMetrics
 StartKernData
 StartTrackKern 3
-TrackKern -1 8 -30 72 -90
-TrackKern 0 8 0 72 0
-TrackKern 1 8 20 72 80
+TrackKern -1 .0 -30.0 72.0 -90.0
+TrackKern 0 +8.0 +0.0 72.0 0.0
+TrackKern 1 8.0 20.0 72.0 80.0
 EndTrackKern
 StartKernPairs 1
 KPX A A -25

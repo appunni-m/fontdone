@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "kind": "outline_model",
+  "description": "Valid outline whose raw pixel cbox exceeds FT_Outline_Render's limit by one unit without overflowing raster arithmetic.",
+  "points": [
+    { "x": -16777217, "y": -16777217 },
+    { "x": 16777217, "y": -16777217 },
+    { "x": 16777217, "y": 16777217 },
+    { "x": -16777217, "y": 16777217 }
+  ],
+  "tags": [1, 1, 1, 1],
+  "contours": [3],
+  "flags": 0,
+  "cbox": {
+    "x_min": -16777217,
+    "y_min": -16777217,
+    "x_max": 16777217,
+    "y_max": 16777217
+  }
+}

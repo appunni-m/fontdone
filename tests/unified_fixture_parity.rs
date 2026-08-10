@@ -15409,6 +15409,7 @@ fn color_glyph_clipbox_route_supported(case: &InputCase) -> bool {
             | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@s12"
             | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@s37"
             | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@format2"
+            | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@format2-varstore"
             | "ftcolor.FT_Get_Color_Glyph_ClipBox.no_clipbox_returns_false_preserves_output"
     )
 }
@@ -15419,6 +15420,9 @@ fn color_glyph_clipbox_base_glyph(case: &InputCase) -> Result<FT_UInt, String> {
         | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@s12"
         | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@s37" => Ok(36),
         "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@format2" => {
+            Ok(37)
+        }
+        "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@format2-varstore" => {
             Ok(37)
         }
         "ftcolor.FT_Get_Color_Glyph_ClipBox.no_clipbox_returns_false_preserves_output" => Ok(37),
@@ -15471,6 +15475,35 @@ fn color_glyph_clipbox_setup(
     wasm_handle: usize,
 ) -> Result<Value, String> {
     let mut output = json!({});
+    if case.inputs.params.get("design_coordinates").is_some() {
+        let coords = ftmm_coords_from_value(&case.inputs.params, "design_coordinates")?;
+        let error = match backend {
+            ColorGlyphClipBoxBackend::Rust => {
+                let Some(face) = rust_face.as_deref_mut() else {
+                    return Err("Rust clipbox variation setup missing face".to_string());
+                };
+                FT_Set_Var_Design_Coordinates(
+                    Some(face),
+                    coords.len() as FT_UInt,
+                    Some(&coords),
+                )
+            }
+            ColorGlyphClipBoxBackend::CAbi => c_abi::FT_Set_Var_Design_Coordinates(
+                c_face,
+                coords.len() as FT_UInt,
+                coords.as_ptr(),
+            ),
+            ColorGlyphClipBoxBackend::Wasm => wasm_abi::fontdone_wasm_set_var_design_coordinates(
+                wasm_handle,
+                coords.len() as FT_UInt,
+                coords.as_ptr(),
+            ),
+        };
+        output["variation"] = json!({
+            "design_coordinates": coords,
+            "error": error,
+        });
+    }
     if case.inputs.params.get("pixel_size").is_some() {
         let (pixel_width, pixel_height) = pixel_size_param(&case.inputs.params)?;
         let error = match backend {
@@ -43420,6 +43453,11 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             push_font_source(case, &mut args)?;
             args.push(face_index_param(params)?.to_string());
             args.push(color_glyph_clipbox_base_glyph(case)?.to_string());
+            if params.get("design_coordinates").is_some() {
+                let coords = ftmm_coords_from_value(params, "design_coordinates")?;
+                args.push(coords.len().to_string());
+                args.push(ftmm_coords_csv(&coords));
+            }
             if let Some(transform) = params.get("set_transform") {
                 let (pixel_width, pixel_height) = pixel_size_param(params)?;
                 let (xx, xy, yx, yy, default_dx, default_dy) =

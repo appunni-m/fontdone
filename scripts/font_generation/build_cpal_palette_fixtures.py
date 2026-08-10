@@ -1245,7 +1245,31 @@ def clip_box(x_min: int, y_min: int, x_max: int, y_max: int, fmt: int = 1) -> ot
     return box
 
 
-def build_colr_v1_clipbox_font(path: Path, include_clip_list: bool) -> None:
+def colr_v1_clipbox_var_store(font: TTFont) -> ot.VarStore:
+    """Build the four-delta VarStore used by the variable ClipBox record."""
+    axis_tags = [axis.axisTag for axis in font["fvar"].axes]
+    region_list = var_builder.buildVarRegionList(
+        [{"wght": (0.0, 1.0, 1.0), "GRAD": (0.0, 1.0, 1.0)}],
+        axis_tags,
+    )
+    var_data = var_builder.buildVarData(
+        [0],
+        [
+            [4096],  # xMin: +0.25 in F2Dot14 units.
+            [2048],  # yMin: +0.125 in F2Dot14 units.
+            [-4096],  # xMax: -0.25 in F2Dot14 units.
+            [-2048],  # yMax: -0.125 in F2Dot14 units.
+        ],
+        optimize=False,
+    )
+    return var_builder.buildVarStore(region_list, [var_data])
+
+
+def build_colr_v1_clipbox_font(
+    path: Path,
+    include_clip_list: bool,
+    variable_clip_box: bool = False,
+) -> None:
     """Build deterministic COLRv1 ClipList fixtures for FT_Get_Color_Glyph_ClipBox.
 
     The success fixture includes a tested format 1 ClipBox plus a format 2
@@ -1254,6 +1278,8 @@ def build_colr_v1_clipbox_font(path: Path, include_clip_list: bool) -> None:
     public ClipBox output cover both static and variable records.
     """
     font = TTFont(SOURCE_FONT, recalcTimestamp=False)
+    if variable_clip_box:
+        add_color_variation_axes(font)
     glyph_order = font.getGlyphOrder()
     base_names = glyph_order[36:39]
 
@@ -1276,6 +1302,7 @@ def build_colr_v1_clipbox_font(path: Path, include_clip_list: bool) -> None:
         color_glyphs,
         version=1,
         glyphMap=font.getReverseGlyphMap(),
+        varStore=colr_v1_clipbox_var_store(font) if variable_clip_box else None,
         allowLayerReuse=False,
     )
 
@@ -1341,6 +1368,11 @@ def main() -> None:
     build_colr_v1_static_gradients_font(COLOR_OUTPUT_DIR / "colr-v1-static-gradients.ttf")
     build_colr_v1_variable_gradients_font(COLOR_OUTPUT_DIR / "colr-v1-variable-gradients.ttf")
     build_colr_v1_clipbox_font(COLOR_OUTPUT_DIR / "colr-v1-clipbox-format1-format2.ttf", True)
+    build_colr_v1_clipbox_font(
+        COLOR_OUTPUT_DIR / "colr-v1-clipbox-format2-varstore.ttf",
+        True,
+        variable_clip_box=True,
+    )
     build_colr_v1_clipbox_font(COLOR_OUTPUT_DIR / "colr-v1-no-clipbox-control.ttf", False)
 
 

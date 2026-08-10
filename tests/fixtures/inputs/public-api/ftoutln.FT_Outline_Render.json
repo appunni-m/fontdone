@@ -305,6 +305,27 @@
             "expect_error": true,
             "expectation": {"compare": {"compare_error_output": true}},
             "coverage": ["grays:invalid-cubic-second-not-cubic"]
+          },
+          {
+            "id": "cbox-just-beyond-render-limit-mono-error-output",
+            "assets": {"outline": {"kind": "ref", "id": "outlines/render/cbox-just-beyond-render-limit.json", "asset_kind": "outline_model"}, "bitmap": {"kind": "bitmap_target", "width": 32, "rows": 32, "pitch": 32, "pixel_mode": "FT_PIXEL_MODE_GRAY", "num_grays": 256}},
+            "params": {"raster_params": {"flags": [], "target": "bitmap", "source": "ignored_sentinel"}, "library": "valid"},
+            "expect_error": true,
+            "coverage": ["mono:error-output-after-cbox-rejection"]
+          },
+          {
+            "id": "cbox-just-beyond-render-limit-mono-negative-pitch",
+            "assets": {"outline": {"kind": "ref", "id": "outlines/render/cbox-just-beyond-render-limit.json", "asset_kind": "outline_model"}, "bitmap": {"kind": "bitmap_target", "width": 32, "rows": 32, "pitch": -32, "pixel_mode": "FT_PIXEL_MODE_GRAY", "num_grays": 256}},
+            "params": {"raster_params": {"flags": [], "target": "bitmap", "source": "ignored_sentinel"}, "library": "valid"},
+            "expect_error": true,
+            "coverage": ["mono:error-output-after-cbox-rejection-negative-pitch"]
+          },
+          {
+            "id": "cbox-just-beyond-render-limit-non-gray-error-output",
+            "assets": {"outline": {"kind": "ref", "id": "outlines/render/cbox-just-beyond-render-limit.json", "asset_kind": "outline_model"}, "bitmap": {"kind": "bitmap_target", "width": 32, "rows": 32, "pitch": 32, "pixel_mode": "FT_PIXEL_MODE_MONO", "num_grays": 2}},
+            "params": {"raster_params": {"flags": [], "target": "bitmap", "source": "ignored_sentinel"}, "library": "valid"},
+            "expect_error": true,
+            "coverage": ["mono:error-output-non-gray-target"]
           }
         ]
       },

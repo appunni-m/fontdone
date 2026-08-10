@@ -45,6 +45,18 @@
               "pixel_size": {
                 "x": 0,
                 "y": 12
+              },
+              "set_transform": {
+                "matrix": {
+                  "xx": 65536,
+                  "xy": 0,
+                  "yx": 0,
+                  "yy": 65536
+                },
+                "delta_26_6": {
+                  "x": 0,
+                  "y": 0
+                }
               }
             },
             "coverage": [
@@ -117,6 +129,44 @@
             },
             "coverage": [
               "ftcolor.get_color_glyph_clipbox:format2-without-varstore"
+            ]
+          },
+          {
+            "id": "format2-varstore",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/color/colr-v1-clipbox-format2-varstore.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "symbol_under_test": "FT_Get_Color_Glyph_ClipBox",
+              "base_glyph": "glyph_with_variable_clipbox",
+              "design_coordinates": [
+                58982400,
+                65536
+              ],
+              "prefill_clip_box": "sentinel-vectors",
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "set_transform": {
+                "matrix": {
+                  "xx": 65536,
+                  "xy": 0,
+                  "yx": 0,
+                  "yy": 65536
+                },
+                "delta_26_6": {
+                  "x": 0,
+                  "y": 0
+                }
+              }
+            },
+            "coverage": [
+              "ftcolor.get_color_glyph_clipbox:format2-with-varstore-deltas"
             ]
           }
         ]

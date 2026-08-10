@@ -67,6 +67,8 @@ static FT_Error cache_no_lookup_requester(FTC_FaceID face_id,
                                           FT_Pointer req_data,
                                           FT_Face* aface);
 static void print_size_metrics_object(FT_Size_Metrics metrics);
+static void print_fixed_coord_array(FT_Fixed* coords, FT_UInt count);
+static void parse_fixed_coord_csv(const char* text, FT_Fixed* coords, FT_UInt count);
 
 static int streq(const char* a, const char* b) {
     return strcmp(a, b) == 0;
@@ -15354,6 +15356,15 @@ static int emit_outline_render(int argc, char** argv) {
         points[2].y = 1073741888L;
         points[3].x = -1073741888L;
         points[3].y = 1073741888L;
+    } else if (strstr(case_id, "@cbox-just-beyond-render-limit")) {
+        points[0].x = -16777217L;
+        points[0].y = -16777217L;
+        points[1].x = 16777217L;
+        points[1].y = -16777217L;
+        points[2].x = 16777217L;
+        points[2].y = 16777217L;
+        points[3].x = -16777217L;
+        points[3].y = 16777217L;
     } else if (strstr(case_id, "@even-odd-double-wind")) {
         points[4].x = 8 * 64;
         points[4].y = 8 * 64;
@@ -15808,10 +15819,16 @@ static int emit_outline_render(int argc, char** argv) {
         bitmap.pitch = 36;
     } else if (strstr(case_id, "@line-partial-below-clip-negative-pitch")) {
         bitmap.pitch = -36;
+    } else if (strstr(case_id, "@cbox-just-beyond-render-limit-mono-negative-pitch")) {
+        bitmap.pitch = -32;
     }
     bitmap.buffer = buffer;
     bitmap.num_grays = 256;
     bitmap.pixel_mode = FT_PIXEL_MODE_GRAY;
+    if (strstr(case_id, "@cbox-just-beyond-render-limit-non-gray")) {
+        bitmap.num_grays = 2;
+        bitmap.pixel_mode = FT_PIXEL_MODE_MONO;
+    }
     if (streq(case_id, "ftimage.FT_RASTER_FLAG_AA.mono_rejects_aa")) {
         bitmap.num_grays = 2;
         bitmap.pixel_mode = FT_PIXEL_MODE_MONO;
@@ -15821,6 +15838,9 @@ static int emit_outline_render(int argc, char** argv) {
     memset(&params, 0, sizeof(params));
     params.target = &bitmap;
     params.flags = FT_RASTER_FLAG_AA;
+    if (strstr(case_id, "@cbox-just-beyond-render-limit")) {
+        params.flags = 0;
+    }
     params.source = (void*)0x1;
     if (strstr(case_id, "@right-edge-clip-outside-target")) {
         params.flags |= FT_RASTER_FLAG_CLIP;
@@ -21485,8 +21505,8 @@ static void print_clip_box_json(FT_ClipBox clip_box) {
 }
 
 static int emit_color_glyph_clipbox_case(int argc, char** argv) {
-    if (argc != 7 && argc != 15) {
-        fprintf(stderr, "--color-glyph-clipbox-case requires CASE SOURCE_KIND SOURCE FACE_INDEX BASE_GLYPH [PX PY XX XY YX YY DX DY]\n");
+    if (argc != 7 && argc != 9 && argc != 15 && argc != 17) {
+        fprintf(stderr, "--color-glyph-clipbox-case requires CASE SOURCE_KIND SOURCE FACE_INDEX BASE_GLYPH [VAR_COUNT VAR_CSV] [PX PY XX XY YX YY DX DY]\n");
         return 2;
     }
     const char* case_id = argv[2];
@@ -21500,18 +21520,37 @@ static int emit_color_glyph_clipbox_case(int argc, char** argv) {
     printf("{");
     print_status(0);
     printf(",\"output\":{\"setup\":{");
-    if (argc == 15) {
-        FT_UInt pixel_width = (FT_UInt)strtoul(argv[7], NULL, 10);
-        FT_UInt pixel_height = (FT_UInt)strtoul(argv[8], NULL, 10);
+    int has_variation = argc == 9 || argc == 17;
+    int has_transform = argc == 15 || argc == 17;
+    if (has_variation) {
+        FT_UInt variation_count = (FT_UInt)strtoul(argv[7], NULL, 10);
+        FT_Fixed variation_coords[16] = {0};
+        FT_UInt parsed_count = variation_count < 16 ? variation_count : 16;
+        parse_fixed_coord_csv(argv[8], variation_coords, parsed_count);
+        FT_Error variation_error = FT_Set_Var_Design_Coordinates(
+            face.face,
+            variation_count,
+            variation_coords);
+        printf("\"variation\":{\"design_coordinates\":");
+        print_fixed_coord_array(variation_coords, parsed_count);
+        printf(",\"error\":%d}", variation_error);
+        if (has_transform) {
+            printf(",");
+        }
+    }
+    if (has_transform) {
+        int transform_arg = has_variation ? 9 : 7;
+        FT_UInt pixel_width = (FT_UInt)strtoul(argv[transform_arg], NULL, 10);
+        FT_UInt pixel_height = (FT_UInt)strtoul(argv[transform_arg + 1], NULL, 10);
         FT_Error size_error = FT_Set_Pixel_Sizes(face.face, pixel_width, pixel_height);
         FT_Matrix matrix;
-        matrix.xx = (FT_Fixed)strtol(argv[9], NULL, 10);
-        matrix.xy = (FT_Fixed)strtol(argv[10], NULL, 10);
-        matrix.yx = (FT_Fixed)strtol(argv[11], NULL, 10);
-        matrix.yy = (FT_Fixed)strtol(argv[12], NULL, 10);
+        matrix.xx = (FT_Fixed)strtol(argv[transform_arg + 2], NULL, 10);
+        matrix.xy = (FT_Fixed)strtol(argv[transform_arg + 3], NULL, 10);
+        matrix.yx = (FT_Fixed)strtol(argv[transform_arg + 4], NULL, 10);
+        matrix.yy = (FT_Fixed)strtol(argv[transform_arg + 5], NULL, 10);
         FT_Vector delta;
-        delta.x = (FT_Pos)strtol(argv[13], NULL, 10);
-        delta.y = (FT_Pos)strtol(argv[14], NULL, 10);
+        delta.x = (FT_Pos)strtol(argv[transform_arg + 6], NULL, 10);
+        delta.y = (FT_Pos)strtol(argv[transform_arg + 7], NULL, 10);
         FT_Set_Transform(face.face, &matrix, &delta);
         printf("\"pixel_size\":{\"x\":%u,\"y\":%u,\"error\":%d},",
                pixel_width,
@@ -38259,7 +38298,8 @@ static int dispatch(int argc, char** argv) {
     if (argc == 7 && streq(argv[1], "--color-glyph-layer-case")) {
         return emit_color_glyph_layer_case(argc, argv);
     }
-    if ((argc == 7 || argc == 15) && streq(argv[1], "--color-glyph-clipbox-case")) {
+    if ((argc == 7 || argc == 9 || argc == 15 || argc == 17) &&
+        streq(argv[1], "--color-glyph-clipbox-case")) {
         return emit_color_glyph_clipbox_case(argc, argv);
     }
     if (argc == 6 && streq(argv[1], "--color-paint-malformed-case")) {

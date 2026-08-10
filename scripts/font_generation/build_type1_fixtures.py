@@ -391,7 +391,7 @@ def build_type1_encoding_fixtures() -> None:
         build_encoding_fixture(path, font_name, family_name, encoding)
 
 
-def build_attach_afm_fixture(path: Path) -> None:
+def build_attach_afm_fixture(path: Path, *, decimal_track_values: bool = False) -> None:
     """Build matching AFM data for the generated attach AFM Type 1 face.
 
     FreeType 2.14.3 parses Type 1 auxiliary AFM data through
@@ -400,7 +400,9 @@ def build_attach_afm_fixture(path: Path) -> None:
     point size, and maximum kern fields.  Keep the values intentionally simple
     and non-zero so later `FT_Attach_File`, `FT_Attach_Stream`, and
     `FT_Get_Track_Kerning` rows can prove observable attachment behavior
-    instead of only proving that a file opened.
+    instead of only proving that a file opened.  The track-kerning fixture can
+    request equivalent decimal spellings to exercise the AFM fixed-point
+    parser while preserving those values.
     """
 
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -424,9 +426,19 @@ def build_attach_afm_fixture(path: Path) -> None:
                 "EndCharMetrics",
                 "StartKernData",
                 "StartTrackKern 3",
-                "TrackKern -1 8 -30 72 -90",
-                "TrackKern 0 8 0 72 0",
-                "TrackKern 1 8 20 72 80",
+                *(
+                    [
+                        "TrackKern -1 .0 -30.0 72.0 -90.0",
+                        "TrackKern 0 +8.0 +0.0 72.0 0.0",
+                        "TrackKern 1 8.0 20.0 72.0 80.0",
+                    ]
+                    if decimal_track_values
+                    else [
+                        "TrackKern -1 8 -30 72 -90",
+                        "TrackKern 0 8 0 72 0",
+                        "TrackKern 1 8 20 72 80",
+                    ]
+                ),
                 "EndTrackKern",
                 "StartKernPairs 1",
                 "KPX A A -25",
@@ -492,7 +504,9 @@ def main() -> None:
         "Attach AFM Base",
         "Generated for fontdone Type 1 track-kerning coverage",
     )
-    build_attach_afm_fixture(INPUT_AUX_OUT_DIR / "track-kern-base.afm")
+    build_attach_afm_fixture(
+        INPUT_AUX_OUT_DIR / "track-kern-base.afm", decimal_track_values=True
+    )
     build_font_value_populated(INPUT_OUT_DIR / "font-value-populated.pfb")
     build_adobe_mm_two_axis(MM_OUT_DIR / "adobe-mm-two-axis.pfb")
     build_adobe_mm_two_axis(LEGACY_MM_OUT_DIR / "adobe-multiple-master.pfb")

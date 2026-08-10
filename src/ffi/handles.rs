@@ -5305,34 +5305,6 @@ impl StrokerState {
         true
     }
 
-    fn append_small_conic_segment(&mut self, control: FT_Vector, to: FT_Vector) -> bool {
-        let arc = [to, control, self.center];
-        let mut angle_in = self.angle_in;
-        let mut angle_out = self.angle_in;
-        if !Self::conic_is_small_enough(arc, &mut angle_in, &mut angle_out) {
-            return false;
-        }
-
-        // FreeType 2.14.3 `src/base/ftstroke.c:1395-1522` initializes or
-        // joins the current corner, then appends the offset conic arc to both
-        // borders.  This staged route handles already-small conics only;
-        // subdivision and wide-stroke negative-sector handling remain pending.
-        if self.first_point {
-            self.start_conic_subpath(angle_in);
-        } else {
-            self.angle_out = angle_in;
-            self.process_corner(0);
-        }
-
-        self.append_conic_offset_arc(control, to, self.center, angle_in, angle_out);
-
-        self.angle_in = angle_out;
-        self.center = to;
-        self.line_length = 0;
-        self.border_counts_valid = false;
-        true
-    }
-
     fn append_conic_segment(&mut self, control: FT_Vector, to: FT_Vector) -> bool {
         // FreeType 2.14.3 `src/base/ftstroke.c:1370-1535` subdivides larger
         // conics on a fixed stack until every arc is below
