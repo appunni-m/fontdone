@@ -51,7 +51,7 @@
       "case_id": "ftglyph.FT_Get_Glyph.error_unsupported_format_or_bad_slot_payload",
       "status": "routed",
       "operation": "get_glyph",
-      "required_route": "Synthetic glyph-slot formats and malformed SVG payloads reach the same FT_Get_Glyph class hooks and cleanup paths as pinned C, with exact output-pointer and allocation/free observations."
+      "required_route": "Synthetic glyph-slot formats, bitmap/SVG payloads, advance bounds, null-library validation, and allocator failures reach the same FT_Get_Glyph class hooks and cleanup paths as pinned C, with exact output-pointer and allocation/free observations."
     },
     {
       "case_id": "ftglyph.FT_Glyph_Copy.error_copy_hook_failure_cleans_target",

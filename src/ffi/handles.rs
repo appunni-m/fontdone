@@ -14896,6 +14896,33 @@ pub fn FT_Malformed_Get_GlyphSlot(face: &FT_Face, variant: FT_UInt) -> FT_GlyphS
                 delta: FT_Vector::default(),
             });
         }
+        4 => {
+            slot.format = FT_GLYPH_FORMAT_BITMAP;
+            slot.bitmap = Some(FT_Bitmap {
+                rows: 1,
+                width: 1,
+                pitch: 1,
+                buffer: vec![0],
+                num_grays: 1,
+                pixel_mode: 0,
+            });
+        }
+        5 => {
+            slot.format = FT_GLYPH_FORMAT_SVG;
+            slot.svg = Some(FT_SvgDocumentOwned {
+                svg_document: vec![0],
+                metrics: FT_Size_MetricsRec::default(),
+                units_per_EM: 0,
+                start_glyph_id: 0,
+                end_glyph_id: 0,
+                transform: FT_Matrix::default(),
+                delta: FT_Vector::default(),
+            });
+        }
+        6 => {
+            slot.format = FT_GLYPH_FORMAT_BITMAP;
+            slot.advance.x = 0x8000 * 64;
+        }
         _ => slot.format = 0x1234_5678,
     }
     slot

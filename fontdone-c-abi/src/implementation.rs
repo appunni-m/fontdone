@@ -7521,6 +7521,115 @@ pub fn abi_get_glyph_from_face(face: FT_Face, aglyph: *mut FT_Glyph) -> FT_Error
 }
 
 #[cfg(feature = "abi-test-support")]
+fn abi_get_glyph_external_allocation_failure(variant: FT_UInt) -> FT_Error {
+    let mut data = Box::new(AbiCustomMemoryData {
+        expected_memory: 0,
+        phase: AbiCustomMemoryPhase::NewLibrary,
+        events: Vec::new(),
+        blocks: BTreeMap::new(),
+        unknown_release: false,
+        fail_after: Some(if variant == 8 { 1 } else { 2 }),
+        allocation_count: 0,
+    });
+    let mut memory = Box::new(FT_MemoryRec {
+        user: ptr::from_mut(data.as_mut()).cast(),
+        alloc: Some(abi_custom_memory_alloc),
+        free: Some(abi_custom_memory_free),
+        realloc: Some(abi_custom_memory_realloc),
+    });
+    data.expected_memory = ptr::from_ref(&*memory).addr();
+    let mut library = ptr::null_mut();
+    let setup = FT_New_Library(memory.as_mut(), &mut library);
+    if setup != rust_ffi::FT_Err_Ok {
+        return setup;
+    }
+    let mut slot = FT_GlyphSlotRec {
+        library,
+        ..FT_GlyphSlotRec::default()
+    };
+    let mut document = FT_SVG_DocumentRec::default();
+    let mut svg_data = [0_u8; 1];
+    match variant {
+        9 => {
+            slot.format = rust_ffi::FT_GLYPH_FORMAT_BITMAP;
+            slot.bitmap.rows = 1;
+            slot.bitmap.width = 1;
+            slot.bitmap.pitch = 1;
+            slot.bitmap.buffer = ptr::from_mut(&mut svg_data[0]);
+        }
+        10 => {
+            slot.format = rust_ffi::FT_GLYPH_FORMAT_SVG;
+            document.svg_document = ptr::from_mut(&mut svg_data[0]);
+            document.svg_document_length = 1;
+            slot.other = ptr::from_mut(&mut document).cast();
+        }
+        _ => slot.format = rust_ffi::FT_GLYPH_FORMAT_BITMAP,
+    }
+    let mut glyph = 1usize as FT_Glyph;
+    let error = FT_Get_Glyph(ptr::from_mut(&mut slot), &mut glyph);
+    if error == rust_ffi::FT_Err_Ok && !glyph.is_null() {
+        FT_Done_Glyph(glyph);
+    }
+    let _ = FT_Done_Library(library);
+    error
+}
+
+#[cfg(feature = "abi-test-support")]
+pub fn abi_get_glyph_from_external_malformed_slot(
+    face: FT_Face,
+    variant: FT_UInt,
+    aglyph: *mut FT_Glyph,
+) -> FT_Error {
+    if variant >= 8 {
+        return abi_get_glyph_external_allocation_failure(variant);
+    }
+    let Some(state) = face_state(face) else {
+        return rust_ffi::FT_Err_Invalid_Argument;
+    };
+    let mut slot = FT_GlyphSlotRec {
+        library: state.library,
+        ..FT_GlyphSlotRec::default()
+    };
+    let mut document = FT_SVG_DocumentRec::default();
+    let mut bitmap_data = [0_u8; 1];
+    let mut svg_data = [0_u8; 1];
+    match variant {
+        0 => slot.format = 0x1234_5678,
+        1 => slot.format = rust_ffi::FT_GLYPH_FORMAT_BITMAP,
+        2 => slot.format = rust_ffi::FT_GLYPH_FORMAT_SVG,
+        3 => {
+            slot.format = rust_ffi::FT_GLYPH_FORMAT_SVG;
+            slot.other = ptr::from_mut(&mut document).cast();
+        }
+        4 => {
+            slot.format = rust_ffi::FT_GLYPH_FORMAT_BITMAP;
+            slot.bitmap.rows = 1;
+            slot.bitmap.width = 1;
+            slot.bitmap.pitch = 1;
+            slot.bitmap.buffer = bitmap_data.as_mut_ptr();
+        }
+        5 => {
+            slot.format = rust_ffi::FT_GLYPH_FORMAT_SVG;
+            document.svg_document = svg_data.as_mut_ptr();
+            document.svg_document_length = 1;
+            slot.other = ptr::from_mut(&mut document).cast();
+        }
+        6 => {
+            slot.format = rust_ffi::FT_GLYPH_FORMAT_BITMAP;
+            slot.advance.x = 0x8000 * 64;
+        }
+        7 => {
+            slot.library = ptr::null_mut();
+            slot.format = rust_ffi::FT_GLYPH_FORMAT_BITMAP;
+        }
+        _ => slot.format = 0x1234_5678,
+    }
+    // SAFETY: `slot` and the optional SVG record remain alive for the complete
+    // call, matching the borrowed public records supplied by a C caller.
+    FT_Get_Glyph(ptr::from_mut(&mut slot), aglyph)
+}
+
+#[cfg(feature = "abi-test-support")]
 pub fn abi_set_unsupported_glyph_slot(face: FT_Face) -> FT_Error {
     let Some(state) = face_state(face) else {
         return rust_ffi::FT_Err_Invalid_Argument;
@@ -10265,7 +10374,7 @@ fn get_glyph_from_external_slot(slot: &FT_GlyphSlotRec, out: NonNull<FT_Glyph>) 
         _ => return rust_ffi::FT_Err_Invalid_Glyph_Format,
     };
     let Some(state) = library_state_mut(slot.library) else {
-        return rust_ffi::FT_Err_Invalid_Slot_Handle as FT_Error;
+        return rust_ffi::FT_Err_Invalid_Argument;
     };
     let allocation_memory = state.allocation_memory;
     let allocation_block = match custom_memory_block(allocation_memory, glyph_size) {
@@ -10310,6 +10419,19 @@ fn get_glyph_from_external_slot(slot: &FT_GlyphSlotRec, out: NonNull<FT_Glyph>) 
             // `rows * abs(pitch)` readable bytes for FT_Bitmap_Copy.
             unsafe { slice::from_raw_parts(slot.bitmap.buffer, byte_len).to_vec() }
         };
+        let payload_allocation_block = if byte_len == 0 || slot.bitmap.buffer.is_null() {
+            ptr::null_mut()
+        } else {
+            match custom_memory_block(allocation_memory, byte_len) {
+                Ok(block) => block.unwrap_or(ptr::null_mut()),
+                Err(error) => {
+                    free_custom_memory_block(allocation_memory, allocation_block);
+                    // SAFETY: `out` is validated caller-provided output storage.
+                    unsafe { *out.as_ptr() = ptr::null_mut() };
+                    return error;
+                }
+            }
+        };
         let core = rust_ffi::FT_BitmapGlyphOwned {
             root,
             left: slot.bitmap_left,
@@ -10326,6 +10448,7 @@ fn get_glyph_from_external_slot(slot: &FT_GlyphSlotRec, out: NonNull<FT_Glyph>) 
         let mut owned = OwnedBitmapGlyph::new(core);
         owned.allocation_memory = allocation_memory;
         owned.allocation_block = allocation_block;
+        owned.payload_allocation_block = payload_allocation_block;
         Box::into_raw(Box::new(owned)).cast::<FT_GlyphRec>()
     } else {
         let Some(document) = non_null(slot.other.cast::<FT_SVG_DocumentRec>()) else {
@@ -10337,12 +10460,13 @@ fn get_glyph_from_external_slot(slot: &FT_GlyphSlotRec, out: NonNull<FT_Glyph>) 
         // SAFETY: `slot->other` is non-null and SVG slots expose an
         // `FT_SVG_DocumentRec` for the duration of this call.
         let document = unsafe { document.as_ref() };
-        let Ok(document_len) = usize::try_from(document.svg_document_length) else {
-            free_custom_memory_block(allocation_memory, allocation_block);
-            // SAFETY: `out` is validated caller-provided output storage.
-            unsafe { *out.as_ptr() = ptr::null_mut() };
-            return rust_ffi::FT_Err_Invalid_Slot_Handle as FT_Error;
-        };
+        // `FT_ULong` and `size_t` have the same width on every supported C ABI
+        // target, so the public SVG length is representable as `usize`.
+        #[allow(
+            clippy::cast_possible_truncation,
+            reason = "FT_ULong and size_t are equally wide on supported C ABI targets"
+        )]
+        let document_len = document.svg_document_length as usize;
         if document_len == 0 || document.svg_document.is_null() {
             free_custom_memory_block(allocation_memory, allocation_block);
             // SAFETY: `out` is validated caller-provided output storage.
@@ -10353,6 +10477,15 @@ fn get_glyph_from_external_slot(slot: &FT_GlyphSlotRec, out: NonNull<FT_Glyph>) 
         // readable bytes.
         let svg_document =
             unsafe { slice::from_raw_parts(document.svg_document, document_len).to_vec() };
+        let payload_allocation_block = match custom_memory_block(allocation_memory, document_len) {
+            Ok(block) => block.unwrap_or(ptr::null_mut()),
+            Err(error) => {
+                free_custom_memory_block(allocation_memory, allocation_block);
+                // SAFETY: `out` is validated caller-provided output storage.
+                unsafe { *out.as_ptr() = ptr::null_mut() };
+                return error;
+            }
+        };
         let core = rust_ffi::FT_SvgGlyphOwned {
             root,
             svg_document,
@@ -10384,6 +10517,7 @@ fn get_glyph_from_external_slot(slot: &FT_GlyphSlotRec, out: NonNull<FT_Glyph>) 
         let mut owned = OwnedSvgGlyph::new(core);
         owned.allocation_memory = allocation_memory;
         owned.allocation_block = allocation_block;
+        owned.payload_allocation_block = payload_allocation_block;
         Box::into_raw(Box::new(owned)).cast::<FT_GlyphRec>()
     };
     // SAFETY: `out` is validated caller-provided output storage.

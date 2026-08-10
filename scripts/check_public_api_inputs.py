@@ -5088,6 +5088,13 @@ def pending_route_reason(row: ConcreteInput) -> str | None:
                 "bitmap_format_with_outline_payload",
                 "svg_null_document",
                 "svg_zero_length_document",
+                "bitmap_format_with_payload",
+                "svg_valid_document",
+                "bitmap_format_with_advance_out_of_range",
+                "bitmap_format_with_null_library",
+                "bitmap_record_allocation_failure",
+                "bitmap_payload_allocation_failure",
+                "svg_payload_allocation_failure",
             ]
             and "font" in row.assets
             and "malformed_facade" in row.assets

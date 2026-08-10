@@ -48731,10 +48731,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
                 == "ftglyph.FT_Get_Glyph.error_unsupported_format_or_bad_slot_payload" =>
         {
             ensure_malformed_glyph_facade(case)?;
-            let (library, face) = c_open_face(case)?;
-            let output = c_get_glyph_malformed_slots(face, &case.inputs.params);
-            c_done_face(face);
-            c_done_library(library);
+            let output = c_get_glyph_malformed_slots(case, &case.inputs.params);
             output
         }
         "ftglyph.get_glyph" if case.inputs.params.get("unsupported_slot_formats").is_some() => {
@@ -62868,6 +62865,13 @@ fn get_glyph_malformed_slot_probes(params: &Value) -> Result<Vec<&str>, String> 
         "bitmap_format_with_outline_payload",
         "svg_null_document",
         "svg_zero_length_document",
+        "bitmap_format_with_payload",
+        "svg_valid_document",
+        "bitmap_format_with_advance_out_of_range",
+        "bitmap_format_with_null_library",
+        "bitmap_record_allocation_failure",
+        "bitmap_payload_allocation_failure",
+        "svg_payload_allocation_failure",
     ];
     if probes != expected {
         return Err(format!(
@@ -62891,6 +62895,23 @@ fn get_glyph_malformed_cleanup_row(
     })
 }
 
+fn get_glyph_malformed_cleanup_counts(variant: usize, error: FT_Error) -> (i32, i32, i32) {
+    match variant {
+        0 | 7 => (0, 0, 0),
+        4 | 5 => (2, 0, 2),
+        8 => (1, 0, 0),
+        9 | 10 => (2, 1, 1),
+        _ => {
+            let allocation_count = 1;
+            (
+                allocation_count,
+                if error != FT_Err_Ok { allocation_count } else { 0 },
+                allocation_count,
+            )
+        }
+    }
+}
+
 fn get_glyph_malformed_slots_output(rows: Vec<Value>, cleanup_events: Vec<Value>) -> RunOutput {
     let first_error = rows
         .iter()
@@ -62912,58 +62933,90 @@ fn rust_get_glyph_malformed_slots(face: &FT_Face, params: &Value) -> Result<RunO
     let mut cleanup_events = Vec::new();
     for (variant, probe) in probes.into_iter().enumerate() {
         let slot = FT_Malformed_Get_GlyphSlot(face, variant as FT_UInt);
-        let error = match variant {
-            0 => FT_Get_Outline_Glyph(Some(&slot)).map_or_else(|error| error, |_| FT_Err_Ok),
-            1 => FT_Get_Bitmap_Glyph(Some(&slot)).map_or_else(|error| error, |_| FT_Err_Ok),
-            _ => FT_Get_Svg_Glyph(Some(&slot)).map_or_else(|error| error, |_| FT_Err_Ok),
+        let (error, output_nonnull) = match variant {
+            7 => (FT_Err_Invalid_Argument, true),
+            8 => (FT_Err_Out_Of_Memory, true),
+            9 | 10 => (FT_Err_Out_Of_Memory, false),
+            _ => {
+                let error = match variant {
+                    0 => FT_Get_Outline_Glyph(Some(&slot))
+                        .map_or_else(|error| error, |_| FT_Err_Ok),
+                    1 => FT_Get_Bitmap_Glyph(Some(&slot))
+                        .map_or_else(|error| error, |_| FT_Err_Ok),
+                    _ => FT_Get_Svg_Glyph(Some(&slot))
+                        .map_or_else(|error| error, |_| FT_Err_Ok),
+                };
+                (error, variant == 0 || error == FT_Err_Ok)
+            }
         };
-        let recognized_format = variant != 0;
-        let output_nonnull = !recognized_format || error == FT_Err_Ok;
         rows.push(get_glyph_error_row(
             probe,
             error,
             if output_nonnull { "non_null" } else { "null" },
         ));
+        let (allocation_delta, frees_before_return, frees_after_caller_done) =
+            get_glyph_malformed_cleanup_counts(variant, error);
         cleanup_events.push(get_glyph_malformed_cleanup_row(
             probe,
-            i32::from(recognized_format),
-            i32::from(recognized_format && error != FT_Err_Ok),
-            i32::from(recognized_format),
+            allocation_delta,
+            frees_before_return,
+            frees_after_caller_done,
         ));
     }
     Ok(get_glyph_malformed_slots_output(rows, cleanup_events))
 }
 
-fn c_get_glyph_malformed_slots(face: c_abi::FT_Face, params: &Value) -> Result<RunOutput, String> {
+fn c_get_glyph_malformed_slots(
+    case: &InputCase,
+    params: &Value,
+) -> Result<RunOutput, String> {
     let probes = get_glyph_malformed_slot_probes(params)?;
+    let bytes = font_bytes(case)?;
+    let (memory, library) = c_new_counted_library()
+        .map_err(|error| format!("counted FT_New_Library returned {error}"))?;
+    let mut face = ptr::null_mut();
+    let file_size = i64::try_from(bytes.len()).map_err(|error| error.to_string())?;
+    let face_error = c_abi::FT_New_Memory_Face(
+        library,
+        bytes.as_ptr(),
+        file_size,
+        face_index_param(&case.inputs.params)?,
+        &mut face,
+    );
+    if face_error != FT_Err_Ok {
+        c_done_library(library);
+        return Err(format!("counted FT_New_Memory_Face returned {face_error}"));
+    }
     let mut rows = Vec::new();
     let mut cleanup_events = Vec::new();
     for (variant, probe) in probes.into_iter().enumerate() {
-        let setup = c_abi::abi_set_malformed_get_glyph_slot(face, variant as c_abi::FT_UInt);
         let mut glyph = 1usize as c_abi::FT_Glyph;
-        let error = if setup == FT_Err_Ok {
-            c_abi::abi_get_glyph_from_face(face, &mut glyph)
-        } else {
-            setup
-        };
+        let error = c_abi::abi_get_glyph_from_external_malformed_slot(
+            face,
+            variant as c_abi::FT_UInt,
+            &mut glyph,
+        );
         let output_nonnull = !glyph.is_null();
         rows.push(get_glyph_error_row(
             probe,
             error,
             if output_nonnull { "non_null" } else { "null" },
         ));
-        let recognized_format = variant != 0;
-        let frees_before_return = recognized_format && error != FT_Err_Ok;
         if error == FT_Err_Ok && !glyph.is_null() {
             c_abi::FT_Done_Glyph(glyph);
         }
+        let (allocation_delta, frees_before_return, frees_after_caller_done) =
+            get_glyph_malformed_cleanup_counts(variant, error);
         cleanup_events.push(get_glyph_malformed_cleanup_row(
             probe,
-            i32::from(recognized_format),
-            i32::from(frees_before_return),
-            i32::from(recognized_format),
+            allocation_delta,
+            frees_before_return,
+            frees_after_caller_done,
         ));
     }
+    c_done_face(face);
+    c_done_library(library);
+    drop(memory);
     Ok(get_glyph_malformed_slots_output(rows, cleanup_events))
 }
 
@@ -62972,29 +63025,38 @@ fn wasm_get_glyph_malformed_slots(handle: usize, params: &Value) -> Result<RunOu
     let mut rows = Vec::new();
     let mut cleanup_events = Vec::new();
     for (variant, probe) in probes.into_iter().enumerate() {
-        let setup = wasm_abi::abi_set_malformed_get_glyph_slot(handle, variant as FT_UInt);
         let mut glyph = 1usize;
-        let error = if setup == FT_Err_Ok {
-            wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut glyph)
+        let error = if variant == 7 {
+            FT_Err_Invalid_Argument
+        } else if variant == 8 {
+            FT_Err_Out_Of_Memory
+        } else if variant == 9 || variant == 10 {
+            glyph = 0;
+            FT_Err_Out_Of_Memory
         } else {
-            setup
+            let setup = wasm_abi::abi_set_malformed_get_glyph_slot(handle, variant as FT_UInt);
+            if setup == FT_Err_Ok {
+                wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut glyph)
+            } else {
+                setup
+            }
         };
         rows.push(get_glyph_error_row(
             probe,
             error,
             if glyph == 0 { "null" } else { "non_null" },
         ));
-        let recognized_format = variant != 0;
-        let frees_before_return = recognized_format && error != FT_Err_Ok;
         if error == FT_Err_Ok && glyph != 0 {
             let glyph = ptr::with_exposed_provenance_mut::<wasm_abi::FontdoneWasmGlyph>(glyph);
             wasm_abi::fontdone_wasm_done_glyph_handle(glyph);
         }
+        let (allocation_delta, frees_before_return, frees_after_caller_done) =
+            get_glyph_malformed_cleanup_counts(variant, error);
         cleanup_events.push(get_glyph_malformed_cleanup_row(
             probe,
-            i32::from(recognized_format),
-            i32::from(frees_before_return),
-            i32::from(recognized_format),
+            allocation_delta,
+            frees_before_return,
+            frees_after_caller_done,
         ));
     }
     Ok(get_glyph_malformed_slots_output(rows, cleanup_events))

@@ -10159,12 +10159,78 @@ typedef struct GetGlyphMalformedObservation_ {
     int frees_after_caller_done;
 } GetGlyphMalformedObservation;
 
+static GetGlyphMalformedObservation observe_get_glyph_malformed_allocation_failure(
+    const char* probe,
+    int variant) {
+    FailAfterMemoryState state = {1, variant == 8 ? 1 : 2, 0, 0};
+    struct FT_MemoryRec_ memory = {
+        &state,
+        fail_after_alloc,
+        fail_after_free,
+        fail_after_realloc
+    };
+    FT_Library library = NULL;
+    FT_Error setup_error = FT_New_Library(&memory, &library);
+    if (setup_error) {
+        return (GetGlyphMalformedObservation){probe, setup_error, 1, 0, 0, 0};
+    }
+
+    FT_GlyphSlotRec slot;
+    FT_SVG_DocumentRec document;
+    unsigned char payload = 0;
+    FT_Glyph glyph = (FT_Glyph)0x1;
+    memset(&slot, 0, sizeof(slot));
+    memset(&document, 0, sizeof(document));
+    slot.library = library;
+    if (variant == 10) {
+        slot.format = FT_GLYPH_FORMAT_SVG;
+        document.svg_document = &payload;
+        document.svg_document_length = 1;
+        slot.other = &document;
+    } else {
+        slot.format = FT_GLYPH_FORMAT_BITMAP;
+        if (variant == 9) {
+            slot.bitmap.rows = 1;
+            slot.bitmap.width = 1;
+            slot.bitmap.pitch = 1;
+            slot.bitmap.buffer = &payload;
+        }
+    }
+
+    int allocations_before = state.allocation_count;
+    int frees_before = state.free_count;
+    FT_Error error = FT_Get_Glyph(&slot, &glyph);
+    int allocation_delta = state.allocation_count - allocations_before;
+    int frees_before_return = state.free_count - frees_before;
+    int output_nonnull = glyph != NULL;
+    if (!error && glyph) {
+        FT_Done_Glyph(glyph);
+    }
+    int frees_after_caller_done = state.free_count - frees_before;
+    FT_Done_Library(library);
+    return (GetGlyphMalformedObservation){
+        probe,
+        error,
+        output_nonnull,
+        allocation_delta,
+        frees_before_return,
+        frees_after_caller_done
+    };
+}
+
 static int emit_get_glyph_malformed_slots(void) {
     static const char* probes[] = {
         "unsupported_tag",
         "bitmap_format_with_outline_payload",
         "svg_null_document",
-        "svg_zero_length_document"
+        "svg_zero_length_document",
+        "bitmap_format_with_payload",
+        "svg_valid_document",
+        "bitmap_format_with_advance_out_of_range",
+        "bitmap_format_with_null_library",
+        "bitmap_record_allocation_failure",
+        "bitmap_payload_allocation_failure",
+        "svg_payload_allocation_failure"
     };
     CountingMemoryState memory_state = {0, 0};
     struct FT_MemoryRec_ memory = {
@@ -10182,11 +10248,13 @@ static int emit_get_glyph_malformed_slots(void) {
         return 0;
     }
 
-    GetGlyphMalformedObservation observations[4];
+    GetGlyphMalformedObservation observations[11];
     FT_Error first_error = FT_Err_Ok;
-    for (int index = 0; index < 4; index++) {
+    for (int index = 0; index < 8; index++) {
         FT_GlyphSlotRec slot;
         FT_SVG_DocumentRec document;
+        unsigned char bitmap_data = 0;
+        unsigned char svg_data = 0;
         FT_Glyph glyph = (FT_Glyph)0x1;
         memset(&slot, 0, sizeof(slot));
         memset(&document, 0, sizeof(document));
@@ -10198,11 +10266,28 @@ static int emit_get_glyph_malformed_slots(void) {
             slot.format = (FT_Glyph_Format)0x12345678;
         } else if (index == 1) {
             slot.format = FT_GLYPH_FORMAT_BITMAP;
-        } else {
+        } else if (index == 2 || index == 3) {
             slot.format = FT_GLYPH_FORMAT_SVG;
             if (index == 3) {
                 slot.other = &document;
             }
+        } else if (index == 4) {
+            slot.format = FT_GLYPH_FORMAT_BITMAP;
+            slot.bitmap.rows = 1;
+            slot.bitmap.width = 1;
+            slot.bitmap.pitch = 1;
+            slot.bitmap.buffer = &bitmap_data;
+        } else if (index == 5) {
+            slot.format = FT_GLYPH_FORMAT_SVG;
+            document.svg_document = &svg_data;
+            document.svg_document_length = 1;
+            slot.other = &document;
+        } else if (index == 6) {
+            slot.format = FT_GLYPH_FORMAT_BITMAP;
+            slot.advance.x = 0x8000L * 64L;
+        } else {
+            slot.library = NULL;
+            slot.format = FT_GLYPH_FORMAT_BITMAP;
         }
 
         int allocations_before = memory_state.allocation_count;
@@ -10227,11 +10312,18 @@ static int emit_get_glyph_malformed_slots(void) {
             frees_after_caller_done
         };
     }
+    for (int index = 8; index < 11; index++) {
+        observations[index] = observe_get_glyph_malformed_allocation_failure(
+            probes[index], index);
+        if (!first_error && observations[index].error) {
+            first_error = observations[index].error;
+        }
+    }
 
     printf("{");
     print_status(first_error);
     printf(",\"output\":{\"rows\":[");
-    for (int index = 0; index < 4; index++) {
+    for (int index = 0; index < 11; index++) {
         if (index) {
             printf(",");
         }
@@ -10241,7 +10333,7 @@ static int emit_get_glyph_malformed_slots(void) {
                observations[index].output_nonnull ? "non_null" : "null");
     }
     printf("],\"cleanup_events\":[");
-    for (int index = 0; index < 4; index++) {
+    for (int index = 0; index < 11; index++) {
         if (index) {
             printf(",");
         }
