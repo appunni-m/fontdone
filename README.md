@@ -144,18 +144,18 @@ their exact worktree than the committed release snapshot.
 
 The latest current-worktree all-lane coverage snapshot was recorded on
 **2026-08-10** for the worktree based at commit
-`5ab9245b606882d6ff26693fc82703df8d4d6033`
-(Coverage MCP run `b00ce661-78c7-4bc5-8f0c-c2a6041feb31`, snapshot
-`17c23c7d-a240-4b55-b87b-79308c716e27`):
+`948d24625df79db9a2836124afda50facbc2ea9c`
+(Coverage MCP run `c44982bc-d500-4ddc-8de8-7dbbccd90d20`, snapshot
+`131c54db-5620-4ca2-9f88-7d3c121fe224`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,302 / 54,284 | 92.66% |
-| Branches | 10,049 / 12,541 | 80.13% |
+| Lines | 50,307 / 54,284 | 92.67% |
+| Branches | 10,051 / 12,541 | 80.15% |
 | Functions | 3,448 / 3,819 | 90.29% |
-| Regions | 69,070 / 75,347 | 91.67% |
+| Regions | 69,077 / 75,347 | 91.68% |
 
-The current managed validation completed in 61.583 seconds; its three split
+The current managed validation completed in 60.568 seconds; its three split
 backends passed all 7,620 runnable comparisons. Its nine shard processes split
 the same exact matrix into disjoint slices before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
@@ -178,6 +178,12 @@ than MCP ingestion or the C oracle, as the largest cold-run delay. The cold
 comparison run `9da2059c-8e05-424a-85f6-30e0b6e0c432` took 84.484 seconds,
 including a 67-second instrumented rebuild; the warm run above reused that
 binary.
+
+The new maintained `MONO` plus x-only-strength row for
+`FT_Bitmap_Embolden` closes the packed-bit tail-mask branch in
+`src/ffi/handles.rs`; focused, full-parity, and C-ABI contract evidence all
+remain oracle-backed. The measured aggregate change was +5 lines, +2
+branches, and +7 regions; function coverage was unchanged.
 
 The earlier coverage-speed change set `COVERAGE_TEST_DEBUG=0`, removing DWARF
 line tables while retaining LLVM source mapping; its historical cold build was
