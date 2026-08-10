@@ -92698,6 +92698,55 @@ fn bitmap_blend_output(case: &InputCase, backend: BitmapBlendBackend) -> Result<
         );
         return Ok(error(err));
     }
+    if scenario == "error_invalid_source_or_target_buffer" {
+        let (mut source, source_bytes) = bitmap_blend_source_record(FT_PIXEL_MODE_GRAY, false);
+        let mut target = FT_Bitmap_C {
+            pixel_mode: FT_PIXEL_MODE_BGRA as u8,
+            ..FT_Bitmap_C::default()
+        };
+        let mut target_offset = FT_Vector { x: -33, y: 130 };
+        let err = bitmap_blend_call(
+            backend,
+            &mut source,
+            source_bytes,
+            FT_Vector { x: 31, y: 95 },
+            &mut target,
+            None,
+            &mut target_offset,
+            BitmapBlendColor {
+                blue: 29,
+                green: 113,
+                red: 211,
+                alpha: 173,
+            },
+            true,
+        );
+        if err != FT_Err_Invalid_Argument {
+            return Ok(error(err));
+        }
+
+        let (mut unsupported_source, unsupported_bytes) =
+            bitmap_blend_source_record(99, false);
+        let mut empty_target = FT_Bitmap_C::default();
+        let mut empty_target_offset = FT_Vector { x: -33, y: 130 };
+        let err = bitmap_blend_call(
+            backend,
+            &mut unsupported_source,
+            unsupported_bytes,
+            FT_Vector { x: 31, y: 95 },
+            &mut empty_target,
+            None,
+            &mut empty_target_offset,
+            BitmapBlendColor {
+                blue: 29,
+                green: 113,
+                red: 211,
+                alpha: 173,
+            },
+            true,
+        );
+        return Ok(error(err));
+    }
     if scenario == "error_overflow_or_flow_mismatch" {
         let mut sample = bitmap_blend_default_sample();
         sample.existing_target = true;

@@ -2736,6 +2736,8 @@ subjects:
         description: Source and target offsets have their low six 26.6 bits cleared and the returned target offset matches C.
       - id: error_invalid_arguments_or_target_mode
         description: Null library/source/target/atarget_offset and non-empty non-BGRA target modes return C error classifications and write behavior.
+      - id: error_invalid_source_or_target_buffer
+        description: A BGRA target without a buffer and a source with an unsupported pixel mode both return Invalid_Argument before blending.
       - id: error_overflow_or_flow_mismatch
         description: Coordinate overflow and source/target pitch-flow mismatch return the same C error and preserve/release buffers exactly as C.
       - id: error_coordinate_overflow

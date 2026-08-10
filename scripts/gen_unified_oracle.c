@@ -4116,6 +4116,34 @@ static int emit_bitmap_blend(const char* scenario) {
         FT_Done_FreeType(library);
         return 0;
     }
+    if (streq(scenario, "error_invalid_source_or_target_buffer")) {
+        unsigned char source_bytes[96];
+        FT_Bitmap source;
+        FT_Bitmap target;
+        bitmap_blend_source(&source, source_bytes, FT_PIXEL_MODE_GRAY, 0);
+        FT_Bitmap_Init(&target);
+        target.pixel_mode = FT_PIXEL_MODE_BGRA;
+        err = FT_Bitmap_Blend(
+            library, &source, source_offset, &target, &target_offset, color);
+        if (target.buffer) {
+            FT_Bitmap_Done(library, &target);
+        }
+
+        unsigned char unsupported_bytes[96];
+        FT_Bitmap unsupported_source;
+        bitmap_blend_source(&unsupported_source, unsupported_bytes, (FT_Pixel_Mode)99, 0);
+        FT_Bitmap_Init(&target);
+        err = FT_Bitmap_Blend(
+            library, &unsupported_source, source_offset, &target, &target_offset, color);
+        if (target.buffer) {
+            FT_Bitmap_Done(library, &target);
+        }
+        printf("{");
+        print_status(err);
+        printf("}\n");
+        FT_Done_FreeType(library);
+        return 0;
+    }
     if (streq(scenario, "error_overflow_or_flow_mismatch")) {
         unsigned char source_bytes[96];
         FT_Bitmap source;

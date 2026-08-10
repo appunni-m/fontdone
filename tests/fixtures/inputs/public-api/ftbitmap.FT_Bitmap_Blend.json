@@ -10,6 +10,7 @@
     "success_empty_source_zero_rows_noop",
     "success_integerizes_offsets",
     "error_invalid_arguments_or_target_mode",
+    "error_invalid_source_or_target_buffer",
     "error_overflow_or_flow_mismatch",
     "error_coordinate_overflow"
   ],
@@ -511,6 +512,85 @@
           "Synthetic bitmap matrix covering all public pixel modes and pitch directions"
         ]
       }
+    },
+    {
+      "case_id": "ftbitmap.FT_Bitmap_Blend.error_invalid_source_or_target_buffer",
+      "subject": "ftbitmap.FT_Bitmap_Blend",
+      "case": "error_invalid_source_or_target_buffer",
+      "operation": "ftbitmap.bitmap_blend",
+      "schema": "bitmap_operation",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "f1",
+            "params": {
+              "scenario": "error_invalid_source_or_target_buffer",
+              "source_pixel_modes": [
+                "GRAY",
+                "unsupported:99"
+              ],
+              "target_initial_states": [
+                "BGRA_without_buffer",
+                "empty_bitmap"
+              ],
+              "offsets_26_6": [
+                [
+                  31,
+                  95
+                ]
+              ],
+              "flow": [
+                "positive_pitch"
+              ],
+              "load_flags": 0
+            },
+            "coverage": [
+              "ftbitmap.bitmap_blend:explicit-f1"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:error",
+        "header:ftbitmap",
+        "area:bitmap",
+        "error-trigger"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "target_validation": [
+            "BGRA target requires a non-null buffer",
+            "unsupported source pixel mode is rejected"
+          ],
+          "target_offset": "FT_Vector"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "target.rows",
+            "target.width",
+            "target.pitch",
+            "target.pixel_mode",
+            "target.buffer_bgra_bytes",
+            "target_offset",
+            "allocator.events"
+          ],
+          "compare_error_output": true
+        },
+        "error": "Invalid_Argument",
+        "fixture_requirements": [
+          "Synthetic grayscale source with an existing BGRA target record whose buffer is null",
+          "Synthetic source record with an unsupported pixel mode and valid backing bytes"
+        ]
+      },
+      "sources_checked": [
+        "freetype/src/base/ftbitmap.c:762-820",
+        "freetype/src/base/ftbitmap.c:1000-1058"
+      ]
     },
     {
       "case_id": "ftbitmap.FT_Bitmap_Blend.error_overflow_or_flow_mismatch",
