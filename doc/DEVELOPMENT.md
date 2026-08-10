@@ -283,11 +283,11 @@ Coverage and parity answer different questions. Executing a line or branch
 does not prove that its result matches C.
 
 The latest pushed-commit all-lane Coverage MCP run is
-`c6968b69-eaab-4193-ac74-5eb22c1222ac` (snapshot
-`70068174-e02b-4f7e-b063-3f6dd549f043`). It completed in 62.777 seconds and
-passed 7,646 / 7,646 runnable parity comparisons in the three split backends.
-The overall report is 50,523 / 54,373 lines, 10,079 / 12,537 branches,
-3,478 / 3,832 functions, and 69,374 / 75,474 regions. The dominant cold-run cost remains
+`2cb7c925-28fe-4af9-b3f5-8aa83d6d9fc8` (snapshot
+`ad13baed-650f-4893-a3f2-0ee4760fea46`). It completed in 60.363 seconds and
+passed 7,648 / 7,648 runnable parity comparisons in the three split backends.
+The overall report is 50,538 / 54,373 lines, 10,083 / 12,537 branches,
+3,478 / 3,832 functions, and 69,408 / 75,474 regions. The dominant cold-run cost remains
 instrumented compilation; warm shard execution and report ingestion are much
 smaller. The preceding cold run `da91cabd-0631-46ec-83b8-f3e609246ffe` took
 70.571 seconds, including 54.73 seconds of instrumented test-profile
@@ -370,14 +370,14 @@ Coverage MCP. Instrumented compilation remains the dominant cold component.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,523 / 54,373 | 92.92% |
-| Branches | 10,079 / 12,537 | 80.39% |
+| Lines | 50,538 / 54,373 | 92.95% |
+| Branches | 10,083 / 12,537 | 80.43% |
 | Functions | 3,478 / 3,832 | 90.76% |
-| Regions | 69,374 / 75,474 | 91.92% |
+| Regions | 69,408 / 75,474 | 91.96% |
 
-That latest run passed all 7,644 runnable parity comparisons with 0 failures;
+That latest run passed all 7,648 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`70068174-e02b-4f7e-b063-3f6dd549f043`. Coverage MCP accepts the current LLVM
+`ad13baed-650f-4893-a3f2-0ee4760fea46`. Coverage MCP accepts the current LLVM
 JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
 rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
 apply only to the named source commit, suite, and toolchain. They are not a
@@ -417,7 +417,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 716 tracked paths and no symlinks.
+The canonical input tree currently contains 717 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -619,7 +619,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,639 | executable parity tests and public contracts |
-| R04 | 716 | licensed canonical fixture inputs |
+| R04 | 717 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -627,7 +627,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,577** | **all retained paths** |
+| **Total** | **2,578** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

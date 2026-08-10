@@ -561,16 +561,17 @@ worktree at that point:
 | 164 | `b04801a` (PCF charset-encoding branch coverage) | Added generated `properties-iso8859-non-unicode.pcf` and `properties-iso646-non-irv.pcf` controls to the maintained `FT_New_Memory_Face.success_pcf_property_metadata_variants` route. The focused parity run `10b02d77-a68d-463e-aa78-88f0851357b6` passed 5 / 5; clean pushed-head full parity run `6f15260f-1e44-4d90-aaec-9f2f366890a6`, recorded by `c13a4300-be80-4659-95fe-8b0a7e00294c`, passed 7,644 / 7,644 runnable comparisons with 0 failures and 3 pending safety-extension cases. The route audit reports 7,647 concrete cases, 0 pending routes, 0 generic-fallback rows, and 218 / 218 function evidence in each ABI surface. Clean all-lane Coverage MCP run `fe441a5d-78c9-4da3-87ae-e0a07e37ad23`, snapshot `22e8e1d8-d127-48d7-a618-565a889cb5d3`, completed in 14.428 seconds and measured 50,317 / 54,278 lines, 10,075 / 12,537 branches, 3,448 / 3,819 functions, and 69,085 / 75,337 regions; `src/font.rs:1252-1253` now covers all ISO8859 and ISO646 encoding-condition branches. The C-ABI contract run `50a57027-4581-402d-82ca-b32b10ebe3b4` retains 10 / 12 categories: C01.7 5,387 / 5,387, C08.3 7,644 / 7,644, C11.3 7 / 8, and C12.3 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
 | 165 | `76a4530` (FT_Bitmap_Blend empty-source and same-bounds coverage routes) | Added maintained `FT_Bitmap_Blend` inputs for a nonzero-width zero-row source no-op and an existing 2x2 BGRA target whose bounds already match the source, exercising the empty-source branch and no-reallocation region through pinned C, Rust FFI, C ABI, and WASM. Focused parity run `182fecd1-184c-4328-8cc6-604243d26ae5` passed 1 / 1; clean pushed-head full parity run `72d8beb1-9503-4ae2-86bd-749cb4336abf`, recorded by `aa2021aa-143f-4888-a30e-3c5a89133dbf`, passed 7,646 / 7,646 runnable comparisons with 0 failures and 3 pending safety-extension cases. The route audit reports 7,649 concrete cases, 0 pending routes, 0 generic-fallback rows, and 218 / 218 function evidence in each ABI surface. Clean pushed-head all-lane Coverage MCP run `b2ee24de-5c6c-42b5-bb79-0a66e731d0c8`, snapshot `94eda3d1-849e-490a-a605-05140d85c612`, completed in 49.631 seconds and measured 50,318 / 54,278 lines, 10,078 / 12,537 branches, 3,448 / 3,819 functions, and 69,087 / 75,337 regions; `src/ffi/handles.rs` moved to 14,445 / 16,371 regions. The C-ABI contract run `aaf7f5b9-085a-4f25-8ee9-7f789066fb17` retains 10 / 12 categories: C01.7 5,389 / 5,389, C08.3 7,646 / 7,646, C11.3 7 / 8, and C12.3 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
 | 166 | `f6eb41b` (FT_Get_PS_Font_Value dispatch coverage routes) | Expanded maintained PostScript font-value inputs across scalar, array, string, blue-zone, stem-snap, encoding, invalid-key, unsupported-service, non-PostScript, length, index, and null-face behavior; implemented the missing pure-Rust dispatch from parsed Type 1 data and corrected host-width `FT_Fixed` outputs. Focused parity run `1f6b334e-5228-462a-8afb-e28e37903c86` passed; committed full parity run `2ca79658-a6b5-409d-b1c2-0766d5c40924`, recorded by `b83a232e-0dbb-4cd9-847e-08e226ab9925`, passed 7,646 / 7,646 runnable comparisons with 0 failures and 3 pending safety-extension cases. The route audit reports 7,649 concrete cases, 0 pending routes, 0 generic-fallback rows, and 218 / 218 function evidence in each ABI surface. Committed all-lane Coverage MCP run `c6968b69-eaab-4193-ac74-5eb22c1222ac`, snapshot `70068174-e02b-4f7e-b063-3f6dd549f043`, completed in 62.777 seconds and measured 50,523 / 54,373 lines, 10,079 / 12,537 branches, 3,478 / 3,832 functions, and 69,374 / 75,474 regions; `src/ffi/handles.rs` moved to 14,732 / 16,508 regions. The C-ABI contract run `119cd539-6cee-4605-be9f-7b7babe3dd50` retains 10 / 12 categories: C01.7 5,389 / 5,389, C08.3 7,646 / 7,646, C11.3 7 / 8, and C12.3 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
+| 167 | `03bf2e7` (malformed COLRv1 layer-list bounds parity route) | Added the maintained `colr-v1-malformed-layer-list.ttf` derivative and a real `FT_Get_Paint` case whose `PaintColrLayers` first-layer index exceeds the three-entry layer list. The pinned C oracle and pure-Rust FFI, C ABI, and WASM routes now agree on the malformed-format rejection while preserving the paint sentinel; the bounds-rejection region in `parse_colr_v1_paint` is exercised without a unit-only route. Focused parity passed 1 / 1; pushed-head full parity run `bf9a4027-1c0e-4530-bc71-9537025090dd`, recorded by `ebc3ea0c-775b-48f0-a294-6e23b700f501`, passed 7,648 / 7,648 runnable comparisons with 0 failures and 3 pending safety-extension cases. The route audit reports 7,651 concrete cases, 0 pending routes, 0 generic-fallback rows, and 218 / 218 function evidence in each ABI surface. Pushed-head all-lane Coverage MCP run `2cb7c925-28fe-4af9-b3f5-8aa83d6d9fc8`, snapshot `ad13baed-650f-4893-a3f2-0ee4760fea46`, completed in 60.363 seconds and measured 50,538 / 54,373 lines, 10,083 / 12,537 branches, 3,478 / 3,832 functions, and 69,408 / 75,474 regions. |
 
 The current pushed-head parity verification is Coverage MCP parity run
-`2ca79658-a6b5-409d-b1c2-0766d5c40924`, recorded by
-`b83a232e-0dbb-4cd9-847e-08e226ab9925`: it passed 7,646 / 7,646 runnable
+`bf9a4027-1c0e-4530-bc71-9537025090dd`, recorded by
+`ebc3ea0c-775b-48f0-a294-6e23b700f501`: it passed 7,648 / 7,648 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
-route audit reports **7,649 concrete cases, 0 pending routes and 0 generic-fallback rows**, with
+route audit reports **7,651 concrete cases, 0 pending routes and 0 generic-fallback rows**, with
 218 / 218 function routes present in each ABI surface. The source-digest
 attestation was refreshed in `doc/runtime_parity_evidence.json`; its current
 parity-tree digest is
-`5b81f0a54e481c444080af3f9ee0386191c0ce25c8b995e94a0bbf5013997680`.
+`5b8d1d0040d6671da72f3ebfa1f64cd94cb268a8b170411cfa285c5922e68453`.
 The tracked C-ABI scorecard is **10 / 12 categories complete**; C01.7 is
 5,389 / 5,389, C08.3 is 7,646 / 7,646, C11.3 is 7 / 8, and C12.3 is 1 / 5.
 The Windows import-library item and four fresh target-lane bundles remain.
@@ -584,11 +585,11 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current pushed-head all-lane run `c6968b69-eaab-4193-ac74-5eb22c1222ac`
-completed in 62.777 seconds with snapshot
-`70068174-e02b-4f7e-b063-3f6dd549f043`. It measured 50,523 / 54,373 lines,
-10,079 / 12,537 branches, 3,478 / 3,832 functions, and 69,374 / 75,474
-regions; the nine process-local shard writers split the 7,646 runnable cases
+The current pushed-head all-lane run `2cb7c925-28fe-4af9-b3f5-8aa83d6d9fc8`
+completed in 60.363 seconds with snapshot
+`ad13baed-650f-4893-a3f2-0ee4760fea46`. It measured 50,538 / 54,373 lines,
+10,083 / 12,537 branches, 3,478 / 3,832 functions, and 69,408 / 75,474
+regions; the nine process-local shard writers split the 7,648 runnable cases
 before report generation. On this 12-logical-CPU host the adaptive
 default uses three shards per backend; constrained runners use two, and
 `COVERAGE_UNIFIED_SHARDS=1` restores the earlier three-process split. The
