@@ -91734,6 +91734,67 @@ fn bitmap_blend_output(case: &InputCase, backend: BitmapBlendBackend) -> Result<
             "runs": [run_output_json(ok(bitmap_blend_json(&target, &target_offset)))]
         })));
     }
+    if scenario == "success_empty_source_zero_rows_noop" {
+        let (mut source, source_bytes) =
+            bitmap_blend_source_record(FT_PIXEL_MODE_GRAY, false);
+        source.rows = 0;
+        let mut target = FT_Bitmap_C::default();
+        let mut target_offset = FT_Vector { x: -33, y: 130 };
+        let err = bitmap_blend_call(
+            backend,
+            &mut source,
+            source_bytes,
+            FT_Vector { x: 31, y: 95 },
+            &mut target,
+            None,
+            &mut target_offset,
+            BitmapBlendColor {
+                blue: 29,
+                green: 113,
+                red: 211,
+                alpha: 173,
+            },
+            true,
+        );
+        if err != FT_Err_Ok {
+            return Ok(error(err));
+        }
+        return Ok(ok(json!({
+            "runs": [run_output_json(ok(bitmap_blend_json(&target, &target_offset)))]
+        })));
+    }
+    if scenario == "success_existing_bgra_same_bounds_preserves" {
+        let (mut source, source_bytes) =
+            bitmap_blend_source_record(FT_PIXEL_MODE_GRAY, false);
+        source.width = 2;
+        source.rows = 2;
+        source.pitch = 2;
+        let mut target = FT_Bitmap_C::default();
+        let mut target_offset = FT_Vector { x: 64, y: 128 };
+        bitmap_blend_prepopulate(backend, &mut target, &mut target_offset)?;
+        let err = bitmap_blend_call(
+            backend,
+            &mut source,
+            source_bytes,
+            FT_Vector { x: 64, y: 128 },
+            &mut target,
+            None,
+            &mut target_offset,
+            BitmapBlendColor {
+                blue: 29,
+                green: 113,
+                red: 211,
+                alpha: 173,
+            },
+            true,
+        );
+        if err != FT_Err_Ok {
+            return Ok(error(err));
+        }
+        return Ok(ok(json!({
+            "runs": [run_output_json(ok(bitmap_blend_json(&target, &target_offset)))]
+        })));
+    }
     if scenario == "error_invalid_arguments_or_target_mode" {
         bitmap_blend_null_argument_errors(backend)?;
         let mut sample = bitmap_blend_default_sample();

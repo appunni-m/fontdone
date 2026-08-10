@@ -2724,10 +2724,14 @@ subjects:
         description: Blending into an FT_Bitmap_Init target allocates BGRA storage, sets pitch to 4*width, and updates target offset like C.
       - id: success_existing_bgra_reallocates_or_preserves
         description: Blending into an existing BGRA target expands or preserves the target rectangle and pixel bytes exactly like C.
+      - id: success_existing_bgra_same_bounds_preserves
+        description: Blending into an existing BGRA target with identical bounds preserves its allocation shape and updates pixels exactly like C.
       - id: success_source_pixel_modes_and_flow
         description: MONO, GRAY2, GRAY4, GRAY, LCD, LCD_V, BGRA, and NONE sources with positive and negative pitch produce exact C BGRA bytes or the defined no-op.
       - id: success_empty_source_noop
         description: A zero-width source returns success without allocating or mutating the empty BGRA target, matching pinned C.
+      - id: success_empty_source_zero_rows_noop
+        description: A nonzero-width source with zero rows returns success without reading source storage or mutating the empty BGRA target, matching pinned C.
       - id: success_integerizes_offsets
         description: Source and target offsets have their low six 26.6 bits cleared and the returned target offset matches C.
       - id: error_invalid_arguments_or_target_mode

@@ -3907,6 +3907,36 @@ static int emit_bitmap_blend_success_run(
     return 0;
 }
 
+static int emit_bitmap_blend_same_bounds_success_run(FT_Library library, FT_Color color) {
+    unsigned char source_bytes[96];
+    FT_Bitmap source;
+    FT_Bitmap target;
+    FT_Vector source_offset = { 64, 128 };
+    FT_Vector target_offset = { 64, 128 };
+
+    FT_Bitmap_Init(&target);
+    bitmap_blend_source(&source, source_bytes, FT_PIXEL_MODE_GRAY, 0);
+    source.width = 2;
+    source.rows = 2;
+    source.pitch = 2;
+
+    FT_Error err = bitmap_blend_prepopulate(library, &target, &target_offset);
+    if (!err) {
+        err = FT_Bitmap_Blend(
+            library, &source, source_offset, &target, &target_offset, color);
+    }
+
+    printf("{");
+    print_status(err);
+    if (!err) {
+        printf(",\"output\":");
+        print_blend_run_output(&target, &target_offset);
+    }
+    printf("}");
+    if (target.buffer) FT_Bitmap_Done(library, &target);
+    return 0;
+}
+
 static int emit_bitmap_embolden(const char* scenario) {
     FT_Library library = NULL;
     FT_Error err = FT_Init_FreeType(&library);
@@ -3998,6 +4028,32 @@ static int emit_bitmap_blend(const char* scenario) {
 
         bitmap_blend_source(&source, source_bytes, FT_PIXEL_MODE_GRAY, 0);
         source.width = 0;
+        FT_Bitmap_Init(&target);
+        err = FT_Bitmap_Blend(
+            library, &source, source_offset, &target, &empty_target_offset, color);
+
+        printf("{");
+        print_status(err);
+        if (!err) {
+            printf(",\"output\":{\"runs\":[{");
+            print_status(err);
+            printf(",\"output\":");
+            print_blend_run_output(&target, &empty_target_offset);
+            printf("}]}");
+        }
+        printf("}\n");
+        if (target.buffer) FT_Bitmap_Done(library, &target);
+        FT_Done_FreeType(library);
+        return 0;
+    }
+    if (streq(scenario, "success_empty_source_zero_rows_noop")) {
+        unsigned char source_bytes[96];
+        FT_Bitmap source;
+        FT_Bitmap target;
+        FT_Vector empty_target_offset = { -33, 130 };
+
+        bitmap_blend_source(&source, source_bytes, FT_PIXEL_MODE_GRAY, 0);
+        source.rows = 0;
         FT_Bitmap_Init(&target);
         err = FT_Bitmap_Blend(
             library, &source, source_offset, &target, &empty_target_offset, color);
@@ -4140,6 +4196,8 @@ static int emit_bitmap_blend(const char* scenario) {
         }
     } else if (streq(scenario, "success_existing_bgra_reallocates_or_preserves")) {
         emit_bitmap_blend_success_run(library, FT_PIXEL_MODE_GRAY, 0, 1, source_offset, target_offset, color);
+    } else if (streq(scenario, "success_existing_bgra_same_bounds_preserves")) {
+        emit_bitmap_blend_same_bounds_success_run(library, color);
     } else if (streq(scenario, "success_integerizes_offsets")) {
         FT_Vector frac_source = { 127, -65 };
         FT_Vector frac_target = { 95, 193 };
