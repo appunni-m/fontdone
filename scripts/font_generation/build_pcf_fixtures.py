@@ -270,6 +270,17 @@ def main() -> None:
             truncated_metrics_payload,
         )
     )
+    oversized_metrics_payload = align4(
+        struct.pack("<IH", PCF_COMPRESSED_METRICS, 0xFFFF) + bytes(5)
+    )
+    oversized_metrics_data = build_pcf(
+        replace_table(
+            tables,
+            PCF_METRICS,
+            PCF_COMPRESSED_METRICS,
+            oversized_metrics_payload,
+        )
+    )
     accelerators_format_mismatch_data = build_pcf(
         replace_table(tables, PCF_ACCELERATORS, PCF_COMPRESSED_METRICS, accelerators_table())
     )
@@ -323,6 +334,21 @@ def main() -> None:
     encoding_bounds_data = build_pcf(
         replace_table(tables, PCF_BDF_ENCODINGS, 0, bytes(encoding_bounds_payload))
     )
+    encoding_last_column_payload = bytearray(encodings_table())
+    struct.pack_into("<HH", encoding_last_column_payload, 4, 0, 0x100)
+    encoding_last_column_data = build_pcf(
+        replace_table(tables, PCF_BDF_ENCODINGS, 0, bytes(encoding_last_column_payload))
+    )
+    encoding_row_bounds_payload = bytearray(encodings_table())
+    struct.pack_into("<HH", encoding_row_bounds_payload, 8, 1, 0)
+    encoding_row_bounds_data = build_pcf(
+        replace_table(tables, PCF_BDF_ENCODINGS, 0, bytes(encoding_row_bounds_payload))
+    )
+    encoding_last_row_payload = bytearray(encodings_table())
+    struct.pack_into("<HH", encoding_last_row_payload, 8, 0, 0x100)
+    encoding_last_row_data = build_pcf(
+        replace_table(tables, PCF_BDF_ENCODINGS, 0, bytes(encoding_last_row_payload))
+    )
     truncated_encodings_payload = encodings_table()[:14]
     truncated_encodings_data = build_pcf(
         replace_table(tables, PCF_BDF_ENCODINGS, 0, truncated_encodings_payload)
@@ -331,6 +357,16 @@ def main() -> None:
     struct.pack_into("<H", invalid_encoding_glyph_payload, 14, 0xFFFF)
     invalid_encoding_glyph_data = build_pcf(
         replace_table(tables, PCF_BDF_ENCODINGS, 0, bytes(invalid_encoding_glyph_payload))
+    )
+    out_of_range_encoding_glyph_payload = bytearray(encodings_table())
+    struct.pack_into("<H", out_of_range_encoding_glyph_payload, 14, 1)
+    out_of_range_encoding_glyph_data = build_pcf(
+        replace_table(
+            tables,
+            PCF_BDF_ENCODINGS,
+            0,
+            bytes(out_of_range_encoding_glyph_payload),
+        )
     )
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -429,6 +465,7 @@ def main() -> None:
     write_fixture("metrics-format-mismatch.pcf", metrics_format_mismatch_data)
     write_fixture("unsupported-metrics-format.pcf", unsupported_metrics_data)
     write_fixture("truncated-metrics.pcf", truncated_metrics_data)
+    write_fixture("oversized-metrics-count.pcf", oversized_metrics_data)
     write_fixture("accelerators-format-mismatch.pcf", accelerators_format_mismatch_data)
     write_fixture("unsupported-accelerators-format.pcf", unsupported_accelerators_data)
     write_fixture("truncated-accelerators.pcf", truncated_accelerators_data)
@@ -438,8 +475,12 @@ def main() -> None:
     write_fixture("encodings-format-mismatch.pcf", encodings_format_mismatch_data)
     write_fixture("unsupported-encodings-format.pcf", unsupported_encodings_data)
     write_fixture("encoding-bounds.pcf", encoding_bounds_data)
+    write_fixture("encoding-last-column-bounds.pcf", encoding_last_column_data)
+    write_fixture("encoding-row-bounds.pcf", encoding_row_bounds_data)
+    write_fixture("encoding-last-row-bounds.pcf", encoding_last_row_data)
     write_fixture("truncated-encodings.pcf", truncated_encodings_data)
     write_fixture("invalid-encoding-glyph.pcf", invalid_encoding_glyph_data)
+    write_fixture("out-of-range-encoding-glyph.pcf", out_of_range_encoding_glyph_data)
 
 
 if __name__ == "__main__":

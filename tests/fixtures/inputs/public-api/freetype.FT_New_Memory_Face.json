@@ -2196,6 +2196,23 @@
             "coverage": ["pcf:truncated-metrics"]
           },
           {
+            "id": "pcf-oversized-metrics-count",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/oversized-metrics-count.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/oversized-metrics-count.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:metrics-count-upper-bound"]
+          },
+          {
             "id": "pcf-accelerators-format-mismatch",
             "assets": {
               "font_bytes": {
@@ -2349,6 +2366,57 @@
             "coverage": ["pcf:encoding-bounds"]
           },
           {
+            "id": "pcf-encoding-last-column-bounds",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/encoding-last-column-bounds.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/encoding-last-column-bounds.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:encoding-last-column-bounds"]
+          },
+          {
+            "id": "pcf-encoding-row-bounds",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/encoding-row-bounds.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/encoding-row-bounds.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:encoding-row-bounds"]
+          },
+          {
+            "id": "pcf-encoding-last-row-bounds",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/encoding-last-row-bounds.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/encoding-last-row-bounds.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:encoding-last-row-bounds"]
+          },
+          {
             "id": "pcf-truncated-encodings",
             "assets": {
               "font_bytes": {
@@ -2381,6 +2449,23 @@
             },
             "params": {"variants": [{"face_index": 0}]},
             "coverage": ["pcf:invalid-encoding-glyph"]
+          },
+          {
+            "id": "pcf-out-of-range-encoding-glyph",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/out-of-range-encoding-glyph.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/out-of-range-encoding-glyph.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:out-of-range-encoding-glyph"]
           },
           {
             "id": "winfnt-short-header",
