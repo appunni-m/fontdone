@@ -282,14 +282,17 @@ checkout normally runs `make c-abi-contract`.
 Coverage and parity answer different questions. Executing a line or branch
 does not prove that its result matches C.
 
-The latest source-bound all-lane Coverage MCP run is
-`edd9424a-33ca-4e6a-b044-e085a579af28` (snapshot
-`da0cd1e0-88f0-4d18-af40-9f48def342bb`). It completed in 14.572 seconds and
-passed 7,639 / 7,639 runnable parity comparisons in the three split backends.
-The overall report is 50,314 / 54,278 lines, 10,068 / 12,537 branches,
-3,448 / 3,819 functions, and 69,080 / 75,337 regions. The dominant cold-run cost remains
+The latest pushed-commit all-lane Coverage MCP run is
+`fe441a5d-78c9-4da3-87ae-e0a07e37ad23` (snapshot
+`22e8e1d8-d127-48d7-a618-565a889cb5d3`). It completed in 14.428 seconds and
+passed 7,644 / 7,644 runnable parity comparisons in the three split backends.
+The overall report is 50,317 / 54,278 lines, 10,075 / 12,537 branches,
+3,448 / 3,819 functions, and 69,085 / 75,337 regions. The dominant cold-run cost remains
 instrumented compilation; warm shard execution and report ingestion are much
-smaller.
+smaller. The preceding cold run `da91cabd-0631-46ec-83b8-f3e609246ffe` took
+70.571 seconds, including 54.73 seconds of instrumented test-profile
+compilation; the warm run above took 14.428 seconds. This identifies cache-miss
+compilation, not Coverage MCP ingestion, as the speed bottleneck.
 
 The measured MONO plus x-only-strength `FT_Bitmap_Embolden` parity row now
 reaches the packed-bit tail-mask branch in `src/ffi/handles.rs`; the focused
@@ -367,14 +370,14 @@ Coverage MCP. Instrumented compilation remains the dominant cold component.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,314 / 54,278 | 92.70% |
-| Branches | 10,068 / 12,537 | 80.31% |
+| Lines | 50,317 / 54,278 | 92.70% |
+| Branches | 10,075 / 12,537 | 80.36% |
 | Functions | 3,448 / 3,819 | 90.29% |
-| Regions | 69,080 / 75,337 | 91.69% |
+| Regions | 69,085 / 75,337 | 91.70% |
 
-That latest run passed all 7,639 runnable parity comparisons with 0 failures;
+That latest run passed all 7,644 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`da0cd1e0-88f0-4d18-af40-9f48def342bb`. Coverage MCP accepts the current LLVM
+`22e8e1d8-d127-48d7-a618-565a889cb5d3`. Coverage MCP accepts the current LLVM
 JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
 rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
 apply only to the named source commit, suite, and toolchain. They are not a
@@ -414,7 +417,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 711 tracked paths and no symlinks.
+The canonical input tree currently contains 716 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -616,7 +619,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,639 | executable parity tests and public contracts |
-| R04 | 711 | licensed canonical fixture inputs |
+| R04 | 716 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -624,7 +627,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,572** | **all retained paths** |
+| **Total** | **2,577** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
