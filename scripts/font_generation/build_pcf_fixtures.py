@@ -253,6 +253,16 @@ def main() -> None:
             *tables[1:],
         ]
     )
+    iso8859_non_unicode_data = build_pcf(
+        [
+            (
+                PCF_PROPERTIES,
+                0,
+                properties_table(charset_registry="ISO8859", charset_encoding="2"),
+            ),
+            *tables[1:],
+        ]
+    )
     iso646_data = build_pcf(
         [
             (
@@ -261,6 +271,16 @@ def main() -> None:
                 properties_table(
                     charset_registry="ISO646.1991", charset_encoding="IRV"
                 ),
+            ),
+            *tables[1:],
+        ]
+    )
+    iso646_non_irv_data = build_pcf(
+        [
+            (
+                PCF_PROPERTIES,
+                0,
+                properties_table(charset_registry="ISO646.1991", charset_encoding="ASCII"),
             ),
             *tables[1:],
         ]
@@ -494,7 +514,9 @@ def main() -> None:
 
     write_fixture("metrics-format-mismatch.pcf", metrics_format_mismatch_data)
     write_fixture("properties-iso8859.pcf", iso8859_data)
+    write_fixture("properties-iso8859-non-unicode.pcf", iso8859_non_unicode_data)
     write_fixture("properties-iso646.pcf", iso646_data)
+    write_fixture("properties-iso646-non-irv.pcf", iso646_non_irv_data)
     write_fixture("properties-non-atom-family.pcf", non_atom_family_data)
     write_fixture("unsupported-metrics-format.pcf", unsupported_metrics_data)
     write_fixture("truncated-metrics.pcf", truncated_metrics_data)

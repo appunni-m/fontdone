@@ -1552,6 +1552,15 @@
             "coverage": ["pcf:properties-iso8859-unicode-charmap"]
           },
           {
+            "id": "pcf-properties-iso8859-non-unicode",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso8859-non-unicode.pcf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso8859-non-unicode.pcf"}
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:properties-iso8859-non-unicode-charmap"]
+          },
+          {
             "id": "pcf-properties-iso646",
             "assets": {
               "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso646.pcf"},
@@ -1559,6 +1568,15 @@
             },
             "params": {"variants": [{"face_index": 0}]},
             "coverage": ["pcf:properties-iso646-unicode-charmap"]
+          },
+          {
+            "id": "pcf-properties-iso646-non-irv",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso646-non-irv.pcf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso646-non-irv.pcf"}
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:properties-iso646-non-irv-charmap"]
           },
           {
             "id": "pcf-properties-non-atom-family",
