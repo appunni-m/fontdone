@@ -91,6 +91,13 @@ as a valid solid control.  The fixture therefore exercises the pinned lazy
 `FT_Get_Paint` failure format for PaintGlyph, PaintTransform, PaintTranslate,
 PaintScale, PaintRotate, PaintSkew, and both PaintComposite child pointers.
 
+`malformed/colr-v1-malformed-layer-list.ttf` is a deterministic derivative
+that preserves the first PaintColrLayers root but replaces its
+`FirstLayerIndex` with `4`, beyond the maintained three-entry LayerV1List.  The
+root remains discoverable through `FT_Get_Color_Glyph_Paint`, while
+`FT_Get_Paint` exercises the pinned layer-bounds rejection; glyph 50 remains
+the valid solid control.
+
 ## 3. Review requirements
 
 Before adding or changing a generator:

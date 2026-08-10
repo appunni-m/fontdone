@@ -283,6 +283,14 @@
             "coverage": ["grays:invalid-conic-bad-tag"]
           },
           {
+            "id": "invalid-conic-bad-tag-mono-error-output",
+            "assets": {"outline": {"kind": "synthetic_outline", "id": "outlines/render/invalid-conic-bad-tag.json", "generator": "unified-inline-outline-v1"}, "bitmap": {"kind": "bitmap_target", "width": 32, "rows": 32, "pitch": 32, "pixel_mode": "FT_PIXEL_MODE_GRAY", "num_grays": 256}},
+            "params": {"raster_params": {"flags": [], "target": "bitmap", "source": "ignored_sentinel"}, "library": "valid"},
+            "expect_error": true,
+            "expectation": {"compare": {"compare_error_output": true}},
+            "coverage": ["mono:error-output-after-raster-validation"]
+          },
+          {
             "id": "invalid-cubic-single-control",
             "assets": {"outline": {"kind": "synthetic_outline", "id": "outlines/render/invalid-cubic-single-control.json", "generator": "unified-inline-outline-v1"}, "bitmap": {"kind": "bitmap_target", "width": 32, "rows": 32, "pitch": 32, "pixel_mode": "FT_PIXEL_MODE_GRAY", "num_grays": 256}},
             "params": {"raster_params": {"flags": ["FT_RASTER_FLAG_AA"], "target": "bitmap", "source": "ignored_sentinel"}, "library": "valid"},

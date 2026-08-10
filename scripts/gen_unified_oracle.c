@@ -21645,6 +21645,11 @@ static int emit_color_paint_malformed_case(int argc, char** argv) {
         }
         malformed_count = 8;
         control_glyph = 50;
+    } else if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_layer_list_index_returns_false")) {
+        labels[0] = "paint_colr_layers_first_layer_index_out_of_range";
+        glyphs[0] = 36;
+        malformed_count = 1;
+        control_glyph = 50;
     } else {
         labels[0] = "paint_format_33";
         labels[1] = streq(

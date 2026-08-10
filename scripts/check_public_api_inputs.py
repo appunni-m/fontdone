@@ -1211,6 +1211,7 @@ def exact_error_public_route(operation: str, case_id: str, expect_error: bool) -
         "ftcolor.FT_COLOR_ROOT_TRANSFORM_MAX.invalid_runtime_behavior",
         "ftcolor.FT_COLR_PAINTFORMAT_UNSUPPORTED.invalid_format_returns_false",
         "ftcolor.FT_COLR_PAINT_FORMAT_MAX.read_paint_rejects_max_and_above",
+        "ftcolor.FT_Get_Paint.malformed_layer_list_index_returns_false",
         "ftcolor.FT_Get_Color_Glyph_ClipBox.null_and_non_sfnt_rejected",
         "ftcolor.FT_Get_Color_Glyph_ClipBox.malformed_clipbox_false_behavior",
         "ftcolor.FT_Get_Color_Glyph_Layer.invalid_inputs_rejected",
@@ -6695,6 +6696,12 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
         == "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false"
     ):
         return "FT_Get_Paint malformed child-offset rejection validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "ftcolor.get_paint_malformed"
+        and row.case_id
+        == "ftcolor.FT_Get_Paint.malformed_layer_list_index_returns_false"
+    ):
+        return "FT_Get_Paint malformed PaintColrLayers bounds rejection validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
     if (
         row.operation == "ftcolor.get_paint_malformed"
         and row.case_id

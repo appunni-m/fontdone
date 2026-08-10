@@ -4121,6 +4121,8 @@ subjects:
         description: Opaque paints with insert_root_transform set return a TRANSFORM paint that wraps the original opaque paint and reports the active size scale and FT_Set_Transform matrix/delta converted to FT_Affine23 16.16 fields like ttcolr.c.
       - id: malformed_child_offsets_return_false
         description: PaintGlyph, PaintTransform, PaintTranslate, PaintScale, PaintRotate, PaintSkew, and PaintComposite roots with zero or out-of-range child offsets return 0 from FT_Get_Paint after recording the root format, while a valid solid control remains resolvable.
+      - id: malformed_layer_list_index_returns_false
+        description: A PaintColrLayers root whose FirstLayerIndex exceeds LayerV1List returns 0 from FT_Get_Paint after preserving the destination paint, while a valid solid control remains resolvable.
       - id: error_null_or_missing_colr
         description: Null or non-COLR v1 face state, missing base glyph list, null COLR table, invalid opaque pointer, unsupported paint format, and truncated child tables return 0 and preserve the destination paint according to the C oracle.
       - id: error_null_output_policy

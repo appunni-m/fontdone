@@ -693,6 +693,52 @@ def build_colr_v1_malformed_child_paints_font(path: Path) -> None:
     path.write_bytes(data)
 
 
+def build_colr_v1_malformed_layer_list_font(path: Path) -> None:
+    """Build a COLRv1 control with an out-of-range PaintColrLayers index.
+
+    The root PaintColrLayers record remains addressable through
+    ``FT_Get_Color_Glyph_Paint`` while its FirstLayerIndex cannot be resolved
+    through LayerV1List.  Glyph 50 remains the valid solid control for the
+    public two-step call sequence.
+    """
+    source = COLOR_OUTPUT_DIR / "colr-v1-all-paints.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    table = font.reader.tables.get(b"COLR")
+    if table is None or table.length < 18:
+        raise RuntimeError(f"canonical COLRv1 fixture has no usable COLR table: {source}")
+
+    data = bytearray(source.read_bytes())
+    table_offset = table.offset
+    table_end = table_offset + table.length
+    base_offset = int.from_bytes(data[table_offset + 14 : table_offset + 18], "big")
+    base_start = table_offset + base_offset
+    base_count = int.from_bytes(data[base_start : base_start + 4], "big")
+    if base_count == 0:
+        raise RuntimeError("canonical COLRv1 fixture has no base glyph records")
+
+    record_start = base_start + 4
+    glyph_id = int.from_bytes(data[record_start : record_start + 2], "big")
+    if glyph_id != 36:
+        raise RuntimeError(f"unexpected canonical COLRv1 first glyph: {glyph_id} != 36")
+    paint_offset = int.from_bytes(data[record_start + 2 : record_start + 6], "big")
+    paint_position = base_start + paint_offset
+    if not table_offset <= paint_position or paint_position + 6 > table_end:
+        raise RuntimeError(f"canonical COLRv1 layer paint leaves table: {paint_position:#x}")
+    if data[paint_position] != int(ot.PaintFormat.PaintColrLayers):
+        raise RuntimeError(
+            "canonical COLRv1 first root is not PaintColrLayers: "
+            f"{data[paint_position]}"
+        )
+
+    data[paint_position + 1] = 1
+    # The canonical LayerV1List has three entries.  Use a non-wrapping index
+    # so FreeType's unsigned ``first_layer_index + num_layers`` check rejects
+    # the record instead of accepting 0xFFFFFFFF through 32-bit overflow.
+    data[paint_position + 2 : paint_position + 6] = (4).to_bytes(4, "big")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
 def color_line(extend: ot.ExtendMode, stops: list[tuple[float, int, float]]) -> dict[str, object]:
     return {
         "Extend": int(extend),
@@ -991,6 +1037,9 @@ def main() -> None:
     )
     build_colr_v1_malformed_child_paints_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-child-paints.ttf"
+    )
+    build_colr_v1_malformed_layer_list_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-layer-list.ttf"
     )
     build_colr_v1_static_gradients_font(COLOR_OUTPUT_DIR / "colr-v1-static-gradients.ttf")
     build_colr_v1_variable_gradients_font(COLOR_OUTPUT_DIR / "colr-v1-variable-gradients.ttf")
