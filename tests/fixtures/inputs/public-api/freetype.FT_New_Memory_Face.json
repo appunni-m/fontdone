@@ -2145,6 +2145,244 @@
             ]
           },
           {
+            "id": "pcf-metrics-format-mismatch",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/metrics-format-mismatch.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/metrics-format-mismatch.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:metrics-format-mismatch"]
+          },
+          {
+            "id": "pcf-unsupported-metrics-format",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/unsupported-metrics-format.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/unsupported-metrics-format.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:metrics-format-unsupported"]
+          },
+          {
+            "id": "pcf-truncated-metrics",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/truncated-metrics.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/truncated-metrics.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:truncated-metrics"]
+          },
+          {
+            "id": "pcf-accelerators-format-mismatch",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/accelerators-format-mismatch.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/accelerators-format-mismatch.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:accelerators-format-mismatch"]
+          },
+          {
+            "id": "pcf-unsupported-accelerators-format",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/unsupported-accelerators-format.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/unsupported-accelerators-format.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:accelerators-format-unsupported"]
+          },
+          {
+            "id": "pcf-truncated-accelerators",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/truncated-accelerators.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/truncated-accelerators.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:truncated-accelerators"]
+          },
+          {
+            "id": "pcf-bitmaps-format-mismatch",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/bitmaps-format-mismatch.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/bitmaps-format-mismatch.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:bitmaps-format-mismatch"]
+          },
+          {
+            "id": "pcf-unsupported-bitmaps-format",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/unsupported-bitmaps-format.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/unsupported-bitmaps-format.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:bitmaps-format-unsupported"]
+          },
+          {
+            "id": "pcf-bitmap-count-mismatch",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/bitmap-count-mismatch.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/bitmap-count-mismatch.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:bitmap-count-mismatch"]
+          },
+          {
+            "id": "pcf-encodings-format-mismatch",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/encodings-format-mismatch.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/encodings-format-mismatch.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:encodings-format-mismatch"]
+          },
+          {
+            "id": "pcf-unsupported-encodings-format",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/unsupported-encodings-format.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/unsupported-encodings-format.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:encodings-format-unsupported"]
+          },
+          {
+            "id": "pcf-encoding-bounds",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/encoding-bounds.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/encoding-bounds.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:encoding-bounds"]
+          },
+          {
+            "id": "pcf-truncated-encodings",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/truncated-encodings.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/truncated-encodings.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:truncated-encodings"]
+          },
+          {
+            "id": "pcf-invalid-encoding-glyph",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/invalid-encoding-glyph.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/invalid-encoding-glyph.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:invalid-encoding-glyph"]
+          },
+          {
             "id": "winfnt-short-header",
             "assets": {
               "font_bytes": {

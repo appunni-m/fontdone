@@ -72,7 +72,7 @@ def metric_record() -> bytes:
     return struct.pack("<hhhhhh", 0, 8, 8, 8, 2, 0)
 
 
-def accelerators_table() -> bytes:
+def accelerators_table(format_word: int = 0) -> bytes:
     flags = bytes(
         [
             1,  # noOverlap
@@ -87,7 +87,7 @@ def accelerators_table() -> bytes:
     )
     header = flags + struct.pack("<iii", 8, 2, 0)
     metric = metric_record()
-    return align4(struct.pack("<I", 0) + header + metric + metric)
+    return align4(struct.pack("<I", format_word) + header + metric + metric)
 
 
 def metrics_table() -> bytes:
@@ -169,6 +169,28 @@ def build_pcf(tables: list[tuple[int, int, bytes]]) -> bytes:
     return struct.pack("<II", PCF_FILE_VERSION, len(tables)) + toc + body
 
 
+def replace_table(
+    tables: list[tuple[int, int, bytes]],
+    table_type: int,
+    table_format: int,
+    table_data: bytes,
+) -> list[tuple[int, int, bytes]]:
+    replaced = []
+    for current_type, current_format, current_data in tables:
+        if current_type == table_type:
+            replaced.append((table_type, table_format, table_data))
+        else:
+            replaced.append((current_type, current_format, current_data))
+    return replaced
+
+
+def write_fixture(name: str, data: bytes) -> None:
+    output = OUT_DIR / name
+    if output.exists() or output.is_symlink():
+        output.unlink()
+    output.write_bytes(data)
+
+
 def main() -> None:
     tables = [
         (PCF_PROPERTIES, 0, properties_table()),
@@ -219,6 +241,97 @@ def main() -> None:
         (PCF_BDF_ENCODINGS, PCF_BYTE_MASK, encodings_table(msb=True)),
     ]
     msb_data = build_pcf(msb_tables)
+
+    metrics_format_mismatch_data = build_pcf(
+        replace_table(
+            tables,
+            PCF_METRICS,
+            PCF_COMPRESSED_METRICS,
+            uncompressed_metrics_table(),
+        )
+    )
+    unsupported_metrics_payload = align4(
+        struct.pack("<IH", 0x00000200, 1) + bytes(5)
+    )
+    unsupported_metrics_data = build_pcf(
+        replace_table(
+            tables,
+            PCF_METRICS,
+            0x00000200,
+            unsupported_metrics_payload,
+        )
+    )
+    truncated_metrics_payload = align4(struct.pack("<IH", PCF_COMPRESSED_METRICS, 1))
+    truncated_metrics_data = build_pcf(
+        replace_table(
+            tables,
+            PCF_METRICS,
+            PCF_COMPRESSED_METRICS,
+            truncated_metrics_payload,
+        )
+    )
+    accelerators_format_mismatch_data = build_pcf(
+        replace_table(tables, PCF_ACCELERATORS, PCF_COMPRESSED_METRICS, accelerators_table())
+    )
+    unsupported_accelerators_payload = accelerators_table(PCF_COMPRESSED_METRICS)
+    unsupported_accelerators_data = build_pcf(
+        replace_table(
+            tables,
+            PCF_ACCELERATORS,
+            PCF_COMPRESSED_METRICS,
+            unsupported_accelerators_payload,
+        )
+    )
+    truncated_accelerators_data = build_pcf(
+        replace_table(tables, PCF_ACCELERATORS, 0, accelerators_table()[:24])
+    )
+    bitmaps_format_mismatch_data = build_pcf(
+        replace_table(tables, PCF_BITMAPS, PCF_COMPRESSED_METRICS, bitmaps_table())
+    )
+    unsupported_bitmaps_payload = bytearray(bitmaps_table())
+    struct.pack_into("<I", unsupported_bitmaps_payload, 0, PCF_COMPRESSED_METRICS)
+    unsupported_bitmaps_data = build_pcf(
+        replace_table(
+            tables,
+            PCF_BITMAPS,
+            PCF_COMPRESSED_METRICS,
+            bytes(unsupported_bitmaps_payload),
+        )
+    )
+    bitmap_count_mismatch_payload = bytearray(bitmaps_table())
+    struct.pack_into("<I", bitmap_count_mismatch_payload, 4, 0)
+    bitmap_count_mismatch_data = build_pcf(
+        replace_table(tables, PCF_BITMAPS, 0, bytes(bitmap_count_mismatch_payload))
+    )
+    encodings_format_mismatch_data = build_pcf(
+        replace_table(tables, PCF_BDF_ENCODINGS, PCF_COMPRESSED_METRICS, encodings_table())
+    )
+    unsupported_encodings_payload = encodings_table()
+    unsupported_encodings_payload = struct.pack(
+        "<I", PCF_COMPRESSED_METRICS
+    ) + unsupported_encodings_payload[4:]
+    unsupported_encodings_data = build_pcf(
+        replace_table(
+            tables,
+            PCF_BDF_ENCODINGS,
+            PCF_COMPRESSED_METRICS,
+            unsupported_encodings_payload,
+        )
+    )
+    encoding_bounds_payload = bytearray(encodings_table())
+    struct.pack_into("<HH", encoding_bounds_payload, 4, 1, 0)
+    encoding_bounds_data = build_pcf(
+        replace_table(tables, PCF_BDF_ENCODINGS, 0, bytes(encoding_bounds_payload))
+    )
+    truncated_encodings_payload = encodings_table()[:14]
+    truncated_encodings_data = build_pcf(
+        replace_table(tables, PCF_BDF_ENCODINGS, 0, truncated_encodings_payload)
+    )
+    invalid_encoding_glyph_payload = bytearray(encodings_table())
+    struct.pack_into("<H", invalid_encoding_glyph_payload, 14, 0xFFFF)
+    invalid_encoding_glyph_data = build_pcf(
+        replace_table(tables, PCF_BDF_ENCODINGS, 0, bytes(invalid_encoding_glyph_payload))
+    )
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     output = OUT_DIR / "properties-signed-only.pcf"
@@ -312,6 +425,21 @@ def main() -> None:
     if table_before_output.exists() or table_before_output.is_symlink():
         table_before_output.unlink()
     table_before_output.write_bytes(table_before_directory)
+
+    write_fixture("metrics-format-mismatch.pcf", metrics_format_mismatch_data)
+    write_fixture("unsupported-metrics-format.pcf", unsupported_metrics_data)
+    write_fixture("truncated-metrics.pcf", truncated_metrics_data)
+    write_fixture("accelerators-format-mismatch.pcf", accelerators_format_mismatch_data)
+    write_fixture("unsupported-accelerators-format.pcf", unsupported_accelerators_data)
+    write_fixture("truncated-accelerators.pcf", truncated_accelerators_data)
+    write_fixture("bitmaps-format-mismatch.pcf", bitmaps_format_mismatch_data)
+    write_fixture("unsupported-bitmaps-format.pcf", unsupported_bitmaps_data)
+    write_fixture("bitmap-count-mismatch.pcf", bitmap_count_mismatch_data)
+    write_fixture("encodings-format-mismatch.pcf", encodings_format_mismatch_data)
+    write_fixture("unsupported-encodings-format.pcf", unsupported_encodings_data)
+    write_fixture("encoding-bounds.pcf", encoding_bounds_data)
+    write_fixture("truncated-encodings.pcf", truncated_encodings_data)
+    write_fixture("invalid-encoding-glyph.pcf", invalid_encoding_glyph_data)
 
 
 if __name__ == "__main__":
