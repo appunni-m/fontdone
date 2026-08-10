@@ -21708,6 +21708,27 @@ static int emit_color_paint_malformed_case(int argc, char** argv) {
         }
         malformed_count = 4;
         control_glyph = 50;
+    } else if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_radial_payload_reads_return_false")) {
+        labels[0] = "paint_radial_payload_truncated";
+        glyphs[0] = 36;
+        malformed_count = 1;
+        control_glyph = 50;
+    } else if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_transform_payload_reads_return_false")) {
+        static const char* transform_labels[] = {
+            "paint_scale_payload_truncated",
+            "paint_scale_centered_payload_truncated",
+            "paint_scale_uniform_payload_truncated",
+            "paint_scale_uniform_centered_payload_truncated",
+            "paint_rotate_payload_truncated",
+            "paint_rotate_centered_payload_truncated",
+        };
+        static const FT_UInt transform_glyphs[] = {36, 37, 38, 39, 40, 41};
+        for (size_t index = 0; index < 6; index++) {
+            labels[index] = transform_labels[index];
+            glyphs[index] = transform_glyphs[index];
+        }
+        malformed_count = 6;
+        control_glyph = 50;
     } else if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_colorline_return_false")) {
         static const char* colorline_labels[] = {
             "paint_linear_invalid_colorline",

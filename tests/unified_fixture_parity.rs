@@ -15904,6 +15904,10 @@ fn malformed_colr_paint_glyphs(case: &InputCase, label_count: usize) -> Result<V
         == "ftcolor.FT_Get_Paint.malformed_gradient_payload_reads_return_false"
     {
         vec![36, 37, 38, 39, 50]
+    } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_radial_payload_reads_return_false" {
+        vec![36, 50]
+    } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_transform_payload_reads_return_false" {
+        vec![36, 37, 38, 39, 40, 41, 50]
     } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_colorline_return_false" {
         vec![40, 41, 42, 43, 50]
     } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_layer_list_index_returns_false" {
@@ -16013,6 +16017,12 @@ fn color_paint_malformed_output_for_open_face(
         "control_return": control_return,
         "control_root_return": control_root_return,
     });
+    // Keep the test-only graph snapshot diagnostic on the malformed parity
+    // route.  The maintained malformed COLRv1 fixtures preserve the wrapper
+    // format while breaking child, payload, or ColorLine reads, so this
+    // exercises the internal Malformed* snapshot nodes without changing the
+    // public FT_Get_Paint mutation contract above.
+    let _ = color_paint_snapshot_json(backend, rust_face, c_face, wasm_handle);
     // The public bool APIs have no FT_Error result.  The aggregate parity
     // route reports Invalid_Table so the manifest's expected-error contract
     // can compare the full mutation matrix while retaining the bool returns.

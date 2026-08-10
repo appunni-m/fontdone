@@ -4125,6 +4125,10 @@ subjects:
         description: COLRv1 roots whose payload bytes end at the table boundary return 0 from FT_Get_Paint after recording the format or preserving the caller-owned destination, while a valid solid control remains resolvable.
       - id: malformed_gradient_payload_reads_return_false
         description: Variable-linear, linear, sweep, and skew roots with valid zero-stop ColorLines reach fixed-payload boundary failures at the end of the COLR table, while a valid solid control remains resolvable.
+      - id: malformed_radial_payload_reads_return_false
+        description: A radial-gradient root with a valid zero-stop ColorLine reaches its final fixed-payload boundary at the end of the COLR table, while a valid solid control remains resolvable.
+      - id: malformed_transform_payload_reads_return_false
+        description: Scale and rotate roots whose fixed payloads end at the COLR table boundary return 0 from FT_Get_Paint while a valid solid control remains resolvable.
       - id: malformed_colorline_return_false
         description: Linear, radial, sweep, and variable-linear roots whose shared ColorLine has an unsupported extend mode return 0 from FT_Get_Paint while preserving the destination, and a valid solid control remains resolvable.
       - id: malformed_layer_list_index_returns_false

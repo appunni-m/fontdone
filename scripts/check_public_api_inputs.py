@@ -1213,6 +1213,8 @@ def exact_error_public_route(operation: str, case_id: str, expect_error: bool) -
         "ftcolor.FT_COLR_PAINT_FORMAT_MAX.read_paint_rejects_max_and_above",
         "ftcolor.FT_Get_Paint.malformed_payload_reads_return_false",
         "ftcolor.FT_Get_Paint.malformed_gradient_payload_reads_return_false",
+        "ftcolor.FT_Get_Paint.malformed_radial_payload_reads_return_false",
+        "ftcolor.FT_Get_Paint.malformed_transform_payload_reads_return_false",
         "ftcolor.FT_Get_Paint.malformed_colorline_return_false",
         "ftcolor.FT_Get_Paint.malformed_layer_list_index_returns_false",
         "ftcolor.FT_Get_Color_Glyph_ClipBox.null_and_non_sfnt_rejected",
@@ -6711,6 +6713,18 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
         == "ftcolor.FT_Get_Paint.malformed_gradient_payload_reads_return_false"
     ):
         return "FT_Get_Paint malformed gradient payload-boundary rejection validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "ftcolor.get_paint_malformed"
+        and row.case_id
+        == "ftcolor.FT_Get_Paint.malformed_radial_payload_reads_return_false"
+    ):
+        return "FT_Get_Paint malformed radial payload-boundary rejection validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "ftcolor.get_paint_malformed"
+        and row.case_id
+        == "ftcolor.FT_Get_Paint.malformed_transform_payload_reads_return_false"
+    ):
+        return "FT_Get_Paint malformed transform payload-boundary rejection validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
     if (
         row.operation == "ftcolor.get_paint_malformed"
         and row.case_id

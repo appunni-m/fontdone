@@ -891,6 +891,90 @@ def build_colr_v1_malformed_gradient_payloads_font(path: Path) -> None:
     path.write_bytes(data)
 
 
+def build_colr_v1_malformed_radial_payload_font(path: Path) -> None:
+    """Build a radial root whose payload ends after a valid ColorLine."""
+    source = COLOR_OUTPUT_DIR / "colr-v1-all-paints.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    table = font.reader.tables.get(b"COLR")
+    if table is None or table.length < 24:
+        raise RuntimeError(f"canonical COLRv1 fixture has no usable COLR table: {source}")
+
+    data = bytearray(source.read_bytes())
+    table_offset = table.offset
+    base_offset = int.from_bytes(data[table_offset + 14 : table_offset + 18], "big")
+    base_start = table_offset + base_offset
+    table_end_relative = table.length
+    colorline_relative_position = table_end_relative - 3
+    data[
+        table_offset + colorline_relative_position : table_offset + table_end_relative
+    ] = b"\0\0\0"
+
+    record_start = base_start + 4
+    glyph_id = int.from_bytes(data[record_start : record_start + 2], "big")
+    if glyph_id != 36:
+        raise RuntimeError(f"unexpected canonical COLRv1 first glyph: {glyph_id} != 36")
+
+    # PaintRadialGradient has the same fixed payload extent as PaintLinearGradient
+    # through r1 at offset +14.  Starting it 15 bytes from the table end leaves
+    # the ColorLine header readable while the final two-byte field is truncated.
+    paint_relative_position = table_end_relative - 15
+    paint_position = table_offset + paint_relative_position
+    child_offset = colorline_relative_position - paint_relative_position
+    if not 0 < child_offset <= 0xFFFFFF:
+        raise RuntimeError(f"invalid shared ColorLine offset {child_offset} for glyph 36")
+    data[record_start + 2 : record_start + 6] = (
+        paint_relative_position - base_offset
+    ).to_bytes(4, "big")
+    data[paint_position] = 6
+    data[paint_position + 1 : paint_position + 4] = child_offset.to_bytes(3, "big")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
+def build_colr_v1_malformed_transform_payloads_font(path: Path) -> None:
+    """Build scale and rotate roots whose fixed payloads end at the table boundary."""
+    source = COLOR_OUTPUT_DIR / "colr-v1-all-paints.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    table = font.reader.tables.get(b"COLR")
+    if table is None or table.length < 24:
+        raise RuntimeError(f"canonical COLRv1 fixture has no usable COLR table: {source}")
+
+    data = bytearray(source.read_bytes())
+    table_offset = table.offset
+    base_offset = int.from_bytes(data[table_offset + 14 : table_offset + 18], "big")
+    base_start = table_offset + base_offset
+    specs = (
+        (16, table.length - 5),
+        (18, table.length - 11),
+        (20, table.length - 4),
+        (22, table.length - 9),
+        (24, table.length - 3),
+        (26, table.length - 8),
+    )
+    for record_index, (paint_format, paint_relative_position) in enumerate(specs):
+        record_start = base_start + 4 + record_index * 6
+        glyph_id = int.from_bytes(data[record_start : record_start + 2], "big")
+        expected_glyph_id = 36 + record_index
+        if glyph_id != expected_glyph_id:
+            raise RuntimeError(
+                f"unexpected canonical COLRv1 glyph at record {record_index}: "
+                f"{glyph_id} != {expected_glyph_id}"
+            )
+        paint_position = table_offset + paint_relative_position
+        if not table_offset <= paint_position < table_offset + table.length:
+            raise RuntimeError(
+                f"canonical COLRv1 transform paint leaves table: {paint_position:#x}"
+            )
+        data[record_start + 2 : record_start + 6] = (
+            paint_relative_position - base_offset
+        ).to_bytes(4, "big")
+        data[paint_position] = paint_format
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
 def build_colr_v1_malformed_layer_list_font(path: Path) -> None:
     """Build a COLRv1 control with an out-of-range PaintColrLayers index.
 
@@ -1244,6 +1328,12 @@ def main() -> None:
     )
     build_colr_v1_malformed_gradient_payloads_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-gradient-payloads.ttf"
+    )
+    build_colr_v1_malformed_radial_payload_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-radial-payload.ttf"
+    )
+    build_colr_v1_malformed_transform_payloads_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-transform-payloads.ttf"
     )
     build_colr_v1_malformed_layer_list_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-layer-list.ttf"
