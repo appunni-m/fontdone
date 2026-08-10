@@ -16164,6 +16164,8 @@ fn malformed_colr_paint_glyphs(case: &InputCase, label_count: usize) -> Result<V
             == "ftcolor.FT_Get_Paint.malformed_rotate_centered_second_coordinate_read_returns_false"
         || case.case_id == "ftcolor.FT_Get_Paint.malformed_translate_dx_read_returns_false"
         || case.case_id == "ftcolor.FT_Get_Paint.malformed_translate_dy_read_returns_false"
+        || case.case_id
+            == "ftcolor.FT_Get_Paint.malformed_skew_centered_final_coordinate_read_returns_false"
     {
         vec![36, 50]
     } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_transform_payload_reads_return_false" {
@@ -40098,6 +40100,8 @@ fn with_public_family_exact_error(mut case: InputCase) -> InputCase {
             || case.case_id == "ftcolor.FT_COLR_PAINT_FORMAT_MAX.read_paint_rejects_max_and_above"
             || case.case_id == "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false"
             || case.case_id == "ftcolor.FT_Get_Paint.malformed_payload_reads_return_false"
+            || case.case_id
+                == "ftcolor.FT_Get_Paint.malformed_skew_centered_final_coordinate_read_returns_false"
             || case.case_id
                 == "ftcolor.FT_Get_Paint.malformed_gradient_payload_reads_return_false"
             || case.case_id == "ftcolor.FT_Get_Paint.malformed_colorline_return_false"

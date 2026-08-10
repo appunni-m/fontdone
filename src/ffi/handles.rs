@@ -1532,6 +1532,7 @@ enum ColrV1Paint {
     /// A skew whose child opaque paint was written before FreeType rejected
     /// the angle payload boundary.
     MalformedSkew {
+        format: FT_Int,
         paint: Box<ColrV1Paint>,
         x_skew_angle: FT_Fixed,
         y_skew_angle: FT_Fixed,
@@ -9013,6 +9014,7 @@ fn parse_colr_v1_paint(
                 ))
             })() else {
                 return Some(ColrV1Paint::MalformedSkew {
+                    format: FT_Int::from(format),
                     paint,
                     x_skew_angle: 0,
                     y_skew_angle: 0,
@@ -9028,6 +9030,7 @@ fn parse_colr_v1_paint(
                     ))
                 })() else {
                     return Some(ColrV1Paint::MalformedSkew {
+                        format: FT_Int::from(format),
                         paint,
                         x_skew_angle,
                         y_skew_angle,
@@ -9511,6 +9514,7 @@ pub fn FT_Get_Paint(
             return 0;
         }
         ColrV1Paint::MalformedSkew {
+            format,
             paint,
             x_skew_angle,
             y_skew_angle,
@@ -9518,8 +9522,10 @@ pub fn FT_Get_Paint(
             center_y,
         } => {
             // FreeType writes the child opaque paint and then rejects the
-            // fixed angle payload. Match that partially initialized union.
-            paint_out.format = FT_COLR_PAINTFORMAT_SKEW as _;
+            // fixed skew payload. The source format remains visible because
+            // FreeType rejects this path before its success normalization to
+            // the public FT_COLR_PAINTFORMAT_SKEW value.
+            paint_out.format = *format as _;
             paint_out.u = FT_COLR_PaintUnion {
                 skew: FT_PaintSkew {
                     paint: colr_v1_paint_to_opaque(paint),
@@ -10338,6 +10344,7 @@ fn colr_v1_snapshot_paint(
             values: [0; 6],
         }),
         ColrV1Paint::MalformedSkew {
+            format: _,
             x_skew_angle,
             y_skew_angle,
             center_x,

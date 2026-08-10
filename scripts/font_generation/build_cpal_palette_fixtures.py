@@ -1085,6 +1085,11 @@ def build_colr_v1_malformed_translate_dy_payload_font(path: Path) -> None:
     build_colr_v1_malformed_transform_boundary_font(path, 14, 6)
 
 
+def build_colr_v1_malformed_skew_centered_final_payload_font(path: Path) -> None:
+    """Build a centered skew root whose final center field reaches the table end."""
+    build_colr_v1_malformed_transform_boundary_font(path, 30, 11)
+
+
 def build_colr_v1_malformed_layer_list_font(path: Path) -> None:
     """Build a COLRv1 control with an out-of-range PaintColrLayers index.
 
@@ -1560,6 +1565,9 @@ def main() -> None:
     )
     build_colr_v1_malformed_translate_dy_payload_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-translate-dy-payload.ttf"
+    )
+    build_colr_v1_malformed_skew_centered_final_payload_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-skew-centered-final-payload.ttf"
     )
     build_colr_v1_malformed_layer_list_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-layer-list.ttf"
