@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "evidence_kind": "full_runtime_parity",
-  "recorded_at_utc": "2026-08-10T01:20:47.697437+00:00",
+  "recorded_at_utc": "2026-08-10T01:52:19.022403+00:00",
   "command": "make test-parity",
   "source": {
-    "git_head": "ad6dd23bb0b89c232caa36bb904f5e2378e48170",
+    "git_head": "54a77483375307a892ab1b1305a63df6a23bebbc",
     "git_worktree_dirty": false,
-    "parity_tree_sha256": "95cf87db050b344d372cf82b3f66f431ee93dedda7cfd4c74c18cc42060165b4",
-    "parity_path_count": 2491
+    "parity_tree_sha256": "45decf3d194a508c5cf81644ff1c026f0ed6fe6304141d0179d2bd33525744d5",
+    "parity_path_count": 2492
   },
   "toolchain": {
     "rustc": "rustc 1.96.1 (31fca3adb 2026-06-26)",
@@ -20,20 +20,20 @@
   },
   "artifacts": {
     "log": "target/parity-evidence/test-parity.log",
-    "log_sha256": "86d3df43ff00da563e4c24a638395434091617bee16221f3af674f44089d4309",
+    "log_sha256": "48808cbe744f8de8776046fe98acb4f8f8c69d39d048cb1df631a61683f623c9",
     "oracle": "target/unified-fixtures/gen_unified_oracle",
-    "oracle_sha256": "67ac705a42c4f36102b4c520d4d962161fc527aebf7aad72a2ea02574ac4b108"
+    "oracle_sha256": "bc6a5e2a25c0a690b730bffc39b581f6c7f85e0bdd47290ea758c5cf9fb8c071"
   },
   "runtime_parity": {
-    "runnable": 7618,
-    "passed": 7618,
+    "runnable": 7619,
+    "passed": 7619,
     "failed": 0,
     "pending": 3,
-    "covered_manifest": 4205,
+    "covered_manifest": 4206,
     "validated_input_subjects": 1543,
     "validated_input_files": 1537,
-    "logical_input_cases": 4298,
-    "concrete_input_cases": 7621,
+    "logical_input_cases": 4299,
+    "concrete_input_cases": 7622,
     "function_route_evidence": 218,
     "function_total": 218
   },
