@@ -49,7 +49,7 @@ licenses are enforced by `make supply-chain`.
 | `build_cpal_palette_fixtures.py` | Derived | `tests/fixtures/input/fonts/DejaVuSans.ttf`; DejaVu/Bitstream terms remain applicable. |
 | `build_cmap_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; only cmap/table mutations, including maintained malformed format-13 and format-14 parser matrices beside valid format-6 controls. |
 | `build_gasp_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
-| `build_hinter_edge_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`, including a 102-level composite chain for the pinned recursion-depth guard and a 77-glyph opcode stack-underflow matrix for pedantic TrueType interpreter dispatches. |
+| `build_hinter_edge_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`, including a 102-level composite chain, a 77-glyph opcode stack-underflow matrix, an isolated TrueType VM operand/branch matrix, and a prep-time empty-contour SHZ control. |
 | `build_metric_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
 | `build_post_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
 | `build_sbit_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; bitmap outputs add project-authored EBLC/EBDT records, including the maintained `embedded-strikes.ttf` face-record input, valid and malformed SFNT-BDF derivatives, and a CBLC/CBDT strike-metrics normalization matrix. |

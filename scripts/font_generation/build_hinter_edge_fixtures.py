@@ -540,6 +540,139 @@ def write_opcode_stack_underflow_matrix() -> None:
     save_font("hinter-opcode-stack-underflow-matrix.ttf", font)
 
 
+def write_run_program_branch_matrix() -> None:
+    """Build isolated glyph programs for uncovered VM operand and branch paths.
+
+    Every row is a public glyph-load input.  Error rows deliberately stop at
+    one selected interpreter boundary; valid rows consume their results so a
+    later instruction cannot hide the branch under test behind an earlier
+    failure.  The glyph IDs start at 60 because the base matrix has 60 glyphs.
+    """
+    font = TTFont(BASE_FONT, recalcTimestamp=False)
+    # Keep setup programs side-effect free.  This isolates glyph-range
+    # execution from the base matrix's intentionally varied fpgm/prep state.
+    font["fpgm"].program = program_from_bytes(bytes([0x00]))
+    font["prep"].program = program_from_bytes(bytes([0x00]))
+    base_glyph = deepcopy(font["glyf"]["base"])
+    base_metrics = font["hmtx"].metrics["base"]
+
+    programs = (
+        ("pushb_truncated", "b7"),
+        ("pushw_truncated", "bf"),
+        ("npushb_count_truncated", "40"),
+        ("npushw_count_truncated", "41"),
+        ("npushw_hi_truncated", "41 01"),
+        ("npushw_lo_truncated", "41 01 00"),
+        ("swap_second_pop", "b0 00 23"),
+        ("add_second_pop", "b0 00 60"),
+        ("sub_second_pop", "b0 00 61"),
+        ("div_second_pop", "b0 00 62"),
+        ("mul_second_pop", "b0 00 63"),
+        ("ws_second_pop", "b0 01 42"),
+        ("rs_invalid_pedantic", "b0 09 43"),
+        ("wcvtp_second_pop", "b0 01 44"),
+        ("rcvt_invalid_pedantic", "b0 09 45"),
+        ("md_second_pop", "b0 00 49"),
+        ("scfs_second_pop", "b0 00 48"),
+        ("scfs_invalid_pedantic", "b1 09 00 48"),
+        ("miap_second_pop", "b0 00 3e"),
+        ("miap_invalid_cvt_pedantic", "b1 00 09 3e"),
+        ("mirp_second_pop", "b0 00 e0"),
+        ("mirp_invalid_cvt_pedantic", "b1 00 09 e0"),
+        ("shp_reference_noop", "b0 09 12 b0 00 32"),
+        ("shp_invalid_point_pedantic", "b0 09 32"),
+        ("shc_reference_noop", "b0 09 12 b0 00 34"),
+        ("shc_reference_invalid_pedantic", "b0 09 12 b0 00 34"),
+        ("shz_skip_reference_point", "b0 00 36"),
+        ("loopcall_second_pop", "b0 00 2a"),
+        ("if_empty_stack", "58"),
+        ("shpix_second_pop", "b0 00 38"),
+        ("alignpts_second_pop", "b0 00 27"),
+        ("ip_empty_stack", "39"),
+        ("lt_empty_stack", "50"),
+        ("lt_second_pop", "b0 00 50"),
+        ("lteq_empty_stack", "51"),
+        ("lteq_second_pop", "b0 00 51"),
+        ("gt_empty_stack", "52"),
+        ("gt_second_pop", "b0 00 52"),
+        ("gteq_empty_stack", "53"),
+        ("gteq_second_pop", "b0 00 53"),
+        ("eq_empty_stack", "54"),
+        ("eq_second_pop", "b0 00 54"),
+        ("neq_empty_stack", "55"),
+        ("neq_second_pop", "b0 00 55"),
+        ("or_empty_stack", "5b"),
+        ("or_second_pop", "b0 00 5b"),
+        ("fliprgon_empty_stack", "81"),
+        ("fliprgon_second_pop", "b0 00 81"),
+        ("fliprgoff_empty_stack", "82"),
+        ("fliprgoff_second_pop", "b0 00 82"),
+        ("flippt_empty_stack", "80"),
+        ("valid_branch_matrix", "b0 40 56 21 b0 00 57 21 b0 00 5c 21 b1 01 02 8b 21 b1 02 01 8c 21 b0 00 80 b1 00 01 81 b1 00 01 82 b2 01 02 03 8a b9 01 14 85 b9 08 02 85 b0 00 85 b1 ff ff 8d b0 00 7f b1 01 02 50 21 b1 02 01 51 21 b1 02 01 52 21 b1 01 02 53 21 b1 02 02 54 21 b1 02 03 55 21 b1 01 00 5b 21"),
+        ("jrot_second_pop", "b0 00 78"),
+        ("jrof_second_pop", "b0 00 79"),
+        ("jrot_taken", "b0 02 b0 01 78 21"),
+        ("jrof_taken", "b0 02 b0 00 79 21"),
+        ("sfvtl_second_pop", "b0 00 08"),
+        ("spvfs_second_pop", "b0 00 0a"),
+        ("sfvfs_second_pop", "b0 00 0b"),
+        ("spvtl_second_pop", "b0 00 06"),
+        ("isect_one_operand", "b0 00 0f"),
+        ("isect_two_operands", "b1 00 01 0f"),
+        ("isect_three_operands", "b2 00 01 02 0f"),
+        ("isect_four_operands", "b3 00 01 02 03 0f"),
+        ("aa_empty_stack", "7f"),
+        ("wcvtf_second_pop", "b0 01 70"),
+        ("wcvtf_invalid_pedantic", "b1 09 01 70"),
+        ("and_second_pop", "b0 00 5a"),
+        ("sdpvtl_second_pop", "b0 00 86"),
+        ("deltap_skip_empty", "b0 01 5d"),
+        ("deltap_skip_one", "b0 01 b0 00 5d"),
+        ("deltap_in_range_empty", "b0 14 5e b0 01 5d"),
+        ("deltap_in_range_one", "b0 14 5e b0 01 b0 00 5d"),
+        ("deltac_skip_empty", "b0 01 73"),
+        ("deltac_skip_one", "b0 01 b0 00 73"),
+        ("deltac_in_range_empty", "b0 14 5e b0 01 73"),
+        ("deltac_in_range_one", "b0 14 5e b0 01 b0 00 73"),
+        ("deltac_invalid_pedantic", "b0 14 5e b0 00 b0 09 b0 01 73"),
+        ("utp_invalid_pedantic", "b0 01 13 b0 09 29"),
+        ("odd_empty_stack", "56"),
+        ("even_empty_stack", "57"),
+        ("not_empty_stack", "5c"),
+        ("max_second_pop", "b0 01 8b"),
+        ("min_empty_stack", "8c"),
+        ("min_second_pop", "b0 01 8c"),
+        ("raw_invalid_opcode", "28"),
+        ("custom_invalid_opcode", "7b"),
+        ("instctrl_empty_stack", "8e"),
+        ("instctrl_second_pop", "b0 00 8e"),
+        ("instctrl_invalid_selector", "b1 00 04 8e"),
+        ("instctrl_invalid_value", "b1 01 02 8e"),
+        ("unknown_invalid_opcode", "94"),
+    )
+
+    glyph_order = font.getGlyphOrder()
+    for glyph_name, hex_code in programs:
+        glyph_order.append(glyph_name)
+        glyph = deepcopy(base_glyph)
+        glyph.program = program_from_bytes(bytes.fromhex(hex_code))
+        font["glyf"][glyph_name] = glyph
+        font["hmtx"].metrics[glyph_name] = base_metrics
+    font.setGlyphOrder(glyph_order)
+    save_font("hinter-run-program-branch-matrix.ttf", font)
+
+
+def write_prep_shz_empty_contour() -> None:
+    """Reach SHZ's empty-glyph contour branch during prep execution."""
+    font = TTFont(BASE_FONT, recalcTimestamp=False)
+    font["fpgm"].program = program_from_bytes(bytes([0x00]))
+    # Prep executes against an empty zone.  Keep zp1 in twilight so the
+    # reference displacement is valid, then target zp2=1 (the empty glyph
+    # zone) to exercise the no-contour limit branch.
+    font["prep"].program = program_from_bytes(bytes.fromhex("b0 00 14 b0 01 15 b0 00 36"))
+    save_font("hinter-prep-shz-empty-contour.ttf", font)
+
+
 def main() -> None:
     write_empty_fpgm()
     write_empty_glyph_iup()
@@ -574,6 +707,8 @@ def main() -> None:
     write_fpgm_unterminated_fdef()
     write_fpgm_unterminated_idef()
     write_opcode_stack_underflow_matrix()
+    write_run_program_branch_matrix()
+    write_prep_shz_empty_contour()
 
 
 if __name__ == "__main__":

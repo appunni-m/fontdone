@@ -9936,6 +9936,642 @@
             "params": {"face_index": 0, "size": 20, "glyph_index": 136, "load_flags": ["FT_LOAD_DEFAULT", "FT_LOAD_PEDANTIC"]},
             "expect_error": true,
             "coverage": ["tt/hinter:opcode-stack-underflow-76"]
+          },
+          {
+            "id": "hinter-run-program-pushb-truncated",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 60, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-pushb-truncated"]
+          },
+          {
+            "id": "hinter-run-program-pushw-truncated",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 61, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-pushw-truncated"]
+          },
+          {
+            "id": "hinter-run-program-npushb-count-truncated",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 62, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-npushb-count-truncated"]
+          },
+          {
+            "id": "hinter-run-program-npushw-count-truncated",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 63, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-npushw-count-truncated"]
+          },
+          {
+            "id": "hinter-run-program-npushw-hi-truncated",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 64, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-npushw-hi-truncated"]
+          },
+          {
+            "id": "hinter-run-program-npushw-lo-truncated",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 65, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-npushw-lo-truncated"]
+          },
+          {
+            "id": "hinter-run-program-swap-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 66, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-swap-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-add-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 67, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-add-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-sub-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 68, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-sub-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-div-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 69, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-div-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-mul-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 70, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-mul-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-ws-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 71, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-ws-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-rs-invalid-pedantic",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 72, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-rs-invalid-pedantic"]
+          },
+          {
+            "id": "hinter-run-program-wcvtp-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 73, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-wcvtp-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-rcvt-invalid-pedantic",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 74, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-rcvt-invalid-pedantic"]
+          },
+          {
+            "id": "hinter-run-program-md-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 75, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-md-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-scfs-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 76, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-scfs-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-scfs-invalid-pedantic",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 77, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-scfs-invalid-pedantic"]
+          },
+          {
+            "id": "hinter-run-program-miap-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 78, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-miap-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-miap-invalid-cvt-pedantic",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 79, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-miap-invalid-cvt-pedantic"]
+          },
+          {
+            "id": "hinter-run-program-mirp-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 80, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-mirp-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-mirp-invalid-cvt-pedantic",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 81, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-mirp-invalid-cvt-pedantic"]
+          },
+          {
+            "id": "hinter-run-program-shp-reference-noop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 82, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:run-program-shp-reference-noop"]
+          },
+          {
+            "id": "hinter-run-program-shp-invalid-point-pedantic",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 83, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-shp-invalid-point-pedantic"]
+          },
+          {
+            "id": "hinter-run-program-shc-reference-noop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 84, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:run-program-shc-reference-noop"]
+          },
+          {
+            "id": "hinter-run-program-shc-reference-invalid-pedantic",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 85, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-shc-reference-invalid-pedantic"]
+          },
+          {
+            "id": "hinter-run-program-shz-skip-reference-point",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 86, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:run-program-shz-skip-reference-point"]
+          },
+          {
+            "id": "hinter-run-program-loopcall-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 87, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-loopcall-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-if-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 88, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-if-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-shpix-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 89, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-shpix-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-alignpts-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 90, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-alignpts-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-ip-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 91, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-ip-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-lt-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 92, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-lt-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-lt-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 93, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-lt-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-lteq-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 94, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-lteq-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-lteq-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 95, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-lteq-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-gt-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 96, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-gt-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-gt-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 97, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-gt-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-gteq-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 98, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-gteq-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-gteq-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 99, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-gteq-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-eq-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 100, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-eq-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-eq-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 101, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-eq-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-neq-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 102, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-neq-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-neq-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 103, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-neq-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-or-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 104, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-or-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-or-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 105, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-or-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-fliprgon-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 106, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-fliprgon-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-fliprgon-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 107, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-fliprgon-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-fliprgoff-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 108, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-fliprgoff-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-fliprgoff-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 109, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-fliprgoff-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-flippt-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 110, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-flippt-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-jrot-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 112, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-jrot-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-jrof-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 113, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-jrof-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-jrot-taken",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 114, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:run-program-jrot-taken"]
+          },
+          {
+            "id": "hinter-run-program-jrof-taken",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 115, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:run-program-jrof-taken"]
+          },
+          {
+            "id": "hinter-run-program-sfvtl-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 116, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-sfvtl-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-spvfs-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 117, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-spvfs-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-sfvfs-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 118, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-sfvfs-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-spvtl-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 119, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-spvtl-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-isect-one-operand",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 120, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-isect-one-operand"]
+          },
+          {
+            "id": "hinter-run-program-isect-two-operands",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 121, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-isect-two-operands"]
+          },
+          {
+            "id": "hinter-run-program-isect-three-operands",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 122, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-isect-three-operands"]
+          },
+          {
+            "id": "hinter-run-program-isect-four-operands",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 123, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-isect-four-operands"]
+          },
+          {
+            "id": "hinter-run-program-aa-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 124, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-aa-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-wcvtf-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 125, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-wcvtf-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-wcvtf-invalid-pedantic",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 126, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-wcvtf-invalid-pedantic"]
+          },
+          {
+            "id": "hinter-run-program-and-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 127, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-and-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-sdpvtl-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 128, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-sdpvtl-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-deltap-skip-empty",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 129, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:run-program-deltap-skip-empty"]
+          },
+          {
+            "id": "hinter-run-program-deltap-skip-one",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 130, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:run-program-deltap-skip-one"]
+          },
+          {
+            "id": "hinter-run-program-deltap-in-range-empty",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 131, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:run-program-deltap-in-range-empty"]
+          },
+          {
+            "id": "hinter-run-program-deltap-in-range-one",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 132, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:run-program-deltap-in-range-one"]
+          },
+          {
+            "id": "hinter-run-program-deltac-skip-empty",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 133, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:run-program-deltac-skip-empty"]
+          },
+          {
+            "id": "hinter-run-program-deltac-skip-one",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 134, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:run-program-deltac-skip-one"]
+          },
+          {
+            "id": "hinter-run-program-deltac-in-range-empty",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 135, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:run-program-deltac-in-range-empty"]
+          },
+          {
+            "id": "hinter-run-program-deltac-in-range-one",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 136, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:run-program-deltac-in-range-one"]
+          },
+          {
+            "id": "hinter-run-program-deltac-invalid-pedantic",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 137, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-deltac-invalid-pedantic"]
+          },
+          {
+            "id": "hinter-run-program-utp-invalid-pedantic",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 138, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-utp-invalid-pedantic"]
+          },
+          {
+            "id": "hinter-run-program-odd-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 139, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-odd-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-even-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 140, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-even-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-not-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 141, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-not-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-max-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 142, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-max-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-min-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 143, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-min-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-min-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 144, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-min-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-raw-invalid-opcode",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 145, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-raw-invalid-opcode"]
+          },
+          {
+            "id": "hinter-run-program-custom-invalid-opcode",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 146, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-custom-invalid-opcode"]
+          },
+          {
+            "id": "hinter-run-program-instctrl-empty-stack",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 147, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-instctrl-empty-stack"]
+          },
+          {
+            "id": "hinter-run-program-instctrl-second-pop",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 148, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-instctrl-second-pop"]
+          },
+          {
+            "id": "hinter-run-program-instctrl-invalid-selector",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 149, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-instctrl-invalid-selector"]
+          },
+          {
+            "id": "hinter-run-program-instctrl-invalid-value",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 150, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-instctrl-invalid-value"]
+          },
+          {
+            "id": "hinter-run-program-unknown-invalid-opcode",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 151, "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_PEDANTIC"]},
+            "expect_error": true,
+            "coverage": ["tt/hinter:run-program-unknown-invalid-opcode"]
+          },
+          {
+            "id": "hinter-prep-shz-empty-contour",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-prep-shz-empty-contour.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 1, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:prep-shz-empty-contour"]
+          },
+          {
+            "id": "hinter-run-program-valid-branch-matrix",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/hinter-run-program-branch-matrix.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 111, "load_flags": ["FT_LOAD_NO_AUTOHINT"]},
+            "coverage": ["tt/hinter:run-program-valid-branch-matrix"]
           }
         ]
       },
