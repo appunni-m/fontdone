@@ -42037,7 +42037,8 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         let mut args = vec!["--lzw-stream-case".to_string(), case.case_id.clone()];
         match case.case_id.as_str() {
             "ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream"
-            | "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams" => {
+            | "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams"
+            | "ftlzw.FT_Stream_OpenLZW.reads_malformed_lzw_streams" => {
                 for payload in lzw_stream_manifest(case)?.payloads {
                     args.push(payload.id);
                     args.push(
@@ -77019,6 +77020,7 @@ fn is_lzw_stream_case(case: &InputCase) -> bool {
         case.case_id.as_str(),
         "ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream"
             | "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams"
+            | "ftlzw.FT_Stream_OpenLZW.reads_malformed_lzw_streams"
             | "ftlzw.FT_Stream_OpenLZW.invalid_header_error"
             | "ftlzw.FT_Stream_OpenLZW.null_stream_or_source_error"
             | "ftlzw.FT_Stream_OpenLZW.unsupported_build_error"
@@ -77031,6 +77033,9 @@ fn lzw_stream_output(case: &InputCase, backend: LzwStreamBackend) -> Result<RunO
             lzw_stream_success_output(case, backend)
         }
         "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams" => {
+            lzw_stream_success_output(case, backend)
+        }
+        "ftlzw.FT_Stream_OpenLZW.reads_malformed_lzw_streams" => {
             lzw_stream_success_output(case, backend)
         }
         "ftlzw.FT_Stream_OpenLZW.invalid_header_error" => {
@@ -77221,8 +77226,11 @@ fn lzw_stream_success_output(
     backend: LzwStreamBackend,
 ) -> Result<RunOutput, String> {
     let manifest = lzw_stream_manifest(case)?;
-    let sequential_reads =
-        case.case_id == "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams";
+    let sequential_reads = matches!(
+        case.case_id.as_str(),
+        "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams"
+            | "ftlzw.FT_Stream_OpenLZW.reads_malformed_lzw_streams"
+    );
     let mut rows = Vec::new();
     for payload in manifest.payloads {
         let raw = cached_file_bytes(&payload.raw)?;
@@ -77360,13 +77368,23 @@ fn lzw_stream_read_ranges(
     sequential_reads: bool,
 ) -> Result<Vec<Value>, String> {
     let ranges = if sequential_reads {
-        [(0usize, 0usize), (0, 64), (64, 64), (0, raw.len())]
+        [
+            (0usize, 0usize, true),
+            (0, 64, false),
+            (64, 64, false),
+            (0, raw.len(), false),
+        ]
     } else {
-        [(0usize, 0usize), (1, 1), (32, 64), (0, raw.len())]
+        [
+            (0usize, 0usize, true),
+            (1, 1, false),
+            (32, 64, false),
+            (0, raw.len(), false),
+        ]
     };
     ranges
         .into_iter()
-        .map(|(offset, requested)| {
+        .map(|(offset, requested, buffer_null)| {
             let bytes = match backend {
                 LzwStreamBackend::Rust => FT_LZW_Stream_Read(
                     Some(stream),
@@ -77400,7 +77418,7 @@ fn lzw_stream_read_ranges(
             Ok(json!({
                 "offset": offset,
                 "requested": requested,
-                "buffer_null": requested == 0,
+                "buffer_null": buffer_null,
                 "read": bytes.len(),
                 "bytes": hex_bytes(&bytes),
                 "expected": hex_bytes(expected),

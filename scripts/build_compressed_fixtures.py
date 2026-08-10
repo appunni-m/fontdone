@@ -64,7 +64,13 @@ def literal_unix_compress(data: bytes) -> bytes:
     return bytes(output)
 
 
-def unix_compress(data: bytes, *, clear_after: int | None = None) -> bytes:
+def unix_compress(
+    data: bytes,
+    *,
+    max_bits: int = 16,
+    block_mode: bool = True,
+    clear_after: int | None = None,
+) -> bytes:
     """Encode deterministic block-mode Unix-compress data.
 
     The encoder follows the pinned FreeType decoder's 9-bit start, dictionary
@@ -73,16 +79,20 @@ def unix_compress(data: bytes, *, clear_after: int | None = None) -> bytes:
     dictionary reinitialization without relying on a platform `compress`
     implementation.
     """
+    if not 9 <= max_bits <= 16:
+        raise ValueError("Unix-compress max_bits must be between 9 and 16")
+    if clear_after is not None and not block_mode:
+        raise ValueError("CLEAR requires Unix-compress block mode")
     if not data:
-        return bytes((0x1F, 0x9D, 0x90))
+        header = max_bits | (0x80 if block_mode else 0)
+        return bytes((0x1F, 0x9D, header))
 
     clear_code = 256
-    max_bits = 16
     max_code = 1 << max_bits
     dictionary = {bytes((value,)): value for value in range(256)}
     next_code = 257
     width = 9
-    decoder_free = 1
+    decoder_free = 1 if block_mode else 0
     data_codes = 0
     records: list[tuple[int, int, bool]] = []
     emitted = 0
@@ -119,7 +129,7 @@ def unix_compress(data: bytes, *, clear_after: int | None = None) -> bytes:
 
     records.append((dictionary[phrase], width, False))
 
-    output = bytearray((0x1F, 0x9D, 0x90))
+    output = bytearray((0x1F, 0x9D, max_bits | (0x80 if block_mode else 0)))
     block_width = 9
     block = 0
     block_bits = 0
@@ -158,6 +168,33 @@ def unix_compress(data: bytes, *, clear_after: int | None = None) -> bytes:
 
     if block_bits:
         flush_block((block_bits + 7) // 8, block)
+    return bytes(output)
+
+
+def unix_compress_codes(
+    codes: list[int],
+    *,
+    header: int = 0x90,
+    width: int = 9,
+    minimum_data_bytes: int = 0,
+) -> bytes:
+    """Pack a small deterministic code sequence for malformed-stream probes."""
+    output = bytearray((0x1F, 0x9D, header))
+    accumulator = 0
+    bits = 0
+    for code in codes:
+        if not 0 <= code < (1 << width):
+            raise ValueError(f"code {code} does not fit in {width} bits")
+        accumulator |= code << bits
+        bits += width
+        while bits >= 8:
+            output.append(accumulator & 0xFF)
+            accumulator >>= 8
+            bits -= 8
+    if bits:
+        output.append(accumulator & 0xFF)
+    while len(output) < 3 + minimum_data_bytes:
+        output.append(0)
     return bytes(output)
 
 
@@ -264,6 +301,47 @@ def build_lzw() -> None:
         LZW_OUT / "block-reset.Z",
         unix_compress(clear_raw, clear_after=64),
     )
+    boundary_raw = bytes(range(256)) * 4
+    write_if_changed(LZW_OUT / "dictionary-boundary.raw", boundary_raw)
+    write_if_changed(
+        LZW_OUT / "max-bits-9-boundary.Z",
+        unix_compress(boundary_raw, max_bits=9),
+    )
+    write_if_changed(
+        LZW_OUT / "max-bits-9-clear.Z",
+        unix_compress(clear_raw[:320], max_bits=9, clear_after=64),
+    )
+    write_if_changed(LZW_OUT / "max-bits-9-clear.raw", clear_raw[:320])
+    write_if_changed(
+        LZW_OUT / "max-bits-10-transition.Z",
+        unix_compress(boundary_raw, max_bits=10),
+    )
+    write_if_changed(
+        LZW_OUT / "non-block-dictionary.Z",
+        unix_compress(boundary_raw, block_mode=False),
+    )
+    non_block_clear_raw = bytes(8)
+    write_if_changed(LZW_OUT / "non-block-clear.raw", non_block_clear_raw)
+    write_if_changed(
+        LZW_OUT / "non-block-clear.Z",
+        unix_compress_codes([0, 256], header=0x10, minimum_data_bytes=9),
+    )
+    malformed_raw = b""
+    write_if_changed(LZW_OUT / "malformed-empty.raw", malformed_raw)
+    write_if_changed(LZW_OUT / "truncated-header.Z", bytes((0x1F, 0x9D)))
+    write_if_changed(LZW_OUT / "truncated-code.Z", bytes((0x1F, 0x9D, 0x90)))
+    write_if_changed(LZW_OUT / "invalid-max-bits-low.Z", bytes((0x1F, 0x9D, 0x88)))
+    write_if_changed(LZW_OUT / "invalid-max-bits-high.Z", bytes((0x1F, 0x9D, 0x91)))
+    write_if_changed(
+        LZW_OUT / "first-code-non-literal.Z",
+        unix_compress_codes([256], minimum_data_bytes=9),
+    )
+    invalid_reference_raw = bytes((0,))
+    write_if_changed(LZW_OUT / "invalid-reference.raw", invalid_reference_raw)
+    write_if_changed(
+        LZW_OUT / "invalid-reference.Z",
+        unix_compress_codes([0, 511], minimum_data_bytes=9),
+    )
     manifest = {
         "version": 1,
         "source": "scripts/build_compressed_fixtures.py",
@@ -291,10 +369,73 @@ def build_lzw() -> None:
                 "raw": "compressed/lzw/block-reset.raw",
                 "lzw": "compressed/lzw/block-reset.Z",
             },
+            {
+                "id": "max_bits_9_boundary",
+                "raw": "compressed/lzw/dictionary-boundary.raw",
+                "lzw": "compressed/lzw/max-bits-9-boundary.Z",
+            },
+            {
+                "id": "max_bits_9_clear",
+                "raw": "compressed/lzw/max-bits-9-clear.raw",
+                "lzw": "compressed/lzw/max-bits-9-clear.Z",
+            },
+            {
+                "id": "max_bits_10_transition",
+                "raw": "compressed/lzw/dictionary-boundary.raw",
+                "lzw": "compressed/lzw/max-bits-10-transition.Z",
+            },
+            {
+                "id": "non_block_dictionary",
+                "raw": "compressed/lzw/dictionary-boundary.raw",
+                "lzw": "compressed/lzw/non-block-dictionary.Z",
+            },
+            {
+                "id": "non_block_clear_code",
+                "raw": "compressed/lzw/non-block-clear.raw",
+                "lzw": "compressed/lzw/non-block-clear.Z",
+            },
         ],
     }
     encoded = json.dumps(dictionary_manifest, indent=2, sort_keys=True).encode("utf-8") + b"\n"
     write_if_changed(LZW_OUT / "dictionary-streams.json", encoded)
+    malformed_manifest = {
+        "version": 1,
+        "source": "scripts/build_compressed_fixtures.py",
+        "payloads": [
+            {
+                "id": "truncated_header",
+                "raw": "compressed/lzw/malformed-empty.raw",
+                "lzw": "compressed/lzw/truncated-header.Z",
+            },
+            {
+                "id": "truncated_code",
+                "raw": "compressed/lzw/malformed-empty.raw",
+                "lzw": "compressed/lzw/truncated-code.Z",
+            },
+            {
+                "id": "invalid_max_bits_low",
+                "raw": "compressed/lzw/malformed-empty.raw",
+                "lzw": "compressed/lzw/invalid-max-bits-low.Z",
+            },
+            {
+                "id": "invalid_max_bits_high",
+                "raw": "compressed/lzw/malformed-empty.raw",
+                "lzw": "compressed/lzw/invalid-max-bits-high.Z",
+            },
+            {
+                "id": "first_code_non_literal",
+                "raw": "compressed/lzw/malformed-empty.raw",
+                "lzw": "compressed/lzw/first-code-non-literal.Z",
+            },
+            {
+                "id": "invalid_reference",
+                "raw": "compressed/lzw/invalid-reference.raw",
+                "lzw": "compressed/lzw/invalid-reference.Z",
+            },
+        ],
+    }
+    encoded = json.dumps(malformed_manifest, indent=2, sort_keys=True).encode("utf-8") + b"\n"
+    write_if_changed(LZW_OUT / "malformed-streams.json", encoded)
 
 
 def main() -> None:

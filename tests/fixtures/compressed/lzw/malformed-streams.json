@@ -1,0 +1,36 @@
+{
+  "payloads": [
+    {
+      "id": "truncated_header",
+      "lzw": "compressed/lzw/truncated-header.Z",
+      "raw": "compressed/lzw/malformed-empty.raw"
+    },
+    {
+      "id": "truncated_code",
+      "lzw": "compressed/lzw/truncated-code.Z",
+      "raw": "compressed/lzw/malformed-empty.raw"
+    },
+    {
+      "id": "invalid_max_bits_low",
+      "lzw": "compressed/lzw/invalid-max-bits-low.Z",
+      "raw": "compressed/lzw/malformed-empty.raw"
+    },
+    {
+      "id": "invalid_max_bits_high",
+      "lzw": "compressed/lzw/invalid-max-bits-high.Z",
+      "raw": "compressed/lzw/malformed-empty.raw"
+    },
+    {
+      "id": "first_code_non_literal",
+      "lzw": "compressed/lzw/first-code-non-literal.Z",
+      "raw": "compressed/lzw/malformed-empty.raw"
+    },
+    {
+      "id": "invalid_reference",
+      "lzw": "compressed/lzw/invalid-reference.Z",
+      "raw": "compressed/lzw/invalid-reference.raw"
+    }
+  ],
+  "source": "scripts/build_compressed_fixtures.py",
+  "version": 1
+}

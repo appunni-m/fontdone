@@ -917,7 +917,8 @@ static int emit_lzw_stream_case(int argc, char** argv) {
     }
 
     if (streq(case_id, "ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream") ||
-        streq(case_id, "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams")) {
+        streq(case_id, "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams") ||
+        streq(case_id, "ftlzw.FT_Stream_OpenLZW.reads_malformed_lzw_streams")) {
         if (argc < 6 || ((argc - 3) % 3) != 0) {
             fprintf(stderr, "LZW success requires PAYLOAD_ID RAW LZW groups\n");
             FT_Done_FreeType(library);
@@ -961,7 +962,8 @@ static int emit_lzw_stream_case(int argc, char** argv) {
                         &stream,
                         raw,
                         raw_len,
-                        streq(case_id, "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams"));
+                        streq(case_id, "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams") ||
+                            streq(case_id, "ftlzw.FT_Stream_OpenLZW.reads_malformed_lzw_streams"));
                 }
                 printf(",\"close_events\":{\"wrapper\":%d,\"source\":0}}", status ? 0 : 1);
                 first = 0;

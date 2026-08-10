@@ -5,6 +5,7 @@
     "import_contract",
     "opens_valid_lzw_stream",
     "opens_dictionary_and_block_reset_streams",
+    "reads_malformed_lzw_streams",
     "invalid_header_error",
     "null_stream_or_source_error",
     "unsupported_build_error"
@@ -192,7 +193,77 @@
           "freetype/src/lzw/ftzopen.c:275-380"
         ],
         "fixture_requirements": [
-          "compressed/lzw/dictionary-streams.json must reference deterministic 0x1F 0x9D Unix-compress streams that exercise dictionary references, width growth, and block-mode CLEAR reset; the read matrix must decode two forward chunks before the reset-to-zero full read."
+          "compressed/lzw/dictionary-streams.json must reference deterministic 0x1F 0x9D Unix-compress streams that exercise dictionary references, 9-bit saturation, width growth at the configured maximum, non-block mode, and block-mode CLEAR reset; the read matrix must decode two forward chunks before the reset-to-zero full read."
+        ]
+      }
+    },
+    {
+      "case_id": "ftlzw.FT_Stream_OpenLZW.reads_malformed_lzw_streams",
+      "subject": "ftlzw.FT_Stream_OpenLZW",
+      "case": "reads_malformed_lzw_streams",
+      "operation": "ftlzw.stream_open_lzw",
+      "schema": "api_result",
+      "expect_error": false,
+      "abi": {
+        "header": "freetype/ftlzw.h",
+        "symbol": "FT_Stream_OpenLZW",
+        "signature": "FT_Error FT_Stream_OpenLZW(FT_Stream stream, FT_Stream source)",
+        "build_option": "FT_CONFIG_OPTION_USE_LZW"
+      },
+      "inputs": {
+        "assets": {
+          "lzw_streams": {
+            "kind": "ref",
+            "id": "compressed/lzw/malformed-streams.json",
+            "asset_kind": "manifest"
+          }
+        },
+        "params": {
+          "lzw_enabled": true,
+          "read_offsets": [
+            0,
+            0,
+            64,
+            0
+          ],
+          "read_counts": [
+            0,
+            64,
+            64
+          ],
+          "close_after_reads": true
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftlzw",
+        "area:lzw",
+        "coverage:truncated-stream",
+        "coverage:invalid-code"
+      ],
+      "expectation": {
+        "status": "build_dependent",
+        "output_shape": {
+          "return": "FT_Error",
+          "target_stream": "memory, descriptor, read, close, pos, size, base fields",
+          "decoded_reads": "partial or empty byte chunks from C oracle",
+          "malformed_stream": "decoder stops at the first invalid or truncated code"
+        },
+        "compare": {
+          "mode": "bytes",
+          "paths": [
+            "status",
+            "target_stream.field_classes",
+            "decoded_reads[*].bytes",
+            "close_events"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/lzw/ftlzw.c:170-224",
+          "freetype/src/lzw/ftzopen.c:275-380"
+        ],
+        "fixture_requirements": [
+          "compressed/lzw/malformed-streams.json must reference maintained valid-magic .Z inputs for truncated headers/codes, invalid max_bits, non-literal first codes, and invalid dictionary references."
         ]
       }
     },

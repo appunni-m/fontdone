@@ -8257,14 +8257,16 @@ subjects:
       - id: opens_valid_lzw_stream
         description: With FT_CONFIG_OPTION_USE_LZW and valid .Z data, C initializes the target stream with memory, descriptor, read, close, pos, size, and null base fields; the declared zero-count read uses a null buffer and returns zero without copying.
       - id: opens_dictionary_and_block_reset_streams
-        description: Deterministic block-mode .Z parity inputs exercise dictionary-reference decoding, 9-to-10-bit width growth, and CLEAR-driven dictionary reset through the same public stream wrapper; parity reads two forward chunks before a clean reset-to-zero full read.
+        description: Deterministic .Z parity inputs exercise dictionary-reference decoding, 9-bit dictionary saturation, 9-to-10-bit width growth at the configured maximum, non-block mode, and block-mode CLEAR reset through the same public stream wrapper; parity reads two forward chunks before a clean reset-to-zero full read.
+      - id: reads_malformed_lzw_streams
+        description: Maintained valid-magic .Z inputs exercise truncated headers and codes, invalid max_bits values, a non-literal first code, and an invalid dictionary reference; the wrapper opens and the decoder stops with C-equivalent partial or empty output.
       - id: invalid_header_error
         description: With LZW support enabled, a source stream without the LZW magic/header returns the same C error before allocating the LZW descriptor.
       - id: null_stream_or_source_error
         description: A null target stream or source stream returns FT_Err_Invalid_Stream_Handle.
       - id: unsupported_build_error
         description: Without FT_CONFIG_OPTION_USE_LZW, the exported function returns FT_Err_Unimplemented_Feature for all arguments.
-    # needs-input: operation=FT_Stream_OpenLZW then stream read/seek/close; fixture_asset=small valid .pcf.Z or synthetic .Z binary, invalid-header binary, and FT_Stream memory wrapper records; params={lzw_enabled:false/true, target_stream:null/valid, source_stream:null/valid, read_offsets:[0,forward,forward,backward], read_counts:[0,64,64,full], null_buffer_zero_count:true}; output shape={FT_Error, target stream field snapshot, decoded byte chunks/hash, close side effects, source stream ownership class}; comparison=exact C oracle error code, stream field mutation, decoded bytes, forward dictionary/CLEAR decoding, reset-to-zero behavior, and unsupported-build classification.
+    # needs-input: operation=FT_Stream_OpenLZW then stream read/seek/close; fixture_asset=small valid .pcf.Z or synthetic .Z binary, dictionary/width/CLEAR/non-block streams, valid-magic malformed .Z binaries, invalid-header binary, and FT_Stream memory wrapper records; params={lzw_enabled:false/true, target_stream:null/valid, source_stream:null/valid, read_offsets:[0,forward,forward,backward], read_counts:[0,64,64,full], null_buffer_zero_count:true}; output shape={FT_Error, target stream field snapshot, decoded byte chunks/hash, close side effects, source stream ownership class}; comparison=exact C oracle error code, stream field mutation, decoded bytes, forward dictionary/CLEAR/malformed decoding, reset-to-zero behavior, and unsupported-build classification.
 
   - id: ftmm.T1_MAX_MM_AXIS
     kind: constant

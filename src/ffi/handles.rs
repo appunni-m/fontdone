@@ -7884,20 +7884,18 @@ fn decode_unix_compress(input: &[u8]) -> Box<[u8]> {
     const BIT_MASK: u8 = 0x1F;
     const BLOCK_MASK: u8 = 0x80;
 
+    // FT_Stream_OpenLZW validates the two magic bytes before calling this
+    // private decoder; keep the length check here for a valid-magic truncated
+    // source that can still be opened by the public wrapper.
     let Some(header) = input.get(..3) else {
         return Box::default();
     };
-    if header[..2] != [0x1F, 0x9D] {
-        return Box::default();
-    }
     let max_bits = usize::from(header[2] & BIT_MASK);
     if !(INITIAL_BITS..=16).contains(&max_bits) {
         return Box::default();
     }
     let block_mode = header[2] & BLOCK_MASK != 0;
-    let Some(max_codes) = 1usize.checked_shl(u32::try_from(max_bits).unwrap_or(0)) else {
-        return Box::default();
-    };
+    let max_codes = 1usize << max_bits;
     let max_free = max_codes.saturating_sub(256);
     let mut prefix = vec![0u16; max_free];
     let mut suffix = vec![0u8; max_free];
@@ -7921,15 +7919,12 @@ fn decode_unix_compress(input: &[u8]) -> Box<[u8]> {
     let mut old_char = first_code;
     let mut discard_block = false;
 
-    'decode: loop {
-        if free_ent >= free_bits {
-            let Some(next_width) = width.checked_add(1) else {
-                break;
-            };
-            if next_width > 16 {
-                break;
-            }
-            width = next_width;
+    loop {
+        // At the maximum width free_bits is max_free + 1 while free_ent is
+        // capped at max_free, so this transition is only possible below the
+        // configured maximum.
+        if free_ent >= free_bits && width < max_bits {
+            width += 1;
             free_bits = if width < max_bits {
                 (1usize << width).saturating_sub(256)
             } else {
@@ -7946,11 +7941,9 @@ fn decode_unix_compress(input: &[u8]) -> Box<[u8]> {
         if code == CLEAR && block_mode {
             free_ent = (FIRST - 1).saturating_sub(256);
             width = INITIAL_BITS;
-            free_bits = if width < max_bits {
-                (1usize << width).saturating_sub(256)
-            } else {
-                max_free.saturating_add(1)
-            };
+            // Match ft_lzwstate_get_code: CLEAR restores the initial-width
+            // threshold even when the stream's configured maximum is 9 bits.
+            free_bits = (1usize << width).saturating_sub(256);
             old_code = 0;
             old_char = 0;
             discard_block = true;
@@ -7970,28 +7963,20 @@ fn decode_unix_compress(input: &[u8]) -> Box<[u8]> {
             }
             while code >= 256 {
                 let index = code - 256;
-                let (Some(&next_suffix), Some(&next_prefix)) =
-                    (suffix.get(index), prefix.get(index))
-                else {
-                    break 'decode;
-                };
-                stack.push(next_suffix);
-                code = usize::from(next_prefix);
-                if stack.len() > max_codes {
-                    break 'decode;
-                }
+                // A dictionary index is below free_ent here, and every
+                // prefix/suffix entry below free_ent has already been filled.
+                stack.push(suffix[index]);
+                code = usize::from(prefix[index]);
             }
         }
 
-        let Ok(decoded_char) = u8::try_from(code) else {
-            break;
-        };
+        let decoded_char = code as u8;
         old_char = usize::from(decoded_char);
         stack.push(decoded_char);
         output.extend(stack.into_iter().rev());
 
         if free_ent < max_free {
-            prefix[free_ent] = u16::try_from(old_code).unwrap_or(0);
+            prefix[free_ent] = old_code as u16;
             suffix[free_ent] = decoded_char;
             free_ent = free_ent.saturating_add(1);
         }
@@ -8001,14 +7986,12 @@ fn decode_unix_compress(input: &[u8]) -> Box<[u8]> {
     output.into_boxed_slice()
 }
 
-pub fn FT_Stream_OpenLZW(
+#[cfg(feature = "lzw")]
+fn open_lzw_enabled(
     stream: Option<&mut FT_StreamRec>,
     source: Option<&FT_StreamRec>,
     source_bytes: Option<&[FT_Byte]>,
 ) -> FT_Error {
-    if !cfg!(feature = "lzw") {
-        return FT_Err_Unimplemented_Feature as FT_Error;
-    }
     let (Some(stream), Some(source), Some(source_bytes)) = (stream, source, source_bytes) else {
         return FT_Err_Invalid_Stream_Handle as FT_Error;
     };
@@ -8038,6 +8021,23 @@ pub fn FT_Stream_OpenLZW(
         .unwrap_or_else(|poisoned| poisoned.into_inner())
         .insert(stream_key, decoded);
     FT_Err_Ok
+}
+
+#[cfg(not(feature = "lzw"))]
+fn open_lzw_enabled(
+    _stream: Option<&mut FT_StreamRec>,
+    _source: Option<&FT_StreamRec>,
+    _source_bytes: Option<&[FT_Byte]>,
+) -> FT_Error {
+    FT_Err_Unimplemented_Feature as FT_Error
+}
+
+pub fn FT_Stream_OpenLZW(
+    stream: Option<&mut FT_StreamRec>,
+    source: Option<&FT_StreamRec>,
+    source_bytes: Option<&[FT_Byte]>,
+) -> FT_Error {
+    open_lzw_enabled(stream, source, source_bytes)
 }
 
 pub fn FT_LZW_Stream_Read(

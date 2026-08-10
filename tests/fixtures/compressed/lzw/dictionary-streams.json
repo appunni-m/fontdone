@@ -9,6 +9,31 @@
       "id": "block_reset",
       "lzw": "compressed/lzw/block-reset.Z",
       "raw": "compressed/lzw/block-reset.raw"
+    },
+    {
+      "id": "max_bits_9_boundary",
+      "lzw": "compressed/lzw/max-bits-9-boundary.Z",
+      "raw": "compressed/lzw/dictionary-boundary.raw"
+    },
+    {
+      "id": "max_bits_9_clear",
+      "lzw": "compressed/lzw/max-bits-9-clear.Z",
+      "raw": "compressed/lzw/max-bits-9-clear.raw"
+    },
+    {
+      "id": "max_bits_10_transition",
+      "lzw": "compressed/lzw/max-bits-10-transition.Z",
+      "raw": "compressed/lzw/dictionary-boundary.raw"
+    },
+    {
+      "id": "non_block_dictionary",
+      "lzw": "compressed/lzw/non-block-dictionary.Z",
+      "raw": "compressed/lzw/dictionary-boundary.raw"
+    },
+    {
+      "id": "non_block_clear_code",
+      "lzw": "compressed/lzw/non-block-clear.Z",
+      "raw": "compressed/lzw/non-block-clear.raw"
     }
   ],
   "source": "scripts/build_compressed_fixtures.py",
