@@ -767,32 +767,22 @@ fn ft_bitmap_pitch_abs(bitmap: &FT_Bitmap_C) -> Option<usize> {
     usize::try_from(bitmap.pitch.unsigned_abs()).ok()
 }
 
+#[allow(
+    clippy::cast_possible_truncation,
+    reason = "the public FT_Bitmap fields are u32/i32 and supported targets are at least 32-bit"
+)]
 fn ft_bitmap_assure_buffer(bitmap: &mut FT_Bitmap_C, x_pixels: usize, y_pixels: usize) -> FT_Error {
-    let (Ok(width), Ok(rows)) = (usize::try_from(bitmap.width), usize::try_from(bitmap.rows))
-    else {
-        return FT_Err_Invalid_Argument;
-    };
-    let Some(pitch) = ft_bitmap_pitch_abs(bitmap) else {
-        return FT_Err_Invalid_Argument;
-    };
+    // `FT_Bitmap_Embolden` converts GRAY2 and GRAY4 to GRAY before reaching
+    // this private helper, so those C switch arms are unreachable here.
+    let width = bitmap.width as usize;
+    let rows = bitmap.rows as usize;
+    let pitch = bitmap.pitch.unsigned_abs() as usize;
     let (bpp, new_pitch) = match i32::from(bitmap.pixel_mode) {
         FT_PIXEL_MODE_MONO => {
             let Some(new_width) = width.checked_add(x_pixels) else {
                 return FT_Err_Out_Of_Memory as FT_Error;
             };
             (1usize, (new_width + 7) >> 3)
-        }
-        FT_PIXEL_MODE_GRAY2 => {
-            let Some(new_width) = width.checked_add(x_pixels) else {
-                return FT_Err_Out_Of_Memory as FT_Error;
-            };
-            (2, (new_width + 3) >> 2)
-        }
-        FT_PIXEL_MODE_GRAY4 => {
-            let Some(new_width) = width.checked_add(x_pixels) else {
-                return FT_Err_Out_Of_Memory as FT_Error;
-            };
-            (4, (new_width + 1) >> 1)
         }
         FT_PIXEL_MODE_GRAY | FT_PIXEL_MODE_LCD | FT_PIXEL_MODE_LCD_V => {
             let Some(new_pitch) = width.checked_add(x_pixels) else {
