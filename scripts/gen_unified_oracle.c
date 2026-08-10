@@ -20657,6 +20657,18 @@ static int emit_ps_font_value_matrix(int argc, char** argv) {
     printf("{");
     print_status(0);
     printf(",\"output\":{\"rows\":[");
+    print_ps_font_value_matrix_row("unique_id", "PS_DICT_UNIQUE_ID",
+                                   type1.face, PS_DICT_UNIQUE_ID, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("std_hw", "PS_DICT_STD_HW",
+                                   type1.face, PS_DICT_STD_HW, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("std_vw", "PS_DICT_STD_VW",
+                                   type1.face, PS_DICT_STD_VW, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("num_blue_values", "PS_DICT_NUM_BLUE_VALUES",
+                                   type1.face, PS_DICT_NUM_BLUE_VALUES, 0, 0, 256, 1);
+    printf(",");
     print_ps_font_value_matrix_row("scalar_value", "PS_DICT_UNDERLINE_POSITION",
                                    type1.face, PS_DICT_UNDERLINE_POSITION, 0, 0, 256, 1);
     printf(",");
@@ -20666,8 +20678,92 @@ static int emit_ps_font_value_matrix(int argc, char** argv) {
     print_ps_font_value_matrix_row("array_value", "PS_DICT_BLUE_VALUE",
                                    type1.face, PS_DICT_BLUE_VALUE, 0, 0, 256, 1);
     printf(",");
+    print_ps_font_value_matrix_row("blue_fuzz", "PS_DICT_BLUE_FUZZ",
+                                   type1.face, PS_DICT_BLUE_FUZZ, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("blue_scale", "PS_DICT_BLUE_SCALE",
+                                   type1.face, PS_DICT_BLUE_SCALE, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("blue_shift", "PS_DICT_BLUE_SHIFT",
+                                   type1.face, PS_DICT_BLUE_SHIFT, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("num_other_blues", "PS_DICT_NUM_OTHER_BLUES",
+                                   type1.face, PS_DICT_NUM_OTHER_BLUES, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("other_blue", "PS_DICT_OTHER_BLUE",
+                                   type1.face, PS_DICT_OTHER_BLUE, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("num_family_blues", "PS_DICT_NUM_FAMILY_BLUES",
+                                   type1.face, PS_DICT_NUM_FAMILY_BLUES, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("family_blue", "PS_DICT_FAMILY_BLUE",
+                                   type1.face, PS_DICT_FAMILY_BLUE, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("num_family_other_blues", "PS_DICT_NUM_FAMILY_OTHER_BLUES",
+                                   type1.face, PS_DICT_NUM_FAMILY_OTHER_BLUES, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("family_other_blue", "PS_DICT_FAMILY_OTHER_BLUE",
+                                   type1.face, PS_DICT_FAMILY_OTHER_BLUE, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("num_stem_snap_h", "PS_DICT_NUM_STEM_SNAP_H",
+                                   type1.face, PS_DICT_NUM_STEM_SNAP_H, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("stem_snap_h", "PS_DICT_STEM_SNAP_H",
+                                   type1.face, PS_DICT_STEM_SNAP_H, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("num_stem_snap_v", "PS_DICT_NUM_STEM_SNAP_V",
+                                   type1.face, PS_DICT_NUM_STEM_SNAP_V, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("stem_snap_v", "PS_DICT_STEM_SNAP_V",
+                                   type1.face, PS_DICT_STEM_SNAP_V, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("force_bold", "PS_DICT_FORCE_BOLD",
+                                   type1.face, PS_DICT_FORCE_BOLD, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("rnd_stem_up", "PS_DICT_RND_STEM_UP",
+                                   type1.face, PS_DICT_RND_STEM_UP, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("min_feature", "PS_DICT_MIN_FEATURE",
+                                   type1.face, PS_DICT_MIN_FEATURE, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("len_iv", "PS_DICT_LEN_IV",
+                                   type1.face, PS_DICT_LEN_IV, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("password", "PS_DICT_PASSWORD",
+                                   type1.face, PS_DICT_PASSWORD, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("language_group", "PS_DICT_LANGUAGE_GROUP",
+                                   type1.face, PS_DICT_LANGUAGE_GROUP, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("version", "PS_DICT_VERSION",
+                                   type1.face, PS_DICT_VERSION, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("notice", "PS_DICT_NOTICE",
+                                   type1.face, PS_DICT_NOTICE, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("family_name", "PS_DICT_FAMILY_NAME",
+                                   type1.face, PS_DICT_FAMILY_NAME, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("weight", "PS_DICT_WEIGHT",
+                                   type1.face, PS_DICT_WEIGHT, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("is_fixed_pitch", "PS_DICT_IS_FIXED_PITCH",
+                                   type1.face, PS_DICT_IS_FIXED_PITCH, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("underline_thickness", "PS_DICT_UNDERLINE_THICKNESS",
+                                   type1.face, PS_DICT_UNDERLINE_THICKNESS, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("italic_angle", "PS_DICT_ITALIC_ANGLE",
+                                   type1.face, PS_DICT_ITALIC_ANGLE, 0, 0, 256, 1);
+    printf(",");
     print_ps_font_value_matrix_row("encoding_type", "PS_DICT_ENCODING_TYPE",
                                    custom.face, PS_DICT_ENCODING_TYPE, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("encoding_entry", "PS_DICT_ENCODING_ENTRY",
+                                   custom.face, PS_DICT_ENCODING_ENTRY, 0, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("encoding_entry_invalid_index", "PS_DICT_ENCODING_ENTRY",
+                                   custom.face, PS_DICT_ENCODING_ENTRY, 255, 0, 256, 1);
     printf(",");
     print_ps_font_value_matrix_row("sizing_query", "PS_DICT_FULL_NAME",
                                    type1.face, PS_DICT_FULL_NAME, 0, 1, 0, 0);
@@ -20680,6 +20776,9 @@ static int emit_ps_font_value_matrix(int argc, char** argv) {
     printf(",");
     print_ps_font_value_matrix_row("invalid_index", "PS_DICT_BLUE_VALUE",
                                    type1.face, PS_DICT_BLUE_VALUE, 255, 0, 256, 1);
+    printf(",");
+    print_ps_font_value_matrix_row("invalid_key", "PS_DICT_UNSUPPORTED",
+                                   type1.face, (PS_Dict_Keys)46, 0, 0, 256, 1);
     printf(",");
     print_ps_font_value_matrix_row("unsupported_service", "PS_DICT_FULL_NAME",
                                    cff.face, PS_DICT_FULL_NAME, 0, 0, 256, 1);

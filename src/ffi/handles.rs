@@ -7255,6 +7255,51 @@ pub fn FT_Get_PS_Font_Value(
                 &private.blue_values,
             )
         }),
+        PS_DICT_NUM_OTHER_BLUES => font.type1_private().map_or(-1, |private| {
+            copy_value_bytes(
+                value,
+                std::mem::size_of::<FT_Byte>(),
+                &[private.num_other_blues],
+            )
+        }),
+        PS_DICT_OTHER_BLUE => font.type1_private().map_or(-1, |private| {
+            copy_ps_short_array_value(
+                value,
+                idx,
+                usize::from(private.num_other_blues),
+                &private.other_blues,
+            )
+        }),
+        PS_DICT_NUM_FAMILY_BLUES => font.type1_private().map_or(-1, |private| {
+            copy_value_bytes(
+                value,
+                std::mem::size_of::<FT_Byte>(),
+                &[private.num_family_blues],
+            )
+        }),
+        PS_DICT_FAMILY_BLUE => font.type1_private().map_or(-1, |private| {
+            copy_ps_short_array_value(
+                value,
+                idx,
+                usize::from(private.num_family_blues),
+                &private.family_blues,
+            )
+        }),
+        PS_DICT_NUM_FAMILY_OTHER_BLUES => font.type1_private().map_or(-1, |private| {
+            copy_value_bytes(
+                value,
+                std::mem::size_of::<FT_Byte>(),
+                &[private.num_family_other_blues],
+            )
+        }),
+        PS_DICT_FAMILY_OTHER_BLUE => font.type1_private().map_or(-1, |private| {
+            copy_ps_short_array_value(
+                value,
+                idx,
+                usize::from(private.num_family_other_blues),
+                &private.family_other_blues,
+            )
+        }),
         PS_DICT_BLUE_FUZZ => font.type1_private().map_or(-1, |private| {
             copy_value_bytes(
                 value,
@@ -7266,7 +7311,7 @@ pub fn FT_Get_PS_Font_Value(
             copy_value_bytes(
                 value,
                 std::mem::size_of::<FT_Fixed>(),
-                &private.blue_scale.to_ne_bytes(),
+                &FT_Fixed::from(private.blue_scale).to_ne_bytes(),
             )
         }),
         PS_DICT_BLUE_SHIFT => font.type1_private().map_or(-1, |private| {
@@ -7296,6 +7341,55 @@ pub fn FT_Get_PS_Font_Value(
                 std::mem::size_of::<FT_Long>(),
                 &private.language_group.to_ne_bytes(),
             )
+        }),
+        PS_DICT_NUM_STEM_SNAP_H => font.type1_private().map_or(-1, |private| {
+            copy_value_bytes(
+                value,
+                std::mem::size_of::<FT_Byte>(),
+                &[private.num_snap_widths],
+            )
+        }),
+        PS_DICT_STEM_SNAP_H => font.type1_private().map_or(-1, |private| {
+            copy_ps_short_array_value(
+                value,
+                idx,
+                usize::from(private.num_snap_widths),
+                &private.snap_widths,
+            )
+        }),
+        PS_DICT_NUM_STEM_SNAP_V => font.type1_private().map_or(-1, |private| {
+            copy_value_bytes(
+                value,
+                std::mem::size_of::<FT_Byte>(),
+                &[private.num_snap_heights],
+            )
+        }),
+        PS_DICT_STEM_SNAP_V => font.type1_private().map_or(-1, |private| {
+            copy_ps_short_array_value(
+                value,
+                idx,
+                usize::from(private.num_snap_heights),
+                &private.snap_heights,
+            )
+        }),
+        PS_DICT_FORCE_BOLD => font.type1_private().map_or(-1, |private| {
+            let force_bold = FT_Bool::from(private.force_bold);
+            copy_value_bytes(
+                value,
+                std::mem::size_of::<FT_Bool>(),
+                &force_bold.to_ne_bytes(),
+            )
+        }),
+        PS_DICT_RND_STEM_UP => font.type1_private().map_or(-1, |private| {
+            let round_stem_up = FT_Bool::from(private.round_stem_up);
+            copy_value_bytes(
+                value,
+                std::mem::size_of::<FT_Bool>(),
+                &round_stem_up.to_ne_bytes(),
+            )
+        }),
+        PS_DICT_MIN_FEATURE => font.type1_private().map_or(-1, |private| {
+            copy_ps_short_array_value(value, idx, private.min_feature.len(), &private.min_feature)
         }),
         PS_DICT_VERSION => copy_ps_string_value(
             value,
@@ -7344,7 +7438,7 @@ pub fn FT_Get_PS_Font_Value(
             copy_value_bytes(
                 value,
                 std::mem::size_of::<FT_Fixed>(),
-                &info.italic_angle.to_ne_bytes(),
+                &FT_Fixed::from(info.italic_angle).to_ne_bytes(),
             )
         }),
         // FreeType `src/type1/t1driver.c:t1_ps_get_font_value` copies

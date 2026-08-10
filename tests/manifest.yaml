@@ -12188,7 +12188,7 @@ subjects:
         description: Unsupported keys, out-of-range array indexes, absent strings, and unavailable dictionary entries return 0 rather than a FreeType error code.
       - id: non_type1_or_missing_service_returns_zero
         description: Null face, non-PostScript faces, and PostScript services without ps_get_font_value return 0 from the public wrapper.
-    # needs-input: operation=FT_Get_PS_Font_Value over representative PS_Dict_Keys; fixture_asset=Type1 font with known dictionary values, custom Encoding array, subrs/charstrings, plus CFF/CID/Type42/TrueType controls; params={font, key, idx, value_len, value_pointer_mode}; expected output shape={FT_Long required_len_or_zero, copied typed value bytes, untouched-buffer sentinel}; comparison=exact C oracle length and copied byte payload.
+    # maintained-input: operation=FT_Get_PS_Font_Value over representative PS_Dict_Keys; fixture_asset=maintained Type1 font with populated Private/FontInfo dictionaries and custom Encoding array, plus CFF/TrueType controls; params={font, key, idx, value_len, value_pointer_mode}; expected output shape={FT_Long required_len_or_zero, copied typed value bytes, untouched-buffer sentinel}; comparison=exact C oracle length and copied byte payload.
 
   - id: t1tables.FT_Has_PS_Glyph_Names
     kind: function
