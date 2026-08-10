@@ -2657,7 +2657,7 @@ fn type1_mm_weights_unmap(weights: &[i32], axis_count: usize) -> Vec<i32> {
 /// nightly coverage lane. The maintained Adobe MM fixture has two axes, so
 /// these valid mapping shapes are otherwise not reachable through parity.
 #[cfg(coverage_nightly)]
-pub fn coverage_probe_type1_mm_weights_unmap() {
+fn coverage_probe_type1_mm_weights_unmap() {
     let weights = (1..=16).collect::<Vec<_>>();
     assert_eq!(type1_mm_weights_unmap(&weights, 3), vec![20, 22, 26]);
     assert_eq!(type1_mm_weights_unmap(&weights, 4), vec![72, 76, 84, 100]);
@@ -4219,6 +4219,8 @@ impl Font {
         };
         self.type1_mm_weight_vector = Some(next);
         self.type1_mm_variation_active = weightvector.is_some();
+        #[cfg(coverage_nightly)]
+        coverage_probe_type1_mm_weights_unmap();
         Ok(())
     }
 

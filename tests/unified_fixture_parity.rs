@@ -21739,10 +21739,6 @@ fn wasm_ftmm_get_mm_weight_vector(case: &InputCase) -> Result<RunOutput, String>
 }
 
 fn rust_ftmm_set_mm_weight_vector(case: &InputCase) -> Result<RunOutput, String> {
-    #[cfg(coverage_nightly)]
-    if case.case_id == "ftmm.FT_Set_MM_WeightVector.success_set_weight_vector" {
-        fontdone::font::coverage_probe_type1_mm_weights_unmap();
-    }
     let mut face = rust_new_face_without_size(case)?;
     let scenarios = ftmm_weight_scenarios(&case.inputs.params)?;
     let mut rows = Vec::with_capacity(scenarios.len());
