@@ -72,6 +72,58 @@ def build_cpal_zero_entry_font(path: Path) -> None:
     font.save(path, reorderTables=False)
 
 
+def build_cpal_variant(path: Path, variant: str) -> None:
+    """Build a deterministic CPAL parser control from the canonical v1 face.
+
+    FreeType treats malformed CPAL as an optional-table load failure, so the
+    surrounding SFNT remains openable.  The valid no-metadata variant also
+    records the CPAL v1 representation where all three optional offsets are
+    zero and therefore all three public metadata pointers remain NULL.
+    """
+    source = OUTPUT_DIR / "cpal-palettes-names-flags.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    table = font.reader.tables.get(b"CPAL")
+    if table is None or table.length < 12:
+        raise RuntimeError(f"canonical CPAL fixture has no usable table: {source}")
+
+    data = bytearray(source.read_bytes())
+    table_offset = table.offset
+    table_length = table.length
+    num_palettes = int.from_bytes(data[table_offset + 4 : table_offset + 6], "big")
+    extensions_offset = 12 + num_palettes * 2
+    if extensions_offset + 12 > table_length:
+        raise RuntimeError("canonical CPAL fixture has no complete v1 extension header")
+
+    record_start = None
+    num_tables = int.from_bytes(data[4:6], "big")
+    for index in range(num_tables):
+        candidate = 12 + index * 16
+        if data[candidate : candidate + 4] == b"CPAL":
+            record_start = candidate
+            break
+    if record_start is None:
+        raise RuntimeError(f"canonical CPAL fixture has no directory record: {source}")
+
+    if variant == "no_optional_metadata":
+        data[table_offset + extensions_offset : table_offset + extensions_offset + 12] = b"\0" * 12
+    elif variant == "truncated_indices":
+        data[record_start + 12 : record_start + 16] = (12).to_bytes(4, "big")
+    elif variant in {"truncated_types", "truncated_labels", "truncated_entry_labels"}:
+        field_offset = {
+            "truncated_types": 0,
+            "truncated_labels": 4,
+            "truncated_entry_labels": 8,
+        }[variant]
+        data[table_offset + extensions_offset + field_offset : table_offset + extensions_offset + field_offset + 4] = (
+            table_length - 1
+        ).to_bytes(4, "big")
+    else:
+        raise ValueError(f"unknown CPAL variant: {variant}")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
 def build_colr_v0_layers_font(path: Path) -> None:
     font = TTFont(SOURCE_FONT, recalcTimestamp=False)
 
@@ -1327,6 +1379,16 @@ def main() -> None:
     ):
         build_cpal_font(OUTPUT_DIR / name)
     build_cpal_zero_entry_font(OUTPUT_DIR / "cpal-zero-entries.ttf")
+    build_cpal_variant(
+        OUTPUT_DIR / "cpal-v1-no-optional-metadata.ttf", "no_optional_metadata"
+    )
+    build_cpal_variant(OUTPUT_DIR / "malformed" / "cpal-v1-truncated-indices.ttf", "truncated_indices")
+    build_cpal_variant(OUTPUT_DIR / "malformed" / "cpal-v1-truncated-types.ttf", "truncated_types")
+    build_cpal_variant(OUTPUT_DIR / "malformed" / "cpal-v1-truncated-labels.ttf", "truncated_labels")
+    build_cpal_variant(
+        OUTPUT_DIR / "malformed" / "cpal-v1-truncated-entry-labels.ttf",
+        "truncated_entry_labels",
+    )
     build_colr_v0_layers_font(COLOR_OUTPUT_DIR / "colr-v0-layers-cpal.ttf")
     build_colr_v0_layers_font(COLOR_OUTPUT_DIR / "colr-v0-layer-control.ttf")
     build_colr_v1_composite_font(COLOR_OUTPUT_DIR / "colr_v1_composite_modes.ttf")

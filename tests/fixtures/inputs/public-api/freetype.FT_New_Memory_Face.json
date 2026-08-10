@@ -1001,6 +1001,42 @@
             "coverage": ["tt/cmap:encoding-record-array-overflow-ignored-at-face-open"]
           },
           {
+            "id": "cpal-v1-truncated-indices",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/color/malformed/cpal-v1-truncated-indices.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/color/malformed/cpal-v1-truncated-indices.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/cpal:palette-index-array-truncated-ignored-at-face-open"]
+          },
+          {
+            "id": "cpal-v1-truncated-types",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/color/malformed/cpal-v1-truncated-types.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/color/malformed/cpal-v1-truncated-types.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/cpal:palette-types-array-truncated-ignored-at-face-open"]
+          },
+          {
+            "id": "cpal-v1-truncated-labels",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/color/malformed/cpal-v1-truncated-labels.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/color/malformed/cpal-v1-truncated-labels.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/cpal:palette-label-array-truncated-ignored-at-face-open"]
+          },
+          {
+            "id": "cpal-v1-truncated-entry-labels",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/color/malformed/cpal-v1-truncated-entry-labels.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/color/malformed/cpal-v1-truncated-entry-labels.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/cpal:entry-label-array-truncated-ignored-at-face-open"]
+          },
+          {
             "id": "gvar-short-table",
             "assets": {
               "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/gvar-short.ttf"},

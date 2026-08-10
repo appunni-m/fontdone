@@ -23070,6 +23070,7 @@ static int emit_color_palette_case(int argc, char** argv) {
     if (streq(case_id, "ftcolor.FT_Palette_Data_Get.success_sfnt_without_cpal") ||
         streq(case_id, "ftcolor.FT_Palette_Data_Get.success_non_sfnt_null_palette_data") ||
         streq(case_id, "ftcolor.FT_Palette_Data_Get.success_sfnt_cpal_palette_data") ||
+        streq(case_id, "ftcolor.FT_Palette_Data_Get.success_cpal_without_optional_metadata") ||
         streq(case_id, "ftcolor.FT_Palette_Data_Get.success_cpal_zero_entries")) {
         FT_Palette_Data data = { 999, (const FT_UShort*)1, (const FT_UShort*)1, 999, (const FT_UShort*)1 };
         FT_Error err = FT_Palette_Data_Get(face.face, &data);

@@ -6839,6 +6839,7 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
         and row.case_id
         in {
             "ftcolor.FT_Palette_Data_Get.success_sfnt_cpal_palette_data",
+            "ftcolor.FT_Palette_Data_Get.success_cpal_without_optional_metadata",
             "ftcolor.FT_Palette_Data_Get.success_cpal_zero_entries",
         }
     ):

@@ -3,6 +3,7 @@
   "subject": "ftcolor.FT_Palette_Data_Get",
   "manifest_cases": [
     "success_sfnt_cpal_palette_data",
+    "success_cpal_without_optional_metadata",
     "success_cpal_zero_entries",
     "success_sfnt_without_cpal",
     "success_non_sfnt_null_palette_data",
@@ -70,6 +71,61 @@
         "fixture_requirements": [
           "Runtime compares C FreeType, Rust FFI, C FFI, and Wasm FFI outputs",
           "CPAL font with labels, flags, multiple palettes, entry labels, and empty-name 0xFFFF entries"
+        ]
+      }
+    },
+    {
+      "case_id": "ftcolor.FT_Palette_Data_Get.success_cpal_without_optional_metadata",
+      "subject": "ftcolor.FT_Palette_Data_Get",
+      "case": "success_cpal_without_optional_metadata",
+      "operation": "ftcolor.palette_data_get",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/color/cpal-v1-no-optional-metadata.ttf",
+            "asset_kind": "font",
+            "properties": [
+              "CPAL v1 face with multiple palettes and zero optional metadata offsets",
+              "C-null palette flags, palette names, and entry-name pointers"
+            ]
+          }
+        },
+        "params": {
+          "face_index": 0,
+          "sentinel_palette_data": true
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcolor",
+        "area:colr-v1"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "record": "FT_Palette_Data",
+          "zero_metadata_policy": "counts match CPAL while all optional metadata pointers remain NULL"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "error",
+            "palette_data.num_palettes",
+            "palette_data.palette_name_ids",
+            "palette_data.palette_flags",
+            "palette_data.num_palette_entries",
+            "palette_data.palette_entry_name_ids",
+            "pointer_nullness"
+          ]
+        },
+        "error": null,
+        "fixture_requirements": [
+          "Runtime compares C FreeType, Rust FFI, C FFI, and Wasm FFI outputs",
+          "CPAL v1 table leaves all optional palette metadata offsets at zero"
         ]
       }
     },

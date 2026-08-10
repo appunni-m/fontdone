@@ -8405,15 +8405,20 @@ fn parse_cpal_table(data: &[u8]) -> Option<CpalState> {
         palettes.push(palette);
     }
 
-    let mut palette_flags = vec![0; num_palettes];
-    let mut palette_name_ids = vec![0xFFFF; num_palettes];
-    let mut palette_entry_name_ids = vec![0xFFFF; num_palette_entries];
+    // FreeType leaves each optional CPAL v1 metadata array NULL when its
+    // offset is zero, and CPAL v0 has no metadata arrays at all.  Keep empty
+    // vectors until an offset is present so the public ABI preserves that
+    // pointer-nullness instead of manufacturing zero/0xFFFF arrays.
+    let mut palette_flags = Vec::new();
+    let mut palette_name_ids = Vec::new();
+    let mut palette_entry_name_ids = Vec::new();
     if version >= 1 {
         let extensions_offset = indices_end;
         if let Some(types_offset) = read_u32_be(data, extensions_offset)
             .and_then(|offset| usize::try_from(offset).ok())
             .filter(|offset| *offset != 0)
         {
+            palette_flags = vec![0; num_palettes];
             for (index, out) in palette_flags.iter_mut().enumerate() {
                 // FreeType 2.14.3 `src/sfnt/ttcpal.c:158-164` copies
                 // palette flags with `FT_NEXT_USHORT`; although CPAL v1 calls
@@ -8427,6 +8432,7 @@ fn parse_cpal_table(data: &[u8]) -> Option<CpalState> {
             .and_then(|offset| usize::try_from(offset).ok())
             .filter(|offset| *offset != 0)
         {
+            palette_name_ids = vec![0xFFFF; num_palettes];
             for (index, out) in palette_name_ids.iter_mut().enumerate() {
                 *out = read_u16_be(data, labels_offset.checked_add(index.checked_mul(2)?)?)?;
             }
@@ -8435,6 +8441,7 @@ fn parse_cpal_table(data: &[u8]) -> Option<CpalState> {
             .and_then(|offset| usize::try_from(offset).ok())
             .filter(|offset| *offset != 0)
         {
+            palette_entry_name_ids = vec![0xFFFF; num_palette_entries];
             for (index, out) in palette_entry_name_ids.iter_mut().enumerate() {
                 *out = read_u16_be(
                     data,
