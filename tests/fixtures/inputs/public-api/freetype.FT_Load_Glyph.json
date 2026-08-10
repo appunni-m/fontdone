@@ -84,6 +84,28 @@
             ]
           },
           {
+            "id": "type1-parser-opcodes",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/parser-opcodes.pfb",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_SCALE"
+              ]
+            },
+            "coverage": [
+              "font:type1-charstring-parser-opcodes"
+            ]
+          },
+          {
             "id": "gvar-packed-default",
             "assets": {
               "font": {

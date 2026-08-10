@@ -92,6 +92,7 @@ def build_simple_type1(
     is_fixed_pitch: bool = False,
     private_overrides: dict[str, object] | None = None,
     cleartext_replacements: list[tuple[bytes, bytes]] | None = None,
+    charstrings: dict[str, T1CharString] | None = None,
 ) -> None:
     private_dict = {
         "BlueValues": [],
@@ -134,7 +135,8 @@ def build_simple_type1(
         "FontMatrix": [0.001, 0, 0, 0.001, 0, 0],
         "FontBBox": (0, 0, 500, 700),
         "Private": private_dict,
-        "CharStrings": {
+        "CharStrings": charstrings
+        or {
             ".notdef": charstring([500, 0, "hsbw", "endchar"]),
             "A": charstring(
                 [
@@ -308,6 +310,73 @@ def build_font_value_populated(path: Path) -> None:
             "BlueValues": [-20, 0, 480, 500],
             "StdHW": [42],
             "StdVW": [83],
+        },
+    )
+
+
+def build_parser_opcode_coverage(path: Path) -> None:
+    """Build a Type 1 glyph whose valid program reaches every supported path."""
+
+    build_simple_type1(
+        path,
+        "Type1ParserOpcodes",
+        "Type 1 Parser Opcodes",
+        "Generated for fontdone Type 1 charstring parser coverage",
+        charstrings={
+            ".notdef": charstring([500, 0, "hsbw", "endchar"]),
+            "A": charstring(
+                [
+                    0,
+                    500,
+                    "hsbw",
+                    0,
+                    "hstem",
+                    0,
+                    "vstem",
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    "hstem3",
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    "vstem3",
+                    "dotsection",
+                    0,
+                    1,
+                    "div",
+                    "hstem",
+                    0,
+                    "vmoveto",
+                    0,
+                    0,
+                    "hlineto",
+                    0,
+                    "vlineto",
+                    0,
+                    0,
+                    "rlineto",
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    "rrcurveto",
+                    "closepath",
+                    0,
+                    "hmoveto",
+                    0,
+                    "vlineto",
+                    "closepath",
+                    "endchar",
+                ]
+            ),
         },
     )
 
@@ -508,6 +577,7 @@ def main() -> None:
         INPUT_AUX_OUT_DIR / "track-kern-base.afm", decimal_track_values=True
     )
     build_font_value_populated(INPUT_OUT_DIR / "font-value-populated.pfb")
+    build_parser_opcode_coverage(INPUT_OUT_DIR / "parser-opcodes.pfb")
     build_adobe_mm_two_axis(MM_OUT_DIR / "adobe-mm-two-axis.pfb")
     build_adobe_mm_two_axis(LEGACY_MM_OUT_DIR / "adobe-multiple-master.pfb")
     build_mm_blend_fontinfo_private(OUT_DIR / "mm-blend-fontinfo-private.pfb")

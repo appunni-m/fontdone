@@ -417,7 +417,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 731 tracked paths and no symlinks.
+The canonical input tree currently contains 732 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -442,6 +442,14 @@ The runtime row additionally sends selector `99` through the WASM
 PS-hinting entry point. The wrapper must reject that unknown selector before
 reading font bytes, matching the pinned `FT_Err_Invalid_Argument` result from
 the equivalent null-module C property call.
+
+The maintained Type 1 parser control
+`tests/fixtures/input/fonts/type1/parser-opcodes.pfb` keeps the valid
+CharString movement, stem, hint, escape, division, contour, and termination
+paths on the public `FT_Load_Glyph` parity route. Its all-zero geometry is
+intentional: it isolates parser execution from unrelated C/Rust outline-metric
+differences while still comparing the complete slot result with the pinned C
+oracle.
 
 Maintained glyph-slot and render inputs may set `probe_wasm_bitmap_accessors`.
 Those cases keep the normal slot result in the pinned-C comparison while the
@@ -619,7 +627,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,662 | executable parity tests and public contracts |
-| R04 | 731 | licensed canonical fixture inputs |
+| R04 | 732 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
