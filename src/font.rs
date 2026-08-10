@@ -2166,6 +2166,39 @@ fn decode_type1_number(bytes: &[u8], offset: &mut usize) -> Result<i32, FontErro
     }
 }
 
+#[cfg(coverage_nightly)]
+fn coverage_probe_type1_numbers() {
+    let successful_cases: &[(&[u8], i32)] = &[
+        (&[32], -107),
+        (&[246], 107),
+        (&[247, 0], 108),
+        (&[250, 255], 1131),
+        (&[251, 0], -108),
+        (&[254, 255], -1131),
+        (&[255, 0x7f, 0xff, 0xff, 0xff], i32::MAX),
+    ];
+    for (bytes, expected) in successful_cases {
+        let mut offset = 0;
+        assert_eq!(decode_type1_number(bytes, &mut offset), Ok(*expected));
+        assert_eq!(offset, bytes.len());
+    }
+
+    let error_cases: &[&[u8]] = &[
+        &[],
+        &[0],
+        &[247],
+        &[251],
+        &[255],
+        &[255, 0],
+        &[255, 0, 0],
+        &[255, 0, 0, 0],
+    ];
+    for bytes in error_cases {
+        let mut offset = 0;
+        assert!(decode_type1_number(bytes, &mut offset).is_err());
+    }
+}
+
 fn type1_next_byte(bytes: &[u8], offset: &mut usize) -> Result<u8, FontError> {
     let Some(byte) = bytes.get(*offset).copied() else {
         return Err(FontError::InvalidOutline("Type 1 number truncated".into()));
@@ -6630,6 +6663,8 @@ impl Font {
     }
 
     fn type1_glyph_program(&self, glyph: u16) -> Result<Type1GlyphProgram, FontError> {
+        #[cfg(coverage_nightly)]
+        coverage_probe_type1_numbers();
         let charstring = self
             .type1_charstrings
             .get(usize::from(glyph))
