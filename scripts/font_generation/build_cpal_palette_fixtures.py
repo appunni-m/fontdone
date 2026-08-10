@@ -997,12 +997,12 @@ def build_colr_v1_malformed_transform_payloads_font(path: Path) -> None:
     base_offset = int.from_bytes(data[table_offset + 14 : table_offset + 18], "big")
     base_start = table_offset + base_offset
     specs = (
-        (16, table.length - 5),
-        (18, table.length - 11),
+        (16, table.length - 6),
+        (18, table.length - 8),
         (20, table.length - 4),
         (22, table.length - 9),
         (24, table.length - 3),
-        (26, table.length - 8),
+        (26, table.length - 7),
     )
     for record_index, (paint_format, paint_relative_position) in enumerate(specs):
         record_start = base_start + 4 + record_index * 6
