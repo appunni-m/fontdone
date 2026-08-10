@@ -1650,6 +1650,8 @@ fn outline_render_runtime_supported(case: &InputCase) -> bool {
             | "ftimage.FT_Raster_Render_Func.outline_render_passes_params"
             | "ftimage.FT_Raster_Render_Func.render_error_propagates"
             | "ftimage.FT_Span.wide_outline_span_limit"
+            | "ftoutln.FT_Outline_Render.direct_render_clip_and_spans"
+            | "ftoutln.FT_Outline_Render.direct_render_without_gray_spans"
             | "ftoutln.FT_Outline_Render.renderer_fallback_and_errors"
     ) || (case.subject == "ftoutln.FT_Outline_Render" && case.case == "bitmap_render_matches_c")
 }
@@ -81808,9 +81810,9 @@ fn vector_json(vector: FT_Vector) -> Value {
     })
 }
 
-// The legacy direct-span rows are still classified as fallback coverage and
-// intentionally remain on their pre-existing shared handler.  The public
-// bitmap matrix below must not turn them into apparent C/C-ABI/WASM parity.
+// Legacy callers that use the dedicated direct-render operation remain on the
+// shared fallback handler; the maintained FT_Outline_Render direct rows above
+// are routed through the real Rust, C-ABI, and WASM span implementations.
 fn outline_render_direct_fallback_runtime_output(case: &InputCase) -> Result<RunOutput, String> {
     if case.expect_error {
         return Ok(error(FT_Err_Invalid_Argument));
@@ -82897,6 +82899,11 @@ fn outline_render_renderer_fallback_output(_case: &InputCase) -> Result<RunOutpu
 fn outline_render_gray_spans_present(params: &Value) -> bool {
     params
         .get("gray_spans")
+        .or_else(|| {
+            params
+                .get("raster_params")
+                .and_then(|raster_params| raster_params.get("gray_spans"))
+        })
         .and_then(Value::as_str)
         .is_none_or(|value| value != "NULL")
 }

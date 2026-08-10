@@ -1,7 +1,7 @@
 {
   "version": 1,
   "subject": "ftoutln.FT_Outline_Render",
-  "manifest_cases": ["bitmap_render_matches_c", "direct_render_clip_and_spans", "renderer_fallback_and_errors"],
+  "manifest_cases": ["bitmap_render_matches_c", "direct_render_clip_and_spans", "direct_render_without_gray_spans", "renderer_fallback_and_errors"],
   "cases": [
     {
       "case_id": "ftoutln.FT_Outline_Render.bitmap_render_matches_c",
@@ -344,6 +344,18 @@
       "classifiers": ["kind:function", "header:ftoutln", "surface:public-c-api", "operation:direct-render"],
       "metadata": {"abi": {"header": "freetype/ftoutln.h", "symbol": "FT_Outline_Render", "kind": "function", "c_signature": "FT_Error FT_Outline_Render(FT_Library library, FT_Outline* outline, FT_Raster_Params* params)"}, "source_behavior": "In direct mode without CLIP, FreeType presets clip_box from the outline cbox rounded to pixel bounds."},
       "expectation": {"status": "ok", "output_shape": {"return": "FT_Error", "clip_box": "FT_BBox", "spans": [{"y": "integer", "x": "integer", "len": "integer", "coverage": "integer"}]}, "compare": {"mode": "exact", "paths": ["return", "clip_box", "spans"]}, "source_refs": ["freetype/src/base/ftoutln.c:625-640"], "fixture_requirements": ["Direct-render outline that emits a stable span list through the gray_spans callback."]}
+    },
+    {
+      "case_id": "ftoutln.FT_Outline_Render.direct_render_without_gray_spans",
+      "subject": "ftoutln.FT_Outline_Render",
+      "case": "direct_render_without_gray_spans",
+      "operation": "ftoutln.outline_render",
+      "schema": "span_trace",
+      "expect_error": false,
+      "inputs": {"assets": {"outline": {"kind": "ref", "id": "outlines/render/direct-spans-clipped.json", "asset_kind": "outline_model"}}, "params": {"raster_params": {"flags": ["FT_RASTER_FLAG_AA", "FT_RASTER_FLAG_DIRECT"], "gray_spans": "NULL", "source": "ignored_sentinel"}, "expect_clip_box_from_cbox": true}},
+      "classifiers": ["kind:function", "header:ftoutln", "surface:public-c-api", "operation:direct-render", "coverage:null-gray-spans"],
+      "metadata": {"abi": {"header": "freetype/ftoutln.h", "symbol": "FT_Outline_Render", "kind": "function", "c_signature": "FT_Error FT_Outline_Render(FT_Library library, FT_Outline* outline, FT_Raster_Params* params)"}, "source_behavior": "DIRECT smooth rendering returns success without rasterizing when gray_spans is null, while the caller target remains untouched."},
+      "expectation": {"status": "ok", "output_shape": {"return": "FT_Error", "clip_box": "FT_BBox", "spans": [], "user_seen": false, "target_preserved": true}, "compare": {"mode": "exact", "paths": ["return", "clip_box", "spans", "user_seen", "target_preserved"]}, "source_refs": ["freetype/src/smooth/ftgrays.c:1998-2001"], "fixture_requirements": ["The same maintained direct-render outline is used with a null gray_spans callback to exercise the C-compatible no-op path."]}
     },
     {
       "case_id": "ftoutln.FT_Outline_Render.renderer_fallback_and_errors",

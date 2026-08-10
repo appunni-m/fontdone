@@ -15989,6 +15989,7 @@ static int emit_outline_render(int argc, char** argv) {
         streq(case_id, "ftimage.FT_Span.direct_span_values_match_c") ||
         streq(case_id, "ftimage.FT_Span.wide_outline_span_limit") ||
         streq(case_id, "ftoutln.FT_Outline_Render.direct_render_clip_and_spans") ||
+        streq(case_id, "ftoutln.FT_Outline_Render.direct_render_without_gray_spans") ||
         streq(case_id, "ftimage.FT_RASTER_FLAG_CLIP.direct_clip_box_limits_spans") ||
         streq(case_id, "ftimage.FT_RASTER_FLAG_CLIP.direct_without_clip_presets_cbox")) {
         memset(buffer, 0xA5, sizeof(buffer));
@@ -16002,7 +16003,8 @@ static int emit_outline_render(int argc, char** argv) {
             params.clip_box.yMax = 6;
         }
         params.user = recorded_outline_user_token;
-        if (!streq(case_id, "ftimage.FT_RASTER_FLAG_DIRECT.direct_missing_callback_noop")) {
+        if (!streq(case_id, "ftimage.FT_RASTER_FLAG_DIRECT.direct_missing_callback_noop") &&
+            !streq(case_id, "ftoutln.FT_Outline_Render.direct_render_without_gray_spans")) {
             params.gray_spans = record_outline_gray_spans;
         }
         err = FT_Outline_Render(library, &outline, &params);
