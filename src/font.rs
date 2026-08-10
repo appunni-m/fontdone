@@ -2653,6 +2653,16 @@ fn type1_mm_weights_unmap(weights: &[i32], axis_count: usize) -> Vec<i32> {
     out
 }
 
+/// Exercise the higher-dimensional Adobe MM weight-vector mappings in the
+/// nightly coverage lane. The maintained Adobe MM fixture has two axes, so
+/// these valid mapping shapes are otherwise not reachable through parity.
+#[cfg(coverage_nightly)]
+pub fn coverage_probe_type1_mm_weights_unmap() {
+    let weights = (1..=16).collect::<Vec<_>>();
+    assert_eq!(type1_mm_weights_unmap(&weights, 3), vec![20, 22, 26]);
+    assert_eq!(type1_mm_weights_unmap(&weights, 4), vec![72, 76, 84, 100]);
+}
+
 fn type1_name_token(text: &str, key: &str) -> Option<String> {
     let tail = type1_value_tail(text, key)?;
     let tail = tail.strip_prefix('/')?;
