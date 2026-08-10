@@ -6,6 +6,7 @@
     "sfnt_name_storage_out_of_bounds",
     "sfnt_name_table_missing_diagnostic",
     "sfnt_name_header_truncated_diagnostic",
+    "sfnt_name_header_stream_truncated_diagnostic",
     "sfnt_name_empty_table_success",
     "sfnt_without_name_table"
   ],
@@ -160,6 +161,58 @@
         },
         "error": "FT_Err_Name_Table_Missing",
         "fixture_requirements": "The project-authored face opens successfully with a five-byte name table; the pinned stream frame can read the following byte, then the declared table limit fails the record-array guard."
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_header_stream_truncated_diagnostic",
+      "subject": "fterrdef.FT_Err_Name_Table_Missing",
+      "case": "sfnt_name_header_stream_truncated_diagnostic",
+      "operation": "fterrdef.sfnt_load_name_diagnostic",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/names/name-header-truncated.ttf"
+          }
+        },
+        "params": {
+          "expected_error_symbol": "FT_Err_Invalid_Stream_Operation",
+          "expected_error_value_source": "pinned fterrdef.h",
+          "pinned_source": "freetype/src/sfnt/ttload.c",
+          "face_index": 0,
+          "runtime_route": "internal_sfnt_load_name_service",
+          "table": "name",
+          "condition": "name table ends before the six-byte stream frame can be read"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "error-trigger",
+        "route:controlled-pinned-service"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "error": "FT_Error",
+          "error_symbol": "FT_Err_*",
+          "name_count": "zero after failed internal service load",
+          "diagnostic_source": "pinned FreeType source location"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "status",
+            "output.name_count"
+          ]
+        },
+        "error": "FT_Err_Invalid_Stream_Operation",
+        "fixture_requirements": "The project-authored face opens successfully with a one-byte name table at EOF, so the pinned six-byte stream frame is truncated before the name header can be read."
       }
     },
     {

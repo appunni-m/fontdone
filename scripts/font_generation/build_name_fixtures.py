@@ -321,6 +321,49 @@ def write_bad_storage_name_table() -> None:
     )
 
 
+def write_truncated_name_header() -> None:
+    """Place a one-byte name table at EOF to truncate the six-byte C frame."""
+    path = NAME_OUT_DIR / "name-header-truncated.ttf"
+    data = bytearray(BASE_STATIC.read_bytes())
+    records = table_records(data)
+    count = int.from_bytes(data[4:6], "big")
+    directory_size = 12 + count * 16
+    tags = [
+        bytes(data[12 + index * 16 : 16 + index * 16]) for index in range(count)
+    ]
+    rebuilt = bytearray(data[:directory_size])
+    if len(rebuilt) % 4:
+        rebuilt.extend(b"\0" * (4 - len(rebuilt) % 4))
+    rebuilt_records: dict[bytes, dict[str, int]] = {}
+    for tag in [tag for tag in tags if tag != b"name"] + [b"name"]:
+        record = records[tag]
+        payload = b"\0" if tag == b"name" else data[
+            record["offset"] : record["offset"] + record["length"]
+        ]
+        offset = len(rebuilt)
+        rebuilt.extend(payload)
+        if len(rebuilt) % 4:
+            rebuilt.extend(b"\0" * (4 - len(rebuilt) % 4))
+        rebuilt_records[tag] = {
+            "record_offset": record["record_offset"],
+            "offset": offset,
+            "length": len(payload),
+        }
+        record_offset = record["record_offset"]
+        rebuilt[record_offset + 4 : record_offset + 8] = checksum(payload).to_bytes(
+            4, "big"
+        )
+        rebuilt[record_offset + 8 : record_offset + 12] = offset.to_bytes(4, "big")
+        rebuilt[record_offset + 12 : record_offset + 16] = len(payload).to_bytes(
+            4, "big"
+        )
+    update_head_checksum_adjustment(rebuilt, rebuilt_records)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists() or path.is_symlink():
+        path.unlink()
+    path.write_bytes(rebuilt)
+
+
 def write_preferred_family_distinct() -> None:
     records = [
         NameRecordSpec(3, 1, 0x0409, 1, utf16be("LegacyFamily")),
@@ -937,6 +980,7 @@ def main() -> None:
     write_format1_prestorage_strings()
     write_missing_name_table()
     write_bad_storage_name_table()
+    write_truncated_name_header()
     write_preferred_family_distinct()
     write_preferred_family_os2_version_ffff()
     write_wws_only_name_selection()

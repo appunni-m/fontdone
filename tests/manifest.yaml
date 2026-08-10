@@ -5644,6 +5644,8 @@ subjects:
         description: The controlled SFNT name loader reports FT_Err_Table_Missing when a face-openable SFNT has no name table.
       - id: sfnt_name_header_truncated_diagnostic
         description: The controlled SFNT name loader reports FT_Err_Name_Table_Missing when a face-openable short name table crosses the stream frame but its declared table limit precedes the record array.
+      - id: sfnt_name_header_stream_truncated_diagnostic
+        description: The controlled SFNT name loader reports FT_Err_Invalid_Stream_Operation when the face-openable name table ends before the six-byte stream frame can be read.
       - id: sfnt_name_empty_table_success
         description: The controlled SFNT name loader accepts a six-byte empty name table and reports FT_Err_Ok with zero names.
       - id: sfnt_without_name_table

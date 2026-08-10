@@ -6646,6 +6646,7 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
             "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_storage_out_of_bounds",
             "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_table_missing_diagnostic",
             "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_header_truncated_diagnostic",
+            "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_header_stream_truncated_diagnostic",
             "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_empty_table_success",
         }
     ):
