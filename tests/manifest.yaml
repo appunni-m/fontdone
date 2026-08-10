@@ -2815,7 +2815,7 @@ subjects:
       - id: success_gray_and_packed_modes
         description: MONO, GRAY2, GRAY4, and GRAY inputs produce exact C dimensions, pitch, pixel mode, and emboldened bytes.
       - id: success_strength_rounding_and_zero
-        description: Zero, subpixel, and multi-pixel 26.6 x/y strengths are rounded and applied exactly like C.
+        description: Zero, subpixel, exact-byte, full-pitch, and multi-pixel 26.6 x/y strengths are rounded and applied exactly like C.
       - id: success_gray2_gray4_convert_to_gray
         description: GRAY2 and GRAY4 sources are converted to 8bpp GRAY output with C-compatible values.
       - id: error_mono_strength_limit
@@ -2824,7 +2824,7 @@ subjects:
         description: Null library/bitmap, unsupported pixel modes, negative strengths, and strength overflows return exact C errors.
       - id: ownership_reallocates_bitmap_buffer
         description: Successful embolden reallocates buffer and updates rows, width, pitch, and buffer ownership exactly like C.
-    # needs-input: operation=FT_Bitmap_Embolden; fixture_asset=synthetic MONO/GRAY2/GRAY4/GRAY bitmaps plus rendered glyph bitmaps; params xStrength/yStrength values 0, 32, 64, 96, 512, MONO over-limit, positive/negative pitch, null library/bitmap, unsupported mode; output shape=FT_Error plus mutated FT_Bitmap fields and buffer bytes with allocation/free events; comparison=exact C oracle error, dimensions, pitch, pixel mode, bytes, and preservation behavior.
+    # needs-input: operation=FT_Bitmap_Embolden; fixture_asset=synthetic MONO/GRAY2/GRAY4/GRAY bitmaps plus rendered glyph bitmaps; params xStrength/yStrength values 0, 32, 64, 96, 192, 512, 704, MONO over-limit, exact-byte/full-pitch boundaries, positive/negative pitch, null library/bitmap, unsupported mode; output shape=FT_Error plus mutated FT_Bitmap fields and buffer bytes with allocation/free events; comparison=exact C oracle error, dimensions, pitch, pixel mode, bytes, and preservation behavior.
 
   - id: ftbitmap.FT_Bitmap_Init
     kind: function

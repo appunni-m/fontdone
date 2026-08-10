@@ -3739,8 +3739,14 @@ static int bitmap_embolden_pitch(unsigned char pixel_mode, unsigned int width) {
     }
 }
 
-static int bitmap_embolden_alloc(FT_Bitmap* bitmap, unsigned char pixel_mode, int negative_pitch) {
-    unsigned int width = 5;
+static int bitmap_embolden_alloc(
+    FT_Bitmap* bitmap,
+    const char* label,
+    unsigned char pixel_mode,
+    int negative_pitch) {
+    /* The full-pitch boundary row deliberately starts at an 8-pixel MONO
+       width so clamped 8-pixel emboldening reaches an exact two-byte pitch. */
+    unsigned int width = streq(label, "mono-full-pitch") ? 8 : 5;
     unsigned int rows = 3;
     int pitch = bitmap_embolden_pitch(pixel_mode, width);
     size_t len = (size_t)pitch * rows;
@@ -3778,7 +3784,7 @@ static FT_Error print_bitmap_embolden_row(
     FT_Bitmap* bitmap_arg = &bitmap;
     FT_Bitmap_Init(&bitmap);
     if (!null_bitmap) {
-        if (bitmap_embolden_alloc(&bitmap, pixel_mode, negative_pitch)) {
+        if (bitmap_embolden_alloc(&bitmap, label, pixel_mode, negative_pitch)) {
             printf("{\"label\":\"%s\",\"error\":%d,\"bitmap\":null,\"buffer_hex\":\"\",\"buffer_len\":0,\"buffer_identity_class\":\"null\"}", label, FT_Err_Out_Of_Memory);
             return FT_Err_Out_Of_Memory;
         }
@@ -4022,6 +4028,9 @@ static int emit_bitmap_embolden(const char* scenario) {
         for (size_t i = 0; i < sizeof(strengths) / sizeof(strengths[0]); i++) {
             EMIT_ROW("strength", library, FT_PIXEL_MODE_GRAY, 0, strengths[i][0], strengths[i][1], 0, 0);
         }
+        EMIT_ROW("mono-exact-byte", library, FT_PIXEL_MODE_MONO, 0, 192, 0, 0, 0);
+        EMIT_ROW("mono-full-pitch", library, FT_PIXEL_MODE_MONO, 0, 704, 0, 0, 0);
+        EMIT_ROW("mono-last-partial-byte", library, FT_PIXEL_MODE_MONO, 0, 512, 0, 0, 0);
         EMIT_ROW("mono-x-only-bit-tail", library, FT_PIXEL_MODE_MONO, 0, 64, 0, 0, 0);
     } else if (streq(scenario, "success_gray2_gray4_convert_to_gray")) {
         unsigned char modes[] = { FT_PIXEL_MODE_GRAY2, FT_PIXEL_MODE_GRAY4 };

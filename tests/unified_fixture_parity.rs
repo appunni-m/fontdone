@@ -93628,6 +93628,28 @@ fn bitmap_embolden_rows(scenario: &str) -> Result<Vec<BitmapEmboldenRow>, String
                 ));
             }
             rows.push(BitmapEmboldenRow::new(
+                "mono-exact-byte",
+                FT_PIXEL_MODE_MONO as u8,
+                false,
+                192,
+                0,
+            ));
+            rows.push(BitmapEmboldenRow::with_width(
+                "mono-full-pitch",
+                FT_PIXEL_MODE_MONO as u8,
+                false,
+                704,
+                0,
+                8,
+            ));
+            rows.push(BitmapEmboldenRow::new(
+                "mono-last-partial-byte",
+                FT_PIXEL_MODE_MONO as u8,
+                false,
+                512,
+                0,
+            ));
+            rows.push(BitmapEmboldenRow::new(
                 "mono-x-only-bit-tail",
                 FT_PIXEL_MODE_MONO as u8,
                 false,
@@ -93743,7 +93765,7 @@ fn bitmap_embolden_rows(scenario: &str) -> Result<Vec<BitmapEmboldenRow>, String
 }
 
 fn bitmap_embolden_record(row: &BitmapEmboldenRow) -> Result<FT_Bitmap_C, String> {
-    let width = 5;
+    let width = row.width;
     let rows = 3;
     let pitch = bitmap_embolden_pitch(row.pixel_mode, width)?;
     Ok(FT_Bitmap_C {
@@ -93804,6 +93826,7 @@ struct BitmapEmboldenRow {
     negative_pitch: bool,
     x_strength: i64,
     y_strength: i64,
+    width: u32,
     null_library: bool,
     null_bitmap: bool,
     null_buffer: bool,
@@ -93823,9 +93846,24 @@ impl BitmapEmboldenRow {
             negative_pitch,
             x_strength,
             y_strength,
+            width: 5,
             null_library: false,
             null_bitmap: false,
             null_buffer: false,
+        }
+    }
+
+    fn with_width(
+        label: &'static str,
+        pixel_mode: u8,
+        negative_pitch: bool,
+        x_strength: i64,
+        y_strength: i64,
+        width: u32,
+    ) -> Self {
+        Self {
+            width,
+            ..Self::new(label, pixel_mode, negative_pitch, x_strength, y_strength)
         }
     }
 }
