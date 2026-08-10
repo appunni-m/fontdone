@@ -283,11 +283,11 @@ Coverage and parity answer different questions. Executing a line or branch
 does not prove that its result matches C.
 
 The latest source-bound all-lane Coverage MCP run is
-`00e32832-5102-451b-8bae-f329f6c17b91` (snapshot
-`c64eaee9-bb5e-4cdd-bffa-65e567d30d92`). It completed in 68.258 seconds and
-passed 7,620 / 7,620 runnable parity comparisons in the three split backends.
-The overall report is 50,304 / 54,278 lines, 10,049 / 12,537 branches,
-3,448 / 3,819 functions, and 69,069 / 75,337 regions. The dominant cold-run cost remains
+`edd9424a-33ca-4e6a-b044-e085a579af28` (snapshot
+`da0cd1e0-88f0-4d18-af40-9f48def342bb`). It completed in 14.572 seconds and
+passed 7,639 / 7,639 runnable parity comparisons in the three split backends.
+The overall report is 50,314 / 54,278 lines, 10,068 / 12,537 branches,
+3,448 / 3,819 functions, and 69,080 / 75,337 regions. The dominant cold-run cost remains
 instrumented compilation; warm shard execution and report ingestion are much
 smaller.
 
@@ -297,6 +297,9 @@ case, full matrix, and C-ABI contract all pass without a unit-only coverage
 route. The follow-up cleanup removed bitmap-buffer bounds exits that are
 unreachable after the helper validates `bytes.len() >= pitch * rows` and uses
 checked row arithmetic; it preserved the same exact parity outputs.
+The malformed PCF face-open matrix now also reaches metrics, accelerator,
+bitmap, and encoding metadata validation boundaries through maintained input
+fixtures; focused and full parity remain exact.
 
 ```bash
 make test-coverage
@@ -357,21 +360,21 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The current managed run completed in 61.583 seconds. Shard timers run
+The current managed run completed in 14.572 seconds. Shard timers run
 concurrently, so their sum is not wall time; report finalization and artifact
 ingestion are included in the wall time but are not separately exposed by
 Coverage MCP. Instrumented compilation remains the dominant cold component.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,302 / 54,284 | 92.66% |
-| Branches | 10,049 / 12,541 | 80.13% |
+| Lines | 50,314 / 54,278 | 92.70% |
+| Branches | 10,068 / 12,537 | 80.31% |
 | Functions | 3,448 / 3,819 | 90.29% |
-| Regions | 69,070 / 75,347 | 91.67% |
+| Regions | 69,080 / 75,337 | 91.69% |
 
-That latest run passed all 7,620 runnable parity comparisons with 0 failures;
+That latest run passed all 7,639 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`17c23c7d-a240-4b55-b87b-79308c716e27`. Coverage MCP accepts the current LLVM
+`da0cd1e0-88f0-4d18-af40-9f48def342bb`. Coverage MCP accepts the current LLVM
 JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
 rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
 apply only to the named source commit, suite, and toolchain. They are not a
@@ -411,7 +414,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 692 tracked paths and no symlinks.
+The canonical input tree currently contains 711 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -613,7 +616,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,639 | executable parity tests and public contracts |
-| R04 | 692 | licensed canonical fixture inputs |
+| R04 | 711 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -621,7 +624,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,553** | **all retained paths** |
+| **Total** | **2,572** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

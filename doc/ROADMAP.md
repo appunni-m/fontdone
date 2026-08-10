@@ -557,18 +557,19 @@ worktree at that point:
 | 160 | `5ab9245` (COLRv1 format-2 ClipBox parity route) | Added a maintained `FT_Get_Color_Glyph_ClipBox` format-2 case using the existing variable-ClipBox font. Rust now matches pinned FreeType when a format-2 ClipBox has no usable VarStore: zero variation deltas still allow the static box to be transformed and written. Focused parity run `e2d2b298-19ae-4c0c-8362-cff379e8ad51` passed 1 / 1; pushed-head full parity run `bcd568db-c67c-40b3-a45f-745dda502ec8`, recorded by `ce8ab0d6-becd-4ed4-b9f7-c3c99fde930d`, passed 7,620 / 7,620 runnable comparisons with 0 failures and 3 pending safety-extension cases. The route audit reports 7,623 concrete cases, 0 pending routes, 0 generic-fallback rows, and 218 / 218 function evidence in each ABI surface. All-lane Coverage MCP run `b00ce661-78c7-4bc5-8f0c-c2a6041feb31`, snapshot `17c23c7d-a240-4b55-b87b-79308c716e27`, completed in 61.583 seconds and measured 50,302 / 54,284 lines, 10,049 / 12,541 branches, 3,448 / 3,819 functions, and 69,070 / 75,347 regions. The C-ABI contract run `8f8b6aaa-e606-45c9-8e10-5945effa6257` retains 10 / 12 categories: C01.7 5,363 / 5,363, C08.3 7,620 / 7,620, C11.3 7 / 8, and C12.3 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
 | 161 | `948d246` (MONO bitmap embolden tail parity route) | Instantiated the already-declared MONO plus x-only-strength `[64, 0]` `FT_Bitmap_Embolden` matrix row and added its pinned-C oracle companion. The focused parity run `a63ef886-d311-4cfa-b814-0fef2c511218`, clean pushed-head full parity run `78c67a60-a4c5-4467-9da4-6a117e1aec7a`, and record `eaf1d422-0a57-4854-aeba-c2b4142c58f5` all pass 7,620 / 7,620 runnable comparisons with 0 failures and 3 pending safety-extension cases. The row reaches the packed-bit tail-mask branch in `src/ffi/handles.rs`; clean all-lane Coverage MCP run `c44982bc-d500-4ddc-8de8-7dbbccd90d20`, snapshot `131c54db-5620-4ca2-9f88-7d3c121fe224`, completed in 60.568 seconds and measured 50,307 / 54,284 lines, 10,051 / 12,541 branches, 3,448 / 3,819 functions, and 69,077 / 75,347 regions. The C-ABI contract run `08956183-1553-47c2-a727-6755c5cea7a2` retains 10 / 12 categories: C01.7 5,363 / 5,363, C08.3 7,620 / 7,620, C11.3 7 / 8, and C12.3 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
 | 162 | `18e3e25` (bitmap-buffer invariant cleanup) | Removed the unreachable `write >= bytes.len()` and `end > bytes.len()` exits from `ft_bitmap_assure_buffer` after its required-buffer-length check and checked row arithmetic prove both bounds. No input, expected result, or parity denominator was weakened. Focused bitmap run `77bdd774-9fdf-4f9f-bf2c-33b7cae104c4`, clean pushed-head full parity run `8bf7d485-1709-459e-885b-595f09aa2240`, and record `47cbf704-a7dd-4eee-9124-08b0bda8f6be` pass 7,620 / 7,620 runnable comparisons with 0 failures and 3 pending safety-extension cases. Clean all-lane Coverage MCP run `00e32832-5102-451b-8bae-f329f6c17b91`, snapshot `c64eaee9-bb5e-4cdd-bffa-65e567d30d92`, completed in 68.258 seconds and measured 50,304 / 54,278 lines, 10,049 / 12,537 branches, 3,448 / 3,819 functions, and 69,069 / 75,337 regions. The C-ABI contract run `9fb79d26-4b51-4383-8e37-da2b495d03fe` retains 10 / 12 categories: C01.7 5,363 / 5,363, C08.3 7,620 / 7,620, C11.3 7 / 8, and C12.3 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
+| 163 | `7d4d5b3` (PCF metadata-boundary coverage cluster) | Added fourteen maintained malformed PCF face-open fixtures for metrics, accelerators, bitmaps, encodings, and table truncation/consistency boundaries, then added five count/bounds variants for the remaining metric and encoding guards. Focused parity passed 61 / 61; pushed-head full parity run `694878fd-e332-4ef4-be01-0deae0b470f6`, recorded by `01a6d473-cf05-4a22-adde-1284bfa667ca`, passed 7,639 / 7,639 runnable comparisons with 0 failures and 3 pending safety-extension cases. The route audit reports 7,642 concrete cases, 0 pending routes, 0 generic-fallback rows, and 218 / 218 function evidence in each ABI surface. All-lane Coverage MCP run `edd9424a-33ca-4e6a-b044-e085a579af28`, snapshot `da0cd1e0-88f0-4d18-af40-9f48def342bb`, completed in 14.572 seconds and measured 50,314 / 54,278 lines, 10,068 / 12,537 branches, 3,448 / 3,819 functions, and 69,080 / 75,337 regions; the PCF metadata validator boundaries in `src/font.rs:1090-1232` are now fully exercised. The C-ABI contract run `876a95b3-513a-4c7f-9603-6400491e98a1` retains 10 / 12 categories: C01.7 5,382 / 5,382, C08.3 7,639 / 7,639, C11.3 7 / 8, and C12.3 1 / 5; the Windows import-library item and four fresh target-lane bundles remain. |
 
 The current pushed-head parity verification is Coverage MCP parity run
-`8bf7d485-1709-459e-885b-595f09aa2240`, recorded by
-`47cbf704-a7dd-4eee-9124-08b0bda8f6be`: it passed 7,620 / 7,620 runnable
+`694878fd-e332-4ef4-be01-0deae0b470f6`, recorded by
+`01a6d473-cf05-4a22-adde-1284bfa667ca`: it passed 7,639 / 7,639 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
-route audit reports **7,623 concrete cases, 0 pending routes and 0 generic-fallback rows**, with
+route audit reports **7,642 concrete cases, 0 pending routes and 0 generic-fallback rows**, with
 218 / 218 function routes present in each ABI surface. The source-digest
 attestation was refreshed in `doc/runtime_parity_evidence.json`; its current
 parity-tree digest is
-`428ca020ac389a21e3b2b8c34ff3a92d818396b86cbdc846cfd3ef0289260d59`.
+`81c097b74c1ba89cdf1b70c82d3cfa0a1dcbe8282c0b7116e6352d9385e9c6e8`.
 The tracked C-ABI scorecard is **10 / 12 categories complete**; C01.7 is
-5,363 / 5,363, C08.3 is 7,620 / 7,620, C11.3 is 7 / 8, and C12.3 is 1 / 5.
+5,382 / 5,382, C08.3 is 7,639 / 7,639, C11.3 is 7 / 8, and C12.3 is 1 / 5.
 The Windows import-library item and four fresh target-lane bundles remain.
 
 The three pending cases are deliberately excluded from the pinned-C parity
@@ -580,11 +581,11 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current pushed-head all-lane run `00e32832-5102-451b-8bae-f329f6c17b91`
-completed in 68.258 seconds with snapshot
-`c64eaee9-bb5e-4cdd-bffa-65e567d30d92`. It measured 50,304 / 54,278 lines,
-10,049 / 12,537 branches, 3,448 / 3,819 functions, and 69,069 / 75,337
-regions; the nine process-local shard writers split the 7,620 runnable cases
+The current pushed-head all-lane run `edd9424a-33ca-4e6a-b044-e085a579af28`
+completed in 14.572 seconds with snapshot
+`da0cd1e0-88f0-4d18-af40-9f48def342bb`. It measured 50,314 / 54,278 lines,
+10,068 / 12,537 branches, 3,448 / 3,819 functions, and 69,080 / 75,337
+regions; the nine process-local shard writers split the 7,639 runnable cases
 before report generation. On this 12-logical-CPU host the adaptive
 default uses three shards per backend; constrained runners use two, and
 `COVERAGE_UNIFIED_SHARDS=1` restores the earlier three-process split. The
