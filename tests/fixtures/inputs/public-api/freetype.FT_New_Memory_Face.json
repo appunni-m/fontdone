@@ -6,6 +6,7 @@
     "success_negative_face_index_probe",
     "success_named_instance_index",
     "success_malformed_optional_tables_ignored",
+    "success_pcf_property_metadata_variants",
     "error_null_file_base",
     "error_null_library_or_aface",
     "error_bad_size_or_unknown_format"
@@ -1502,33 +1503,6 @@
             },
             "params": {"face_index": 0, "memory_source": "whole_file"},
             "coverage": ["tt/bdf:property-records-beyond-strings-offset-ignored-at-face-open"]
-          },
-          {
-            "id": "pcf-properties-iso8859",
-            "assets": {
-              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso8859.pcf"},
-              "font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso8859.pcf"}
-            },
-            "params": {"face_index": 0, "memory_source": "whole_file"},
-            "coverage": ["pcf:properties-iso8859-unicode-charmap"]
-          },
-          {
-            "id": "pcf-properties-iso646",
-            "assets": {
-              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso646.pcf"},
-              "font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso646.pcf"}
-            },
-            "params": {"face_index": 0, "memory_source": "whole_file"},
-            "coverage": ["pcf:properties-iso646-unicode-charmap"]
-          },
-          {
-            "id": "pcf-properties-non-atom-family",
-            "assets": {
-              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-non-atom-family.pcf"},
-              "font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-non-atom-family.pcf"}
-            },
-            "params": {"face_index": 0, "memory_source": "whole_file"},
-            "coverage": ["pcf:properties-non-atom-family-fallback"]
           }
         ]
       },
@@ -1556,6 +1530,72 @@
           "freetype/src/sfnt/ttcmap.c:tt_face_build_cmaps",
           "freetype/src/sfnt/ttsvg.c:tt_face_load_svg",
           "freetype/src/sfnt/ttbdf.c:tt_face_load_bdf_props"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_New_Memory_Face.success_pcf_property_metadata_variants",
+      "subject": "freetype.FT_New_Memory_Face",
+      "case": "success_pcf_property_metadata_variants",
+      "operation": "new_memory_face",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "pcf-properties-iso8859",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso8859.pcf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso8859.pcf"}
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:properties-iso8859-unicode-charmap"]
+          },
+          {
+            "id": "pcf-properties-iso646",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso646.pcf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso646.pcf"}
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:properties-iso646-unicode-charmap"]
+          },
+          {
+            "id": "pcf-properties-non-atom-family",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-non-atom-family.pcf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-non-atom-family.pcf"}
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "coverage": ["pcf:properties-non-atom-family-fallback"]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:pcf-metadata"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "outputs": "one successful memory-face row per PCF metadata fixture"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "outputs[*].face_index",
+            "outputs[*].status",
+            "outputs[*].error",
+            "outputs[*].opened",
+            "outputs[*].face_nullness"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/pcf/pcfread.c:pcf_get_properties",
+          "freetype/src/pcf/pcfdrivr.c:pcf_get_charset_id"
         ]
       }
     },

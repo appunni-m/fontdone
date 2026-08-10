@@ -87019,6 +87019,11 @@ fn validate_schema_output(case: &InputCase, output: &Value, label: &str) -> Resu
 }
 
 fn comparison_schema(case: &InputCase) -> &str {
+    if case.operation == "new_memory_face"
+        && memory_face_uses_variant_route(&case.inputs.params)
+    {
+        return "api_object";
+    }
     if matches!(
         case.case_id.as_str(),
         "ftoutln.FT_Outline_Decompose.invalid_outline_or_interface_errors"

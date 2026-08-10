@@ -1821,6 +1821,8 @@ subjects:
         # needs-input: concrete fixture input must be added before this case can declare font_variability coverage.
       - id: success_malformed_optional_tables_ignored
         description: Malformed optional name, cmap, sbix, or SVG tables do not make face creation fail; the face and output-pointer state match pinned FreeType while later table-specific access remains independently testable.
+      - id: success_pcf_property_metadata_variants
+        description: PCF metadata property encodings load successfully through the public memory-face row route so Unicode charmap classification and non-atom family fallback remain observable.
       - id: error_null_file_base
         description: A null file_base returns the pinned C invalid-argument classification.
       - id: error_null_library_or_aface
