@@ -23,8 +23,8 @@ doc/INTEGRATION.md	9426	file	7f103e70476608fbb28e0c1009c1a60d65be092216936bf540f
 doc/README.md	4113	file	62f4a7b439e124c958296e875037878e75531d2fee021cad7a78617ed74c3d0c	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/RELEASING.md	6483	file	c76a90198bf795c2af834e0c7269fedbdd51050cd5453fee541c3c331de24386	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/ROADMAP.md	196064	file	0f8488445782327698eb7c3a59c90ee83f9b4516e55acef0f8093ede147efa23	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
-doc/compatibility_snapshot.json	59789	file	e5a339e7c3cdff8417fcba77b90c13b934ce1e3e434e800f82227dd42345cfbf	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/runtime_parity_evidence.json	1312	file	57a0838a0609d149e1462b039279128ae3e585c2863adab6e862b441881b7fed	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/compatibility_snapshot.json	59789	file	4e8273123c56871eb5038b49627419867abf09416e6d0899ea35b2ee5babcc1c	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/runtime_parity_evidence.json	1312	file	f1b1c217552dc88907177ad61bd307f8fc016cea4e2df27bda7a2305703baa09	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 examples/bench_ops.rs	10086	file	a75d7bbf4e8e679ca393d8cffd68cc0824f7198bb5e85857ce4dd75d8e016a21	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/ffi_migration.rs	1806	file	3140c3cbf9182299f2ab8c98f6675dfd3d086c47177f7bf8783160a149eddda8	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/handle_error.rs	571	file	acbe9d9f2e838bb5ca27132dde73287fa123e3a069772a2b741ae6e010fae3b1	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
@@ -176,7 +176,7 @@ src/error.rs	6052	file	251570cf3460afa4f5a4869f41fadfebe72e72efdcdbe00ec3c9db59d
 src/ffi/constants.rs	6160	file	748c42c4e60ed735c233441bced646f8ef5eeaf9764e5e7b5de5e730a0435410	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/convert.rs	14650	file	04413abd79602e6eb84653dc0e89902eb2f93b376584fb34058eabf04af45076	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/generated_constants.rs	48665	file	923d866b8f24e0ecb80dc841eb556b6f528532ddbfb585ee349f5d7354123a50	-	keep-generated-source	R10	Generated source required to build the runtime crate without the offline oracle.
-src/ffi/handles.rs	565980	file	b0d7f0673902e4b92a02ec728ae9788db10f5709bc72af8b2558cea2967a45e9	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/ffi/handles.rs	566429	file	616820eeecee4902706f93824148293132b9a6e64356e2390d312d3144350d2b	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/mod.rs	12829	file	1704b589ba57d9d8032a6f91b98e98330435032674c630bde0e09e7a8f5d9b59	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/types.rs	40746	file	79a6eb634c309d4cca85e741ada479c80f53ef46bebb4952a3c94b9d9010c0ae	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/fixed.rs	16947	file	ad674a41af984b412c943159ce0363ec8856ee0cfc68b87ef6d460ca49f6ef86	-	keep-runtime	R01	Published pure-Rust runtime source.
