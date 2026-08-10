@@ -1332,8 +1332,8 @@ fn scale_glyph_impl_with_scale(
         x_max,
         y_max,
     };
-    let outline_bbox =
-        outline_exact_bbox(&scaled, &outline_raw.end_pts_of_contours).unwrap_or(outline_cbox);
+    let outline_bbox = outline_exact_bbox(&scaled, &outline_raw.end_pts_of_contours, &point_tags)
+        .unwrap_or(outline_cbox);
 
     // FT_GLYPH_BBOX_PIXELS: floor the min, ceil the max (FT_PIX_FLOOR/CEIL on 26.6),
     // then convert to integer pixels.
@@ -1734,7 +1734,12 @@ fn update_bbox_point(bbox: &mut BBox, point: OutlinePoint) {
     bbox.y_max = bbox.y_max.max(point.y);
 }
 
-fn outline_exact_bbox(points: &[OutlinePoint], contours: &[u16]) -> Option<BBox> {
+fn curve_tag(tags: &[u8], index: usize, point: OutlinePoint) -> u8 {
+    tags.get(index)
+        .map_or(u8::from(point.on_curve), |tag| tag & 3)
+}
+
+fn outline_exact_bbox(points: &[OutlinePoint], contours: &[u16], tags: &[u8]) -> Option<BBox> {
     if points.is_empty() || contours.is_empty() {
         return Some(BBox {
             x_min: 0,
@@ -1751,9 +1756,9 @@ fn outline_exact_bbox(points: &[OutlinePoint], contours: &[u16]) -> Option<BBox>
         y_max: i32::MIN + 1,
     };
     let mut bbox = cbox;
-    for &point in points {
+    for (index, &point) in points.iter().enumerate() {
         update_bbox_point(&mut cbox, point);
-        if point.on_curve {
+        if curve_tag(tags, index, point) == 1 {
             update_bbox_point(&mut bbox, point);
         }
     }
@@ -1766,10 +1771,15 @@ fn outline_exact_bbox(points: &[OutlinePoint], contours: &[u16]) -> Option<BBox>
         return Some(bbox);
     }
 
-    decompose_bbox(points, contours, bbox)
+    decompose_bbox(points, contours, tags, bbox)
 }
 
-fn decompose_bbox(points: &[OutlinePoint], contours: &[u16], mut bbox: BBox) -> Option<BBox> {
+fn decompose_bbox(
+    points: &[OutlinePoint],
+    contours: &[u16],
+    tags: &[u8],
+    mut bbox: BBox,
+) -> Option<BBox> {
     let mut first = 0usize;
     for &last_u16 in contours {
         let last = last_u16 as usize;
@@ -1779,11 +1789,14 @@ fn decompose_bbox(points: &[OutlinePoint], contours: &[u16], mut bbox: BBox) -> 
 
         let mut start = points[first];
         let last_point = points[last];
-        let mut point_index = first as isize;
         let mut limit = last;
+        let first_tag = curve_tag(tags, first, start);
+        if first_tag == 2 {
+            return None;
+        }
 
-        if !start.on_curve {
-            if last_point.on_curve {
+        if first_tag == 0 {
+            if curve_tag(tags, last, last_point) == 1 {
                 start = last_point;
                 limit = limit.saturating_sub(1);
             } else {
@@ -1793,44 +1806,76 @@ fn decompose_bbox(points: &[OutlinePoint], contours: &[u16], mut bbox: BBox) -> 
                     on_curve: true,
                 };
             }
-            point_index = first as isize - 1;
         }
 
         update_bbox_point(&mut bbox, start);
         let mut last_emitted = start;
+        let mut point_index = if first_tag == 0 {
+            first as isize - 1
+        } else {
+            first as isize
+        };
 
         while point_index < limit as isize {
             point_index += 1;
             let point = points[point_index as usize];
-            if point.on_curve {
-                last_emitted = point;
-                continue;
-            }
-
-            let mut control = point;
-            loop {
-                if point_index < limit as isize {
-                    point_index += 1;
-                    let next = points[point_index as usize];
-                    if next.on_curve {
-                        bbox_conic_to(last_emitted, control, next, &mut bbox);
-                        last_emitted = next;
-                        break;
-                    }
-
-                    let middle = OutlinePoint {
-                        x: (control.x + next.x) / 2,
-                        y: (control.y + next.y) / 2,
-                        on_curve: true,
-                    };
-                    bbox_conic_to(last_emitted, control, middle, &mut bbox);
-                    last_emitted = middle;
-                    control = next;
-                } else {
-                    bbox_conic_to(last_emitted, control, start, &mut bbox);
-                    last_emitted = start;
-                    break;
+            match curve_tag(tags, point_index as usize, point) {
+                1 => {
+                    last_emitted = point;
                 }
+                0 => {
+                    let mut control = point;
+                    loop {
+                        if point_index < limit as isize {
+                            point_index += 1;
+                            let next = points[point_index as usize];
+                            match curve_tag(tags, point_index as usize, next) {
+                                1 => {
+                                    bbox_conic_to(last_emitted, control, next, &mut bbox);
+                                    last_emitted = next;
+                                    break;
+                                }
+                                0 => {
+                                    let middle = OutlinePoint {
+                                        x: (control.x + next.x) / 2,
+                                        y: (control.y + next.y) / 2,
+                                        on_curve: true,
+                                    };
+                                    bbox_conic_to(last_emitted, control, middle, &mut bbox);
+                                    last_emitted = middle;
+                                    control = next;
+                                }
+                                _ => return None,
+                            }
+                        } else {
+                            bbox_conic_to(last_emitted, control, start, &mut bbox);
+                            last_emitted = start;
+                            break;
+                        }
+                    }
+                }
+                2 | 3 => {
+                    if point_index + 1 > limit as isize
+                        || curve_tag(
+                            tags,
+                            point_index as usize + 1,
+                            points[point_index as usize + 1],
+                        ) != 2
+                    {
+                        return None;
+                    }
+                    let control1 = point;
+                    let control2 = points[point_index as usize + 1];
+                    point_index += 2;
+                    let to = if point_index <= limit as isize {
+                        points[point_index as usize]
+                    } else {
+                        start
+                    };
+                    bbox_cubic_to(last_emitted, control1, control2, to, &mut bbox);
+                    last_emitted = to;
+                }
+                _ => return None,
             }
         }
 
@@ -1856,6 +1901,111 @@ fn bbox_conic_check(y1: i32, y2: i32, y3: i32, min: &mut i32, max: &mut i32) {
     let y = y2 + ft_mul_div(y1, y3, y1 + y3);
     *min = (*min).min(y);
     *max = (*max).max(y);
+}
+
+fn bbox_cubic_to(
+    from: OutlinePoint,
+    control1: OutlinePoint,
+    control2: OutlinePoint,
+    to: OutlinePoint,
+    bbox: &mut BBox,
+) {
+    update_bbox_point(bbox, to);
+    if control1.x < bbox.x_min
+        || control1.x > bbox.x_max
+        || control2.x < bbox.x_min
+        || control2.x > bbox.x_max
+    {
+        bbox_cubic_check(
+            from.x,
+            control1.x,
+            control2.x,
+            to.x,
+            &mut bbox.x_min,
+            &mut bbox.x_max,
+        );
+    }
+    if control1.y < bbox.y_min
+        || control1.y > bbox.y_max
+        || control2.y < bbox.y_min
+        || control2.y > bbox.y_max
+    {
+        bbox_cubic_check(
+            from.y,
+            control1.y,
+            control2.y,
+            to.y,
+            &mut bbox.y_min,
+            &mut bbox.y_max,
+        );
+    }
+}
+
+fn bbox_cubic_check(p1: i32, p2: i32, p3: i32, p4: i32, min: &mut i32, max: &mut i32) {
+    if p2 > *max || p3 > *max {
+        *max += cubic_peak(p1 - *max, p2 - *max, p3 - *max, p4 - *max);
+    }
+    if p2 < *min || p3 < *min {
+        *min -= cubic_peak(*min - p1, *min - p2, *min - p3, *min - p4);
+    }
+}
+
+fn cubic_peak(mut q1: i32, mut q2: i32, mut q3: i32, mut q4: i32) -> i32 {
+    let mask =
+        (q1.unsigned_abs() | q2.unsigned_abs() | q3.unsigned_abs() | q4.unsigned_abs()) as u32;
+    let mut shift = 27 - (31 - mask.leading_zeros() as i32);
+    if shift > 0 {
+        if shift > 2 {
+            shift = 2;
+        }
+        q1 *= 1 << shift;
+        q2 *= 1 << shift;
+        q3 *= 1 << shift;
+        q4 *= 1 << shift;
+    } else {
+        q1 >>= -shift;
+        q2 >>= -shift;
+        q3 >>= -shift;
+        q4 >>= -shift;
+    }
+
+    let mut peak = 0;
+    while q2 > 0 || q3 > 0 {
+        if q1 + q2 > q3 + q4 {
+            q4 += q3;
+            q3 += q2;
+            q2 += q1;
+            q4 += q3;
+            q3 += q2;
+            q4 = (q4 + q3) >> 3;
+            q3 >>= 2;
+            q2 >>= 1;
+        } else {
+            q1 += q2;
+            q2 += q3;
+            q3 += q4;
+            q1 += q2;
+            q2 += q3;
+            q1 = (q1 + q2) >> 3;
+            q2 >>= 2;
+            q3 >>= 1;
+        }
+
+        if q1 == q2 && q1 >= q3 {
+            peak = q1;
+            break;
+        }
+        if q3 == q4 && q2 <= q4 {
+            peak = q4;
+            break;
+        }
+    }
+
+    if shift > 0 {
+        peak >> shift
+    } else {
+        peak << -shift
+    }
 }
 
 /// `FT_PIX_ROUND(x)` on a 26.6 value → rounded pixel (in 26.6, subpixel cleared).
