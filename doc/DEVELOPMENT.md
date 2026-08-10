@@ -283,16 +283,16 @@ Coverage and parity answer different questions. Executing a line or branch
 does not prove that its result matches C.
 
 The latest pushed-commit all-lane Coverage MCP run is
-`669d796d-c1aa-411c-ad12-98a6d2089fc0` (snapshot
-`feb0e45d-3088-4a50-918b-ae580a6fb5f9`). It completed in 60.622 seconds and
-passed 7,650 / 7,650 runnable parity comparisons in the three split backends.
-The overall report is 50,573 / 54,362 lines, 10,101 / 12,522 branches,
-3,479 / 3,833 functions, and 69,451 / 75,449 regions. The dominant cold-run cost remains
-instrumented compilation; warm shard execution and report ingestion are much
-smaller. The preceding cold run `da91cabd-0631-46ec-83b8-f3e609246ffe` took
-70.571 seconds, including 54.73 seconds of instrumented test-profile
-compilation; the warm run above took 14.428 seconds. This identifies cache-miss
-compilation, not Coverage MCP ingestion, as the speed bottleneck.
+`4c112c9e-5a52-4b8e-a64c-97bed7c5ec63` (snapshot
+`7f065d35-dbb0-4ed7-a618-72a740bc2c8d`). It completed in 70.057 seconds with
+exit code 0. The overall report is 51,669 / 54,766 lines, 10,358 / 12,592
+branches, 3,503 / 3,845 functions, and 71,219 / 75,865 regions. The dominant
+cold-run cost remains instrumented compilation; warm shard execution and
+report ingestion are much smaller. The preceding cold run
+`da91cabd-0631-46ec-83b8-f3e609246ffe` took 70.571 seconds, including 54.73
+seconds of instrumented test-profile compilation; the historical warm run
+took 14.428 seconds. This identifies cache-miss compilation, not Coverage MCP
+ingestion, as the speed bottleneck.
 
 The measured MONO plus x-only-strength `FT_Bitmap_Embolden` parity row now
 reaches the packed-bit tail-mask branch in `src/ffi/handles.rs`; the focused
@@ -310,6 +310,13 @@ the C oracle remains the independent callback-event reference. The existing
 WASM outline-render parity cases likewise invoke the exported facade for
 DIRECT rendering and pointer-validation scenarios, while the support helper
 retains span capture for exact output comparison.
+The maintained `ftsystem.FT_Memory.custom_allocator_runtime_events` route now
+installs and exercises the exported C-ABI allocator callbacks under nightly
+coverage, including realloc success, failure, zero-size, null-block, and
+unknown-block behavior while retaining the same normalized lifecycle output.
+The existing U+0245 target-mono `FT_Load_Char` variant also invokes a
+coverage-only `GlyphHints` contour probe to reach both control branches of the
+Latin segment merge; neither change adds a fixture or unit-only parity case.
 
 ```bash
 make test-coverage
@@ -370,21 +377,21 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The current managed run completed in 60.622 seconds. Shard timers run
+The current managed run completed in 70.057 seconds. Shard timers run
 concurrently, so their sum is not wall time; report finalization and artifact
 ingestion are included in the wall time but are not separately exposed by
 Coverage MCP. Instrumented compilation remains the dominant cold component.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,573 / 54,362 | 93.03% |
-| Branches | 10,101 / 12,522 | 80.67% |
-| Functions | 3,479 / 3,833 | 90.76% |
-| Regions | 69,451 / 75,449 | 92.05% |
+| Lines | 51,669 / 54,766 | 94.35% |
+| Branches | 10,358 / 12,592 | 82.26% |
+| Functions | 3,503 / 3,845 | 91.11% |
+| Regions | 71,219 / 75,865 | 93.88% |
 
-That latest run passed all 7,650 runnable parity comparisons with 0 failures;
+That latest run passed all 7,841 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`feb0e45d-3088-4a50-918b-ae580a6fb5f9`. Coverage MCP accepts the current LLVM
+`7f065d35-dbb0-4ed7-a618-72a740bc2c8d`. Coverage MCP accepts the current LLVM
 JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
 rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
 apply only to the named source commit, suite, and toolchain. They are not a
