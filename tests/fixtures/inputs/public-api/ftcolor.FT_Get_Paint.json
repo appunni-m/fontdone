@@ -6,6 +6,7 @@
     "success_inserts_root_transform",
     "malformed_child_offsets_return_false",
     "malformed_payload_reads_return_false",
+    "malformed_gradient_payload_reads_return_false",
     "malformed_colorline_return_false",
     "malformed_layer_list_index_returns_false",
     "error_null_or_missing_colr",
@@ -383,6 +384,73 @@
         "fixture_requirements": [
           "Runtime compares C FreeType, Rust FFI, C ABI, and Wasm FFI outputs",
           "Boundary-root payloads exercise first unavailable fields without truncating the SFNT container"
+        ]
+      }
+    },
+    {
+      "case_id": "ftcolor.FT_Get_Paint.malformed_gradient_payload_reads_return_false",
+      "subject": "ftcolor.FT_Get_Paint",
+      "case": "malformed_gradient_payload_reads_return_false",
+      "operation": "ftcolor.get_paint_malformed",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/color/malformed/colr-v1-malformed-gradient-payloads.ttf",
+            "asset_kind": "font",
+            "properties": [
+              "openable COLRv1 face with variable-linear, linear, sweep, and skew roots",
+              "each root reaches a valid zero-stop ColorLine before its final payload field ends at the COLR table boundary",
+              "valid glyph 50 solid control for the successful two-step call"
+            ]
+          }
+        },
+        "params": {
+          "base_glyphs": [
+            "paint_var_linear_payload_truncated",
+            "paint_linear_payload_truncated",
+            "paint_sweep_payload_truncated",
+            "paint_skew_payload_truncated",
+            "valid_control"
+          ],
+          "follow_calls": [
+            "FT_Get_Color_Glyph_Paint",
+            "FT_Get_Paint"
+          ],
+          "prefill_paint": "sentinel-bytes"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcolor",
+        "area:colr-v1",
+        "coverage:malformed-gradient-payload-reads"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Bool",
+          "paint_before_after": "sentinel mutation classification",
+          "control_return": "FT_Bool"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "return",
+            "paint_before_after",
+            "control_return"
+          ]
+        },
+        "oracle": "generated_at_runtime_from_c_freetype",
+        "sources_checked": [
+          "freetype/src/sfnt/ttcolr.c",
+          "freetype/include/freetype/ftcolor.h"
+        ],
+        "fixture_requirements": [
+          "Runtime compares C FreeType, Rust FFI, C ABI, and Wasm FFI outputs",
+          "Valid ColorLine headers exercise fixed gradient payload boundary failures without truncating the SFNT container"
         ]
       }
     },

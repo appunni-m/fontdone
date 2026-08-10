@@ -15829,13 +15829,30 @@ fn malformed_colr_paint_json(paint: &FT_COLR_Paint, composite_prefix_written: bo
     if composite_prefix_written {
         // Composite source pointers are process-local. Compare only their
         // stable pointer class and the mode that FreeType wrote before the
-        // invalid backdrop offset rejected the paint.
+        // invalid payload rejected the paint. For gradient failures, the
+        // apparent composite mode overlays the ColorLine iterator's process-
+        // local stop pointer, so record its stable semantic class instead of
+        // leaking an address-derived integer into parity output.
         let composite = unsafe { paint.u.composite };
+        let gradient_overlay = matches!(paint.format, 4 | 5 | 6 | 8);
+        let source_paint = if gradient_overlay {
+            json!({
+                "p_class": "colorline_overlay",
+                "insert_root_transform": 0,
+            })
+        } else {
+            opaque_paint_json(composite.source_paint)
+        };
+        let composite_mode = if gradient_overlay {
+            json!("colorline_pointer")
+        } else {
+            json!(composite.composite_mode)
+        };
         json!({
             "format": paint.format,
             "composite_prefix": {
-                "source_paint": opaque_paint_json(composite.source_paint),
-                "composite_mode": composite.composite_mode,
+                "source_paint": source_paint,
+                "composite_mode": composite_mode,
             },
         })
     } else {
@@ -15883,6 +15900,10 @@ fn malformed_colr_paint_glyphs(case: &InputCase, label_count: usize) -> Result<V
         vec![36, 37, 38, 39, 40, 41, 42, 43, 50]
     } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_payload_reads_return_false" {
         vec![36, 37, 38, 39, 40, 41, 42, 43, 50]
+    } else if case.case_id
+        == "ftcolor.FT_Get_Paint.malformed_gradient_payload_reads_return_false"
+    {
+        vec![36, 37, 38, 39, 50]
     } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_colorline_return_false" {
         vec![40, 41, 42, 43, 50]
     } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_layer_list_index_returns_false" {
@@ -39683,6 +39704,8 @@ fn with_public_family_exact_error(mut case: InputCase) -> InputCase {
             || case.case_id == "ftcolor.FT_COLR_PAINT_FORMAT_MAX.read_paint_rejects_max_and_above"
             || case.case_id == "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false"
             || case.case_id == "ftcolor.FT_Get_Paint.malformed_payload_reads_return_false"
+            || case.case_id
+                == "ftcolor.FT_Get_Paint.malformed_gradient_payload_reads_return_false"
             || case.case_id == "ftcolor.FT_Get_Paint.malformed_colorline_return_false"
             || case.case_id
                 == "ftcolor.FT_Get_Paint.malformed_layer_list_index_returns_false"

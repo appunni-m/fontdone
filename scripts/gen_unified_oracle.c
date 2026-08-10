@@ -21572,10 +21572,24 @@ static FT_COLR_Paint malformed_colr_paint_sentinel(void) {
 static void print_malformed_colr_paint_json(const FT_COLR_Paint* paint,
                                              int composite_prefix_written) {
     if (composite_prefix_written) {
+        int gradient_overlay =
+            paint->format == FT_COLR_PAINTFORMAT_LINEAR_GRADIENT ||
+            paint->format == FT_COLR_PAINTFORMAT_RADIAL_GRADIENT ||
+            paint->format == FT_COLR_PAINTFORMAT_SWEEP_GRADIENT ||
+            (int)paint->format == 5;
         printf("{\"format\":%d,\"composite_prefix\":{\"source_paint\":",
                paint->format);
-        print_opaque_paint_json(paint->u.composite.source_paint);
-        printf(",\"composite_mode\":%d}}", (int)paint->u.composite.composite_mode);
+        if (gradient_overlay) {
+            /* The first union bytes are ColorLine fields, not an opaque
+             * paint. Their pointer-shaped interpretation is not stable. */
+            printf("{\"p_class\":\"colorline_overlay\",\"insert_root_transform\":0}");
+            /* The union overlay reads ColorLine::iterator.p as a composite
+             * mode here. That is a process-local table pointer, not a mode. */
+            printf(",\"composite_mode\":\"colorline_pointer\"}}");
+        } else {
+            print_opaque_paint_json(paint->u.composite.source_paint);
+            printf(",\"composite_mode\":%d}}", (int)paint->u.composite.composite_mode);
+        }
         return;
     }
     printf("{\"format\":%d,\"solid\":{\"palette_index\":%u,\"alpha\":%d}}",
@@ -21679,6 +21693,20 @@ static int emit_color_paint_malformed_case(int argc, char** argv) {
             glyphs[index] = payload_glyphs[index];
         }
         malformed_count = 8;
+        control_glyph = 50;
+    } else if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_gradient_payload_reads_return_false")) {
+        static const char* gradient_labels[] = {
+            "paint_var_linear_payload_truncated",
+            "paint_linear_payload_truncated",
+            "paint_sweep_payload_truncated",
+            "paint_skew_payload_truncated",
+        };
+        static const FT_UInt gradient_glyphs[] = {36, 37, 38, 39};
+        for (size_t index = 0; index < 4; index++) {
+            labels[index] = gradient_labels[index];
+            glyphs[index] = gradient_glyphs[index];
+        }
+        malformed_count = 4;
         control_glyph = 50;
     } else if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_colorline_return_false")) {
         static const char* colorline_labels[] = {

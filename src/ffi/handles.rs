@@ -1532,6 +1532,22 @@ enum ColrV1Paint {
         source_paint: Box<ColrV1Paint>,
         composite_mode: FT_UShort,
     },
+    /// A gradient whose ColorLine was written before FreeType rejected its
+    /// fixed payload boundary. The public union is intentionally observable
+    /// on this failure path, even though `FT_Get_Paint` returns zero.
+    MalformedGradient {
+        format: FT_Int,
+        colorline: ColrV1ColorLine,
+    },
+    /// A skew whose child opaque paint was written before FreeType rejected
+    /// the angle payload boundary.
+    MalformedSkew {
+        paint: Box<ColrV1Paint>,
+        x_skew_angle: FT_Fixed,
+        y_skew_angle: FT_Fixed,
+        center_x: FT_Fixed,
+        center_y: FT_Fixed,
+    },
     Layers {
         paints: Vec<ColrV1Paint>,
     },
@@ -8772,51 +8788,92 @@ fn parse_colr_v1_paint(
             // FreeType 2.14.3 `src/sfnt/ttcolr.c:724-758` exposes static
             // PaintLinearGradient coordinates as 16.16 fixed-point vectors and
             // initializes a ColorLine iterator from the child ColorLine table.
+            let colorline = parse_colr_v1_colorline(data, colorline_start, false)?;
+            let coordinates = (|| {
+                Some((
+                    FT_Vector {
+                        x: colr_i16_to_fixed(read_i16_be(data, offset + 4)?),
+                        y: colr_i16_to_fixed(read_i16_be(data, offset + 6)?),
+                    },
+                    FT_Vector {
+                        x: colr_i16_to_fixed(read_i16_be(data, offset + 8)?),
+                        y: colr_i16_to_fixed(read_i16_be(data, offset + 10)?),
+                    },
+                    FT_Vector {
+                        x: colr_i16_to_fixed(read_i16_be(data, offset + 12)?),
+                        y: colr_i16_to_fixed(read_i16_be(data, offset + 14)?),
+                    },
+                ))
+            })();
+            let Some((p0, p1, p2)) = coordinates else {
+                return Some(ColrV1Paint::MalformedGradient {
+                    format: FT_Int::from(format),
+                    colorline,
+                });
+            };
             Some(ColrV1Paint::LinearGradient {
-                colorline: parse_colr_v1_colorline(data, colorline_start, false)?,
-                p0: FT_Vector {
-                    x: colr_i16_to_fixed(read_i16_be(data, offset + 4)?),
-                    y: colr_i16_to_fixed(read_i16_be(data, offset + 6)?),
-                },
-                p1: FT_Vector {
-                    x: colr_i16_to_fixed(read_i16_be(data, offset + 8)?),
-                    y: colr_i16_to_fixed(read_i16_be(data, offset + 10)?),
-                },
-                p2: FT_Vector {
-                    x: colr_i16_to_fixed(read_i16_be(data, offset + 12)?),
-                    y: colr_i16_to_fixed(read_i16_be(data, offset + 14)?),
-                },
+                colorline,
+                p0,
+                p1,
+                p2,
                 var_index_base: None,
             })
         }
         6 => {
             let colorline_start = parse_colr_v1_child_start(data, offset, 1)?;
-            let r0 = colr_i16_to_fixed(read_i16_be(data, offset + 8)?);
-            let r1 = colr_i16_to_fixed(read_i16_be(data, offset + 14)?);
+            let colorline = parse_colr_v1_colorline(data, colorline_start, false)?;
+            let payload = (|| {
+                Some((
+                    FT_Vector {
+                        x: colr_i16_to_fixed(read_i16_be(data, offset + 4)?),
+                        y: colr_i16_to_fixed(read_i16_be(data, offset + 6)?),
+                    },
+                    colr_i16_to_fixed(read_i16_be(data, offset + 8)?),
+                    FT_Vector {
+                        x: colr_i16_to_fixed(read_i16_be(data, offset + 10)?),
+                        y: colr_i16_to_fixed(read_i16_be(data, offset + 12)?),
+                    },
+                    colr_i16_to_fixed(read_i16_be(data, offset + 14)?),
+                ))
+            })();
+            let Some((c0, r0, c1, r1)) = payload else {
+                return Some(ColrV1Paint::MalformedGradient {
+                    format: FT_Int::from(format),
+                    colorline,
+                });
+            };
             Some(ColrV1Paint::RadialGradient {
-                colorline: parse_colr_v1_colorline(data, colorline_start, false)?,
-                c0: FT_Vector {
-                    x: colr_i16_to_fixed(read_i16_be(data, offset + 4)?),
-                    y: colr_i16_to_fixed(read_i16_be(data, offset + 6)?),
-                },
+                colorline,
+                c0,
                 r0: if r0 < 0 { i32::MAX.into() } else { r0 },
-                c1: FT_Vector {
-                    x: colr_i16_to_fixed(read_i16_be(data, offset + 10)?),
-                    y: colr_i16_to_fixed(read_i16_be(data, offset + 12)?),
-                },
+                c1,
                 r1: if r1 < 0 { i32::MAX.into() } else { r1 },
             })
         }
         8 => {
             let colorline_start = parse_colr_v1_child_start(data, offset, 1)?;
+            let colorline = parse_colr_v1_colorline(data, colorline_start, false)?;
+            let payload = (|| {
+                Some((
+                    FT_Vector {
+                        x: colr_i16_to_fixed(read_i16_be(data, offset + 4)?),
+                        y: colr_i16_to_fixed(read_i16_be(data, offset + 6)?),
+                    },
+                    f2dot14_to_fixed(read_i16_be(data, offset + 8)?),
+                    f2dot14_to_fixed(read_i16_be(data, offset + 10)?),
+                ))
+            })();
+            let Some((center, start_angle, end_angle)) = payload else {
+                return Some(ColrV1Paint::MalformedGradient {
+                    format: FT_Int::from(format),
+                    colorline,
+                });
+            };
             Some(ColrV1Paint::SweepGradient {
-                colorline: parse_colr_v1_colorline(data, colorline_start, false)?,
-                center: FT_Vector {
-                    x: colr_i16_to_fixed(read_i16_be(data, offset + 4)?),
-                    y: colr_i16_to_fixed(read_i16_be(data, offset + 6)?),
-                },
-                start_angle: f2dot14_to_fixed(read_i16_be(data, offset + 8)?),
-                end_angle: f2dot14_to_fixed(read_i16_be(data, offset + 10)?),
+                colorline,
+                center,
+                start_angle,
+                end_angle,
             })
         }
         5 => {
@@ -8826,21 +8883,36 @@ fn parse_colr_v1_paint(
             // but preserves a variable ColorLine iterator so
             // FT_Get_Colorline_Stops can read VarColorStop and apply COLR
             // VarStore deltas.
+            let colorline = parse_colr_v1_colorline(data, colorline_start, true)?;
+            let payload = (|| {
+                Some((
+                    FT_Vector {
+                        x: colr_i16_to_fixed(read_i16_be(data, offset + 4)?),
+                        y: colr_i16_to_fixed(read_i16_be(data, offset + 6)?),
+                    },
+                    FT_Vector {
+                        x: colr_i16_to_fixed(read_i16_be(data, offset + 8)?),
+                        y: colr_i16_to_fixed(read_i16_be(data, offset + 10)?),
+                    },
+                    FT_Vector {
+                        x: colr_i16_to_fixed(read_i16_be(data, offset + 12)?),
+                        y: colr_i16_to_fixed(read_i16_be(data, offset + 14)?),
+                    },
+                    read_u32_be(data, offset + 16)?,
+                ))
+            })();
+            let Some((p0, p1, p2, var_index_base)) = payload else {
+                return Some(ColrV1Paint::MalformedGradient {
+                    format: FT_Int::from(format),
+                    colorline,
+                });
+            };
             Some(ColrV1Paint::LinearGradient {
-                colorline: parse_colr_v1_colorline(data, colorline_start, true)?,
-                p0: FT_Vector {
-                    x: colr_i16_to_fixed(read_i16_be(data, offset + 4)?),
-                    y: colr_i16_to_fixed(read_i16_be(data, offset + 6)?),
-                },
-                p1: FT_Vector {
-                    x: colr_i16_to_fixed(read_i16_be(data, offset + 8)?),
-                    y: colr_i16_to_fixed(read_i16_be(data, offset + 10)?),
-                },
-                p2: FT_Vector {
-                    x: colr_i16_to_fixed(read_i16_be(data, offset + 12)?),
-                    y: colr_i16_to_fixed(read_i16_be(data, offset + 14)?),
-                },
-                var_index_base: Some(read_u32_be(data, offset + 16)?),
+                colorline,
+                p0,
+                p1,
+                p2,
+                var_index_base: Some(var_index_base),
             })
         }
         10 => {
@@ -8963,24 +9035,43 @@ fn parse_colr_v1_paint(
         28 | 30 => {
             // FreeType 2.14.3 `src/sfnt/ttcolr.c:1158-1227` normalizes skew
             // forms to public FT_PaintSkew and zero-fills absent centers.
-            let x_skew_angle = f2dot14_to_fixed(read_i16_be(data, offset + 4)?);
-            let y_skew_angle = f2dot14_to_fixed(read_i16_be(data, offset + 6)?);
+            let paint =
+                parse_colr_v1_child_paint(data, offset, depth, layer_list_offset, layer_offsets)?;
+            let Some((x_skew_angle, y_skew_angle)) = (|| {
+                Some((
+                    f2dot14_to_fixed(read_i16_be(data, offset + 4)?),
+                    f2dot14_to_fixed(read_i16_be(data, offset + 6)?),
+                ))
+            })() else {
+                return Some(ColrV1Paint::MalformedSkew {
+                    paint,
+                    x_skew_angle: 0,
+                    y_skew_angle: 0,
+                    center_x: 0,
+                    center_y: 0,
+                });
+            };
             let (center_x, center_y) = if format == 30 {
-                (
-                    colr_i16_to_fixed(read_i16_be(data, offset + 8)?),
-                    colr_i16_to_fixed(read_i16_be(data, offset + 10)?),
-                )
+                let Some((center_x, center_y)) = (|| {
+                    Some((
+                        colr_i16_to_fixed(read_i16_be(data, offset + 8)?),
+                        colr_i16_to_fixed(read_i16_be(data, offset + 10)?),
+                    ))
+                })() else {
+                    return Some(ColrV1Paint::MalformedSkew {
+                        paint,
+                        x_skew_angle,
+                        y_skew_angle,
+                        center_x: 0,
+                        center_y: 0,
+                    });
+                };
+                (center_x, center_y)
             } else {
                 (0, 0)
             };
             Some(ColrV1Paint::Skew {
-                paint: parse_colr_v1_child_paint(
-                    data,
-                    offset,
-                    depth,
-                    layer_list_offset,
-                    layer_offsets,
-                )?,
+                paint,
                 x_skew_angle,
                 y_skew_angle,
                 center_x,
@@ -9255,7 +9346,10 @@ fn colr_v1_find_paint_by_ptr_in_node(
             ..
         } => colr_v1_find_paint_by_ptr_in_node(source_paint, ptr)
             .or_else(|| colr_v1_find_paint_by_ptr_in_node(backdrop_paint, ptr)),
-        ColrV1Paint::Malformed { .. } | ColrV1Paint::MalformedComposite { .. } => None,
+        ColrV1Paint::Malformed { .. }
+        | ColrV1Paint::MalformedComposite { .. }
+        | ColrV1Paint::MalformedGradient { .. }
+        | ColrV1Paint::MalformedSkew { .. } => None,
     }
 }
 
@@ -9428,6 +9522,42 @@ pub fn FT_Get_Paint(
                     // The parity projection intentionally excludes this
                     // caller-owned, process-local remainder of the union.
                     backdrop_paint: FT_OpaquePaint::default(),
+                },
+            };
+            return 0;
+        }
+        ColrV1Paint::MalformedGradient { format, colorline } => {
+            // FreeType writes the ColorLine before its fixed-payload bounds
+            // check rejects the paint. Keep that partial union mutation
+            // visible while preserving the public format byte.
+            paint_out.format = *format;
+            paint_out.u = FT_COLR_PaintUnion {
+                linear_gradient: FT_PaintLinearGradient {
+                    colorline: colr_v1_colorline_to_public(colorline),
+                    p0: FT_Vector::default(),
+                    p1: FT_Vector::default(),
+                    p2: FT_Vector::default(),
+                },
+            };
+            return 0;
+        }
+        ColrV1Paint::MalformedSkew {
+            paint,
+            x_skew_angle,
+            y_skew_angle,
+            center_x,
+            center_y,
+        } => {
+            // FreeType writes the child opaque paint and then rejects the
+            // fixed angle payload. Match that partially initialized union.
+            paint_out.format = FT_COLR_PAINTFORMAT_SKEW as _;
+            paint_out.u = FT_COLR_PaintUnion {
+                skew: FT_PaintSkew {
+                    paint: colr_v1_paint_to_opaque(paint),
+                    x_skew_angle: *x_skew_angle,
+                    y_skew_angle: *y_skew_angle,
+                    center_x: *center_x,
+                    center_y: *center_y,
                 },
             };
             return 0;
@@ -9668,7 +9798,10 @@ fn colr_v1_find_colorline_by_iterator_in_node<'a>(
             ..
         } => colr_v1_find_colorline_by_iterator_in_node(source_paint, iterator)
             .or_else(|| colr_v1_find_colorline_by_iterator_in_node(backdrop_paint, iterator)),
-        ColrV1Paint::Malformed { .. } | ColrV1Paint::MalformedComposite { .. } => None,
+        ColrV1Paint::Malformed { .. }
+        | ColrV1Paint::MalformedComposite { .. }
+        | ColrV1Paint::MalformedGradient { .. }
+        | ColrV1Paint::MalformedSkew { .. } => None,
     }
 }
 
@@ -9790,7 +9923,10 @@ fn colr_v1_find_layer_paints_by_iterator_in_node<'a>(
             ..
         } => colr_v1_find_layer_paints_by_iterator_in_node(source_paint, iterator)
             .or_else(|| colr_v1_find_layer_paints_by_iterator_in_node(backdrop_paint, iterator)),
-        ColrV1Paint::Malformed { .. } | ColrV1Paint::MalformedComposite { .. } => None,
+        ColrV1Paint::Malformed { .. }
+        | ColrV1Paint::MalformedComposite { .. }
+        | ColrV1Paint::MalformedGradient { .. }
+        | ColrV1Paint::MalformedSkew { .. } => None,
     }
 }
 
@@ -9949,7 +10085,10 @@ fn colr_v1_paint_format(paint: &ColrV1Paint) -> FT_PaintFormat {
         ColrV1Paint::Composite { .. } | ColrV1Paint::MalformedComposite { .. } => {
             FT_COLR_PAINTFORMAT_COMPOSITE as FT_PaintFormat
         }
-        ColrV1Paint::Malformed { format } => *format as FT_PaintFormat,
+        ColrV1Paint::Malformed { format } | ColrV1Paint::MalformedGradient { format, .. } => {
+            *format as FT_PaintFormat
+        }
+        ColrV1Paint::MalformedSkew { .. } => FT_COLR_PAINTFORMAT_SKEW as FT_PaintFormat,
     }
 }
 
@@ -10211,6 +10350,33 @@ fn colr_v1_snapshot_paint(
             composite_mode: 0,
             values: [0; 6],
         }),
+        ColrV1Paint::MalformedGradient { format, .. } => nodes.push(FT_ColrV1_PaintNode_Snapshot {
+            depth,
+            format: (*format).try_into().unwrap_or(FT_UShort::MAX),
+            palette_index: 0,
+            alpha: 0,
+            glyph_index: 0,
+            composite_mode: 0,
+            values: [0; 6],
+        }),
+        ColrV1Paint::MalformedSkew {
+            x_skew_angle,
+            y_skew_angle,
+            center_x,
+            center_y,
+            paint,
+        } => {
+            nodes.push(FT_ColrV1_PaintNode_Snapshot {
+                depth,
+                format: FT_COLR_PAINTFORMAT_SKEW as FT_UShort,
+                palette_index: 0,
+                alpha: 0,
+                glyph_index: 0,
+                composite_mode: 0,
+                values: [*x_skew_angle, *y_skew_angle, *center_x, *center_y, 0, 0],
+            });
+            colr_v1_snapshot_paint(paint, depth + 1, nodes);
+        }
     }
 }
 

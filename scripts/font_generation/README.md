@@ -107,6 +107,12 @@ ColorLine extend byte.  The shared malformed ColorLine reaches each gradient
 family's pinned rejection path while the SFNT and glyph 50 control remain
 openable.
 
+`malformed/colr-v1-malformed-gradient-payloads.ttf` is a deterministic
+derivative whose linear, variable-linear, sweep, and skew roots point at a
+valid zero-stop ColorLine but end during their fixed payload fields.  The
+fixture reaches the pinned `ENSURE_READ_BYTES` failures without truncating the
+SFNT and retains glyph 50 as a valid solid control.
+
 `malformed/colr-v1-malformed-layer-list.ttf` is a deterministic derivative
 that preserves the first PaintColrLayers root but replaces its
 `FirstLayerIndex` with `4`, beyond the maintained three-entry LayerV1List.  The
