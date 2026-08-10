@@ -303,6 +303,10 @@ checked row arithmetic; it preserved the same exact parity outputs.
 The malformed PCF face-open matrix now also reaches metrics, accelerator,
 bitmap, and encoding metadata validation boundaries through maintained input
 fixtures; focused and full parity remain exact.
+The maintained `ftoutln.FT_Outline_Decompose` callback cases now exercise the
+exported C-ABI wrapper itself, including callback event delivery, callback
+error propagation, missing callbacks, null interfaces, and malformed outlines;
+the C oracle remains the independent callback-event reference.
 
 ```bash
 make test-coverage
@@ -635,7 +639,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,615** | **all retained paths** |
+| **Total** | **2,616** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

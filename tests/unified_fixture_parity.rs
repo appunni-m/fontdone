@@ -113,6 +113,94 @@ unsafe extern "C" fn c_cmap_requester_failure(
     FT_Err_Invalid_Argument
 }
 
+struct COutlineDecomposeCallbackState {
+    events: Vec<FTOutlineDecomposeEvent>,
+    fail_at: Option<usize>,
+    fail_error: c_abi::FT_Error,
+    user_seen: bool,
+}
+
+fn c_outline_decompose_record_callback(
+    user: c_abi::FT_Pointer,
+    kind: &'static str,
+    points: &[c_abi::FT_Vector],
+) -> c_abi::FT_Error {
+    let Some(state) = (unsafe {
+        user.cast::<COutlineDecomposeCallbackState>().as_mut()
+    }) else {
+        return FT_Err_Invalid_Argument;
+    };
+    let event_index = state.events.len();
+    if state.fail_at == Some(event_index) {
+        return state.fail_error;
+    }
+    state.user_seen = true;
+    state.events.push(FTOutlineDecomposeEvent {
+        kind,
+        points: points
+            .iter()
+            .map(|point| FT_Vector {
+                x: point.x,
+                y: point.y,
+            })
+            .collect(),
+    });
+    FT_Err_Ok
+}
+
+unsafe extern "C" fn c_outline_decompose_move_to_callback(
+    to: *const c_abi::FT_Vector,
+    user: c_abi::FT_Pointer,
+) -> c_abi::FT_Error {
+    let Some(to) = (unsafe { to.as_ref() }) else {
+        return FT_Err_Invalid_Argument;
+    };
+    c_outline_decompose_record_callback(user, "move_to", std::slice::from_ref(to))
+}
+
+unsafe extern "C" fn c_outline_decompose_line_to_callback(
+    to: *const c_abi::FT_Vector,
+    user: c_abi::FT_Pointer,
+) -> c_abi::FT_Error {
+    let Some(to) = (unsafe { to.as_ref() }) else {
+        return FT_Err_Invalid_Argument;
+    };
+    c_outline_decompose_record_callback(user, "line_to", std::slice::from_ref(to))
+}
+
+unsafe extern "C" fn c_outline_decompose_conic_to_callback(
+    control: *const c_abi::FT_Vector,
+    to: *const c_abi::FT_Vector,
+    user: c_abi::FT_Pointer,
+) -> c_abi::FT_Error {
+    let (Some(control), Some(to)) =
+        (unsafe { control.as_ref() }, unsafe { to.as_ref() })
+    else {
+        return FT_Err_Invalid_Argument;
+    };
+    c_outline_decompose_record_callback(user, "conic_to", &[ *control, *to ])
+}
+
+unsafe extern "C" fn c_outline_decompose_cubic_to_callback(
+    control1: *const c_abi::FT_Vector,
+    control2: *const c_abi::FT_Vector,
+    to: *const c_abi::FT_Vector,
+    user: c_abi::FT_Pointer,
+) -> c_abi::FT_Error {
+    let (Some(control1), Some(control2), Some(to)) = (
+        unsafe { control1.as_ref() },
+        unsafe { control2.as_ref() },
+        unsafe { to.as_ref() },
+    ) else {
+        return FT_Err_Invalid_Argument;
+    };
+    c_outline_decompose_record_callback(
+        user,
+        "cubic_to",
+        &[*control1, *control2, *to],
+    )
+}
+
 thread_local! {
     static C_MODULE_LIFECYCLE_LOG: RefCell<Vec<&'static str>> =
         const { RefCell::new(Vec::new()) };
@@ -80722,6 +80810,158 @@ fn wasm_coordinate_endpoint_parity(case: &InputCase) -> Result<RunOutput, String
     result
 }
 
+#[derive(Clone, Copy)]
+struct COutlineDecomposeCallbackSelection {
+    move_to: bool,
+    line_to: bool,
+    conic_to: bool,
+    cubic_to: bool,
+}
+
+impl COutlineDecomposeCallbackSelection {
+    const fn all() -> Self {
+        Self {
+            move_to: true,
+            line_to: true,
+            conic_to: true,
+            cubic_to: true,
+        }
+    }
+}
+
+fn c_outline_decompose_funcs(
+    shift: FT_Int,
+    delta: FT_Pos,
+    callbacks: COutlineDecomposeCallbackSelection,
+) -> c_abi::FT_Outline_Funcs {
+    c_abi::FT_Outline_Funcs {
+        move_to: callbacks
+            .move_to
+            .then_some(c_outline_decompose_move_to_callback),
+        line_to: callbacks
+            .line_to
+            .then_some(c_outline_decompose_line_to_callback),
+        conic_to: callbacks
+            .conic_to
+            .then_some(c_outline_decompose_conic_to_callback),
+        cubic_to: callbacks
+            .cubic_to
+            .then_some(c_outline_decompose_cubic_to_callback),
+        shift,
+        delta,
+    }
+}
+
+fn c_outline_decompose_direct_run(
+    outline: *mut c_abi::FT_Outline,
+    shift: FT_Int,
+    delta: FT_Pos,
+    fail_at: Option<usize>,
+    fail_error: c_abi::FT_Error,
+    callbacks: COutlineDecomposeCallbackSelection,
+) -> (c_abi::FT_Error, FTOutlineDecomposeRun) {
+    let mut state = COutlineDecomposeCallbackState {
+        events: Vec::new(),
+        fail_at,
+        fail_error,
+        user_seen: false,
+    };
+    let funcs = c_outline_decompose_funcs(shift, delta, callbacks);
+    let user = ptr::from_mut(&mut state).cast::<c_void>();
+    let status = c_abi::FT_Outline_Decompose(outline, &funcs, user);
+    let user_seen = state.user_seen;
+    let events = state.events;
+    let transformed_points = events
+        .iter()
+        .flat_map(|event| event.points.iter().copied())
+        .collect();
+    (
+        status,
+        FTOutlineDecomposeRun {
+            shift,
+            delta,
+            events,
+            transformed_points,
+            user_seen,
+        },
+    )
+}
+
+fn c_outline_decompose_direct_runs(
+    outline: *mut c_abi::FT_Outline,
+    transforms: &[(FT_Int, FT_Pos)],
+    fail_at: Option<usize>,
+    fail_error: c_abi::FT_Error,
+    callbacks: COutlineDecomposeCallbackSelection,
+) -> (c_abi::FT_Error, Vec<FTOutlineDecomposeRun>) {
+    let mut runs = Vec::with_capacity(transforms.len());
+    for &(shift, delta) in transforms {
+        let (status, run) = c_outline_decompose_direct_run(
+            outline,
+            shift,
+            delta,
+            fail_at,
+            fail_error,
+            callbacks,
+        );
+        runs.push(run);
+        if status != FT_Err_Ok {
+            return (status, runs);
+        }
+    }
+    (FT_Err_Ok, runs)
+}
+
+fn c_outline_decompose_probe_missing_callbacks(
+    outline: *mut c_abi::FT_Outline,
+) -> Result<(), String> {
+    let probes = [
+        (
+            "move_to",
+            COutlineDecomposeCallbackSelection {
+                move_to: false,
+                ..COutlineDecomposeCallbackSelection::all()
+            },
+        ),
+        (
+            "line_to",
+            COutlineDecomposeCallbackSelection {
+                line_to: false,
+                ..COutlineDecomposeCallbackSelection::all()
+            },
+        ),
+        (
+            "conic_to",
+            COutlineDecomposeCallbackSelection {
+                conic_to: false,
+                ..COutlineDecomposeCallbackSelection::all()
+            },
+        ),
+        (
+            "cubic_to",
+            COutlineDecomposeCallbackSelection {
+                cubic_to: false,
+                ..COutlineDecomposeCallbackSelection::all()
+            },
+        ),
+    ];
+    for (label, callbacks) in probes {
+        let (status, _) = c_outline_decompose_direct_runs(
+            outline,
+            &[(0, 0)],
+            None,
+            FT_Err_Ok,
+            callbacks,
+        );
+        if status != FT_Err_Invalid_Argument {
+            return Err(format!(
+                "missing {label} callback returned {status}, expected {FT_Err_Invalid_Argument}"
+            ));
+        }
+    }
+    Ok(())
+}
+
 fn rust_outline_decompose_runtime_output(case: &InputCase) -> Result<RunOutput, String> {
     if matches!(
         case.case_id.as_str(),
@@ -80775,30 +81015,67 @@ fn c_outline_decompose_runtime_output(case: &InputCase) -> Result<RunOutput, Str
     let masked_tags = outline_decompose_masked_tags(&outline_model);
     let mut outline = CRenderOutlineStorage::new(&outline_model);
     let outline_ptr = outline.as_ptr();
-    match c_abi::abi_support_outline_decompose_trace(
-        outline_ptr,
-        &outline_decompose_transforms(case)?,
-    ) {
-        Ok(runs) if case.case_id == "ftimage.FT_Outline_Funcs.callback_error_propagates" => {
+    let transforms = outline_decompose_transforms(case)?;
+    let (fail_at, fail_error) = if case.case_id
+        == "ftoutln.FT_Outline_Decompose.callback_error_propagates"
+    {
+        let (event_index, error_code) = outline_decompose_callback_failure(case)?;
+        (Some(event_index), error_code)
+    } else {
+        (None, FT_Err_Ok)
+    };
+    let (status, runs) = c_outline_decompose_direct_runs(
+        outline_ptr.cast_mut(),
+        &transforms,
+        fail_at,
+        fail_error,
+        COutlineDecomposeCallbackSelection::all(),
+    );
+    if case.case_id == "ftoutln.FT_Outline_Decompose.line_conic_cubic_event_order" {
+        c_outline_decompose_probe_missing_callbacks(outline_ptr.cast_mut())?;
+    }
+    if case.case_id == "ftoutln.FT_Outline_Decompose.callback_error_propagates" {
+        let run = runs
+            .into_iter()
+            .next()
+            .ok_or_else(|| "callback error trace requires one run".to_string())?;
+        return Ok(error_with_output(
+            status,
+            json!({
+                "return": status,
+                "events_before_error": run
+                    .events
+                    .into_iter()
+                    .map(outline_decompose_event_json)
+                    .collect::<Vec<_>>(),
+            }),
+        ));
+    }
+    match status {
+        status if status == FT_Err_Ok
+            && case.case_id == "ftimage.FT_Outline_Funcs.callback_error_propagates" =>
+        {
             outline_funcs_callback_error_output(case, runs)
         }
-        Ok(runs)
-            if case.case_id
+        status if status == FT_Err_Ok
+            && case.case_id
                 == "ftimage.FT_Outline_MoveTo_Func.decompose_propagates_callback_error" =>
         {
             outline_moveto_callback_error_output(case, runs)
         }
-        Ok(runs) if outline_callback_return_matrix_case(&case.case_id) => {
+        status if status == FT_Err_Ok && outline_callback_return_matrix_case(&case.case_id) => {
             outline_callback_return_matrix_output(case, runs)
         }
-        Ok(runs) if case.case_id == "ftoutln.FT_Outline_Decompose.callback_error_propagates" => {
-            outline_decompose_callback_error_output(case, runs)
+        status if status == FT_Err_Ok
+            && case.case_id == "ftimage.FT_CURVE_TAG.classifies_outline_tags" =>
+        {
+            Ok(ok(outline_decompose_trace_payload_with_masked_tags(
+                runs,
+                masked_tags,
+            )))
         }
-        Ok(runs) if case.case_id == "ftimage.FT_CURVE_TAG.classifies_outline_tags" => Ok(ok(
-            outline_decompose_trace_payload_with_masked_tags(runs, masked_tags),
-        )),
-        Ok(runs) => Ok(ok(outline_decompose_trace_payload(runs))),
-        Err(err) => Ok(error(err)),
+        status if status == FT_Err_Ok => Ok(ok(outline_decompose_trace_payload(runs))),
+        error_code => Ok(error(error_code)),
     }
 }
 
@@ -80917,19 +81194,26 @@ fn c_outline_decompose_invalid_runtime_output(case: &InputCase) -> Result<RunOut
     let bad_contour = outline_from_asset_key(case, "bad_contour")?;
     let mut bad_cubic = CRenderOutlineStorage::new(&bad_cubic);
     let mut bad_contour = CRenderOutlineStorage::new(&bad_contour);
-    let bad_cubic_status =
-        match c_abi::abi_support_outline_decompose_trace(bad_cubic.as_ptr(), &[(0, 0)]) {
-            Ok(_) => FT_Err_Ok,
-            Err(err) => err,
-        };
+    let mut callback_state = COutlineDecomposeCallbackState {
+        events: Vec::new(),
+        fail_at: None,
+        fail_error: FT_Err_Ok,
+        user_seen: false,
+    };
+    let funcs = c_outline_decompose_funcs(0, 0, COutlineDecomposeCallbackSelection::all());
+    let user = ptr::from_mut(&mut callback_state).cast::<c_void>();
+    let null_outline_status = c_abi::FT_Outline_Decompose(ptr::null_mut(), &funcs, user);
+    let null_func_interface_status = c_abi::FT_Outline_Decompose(
+        bad_cubic.as_ptr().cast_mut(),
+        ptr::null(),
+        user,
+    );
+    let bad_cubic_status = c_abi::FT_Outline_Decompose(bad_cubic.as_ptr().cast_mut(), &funcs, user);
     let bad_contour_status =
-        match c_abi::abi_support_outline_decompose_trace(bad_contour.as_ptr(), &[(0, 0)]) {
-            Ok(_) => FT_Err_Ok,
-            Err(err) => err,
-        };
+        c_abi::FT_Outline_Decompose(bad_contour.as_ptr().cast_mut(), &funcs, user);
     Ok(outline_decompose_invalid_output(
-        FT_Err_Invalid_Outline,
-        FT_Err_Invalid_Argument,
+        null_outline_status,
+        null_func_interface_status,
         bad_cubic_status,
         bad_contour_status,
     ))
@@ -81180,10 +81464,9 @@ fn outline_decompose_trace_payload(runs: Vec<FTOutlineDecomposeRun>) -> Value {
     })
 }
 
-fn outline_decompose_callback_error_output(
+fn outline_decompose_callback_failure(
     case: &InputCase,
-    runs: Vec<FTOutlineDecomposeRun>,
-) -> Result<RunOutput, String> {
+) -> Result<(usize, FT_Error), String> {
     let fail_at = case
         .inputs
         .params
@@ -81203,6 +81486,17 @@ fn outline_decompose_callback_error_output(
     } else {
         i32::try_from(rust_constant(error_name)?).map_err(|err| err.to_string())?
     };
+    Ok((
+        usize::try_from(event_index).map_err(|err| err.to_string())?,
+        error_code,
+    ))
+}
+
+fn outline_decompose_callback_error_output(
+    case: &InputCase,
+    runs: Vec<FTOutlineDecomposeRun>,
+) -> Result<RunOutput, String> {
+    let (event_index, error_code) = outline_decompose_callback_failure(case)?;
     let run = runs
         .into_iter()
         .next()
@@ -81210,7 +81504,7 @@ fn outline_decompose_callback_error_output(
     let events_before_error = run
         .events
         .into_iter()
-        .take(usize::try_from(event_index).map_err(|err| err.to_string())?)
+        .take(event_index)
         .map(outline_decompose_event_json)
         .collect::<Vec<_>>();
     Ok(error_with_output(
