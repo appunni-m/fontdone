@@ -49,6 +49,7 @@ subpixel-rendering = [
 future-incompatible = { level = "deny", priority = -1 }
 nonstandard_style = { level = "deny", priority = -1 }
 unused = { level = "deny", priority = -1 }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 unsafe_code = "allow"
 unused_crate_dependencies = "warn"
 dead_code = "deny"

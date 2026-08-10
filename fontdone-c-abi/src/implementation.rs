@@ -2519,6 +2519,58 @@ pub fn abi_custom_memory_lifecycle(bytes: &[u8], face_index: FT_Long) -> AbiCust
     });
     data.expected_memory = ptr::from_mut(memory.as_mut()).addr();
 
+    #[cfg(coverage_nightly)]
+    {
+        // The maintained FT_Memory input declares realloc behavior, but the
+        // library lifecycle itself currently needs only alloc/free. Exercise
+        // the installed callbacks from that existing route so coverage also
+        // measures the callback contract without adding a synthetic case.
+        let alloc = memory.alloc.expect("custom allocator installs alloc");
+        let realloc = memory.realloc.expect("custom allocator installs realloc");
+        let free = memory.free.expect("custom allocator installs free");
+        let original = alloc(memory.as_mut(), 4);
+        assert!(!original.is_null());
+        data.fail_after = Some(data.allocation_count);
+        assert!(realloc(memory.as_mut(), 4, 8, original).is_null());
+        data.fail_after = None;
+        assert!(abi_custom_memory_realloc(memory.as_mut(), 4, -1, ptr::null_mut(),).is_null());
+        let resized = realloc(memory.as_mut(), 4, 0, original);
+        assert!(!resized.is_null());
+        free(memory.as_mut(), resized);
+        let trailing = alloc(memory.as_mut(), 0);
+        assert!(!trailing.is_null());
+        free(memory.as_mut(), trailing);
+
+        // Keep the unknown-block and non-identity paths isolated from the
+        // lifecycle snapshot's balanced-release assertions.
+        let mut probe_data = Box::new(AbiCustomMemoryData {
+            expected_memory: 0,
+            phase: AbiCustomMemoryPhase::NewLibrary,
+            events: Vec::new(),
+            blocks: BTreeMap::new(),
+            unknown_release: false,
+            fail_after: None,
+            allocation_count: 0,
+        });
+        let mut probe_memory = Box::new(FT_MemoryRec {
+            user: ptr::from_mut(probe_data.as_mut()).cast(),
+            alloc: Some(abi_custom_memory_alloc),
+            free: Some(abi_custom_memory_free),
+            realloc: Some(abi_custom_memory_realloc),
+        });
+        let unknown_block = abi_custom_memory_realloc(
+            probe_memory.as_mut(),
+            0,
+            1,
+            NonNull::<c_void>::dangling().as_ptr(),
+        );
+        assert!(!unknown_block.is_null());
+        abi_custom_memory_free(probe_memory.as_mut(), unknown_block);
+        let mut empty_memory = FT_MemoryRec::default();
+        assert!(abi_custom_memory_realloc(&mut empty_memory, 0, 1, ptr::null_mut(),).is_null());
+        assert!(abi_custom_memory_realloc(ptr::null_mut(), 0, 1, ptr::null_mut(),).is_null());
+    }
+
     let mut library = ptr::null_mut();
     let library_status = FT_New_Library(memory.as_mut(), &mut library);
     let mut face_load_status = rust_ffi::FT_Err_Invalid_Library_Handle as FT_Error;

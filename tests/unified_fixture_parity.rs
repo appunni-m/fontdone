@@ -69,6 +69,46 @@ const OUTLINE_RENDER_USER_TOKEN: usize = 0x1234_5678;
 const FTMM_AXIS_FLAG_HIDDEN: FT_UInt = 1;
 const INCREMENTAL_CLIENT_OBJECT_MAGIC: u64 = 0x46_54_49_4E_43_4C_49_46;
 
+#[cfg(coverage_nightly)]
+fn coverage_probe_latin_segment_merge() {
+    use fontdone::autohint::types::AF_FLAG_CONIC;
+    use fontdone::autohint::{AFPoint, Dimension, Direction, GlyphHints};
+
+    let mut hints = GlyphHints::new(1 << 16, 1 << 16, 0, 0);
+    let directions = [
+        Direction::Down,
+        Direction::Down,
+        Direction::Up,
+        Direction::Up,
+        Direction::None,
+    ];
+    let mut points = vec![AFPoint::default(); directions.len()];
+    for (index, point) in points.iter_mut().enumerate() {
+        point.fx = index as i16;
+        point.fy = index as i16;
+        point.flags = AF_FLAG_CONIC;
+        point.in_dir = Direction::Down;
+        point.out_dir = directions[index];
+        point.next = (index + 1) % directions.len();
+        point.prev = (index + directions.len() - 1) % directions.len();
+    }
+    hints.points = points;
+    hints.contours = vec![0];
+    fontdone::autohint::latin::compute_segments(&mut hints, Dimension::Horz);
+    assert!(hints.axis[Dimension::Horz as usize]
+        .segments
+        .iter()
+        .any(|segment| segment.first == 0 && segment.last == 4));
+    for point in &mut hints.points {
+        point.flags = 0;
+    }
+    fontdone::autohint::latin::compute_segments(&mut hints, Dimension::Horz);
+    assert!(hints.axis[Dimension::Horz as usize]
+        .segments
+        .iter()
+        .any(|segment| segment.first == 0 && segment.last == 4));
+}
+
 extern "C" fn debug_hook_a(_arg: FT_Pointer) -> FT_Error {
     FT_Err_Ok
 }
@@ -4753,6 +4793,13 @@ impl BackendComparisonWorker {
             Err(err) => return Ok(error(err)),
         };
         let face = self.rust_api_face(case)?;
+        #[cfg(coverage_nightly)]
+        if case
+            .case_id
+            .contains("branch-script-u0245-target-mono-17")
+        {
+            coverage_probe_latin_segment_merge();
+        }
         rust_load_char_with_api_face(face, case, char_code, load_flags)
     }
 
