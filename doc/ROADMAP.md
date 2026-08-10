@@ -566,16 +566,17 @@ worktree at that point:
 | 169 | `46c4024` (allocator callback and Latin segment coverage routes) | Extended the maintained `ftsystem.FT_Memory.custom_allocator_runtime_events` lifecycle route with a nightly-only direct C-ABI callback probe covering realloc success, failure, zero-size, null-block, and unknown-block behavior without changing its normalized output. The existing U+0245 target-mono `FT_Load_Char` parity variant now also reaches both controlled branches of the Latin segment merge through a coverage-only `GlyphHints` contour probe; no new fixture or unit-only parity case was added. Pushed-head parity run `00dc870d-7837-4ace-8efb-4a1cd8a3b0c9`, recorded in `doc/runtime_parity_evidence.json`, passed 7,841 / 7,841 runnable comparisons with 0 failures and 3 pending safety-extension cases. All-lane Coverage MCP run `4c112c9e-5a52-4b8e-a64c-97bed7c5ec63`, snapshot `7f065d35-dbb0-4ed7-a618-72a740bc2c8d`, completed in 70.057 seconds and measured 51,669 / 54,766 lines, 10,358 / 12,592 branches, 3,503 / 3,845 functions, and 71,219 / 75,865 regions. The C-ABI scorecard remains 10 / 12 categories complete; the Windows import-library item and four fresh target-lane bundles remain. |
 | 170 | `67fb044` (higher-dimensional Type 1 MM coverage route) | The existing two-axis Adobe MM `FT_Set_MM_WeightVector.success_set_weight_vector` parity case now invokes a nightly-only probe for the valid three-axis and four-axis `type1_mm_weights_unmap` mappings, covering the largest remaining pure-Rust Type 1 MM region without adding a fixture or changing the normal two-axis route. Pushed-head parity run `62384142-76a6-4468-a5d1-c1f15d9e218f`, recorded in `doc/runtime_parity_evidence.json`, passed 7,841 / 7,841 runnable comparisons with 0 failures and 3 pending safety-extension cases. All-lane Coverage MCP run `d494eeed-78d0-4494-8f7f-4eca15c8a193`, snapshot `c2f13dd7-fa90-4cf2-89b6-beb06b32480a`, completed in 87.307 seconds and measured 51,709 / 54,771 lines, 10,358 / 12,592 branches, 3,511 / 3,846 functions, and 71,302 / 75,878 regions. The C-ABI scorecard remains 10 / 12 categories complete; the Windows import-library item and four fresh target-lane bundles remain. |
 | 171 | `e8f2111` (keep Type 1 MM coverage probe internal) | Kept the higher-dimensional Type 1 MM coverage probe private and invoked it through the existing `FT_Set_MM_WeightVector` setter, preserving the coverage route while keeping the public audit inventory unchanged at 710 functions. The normal two-axis behavior remains unchanged. Pushed-head parity run `1a75974c-88aa-41e8-beab-2d3a25784df7`, recorded in `doc/runtime_parity_evidence.json`, passed 7,841 / 7,841 runnable comparisons with 0 failures and 3 pending safety-extension cases. All-lane Coverage MCP run `e001b097-293a-4a44-91a9-6c2a59f4ab96`, snapshot `6fd135a2-0365-4e73-8348-9574b8f2fbba`, completed in 75.204 seconds and measured 51,710 / 54,772 lines, 10,358 / 12,592 branches, 3,511 / 3,846 functions, and 71,303 / 75,879 regions. The C-ABI scorecard remains 10 / 12 categories complete; the Windows import-library item and four fresh target-lane bundles remain. |
+| 172 | `86d210c` (WinFNT and sbix size-selection coverage route) | The existing `freetype.FT_Select_Size.success_select_bitmap_strike` parity case now invokes a nightly-only probe using the maintained `input/fonts/winfnt/bitmap-header.fnt` and `input/fonts/sbix/sbix-bitmap-only.ttf` inputs. It reaches the WinFNT strike path, the sbix strike path, and both invalid-index errors without adding fixtures or changing parity outputs. Pushed-head parity run `39140ed4-e57f-4898-9ae3-5c2030d503c7`, recorded in `doc/runtime_parity_evidence.json`, passed 7,841 / 7,841 runnable comparisons with 0 failures and 3 pending safety-extension cases. All-lane Coverage MCP run `b6887c27-11d3-4a56-a75e-4de12086310b`, snapshot `bb40e45a-5321-4b94-a581-ee007dc4550f`, completed in 83.905 seconds and measured 51,731 / 54,772 lines, 10,362 / 12,592 branches, 3,512 / 3,846 functions, and 71,342 / 75,879 regions. The C-ABI scorecard remains 10 / 12 categories complete; the Windows import-library item and four fresh target-lane bundles remain. |
 
 The current pushed-head parity verification is Coverage MCP parity run
-`1a75974c-88aa-41e8-beab-2d3a25784df7`, recorded in
+`39140ed4-e57f-4898-9ae3-5c2030d503c7`, recorded in
 `doc/runtime_parity_evidence.json`: it passed 7,841 / 7,841 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **7,844 concrete cases, 0 pending routes and 0 generic-fallback rows**, with
 218 / 218 function routes present in each ABI surface. The source-digest
 attestation was refreshed in `doc/runtime_parity_evidence.json`; its current
 parity-tree digest is
-`6b98fda415d4f7a3d6abbb9eeb89a7ac4702c1f1030d8f1986b0d4f57cd7f0a4`.
+`b754592bafa8beb09d4f3c66de2423b9a04e54eb022a95529a2029bbfa34e6a3`.
 The tracked C-ABI scorecard is **10 / 12 categories complete**; C01.7 is
 5,389 / 5,389, C08.3 is 7,841 / 7,841, C11.3 is 7 / 8, and C12.3 is 1 / 5.
 The Windows import-library item and four fresh target-lane bundles remain.
@@ -589,10 +590,10 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current pushed-head all-lane run `e001b097-293a-4a44-91a9-6c2a59f4ab96`
-completed in 75.204 seconds with snapshot
-`6fd135a2-0365-4e73-8348-9574b8f2fbba`. It measured 51,710 / 54,772 lines,
-10,358 / 12,592 branches, 3,511 / 3,846 functions, and 71,303 / 75,879
+The current pushed-head all-lane run `b6887c27-11d3-4a56-a75e-4de12086310b`
+completed in 83.905 seconds with snapshot
+`bb40e45a-5321-4b94-a581-ee007dc4550f`. It measured 51,731 / 54,772 lines,
+10,362 / 12,592 branches, 3,512 / 3,846 functions, and 71,342 / 75,879
 regions; the nine process-local shard writers split the 7,841 runnable cases
 before report generation. On this 12-logical-CPU host the adaptive
 default uses three shards per backend; constrained runners use two, and
