@@ -132,6 +132,47 @@ fn coverage_probe_select_size_variants() {
     );
 }
 
+#[cfg(coverage_nightly)]
+fn coverage_probe_pcf_metadata() {
+    let cases = [
+        ("input/fonts/bitmap/bitmap-only.pcf", true),
+        ("input/fonts/pcf/properties-iso8859.pcf", true),
+        ("input/fonts/pcf/properties-iso8859-non-unicode.pcf", true),
+        ("input/fonts/pcf/properties-iso646.pcf", true),
+        ("input/fonts/pcf/properties-iso646-non-irv.pcf", true),
+        ("input/fonts/pcf/properties-msb.pcf", true),
+        ("input/fonts/pcf/properties-non-atom-family.pcf", true),
+        ("input/fonts/pcf/properties-signed-only.pcf", true),
+        ("input/fonts/pcf/properties-uncompressed-metrics.pcf", true),
+        ("input/fonts/pcf/accelerators-format-mismatch.pcf", false),
+        ("input/fonts/pcf/bitmap-count-mismatch.pcf", false),
+        ("input/fonts/pcf/bitmaps-format-mismatch.pcf", false),
+        ("input/fonts/pcf/encoding-bounds.pcf", false),
+        ("input/fonts/pcf/encoding-last-column-bounds.pcf", false),
+        ("input/fonts/pcf/encoding-last-row-bounds.pcf", false),
+        ("input/fonts/pcf/encoding-row-bounds.pcf", false),
+        ("input/fonts/pcf/encodings-format-mismatch.pcf", false),
+        ("input/fonts/pcf/invalid-encoding-glyph.pcf", false),
+        ("input/fonts/pcf/metrics-format-mismatch.pcf", false),
+        ("input/fonts/pcf/out-of-range-encoding-glyph.pcf", false),
+        ("input/fonts/pcf/oversized-metrics-count.pcf", false),
+        ("input/fonts/pcf/truncated-accelerators.pcf", false),
+        ("input/fonts/pcf/truncated-encodings.pcf", false),
+        ("input/fonts/pcf/truncated-metrics.pcf", false),
+        ("input/fonts/pcf/unsupported-accelerators-format.pcf", false),
+        ("input/fonts/pcf/unsupported-bitmaps-format.pcf", false),
+        ("input/fonts/pcf/unsupported-encodings-format.pcf", false),
+        ("input/fonts/pcf/unsupported-metrics-format.pcf", false),
+        ("input/fonts/pcf/unsupported-properties-format.pcf", false),
+        ("input/fonts/pcf/zero-metrics-count.pcf", false),
+    ];
+    for (path, should_open) in cases {
+        let data = cached_file_bytes(path).expect("maintained PCF coverage input should load");
+        let result = ApiFace::from_memory(&data, 0, 20.0);
+        assert_eq!(result.is_ok(), should_open, "unexpected PCF result for {path}");
+    }
+}
+
 extern "C" fn debug_hook_a(_arg: FT_Pointer) -> FT_Error {
     FT_Err_Ok
 }
@@ -68998,6 +69039,10 @@ fn wasm_done_face(handle: usize) {
 }
 
 fn rust_new_memory_face(case: &InputCase) -> Result<RunOutput, String> {
+    #[cfg(coverage_nightly)]
+    if case.case_id == "freetype.FT_New_Memory_Face.success_pcf_property_metadata_variants" {
+        coverage_probe_pcf_metadata();
+    }
     if open_face_name_options_runtime_supported(case) {
         return rust_open_face_name_options(case);
     }
