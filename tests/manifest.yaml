@@ -4121,6 +4121,10 @@ subjects:
         description: Opaque paints with insert_root_transform set return a TRANSFORM paint that wraps the original opaque paint and reports the active size scale and FT_Set_Transform matrix/delta converted to FT_Affine23 16.16 fields like ttcolr.c.
       - id: malformed_child_offsets_return_false
         description: PaintGlyph, PaintTransform, PaintTranslate, PaintScale, PaintRotate, PaintSkew, and PaintComposite roots with zero or out-of-range child offsets return 0 from FT_Get_Paint after recording the root format, while a valid solid control remains resolvable.
+      - id: recursive_source_depth_limit_returns_false
+        description: An openable COLRv1 graph whose PaintComposite source and PaintColrLayers nodes cycle reaches the bounded recursive paint parser depth guard through both root and layer paths, while a valid solid control remains resolvable.
+      - id: recursive_backdrop_depth_limit_returns_false
+        description: An openable COLRv1 graph whose PaintComposite backdrop and PaintColrLayers nodes cycle reaches the bounded recursive paint parser depth guard after a valid source paint, while a valid solid control remains resolvable.
       - id: malformed_payload_reads_return_false
         description: COLRv1 roots whose payload bytes end at the table boundary return 0 from FT_Get_Paint after recording the format or preserving the caller-owned destination, while a valid solid control remains resolvable.
       - id: malformed_gradient_payload_reads_return_false

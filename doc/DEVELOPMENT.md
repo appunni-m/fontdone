@@ -217,6 +217,9 @@ committed compatibility files contain the last recorded measurement.
 Missing service or optional-module behavior should be represented by a
 maintained oracle-backed matrix input that names the setup state (such as a
 valid face opened without `gxvalid`), rather than by a unit-only coverage call.
+COLRv1 recursion and malformed-payload coverage controls belong in maintained
+font fixtures and full parity cases; do not replace those graph inputs with
+unit-only calls into the paint parser.
 
 The wrapper also writes `target/parity-evidence/test-parity.log` and
 `target/parity-evidence/runtime_parity.json`. The JSON binds the measurement to

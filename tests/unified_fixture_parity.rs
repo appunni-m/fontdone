@@ -16146,6 +16146,11 @@ fn malformed_colr_paint_labels(case: &InputCase) -> Result<Vec<String>, String> 
 fn malformed_colr_paint_glyphs(case: &InputCase, label_count: usize) -> Result<Vec<FT_UInt>, String> {
     let glyphs = if case.case_id == "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false" {
         vec![36, 37, 38, 39, 40, 41, 42, 43, 50]
+    } else if case.case_id
+        == "ftcolor.FT_Get_Paint.recursive_source_depth_limit_returns_false"
+        || case.case_id == "ftcolor.FT_Get_Paint.recursive_backdrop_depth_limit_returns_false"
+    {
+        vec![36, 37, 50]
     } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_payload_reads_return_false" {
         vec![36, 37, 38, 39, 40, 41, 42, 43, 50]
     } else if case.case_id

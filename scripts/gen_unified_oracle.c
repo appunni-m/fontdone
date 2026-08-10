@@ -21810,6 +21810,20 @@ static int emit_color_paint_malformed_case(int argc, char** argv) {
         }
         malformed_count = 8;
         control_glyph = 50;
+    } else if (streq(case_id, "ftcolor.FT_Get_Paint.recursive_source_depth_limit_returns_false")) {
+        labels[0] = "paint_composite_recursive_source";
+        labels[1] = "paint_layers_recursive_source";
+        glyphs[0] = 36;
+        glyphs[1] = 37;
+        malformed_count = 2;
+        control_glyph = 50;
+    } else if (streq(case_id, "ftcolor.FT_Get_Paint.recursive_backdrop_depth_limit_returns_false")) {
+        labels[0] = "paint_composite_recursive_backdrop";
+        labels[1] = "paint_layers_recursive_backdrop";
+        glyphs[0] = 36;
+        glyphs[1] = 37;
+        malformed_count = 2;
+        control_glyph = 50;
     } else if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_payload_reads_return_false")) {
         static const char* payload_labels[] = {
             "paint_layers_payload_truncated",

@@ -5,6 +5,8 @@
     "success_resolves_each_supported_paint_format",
     "success_inserts_root_transform",
     "malformed_child_offsets_return_false",
+    "recursive_source_depth_limit_returns_false",
+    "recursive_backdrop_depth_limit_returns_false",
     "malformed_payload_reads_return_false",
     "malformed_gradient_payload_reads_return_false",
     "malformed_radial_payload_reads_return_false",
@@ -315,6 +317,134 @@
         "fixture_requirements": [
           "Runtime compares C FreeType, Rust FFI, C ABI, and Wasm FFI outputs",
           "Malformed child offsets cover every public wrapper family plus source/backdrop composite failures"
+        ]
+      }
+    },
+    {
+      "case_id": "ftcolor.FT_Get_Paint.recursive_source_depth_limit_returns_false",
+      "subject": "ftcolor.FT_Get_Paint",
+      "case": "recursive_source_depth_limit_returns_false",
+      "operation": "ftcolor.get_paint_malformed",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/color/malformed/colr-v1-recursive-source-paints.ttf",
+            "asset_kind": "font",
+            "properties": [
+              "openable COLRv1 face whose PaintComposite source and PaintColrLayers nodes form a bounded cycle",
+              "valid glyph 50 solid control for the successful two-step call"
+            ]
+          }
+        },
+        "params": {
+          "base_glyphs": [
+            "paint_composite_recursive_source",
+            "paint_layers_recursive_source",
+            "valid_control"
+          ],
+          "follow_calls": [
+            "FT_Get_Color_Glyph_Paint",
+            "FT_Get_Paint"
+          ],
+          "prefill_paint": "sentinel-bytes"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcolor",
+        "area:colr-v1",
+        "coverage:recursive-paint-depth"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Bool",
+          "paint_before_after": "sentinel mutation classification",
+          "control_return": "FT_Bool"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "return",
+            "paint_before_after",
+            "control_return"
+          ]
+        },
+        "oracle": "generated_at_runtime_from_c_freetype",
+        "sources_checked": [
+          "freetype/src/sfnt/ttcolr.c",
+          "freetype/include/freetype/ftcolor.h"
+        ],
+        "fixture_requirements": [
+          "Runtime compares C FreeType, Rust FFI, C ABI, and Wasm FFI outputs",
+          "Recursive source and layer graph reaches the bounded parser depth guard without an unbounded allocation"
+        ]
+      }
+    },
+    {
+      "case_id": "ftcolor.FT_Get_Paint.recursive_backdrop_depth_limit_returns_false",
+      "subject": "ftcolor.FT_Get_Paint",
+      "case": "recursive_backdrop_depth_limit_returns_false",
+      "operation": "ftcolor.get_paint_malformed",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/color/malformed/colr-v1-recursive-backdrop-paints.ttf",
+            "asset_kind": "font",
+            "properties": [
+              "openable COLRv1 face whose valid PaintComposite source precedes a recursive backdrop and PaintColrLayers cycle",
+              "valid glyph 50 solid control for the successful two-step call"
+            ]
+          }
+        },
+        "params": {
+          "base_glyphs": [
+            "paint_composite_recursive_backdrop",
+            "paint_layers_recursive_backdrop",
+            "valid_control"
+          ],
+          "follow_calls": [
+            "FT_Get_Color_Glyph_Paint",
+            "FT_Get_Paint"
+          ],
+          "prefill_paint": "sentinel-bytes"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcolor",
+        "area:colr-v1",
+        "coverage:recursive-paint-depth"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Bool",
+          "paint_before_after": "sentinel mutation classification",
+          "control_return": "FT_Bool"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "return",
+            "paint_before_after",
+            "control_return"
+          ]
+        },
+        "oracle": "generated_at_runtime_from_c_freetype",
+        "sources_checked": [
+          "freetype/src/sfnt/ttcolr.c",
+          "freetype/include/freetype/ftcolor.h"
+        ],
+        "fixture_requirements": [
+          "Runtime compares C FreeType, Rust FFI, C ABI, and Wasm FFI outputs",
+          "Recursive backdrop and layer graph reaches the bounded parser depth guard after a valid source paint"
         ]
       }
     },

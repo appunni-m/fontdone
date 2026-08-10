@@ -1073,6 +1073,71 @@ def build_colr_v1_malformed_layer_list_font(path: Path) -> None:
     path.write_bytes(data)
 
 
+def build_colr_v1_recursive_paint_depth_font(path: Path, source_cycle: bool) -> None:
+    """Build a COLRv1 paint graph that reaches the Rust parser depth guard.
+
+    The layer-list entry at table-relative offset 16 points at a composite root
+    and the entry at offset 26 points at a PaintColrLayers node.  Those nodes
+    point back to each other, so face-open parsing reaches the same graph at
+    depth 33 without allowing an unbounded recursive allocation.  The source
+    control makes the composite child itself recursive; the backdrop control
+    keeps the source a valid solid and makes only the backdrop recursive.
+    """
+    source = COLOR_OUTPUT_DIR / "colr-v1-all-paints.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    table = font.reader.tables.get(b"COLR")
+    if table is None or table.length < 18:
+        raise RuntimeError(f"canonical COLRv1 fixture has no usable COLR table: {source}")
+
+    data = bytearray(source.read_bytes())
+    table_offset = table.offset
+    table_end = table_offset + table.length
+    base_offset = int.from_bytes(data[table_offset + 14 : table_offset + 18], "big")
+    layer_list_offset = int.from_bytes(data[table_offset + 18 : table_offset + 22], "big")
+    composite_relative_position = layer_list_offset + 16
+    layer_relative_position = layer_list_offset + 26
+    solid_relative_position = layer_list_offset + 32
+    composite_position = table_offset + composite_relative_position
+    layer_position = table_offset + layer_relative_position
+    solid_position = table_offset + solid_relative_position
+    if solid_position + 5 > table_end:
+        raise RuntimeError("canonical COLRv1 table has no room for recursive paint control")
+
+    def write_u24(position: int, value: int) -> None:
+        data[position : position + 3] = value.to_bytes(3, "big")
+
+    def write_u32(position: int, value: int) -> None:
+        data[position : position + 4] = value.to_bytes(4, "big")
+
+    # The first layer-list entry targets the composite and the third targets
+    # the layer node.  Both offsets are relative to LayerV1List.
+    write_u32(table_offset + layer_list_offset + 4, 16)
+    write_u32(table_offset + layer_list_offset + 12, 26)
+
+    data[composite_position] = int(ot.PaintFormat.PaintComposite)
+    source_target = layer_position if source_cycle else solid_position
+    write_u24(composite_position + 1, source_target - composite_position)
+    data[composite_position + 4] = 0  # FT_COLR_COMPOSITE_CLEAR
+    write_u24(composite_position + 5, layer_position - composite_position)
+
+    data[layer_position] = int(ot.PaintFormat.PaintColrLayers)
+    data[layer_position + 1] = 1
+    write_u32(layer_position + 2, 0)
+
+    data[solid_position] = int(ot.PaintFormat.PaintSolid)
+    data[solid_position + 1 : solid_position + 3] = (0).to_bytes(2, "big")
+    data[solid_position + 3 : solid_position + 5] = (0x4000).to_bytes(2, "big", signed=False)
+
+    base_start = table_offset + base_offset
+    first_record = base_start + 4
+    second_record = first_record + 6
+    write_u32(first_record + 2, composite_relative_position - base_offset)
+    write_u32(second_record + 2, layer_relative_position - base_offset)
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
 def color_line(extend: ot.ExtendMode, stops: list[tuple[float, int, float]]) -> dict[str, object]:
     return {
         "Extend": int(extend),
@@ -1426,6 +1491,14 @@ def main() -> None:
     )
     build_colr_v1_malformed_layer_list_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-layer-list.ttf"
+    )
+    build_colr_v1_recursive_paint_depth_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-recursive-source-paints.ttf",
+        source_cycle=True,
+    )
+    build_colr_v1_recursive_paint_depth_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-recursive-backdrop-paints.ttf",
+        source_cycle=False,
     )
     build_colr_v1_static_gradients_font(COLOR_OUTPUT_DIR / "colr-v1-static-gradients.ttf")
     build_colr_v1_variable_gradients_font(COLOR_OUTPUT_DIR / "colr-v1-variable-gradients.ttf")
