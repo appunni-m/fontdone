@@ -102,35 +102,35 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The latest full parity snapshot was recorded on **2026-08-09** (UTC):
+The latest full parity snapshot was recorded on **2026-08-10** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,617 |
-| Passed cases | 7,617 |
+| Runnable exact-comparison cases | 7,618 |
+| Passed cases | 7,618 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
-| Covered manifest cases | 4,204 |
+| Covered manifest cases | 4,205 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,297 |
-| Concrete expanded cases | 7,620 |
+| Logical declared cases | 4,298 |
+| Concrete expanded cases | 7,621 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,617 / 7,617` means every runnable case in that execution matched; the 3
+`7,618 / 7,618` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
-The latest pushed-head verification is Coverage MCP parity run
-`61f8f35e-4895-45a7-941a-6fb9ec6cb347`, whose passing report was recorded in
+The latest current-worktree verification is Coverage MCP parity run
+`57cc9453-92f3-4a76-b6d3-05239ea9836e`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-7,617 / 7,617 runnable comparisons with 0 failures and 3 explicitly pending
+7,618 / 7,618 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-The record operation was run `9766b7b0-91fe-4705-813f-cfbc156f7f03`; its
+The record operation was run `18332a57-837e-48dd-acf2-8529aba3ac19`; its
 source-bound parity-tree digest is
-`ea065fa0005e2326f3fcc279f1fddf0bf4c3d1f224df818add707bb07c35e27c`.
+`f3f0c449b866710c427648bf5e7e01350d15329cbaf094004307f36c045c136c`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -142,21 +142,21 @@ their exact worktree than the committed release snapshot.
 
 ### 3.3 Last measured combined coverage
 
-The latest pushed-head all-lane coverage snapshot was recorded on
-**2026-08-09** for the current worktree based at commit
-`fb45e10ad19fbb9fd5d3fc81a4dc33c6f3609547`
-(Coverage MCP run `d85c78b7-311b-45a4-9b1b-e3a70a3f45fb`, snapshot
-`51ead77a-fd52-4896-bd2e-7f9177d5c4df`):
+The latest current-worktree all-lane coverage snapshot was recorded on
+**2026-08-10** for the worktree based at commit
+`b8e5efac62a51f074f98a89edf1ed6d44d0c9aa8`
+(Coverage MCP run `b284bbf9-e743-4827-ba86-d83525aedaa4`, snapshot
+`0463c060-3d15-4fc0-962f-f70b1fac6d37`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,218 / 54,249 | 92.57% |
-| Branches | 10,036 / 12,541 | 80.03% |
-| Functions | 3,444 / 3,819 | 90.18% |
-| Regions | 68,957 / 75,368 | 91.49% |
+| Lines | 50,210 / 54,231 | 92.59% |
+| Branches | 10,034 / 12,537 | 80.04% |
+| Functions | 3,444 / 3,817 | 90.23% |
+| Regions | 68,948 / 75,349 | 91.50% |
 
-The current managed validation completed in 64.593 seconds; its three split
-backends passed all 7,617 runnable comparisons. Its nine shard processes split
+The current managed validation completed in 63.455 seconds; its three split
+backends passed all 7,618 runnable comparisons. Its nine shard processes split
 the same exact matrix into disjoint slices before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
 shard processes each compared 2,525 or 2,526 cases before report generation.
@@ -166,7 +166,7 @@ adaptive three-shard default on this 12-logical-CPU host. Nine shard processes
 ran concurrently—three each for Rust FFI, C ABI, and WASM—and each compared
 2,524 or 2,525 cases before the raw profiles were merged. A repeat completed
 in 16.377 seconds; the two-shard baseline took 19.747 seconds. The coverage
-totals and current parity evidence are based on 7,617 / 7,617 runnable
+totals and current parity evidence are based on 7,618 / 7,618 runnable
 comparisons.
 
 The maintained Apple full-Unicode format-13 font and malformed format-13
@@ -197,7 +197,7 @@ results and reduced the measured coverage denominator without weakening a
 fixture or parity comparison. The varstore invariant cleanups remove the
 parser-proven region-index fallback and zero-denominator guard, and now the
 unreachable sign-selection branch, after verifying the store, slope, and scalar
-invariants. The current pushed-head result preserves all 7,617 runnable parity
+invariants. The current pushed-head result preserves all 7,618 runnable parity
 comparisons and leaves only the checked multiplication overflow lines
 relevantly uncovered; `src/tt/varstore.rs` now reports 66 / 66 branches. The
 earlier host-width cleanup removes conversion branches that cannot occur on
@@ -314,11 +314,11 @@ The latest committed scorecard has **10 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,360 / 5,360 pinned-C runtime contract rows exact; 0 pending |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 5,361 / 5,361 pinned-C runtime contract rows exact; 0 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 718 / 718 expected-error routes compare exact error and output results; 7,617 / 7,617 routes have no generic fallback evidence |
+| Errors | 718 / 718 expected-error routes compare exact error and output results; 7,618 / 7,618 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 

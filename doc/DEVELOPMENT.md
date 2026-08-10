@@ -448,6 +448,12 @@ Before changing a fixture:
    classification when the fixture exercises a new public behavior;
 7. run the focused parity lane and `make check-font-fixtures`.
 
+Maintained public-API inputs also pin raw argument behavior.  For example,
+the `FT_Load_Char` input for unassigned load-flag bits keeps the numeric bit
+`0x02000000` and compares the complete slot result with C; the Rust boundary
+must ignore that bit just as the pinned loader does, rather than turning it
+into a blanket unsupported-feature error.
+
 Third-party material must have redistribution permission and exact provenance.
 The three retained compact control fonts whose exact upstream transformation
 was not recoverable may remain unchanged, but must not be used as new generator

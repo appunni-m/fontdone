@@ -83,10 +83,10 @@ pub fn FT_LOAD_TARGET_MODE(flags: FT_Int32) -> FT_Render_Mode {
 }
 
 pub fn load_flags_to_core(flags: FT_Int32) -> Result<api::LoadFlags, FT_Error> {
-    if flags & !SUPPORTED_LOAD_FLAGS != 0 {
-        return Err(FT_Err_Unimplemented_Feature);
-    }
-
+    // FreeType's loader only interprets the public bits it knows about.  It
+    // does not reject otherwise unassigned FT_Int32 bits; preserve that
+    // forward-compatible behavior and let only the consumers of recognized
+    // bits validate their own inputs (for example, an invalid render target).
     let mut core = api::LoadFlags::DEFAULT;
     if flags & FT_LOAD_NO_SCALE != 0 {
         core |= api::LoadFlags::NO_SCALE;

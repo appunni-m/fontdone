@@ -134,33 +134,4 @@ pub const FT_GLYPH_FORMAT_OUTLINE: FT_Glyph_Format = 0x6f75_746c;
 pub const FT_GLYPH_FORMAT_PLOTTER: FT_Glyph_Format = 0x706c_6f74;
 pub const FT_GLYPH_FORMAT_SVG: FT_Glyph_Format = 0x5356_4720;
 
-pub(super) const LOAD_TARGET_MASK: FT_Int32 = 15 << 16;
-// These accepted public load flags either have no currently observable core
-// behavior or are handled by the wrapper boundary that owns the corresponding
-// public surface.
-pub(super) const LOAD_FLAGS_ACCEPTED_WITHOUT_CORE_BITS: FT_Int32 = FT_LOAD_CROP_BITMAP
-    | FT_LOAD_ADVANCE_ONLY
-    | FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH
-    | FT_LOAD_IGNORE_TRANSFORM
-    | FT_LOAD_LINEAR_DESIGN;
-
-pub(super) const SUPPORTED_LOAD_FLAGS: FT_Int32 = FT_LOAD_RENDER
-    | FT_LOAD_NO_SCALE
-    | FT_LOAD_NO_HINTING
-    | FT_LOAD_NO_RECURSE
-    | FT_LOAD_VERTICAL_LAYOUT
-    | FT_LOAD_FORCE_AUTOHINT
-    | FT_LOAD_PEDANTIC
-    | FT_LOAD_MONOCHROME
-    | FT_LOAD_SBITS_ONLY
-    | FT_LOAD_NO_BITMAP
-    | FT_LOAD_NO_AUTOHINT
-    | FT_LOAD_COLOR
-    | FT_LOAD_COMPUTE_METRICS
-    | FT_LOAD_BITMAP_METRICS_ONLY
-    | FT_LOAD_SVG_ONLY
-    | FT_LOAD_NO_SVG
-    | LOAD_FLAGS_ACCEPTED_WITHOUT_CORE_BITS
-    | LOAD_TARGET_MASK;
-
 include!("generated_constants.rs");

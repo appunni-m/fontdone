@@ -1709,6 +1709,8 @@ subjects:
             sizes: [20]
             char_codes: [65]
             load_flags: [0]
+      - id: unknown_load_bits_ignored
+        description: Unassigned FT_Int32 load-flag bits are ignored by FT_Load_Char like the pinned C loader, while recognized bits retain their normal behavior.
       - id: render_during_load
         description: Loads and renders a glyph when FT_LOAD_RENDER is set, matching C bitmap fields and bytes.
         coverage:
