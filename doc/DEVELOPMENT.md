@@ -283,17 +283,17 @@ Coverage and parity answer different questions. Executing a line or branch
 does not prove that its result matches C.
 
 The latest pushed-commit all-lane Coverage MCP run is
-`8c71cb2b-4195-4c87-8d95-2c6f7f799efd` (snapshot
-`9ce54c70-4d60-405f-9da6-279d55a6d7bd`). It completed in 71.430 seconds with
-exit code 0. The overall report is 51,814 / 54,801 lines, 10,368 / 12,592
-branches, 3,516 / 3,847 functions, and 71,437 / 75,909 regions. The dominant
-cold-run cost remains instrumented compilation; warm shard execution and
-report ingestion are much smaller. The preceding pushed-head run
-`43a85a62-c061-4bdf-9442-d3706bdce374` took 79.714 seconds; the preceding cold run
-`da91cabd-0631-46ec-83b8-f3e609246ffe` took 70.571 seconds, including 54.73
-seconds of instrumented test-profile compilation; the historical warm run
-took 14.428 seconds. This identifies cache-miss compilation, not Coverage MCP
-ingestion, as the speed bottleneck.
+`47bb1b34-53a2-41a4-9198-a04a14515423` (snapshot
+`d8291137-95a9-4e6e-841c-bcca41f7f8f1`). It completed in 13.605 seconds with
+exit code 0 after reusing the instrumented build. The overall report is
+51,814 / 54,801 lines, 10,368 / 12,592 branches, 3,516 / 3,847 functions, and
+71,437 / 75,909 regions. The one-time cache-state migration run
+`fe269459-78fa-40cd-a389-1adb9ab32772` took 71.954 seconds, including 51.33
+seconds of instrumented test-profile compilation; the preceding cold run
+`8c71cb2b-4195-4c87-8d95-2c6f7f799efd` took 71.430 seconds, including 50.54
+seconds of compilation. The warm repeat is roughly 81% faster, confirming
+that cache-miss instrumented compilation—not Coverage MCP ingestion—is the
+speed bottleneck.
 
 The measured MONO plus x-only-strength `FT_Bitmap_Embolden` parity row now
 reaches the packed-bit tail-mask branch in `src/ffi/handles.rs`; the focused
@@ -394,10 +394,13 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The current managed run completed in 71.430 seconds. Shard timers run
+The latest managed warm run completed in 13.605 seconds. Shard timers run
 concurrently, so their sum is not wall time; report finalization and artifact
 ingestion are included in the wall time but are not separately exposed by
-Coverage MCP. Instrumented compilation remains the dominant cold component.
+Coverage MCP. The one-time state-marker migration run took 71.954 seconds,
+including 51.33 seconds of instrumented compilation; the warm repeat compiled
+the test profile in 0.03 seconds. Instrumented compilation remains the
+dominant cold component.
 The coverage build-state marker intentionally excludes
 `tests/unified_fixture_parity.rs`: harness-only coverage probes are ignored
 from the report denominator, so Cargo can rebuild the changed integration test
@@ -414,7 +417,7 @@ invalidate the instrumented workspace.
 
 That latest run passed all 7,841 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`9ce54c70-4d60-405f-9da6-279d55a6d7bd`. Coverage MCP accepts the current LLVM
+`d8291137-95a9-4e6e-841c-bcca41f7f8f1`. Coverage MCP accepts the current LLVM
 JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
 rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
 apply only to the named source commit, suite, and toolchain. They are not a
