@@ -21861,6 +21861,16 @@ static int emit_color_paint_malformed_case(int argc, char** argv) {
         glyphs[0] = 36;
         malformed_count = 1;
         control_glyph = 50;
+    } else if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_scale_initial_payload_read_returns_false")) {
+        labels[0] = "paint_scale_initial_payload_truncated";
+        glyphs[0] = 36;
+        malformed_count = 1;
+        control_glyph = 50;
+    } else if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_rotate_centered_second_coordinate_read_returns_false")) {
+        labels[0] = "paint_rotate_centered_second_coordinate_truncated";
+        glyphs[0] = 36;
+        malformed_count = 1;
+        control_glyph = 50;
     } else if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_transform_payload_reads_return_false")) {
         static const char* transform_labels[] = {
             "paint_scale_payload_truncated",

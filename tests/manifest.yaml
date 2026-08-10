@@ -4131,6 +4131,10 @@ subjects:
         description: Variable-linear, linear, sweep, and skew roots with valid zero-stop ColorLines reach fixed-payload boundary failures at the end of the COLR table, while a valid solid control remains resolvable.
       - id: malformed_radial_payload_reads_return_false
         description: A radial-gradient root with a valid zero-stop ColorLine reaches its final fixed-payload boundary at the end of the COLR table, while a valid solid control remains resolvable.
+      - id: malformed_scale_initial_payload_read_returns_false
+        description: A static scale root with a valid nested child reaches its first scale-field boundary at the end of the COLR table while a valid solid control remains resolvable.
+      - id: malformed_rotate_centered_second_coordinate_read_returns_false
+        description: A centered rotate root with a valid nested child and first center coordinate reaches its second center-coordinate boundary at the end of the COLR table while a valid solid control remains resolvable.
       - id: malformed_transform_payload_reads_return_false
         description: Scale and rotate roots whose fixed payloads end at the COLR table boundary return 0 from FT_Get_Paint while a valid solid control remains resolvable.
       - id: malformed_colorline_return_false

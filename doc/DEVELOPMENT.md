@@ -220,6 +220,9 @@ valid face opened without `gxvalid`), rather than by a unit-only coverage call.
 COLRv1 recursion and malformed-payload coverage controls belong in maintained
 font fixtures and full parity cases; do not replace those graph inputs with
 unit-only calls into the paint parser.
+Separate maintained COLRv1 transform-boundary fixtures cover the initial
+static-scale read and final centered-rotate coordinate read without aliasing
+their paint records in one malformed table.
 
 The wrapper also writes `target/parity-evidence/test-parity.log` and
 `target/parity-evidence/runtime_parity.json`. The JSON binds the measurement to

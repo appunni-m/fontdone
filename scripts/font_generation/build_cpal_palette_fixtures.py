@@ -1027,6 +1027,54 @@ def build_colr_v1_malformed_transform_payloads_font(path: Path) -> None:
     path.write_bytes(data)
 
 
+def build_colr_v1_malformed_transform_boundary_font(
+    path: Path,
+    paint_format: int,
+    trailing_bytes: int,
+) -> None:
+    """Build one transform root whose child is valid but a fixed field is truncated."""
+    source = COLOR_OUTPUT_DIR / "colr-v1-all-paints.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    table = font.reader.tables.get(b"COLR")
+    if table is None or table.length < 24:
+        raise RuntimeError(f"canonical COLRv1 fixture has no usable COLR table: {source}")
+
+    data = bytearray(source.read_bytes())
+    table_offset = table.offset
+    base_offset = int.from_bytes(data[table_offset + 14 : table_offset + 18], "big")
+    base_start = table_offset + base_offset
+    record_start = base_start + 4
+    glyph_id = int.from_bytes(data[record_start : record_start + 2], "big")
+    if glyph_id != 36:
+        raise RuntimeError(f"unexpected canonical COLRv1 first glyph: {glyph_id} != 36")
+
+    paint_relative_position = table.length - trailing_bytes
+    paint_position = table_offset + paint_relative_position
+    if not table_offset <= paint_position < table_offset + table.length:
+        raise RuntimeError(f"canonical COLRv1 transform paint leaves table: {paint_position:#x}")
+    data[record_start + 2 : record_start + 6] = (
+        paint_relative_position - base_offset
+    ).to_bytes(4, "big")
+    data[paint_position] = paint_format
+    # Point the nested paint at the final byte, whose value is the unsupported
+    # format 3. This keeps child resolution successful before the target fixed
+    # field reaches the COLR table boundary.
+    data[paint_position + 1 : paint_position + 4] = b"\0\0\3"
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
+def build_colr_v1_malformed_scale_initial_payload_font(path: Path) -> None:
+    """Build a static scale root whose first scale field reaches the table end."""
+    build_colr_v1_malformed_transform_boundary_font(path, 16, 4)
+
+
+def build_colr_v1_malformed_rotate_centered_final_payload_font(path: Path) -> None:
+    """Build a centered rotate root whose second center field reaches the table end."""
+    build_colr_v1_malformed_transform_boundary_font(path, 26, 9)
+
+
 def build_colr_v1_malformed_layer_list_font(path: Path) -> None:
     """Build a COLRv1 control with an out-of-range PaintColrLayers index.
 
@@ -1488,6 +1536,14 @@ def main() -> None:
     )
     build_colr_v1_malformed_transform_payloads_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-transform-payloads.ttf"
+    )
+    build_colr_v1_malformed_scale_initial_payload_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-scale-initial-payload.ttf"
+    )
+    build_colr_v1_malformed_rotate_centered_final_payload_font(
+        COLOR_OUTPUT_DIR
+        / "malformed"
+        / "colr-v1-malformed-rotate-centered-final-payload.ttf"
     )
     build_colr_v1_malformed_layer_list_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-layer-list.ttf"
