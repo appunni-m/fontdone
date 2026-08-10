@@ -16,7 +16,7 @@ NOTICE.md	1273	file	fb2d66458e48f7c5341d1847d985c0364129ecf4d3938db67382b5395756
 README.md	24842	file	7b2e4fab5bb624ca32d700b2c7da1a736803f3c38a42758a4a313036ab6501ad	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 SECURITY.md	1430	file	819fba2cd55207c5ed0dc3564ee230a11c2ba0d6c7c464b844b668158ce79e1b	-	keep-community	R09	Public community or security contract.
 deny.toml	341	file	d4d516ffd41e0c8e3de633cc3d807b5e0b1a53ec7b5f56ad8ea95c73da0a2bf1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-doc/DEVELOPMENT.md	36503	file	bcf0a6b49985b86a85c321486bc9a510b5eb7a12f7c7867a2bec2366bb3ce980	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/DEVELOPMENT.md	36503	file	b01d7f3c9f14bec1cea1e55c4ed9ce7f4c135f01358517137cd1789edbcc976e	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/FILE_RETENTION_INVENTORY.tsv	0	generated	-	-	generated-audit	R11	Generated exhaustive inventory; refresh with scripts/audit_repository_files.py.
 doc/FREETYPE_SUPPORT.md	30950	file	6b6b13666ef8d7dd27a4dbc9546cca45565a6fd517476cbaecf02a0201ac2305	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/INTEGRATION.md	9426	file	7f103e70476608fbb28e0c1009c1a60d65be092216936bf540f49111ea26c64a	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
@@ -142,7 +142,7 @@ scripts/font_generation/build_sbit_fixtures.py	49050	file	d404091308f017b6fc4605
 scripts/font_generation/build_sbix_fixtures.py	8394	file	80395280a54833b1cfc3000723d45334b5b23fa2037bac357e7e39076aae6633	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/font_generation/build_sfnt_fixtures.py	10279	file	4640db8af54a34f98cecf08ef60c2b91ca5d305b711458080eee084963fa48bf	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/font_generation/build_svg_fixtures.py	4607	file	e7f7a2eec87b915e56ef0dba2e33e6f3f52591e32eb3340cf17f64db439ec6ea	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
-scripts/font_generation/build_type1_fixtures.py	19789	file	bce2a1e117c9914d9d261ed38b5a8109f30296efea6cc0029c8bb1f009ee4b18	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
+scripts/font_generation/build_type1_fixtures.py	19812	file	02ad04a2c5ddfa0d99c91ef41fe5f0edcbf518d642824620e7333d46d9a46f2b	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/font_generation/build_type42_fixtures.py	3522	file	13fc9f2ee875760681c469c7fe07f28d64d9715924f81f1ce779abe36da84a47	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/font_generation/generate_malformed_bdf_fixtures.py	5183	file	ae068286db9df2166a2ea6d59706255135e1199f60205fa0eb51d3144032ff14	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/font_generation/generate_winfnt_fixtures.py	6857	file	14099205cbb531e258de3aa7d65e9060f8fd3445ba8a545da0a101b4a81826ce	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
@@ -353,7 +353,7 @@ tests/fixtures/input/font-sources/hinter-control-matrix.ttx	44793	file	887e03264
 tests/fixtures/input/fonts/DejaVuSans.ttf	17572	file	4c44206cbb0238b4a07bac4c557a9254a2dc87941f6ebebfa1147c32dd73b29a	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/LiberationSerif-Regular.ttf	12564	file	2cf2f480ecb644a0702cfd687cc0dec3025b3601edd57bf11ba0c5fce9014a6e	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/NotoSans-Regular.ttf	9896	file	c950ae3feb035f6ebfbd5cf10c6c4de7e541edec43d636e3b6b9f38bd3209adc	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
-tests/fixtures/input/fonts/PROVENANCE.md	78698	file	d2ab5a95da3f2b8d8ab476225ef66b20033d74cbf9e64e37e783e78e4a883675	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
+tests/fixtures/input/fonts/PROVENANCE.md	78698	file	9995951e2cfcb72e63c54a466e7a20a56d74aeef5c346b779209fb25d5b85ccb	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/aat/feat-opbd-trak-prop.ttf	5044	file	001f2851870bec90f70918829b20fdf18122a738eb2a823001644a0b1f73d25f	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/aat/full-gx-valid.ttf	5256	file	749a62977b5c9a2d9c4e683e1c486a8fa4e2ea237179c10139f31c2743df35a5	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/aat/malformed-gx-table.ttf	4956	file	7e1f0c6031d111041407b25ae2eb12188240a4b942ac33e2d756c1f5930d84d3	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
@@ -812,7 +812,7 @@ tests/fixtures/input/fonts/type1/metadata-bold-invalid-bool.pfb	1693	file	70bf9c
 tests/fixtures/input/fonts/type1/mm-blend-fontinfo-private.pfb	2004	file	6355c637281edca010fe816ea80b706b85b83e0b065db5b692d82d2fb4e725d1	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/type1/no-gx-service.pfa	1694	file	767c9aeb5455062cd1a25e6e032f8f159f165ab43c8e364126ba417791fb8faa	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/type1/non-mm-force-bold.pfb	1719	file	a44b149756408a8e2da5012e1aa0217fee4bbe43c43da46efcb70999f7d84e34	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
-tests/fixtures/input/fonts/type1/parser-opcodes.pfb	1767	file	37e0eb580113e6dd5fd00d429b86c3d7d99197fb1c512b1099d94530aba56295	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
+tests/fixtures/input/fonts/type1/parser-opcodes.pfb	1768	file	41210f68279a8e841d320744c4a363c4c3b37cd1fd9bce6524d45eaadc6dad4a	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/type1/simple-type1.pfb	1694	file	767c9aeb5455062cd1a25e6e032f8f159f165ab43c8e364126ba417791fb8faa	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/type1/standard-encoding.pfb	1720	file	1e91b54da8e5f89717c4c6f2d11aebb8cf6a6dbd2e91044136f7b806baf004f0	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/type1/track-kern-base.pfb	1703	file	8ad5cad5c428e2f3957265a899b1d11541a39d39cf732bd670ced0a67c5c587f	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.

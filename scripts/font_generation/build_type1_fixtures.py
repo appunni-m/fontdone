@@ -367,6 +367,7 @@ def build_parser_opcode_coverage(path: Path) -> None:
                     0,
                     0,
                     0,
+                    0,
                     "rrcurveto",
                     "closepath",
                     0,
