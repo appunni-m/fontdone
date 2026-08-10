@@ -101,6 +101,12 @@ format bytes remain discoverable while the first unavailable PaintColrLayers,
 PaintSolid, gradient, PaintGlyph, and PaintComposite payload fields exercise
 the pinned lazy reader's boundary failures without truncating the SFNT.
 
+`malformed/colr-v1-malformed-colorline-paints.ttf` is a deterministic derivative
+that points linear, radial, sweep, and variable-linear roots at one invalid
+ColorLine extend byte.  The shared malformed ColorLine reaches each gradient
+family's pinned rejection path while the SFNT and glyph 50 control remain
+openable.
+
 `malformed/colr-v1-malformed-layer-list.ttf` is a deterministic derivative
 that preserves the first PaintColrLayers root but replaces its
 `FirstLayerIndex` with `4`, beyond the maintained three-entry LayerV1List.  The

@@ -4123,6 +4123,8 @@ subjects:
         description: PaintGlyph, PaintTransform, PaintTranslate, PaintScale, PaintRotate, PaintSkew, and PaintComposite roots with zero or out-of-range child offsets return 0 from FT_Get_Paint after recording the root format, while a valid solid control remains resolvable.
       - id: malformed_payload_reads_return_false
         description: COLRv1 roots whose payload bytes end at the table boundary return 0 from FT_Get_Paint after recording the format or preserving the caller-owned destination, while a valid solid control remains resolvable.
+      - id: malformed_colorline_return_false
+        description: Linear, radial, sweep, and variable-linear roots whose shared ColorLine has an unsupported extend mode return 0 from FT_Get_Paint while preserving the destination, and a valid solid control remains resolvable.
       - id: malformed_layer_list_index_returns_false
         description: A PaintColrLayers root whose FirstLayerIndex exceeds LayerV1List returns 0 from FT_Get_Paint after preserving the destination paint, while a valid solid control remains resolvable.
       - id: error_null_or_missing_colr

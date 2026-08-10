@@ -792,6 +792,53 @@ def build_colr_v1_malformed_payloads_font(path: Path) -> None:
     path.write_bytes(data)
 
 
+def build_colr_v1_malformed_colorline_font(path: Path) -> None:
+    """Build a COLRv1 matrix with one invalid shared ColorLine record."""
+    source = COLOR_OUTPUT_DIR / "colr-v1-all-paints.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    table = font.reader.tables.get(b"COLR")
+    if table is None or table.length < 18:
+        raise RuntimeError(f"canonical COLRv1 fixture has no usable COLR table: {source}")
+
+    data = bytearray(source.read_bytes())
+    table_offset = table.offset
+    table_end = table_offset + table.length
+    base_offset = int.from_bytes(data[table_offset + 14 : table_offset + 18], "big")
+    base_start = table_offset + base_offset
+    target_relative_position = table.length - 40
+    target_position = table_offset + target_relative_position
+    if target_position <= table_offset or target_position >= table_end:
+        raise RuntimeError("canonical COLRv1 table has no safe invalid ColorLine target")
+    data[target_position] = 0xFF  # Extend mode above REFLECT is invalid.
+
+    formats = (4, 6, 8, 5)
+    for record_index, paint_format in enumerate(formats, start=4):
+        record_start = base_start + 4 + record_index * 6
+        glyph_id = int.from_bytes(data[record_start : record_start + 2], "big")
+        expected_glyph_id = 36 + record_index
+        if glyph_id != expected_glyph_id:
+            raise RuntimeError(
+                f"unexpected canonical COLRv1 glyph at record {record_index}: "
+                f"{glyph_id} != {expected_glyph_id}"
+            )
+        paint_offset = int.from_bytes(data[record_start + 2 : record_start + 6], "big")
+        paint_position = base_start + paint_offset
+        if not table_offset <= paint_position < table_end:
+            raise RuntimeError(
+                f"canonical COLRv1 paint offset leaves table: {paint_position:#x}"
+            )
+        child_offset = target_position - paint_position
+        if not 0 < child_offset <= 0xFFFFFF:
+            raise RuntimeError(
+                f"invalid shared ColorLine offset {child_offset} for glyph {glyph_id}"
+            )
+        data[paint_position] = paint_format
+        data[paint_position + 1 : paint_position + 4] = child_offset.to_bytes(3, "big")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
 def build_colr_v1_malformed_layer_list_font(path: Path) -> None:
     """Build a COLRv1 control with an out-of-range PaintColrLayers index.
 
@@ -1139,6 +1186,9 @@ def main() -> None:
     )
     build_colr_v1_malformed_payloads_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-paint-payloads.ttf"
+    )
+    build_colr_v1_malformed_colorline_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-colorline-paints.ttf"
     )
     build_colr_v1_malformed_layer_list_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-layer-list.ttf"

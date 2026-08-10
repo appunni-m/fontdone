@@ -6,6 +6,7 @@
     "success_inserts_root_transform",
     "malformed_child_offsets_return_false",
     "malformed_payload_reads_return_false",
+    "malformed_colorline_return_false",
     "malformed_layer_list_index_returns_false",
     "error_null_or_missing_colr",
     "error_null_output_policy"
@@ -382,6 +383,73 @@
         "fixture_requirements": [
           "Runtime compares C FreeType, Rust FFI, C ABI, and Wasm FFI outputs",
           "Boundary-root payloads exercise first unavailable fields without truncating the SFNT container"
+        ]
+      }
+    },
+    {
+      "case_id": "ftcolor.FT_Get_Paint.malformed_colorline_return_false",
+      "subject": "ftcolor.FT_Get_Paint",
+      "case": "malformed_colorline_return_false",
+      "operation": "ftcolor.get_paint_malformed",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/color/malformed/colr-v1-malformed-colorline-paints.ttf",
+            "asset_kind": "font",
+            "properties": [
+              "openable COLRv1 face with linear, radial, sweep, and variable-linear roots",
+              "all four roots point to one ColorLine whose extend mode is above REFLECT",
+              "valid glyph 50 solid control for the successful two-step call"
+            ]
+          }
+        },
+        "params": {
+          "base_glyphs": [
+            "paint_linear_invalid_colorline",
+            "paint_radial_invalid_colorline",
+            "paint_sweep_invalid_colorline",
+            "paint_var_linear_invalid_colorline",
+            "valid_control"
+          ],
+          "follow_calls": [
+            "FT_Get_Color_Glyph_Paint",
+            "FT_Get_Paint"
+          ],
+          "prefill_paint": "sentinel-bytes"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcolor",
+        "area:colr-v1",
+        "coverage:malformed-colorline"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Bool",
+          "paint_before_after": "sentinel mutation classification",
+          "control_return": "FT_Bool"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "return",
+            "paint_before_after",
+            "control_return"
+          ]
+        },
+        "oracle": "generated_at_runtime_from_c_freetype",
+        "sources_checked": [
+          "freetype/src/sfnt/ttcolr.c",
+          "freetype/include/freetype/ftcolor.h"
+        ],
+        "fixture_requirements": [
+          "Runtime compares C FreeType, Rust FFI, C ABI, and Wasm FFI outputs",
+          "Shared invalid ColorLine extend mode exercises all maintained gradient-family rejection routes"
         ]
       }
     },
