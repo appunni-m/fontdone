@@ -109,6 +109,29 @@ fn coverage_probe_latin_segment_merge() {
         .any(|segment| segment.first == 0 && segment.last == 4));
 }
 
+#[cfg(coverage_nightly)]
+fn coverage_probe_select_size_variants() {
+    let winfnt = cached_file_bytes("input/fonts/winfnt/bitmap-header.fnt")
+        .expect("maintained WinFNT coverage input should load");
+    let mut winfnt_face = ApiFace::from_memory(&winfnt, 0, 12.0)
+        .expect("maintained WinFNT coverage input should open");
+    assert_eq!(winfnt_face.select_size(0), Ok(()));
+    assert_eq!(
+        winfnt_face.select_size(1),
+        Err(fontdone::font::SelectSizeError::InvalidArgument)
+    );
+
+    let sbix = cached_file_bytes("input/fonts/sbix/sbix-bitmap-only.ttf")
+        .expect("maintained sbix coverage input should load");
+    let mut sbix_face = ApiFace::from_memory(&sbix, 0, 12.0)
+        .expect("maintained sbix coverage input should open");
+    assert_eq!(sbix_face.select_size(0), Ok(()));
+    assert_eq!(
+        sbix_face.select_size(1),
+        Err(fontdone::font::SelectSizeError::InvalidArgument)
+    );
+}
+
 extern "C" fn debug_hook_a(_arg: FT_Pointer) -> FT_Error {
     FT_Err_Ok
 }
@@ -51528,6 +51551,10 @@ fn rust_select_size(case: &InputCase) -> Result<RunOutput, String> {
         return Ok(error(FT_Select_Size(None, strike_index)));
     }
     let mut face = open_face(case)?;
+    #[cfg(coverage_nightly)]
+    if case.case_id == "freetype.FT_Select_Size.success_select_bitmap_strike" {
+        coverage_probe_select_size_variants();
+    }
     let err = FT_Select_Size(Some(&mut face), strike_index);
     if err == FT_Err_Ok {
         Ok(ok(size_metrics_json(&face.size_metrics)))
