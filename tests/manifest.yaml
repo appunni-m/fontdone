@@ -4116,7 +4116,7 @@ subjects:
     # needs-input: concrete font_variability coverage folder/sizes must be added before this semantic case can count as covered.
     cases:
       - id: success_resolves_each_supported_paint_format
-        description: Valid opaque paint objects resolve to the same FT_COLR_Paint format and union member fields as C for COLR layers, solid, glyph, COLR glyph, linear gradient, radial gradient, sweep gradient, transform, translate, scale, rotate, skew, and composite paints.
+        description: Valid opaque paint objects resolve to the same FT_COLR_Paint format and union member fields as C for every maintained non-variable COLRv1 form, including centered and uniform scale, centered and uncentered rotate/skew, gradients, wrappers, layers, glyphs, and composite paints.
       - id: success_inserts_root_transform
         description: Opaque paints with insert_root_transform set return a TRANSFORM paint that wraps the original opaque paint and reports the active size scale and FT_Set_Transform matrix/delta converted to FT_Affine23 16.16 fields like ttcolr.c.
       - id: malformed_child_offsets_return_false

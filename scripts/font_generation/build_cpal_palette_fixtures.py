@@ -417,7 +417,7 @@ def build_colr_v1_root_transform_font(path: Path) -> None:
 
 
 def build_colr_v1_all_paints_font(path: Path) -> None:
-    """Build one maintained COLRv1 fixture with every supported paint family."""
+    """Build one maintained COLRv1 fixture with every supported paint form."""
     font = TTFont(SOURCE_FONT, recalcTimestamp=False)
     glyph_order = font.getGlyphOrder()
     base_names = glyph_order[36:60]
@@ -554,6 +554,51 @@ def build_colr_v1_all_paints_font(path: Path) -> None:
             "Glyph": base_names[15],
         },
         base_names[14]: solid_paint(0xFFFF),
+        base_names[15]: {
+            "Format": int(ot.PaintFormat.PaintScaleAroundCenter),
+            "Paint": solid_paint(1),
+            "scaleX": 0.625,
+            "scaleY": -0.75,
+            "centerX": -11,
+            "centerY": 19,
+        },
+        base_names[16]: {
+            "Format": int(ot.PaintFormat.PaintScaleUniform),
+            "Paint": solid_paint(2, 0.5),
+            "scale": 0.5,
+        },
+        base_names[17]: {
+            "Format": int(ot.PaintFormat.PaintScaleUniformAroundCenter),
+            "Paint": solid_paint(3, 0.25),
+            "scale": -0.375,
+            "centerX": 17,
+            "centerY": -23,
+        },
+        base_names[18]: {
+            "Format": int(ot.PaintFormat.PaintRotate),
+            "Paint": solid_paint(1),
+            "angle": 0.25,
+        },
+        base_names[19]: {
+            "Format": int(ot.PaintFormat.PaintSkew),
+            "Paint": solid_paint(2, 0.5),
+            "xSkewAngle": 0.125,
+            "ySkewAngle": -0.25,
+        },
+        base_names[20]: {
+            "Format": int(ot.PaintFormat.PaintRadialGradient),
+            "ColorLine": color_line(ot.ExtendMode.PAD, [(0.0, 1, 1.0)]),
+            "x0": -5,
+            "y0": 8,
+            # The OpenType fields are UFWORD.  FreeType 2.14.3 reads these
+            # bytes with FT_NEXT_SHORT and maps the negative values to
+            # FT_INT_MAX; retain the encoded edge value to exercise that
+            # compatibility behavior in both the C oracle and Rust parser.
+            "r0": 0xFFFF,
+            "x1": 19,
+            "y1": -12,
+            "r1": 0xFFFF,
+        },
     }
 
     font["COLR"] = buildCOLR(

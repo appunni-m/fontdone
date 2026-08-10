@@ -22352,8 +22352,8 @@ static int emit_colr_root_transform_case(const char* case_id, OracleFace* face) 
 }
 
 static void print_colr_all_paints_snapshot_json(FT_Face face) {
-    printf("{\"root_count\":15,\"records\":[");
-    for (int i = 0; i < 15; i++) {
+    printf("{\"root_count\":21,\"records\":[");
+    for (int i = 0; i < 21; i++) {
         if (i) {
             printf(",");
         }
@@ -22404,7 +22404,7 @@ static void print_colr_all_paints_role_row_json(FT_Face face,
 }
 
 static void print_colr_all_paints_rows_json(FT_Face face) {
-    const char* labels[15] = {
+    const char* labels[21] = {
         "colr_layers",
         "solid",
         "glyph",
@@ -22420,9 +22420,15 @@ static void print_colr_all_paints_rows_json(FT_Face face) {
         "composite",
         "root_transform_target",
         "foreground_solid",
+        "scale_around_center",
+        "scale_uniform",
+        "scale_uniform_around_center",
+        "rotate",
+        "skew",
+        "radial_negative_radii",
     };
     printf("[");
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 21; i++) {
         if (i) {
             printf(",");
         }

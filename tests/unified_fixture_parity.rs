@@ -17100,6 +17100,12 @@ fn color_all_paints_rows_json(
         ("composite", 48),
         ("root_transform_target", 49),
         ("foreground_solid", 50),
+        ("scale_around_center", 51),
+        ("scale_uniform", 52),
+        ("scale_uniform_around_center", 53),
+        ("rotate", 54),
+        ("skew", 55),
+        ("radial_negative_radii", 56),
     ]
     .into_iter()
     .map(|(label, glyph)| {

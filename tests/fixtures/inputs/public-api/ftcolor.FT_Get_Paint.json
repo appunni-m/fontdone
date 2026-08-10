@@ -26,7 +26,8 @@
             "properties": [
               "COLR version 1 base glyph list",
               "CPAL table with at least two palettes and named entries",
-              "paint graph containing solid, colr_layers, glyph, colr_glyph, linear, radial, sweep, transform, translate, scale, rotate, skew, and composite paints",
+              "paint graph containing solid, colr_layers, glyph, colr_glyph, linear, radial, sweep, transform, translate, scale, rotate, skew, and composite paints, including static centered and uniform transform forms",
+              "radial gradient radius fields encoded at the UFWORD high-bit edge so pinned FreeType signed reads normalize them to FT_INT_MAX",
               "static ColorLine records using PAD, REPEAT, and REFLECT extend modes",
               "foreground palette index 0xFFFF references"
             ]
