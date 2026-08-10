@@ -283,12 +283,13 @@ Coverage and parity answer different questions. Executing a line or branch
 does not prove that its result matches C.
 
 The latest pushed-commit all-lane Coverage MCP run is
-`b6887c27-11d3-4a56-a75e-4de12086310b` (snapshot
-`bb40e45a-5321-4b94-a581-ee007dc4550f`). It completed in 83.905 seconds with
-exit code 0. The overall report is 51,731 / 54,772 lines, 10,362 / 12,592
-branches, 3,512 / 3,846 functions, and 71,342 / 75,879 regions. The dominant
+`43a85a62-c061-4bdf-9442-d3706bdce374` (snapshot
+`375d7803-7efa-490a-aa8f-af9dbc62036c`). It completed in 79.714 seconds with
+exit code 0. The overall report is 51,771 / 54,801 lines, 10,364 / 12,592
+branches, 3,513 / 3,847 functions, and 71,395 / 75,909 regions. The dominant
 cold-run cost remains instrumented compilation; warm shard execution and
-report ingestion are much smaller. The preceding cold run
+report ingestion are much smaller. The preceding pushed-head run
+`b6887c27-11d3-4a56-a75e-4de12086310b` took 83.905 seconds; the preceding cold run
 `da91cabd-0631-46ec-83b8-f3e609246ffe` took 70.571 seconds, including 54.73
 seconds of instrumented test-profile compilation; the historical warm run
 took 14.428 seconds. This identifies cache-miss compilation, not Coverage MCP
@@ -325,6 +326,10 @@ The existing `FT_Select_Size` parity case also invokes a coverage-only probe
 using the maintained WinFNT and sbix inputs, reaching the WinFNT strike path,
 the sbix strike path, and their invalid-index errors without changing parity
 outputs.
+The existing `FT_Load_Glyph` Type 1 route also invokes a coverage-only probe
+for all Type 1 number encodings and malformed or truncated encodings before
+normal charstring lookup; it adds no parity case and leaves normal outputs
+unchanged.
 
 ```bash
 make test-coverage
@@ -385,21 +390,21 @@ and focused runs leave the setting unset and continue to seed or consult the
 per-case cache. Set `COVERAGE_SKIP_ORACLE_CASE_CACHE_SEED=0` when diagnosing
 cache population itself.
 
-The current managed run completed in 83.905 seconds. Shard timers run
+The current managed run completed in 79.714 seconds. Shard timers run
 concurrently, so their sum is not wall time; report finalization and artifact
 ingestion are included in the wall time but are not separately exposed by
 Coverage MCP. Instrumented compilation remains the dominant cold component.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 51,731 / 54,772 | 94.45% |
-| Branches | 10,362 / 12,592 | 82.29% |
-| Functions | 3,512 / 3,846 | 91.32% |
-| Regions | 71,342 / 75,879 | 94.02% |
+| Lines | 51,771 / 54,801 | 94.47% |
+| Branches | 10,364 / 12,592 | 82.31% |
+| Functions | 3,513 / 3,847 | 91.32% |
+| Regions | 71,395 / 75,909 | 94.05% |
 
 That latest run passed all 7,841 runnable parity comparisons with 0 failures;
 3 cases remained explicitly pending. Its immutable coverage snapshot is
-`bb40e45a-5321-4b94-a581-ee007dc4550f`. Coverage MCP accepts the current LLVM
+`375d7803-7efa-490a-aa8f-af9dbc62036c`. Coverage MCP accepts the current LLVM
 JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
 rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
 apply only to the named source commit, suite, and toolchain. They are not a
