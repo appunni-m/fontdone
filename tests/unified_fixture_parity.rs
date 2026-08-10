@@ -92594,6 +92594,13 @@ fn bitmap_embolden_rows(scenario: &str) -> Result<Vec<BitmapEmboldenRow>, String
                     y_strength,
                 ));
             }
+            rows.push(BitmapEmboldenRow::new(
+                "mono-x-only-bit-tail",
+                FT_PIXEL_MODE_MONO as u8,
+                false,
+                64,
+                0,
+            ));
         }
         "success_gray2_gray4_convert_to_gray" => {
             for pixel_mode in [FT_PIXEL_MODE_GRAY2, FT_PIXEL_MODE_GRAY4] {

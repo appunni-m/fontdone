@@ -3940,6 +3940,7 @@ static int emit_bitmap_embolden(const char* scenario) {
         for (size_t i = 0; i < sizeof(strengths) / sizeof(strengths[0]); i++) {
             EMIT_ROW("strength", library, FT_PIXEL_MODE_GRAY, 0, strengths[i][0], strengths[i][1], 0, 0);
         }
+        EMIT_ROW("mono-x-only-bit-tail", library, FT_PIXEL_MODE_MONO, 0, 64, 0, 0, 0);
     } else if (streq(scenario, "success_gray2_gray4_convert_to_gray")) {
         unsigned char modes[] = { FT_PIXEL_MODE_GRAY2, FT_PIXEL_MODE_GRAY4 };
         for (size_t i = 0; i < sizeof(modes) / sizeof(modes[0]); i++) {
