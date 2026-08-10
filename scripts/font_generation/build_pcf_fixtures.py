@@ -25,7 +25,13 @@ def align4(data: bytes) -> bytes:
     return data + bytes((-len(data)) % 4)
 
 
-def properties_table(*, msb: bool = False) -> bytes:
+def properties_table(
+    *,
+    msb: bool = False,
+    family_name: str | int = "Fontdone PCF",
+    charset_registry: str | int = "ISO10646",
+    charset_encoding: str | int = "1",
+) -> bytes:
     strings = bytearray()
     offsets: dict[str, int] = {}
 
@@ -37,15 +43,15 @@ def properties_table(*, msb: bool = False) -> bytes:
         return offsets[value]
 
     properties: list[tuple[str, str | int]] = [
-        ("FAMILY_NAME", "Fontdone PCF"),
+        ("FAMILY_NAME", family_name),
         # PCF exposes every numeric property as signed INTEGER, including
         # names that the BDF driver classifies as CARDINAL.
         ("POINT_SIZE", -120),
         ("PIXEL_SIZE", 10),
         ("RESOLUTION_X", 72),
         ("RESOLUTION_Y", 72),
-        ("CHARSET_REGISTRY", "ISO10646"),
-        ("CHARSET_ENCODING", "1"),
+        ("CHARSET_REGISTRY", charset_registry),
+        ("CHARSET_ENCODING", charset_encoding),
     ]
     endian = ">" if msb else "<"
     records = bytearray()
@@ -241,6 +247,30 @@ def main() -> None:
         (PCF_BDF_ENCODINGS, PCF_BYTE_MASK, encodings_table(msb=True)),
     ]
     msb_data = build_pcf(msb_tables)
+    iso8859_data = build_pcf(
+        [
+            (PCF_PROPERTIES, 0, properties_table(charset_registry="ISO8859")),
+            *tables[1:],
+        ]
+    )
+    iso646_data = build_pcf(
+        [
+            (
+                PCF_PROPERTIES,
+                0,
+                properties_table(
+                    charset_registry="ISO646.1991", charset_encoding="IRV"
+                ),
+            ),
+            *tables[1:],
+        ]
+    )
+    non_atom_family_data = build_pcf(
+        [
+            (PCF_PROPERTIES, 0, properties_table(family_name=10)),
+            *tables[1:],
+        ]
+    )
 
     metrics_format_mismatch_data = build_pcf(
         replace_table(
@@ -463,6 +493,9 @@ def main() -> None:
     table_before_output.write_bytes(table_before_directory)
 
     write_fixture("metrics-format-mismatch.pcf", metrics_format_mismatch_data)
+    write_fixture("properties-iso8859.pcf", iso8859_data)
+    write_fixture("properties-iso646.pcf", iso646_data)
+    write_fixture("properties-non-atom-family.pcf", non_atom_family_data)
     write_fixture("unsupported-metrics-format.pcf", unsupported_metrics_data)
     write_fixture("truncated-metrics.pcf", truncated_metrics_data)
     write_fixture("oversized-metrics-count.pcf", oversized_metrics_data)

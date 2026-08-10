@@ -1502,6 +1502,33 @@
             },
             "params": {"face_index": 0, "memory_source": "whole_file"},
             "coverage": ["tt/bdf:property-records-beyond-strings-offset-ignored-at-face-open"]
+          },
+          {
+            "id": "pcf-properties-iso8859",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso8859.pcf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso8859.pcf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["pcf:properties-iso8859-unicode-charmap"]
+          },
+          {
+            "id": "pcf-properties-iso646",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso646.pcf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso646.pcf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["pcf:properties-iso646-unicode-charmap"]
+          },
+          {
+            "id": "pcf-properties-non-atom-family",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-non-atom-family.pcf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-non-atom-family.pcf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["pcf:properties-non-atom-family-fallback"]
           }
         ]
       },
