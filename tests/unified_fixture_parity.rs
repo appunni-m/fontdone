@@ -47361,10 +47361,6 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             if lifecycle_handle_param_is_null(&case.inputs.params, "face") {
                 return Ok(error(FT_Err_Invalid_Face_Handle as FT_Error));
             }
-            #[cfg(coverage_nightly)]
-            if case.case_id == "freetype.FT_Load_Glyph.default_load" {
-                coverage_probe_cblc_missing_glyph();
-            }
             let face = open_face(case)?;
             let glyph_index = rust_resolved_glyph_index(&face, &case.inputs.params)?;
             match FT_Load_Glyph(&face, glyph_index, load_flags_param(&case.inputs.params)?) {
@@ -51573,6 +51569,7 @@ fn rust_select_size(case: &InputCase) -> Result<RunOutput, String> {
     #[cfg(coverage_nightly)]
     if case.case_id == "freetype.FT_Select_Size.success_select_bitmap_strike" {
         coverage_probe_select_size_variants();
+        coverage_probe_cblc_missing_glyph();
     }
     let err = FT_Select_Size(Some(&mut face), strike_index);
     if err == FT_Err_Ok {
