@@ -21394,11 +21394,25 @@ static FT_COLR_Paint malformed_colr_paint_sentinel(void) {
     return paint;
 }
 
-static void print_malformed_colr_paint_json(const FT_COLR_Paint* paint) {
+static void print_malformed_colr_paint_json(const FT_COLR_Paint* paint,
+                                             int composite_prefix_written) {
+    if (composite_prefix_written) {
+        printf("{\"format\":%d,\"composite_prefix\":{\"source_paint\":",
+               paint->format);
+        print_opaque_paint_json(paint->u.composite.source_paint);
+        printf(",\"composite_mode\":%d}}", (int)paint->u.composite.composite_mode);
+        return;
+    }
     printf("{\"format\":%d,\"solid\":{\"palette_index\":%u,\"alpha\":%d}}",
            paint->format,
            (unsigned)paint->u.solid.color.palette_index,
            (int)paint->u.solid.color.alpha);
+}
+
+static int malformed_colr_paint_union_preserved(const FT_COLR_Paint* before,
+                                                const FT_COLR_Paint* after) {
+    return before->u.solid.color.palette_index == after->u.solid.color.palette_index &&
+           before->u.solid.color.alpha == after->u.solid.color.alpha;
 }
 
 static int malformed_colr_paint_preserved(const FT_COLR_Paint* before,
@@ -21425,17 +21439,19 @@ static MalformedColrPaintProbe probe_malformed_colr_paint(FT_Face face, FT_UInt 
 static void print_malformed_colr_paint_row_json(const char* label,
                                                 FT_UInt base_glyph,
                                                 const MalformedColrPaintProbe* probe) {
+    int union_preserved = malformed_colr_paint_union_preserved(&probe->before, &probe->after);
     printf("{\"label\":\"%s\",\"base_glyph\":%u,\"root_return\":%u,\"root_opaque\":",
            label,
            base_glyph,
            probe->root_return);
     print_opaque_paint_json(probe->opaque);
     printf(",\"return\":%u,\"before\":", probe->paint_return);
-    print_malformed_colr_paint_json(&probe->before);
+    print_malformed_colr_paint_json(&probe->before, 0);
     printf(",\"after\":");
-    print_malformed_colr_paint_json(&probe->after);
-    printf(",\"preserved\":%s}",
-           malformed_colr_paint_preserved(&probe->before, &probe->after) ? "true" : "false");
+    print_malformed_colr_paint_json(&probe->after, !union_preserved);
+    printf(",\"preserved\":%s,\"union_preserved\":%s}",
+           malformed_colr_paint_preserved(&probe->before, &probe->after) ? "true" : "false",
+           union_preserved ? "true" : "false");
 }
 
 static int emit_color_paint_malformed_case(int argc, char** argv) {
@@ -21449,22 +21465,62 @@ static int emit_color_paint_malformed_case(int argc, char** argv) {
     if (opened != 0) {
         return opened;
     }
-    const char* second_label =
-        streq(case_id, "ftcolor.FT_COLR_PAINTFORMAT_UNSUPPORTED.invalid_format_returns_false")
-            ? "paint_format_255"
-            : "paint_format_34";
-    MalformedColrPaintProbe first = probe_malformed_colr_paint(face.face, 36);
-    MalformedColrPaintProbe second = probe_malformed_colr_paint(face.face, 37);
-    MalformedColrPaintProbe control = probe_malformed_colr_paint(face.face, 38);
+    const char* labels[8];
+    FT_UInt glyphs[8];
+    size_t malformed_count;
+    FT_UInt control_glyph;
+    if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false")) {
+        static const char* child_labels[] = {
+            "paint_glyph_child_offset_zero",
+            "paint_transform_child_offset_out_of_range",
+            "paint_translate_child_offset_zero",
+            "paint_scale_child_offset_out_of_range",
+            "paint_rotate_child_offset_zero",
+            "paint_skew_child_offset_out_of_range",
+            "paint_composite_source_offset_zero",
+            "paint_composite_backdrop_offset_zero",
+        };
+        static const FT_UInt child_glyphs[] = {36, 37, 38, 39, 40, 41, 42, 43};
+        for (size_t index = 0; index < 8; index++) {
+            labels[index] = child_labels[index];
+            glyphs[index] = child_glyphs[index];
+        }
+        malformed_count = 8;
+        control_glyph = 50;
+    } else {
+        labels[0] = "paint_format_33";
+        labels[1] = streq(
+                        case_id,
+                        "ftcolor.FT_COLR_PAINTFORMAT_UNSUPPORTED.invalid_format_returns_false")
+                        ? "paint_format_255"
+                        : "paint_format_34";
+        glyphs[0] = 36;
+        glyphs[1] = 37;
+        malformed_count = 2;
+        control_glyph = 38;
+    }
+    MalformedColrPaintProbe probes[8];
+    for (size_t index = 0; index < malformed_count; index++) {
+        probes[index] = probe_malformed_colr_paint(face.face, glyphs[index]);
+    }
+    MalformedColrPaintProbe control = probe_malformed_colr_paint(face.face, control_glyph);
 
     printf("{");
     print_status(FT_Err_Invalid_Table);
-    printf(",\"output\":{\"return\":[%u,%u],\"paint_before_after\":[",
-           first.paint_return,
-           second.paint_return);
-    print_malformed_colr_paint_row_json("paint_format_33", 36, &first);
-    printf(",");
-    print_malformed_colr_paint_row_json(second_label, 37, &second);
+    printf(",\"output\":{\"return\":[");
+    for (size_t index = 0; index < malformed_count; index++) {
+        if (index > 0) {
+            printf(",");
+        }
+        printf("%u", probes[index].paint_return);
+    }
+    printf("],\"paint_before_after\":[");
+    for (size_t index = 0; index < malformed_count; index++) {
+        if (index > 0) {
+            printf(",");
+        }
+        print_malformed_colr_paint_row_json(labels[index], glyphs[index], &probes[index]);
+    }
     printf("],\"control_return\":%u,\"control_root_return\":%u}",
            control.paint_return,
            control.root_return);

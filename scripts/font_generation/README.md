@@ -84,6 +84,13 @@ retaining the third valid control glyph.  This keeps face opening and
 `FT_Get_Color_Glyph_Paint` successful, then exercises lazy `FT_Get_Paint`
 rejection for formats at or above `FT_COLR_PAINT_FORMAT_MAX`.
 
+`malformed/colr-v1-malformed-child-paints.ttf` is another deterministic
+derivative.  It preserves root records for eight wrapper formats, replacing
+their child offsets with zero or out-of-range values while retaining glyph 50
+as a valid solid control.  The fixture therefore exercises the pinned lazy
+`FT_Get_Paint` failure format for PaintGlyph, PaintTransform, PaintTranslate,
+PaintScale, PaintRotate, PaintSkew, and both PaintComposite child pointers.
+
 ## 3. Review requirements
 
 Before adding or changing a generator:

@@ -4,6 +4,7 @@
   "manifest_cases": [
     "success_resolves_each_supported_paint_format",
     "success_inserts_root_transform",
+    "malformed_child_offsets_return_false",
     "error_null_or_missing_colr",
     "error_null_output_policy"
   ],
@@ -174,6 +175,76 @@
         "error": null,
         "fixture_requirements": [
           "Runtime compares C FreeType, Rust FFI, C FFI, and Wasm FFI outputs"
+        ]
+      }
+    },
+    {
+      "case_id": "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false",
+      "subject": "ftcolor.FT_Get_Paint",
+      "case": "malformed_child_offsets_return_false",
+      "operation": "ftcolor.get_paint_malformed",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/color/malformed/colr-v1-malformed-child-paints.ttf",
+            "asset_kind": "font",
+            "properties": [
+              "openable COLRv1 face with PaintGlyph, PaintTransform, PaintTranslate, PaintScale, PaintRotate, PaintSkew, and PaintComposite roots whose child offsets are zero or outside the COLR table",
+              "valid glyph 50 solid control for the successful two-step call"
+            ]
+          }
+        },
+        "params": {
+          "base_glyphs": [
+            "paint_glyph_child_offset_zero",
+            "paint_transform_child_offset_out_of_range",
+            "paint_translate_child_offset_zero",
+            "paint_scale_child_offset_out_of_range",
+            "paint_rotate_child_offset_zero",
+            "paint_skew_child_offset_out_of_range",
+            "paint_composite_source_offset_zero",
+            "paint_composite_backdrop_offset_zero",
+            "valid_control"
+          ],
+          "follow_calls": [
+            "FT_Get_Color_Glyph_Paint",
+            "FT_Get_Paint"
+          ],
+          "prefill_paint": "sentinel-bytes"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcolor",
+        "area:colr-v1",
+        "coverage:malformed-child-offsets"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Bool",
+          "paint_before_after": "sentinel mutation classification",
+          "control_return": "FT_Bool"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "return",
+            "paint_before_after",
+            "control_return"
+          ]
+        },
+        "oracle": "generated_at_runtime_from_c_freetype",
+        "sources_checked": [
+          "freetype/src/sfnt/ttcolr.c",
+          "freetype/include/freetype/ftcolor.h"
+        ],
+        "fixture_requirements": [
+          "Runtime compares C FreeType, Rust FFI, C ABI, and Wasm FFI outputs",
+          "Malformed child offsets cover every public wrapper family plus source/backdrop composite failures"
         ]
       }
     },

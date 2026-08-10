@@ -1531,6 +1531,13 @@ enum ColrV1Paint {
     Malformed {
         format: FT_Int,
     },
+    /// A composite whose source and mode have been read before FreeType
+    /// rejects its backdrop offset. `FT_Get_Paint` exposes the format and
+    /// preserves that partially written public union prefix on failure.
+    MalformedComposite {
+        source_paint: Box<ColrV1Paint>,
+        composite_mode: FT_UShort,
+    },
     Layers {
         paints: Vec<ColrV1Paint>,
     },
@@ -8453,8 +8460,7 @@ fn parse_colr_v1_child_paint(
     layer_list_offset: usize,
     layer_offsets: &[usize],
 ) -> Option<Box<ColrV1Paint>> {
-    let nested_offset = usize::try_from(read_u24_be(data, offset + 1)?).ok()?;
-    let nested_start = offset.checked_add(nested_offset)?;
+    let nested_start = parse_colr_v1_child_start(data, offset, 1)?;
     Some(Box::new(parse_colr_v1_paint(
         data,
         nested_start,
@@ -8462,6 +8468,16 @@ fn parse_colr_v1_child_paint(
         layer_list_offset,
         layer_offsets,
     )?))
+}
+
+fn parse_colr_v1_child_start(data: &[u8], offset: usize, field_offset: usize) -> Option<usize> {
+    let field_start = offset.checked_add(field_offset)?;
+    let nested_offset = usize::try_from(read_u24_be(data, field_start)?).ok()?;
+    if nested_offset == 0 {
+        return None;
+    }
+    let nested_start = offset.checked_add(nested_offset)?;
+    (nested_start < data.len()).then_some(nested_start)
 }
 
 fn parse_colr_v1_colorline(
@@ -8629,7 +8645,7 @@ fn parse_colr_v1_paint(
         return None;
     }
     let format = *data.get(offset)?;
-    match format {
+    let parsed = (|| match format {
         1 => {
             // FreeType 2.14.3 `src/sfnt/ttcolr.c:641-662` initializes an
             // `FT_LayerIterator` from PaintColrLayers' NumLayers and
@@ -8664,8 +8680,7 @@ fn parse_colr_v1_paint(
             })
         }
         4 => {
-            let colorline_offset = usize::try_from(read_u24_be(data, offset + 1)?).ok()?;
-            let colorline_start = offset.checked_add(colorline_offset)?;
+            let colorline_start = parse_colr_v1_child_start(data, offset, 1)?;
             // FreeType 2.14.3 `src/sfnt/ttcolr.c:724-758` exposes static
             // PaintLinearGradient coordinates as 16.16 fixed-point vectors and
             // initializes a ColorLine iterator from the child ColorLine table.
@@ -8687,8 +8702,7 @@ fn parse_colr_v1_paint(
             })
         }
         6 => {
-            let colorline_offset = usize::try_from(read_u24_be(data, offset + 1)?).ok()?;
-            let colorline_start = offset.checked_add(colorline_offset)?;
+            let colorline_start = parse_colr_v1_child_start(data, offset, 1)?;
             let r0 = colr_i16_to_fixed(read_i16_be(data, offset + 8)?);
             let r1 = colr_i16_to_fixed(read_i16_be(data, offset + 14)?);
             Some(ColrV1Paint::RadialGradient {
@@ -8706,8 +8720,7 @@ fn parse_colr_v1_paint(
             })
         }
         8 => {
-            let colorline_offset = usize::try_from(read_u24_be(data, offset + 1)?).ok()?;
-            let colorline_start = offset.checked_add(colorline_offset)?;
+            let colorline_start = parse_colr_v1_child_start(data, offset, 1)?;
             Some(ColrV1Paint::SweepGradient {
                 colorline: parse_colr_v1_colorline(data, colorline_start, false)?,
                 center: FT_Vector {
@@ -8719,8 +8732,7 @@ fn parse_colr_v1_paint(
             })
         }
         5 => {
-            let colorline_offset = usize::try_from(read_u24_be(data, offset + 1)?).ok()?;
-            let colorline_start = offset.checked_add(colorline_offset)?;
+            let colorline_start = parse_colr_v1_child_start(data, offset, 1)?;
             // FreeType `src/sfnt/ttcolr.c:724-767` normalizes
             // PaintVarLinearGradient to the public PaintLinearGradient format,
             // but preserves a variable ColorLine iterator so
@@ -8765,8 +8777,7 @@ fn parse_colr_v1_paint(
             })
         }
         12 => {
-            let transform_offset = usize::try_from(read_u24_be(data, offset + 4)?).ok()?;
-            let transform_start = offset.checked_add(transform_offset)?;
+            let transform_start = parse_colr_v1_child_start(data, offset, 4)?;
             // FreeType 2.14.3 `src/sfnt/ttcolr.c:903-926` reads PaintTransform
             // Affine2x3 values as OpenType 16.16 fixed-point longs in public
             // FT_Affine23 field order.
@@ -8892,33 +8903,39 @@ fn parse_colr_v1_paint(
             // COLRv1 PaintComposite stores source and backdrop as Offset24
             // values relative to the current record and exposes a public
             // one-byte FT_Composite_Mode in between.
-            let source_offset = usize::try_from(read_u24_be(data, offset + 1)?).ok()?;
-            let source_start = offset.checked_add(source_offset)?;
+            let source_start = parse_colr_v1_child_start(data, offset, 1)?;
+            let source_paint = Box::new(parse_colr_v1_paint(
+                data,
+                source_start,
+                depth + 1,
+                layer_list_offset,
+                layer_offsets,
+            )?);
             let composite_mode = FT_UShort::from(*data.get(offset + 4)?);
-            let backdrop_offset = usize::try_from(read_u24_be(data, offset + 5)?).ok()?;
-            let backdrop_start = offset.checked_add(backdrop_offset)?;
-            Some(ColrV1Paint::Composite {
-                source_paint: Box::new(parse_colr_v1_paint(
-                    data,
-                    source_start,
-                    depth + 1,
-                    layer_list_offset,
-                    layer_offsets,
-                )?),
-                composite_mode,
-                backdrop_paint: Box::new(parse_colr_v1_paint(
-                    data,
-                    backdrop_start,
-                    depth + 1,
-                    layer_list_offset,
-                    layer_offsets,
-                )?),
-            })
+            if let Some(backdrop_start) = parse_colr_v1_child_start(data, offset, 5) {
+                Some(ColrV1Paint::Composite {
+                    source_paint,
+                    composite_mode,
+                    backdrop_paint: Box::new(parse_colr_v1_paint(
+                        data,
+                        backdrop_start,
+                        depth + 1,
+                        layer_list_offset,
+                        layer_offsets,
+                    )?),
+                })
+            } else {
+                Some(ColrV1Paint::MalformedComposite {
+                    source_paint,
+                    composite_mode,
+                })
+            }
         }
-        _ => Some(ColrV1Paint::Malformed {
-            format: FT_Int::from(format),
-        }),
-    }
+        _ => None,
+    })();
+    Some(parsed.unwrap_or(ColrV1Paint::Malformed {
+        format: FT_Int::from(format),
+    }))
 }
 
 pub fn FT_Palette_Data_Get(
@@ -9148,7 +9165,7 @@ fn colr_v1_find_paint_by_ptr_in_node(
             ..
         } => colr_v1_find_paint_by_ptr_in_node(source_paint, ptr)
             .or_else(|| colr_v1_find_paint_by_ptr_in_node(backdrop_paint, ptr)),
-        ColrV1Paint::Malformed { .. } => None,
+        ColrV1Paint::Malformed { .. } | ColrV1Paint::MalformedComposite { .. } => None,
     }
 }
 
@@ -9302,6 +9319,27 @@ pub fn FT_Get_Paint(
             // FreeType's lazy reader records the invalid format byte in the
             // public destination before rejecting the paint payload.
             paint_out.format = *format;
+            return 0;
+        }
+        ColrV1Paint::MalformedComposite {
+            source_paint,
+            composite_mode,
+        } => {
+            // FreeType writes the source opaque paint and mode before its
+            // second child-offset check fails. The parity projection compares
+            // only this meaningful written prefix because the C reader leaves
+            // the caller-owned backdrop bytes process-local.
+            paint_out.format = FT_COLR_PAINTFORMAT_COMPOSITE as _;
+            paint_out.u = FT_COLR_PaintUnion {
+                composite: FT_PaintComposite {
+                    source_paint: colr_v1_paint_to_opaque(source_paint),
+                    composite_mode: FT_Int::from(*composite_mode),
+                    // The C reader has no valid backdrop pointer to write.
+                    // The parity projection intentionally excludes this
+                    // caller-owned, process-local remainder of the union.
+                    backdrop_paint: FT_OpaquePaint::default(),
+                },
+            };
             return 0;
         }
         ColrV1Paint::Layers { paints } => {
@@ -9540,7 +9578,7 @@ fn colr_v1_find_colorline_by_iterator_in_node<'a>(
             ..
         } => colr_v1_find_colorline_by_iterator_in_node(source_paint, iterator)
             .or_else(|| colr_v1_find_colorline_by_iterator_in_node(backdrop_paint, iterator)),
-        ColrV1Paint::Malformed { .. } => None,
+        ColrV1Paint::Malformed { .. } | ColrV1Paint::MalformedComposite { .. } => None,
     }
 }
 
@@ -9662,7 +9700,7 @@ fn colr_v1_find_layer_paints_by_iterator_in_node<'a>(
             ..
         } => colr_v1_find_layer_paints_by_iterator_in_node(source_paint, iterator)
             .or_else(|| colr_v1_find_layer_paints_by_iterator_in_node(backdrop_paint, iterator)),
-        ColrV1Paint::Malformed { .. } => None,
+        ColrV1Paint::Malformed { .. } | ColrV1Paint::MalformedComposite { .. } => None,
     }
 }
 
@@ -9818,7 +9856,9 @@ fn colr_v1_paint_format(paint: &ColrV1Paint) -> FT_PaintFormat {
         ColrV1Paint::Scale { .. } => FT_COLR_PAINTFORMAT_SCALE as FT_PaintFormat,
         ColrV1Paint::Rotate { .. } => FT_COLR_PAINTFORMAT_ROTATE as FT_PaintFormat,
         ColrV1Paint::Skew { .. } => FT_COLR_PAINTFORMAT_SKEW as FT_PaintFormat,
-        ColrV1Paint::Composite { .. } => FT_COLR_PAINTFORMAT_COMPOSITE as FT_PaintFormat,
+        ColrV1Paint::Composite { .. } | ColrV1Paint::MalformedComposite { .. } => {
+            FT_COLR_PAINTFORMAT_COMPOSITE as FT_PaintFormat
+        }
         ColrV1Paint::Malformed { format } => *format as FT_PaintFormat,
     }
 }
@@ -10060,6 +10100,17 @@ fn colr_v1_snapshot_paint(
             });
             colr_v1_snapshot_paint(source_paint, depth + 1, nodes);
             colr_v1_snapshot_paint(backdrop_paint, depth + 1, nodes);
+        }
+        ColrV1Paint::MalformedComposite { composite_mode, .. } => {
+            nodes.push(FT_ColrV1_PaintNode_Snapshot {
+                depth,
+                format: FT_COLR_PAINTFORMAT_COMPOSITE as FT_UShort,
+                palette_index: 0,
+                alpha: 0,
+                glyph_index: 0,
+                composite_mode: *composite_mode,
+                values: [0; 6],
+            })
         }
         ColrV1Paint::Malformed { format } => nodes.push(FT_ColrV1_PaintNode_Snapshot {
             depth,

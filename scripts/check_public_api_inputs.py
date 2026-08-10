@@ -6692,6 +6692,12 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
     if (
         row.operation == "ftcolor.get_paint_malformed"
         and row.case_id
+        == "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false"
+    ):
+        return "FT_Get_Paint malformed child-offset rejection validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "ftcolor.get_paint_malformed"
+        and row.case_id
         == "ftcolor.FT_COLR_PAINT_FORMAT_MAX.read_paint_rejects_max_and_above"
     ):
         return "FT_COLR_PAINT_FORMAT_MAX rejection validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI"

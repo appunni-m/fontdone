@@ -15789,23 +15789,41 @@ fn malformed_colr_paint_sentinel() -> FT_COLR_Paint {
     }
 }
 
-fn malformed_colr_paint_json(paint: &FT_COLR_Paint) -> Value {
-    // The invalid FT_Get_Paint path must leave the caller's union untouched.
-    // Read only the solid arm initialized by our sentinel.
-    let solid = unsafe { paint.u.solid };
-    json!({
-        "format": paint.format,
-        "solid": {
-            "palette_index": solid.color.palette_index,
-            "alpha": solid.color.alpha,
-        },
-    })
+fn malformed_colr_paint_json(paint: &FT_COLR_Paint, composite_prefix_written: bool) -> Value {
+    if composite_prefix_written {
+        // Composite source pointers are process-local. Compare only their
+        // stable pointer class and the mode that FreeType wrote before the
+        // invalid backdrop offset rejected the paint.
+        let composite = unsafe { paint.u.composite };
+        json!({
+            "format": paint.format,
+            "composite_prefix": {
+                "source_paint": opaque_paint_json(composite.source_paint),
+                "composite_mode": composite.composite_mode,
+            },
+        })
+    } else {
+        // The invalid FT_Get_Paint path leaves this caller-owned union arm
+        // untouched for all failures before the composite backdrop check.
+        let solid = unsafe { paint.u.solid };
+        json!({
+            "format": paint.format,
+            "solid": {
+                "palette_index": solid.color.palette_index,
+                "alpha": solid.color.alpha,
+            },
+        })
+    }
+}
+
+fn malformed_colr_paint_union_preserved(before: &FT_COLR_Paint, after: &FT_COLR_Paint) -> bool {
+    let before_solid = unsafe { before.u.solid };
+    let after_solid = unsafe { after.u.solid };
+    before_solid == after_solid
 }
 
 fn malformed_colr_paint_preserved(before: &FT_COLR_Paint, after: &FT_COLR_Paint) -> bool {
-    let before_solid = unsafe { before.u.solid };
-    let after_solid = unsafe { after.u.solid };
-    before.format == after.format && before_solid == after_solid
+    before.format == after.format && malformed_colr_paint_union_preserved(before, after)
 }
 
 fn malformed_colr_paint_labels(case: &InputCase) -> Result<Vec<String>, String> {
@@ -15822,6 +15840,22 @@ fn malformed_colr_paint_labels(case: &InputCase) -> Result<Vec<String>, String> 
                 .ok_or_else(|| "malformed COLRv1 base_glyphs must be strings".to_string())
         })
         .collect::<Result<Vec<_>, _>>()
+}
+
+fn malformed_colr_paint_glyphs(case: &InputCase, label_count: usize) -> Result<Vec<FT_UInt>, String> {
+    let glyphs = if case.case_id == "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false" {
+        vec![36, 37, 38, 39, 40, 41, 42, 43, 50]
+    } else {
+        vec![36, 37, 38]
+    };
+    if glyphs.len() != label_count {
+        return Err(format!(
+            "malformed COLRv1 case has {} labels but {} base glyphs",
+            label_count,
+            glyphs.len()
+        ));
+    }
+    Ok(glyphs)
 }
 
 fn malformed_colr_paint_row_json(
@@ -15850,15 +15884,17 @@ fn malformed_colr_paint_row_json(
         opaque,
         &mut after,
     );
+    let composite_prefix_written = !malformed_colr_paint_union_preserved(&before, &after);
     json!({
         "label": label,
         "base_glyph": base_glyph,
         "root_return": root_return,
         "root_opaque": opaque_paint_json(opaque),
         "return": paint_return,
-        "before": malformed_colr_paint_json(&before),
-        "after": malformed_colr_paint_json(&after),
+        "before": malformed_colr_paint_json(&before, false),
+        "after": malformed_colr_paint_json(&after, composite_prefix_written),
         "preserved": malformed_colr_paint_preserved(&before, &after),
+        "union_preserved": !composite_prefix_written,
     })
 }
 
@@ -15870,22 +15906,35 @@ fn color_paint_malformed_output_for_open_face(
     wasm_handle: usize,
 ) -> Result<RunOutput, String> {
     let labels = malformed_colr_paint_labels(case)?;
-    if labels.len() != 3 {
+    if labels.len() < 2 {
         return Err(format!(
-            "malformed COLRv1 case needs two malformed labels and one control, got {}",
+            "malformed COLRv1 case needs malformed rows and one control, got {}",
             labels.len()
         ));
     }
-    let rows = [
-        malformed_colr_paint_row_json(backend, rust_face, c_face, wasm_handle, &labels[0], 36),
-        malformed_colr_paint_row_json(backend, rust_face, c_face, wasm_handle, &labels[1], 37),
-    ];
+    let glyphs = malformed_colr_paint_glyphs(case, labels.len())?;
+    let malformed_count = labels.len() - 1;
+    let rows = labels[..malformed_count]
+        .iter()
+        .zip(&glyphs[..malformed_count])
+        .map(|(label, &base_glyph)| {
+            malformed_colr_paint_row_json(
+                backend,
+                rust_face,
+                c_face,
+                wasm_handle,
+                label,
+                base_glyph,
+            )
+        })
+        .collect::<Vec<_>>();
+    let control_glyph = glyphs[malformed_count];
     let (control_root_return, control_opaque) = color_paint_call(
         backend,
         rust_face,
         c_face,
         wasm_handle,
-        38,
+        control_glyph,
         FT_COLOR_NO_ROOT_TRANSFORM as FT_UInt,
     );
     let (control_return, _control_paint) = get_paint_call(
@@ -39584,6 +39633,7 @@ fn with_public_family_exact_error(mut case: InputCase) -> InputCase {
             || case.case_id
                 == "ftcolor.FT_COLR_PAINTFORMAT_UNSUPPORTED.invalid_format_returns_false"
             || case.case_id == "ftcolor.FT_COLR_PAINT_FORMAT_MAX.read_paint_rejects_max_and_above"
+            || case.case_id == "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false"
             || case.case_id == "ftcolor.FT_Get_Color_Glyph_ClipBox.null_and_non_sfnt_rejected"
             || case.case_id
                 == "ftcolor.FT_Get_Color_Glyph_ClipBox.malformed_clipbox_false_behavior"
