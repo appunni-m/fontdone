@@ -2724,6 +2724,8 @@ subjects:
         description: Blending into an FT_Bitmap_Init target allocates BGRA storage, sets pitch to 4*width, and updates target offset like C.
       - id: success_existing_bgra_reallocates_or_preserves
         description: Blending into an existing BGRA target expands or preserves the target rectangle and pixel bytes exactly like C.
+      - id: success_existing_bgra_reallocates_negative_flow
+        description: Reallocating an existing BGRA target with negative pitch preserves C's negative-flow allocation and no-op blend behavior.
       - id: success_existing_bgra_same_bounds_preserves
         description: Blending into an existing BGRA target with identical bounds preserves its allocation shape and updates pixels exactly like C.
       - id: success_source_pixel_modes_and_flow

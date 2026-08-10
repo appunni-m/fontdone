@@ -1175,7 +1175,13 @@ pub fn FT_Bitmap_Blend(
         };
         FT_Bitmap_Set_Owned_Buffer(Some(target), vec![0; len]);
     } else if target.width != final_width || target.rows != final_rows {
-        let old_bytes = bitmap_owned_bytes(target).ok_or(FT_Err_Invalid_Argument);
+        // The pinned C implementation has an empty negative-pitch copy branch;
+        // it reallocates the target without reading the old allocation.
+        let old_bytes = if target.pitch < 0 {
+            Err(FT_Err_Invalid_Argument)
+        } else {
+            bitmap_owned_bytes(target).ok_or(FT_Err_Invalid_Argument)
+        };
         let old_pitch = match bitmap_pitch_abs(target) {
             Some(value) => value,
             None => return FT_Err_Invalid_Argument,
@@ -1216,6 +1222,16 @@ pub fn FT_Bitmap_Blend(
             FT_Int::try_from(final_pitch).unwrap_or(FT_Int::MAX)
         };
         FT_Bitmap_Set_Owned_Buffer(Some(target), new_bytes);
+    }
+
+    // FreeType's negative-target-pitch branch is an intentional `/* XXX */`
+    // no-op after target allocation.  A grayscale source is not read on that
+    // path, so do not require its borrowed bytes to be present in our
+    // ownership registry before publishing the final target offset.
+    if target.pitch < 0 && i32::from(source.pixel_mode) == FT_PIXEL_MODE_GRAY {
+        atarget_offset.x = final_llx;
+        atarget_offset.y = final_lly + (FT_Pos::from(final_rows) << 6);
+        return FT_Err_Ok;
     }
 
     let source_gray = if i32::from(source.pixel_mode) == FT_PIXEL_MODE_GRAY {
