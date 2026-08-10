@@ -4804,6 +4804,134 @@
             ]
           },
           {
+            "id": "hebrew-long-blue-replacement-force-autohint",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/script-coverage.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 85,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true,
+              "assert_autohint_coverage_bits_include": [
+                45
+              ]
+            },
+            "coverage": [
+              "autohint/latin:hebrew-long-blue-segment-replacement"
+            ]
+          },
+          {
+            "id": "hebrew-long-blue-degenerate-force-autohint",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/script-coverage.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 86,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "coverage": [
+              "autohint/latin:hebrew-long-blue-degenerate-skip"
+            ]
+          },
+          {
+            "id": "hebrew-long-blue-scan-rejection-force-autohint",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/script-coverage.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 87,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "coverage": [
+              "autohint/latin:hebrew-long-blue-scan-rejection"
+            ]
+          },
+          {
+            "id": "hebrew-long-blue-offcurve-force-autohint",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/script-coverage.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 88,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "coverage": [
+              "autohint/latin:hebrew-long-blue-offcurve-scan"
+            ]
+          },
+          {
+            "id": "hebrew-long-blue-inner-break-force-autohint",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/script-coverage.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 89,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "coverage": [
+              "autohint/latin:hebrew-long-blue-inner-scan-break"
+            ]
+          },
+          {
             "id": "latin-serif-overlap-break-force-autohint",
             "assets": {
               "font": {

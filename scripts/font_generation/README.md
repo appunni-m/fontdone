@@ -39,7 +39,7 @@ licenses are enforced by `make supply-chain`.
 
 | Generator | Classification | Input or provenance |
 |---|---|---|
-| `build_autohint_script_fixtures.py` | Synthetic | Project-authored outlines and tables; one internal copy remains within the generated synthetic family, including malformed `loca` boundary controls. |
+| `build_autohint_script_fixtures.py` | Synthetic | Project-authored outlines and tables; one internal copy remains within the generated synthetic family, including malformed `loca` boundary controls and append-only Hebrew long-blue contour variants. |
 | `build_cff_fixtures.py` | Synthetic and derived | Project-authored CFF1/CFF2, TrueType control, and malformed CFF1/CFF2 table and INDEX data, plus malformed CID CFF derivatives of the maintained OFL-1.1 `FDArrayTest257` face. |
 | `build_render_fixtures.py` | Synthetic | Project-authored outlines and TrueType programs. |
 | `build_type1_fixtures.py` | Synthetic | Project-authored Type 1 charstrings, dictionaries, AFM data, notices, and a naked CID-keyed Type 1 resource. |

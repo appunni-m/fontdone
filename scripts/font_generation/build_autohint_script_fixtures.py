@@ -522,6 +522,82 @@ def latin_wide_segment_filter_glyph():
     )
 
 
+def hebrew_long_blue_replacement_glyph():
+    """Short Hebrew extremum followed by a long, same-direction segment."""
+    return mixed_contour_glyph(
+        [
+            [
+                (110, 0, True),
+                (100, 500, True),
+                (120, 500, True),
+                (-300, 480, True),
+                (-300, 0, True),
+            ],
+        ]
+    )
+
+
+def hebrew_long_blue_degenerate_glyph():
+    """All-vertical Hebrew contour rejected by the long-blue direction scan."""
+    return mixed_contour_glyph(
+        [
+            [
+                (100, 0, True),
+                (100, 500, True),
+                (100, 0, True),
+                (100, 300, True),
+            ],
+        ]
+    )
+
+
+def hebrew_long_blue_scan_rejection_glyph():
+    """Short Hebrew extremum whose next candidate has the opposite direction."""
+    return mixed_contour_glyph(
+        [
+            [
+                (90, 0, True),
+                (100, 500, True),
+                (120, 500, True),
+                (-300, 480, True),
+                (-300, 0, True),
+            ],
+        ]
+    )
+
+
+def hebrew_long_blue_offcurve_glyph():
+    """Accepted long-blue replacement with off-curve points in its scan."""
+    return mixed_contour_glyph(
+        [
+            [
+                (110, 0, True),
+                (100, 500, True),
+                (120, 500, False),
+                (-300, 480, True),
+                (-300, 0, False),
+            ],
+        ]
+    )
+
+
+def hebrew_long_blue_inner_break_glyph():
+    """Long-blue replacement with a short candidate and inner scan stop."""
+    return mixed_contour_glyph(
+        [
+            [
+                (110, 0, True),
+                (100, 500, True),
+                (110, 500, True),
+                (120, 499, True),
+                (90, 480, True),
+                (-300, 478, True),
+                (90, 0, True),
+            ],
+        ]
+    )
+
+
 def latin_vertical_cusp_glyph():
     return mixed_contour_glyph(
         [
@@ -832,6 +908,13 @@ def build_script_coverage() -> None:
     glyph_order.append("latin_extreme_coordinate")
     glyph_order.append("latin_segment_limit")
     glyph_order.append("beng_serif_pointer_order")
+    # Append-only: these Hebrew glyphs exercise the long-blue contour scan
+    # without changing the numeric IDs used by existing fixture cases.
+    glyph_order.append("hebrew_long_blue_replacement")
+    glyph_order.append("hebrew_long_blue_degenerate")
+    glyph_order.append("hebrew_long_blue_scan_rejection")
+    glyph_order.append("hebrew_long_blue_offcurve")
+    glyph_order.append("hebrew_long_blue_inner_break")
 
     glyphs = {
         ".notdef": rectangle_glyph(80, -120, 520, 720),
@@ -928,6 +1011,21 @@ def build_script_coverage() -> None:
     glyphs["latin_segment_limit"] = latin_segment_limit_glyph()
     metrics["latin_segment_limit"] = (1000, 10)
     cmap[0xE100] = "latin_segment_limit"
+    glyphs["hebrew_long_blue_replacement"] = hebrew_long_blue_replacement_glyph()
+    metrics["hebrew_long_blue_replacement"] = (700, 100)
+    cmap[0x05D3] = "hebrew_long_blue_replacement"
+    glyphs["hebrew_long_blue_degenerate"] = hebrew_long_blue_degenerate_glyph()
+    metrics["hebrew_long_blue_degenerate"] = (700, 100)
+    cmap[0x05D4] = "hebrew_long_blue_degenerate"
+    glyphs["hebrew_long_blue_scan_rejection"] = hebrew_long_blue_scan_rejection_glyph()
+    metrics["hebrew_long_blue_scan_rejection"] = (700, 100)
+    cmap[0x05D7] = "hebrew_long_blue_scan_rejection"
+    glyphs["hebrew_long_blue_offcurve"] = hebrew_long_blue_offcurve_glyph()
+    metrics["hebrew_long_blue_offcurve"] = (700, 100)
+    cmap[0x05DA] = "hebrew_long_blue_offcurve"
+    glyphs["hebrew_long_blue_inner_break"] = hebrew_long_blue_inner_break_glyph()
+    metrics["hebrew_long_blue_inner_break"] = (700, 100)
+    cmap[0x05DB] = "hebrew_long_blue_inner_break"
 
     font = FontBuilder(UNITS_PER_EM, isTTF=True)
     font.setupGlyphOrder(glyph_order)
