@@ -568,16 +568,17 @@ worktree at that point:
 | 171 | `e8f2111` (keep Type 1 MM coverage probe internal) | Kept the higher-dimensional Type 1 MM coverage probe private and invoked it through the existing `FT_Set_MM_WeightVector` setter, preserving the coverage route while keeping the public audit inventory unchanged at 710 functions. The normal two-axis behavior remains unchanged. Pushed-head parity run `1a75974c-88aa-41e8-beab-2d3a25784df7`, recorded in `doc/runtime_parity_evidence.json`, passed 7,841 / 7,841 runnable comparisons with 0 failures and 3 pending safety-extension cases. All-lane Coverage MCP run `e001b097-293a-4a44-91a9-6c2a59f4ab96`, snapshot `6fd135a2-0365-4e73-8348-9574b8f2fbba`, completed in 75.204 seconds and measured 51,710 / 54,772 lines, 10,358 / 12,592 branches, 3,511 / 3,846 functions, and 71,303 / 75,879 regions. The C-ABI scorecard remains 10 / 12 categories complete; the Windows import-library item and four fresh target-lane bundles remain. |
 | 172 | `86d210c` (WinFNT and sbix size-selection coverage route) | The existing `freetype.FT_Select_Size.success_select_bitmap_strike` parity case now invokes a nightly-only probe using the maintained `input/fonts/winfnt/bitmap-header.fnt` and `input/fonts/sbix/sbix-bitmap-only.ttf` inputs. It reaches the WinFNT strike path, the sbix strike path, and both invalid-index errors without adding fixtures or changing parity outputs. Pushed-head parity run `39140ed4-e57f-4898-9ae3-5c2030d503c7`, recorded in `doc/runtime_parity_evidence.json`, passed 7,841 / 7,841 runnable comparisons with 0 failures and 3 pending safety-extension cases. All-lane Coverage MCP run `b6887c27-11d3-4a56-a75e-4de12086310b`, snapshot `bb40e45a-5321-4b94-a581-ee007dc4550f`, completed in 83.905 seconds and measured 51,731 / 54,772 lines, 10,362 / 12,592 branches, 3,512 / 3,846 functions, and 71,342 / 75,879 regions. The C-ABI scorecard remains 10 / 12 categories complete; the Windows import-library item and four fresh target-lane bundles remain. |
 | 173 | `d502307` (Type 1 number decoding coverage route) | The existing `freetype.FT_Load_Glyph.default_load` parity route now invokes a nightly-only probe for all Type 1 number encodings plus malformed and truncated encodings before normal charstring lookup, without adding fixtures or changing parity outputs. Pushed-head parity run `d9c3b231-98fe-4382-a441-441a6d99bf84`, recorded in `doc/runtime_parity_evidence.json`, passed 7,841 / 7,841 runnable comparisons with 0 failures and 3 pending safety-extension cases. All-lane Coverage MCP run `43a85a62-c061-4bdf-9442-d3706bdce374`, snapshot `375d7803-7efa-490a-aa8f-af9dbc62036c`, completed in 79.714 seconds and measured 51,771 / 54,801 lines, 10,364 / 12,592 branches, 3,513 / 3,847 functions, and 71,395 / 75,909 regions. The C-ABI scorecard remains 10 / 12 categories complete; the Windows import-library item and four fresh target-lane bundles remain. |
+| 174 | `0fdc628` (CBLC missing-glyph fallback coverage route) | The existing `freetype.FT_Select_Size.success_select_bitmap_strike` coverage-only probe now also opens the maintained CBLC/CBDT gray-format-1 input and loads missing glyph 0 with `FT_LOAD_SBITS_ONLY`, exercising the Cblc empty-bitmap fallback and validating its zero dimensions and empty storage without changing normal parity outputs. Pushed-head parity run `015a4a36-9fb7-41af-85bc-5289941605c7`, recorded in `doc/runtime_parity_evidence.json`, passed 7,841 / 7,841 runnable comparisons with 0 failures and 3 pending safety-extension cases. All-lane Coverage MCP run `8c71cb2b-4195-4c87-8d95-2c6f7f799efd`, snapshot `9ce54c70-4d60-405f-9da6-279d55a6d7bd`, completed in 71.430 seconds and measured 51,814 / 54,801 lines, 10,368 / 12,592 branches, 3,516 / 3,847 functions, and 71,437 / 75,909 regions; relative to entry 173, covered lines rose by 43, branches by 4, functions by 3, and regions by 42. The C-ABI scorecard remains 10 / 12 categories complete; the Windows import-library item and four fresh target-lane bundles remain. |
 
 The current pushed-head parity verification is Coverage MCP parity run
-`d9c3b231-98fe-4382-a441-441a6d99bf84`, recorded in
+`015a4a36-9fb7-41af-85bc-5289941605c7`, recorded in
 `doc/runtime_parity_evidence.json`: it passed 7,841 / 7,841 runnable
 comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **7,844 concrete cases, 0 pending routes and 0 generic-fallback rows**, with
 218 / 218 function routes present in each ABI surface. The source-digest
 attestation was refreshed in `doc/runtime_parity_evidence.json`; its current
 parity-tree digest is
-`9ccac6595dbfd1d1daad32632c11d8c94d694754fa576af32215a8e274a16b08`.
+`60f7892c24b0829b901a1ccdd98c2a06d863cf8566869953ed285221633e6b91`.
 The tracked C-ABI scorecard is **10 / 12 categories complete**; C01.7 is
 5,389 / 5,389, C08.3 is 7,841 / 7,841, C11.3 is 7 / 8, and C12.3 is 1 / 5.
 The Windows import-library item and four fresh target-lane bundles remain.
@@ -591,10 +592,10 @@ memory-unsafe for FreeType 2.14.3:
 rejects each input without dereferencing it, and the safety behavior remains
 covered by the facade/package checks; none is a missing runtime route.
 
-The current pushed-head all-lane run `43a85a62-c061-4bdf-9442-d3706bdce374`
-completed in 79.714 seconds with snapshot
-`375d7803-7efa-490a-aa8f-af9dbc62036c`. It measured 51,771 / 54,801 lines,
-10,364 / 12,592 branches, 3,513 / 3,847 functions, and 71,395 / 75,909
+The current pushed-head all-lane run `8c71cb2b-4195-4c87-8d95-2c6f7f799efd`
+completed in 71.430 seconds with snapshot
+`9ce54c70-4d60-405f-9da6-279d55a6d7bd`. It measured 51,814 / 54,801 lines,
+10,368 / 12,592 branches, 3,516 / 3,847 functions, and 71,437 / 75,909
 regions; the nine process-local shard writers split the 7,841 runnable cases
 before report generation. On this 12-logical-CPU host the adaptive
 default uses three shards per backend; constrained runners use two, and
@@ -605,8 +606,9 @@ changes still force a clean rebuild.
 The preceding cold validation run `da91cabd-0631-46ec-83b8-f3e609246ffe`
 took 70.571 seconds; retained logs attribute 54.73 seconds to the instrumented
 test-profile compilation, while the nine concurrent shard executions each took
-10.02-12.98 seconds. The latest committed-head run above took 79.714 seconds; the
-earlier warm validation took 14.428 seconds, confirming that the larger cold-run
+10.02-12.98 seconds. The preceding committed-head run
+`43a85a62-c061-4bdf-9442-d3706bdce374` took 79.714 seconds; the earlier warm
+validation took 14.428 seconds, confirming that the larger cold-run
 delay is cache-miss compilation rather than Coverage MCP ingestion or pinned-C
 oracle execution.
 The historical optimized-profile validation run `79f4439e-2db4-4ee2-8746-c101d8db2925`
