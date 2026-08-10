@@ -781,6 +781,134 @@
       }
     },
     {
+      "case_id": "ftcolor.FT_Get_Paint.malformed_translate_dx_read_returns_false",
+      "subject": "ftcolor.FT_Get_Paint",
+      "case": "malformed_translate_dx_read_returns_false",
+      "operation": "ftcolor.get_paint_malformed",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/color/malformed/colr-v1-malformed-translate-dx-payload.ttf",
+            "asset_kind": "font",
+            "properties": [
+              "openable COLRv1 face with a translate root",
+              "nested child resolution succeeds before the dx coordinate reaches the COLR table boundary",
+              "valid glyph 50 solid control for the successful two-step call"
+            ]
+          }
+        },
+        "params": {
+          "base_glyphs": [
+            "paint_translate_dx_payload_truncated",
+            "valid_control"
+          ],
+          "follow_calls": [
+            "FT_Get_Color_Glyph_Paint",
+            "FT_Get_Paint"
+          ],
+          "prefill_paint": "sentinel-bytes"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcolor",
+        "area:colr-v1",
+        "coverage:malformed-translate-dx-read"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Bool",
+          "paint_before_after": "sentinel mutation classification",
+          "control_return": "FT_Bool"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "return",
+            "paint_before_after",
+            "control_return"
+          ]
+        },
+        "oracle": "generated_at_runtime_from_c_freetype",
+        "sources_checked": [
+          "freetype/src/sfnt/ttcolr.c",
+          "freetype/include/freetype/ftcolor.h"
+        ],
+        "fixture_requirements": [
+          "Runtime compares C FreeType, Rust FFI, C ABI, and Wasm FFI outputs",
+          "A valid nested child reaches the translate dx boundary without truncating the SFNT container"
+        ]
+      }
+    },
+    {
+      "case_id": "ftcolor.FT_Get_Paint.malformed_translate_dy_read_returns_false",
+      "subject": "ftcolor.FT_Get_Paint",
+      "case": "malformed_translate_dy_read_returns_false",
+      "operation": "ftcolor.get_paint_malformed",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/color/malformed/colr-v1-malformed-translate-dy-payload.ttf",
+            "asset_kind": "font",
+            "properties": [
+              "openable COLRv1 face with a translate root",
+              "nested child resolution and the dx coordinate succeed before the dy coordinate reaches the COLR table boundary",
+              "valid glyph 50 solid control for the successful two-step call"
+            ]
+          }
+        },
+        "params": {
+          "base_glyphs": [
+            "paint_translate_dy_payload_truncated",
+            "valid_control"
+          ],
+          "follow_calls": [
+            "FT_Get_Color_Glyph_Paint",
+            "FT_Get_Paint"
+          ],
+          "prefill_paint": "sentinel-bytes"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcolor",
+        "area:colr-v1",
+        "coverage:malformed-translate-dy-read"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Bool",
+          "paint_before_after": "sentinel mutation classification",
+          "control_return": "FT_Bool"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "return",
+            "paint_before_after",
+            "control_return"
+          ]
+        },
+        "oracle": "generated_at_runtime_from_c_freetype",
+        "sources_checked": [
+          "freetype/src/sfnt/ttcolr.c",
+          "freetype/include/freetype/ftcolor.h"
+        ],
+        "fixture_requirements": [
+          "Runtime compares C FreeType, Rust FFI, C ABI, and Wasm FFI outputs",
+          "A valid nested child and dx coordinate precede the translate dy boundary without truncating the SFNT container"
+        ]
+      }
+    },
+    {
       "case_id": "ftcolor.FT_Get_Paint.malformed_transform_payload_reads_return_false",
       "subject": "ftcolor.FT_Get_Paint",
       "case": "malformed_transform_payload_reads_return_false",

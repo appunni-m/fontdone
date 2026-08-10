@@ -223,6 +223,8 @@ unit-only calls into the paint parser.
 Separate maintained COLRv1 transform-boundary fixtures cover the initial
 static-scale read and final centered-rotate coordinate read without aliasing
 their paint records in one malformed table.
+Separate translate-boundary fixtures cover the dx read and the dy read after a
+successful dx read without aliasing their paint records.
 
 The wrapper also writes `target/parity-evidence/test-parity.log` and
 `target/parity-evidence/runtime_parity.json`. The JSON binds the measurement to
@@ -463,7 +465,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 734 tracked paths and no symlinks.
+The canonical input tree currently contains 736 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 

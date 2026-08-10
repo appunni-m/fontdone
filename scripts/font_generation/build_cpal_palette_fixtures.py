@@ -1075,6 +1075,16 @@ def build_colr_v1_malformed_rotate_centered_final_payload_font(path: Path) -> No
     build_colr_v1_malformed_transform_boundary_font(path, 26, 9)
 
 
+def build_colr_v1_malformed_translate_dx_payload_font(path: Path) -> None:
+    """Build a translate root whose dx field reaches the table end."""
+    build_colr_v1_malformed_transform_boundary_font(path, 14, 5)
+
+
+def build_colr_v1_malformed_translate_dy_payload_font(path: Path) -> None:
+    """Build a translate root whose dy field reaches the table end after dx."""
+    build_colr_v1_malformed_transform_boundary_font(path, 14, 6)
+
+
 def build_colr_v1_malformed_layer_list_font(path: Path) -> None:
     """Build a COLRv1 control with an out-of-range PaintColrLayers index.
 
@@ -1544,6 +1554,12 @@ def main() -> None:
         COLOR_OUTPUT_DIR
         / "malformed"
         / "colr-v1-malformed-rotate-centered-final-payload.ttf"
+    )
+    build_colr_v1_malformed_translate_dx_payload_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-translate-dx-payload.ttf"
+    )
+    build_colr_v1_malformed_translate_dy_payload_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-translate-dy-payload.ttf"
     )
     build_colr_v1_malformed_layer_list_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-layer-list.ttf"

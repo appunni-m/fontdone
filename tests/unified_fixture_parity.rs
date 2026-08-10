@@ -16162,6 +16162,8 @@ fn malformed_colr_paint_glyphs(case: &InputCase, label_count: usize) -> Result<V
     } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_scale_initial_payload_read_returns_false"
         || case.case_id
             == "ftcolor.FT_Get_Paint.malformed_rotate_centered_second_coordinate_read_returns_false"
+        || case.case_id == "ftcolor.FT_Get_Paint.malformed_translate_dx_read_returns_false"
+        || case.case_id == "ftcolor.FT_Get_Paint.malformed_translate_dy_read_returns_false"
     {
         vec![36, 50]
     } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_transform_payload_reads_return_false" {

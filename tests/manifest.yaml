@@ -4135,6 +4135,10 @@ subjects:
         description: A static scale root with a valid nested child reaches its first scale-field boundary at the end of the COLR table while a valid solid control remains resolvable.
       - id: malformed_rotate_centered_second_coordinate_read_returns_false
         description: A centered rotate root with a valid nested child and first center coordinate reaches its second center-coordinate boundary at the end of the COLR table while a valid solid control remains resolvable.
+      - id: malformed_translate_dx_read_returns_false
+        description: A translate root with a valid nested child reaches its dx coordinate boundary at the end of the COLR table while a valid solid control remains resolvable.
+      - id: malformed_translate_dy_read_returns_false
+        description: A translate root with a valid nested child and readable dx coordinate reaches its dy coordinate boundary at the end of the COLR table while a valid solid control remains resolvable.
       - id: malformed_transform_payload_reads_return_false
         description: Scale and rotate roots whose fixed payloads end at the COLR table boundary return 0 from FT_Get_Paint while a valid solid control remains resolvable.
       - id: malformed_colorline_return_false
