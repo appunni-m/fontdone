@@ -106,31 +106,31 @@ The latest full parity snapshot was recorded on **2026-08-10** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,648 |
-| Passed cases | 7,648 |
+| Runnable exact-comparison cases | 7,650 |
+| Passed cases | 7,650 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
-| Covered manifest cases | 4,210 |
+| Covered manifest cases | 4,212 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,303 |
-| Concrete expanded cases | 7,651 |
+| Logical declared cases | 4,305 |
+| Concrete expanded cases | 7,653 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`7,648 / 7,648` means every runnable case in that execution matched; the 3
+`7,650 / 7,650` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest pushed-commit verification is Coverage MCP parity run
-`bf9a4027-1c0e-4530-bc71-9537025090dd`, whose passing report was recorded in
+`4c7b8418-ebda-481f-81f6-15f23f2ff25b`, whose passing report was recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-7,648 / 7,648 runnable comparisons with 0 failures and 3 explicitly pending
+7,650 / 7,650 runnable comparisons with 0 failures and 3 explicitly pending
 safety-extension cases.
-The record operation was run `ebc3ea0c-775b-48f0-a294-6e23b700f501`; its
+The record operation was run `5b3fdb46-8bef-4c81-8422-546f1a5ecf0e`; its
 source-bound parity-tree digest is
-`5b8d1d0040d6671da72f3ebfa1f64cd94cb268a8b170411cfa285c5922e68453`.
+`0ebbc547e0fee357935f0ff7a188960de6804306a056ebec5beb38b0303911ef`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -144,19 +144,19 @@ their exact worktree than the committed release snapshot.
 
 The latest pushed-commit all-lane coverage snapshot was recorded on
 **2026-08-10** for the worktree based at commit
-`03bf2e7799346976304b43506b9f5f3e5bffd3b8`
-(Coverage MCP run `2cb7c925-28fe-4af9-b3f5-8aa83d6d9fc8`, snapshot
-`ad13baed-650f-4893-a3f2-0ee4760fea46`):
+`06a8ce2b91d041d1bc75618e579480d11f182dcd`
+(Coverage MCP run `669d796d-c1aa-411c-ad12-98a6d2089fc0`, snapshot
+`feb0e45d-3088-4a50-918b-ae580a6fb5f9`):
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 50,538 / 54,373 | 92.95% |
-| Branches | 10,083 / 12,537 | 80.43% |
-| Functions | 3,478 / 3,832 | 90.76% |
-| Regions | 69,408 / 75,474 | 91.96% |
+| Lines | 50,573 / 54,362 | 93.03% |
+| Branches | 10,101 / 12,522 | 80.67% |
+| Functions | 3,479 / 3,833 | 90.76% |
+| Regions | 69,451 / 75,449 | 92.05% |
 
-The current managed validation completed in 60.363 seconds; its three split
-backends passed all 7,648 runnable comparisons. Its nine shard processes split
+The current managed validation completed in 60.622 seconds; its three split
+backends passed all 7,650 runnable comparisons. Its nine shard processes split
 the same exact matrix into disjoint slices before report generation. An earlier source-bound validation completed in 67.412 seconds after a
 50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
 shard processes each compared 2,525 or 2,526 cases before report generation.
@@ -166,7 +166,7 @@ adaptive three-shard default on this 12-logical-CPU host. Nine shard processes
 ran concurrently—three each for Rust FFI, C ABI, and WASM—and each compared
 2,524 or 2,525 cases before the raw profiles were merged. A repeat completed
 in 16.377 seconds; the two-shard baseline took 19.747 seconds. The coverage
-totals and current parity evidence are based on 7,648 / 7,648 runnable
+totals and current parity evidence are based on 7,650 / 7,650 runnable
 comparisons.
 
 The maintained Apple full-Unicode format-13 font and malformed format-13
