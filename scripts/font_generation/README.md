@@ -95,6 +95,12 @@ as a valid solid control.  The fixture therefore exercises the pinned lazy
 `FT_Get_Paint` failure format for PaintGlyph, PaintTransform, PaintTranslate,
 PaintScale, PaintRotate, PaintSkew, and both PaintComposite child pointers.
 
+`malformed/colr-v1-malformed-paint-payloads.ttf` is a deterministic derivative
+that repoints eight base roots to the final bytes of the COLR table.  Its
+format bytes remain discoverable while the first unavailable PaintColrLayers,
+PaintSolid, gradient, PaintGlyph, and PaintComposite payload fields exercise
+the pinned lazy reader's boundary failures without truncating the SFNT.
+
 `malformed/colr-v1-malformed-layer-list.ttf` is a deterministic derivative
 that preserves the first PaintColrLayers root but replaces its
 `FirstLayerIndex` with `4`, beyond the maintained three-entry LayerV1List.  The

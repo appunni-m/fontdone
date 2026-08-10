@@ -5,6 +5,7 @@
     "success_resolves_each_supported_paint_format",
     "success_inserts_root_transform",
     "malformed_child_offsets_return_false",
+    "malformed_payload_reads_return_false",
     "malformed_layer_list_index_returns_false",
     "error_null_or_missing_colr",
     "error_null_output_policy"
@@ -310,6 +311,77 @@
         "fixture_requirements": [
           "Runtime compares C FreeType, Rust FFI, C ABI, and Wasm FFI outputs",
           "Malformed child offsets cover every public wrapper family plus source/backdrop composite failures"
+        ]
+      }
+    },
+    {
+      "case_id": "ftcolor.FT_Get_Paint.malformed_payload_reads_return_false",
+      "subject": "ftcolor.FT_Get_Paint",
+      "case": "malformed_payload_reads_return_false",
+      "operation": "ftcolor.get_paint_malformed",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/color/malformed/colr-v1-malformed-paint-payloads.ttf",
+            "asset_kind": "font",
+            "properties": [
+              "openable COLRv1 face with eight base roots pointed at the final bytes of the COLR table",
+              "truncated PaintColrLayers, PaintSolid, gradient, PaintGlyph, and PaintComposite payload fields",
+              "valid glyph 50 solid control for the successful two-step call"
+            ]
+          }
+        },
+        "params": {
+          "base_glyphs": [
+            "paint_layers_payload_truncated",
+            "paint_solid_payload_truncated",
+            "paint_linear_child_offset_truncated",
+            "paint_radial_child_offset_truncated",
+            "paint_sweep_child_offset_truncated",
+            "paint_var_linear_child_offset_truncated",
+            "paint_glyph_child_offset_truncated",
+            "paint_composite_source_offset_truncated",
+            "valid_control"
+          ],
+          "follow_calls": [
+            "FT_Get_Color_Glyph_Paint",
+            "FT_Get_Paint"
+          ],
+          "prefill_paint": "sentinel-bytes"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcolor",
+        "area:colr-v1",
+        "coverage:malformed-payload-reads"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Bool",
+          "paint_before_after": "sentinel mutation classification",
+          "control_return": "FT_Bool"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "return",
+            "paint_before_after",
+            "control_return"
+          ]
+        },
+        "oracle": "generated_at_runtime_from_c_freetype",
+        "sources_checked": [
+          "freetype/src/sfnt/ttcolr.c",
+          "freetype/include/freetype/ftcolor.h"
+        ],
+        "fixture_requirements": [
+          "Runtime compares C FreeType, Rust FFI, C ABI, and Wasm FFI outputs",
+          "Boundary-root payloads exercise first unavailable fields without truncating the SFNT container"
         ]
       }
     },

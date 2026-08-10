@@ -738,6 +738,60 @@ def build_colr_v1_malformed_child_paints_font(path: Path) -> None:
     path.write_bytes(data)
 
 
+def build_colr_v1_malformed_payloads_font(path: Path) -> None:
+    """Build a COLRv1 matrix whose paint payloads end at the table boundary.
+
+    The base-glyph records point eight roots at the final bytes of the COLR
+    table.  Their format bytes remain addressable through
+    ``FT_Get_Color_Glyph_Paint``, while the pinned C reader and Rust parser
+    reject the first unavailable payload field for PaintColrLayers, PaintSolid,
+    and wrapper paint families.  Glyph 50 remains the valid solid control.
+    """
+    source = COLOR_OUTPUT_DIR / "colr-v1-all-paints.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    table = font.reader.tables.get(b"COLR")
+    if table is None or table.length < 18:
+        raise RuntimeError(f"canonical COLRv1 fixture has no usable COLR table: {source}")
+
+    data = bytearray(source.read_bytes())
+    table_offset = table.offset
+    table_end = table_offset + table.length
+    base_offset = int.from_bytes(data[table_offset + 14 : table_offset + 18], "big")
+    base_start = table_offset + base_offset
+    base_count = int.from_bytes(data[base_start : base_start + 4], "big")
+    formats = (1, 2, 4, 6, 8, 5, 10, 32)
+    if base_count < len(formats):
+        raise ValueError(
+            f"canonical COLRv1 fixture has only {base_count} base records, "
+            f"cannot mutate {len(formats)}"
+        )
+
+    table_relative_positions = [table.length - 2 - index for index in range(len(formats))]
+    for record_index, (paint_format, table_relative_position) in enumerate(
+        zip(formats, table_relative_positions)
+    ):
+        record_start = base_start + 4 + record_index * 6
+        glyph_id = int.from_bytes(data[record_start : record_start + 2], "big")
+        expected_glyph_id = 36 + record_index
+        if glyph_id != expected_glyph_id:
+            raise RuntimeError(
+                f"unexpected canonical COLRv1 glyph at record {record_index}: "
+                f"{glyph_id} != {expected_glyph_id}"
+            )
+        paint_position = table_offset + table_relative_position
+        if not table_offset <= paint_position < table_end:
+            raise RuntimeError(
+                f"canonical COLRv1 boundary paint offset leaves table: {paint_position:#x}"
+            )
+        data[record_start + 2 : record_start + 6] = (
+            table_relative_position - base_offset
+        ).to_bytes(4, "big")
+        data[paint_position] = paint_format
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
 def build_colr_v1_malformed_layer_list_font(path: Path) -> None:
     """Build a COLRv1 control with an out-of-range PaintColrLayers index.
 
@@ -1082,6 +1136,9 @@ def main() -> None:
     )
     build_colr_v1_malformed_child_paints_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-child-paints.ttf"
+    )
+    build_colr_v1_malformed_payloads_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-paint-payloads.ttf"
     )
     build_colr_v1_malformed_layer_list_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-layer-list.ttf"

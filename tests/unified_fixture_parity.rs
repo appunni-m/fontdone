@@ -15881,6 +15881,8 @@ fn malformed_colr_paint_labels(case: &InputCase) -> Result<Vec<String>, String> 
 fn malformed_colr_paint_glyphs(case: &InputCase, label_count: usize) -> Result<Vec<FT_UInt>, String> {
     let glyphs = if case.case_id == "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false" {
         vec![36, 37, 38, 39, 40, 41, 42, 43, 50]
+    } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_payload_reads_return_false" {
+        vec![36, 37, 38, 39, 40, 41, 42, 43, 50]
     } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_layer_list_index_returns_false" {
         vec![36, 50]
     } else {
@@ -39678,6 +39680,7 @@ fn with_public_family_exact_error(mut case: InputCase) -> InputCase {
                 == "ftcolor.FT_COLR_PAINTFORMAT_UNSUPPORTED.invalid_format_returns_false"
             || case.case_id == "ftcolor.FT_COLR_PAINT_FORMAT_MAX.read_paint_rejects_max_and_above"
             || case.case_id == "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false"
+            || case.case_id == "ftcolor.FT_Get_Paint.malformed_payload_reads_return_false"
             || case.case_id
                 == "ftcolor.FT_Get_Paint.malformed_layer_list_index_returns_false"
             || case.case_id == "ftcolor.FT_Get_Color_Glyph_ClipBox.null_and_non_sfnt_rejected"

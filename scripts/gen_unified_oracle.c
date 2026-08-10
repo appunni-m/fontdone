@@ -21662,6 +21662,24 @@ static int emit_color_paint_malformed_case(int argc, char** argv) {
         }
         malformed_count = 8;
         control_glyph = 50;
+    } else if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_payload_reads_return_false")) {
+        static const char* payload_labels[] = {
+            "paint_layers_payload_truncated",
+            "paint_solid_payload_truncated",
+            "paint_linear_child_offset_truncated",
+            "paint_radial_child_offset_truncated",
+            "paint_sweep_child_offset_truncated",
+            "paint_var_linear_child_offset_truncated",
+            "paint_glyph_child_offset_truncated",
+            "paint_composite_source_offset_truncated",
+        };
+        static const FT_UInt payload_glyphs[] = {36, 37, 38, 39, 40, 41, 42, 43};
+        for (size_t index = 0; index < 8; index++) {
+            labels[index] = payload_labels[index];
+            glyphs[index] = payload_glyphs[index];
+        }
+        malformed_count = 8;
+        control_glyph = 50;
     } else if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_layer_list_index_returns_false")) {
         labels[0] = "paint_colr_layers_first_layer_index_out_of_range";
         glyphs[0] = 36;
