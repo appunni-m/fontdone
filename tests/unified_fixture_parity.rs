@@ -56,8 +56,8 @@ use std::time::{Duration, Instant};
 use fontdone::autohint::coverage as autohint_coverage;
 use fontdone::ffi::*;
 use fontdone::{
-    CharmapInfo, Face as ApiFace, Font, FontError, GlyphSlot as ApiGlyphSlot, LoadFlags, LoadMode,
-    PixelMode, RenderMode, RenderedBitmap,
+    CharmapInfo, Face as ApiFace, Font, FontError, GlyphSlot as ApiGlyphSlot, LoadMode, PixelMode,
+    RenderMode, RenderedBitmap,
 };
 use fontdone_c_abi as c_abi;
 use fontdone_wasm as wasm_abi;
@@ -140,7 +140,7 @@ fn coverage_probe_cblc_missing_glyph() {
         .expect("maintained CBLC coverage input should open");
     face.set_pixel_sizes(20, 20);
     let slot = face
-        .load_glyph(0, LoadFlags::SBITS_ONLY)
+        .load_glyph(0, fontdone::LoadFlags::SBITS_ONLY)
         .expect("missing CBLC glyph should use the empty bitmap fallback");
     assert!(slot.bitmap.is_none());
     assert_eq!(slot.metrics.width, 0);
