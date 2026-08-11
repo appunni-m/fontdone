@@ -8957,6 +8957,19 @@ pub fn FT_Get_Color_Glyph_Layer(
     };
     *aglyph_index = layer.glyph_index;
     *acolor_index = layer.color_index;
+    let glyph_count = FT_UInt::try_from(face.num_glyphs).unwrap_or(0);
+    let palette_entry_count = face
+        .cpal
+        .as_ref()
+        .map_or(0, |cpal| cpal.borrow().active_palette.len());
+    if layer.glyph_index >= glyph_count
+        || (layer.color_index != 0xFFFF
+            && usize::try_from(layer.color_index)
+                .ok()
+                .is_none_or(|index| index >= palette_entry_count))
+    {
+        return 0;
+    }
     iterator.layer = iterator.layer.saturating_add(1);
     1
 }

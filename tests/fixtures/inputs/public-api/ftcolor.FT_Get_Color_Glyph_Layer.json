@@ -271,22 +271,62 @@
       "schema": "api_result",
       "expect_error": true,
       "inputs": {
-        "assets": {
-          "font": {
-            "kind": "ref",
-            "id": "input/fonts/color/malformed/colr-v0-invalid-layer-records.ttf",
-            "asset_kind": "font"
+        "variants": [
+          {
+            "id": "layer_gid_out_of_range",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/color/malformed/colr-v0-invalid-layer-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "symbol_under_test": "FT_Get_Color_Glyph_Layer",
+              "base_glyph": "layer_gid_out_of_range",
+              "prefill_outputs": "sentinel-scalars"
+            },
+            "coverage": [
+              "ftcolor.get_color_glyph_layer:invalid-layer-glyph-index"
+            ]
+          },
+          {
+            "id": "layer_color_index_out_of_cpal_range",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/color/malformed/colr-v0-invalid-layer-color.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "symbol_under_test": "FT_Get_Color_Glyph_Layer",
+              "base_glyph": "layer_color_index_out_of_cpal_range",
+              "prefill_outputs": "sentinel-scalars"
+            },
+            "coverage": [
+              "ftcolor.get_color_glyph_layer:invalid-layer-color-index"
+            ]
+          },
+          {
+            "id": "truncated_layer_array",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/color/malformed/colr-v0-truncated-layer-array.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "symbol_under_test": "FT_Get_Color_Glyph_Layer",
+              "base_glyph": "truncated_layer_array",
+              "prefill_outputs": "sentinel-scalars"
+            },
+            "coverage": [
+              "ftcolor.get_color_glyph_layer:truncated-layer-array"
+            ]
           }
-        },
-        "params": {
-          "symbol_under_test": "FT_Get_Color_Glyph_Layer",
-          "base_glyphs": [
-            "layer_gid_out_of_range",
-            "layer_color_index_out_of_cpal_range",
-            "truncated_layer_array"
-          ],
-          "prefill_outputs": "sentinel-scalars"
-        }
+        ]
       },
       "classifiers": [
         "kind:function",
@@ -299,16 +339,18 @@
         "status": "error",
         "output_shape": {
           "return": "FT_Bool",
-          "outputs_before_after": "sentinel mutation classification",
-          "iterator_before_after": "FT_LayerIterator state",
+          "glyph_index": "caller output after the malformed read",
+          "color_index": "caller output after the malformed read",
+          "iterator": "FT_LayerIterator state",
           "malformed_variant": "string"
         },
         "compare": {
           "mode": "exact",
           "paths": [
             "return",
-            "outputs_before_after",
-            "iterator_before_after",
+            "glyph_index",
+            "color_index",
+            "iterator",
             "malformed_variant"
           ]
         },

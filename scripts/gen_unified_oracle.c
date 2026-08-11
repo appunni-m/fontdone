@@ -21782,6 +21782,42 @@ static int emit_color_glyph_layer_case(int argc, char** argv) {
     return 0;
 }
 
+static int emit_color_glyph_layer_malformed_case(int argc, char** argv) {
+    if (argc != 7) {
+        fprintf(stderr, "--color-glyph-layer-malformed-case requires CASE SOURCE_KIND SOURCE FACE_INDEX BASE_GLYPH\n");
+        return 2;
+    }
+    const char* case_id = argv[2];
+    const char* variant = strchr(case_id, '@');
+    OracleFace face;
+    int opened = open_oracle_face(argv[3], argv[4], atol(argv[5]), &face);
+    if (opened != 0) {
+        return opened;
+    }
+    FT_UInt base_glyph = (FT_UInt)strtoul(argv[6], NULL, 10);
+    FT_LayerIterator iterator;
+    memset(&iterator, 0, sizeof(iterator));
+    FT_UInt glyph_index = 0xDEAD;
+    FT_UInt color_index = 0xBEEF;
+    FT_Bool result = FT_Get_Color_Glyph_Layer(
+        face.face,
+        base_glyph,
+        &glyph_index,
+        &color_index,
+        &iterator);
+
+    printf("{");
+    print_status(FT_Err_Invalid_Table);
+    printf(",\"output\":{\"return\":%u,\"glyph_index\":%u,\"color_index\":%u,\"iterator\":",
+           result,
+           glyph_index,
+           color_index);
+    print_layer_iterator_json(iterator);
+    printf(",\"malformed_variant\":\"%s\"}}\n", variant ? variant + 1 : "single");
+    close_oracle_face(&face);
+    return 0;
+}
+
 static void print_color_glyph_layer_sequence_for_base_glyph_json(FT_Face face,
                                                                  FT_UInt base_glyph,
                                                                  int max_calls) {
@@ -38939,6 +38975,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 7 && streq(argv[1], "--color-glyph-layer-case")) {
         return emit_color_glyph_layer_case(argc, argv);
+    }
+    if (argc == 7 && streq(argv[1], "--color-glyph-layer-malformed-case")) {
+        return emit_color_glyph_layer_malformed_case(argc, argv);
     }
     if ((argc == 7 || argc == 9 || argc == 15 || argc == 17) &&
         streq(argv[1], "--color-glyph-clipbox-case")) {

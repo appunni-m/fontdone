@@ -120,6 +120,14 @@ root remains discoverable through `FT_Get_Color_Glyph_Paint`, while
 `FT_Get_Paint` exercises the pinned layer-bounds rejection; glyph 50 remains
 the valid solid control.
 
+The three `malformed/colr-v0-invalid-layer-*.ttf` and
+`malformed/colr-v0-truncated-layer-array.ttf` controls are synthetic
+DejaVu-derived COLR v0 faces with one layer record each.  They retain an
+openable SFNT while separately exercising an out-of-range layer glyph, an
+out-of-range CPAL index, and a base record whose layer count exceeds the
+layer array.  `FT_Get_Color_Glyph_Layer` must reject each malformed record
+lazily with the pinned output and iterator mutation behavior.
+
 The seven `malformed/colr-v1-clip*.ttf` controls are deterministic derivatives
 of `colr-v1-clipbox-format1-format2.ttf`, with the LayerV1List control derived
 from `colr-v1-all-paints.ttf`. They retain an openable SFNT and mutate only

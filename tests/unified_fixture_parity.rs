@@ -3505,6 +3505,9 @@ impl BackendComparisonWorker {
             "ftbzip2.stream_open_bzip2" if is_bzip2_enabled_stream_case(case) => {
                 bzip2_stream_output(case, Bzip2StreamBackend::Rust)
             }
+            "ftcolor.get_color_glyph_layer" if color_glyph_layer_malformed_route_supported(case) => {
+                rust_color_glyph_layer_malformed_case(case)
+            }
             "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
                 rust_color_glyph_layer_case(case)
             }
@@ -3957,6 +3960,9 @@ impl BackendComparisonWorker {
             }
             "ftbzip2.stream_open_bzip2" if is_bzip2_enabled_stream_case(case) => {
                 bzip2_stream_output(case, Bzip2StreamBackend::CAbi)
+            }
+            "ftcolor.get_color_glyph_layer" if color_glyph_layer_malformed_route_supported(case) => {
+                c_color_glyph_layer_malformed_case(case)
             }
             "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
                 c_color_glyph_layer_case(case)
@@ -4420,6 +4426,9 @@ impl BackendComparisonWorker {
             }
             "ftbzip2.stream_open_bzip2" if is_bzip2_enabled_stream_case(case) => {
                 bzip2_stream_output(case, Bzip2StreamBackend::Wasm)
+            }
+            "ftcolor.get_color_glyph_layer" if color_glyph_layer_malformed_route_supported(case) => {
+                wasm_color_glyph_layer_malformed_case(case)
             }
             "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
                 wasm_color_glyph_layer_case(case)
@@ -15377,6 +15386,18 @@ fn color_glyph_layer_success_route_supported(case: &InputCase) -> bool {
     )
 }
 
+fn color_glyph_layer_malformed_route_supported(case: &InputCase) -> bool {
+    case_id_base(&case.case_id)
+        == "ftcolor.FT_Get_Color_Glyph_Layer.malformed_layer_record_false_behavior"
+}
+
+fn color_glyph_layer_malformed_variant(case: &InputCase) -> Result<&str, String> {
+    case.case_id
+        .split_once('@')
+        .map(|(_, variant)| variant)
+        .ok_or_else(|| format!("malformed color glyph layer case has no variant: {}", case.case_id))
+}
+
 fn layer_iterator_json(iterator: FT_LayerIterator) -> Value {
     json!({
         "num_layers": iterator.num_layers,
@@ -15577,9 +15598,53 @@ fn color_layer_iterator_combined_output_for_open_face(
     })
 }
 
+fn color_glyph_layer_malformed_output_for_open_face(
+    case: &InputCase,
+    backend: ColorGlyphLayerBackend,
+    rust_face: Option<&FT_Face>,
+    c_face: c_abi::FT_Face,
+    wasm_handle: usize,
+) -> Result<RunOutput, String> {
+    let malformed_variant = color_glyph_layer_malformed_variant(case)?;
+    let mut iterator = FT_LayerIterator::default();
+    let mut glyph_index = 0xDEAD;
+    let mut color_index = 0xBEEF;
+    let result = color_glyph_layer_call(
+        backend,
+        rust_face,
+        c_face,
+        wasm_handle,
+        36,
+        &mut glyph_index,
+        &mut color_index,
+        &mut iterator,
+    );
+    Ok(error_with_output(
+        FT_Err_Invalid_Table,
+        json!({
+            "return": result,
+            "glyph_index": glyph_index,
+            "color_index": color_index,
+            "iterator": layer_iterator_json(iterator),
+            "malformed_variant": malformed_variant,
+        }),
+    ))
+}
+
 fn rust_color_glyph_layer_case(case: &InputCase) -> Result<RunOutput, String> {
     let face = open_face(case)?;
     color_glyph_layer_output_for_open_face(
+        case,
+        ColorGlyphLayerBackend::Rust,
+        Some(&face),
+        ptr::null_mut(),
+        0,
+    )
+}
+
+fn rust_color_glyph_layer_malformed_case(case: &InputCase) -> Result<RunOutput, String> {
+    let face = open_face(case)?;
+    color_glyph_layer_malformed_output_for_open_face(
         case,
         ColorGlyphLayerBackend::Rust,
         Some(&face),
@@ -15597,9 +15662,36 @@ fn c_color_glyph_layer_case(case: &InputCase) -> Result<RunOutput, String> {
     output
 }
 
+fn c_color_glyph_layer_malformed_case(case: &InputCase) -> Result<RunOutput, String> {
+    let (library, face) = c_open_face(case)?;
+    let output = color_glyph_layer_malformed_output_for_open_face(
+        case,
+        ColorGlyphLayerBackend::CAbi,
+        None,
+        face,
+        0,
+    );
+    c_done_face(face);
+    c_done_library(library);
+    output
+}
+
 fn wasm_color_glyph_layer_case(case: &InputCase) -> Result<RunOutput, String> {
     let handle = wasm_open_face(case)?;
     let output = color_glyph_layer_output_for_open_face(
+        case,
+        ColorGlyphLayerBackend::Wasm,
+        None,
+        ptr::null_mut(),
+        handle,
+    );
+    wasm_done_face(handle);
+    output
+}
+
+fn wasm_color_glyph_layer_malformed_case(case: &InputCase) -> Result<RunOutput, String> {
+    let handle = wasm_open_face(case)?;
+    let output = color_glyph_layer_malformed_output_for_open_face(
         case,
         ColorGlyphLayerBackend::Wasm,
         None,
@@ -43829,6 +43921,16 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(face_index_param(params)?.to_string());
             Ok(args)
         }
+        "ftcolor.get_color_glyph_layer" if color_glyph_layer_malformed_route_supported(case) => {
+            let mut args = vec![
+                "--color-glyph-layer-malformed-case".to_string(),
+                case.case_id.clone(),
+            ];
+            push_font_source(case, &mut args)?;
+            args.push(face_index_param(params)?.to_string());
+            args.push("36".to_string());
+            Ok(args)
+        }
         "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
             let mut args = vec!["--color-glyph-layer-case".to_string(), case.case_id.clone()];
             push_font_source(case, &mut args)?;
@@ -47993,6 +48095,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftcolor.palette_data_get"
         | "ftcolor.palette_select"
         | "ftcolor.palette_set_foreground_color" => rust_palette_case(case),
+        "ftcolor.get_color_glyph_layer" if color_glyph_layer_malformed_route_supported(case) => {
+            rust_color_glyph_layer_malformed_case(case)
+        }
         "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
             rust_color_glyph_layer_case(case)
         }
@@ -48211,6 +48316,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftcolor.palette_data_get"
         | "ftcolor.palette_select"
         | "ftcolor.palette_set_foreground_color" => c_palette_case(case),
+        "ftcolor.get_color_glyph_layer" if color_glyph_layer_malformed_route_supported(case) => {
+            c_color_glyph_layer_malformed_case(case)
+        }
         "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
             c_color_glyph_layer_case(case)
         }
@@ -49679,6 +49787,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftcolor.palette_data_get"
         | "ftcolor.palette_select"
         | "ftcolor.palette_set_foreground_color" => wasm_palette_case(case),
+        "ftcolor.get_color_glyph_layer" if color_glyph_layer_malformed_route_supported(case) => {
+            wasm_color_glyph_layer_malformed_case(case)
+        }
         "ftcolor.get_color_glyph_layer" if color_glyph_layer_success_route_supported(case) => {
             wasm_color_glyph_layer_case(case)
         }

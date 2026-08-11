@@ -172,6 +172,65 @@ def build_colr_v0_layers_font(path: Path) -> None:
     font.save(path, reorderTables=False)
 
 
+def build_colr_v0_malformed_layer_records_font(path: Path, variant: str) -> None:
+    """Build an openable COLR v0 face with one lazy layer failure."""
+    font = TTFont(SOURCE_FONT, recalcTimestamp=False)
+
+    colr = newTable("COLR")
+    colr.version = 0
+    layer = LayerRecord()
+    layer.name = "B"
+    layer.colorID = 0
+    colr.ColorLayers = {"A": [layer]}
+    font["COLR"] = colr
+
+    cpal = newTable("CPAL")
+    cpal.version = 0
+    cpal.numPaletteEntries = 3
+    cpal.palettes = [
+        [
+            Color(0x10, 0x20, 0x30, 0xFF),
+            Color(0x40, 0x50, 0x60, 0xFF),
+            Color(0x70, 0x80, 0x90, 0xFF),
+        ]
+    ]
+    font["CPAL"] = cpal
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    font.save(path, reorderTables=False)
+
+    data = bytearray(path.read_bytes())
+    num_tables = int.from_bytes(data[4:6], "big")
+    record_start = None
+    for index in range(num_tables):
+        candidate = 12 + index * 16
+        if data[candidate : candidate + 4] == b"COLR":
+            record_start = candidate
+            break
+    if record_start is None:
+        raise RuntimeError("malformed COLR v0 fixture has no COLR directory record")
+    table_offset = int.from_bytes(data[record_start + 8 : record_start + 12], "big")
+    table_length = int.from_bytes(data[record_start + 12 : record_start + 16], "big")
+    if table_offset + table_length > len(data) or table_length < 24:
+        raise RuntimeError("malformed COLR v0 fixture has an unusable COLR table")
+
+    base_records_offset = int.from_bytes(data[table_offset + 4 : table_offset + 8], "big")
+    layer_records_offset = int.from_bytes(data[table_offset + 8 : table_offset + 12], "big")
+    # Keep the SFNT and COLR table structurally loadable so FreeType defers the
+    # record check until FT_Get_Color_Glyph_Layer.
+    first_layer = table_offset + layer_records_offset
+    base_record = table_offset + base_records_offset
+    if variant == "layer_gid_out_of_range":
+        data[first_layer : first_layer + 2] = (0xFFFF).to_bytes(2, "big")
+    elif variant == "layer_color_index_out_of_cpal_range":
+        data[first_layer + 2 : first_layer + 4] = (3).to_bytes(2, "big")
+    elif variant == "truncated_layer_array":
+        data[base_record + 4 : base_record + 6] = (2).to_bytes(2, "big")
+    else:
+        raise ValueError(f"unknown malformed COLR v0 variant: {variant}")
+    path.write_bytes(data)
+
+
 def solid_paint(palette_index: int, alpha: float = 1.0) -> dict[str, object]:
     return {
         "Format": int(ot.PaintFormat.PaintSolid),
@@ -1653,6 +1712,15 @@ def main() -> None:
     )
     build_colr_v0_layers_font(COLOR_OUTPUT_DIR / "colr-v0-layers-cpal.ttf")
     build_colr_v0_layers_font(COLOR_OUTPUT_DIR / "colr-v0-layer-control.ttf")
+    for variant, filename in (
+        ("layer_gid_out_of_range", "colr-v0-invalid-layer-glyph.ttf"),
+        ("layer_color_index_out_of_cpal_range", "colr-v0-invalid-layer-color.ttf"),
+        ("truncated_layer_array", "colr-v0-truncated-layer-array.ttf"),
+    ):
+        build_colr_v0_malformed_layer_records_font(
+            COLOR_OUTPUT_DIR / "malformed" / filename,
+            variant,
+        )
     build_colr_v1_composite_font(COLOR_OUTPUT_DIR / "colr_v1_composite_modes.ttf")
     build_colr_v1_layers_font(COLOR_OUTPUT_DIR / "colr-v1-paint-colr-layers-cpal.ttf")
     build_colr_v1_colr_glyph_font(COLOR_OUTPUT_DIR / "colr-v1-colr-glyph-recursive.ttf")
