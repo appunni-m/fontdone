@@ -1951,8 +1951,7 @@ fn bbox_cubic_check(p1: i32, p2: i32, p3: i32, p4: i32, min: &mut i32, max: &mut
 }
 
 fn cubic_peak(mut q1: i32, mut q2: i32, mut q3: i32, mut q4: i32) -> i32 {
-    let mask =
-        (q1.unsigned_abs() | q2.unsigned_abs() | q3.unsigned_abs() | q4.unsigned_abs()) as u32;
+    let mask = q1.unsigned_abs() | q2.unsigned_abs() | q3.unsigned_abs() | q4.unsigned_abs();
     let mut shift = 27 - (31 - mask.leading_zeros() as i32);
     if shift > 0 {
         if shift > 2 {

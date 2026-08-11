@@ -1,0 +1,125 @@
+{
+  "kind": "outline_model_set",
+  "version": 1,
+  "unit": "26.6",
+  "cases": [
+    {
+      "id": "conic_control_x_min",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": -256, "y": 64},
+        {"x": 256, "y": 0}
+      ],
+      "tags": [1, 0, 1],
+      "contours": [2],
+      "flags": 0
+    },
+    {
+      "id": "conic_control_x_max",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 512, "y": -64},
+        {"x": 256, "y": 0}
+      ],
+      "tags": [1, 0, 1],
+      "contours": [2],
+      "flags": 0
+    },
+    {
+      "id": "cubic_control_x_extrema",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": -256, "y": 0},
+        {"x": 512, "y": 0},
+        {"x": 256, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
+      "id": "cubic_second_control_x_min",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 64, "y": 0},
+        {"x": -256, "y": 0},
+        {"x": 256, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
+      "id": "cubic_second_control_x_max",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 64, "y": 0},
+        {"x": 512, "y": 0},
+        {"x": 256, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
+      "id": "cubic_control_y_extrema",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 0, "y": -256},
+        {"x": 256, "y": 512},
+        {"x": 256, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
+      "id": "cubic_second_control_y_min",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 0, "y": 0},
+        {"x": 256, "y": -256},
+        {"x": 256, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
+      "id": "cubic_second_control_y_max",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 0, "y": 0},
+        {"x": 256, "y": 512},
+        {"x": 256, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
+      "id": "cubic_small_coordinates",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": -8, "y": 0},
+        {"x": 16, "y": 0},
+        {"x": 8, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
+      "id": "cubic_large_coordinates",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 1073741824, "y": 1073741824},
+        {"x": -1073741824, "y": -1073741824},
+        {"x": 256, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    }
+  ]
+}

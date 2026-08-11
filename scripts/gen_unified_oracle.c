@@ -70,6 +70,13 @@ static FT_Error cache_no_lookup_requester(FTC_FaceID face_id,
 static void print_size_metrics_object(FT_Size_Metrics metrics);
 static void print_fixed_coord_array(FT_Fixed* coords, FT_UInt count);
 static void parse_fixed_coord_csv(const char* text, FT_Fixed* coords, FT_UInt count);
+static int decode_stroker_parse_outline_row(char* row,
+                                            char* label,
+                                            size_t label_size,
+                                            FT_Vector* points,
+                                            unsigned char* tags,
+                                            unsigned short* contours,
+                                            FT_Outline* outline);
 
 static int streq(const char* a, const char* b) {
     return strcmp(a, b) == 0;
@@ -3963,6 +3970,38 @@ static int emit_bitmap_blend_same_bounds_success_run(FT_Library library, FT_Colo
     return 0;
 }
 
+static int emit_bitmap_blend_partial_rows_success_run(FT_Library library, FT_Color color) {
+    unsigned char source_bytes[96];
+    FT_Bitmap source;
+    FT_Bitmap target;
+    FT_Vector source_offset = { 64, 128 };
+    FT_Vector target_offset = { 64, 128 };
+
+    FT_Bitmap_Init(&target);
+    bitmap_blend_source(&source, source_bytes, FT_PIXEL_MODE_GRAY, 0);
+    source.width = 2;
+    source.rows = 2;
+    source.pitch = 2;
+
+    FT_Error err = bitmap_blend_prepopulate(library, &target, &target_offset);
+    if (!err) {
+        /* Keep the existing allocation but make the target rectangle empty. */
+        target.rows = 0;
+        err = FT_Bitmap_Blend(
+            library, &source, source_offset, &target, &target_offset, color);
+    }
+
+    printf("{");
+    print_status(err);
+    if (!err) {
+        printf(",\"output\":");
+        print_blend_run_output(&target, &target_offset);
+    }
+    printf("}");
+    if (target.buffer) FT_Bitmap_Done(library, &target);
+    return 0;
+}
+
 static int emit_bitmap_blend_negative_target_reallocate_success_run(
     FT_Library library, FT_Color color, FT_Pixel_Mode mode, int source_pitch) {
     unsigned char source_bytes[96];
@@ -4287,6 +4326,8 @@ static int emit_bitmap_blend(const char* scenario) {
         emit_bitmap_blend_success_run(library, FT_PIXEL_MODE_GRAY, 0, 1, source_offset, target_offset, color);
     } else if (streq(scenario, "success_existing_bgra_same_bounds_preserves")) {
         emit_bitmap_blend_same_bounds_success_run(library, color);
+    } else if (streq(scenario, "success_existing_bgra_partial_rows_ignored")) {
+        emit_bitmap_blend_partial_rows_success_run(library, color);
     } else if (streq(scenario, "success_existing_bgra_reallocates_negative_flow")) {
         emit_bitmap_blend_negative_target_reallocate_success_run(
             library, color, FT_PIXEL_MODE_GRAY, -2);
@@ -8080,6 +8121,52 @@ static int emit_outline_get_bbox_malformed(int argc, char** argv) {
         &first_error,
         &emitted
     );
+    printf("]},");
+    print_status(first_error);
+    printf("}\n");
+    return 0;
+}
+
+static int emit_outline_get_bbox_synthetic(int argc, char** argv) {
+    if (argc != 3) return 2;
+    char encoded[16384];
+    snprintf(encoded, sizeof(encoded), "%s", argv[2]);
+    FT_Error first_error = 0;
+    int first_row = 1;
+
+    printf("{\"output\":{\"rows\":[");
+    char* row_save = NULL;
+    char* row_text = strtok_r(encoded, ";", &row_save);
+    while (row_text) {
+        char label[128];
+        FT_Vector points[256] = {0};
+        unsigned char tags[256] = {0};
+        unsigned short contours[64] = {0};
+        FT_Outline outline = {0, 0, points, tags, contours, 0};
+        if (!decode_stroker_parse_outline_row(
+                row_text,
+                label,
+                sizeof(label),
+                points,
+                tags,
+                contours,
+                &outline)) {
+            return 2;
+        }
+
+        FT_BBox bbox = {0, 0, 0, 0};
+        FT_Error error = FT_Outline_Get_BBox(&outline, &bbox);
+        if (first_error == 0 && error != 0) {
+            first_error = error;
+        }
+        if (!first_row) printf(",");
+        first_row = 0;
+        printf("{\"case\":\"%s\",", label);
+        printf("\"status\":\"%s\",\"error\":%d,", error ? "error" : "ok", error);
+        print_bbox_named("bbox", bbox);
+        printf("}");
+        row_text = strtok_r(NULL, ";", &row_save);
+    }
     printf("]},");
     print_status(first_error);
     printf("}\n");
@@ -12793,7 +12880,11 @@ static int emit_manager_ownership(int argc, char** argv) {
     int post_reset_node_non_null;
     int references_released_before_reset;
     int reset_preserved_cache_handle;
-    (void)argc;
+    int edge_probes = argc > 5 && streq(argv[5], "1");
+    FT_Error post_done_lookup_face_status = FT_Err_Ok;
+    FT_Error post_done_lookup_size_status = FT_Err_Ok;
+    FT_Error post_done_sbit_without_output_status = FT_Err_Ok;
+    int post_done_reset_called = 0;
 
     if (load_oracle_source_bytes(source_kind,
                                  source_value,
@@ -12878,6 +12969,8 @@ static int emit_manager_ownership(int argc, char** argv) {
     if (repeat_node) {
         FTC_Node_Unref(repeat_node, manager);
     }
+    FTC_Node_Unref(first_node, manager);
+    FTC_Node_Unref(NULL, manager);
 
     cache_before_reset = cache;
     FTC_Manager_Reset(manager);
@@ -12901,6 +12994,23 @@ static int emit_manager_ownership(int argc, char** argv) {
     FTC_Manager_Done(manager);
     manager = NULL;
     finalizers_after_done = request.finalizer_calls;
+    if (edge_probes) {
+        FT_Face edge_face = NULL;
+        FT_Size edge_size = NULL;
+        FTC_Node edge_node = NULL;
+        post_done_lookup_face_status =
+            FTC_Manager_LookupFace(manager, &request, &edge_face);
+        post_done_lookup_size_status =
+            FTC_Manager_LookupSize(manager, &scaler, &edge_size);
+        post_done_sbit_without_output_status =
+            FTC_SBitCache_Lookup(NULL,
+                                 &image_type,
+                                 36,
+                                 NULL,
+                                 &edge_node);
+        FTC_Manager_Reset(manager);
+        post_done_reset_called = 1;
+    }
 
     printf("{");
     print_status(status);
@@ -12927,7 +13037,7 @@ static int emit_manager_ownership(int argc, char** argv) {
            "\"cache_lifecycle\":{"
            "\"sbit_cache_non_null\":%s,"
            "\"reset_preserved_cache_handle\":%s,"
-           "\"done_owns_cache\":true}}}\n",
+           "\"done_owns_cache\":true}",
            requester_after_first,
            requester_after_repeat,
            requester_after_reset,
@@ -12943,6 +13053,21 @@ static int emit_manager_ownership(int argc, char** argv) {
            references_released_before_reset ? "true" : "false",
            cache_before_reset != NULL ? "true" : "false",
            reset_preserved_cache_handle ? "true" : "false");
+
+    if (edge_probes) {
+        printf(",\"edge_probes\":{"
+               "\"invalid_unref_noops\":true,"
+               "\"post_done\":{"
+               "\"lookup_face_status\":%d,"
+               "\"lookup_size_status\":%d,"
+               "\"sbit_without_output_status\":%d,"
+               "\"reset_called\":%s}}",
+               post_done_lookup_face_status,
+               post_done_lookup_size_status,
+               post_done_sbit_without_output_status,
+               post_done_reset_called ? "true" : "false");
+    }
+    printf("}}\n");
 
     FT_Done_FreeType(library);
     free(data);
@@ -16017,6 +16142,9 @@ static int emit_outline_render(int argc, char** argv) {
         params.clip_box.xMax = 40;
         params.clip_box.yMax = 1;
     }
+    if (streq(case_id, "ftoutln.FT_Outline_Render.direct_render_without_target")) {
+        params.target = NULL;
+    }
 
     if (streq(case_id, "ftimage.FT_Raster_Render_Func.outline_render_passes_params")) {
         params.flags = FT_RASTER_FLAG_AA | FT_RASTER_FLAG_DIRECT | FT_RASTER_FLAG_CLIP;
@@ -16065,6 +16193,7 @@ static int emit_outline_render(int argc, char** argv) {
         streq(case_id, "ftimage.FT_Span.wide_outline_span_limit") ||
         streq(case_id, "ftoutln.FT_Outline_Render.direct_render_clip_and_spans") ||
         streq(case_id, "ftoutln.FT_Outline_Render.direct_render_without_gray_spans") ||
+        streq(case_id, "ftoutln.FT_Outline_Render.direct_render_without_target") ||
         streq(case_id, "ftimage.FT_RASTER_FLAG_CLIP.direct_clip_box_limits_spans") ||
         streq(case_id, "ftimage.FT_RASTER_FLAG_CLIP.direct_without_clip_presets_cbox")) {
         memset(buffer, 0xA5, sizeof(buffer));
@@ -16321,6 +16450,7 @@ static int emit_outline_decompose(int argc, char** argv) {
         !is_outline_decompose_cubic_case(case_id) &&
         !is_outline_callback_return_matrix_case(case_id) &&
         !streq(case_id, "ftoutln.FT_Outline_Decompose.line_conic_cubic_event_order") &&
+        !streq(case_id, "ftoutln.FT_Outline_Decompose.implied_start_and_closing_segments") &&
         !streq(case_id, "ftoutln.FT_Outline_Decompose.shift_delta_applied_to_callbacks") &&
         !streq(case_id, "ftoutln.FT_Outline_Decompose.callback_error_propagates") &&
         !streq(case_id, "ftoutln.FT_Outline_Decompose.invalid_outline_or_interface_errors") &&
@@ -16450,6 +16580,43 @@ static int emit_outline_decompose(int argc, char** argv) {
             n_contours = 3;
             n_points = 11;
         }
+    } else if (streq(case_id, "ftoutln.FT_Outline_Decompose.implied_start_and_closing_segments")) {
+        points[0].x = 0;
+        points[0].y = 64;
+        points[1].x = 64;
+        points[1].y = 128;
+        points[2].x = 128;
+        points[2].y = 0;
+        points[3].x = 192;
+        points[3].y = -64;
+        points[4].x = 256;
+        points[4].y = 64;
+        points[5].x = 320;
+        points[5].y = 64;
+        points[6].x = 384;
+        points[6].y = 0;
+        points[7].x = 448;
+        points[7].y = 64;
+        points[8].x = 512;
+        points[8].y = 0;
+        points[9].x = 576;
+        points[9].y = 0;
+        points[10].x = 640;
+        points[10].y = 96;
+        points[11].x = 704;
+        points[11].y = 96;
+        tags[0] = FT_CURVE_TAG_CONIC;
+        tags[1] = FT_CURVE_TAG_CONIC;
+        tags[3] = FT_CURVE_TAG_CONIC;
+        tags[4] = FT_CURVE_TAG_CONIC;
+        tags[5] = FT_CURVE_TAG_CONIC;
+        tags[10] = FT_CURVE_TAG_CUBIC;
+        tags[11] = FT_CURVE_TAG_CUBIC;
+        contours[0] = 4;
+        contours[1] = 8;
+        contours[2] = 11;
+        n_contours = 3;
+        n_points = 12;
     } else if (streq(case_id, "ftoutln.FT_Outline_Decompose.shift_delta_applied_to_callbacks")) {
         points[0].x = 32;
         points[0].y = 48;
@@ -16597,6 +16764,7 @@ static int emit_outline_decompose(int argc, char** argv) {
         streq(case_id, "ftimage.FT_CURVE_TAG.classifies_outline_tags") ||
         is_outline_decompose_touch_mask_case(case_id) ||
         streq(case_id, "ftoutln.FT_Outline_Decompose.line_conic_cubic_event_order") ||
+        streq(case_id, "ftoutln.FT_Outline_Decompose.implied_start_and_closing_segments") ||
         streq(case_id, "ftoutln.FT_Outline_Decompose.shift_delta_applied_to_callbacks") ||
         streq(case_id, "ftoutln.FT_Outline_Decompose.callback_error_propagates")) {
         transform_count = 1;
@@ -21569,7 +21737,7 @@ static int emit_color_glyph_layer_case(int argc, char** argv) {
     FT_UInt color_index = 0xBEEF;
 
     printf("{");
-    print_status(0);
+    print_status(FT_Err_Ok);
     if (streq(case_id, "ftcolor.FT_Get_Color_Glyph_Layer.layer_iteration_success") ||
         streq(case_id, "ftcolor.FT_LayerIterator.initialized_and_advanced_by_color_glyph_layers_v0")) {
         printf(",\"output\":{\"calls\":[");
@@ -21680,6 +21848,12 @@ static int emit_color_glyph_clipbox_case(int argc, char** argv) {
         return 2;
     }
     const char* case_id = argv[2];
+    const char* malformed_prefix =
+        "ftcolor.FT_Get_Color_Glyph_ClipBox.malformed_clipbox_false_behavior";
+    size_t malformed_prefix_length = strlen(malformed_prefix);
+    int malformed_clipbox =
+        strncmp(case_id, malformed_prefix, malformed_prefix_length) == 0 &&
+        (case_id[malformed_prefix_length] == '\0' || case_id[malformed_prefix_length] == '@');
     OracleFace face;
     int opened = open_oracle_face(argv[3], argv[4], atol(argv[5]), &face);
     if (opened != 0) {
@@ -21688,7 +21862,7 @@ static int emit_color_glyph_clipbox_case(int argc, char** argv) {
     FT_UInt base_glyph = (FT_UInt)strtoul(argv[6], NULL, 10);
 
     printf("{");
-    print_status(0);
+    print_status(malformed_clipbox ? FT_Err_Invalid_Table : FT_Err_Ok);
     printf(",\"output\":{\"setup\":{");
     int has_variation = argc == 9 || argc == 17;
     int has_transform = argc == 15 || argc == 17;
@@ -21740,12 +21914,17 @@ static int emit_color_glyph_clipbox_case(int argc, char** argv) {
     FT_ClipBox clip_box = before;
     FT_Bool result = FT_Get_Color_Glyph_ClipBox(face.face, base_glyph, &clip_box);
     printf(",\"return\":%u", result);
-    if (streq(case_id, "ftcolor.FT_Get_Color_Glyph_ClipBox.no_clipbox_returns_false_preserves_output")) {
+    if (malformed_clipbox ||
+        streq(case_id, "ftcolor.FT_Get_Color_Glyph_ClipBox.no_clipbox_returns_false_preserves_output")) {
         printf(",\"clip_box_before_after\":{\"before\":");
         print_clip_box_json(before);
         printf(",\"after\":");
         print_clip_box_json(clip_box);
         printf(",\"preserved\":%s}", clip_box_equal(before, clip_box) ? "true" : "false");
+        if (malformed_clipbox) {
+            const char* variant = strchr(case_id, '@');
+            printf(",\"malformed_variant\":\"%s\"", variant ? variant + 1 : "single");
+        }
     } else {
         printf(",\"clip_box\":");
         print_clip_box_json(clip_box);
@@ -27419,6 +27598,127 @@ static int emit_glyph_stroke_destroy_option(int argc, char** argv) {
     return 0;
 }
 
+static int emit_glyph_stroke_invalid_arguments(int argc, char** argv, FT_Bool border) {
+    if (argc != 3) return 2;
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{");
+        print_status(init_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+
+    FT_Face face = NULL;
+    FT_Error face_error = FT_New_Face(library, argv[2], 0, &face);
+    FT_Error size_error = face_error ? face_error : FT_Set_Char_Size(face, 0, 1536, 72, 72);
+    FT_Error load_error = size_error ? size_error : FT_Load_Glyph(face, 36, FT_LOAD_NO_BITMAP);
+    FT_Glyph outline = NULL;
+    FT_Error get_error = load_error ? load_error : FT_Get_Glyph(face->glyph, &outline);
+    FT_Glyph original = outline;
+
+    FT_Error null_pglyph_status = border
+        ? FT_Glyph_StrokeBorder(NULL, NULL, 1, 0)
+        : FT_Glyph_Stroke(NULL, NULL, 0);
+    FT_Glyph null_glyph = NULL;
+    FT_Error null_glyph_status = border
+        ? FT_Glyph_StrokeBorder(&null_glyph, NULL, 1, 0)
+        : FT_Glyph_Stroke(&null_glyph, NULL, 0);
+    FT_Error null_stroker_status = get_error;
+    if (!get_error) {
+        null_stroker_status = border
+            ? FT_Glyph_StrokeBorder(&outline, NULL, 1, 0)
+            : FT_Glyph_Stroke(&outline, NULL, 0);
+    }
+
+    printf("{");
+    print_status(null_pglyph_status);
+    printf(",\"output\":{\"rows\":[");
+    printf("{\"probe\":\"null_pglyph\",\"status\":%d,\"pglyph_after\":\"not_applicable\"},",
+           null_pglyph_status);
+    printf("{\"probe\":\"valid_pointer_to_null_glyph\",\"status\":%d,\"pglyph_after\":\"%s\"},",
+           null_glyph_status,
+           null_glyph ? "non_null" : "null");
+    printf("{\"probe\":\"outline_with_null_stroker\",\"status\":%d,\"pglyph_after\":\"%s\"}",
+           null_stroker_status,
+           outline ? "non_null" : "null");
+    printf("]}}\n");
+
+    if (outline && outline != original) FT_Done_Glyph(outline);
+    if (original) FT_Done_Glyph(original);
+    if (face) FT_Done_Face(face);
+    FT_Done_FreeType(library);
+    return 0;
+}
+
+static int emit_glyph_stroke_invalid_outline(int argc, char** argv) {
+    if (argc != 3) return 2;
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    FT_Face face = NULL;
+    FT_Error face_error = init_error ? init_error : FT_New_Face(library, argv[2], 0, &face);
+    FT_Error size_error = face_error ? face_error : FT_Set_Char_Size(face, 0, 1536, 72, 72);
+    FT_Error load_error = size_error ? size_error : FT_Load_Glyph(face, 36, FT_LOAD_NO_BITMAP);
+    FT_Glyph glyph = NULL;
+    FT_Error get_error = load_error ? load_error : FT_Get_Glyph(face->glyph, &glyph);
+    FT_Stroker stroker = NULL;
+    FT_Error new_error = get_error ? get_error : FT_Stroker_New(library, &stroker);
+    if (!new_error && glyph && glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
+        FT_OutlineGlyph outline_glyph = (FT_OutlineGlyph)glyph;
+        if (outline_glyph->outline.n_points > 0) {
+            outline_glyph->outline.tags[0] = FT_CURVE_TAG_CUBIC;
+        } else {
+            new_error = FT_Err_Invalid_Outline;
+        }
+    }
+    if (!new_error && stroker) {
+        FT_Stroker_Set(stroker, 96, FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 65536);
+    }
+    FT_Error stroke_error = new_error ? new_error : FT_Glyph_Stroke(&glyph, stroker, 0);
+    printf("{");
+    print_status(stroke_error);
+    printf(",\"output\":null}\n");
+    if (stroker) FT_Stroker_Done(stroker);
+    if (glyph) FT_Done_Glyph(glyph);
+    if (face) FT_Done_Face(face);
+    if (library) FT_Done_FreeType(library);
+    return 0;
+}
+
+static int emit_glyph_stroke_border_invalid_outline(int argc, char** argv) {
+    if (argc != 3) return 2;
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    FT_Face face = NULL;
+    FT_Error face_error = init_error ? init_error : FT_New_Face(library, argv[2], 0, &face);
+    FT_Error size_error = face_error ? face_error : FT_Set_Char_Size(face, 0, 1536, 72, 72);
+    FT_Error load_error = size_error ? size_error : FT_Load_Glyph(face, 36, FT_LOAD_NO_BITMAP);
+    FT_Glyph glyph = NULL;
+    FT_Error get_error = load_error ? load_error : FT_Get_Glyph(face->glyph, &glyph);
+    FT_Stroker stroker = NULL;
+    FT_Error new_error = get_error ? get_error : FT_Stroker_New(library, &stroker);
+    if (!new_error && glyph && glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
+        FT_OutlineGlyph outline_glyph = (FT_OutlineGlyph)glyph;
+        if (outline_glyph->outline.n_points > 0) {
+            outline_glyph->outline.tags[0] = FT_CURVE_TAG_CUBIC;
+        } else {
+            new_error = FT_Err_Invalid_Outline;
+        }
+    }
+    if (!new_error && stroker) {
+        FT_Stroker_Set(stroker, 96, FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 65536);
+    }
+    FT_Error stroke_error = new_error ? new_error : FT_Glyph_StrokeBorder(&glyph, stroker, 0, 0);
+    printf("{");
+    print_status(stroke_error);
+    printf(",\"output\":null}\n");
+    if (stroker) FT_Stroker_Done(stroker);
+    if (glyph) FT_Done_Glyph(glyph);
+    if (face) FT_Done_Face(face);
+    if (library) FT_Done_FreeType(library);
+    return 0;
+}
+
 static int emit_glyph_stroke_border_outside_success(int argc, char** argv) {
     if (argc != 3) return 2;
     FT_Library library = NULL;
@@ -32185,6 +32485,17 @@ static int emit_face_or_slot(int argc, char** argv) {
 
     FT_Face face;
     err = FT_New_Memory_Face(library, data, data_len, face_index, &face);
+    if (err && streq(command, "--sfnt-load-name-diagnostic")) {
+        // The Rust diagnostic accepts raw bytes so it can report the parser
+        // error before a face exists. Preserve its status/name-count shape in
+        // the offline oracle when FreeType rejects the face during open.
+        printf("{");
+        print_status(err);
+        printf(",\"output\":{\"name_count\":0}}\n");
+        FT_Done_FreeType(library);
+        free(data);
+        return 0;
+    }
     if (!err && face_index < 0 && streq(command, "--new-memory-face")) {
         printf("{");
         print_status(err);
@@ -38798,6 +39109,15 @@ static int dispatch(int argc, char** argv) {
     if (argc == 9 && streq(argv[1], "--glyph-stroke-destroy-option")) {
         return emit_glyph_stroke_destroy_option(argc, argv);
     }
+    if (argc == 3 && streq(argv[1], "--glyph-stroke-invalid-arguments")) {
+        return emit_glyph_stroke_invalid_arguments(argc, argv, 0);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-stroke-invalid-outline")) {
+        return emit_glyph_stroke_invalid_outline(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-stroke-border-invalid-outline")) {
+        return emit_glyph_stroke_border_invalid_outline(argc, argv);
+    }
     if (argc == 3 && streq(argv[1], "--glyph-stroke-border-outside-success")) {
         return emit_glyph_stroke_border_outside_success(argc, argv);
     }
@@ -38806,6 +39126,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 10 && streq(argv[1], "--glyph-stroke-border-destroy-option")) {
         return emit_glyph_stroke_border_destroy_option(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-stroke-border-invalid-arguments")) {
+        return emit_glyph_stroke_invalid_arguments(argc, argv, 1);
     }
     if (argc == 4 && streq(argv[1], "--stroker-open-line-geometry")) {
         return emit_stroker_open_line_geometry(argc, argv);
@@ -39194,6 +39517,9 @@ static int dispatch(int argc, char** argv) {
     if (argc == 3 && streq(argv[1], "--outline-get-bbox-malformed")) {
         return emit_outline_get_bbox_malformed(argc, argv);
     }
+    if (argc == 3 && streq(argv[1], "--outline-get-bbox-synthetic")) {
+        return emit_outline_get_bbox_synthetic(argc, argv);
+    }
     if (argc == 3 && streq(argv[1], "--outline-get-cbox-null-inputs")) {
         return emit_outline_get_cbox_null_inputs(argc, argv);
     }
@@ -39422,7 +39748,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 7 && streq(argv[1], "--manager-new-route")) {
         return emit_manager_new_route(argc, argv);
     }
-    if (argc == 5 && streq(argv[1], "--manager-ownership")) {
+    if (argc == 6 && streq(argv[1], "--manager-ownership")) {
         return emit_manager_ownership(argc, argv);
     }
     if (argc == 5 && streq(argv[1], "--custom-memory-lifecycle")) {

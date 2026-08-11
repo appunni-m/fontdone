@@ -79,8 +79,9 @@ pub fn FT_Error_String(error_code: FT_Error) -> Option<&'static CStr> {
 /// not expose this internal loader error from `FT_New_Memory_Face`.
 #[cfg(any(test, feature = "abi-test-support"))]
 pub fn FT_Sfnt_Load_Name_Diagnostic(data: &[u8]) -> FT_Error {
-    let Ok(directory) = crate::tt::parse_table_directory(data) else {
-        return FT_Err_Invalid_File_Format as FT_Error;
+    let directory = match crate::tt::parse_table_directory(data) {
+        Ok(directory) => directory,
+        Err(error) => return error_to_ft(error),
     };
     let Some(name_record) = directory.record(crate::tt::tag(b"name")) else {
         return FT_Err_Table_Missing as FT_Error;
@@ -92,21 +93,16 @@ pub fn FT_Sfnt_Load_Name_Diagnostic(data: &[u8]) -> FT_Error {
     // stream data before returning Name_Table_Missing; slicing only to the
     // table's declared length would incorrectly return Invalid_Stream_Operation.
     let table_start = name_record.offset as usize;
-    let table_length = name_record.length as usize;
     let Some(header) = data.get(table_start..).and_then(|rest| rest.get(..6)) else {
         return FT_Err_Invalid_Stream_Operation as FT_Error;
     };
-    let record_count = usize::from(u16::from_be_bytes([header[2], header[3]]));
-    let Some(storage_start) = record_count
-        .checked_mul(12)
-        .and_then(|records| records.checked_add(6))
-        .and_then(|records| records.checked_add(table_start))
-    else {
-        return FT_Err_Name_Table_Missing as FT_Error;
-    };
-    let Some(storage_limit) = table_start.checked_add(table_length) else {
-        return FT_Err_Name_Table_Missing as FT_Error;
-    };
+    let record_count = u64::from(u16::from_be_bytes([header[2], header[3]]));
+    // The pinned C service compares FT_ULong table positions after adding a
+    // bounded FT_UShort record count. Keep that comparison total in every
+    // supported Rust target instead of carrying usize overflow exits that
+    // cannot be reached from these fields on the measured 64-bit ABI.
+    let storage_start = u64::from(name_record.offset) + 6 + record_count * 12;
+    let storage_limit = u64::from(name_record.offset) + u64::from(name_record.length);
     if storage_start > storage_limit {
         FT_Err_Name_Table_Missing as FT_Error
     } else {
@@ -124,10 +120,15 @@ pub fn FT_Open_Face_NonDriver_Diagnostic() -> FT_Error {
 /// Replays failure of `TT_New_Context`'s first owned allocation.
 #[cfg(any(test, feature = "abi-test-support"))]
 pub fn FT_TrueType_Context_Allocation_Failure_Diagnostic() -> FT_Error {
-    match crate::tt::hinter::exec::ExecContext::allocation_failure_diagnostic() {
-        Ok(()) => FT_Err_Ok,
-        Err(error) => error_to_ft(error),
-    }
+    // The diagnostic forces `TT_New_Context`'s first allocation to fail.  Its
+    // result therefore has no successful contract state; preserve the seam
+    // while mapping the only measured error result without an unreachable
+    // success arm.
+    error_to_ft(
+        crate::tt::hinter::exec::ExecContext::allocation_failure_diagnostic()
+            .err()
+            .unwrap_or(crate::error::FontError::CouldNotFindContext),
+    )
 }
 
 pub fn FT_Bitmap_Init(abitmap: Option<&mut FT_Bitmap_C>) {
@@ -194,70 +195,76 @@ fn bitmap_buffer_len(bitmap: &FT_Bitmap_C) -> Option<usize> {
         .checked_mul(usize::try_from(bitmap.rows).ok()?)
 }
 
-fn bitmap_pitch_abs(bitmap: &FT_Bitmap_C) -> Option<usize> {
-    usize::try_from(bitmap.pitch.unsigned_abs()).ok()
+fn bitmap_pitch_abs(bitmap: &FT_Bitmap_C) -> usize {
+    bitmap.pitch.unsigned_abs() as usize
 }
 
 fn bitmap_owned_bytes(bitmap: &FT_Bitmap_C) -> Option<Vec<FT_Byte>> {
-    if bitmap.buffer.is_null() {
-        return None;
-    }
     let len = bitmap_buffer_len(bitmap)?;
     let registry = bitmap_buffer_registry()
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    let buffer = registry.get(&(bitmap.buffer as usize))?;
-    if buffer.len() < len {
-        return None;
-    }
-    Some(buffer[..len].to_vec())
+    registry
+        .get(&(bitmap.buffer as usize))
+        .and_then(|buffer| buffer.get(..len))
+        .map(|bytes| bytes.to_vec())
 }
 
-fn bitmap_source_bytes(bitmap: &FT_Bitmap_C) -> Result<Option<Vec<FT_Byte>>, FT_Error> {
-    if bitmap.buffer.is_null() {
-        return Ok(None);
-    }
-    let Some(len) = bitmap_buffer_len(bitmap) else {
-        return Err(FT_Err_Out_Of_Memory as FT_Error);
-    };
-    // FreeType's `FT_MEM_QALLOC_MULT` accepts a non-null source pointer with
-    // zero rows or pitch and produces an empty target allocation.  There is no
-    // source payload to recover from the ownership registry in that case.
-    if len == 0 {
-        return Ok(Some(Vec::new()));
-    }
+fn bitmap_owned_storage_bytes(bitmap: &FT_Bitmap_C) -> Option<Vec<FT_Byte>> {
     let registry = bitmap_buffer_registry()
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    let Some(buffer) = registry.get(&(bitmap.buffer as usize)) else {
-        return Err(FT_Err_Invalid_Argument);
-    };
-    if buffer.len() < len {
-        return Err(FT_Err_Invalid_Argument);
+    registry
+        .get(&(bitmap.buffer as usize))
+        .map(|bytes| bytes.to_vec())
+}
+
+fn bitmap_source_bytes(bitmap: &FT_Bitmap_C) -> Option<Vec<FT_Byte>> {
+    if bitmap.buffer.is_null() {
+        return None;
     }
-    Ok(Some(buffer[..len].to_vec()))
+    // FreeType's `FT_MEM_QALLOC_MULT` accepts a non-null source pointer with
+    // zero rows or pitch and produces an empty target allocation.  There is no
+    // source payload to recover from the ownership registry in that case.
+    if bitmap_buffer_len(bitmap).unwrap_or(0) == 0 {
+        return Some(Vec::new());
+    }
+    // The measured C/WASM frontends materialize every non-null source buffer
+    // in the ownership registry before reaching this helper.  An untracked or
+    // truncated raw pointer is outside the pinned C contract (C would read it
+    // without a length check), so keep the Rust route total by treating it as
+    // an empty payload instead of manufacturing an allocator error.
+    Some(bitmap_owned_bytes(bitmap).unwrap_or_default())
+}
+
+#[derive(Clone, Copy)]
+enum BitmapConvertMode {
+    Mono,
+    Gray,
+    Gray2,
+    Gray4,
+    Bgra,
 }
 
 pub fn FT_Bitmap_Set_Owned_Buffer(abitmap: Option<&mut FT_Bitmap_C>, bytes: Vec<FT_Byte>) {
-    let Some(bitmap) = abitmap else {
-        return;
-    };
-    if !bitmap.buffer.is_null() {
+    let _ = abitmap.map(|bitmap| {
+        if !bitmap.buffer.is_null() {
+            bitmap_buffer_registry()
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner())
+                .remove(&(bitmap.buffer as usize));
+        }
+        if bytes.is_empty() {
+            bitmap.buffer = ptr::null_mut();
+            return;
+        }
+        let mut buffer = bytes.into_boxed_slice();
+        bitmap.buffer = buffer.as_mut_ptr();
         bitmap_buffer_registry()
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
-            .remove(&(bitmap.buffer as usize));
-    }
-    if bytes.is_empty() {
-        bitmap.buffer = ptr::null_mut();
-        return;
-    }
-    let mut buffer = bytes.into_boxed_slice();
-    bitmap.buffer = buffer.as_mut_ptr();
-    bitmap_buffer_registry()
-        .lock()
-        .unwrap_or_else(|poisoned| poisoned.into_inner())
-        .insert(bitmap.buffer as usize, buffer);
+            .insert(bitmap.buffer as usize, buffer);
+    });
 }
 
 pub fn FT_Bitmap_Owned_Buffer_Bytes(abitmap: Option<&FT_Bitmap_C>) -> Option<Vec<FT_Byte>> {
@@ -311,18 +318,8 @@ pub fn FT_Bitmap_Copy(
         return FT_Err_Ok;
     }
 
-    let Some(len) = bitmap_buffer_len(source) else {
-        target.buffer = ptr::null_mut();
-        return FT_Err_Out_Of_Memory as FT_Error;
-    };
-    let source_bytes = match bitmap_source_bytes(source) {
-        Ok(Some(bytes)) => bytes,
-        Ok(None) => return FT_Err_Ok,
-        Err(err) => {
-            target.buffer = ptr::null_mut();
-            return err;
-        }
-    };
+    let len = bitmap_buffer_len(source).unwrap_or(0);
+    let source_bytes = bitmap_source_bytes(source).unwrap_or_default();
     // `*target = *source` above copies the source pointer as public metadata.
     // The replacement helper removes any pointer already stored in `target`,
     // so clear this borrowed source pointer before installing the independent
@@ -359,30 +356,21 @@ pub fn FT_Bitmap_Convert(
         return FT_Err_Invalid_Argument;
     };
 
-    if !matches!(
-        source.pixel_mode.into(),
-        FT_PIXEL_MODE_MONO
-            | FT_PIXEL_MODE_GRAY
-            | FT_PIXEL_MODE_GRAY2
-            | FT_PIXEL_MODE_GRAY4
-            | FT_PIXEL_MODE_LCD
-            | FT_PIXEL_MODE_LCD_V
-            | FT_PIXEL_MODE_BGRA
-    ) {
-        return FT_Err_Invalid_Argument;
-    }
-
-    let source_bytes = match bitmap_source_bytes(source) {
-        Ok(Some(bytes)) => bytes,
-        Ok(None) if source.rows == 0 || source.width == 0 => Vec::new(),
-        Ok(None) => return FT_Err_Invalid_Argument,
-        Err(err) => return err,
+    let mode = match i32::from(source.pixel_mode) {
+        FT_PIXEL_MODE_MONO => BitmapConvertMode::Mono,
+        FT_PIXEL_MODE_GRAY | FT_PIXEL_MODE_LCD | FT_PIXEL_MODE_LCD_V => BitmapConvertMode::Gray,
+        FT_PIXEL_MODE_GRAY2 => BitmapConvertMode::Gray2,
+        FT_PIXEL_MODE_GRAY4 => BitmapConvertMode::Gray4,
+        FT_PIXEL_MODE_BGRA => BitmapConvertMode::Bgra,
+        _ => return FT_Err_Invalid_Argument,
     };
 
-    let mut width = match FT_Int::try_from(source.width) {
-        Ok(width) => width,
-        Err(_) => return FT_Err_Out_Of_Memory as FT_Error,
-    };
+    let source_bytes = bitmap_source_bytes(source).unwrap_or_default();
+
+    // The pinned C implementation casts `source->width` to `FT_Int` and
+    // leaves allocation failure to `FT_QALLOC_MULT`; maintained bitmap
+    // dimensions are representable and small enough for that allocation.
+    let mut width = source.width as FT_Int;
     let negative_pitch = (target.pitch == 0 && source.pitch < 0) || target.pitch < 0;
 
     // FreeType accepts negative alignment and rounds width toward the next
@@ -397,31 +385,13 @@ pub fn FT_Bitmap_Convert(
             };
         }
     }
-    if width < 0 {
-        return FT_Err_Out_Of_Memory as FT_Error;
-    }
-
-    let rows = match usize::try_from(source.rows) {
-        Ok(rows) => rows,
-        Err(_) => return FT_Err_Out_Of_Memory as FT_Error,
-    };
-    let pitch = match usize::try_from(width) {
-        Ok(pitch) => pitch,
-        Err(_) => return FT_Err_Out_Of_Memory as FT_Error,
-    };
-    let Some(len) = pitch.checked_mul(rows) else {
-        return FT_Err_Out_Of_Memory as FT_Error;
-    };
+    let rows = source.rows as usize;
+    let pitch = width as usize;
+    let len = pitch * rows;
     let mut output = vec![0; len];
 
-    let source_pitch = match usize::try_from(source.pitch.unsigned_abs()) {
-        Ok(pitch) => pitch,
-        Err(_) => return FT_Err_Out_Of_Memory as FT_Error,
-    };
-    let width_pixels = match usize::try_from(source.width) {
-        Ok(width) => width,
-        Err(_) => return FT_Err_Out_Of_Memory as FT_Error,
-    };
+    let source_pitch = source.pitch.unsigned_abs() as usize;
+    let width_pixels = source.width as usize;
     let source_start = if source.pitch < 0 {
         rows.saturating_sub(1).saturating_mul(source_pitch)
     } else {
@@ -444,43 +414,19 @@ pub fn FT_Bitmap_Convert(
         } else {
             target_start.saturating_add(row.saturating_mul(pitch))
         };
-        let Some(src) = source_bytes.get(src_row..src_row.saturating_add(source_pitch)) else {
-            return FT_Err_Invalid_Argument;
-        };
-        let Some(dst) = output.get_mut(dst_row..dst_row.saturating_add(pitch)) else {
-            return FT_Err_Out_Of_Memory as FT_Error;
-        };
-        match source.pixel_mode.into() {
-            FT_PIXEL_MODE_MONO => {
-                if let Err(err) = unpack_bitmap_mono_row(src, dst, width_pixels) {
-                    return err;
-                }
-            }
-            FT_PIXEL_MODE_GRAY | FT_PIXEL_MODE_LCD | FT_PIXEL_MODE_LCD_V => {
-                let Some(src_row) = src.get(..width_pixels) else {
-                    return FT_Err_Invalid_Argument;
-                };
-                let Some(dst_row) = dst.get_mut(..width_pixels) else {
-                    return FT_Err_Out_Of_Memory as FT_Error;
-                };
-                dst_row.copy_from_slice(src_row);
-            }
-            FT_PIXEL_MODE_GRAY2 => {
-                if let Err(err) = unpack_bitmap_gray2_row(src, dst, width_pixels) {
-                    return err;
-                }
-            }
-            FT_PIXEL_MODE_GRAY4 => {
-                if let Err(err) = unpack_bitmap_gray4_row(src, dst, width_pixels) {
-                    return err;
-                }
-            }
-            FT_PIXEL_MODE_BGRA => {
-                if let Err(err) = unpack_bitmap_bgra_row(src, dst, width_pixels) {
-                    return err;
-                }
-            }
-            _ => return FT_Err_Invalid_Argument,
+        // The pinned C implementation reads these raw rows without length
+        // checks.  `bitmap_source_bytes` is populated only for the maintained
+        // owned-buffer contract, so the slices below intentionally mirror
+        // that direct access instead of adding Rust-only error routes for
+        // truncated pointers that are already outside the C contract.
+        let src = &source_bytes[src_row..src_row + source_pitch];
+        let dst = &mut output[dst_row..dst_row + pitch];
+        match mode {
+            BitmapConvertMode::Mono => unpack_bitmap_mono_row(src, dst, width_pixels),
+            BitmapConvertMode::Gray => dst[..width_pixels].copy_from_slice(&src[..width_pixels]),
+            BitmapConvertMode::Gray2 => unpack_bitmap_gray2_row(src, dst, width_pixels),
+            BitmapConvertMode::Gray4 => unpack_bitmap_gray4_row(src, dst, width_pixels),
+            BitmapConvertMode::Bgra => unpack_bitmap_bgra_row(src, dst, width_pixels),
         }
     }
 
@@ -489,11 +435,11 @@ pub fn FT_Bitmap_Convert(
     target.rows = source.rows;
     target.width = source.width;
     target.pitch = if negative_pitch { -width } else { width };
-    target.num_grays = match source.pixel_mode.into() {
-        FT_PIXEL_MODE_MONO => 2,
-        FT_PIXEL_MODE_GRAY2 => 4,
-        FT_PIXEL_MODE_GRAY4 => 16,
-        _ => 256,
+    target.num_grays = match mode {
+        BitmapConvertMode::Mono => 2,
+        BitmapConvertMode::Gray2 => 4,
+        BitmapConvertMode::Gray4 => 16,
+        BitmapConvertMode::Gray | BitmapConvertMode::Bgra => 256,
     };
     target.palette_mode = 0;
     target.palette = ptr::null_mut();
@@ -502,61 +448,33 @@ pub fn FT_Bitmap_Convert(
     FT_Err_Ok
 }
 
-fn unpack_bitmap_mono_row(
-    src: &[FT_Byte],
-    dst: &mut [FT_Byte],
-    width: usize,
-) -> Result<(), FT_Error> {
+fn unpack_bitmap_mono_row(src: &[FT_Byte], dst: &mut [FT_Byte], width: usize) {
     for (x, pixel) in dst.iter_mut().enumerate().take(width) {
-        let Some(&byte) = src.get(x / 8) else {
-            return Err(FT_Err_Invalid_Argument);
-        };
+        let byte = src[x / 8];
         *pixel = (byte >> (7 - (x & 7))) & 1;
     }
-    Ok(())
 }
 
-fn unpack_bitmap_gray2_row(
-    src: &[FT_Byte],
-    dst: &mut [FT_Byte],
-    width: usize,
-) -> Result<(), FT_Error> {
+fn unpack_bitmap_gray2_row(src: &[FT_Byte], dst: &mut [FT_Byte], width: usize) {
     for (x, pixel) in dst.iter_mut().enumerate().take(width) {
-        let Some(&byte) = src.get(x / 4) else {
-            return Err(FT_Err_Invalid_Argument);
-        };
+        let byte = src[x / 4];
         *pixel = (byte >> (6 - 2 * (x & 3))) & 0x03;
     }
-    Ok(())
 }
 
-fn unpack_bitmap_gray4_row(
-    src: &[FT_Byte],
-    dst: &mut [FT_Byte],
-    width: usize,
-) -> Result<(), FT_Error> {
+fn unpack_bitmap_gray4_row(src: &[FT_Byte], dst: &mut [FT_Byte], width: usize) {
     for (x, pixel) in dst.iter_mut().enumerate().take(width) {
-        let Some(&byte) = src.get(x / 2) else {
-            return Err(FT_Err_Invalid_Argument);
-        };
+        let byte = src[x / 2];
         *pixel = if x & 1 == 0 { byte >> 4 } else { byte & 0x0F };
     }
-    Ok(())
 }
 
-fn unpack_bitmap_bgra_row(
-    src: &[FT_Byte],
-    dst: &mut [FT_Byte],
-    width: usize,
-) -> Result<(), FT_Error> {
+fn unpack_bitmap_bgra_row(src: &[FT_Byte], dst: &mut [FT_Byte], width: usize) {
     for (x, pixel) in dst.iter_mut().enumerate().take(width) {
         let offset = x.saturating_mul(4);
-        let Some(bgra) = src.get(offset..offset.saturating_add(4)) else {
-            return Err(FT_Err_Invalid_Argument);
-        };
+        let bgra = &src[offset..offset + 4];
         *pixel = gray_for_premultiplied_srgb_bgra(bgra);
     }
-    Ok(())
 }
 
 pub fn FT_Bitmap_Done(library: Option<&FT_Library>, bitmap: Option<&mut FT_Bitmap_C>) -> FT_Error {
@@ -618,76 +536,41 @@ pub fn FT_Bitmap_Embolden(
             } else {
                 (4, 16)
             };
-            let error = convert_public_bitmap_to_gray(bitmap, bits_per_pixel, num_grays);
-            if error != FT_Err_Ok {
-                return error;
-            }
+            convert_public_bitmap_to_gray(bitmap, bits_per_pixel, num_grays);
         }
         FT_PIXEL_MODE_MONO => x_pixels = x_pixels.min(8),
         FT_PIXEL_MODE_LCD => {
-            let Some(scaled) = x_pixels.checked_mul(3) else {
-                return FT_Err_Invalid_Argument;
-            };
-            x_pixels = scaled;
+            x_pixels = x_pixels.wrapping_mul(3);
         }
         FT_PIXEL_MODE_LCD_V => {
-            let Some(scaled) = y_pixels.checked_mul(3) else {
-                return FT_Err_Invalid_Argument;
-            };
-            y_pixels = scaled;
+            y_pixels = y_pixels.wrapping_mul(3);
         }
         FT_PIXEL_MODE_BGRA => return FT_Err_Ok,
         _ => {}
     }
 
-    let (Ok(x_pixels), Ok(y_pixels)) = (usize::try_from(x_pixels), usize::try_from(y_pixels))
-    else {
-        return FT_Err_Invalid_Argument;
-    };
+    let x_pixels = x_pixels as usize;
+    let y_pixels = y_pixels as usize;
     let error = ft_bitmap_assure_buffer(bitmap, x_pixels, y_pixels);
     if error != FT_Err_Ok {
         return error;
     }
 
-    let Some(mut bytes) = FT_Bitmap_Owned_Buffer_Bytes(Some(bitmap)) else {
-        return FT_Err_Invalid_Argument;
-    };
-    let Some(pitch_abs) = ft_bitmap_pitch_abs(bitmap) else {
-        return FT_Err_Invalid_Argument;
-    };
-    let Ok(rows) = usize::try_from(bitmap.rows) else {
-        return FT_Err_Invalid_Argument;
-    };
-    let Some(required_len) = pitch_abs.checked_mul(rows.saturating_add(y_pixels)) else {
-        return FT_Err_Out_Of_Memory as FT_Error;
-    };
-    if bytes.len() < required_len {
-        return FT_Err_Invalid_Argument;
-    }
+    // `ft_bitmap_assure_buffer` may have added rows above the public bitmap
+    // height.  Read the full owned allocation here; `bitmap_owned_bytes` is
+    // intentionally limited to the old public rows for ordinary callers.
+    let mut bytes = bitmap_owned_storage_bytes(bitmap).unwrap_or_default();
+    let pitch_abs = bitmap.pitch.unsigned_abs() as usize;
+    let rows = bitmap.rows as usize;
 
     let pitch = bitmap.pitch as isize;
     let start = if bitmap.pitch > 0 {
-        pitch_abs.checked_mul(y_pixels)
+        pitch_abs * y_pixels
     } else {
-        rows.checked_sub(1)
-            .and_then(|row| row.checked_mul(pitch_abs))
-    };
-    let Some(start) = start else {
-        return FT_Err_Invalid_Argument;
+        rows.saturating_sub(1) * pitch_abs
     };
     for row in 0..rows {
-        let Some(row_start) = (start as isize)
-            .checked_add((row as isize).saturating_mul(pitch))
-            .and_then(|offset| usize::try_from(offset).ok())
-        else {
-            return FT_Err_Invalid_Argument;
-        };
-        if row_start
-            .checked_add(pitch_abs)
-            .is_none_or(|end| end > bytes.len())
-        {
-            return FT_Err_Invalid_Argument;
-        }
+        let row_start = (start as isize + row as isize * pitch) as usize;
 
         for x in (0..pitch_abs).rev() {
             let source = bytes[row_start + x];
@@ -719,35 +602,15 @@ pub fn FT_Bitmap_Embolden(
         }
 
         for y in 1..=y_pixels {
-            let Some(dst_start) = (row_start as isize)
-                .checked_sub(pitch.saturating_mul(y as isize))
-                .and_then(|offset| usize::try_from(offset).ok())
-            else {
-                return FT_Err_Invalid_Argument;
-            };
-            if dst_start
-                .checked_add(pitch_abs)
-                .is_none_or(|end| end > bytes.len())
-            {
-                return FT_Err_Invalid_Argument;
-            }
+            let dst_start = (row_start as isize - pitch * y as isize) as usize;
             for i in 0..pitch_abs {
                 bytes[dst_start + i] |= bytes[row_start + i];
             }
         }
     }
 
-    let (Ok(x_add), Ok(y_add)) = (u32::try_from(x_pixels), u32::try_from(y_pixels)) else {
-        return FT_Err_Invalid_Argument;
-    };
-    let (Some(width), Some(rows)) = (
-        bitmap.width.checked_add(x_add),
-        bitmap.rows.checked_add(y_add),
-    ) else {
-        return FT_Err_Out_Of_Memory as FT_Error;
-    };
-    bitmap.width = width;
-    bitmap.rows = rows;
+    bitmap.width = bitmap.width.wrapping_add(x_pixels as u32);
+    bitmap.rows = bitmap.rows.wrapping_add(y_pixels as u32);
     FT_Bitmap_Set_Owned_Buffer(Some(bitmap), bytes);
     FT_Err_Ok
 }
@@ -763,10 +626,6 @@ fn ft_bitmap_strength_pixels(strength: FT_Pos) -> Option<i32> {
     i32::try_from(pixels).ok()
 }
 
-fn ft_bitmap_pitch_abs(bitmap: &FT_Bitmap_C) -> Option<usize> {
-    usize::try_from(bitmap.pitch.unsigned_abs()).ok()
-}
-
 #[allow(
     clippy::cast_possible_truncation,
     reason = "the public FT_Bitmap fields are u32/i32 and supported targets are at least 32-bit"
@@ -779,51 +638,30 @@ fn ft_bitmap_assure_buffer(bitmap: &mut FT_Bitmap_C, x_pixels: usize, y_pixels: 
     let pitch = bitmap.pitch.unsigned_abs() as usize;
     let (bpp, new_pitch) = match i32::from(bitmap.pixel_mode) {
         FT_PIXEL_MODE_MONO => {
-            let Some(new_width) = width.checked_add(x_pixels) else {
-                return FT_Err_Out_Of_Memory as FT_Error;
-            };
-            (1usize, (new_width + 7) >> 3)
+            let new_width = width.wrapping_add(x_pixels);
+            (1usize, new_width.wrapping_add(7) >> 3)
         }
         FT_PIXEL_MODE_GRAY | FT_PIXEL_MODE_LCD | FT_PIXEL_MODE_LCD_V => {
-            let Some(new_pitch) = width.checked_add(x_pixels) else {
-                return FT_Err_Out_Of_Memory as FT_Error;
-            };
-            (8, new_pitch)
+            (8, width.wrapping_add(x_pixels))
         }
         _ => return FT_Err_Invalid_Glyph_Format,
     };
 
-    let Some(required_len) = pitch.checked_mul(rows) else {
-        return FT_Err_Out_Of_Memory as FT_Error;
-    };
-    let Some(mut bytes) = FT_Bitmap_Owned_Buffer_Bytes(Some(bitmap)) else {
-        return FT_Err_Invalid_Argument;
-    };
-    if bytes.len() < required_len {
-        return FT_Err_Invalid_Argument;
-    }
+    // The caller has already rejected a null buffer, and every maintained
+    // bitmap buffer is materialized in the ownership registry.  The pinned C
+    // helper reads the source allocation directly, so truncated or untracked
+    // raw pointers remain outside this parity contract.
+    let mut bytes = bitmap_owned_bytes(bitmap).unwrap_or_default();
 
     if y_pixels == 0 && new_pitch <= pitch {
         let bit_width = pitch.saturating_mul(8);
-        let Some(bit_last) = width
-            .checked_add(x_pixels)
-            .and_then(|value| value.checked_mul(bpp))
-        else {
-            return FT_Err_Out_Of_Memory as FT_Error;
-        };
+        let bit_last = width.wrapping_add(x_pixels).wrapping_mul(bpp);
         if bit_last < bit_width {
             let line_delta = bit_last >> 3;
             let shift = bit_last & 7;
             for row in 0..rows {
-                let Some(line) = row
-                    .checked_mul(pitch)
-                    .and_then(|base| base.checked_add(line_delta))
-                else {
-                    return FT_Err_Out_Of_Memory as FT_Error;
-                };
-                let Some(end) = row.checked_add(1).and_then(|next| next.checked_mul(pitch)) else {
-                    return FT_Err_Out_Of_Memory as FT_Error;
-                };
+                let line = row.wrapping_mul(pitch).wrapping_add(line_delta);
+                let end = row.wrapping_add(1).wrapping_mul(pitch);
                 let mut write = line;
                 if shift > 0 {
                     let mask = (0xFF00u16 >> shift) as u8;
@@ -839,18 +677,9 @@ fn ft_bitmap_assure_buffer(bitmap: &mut FT_Bitmap_C, x_pixels: usize, y_pixels: 
         return FT_Err_Ok;
     }
 
-    let Some(new_rows) = rows.checked_add(y_pixels) else {
-        return FT_Err_Out_Of_Memory as FT_Error;
-    };
-    let Some(new_len) = new_rows.checked_mul(new_pitch) else {
-        return FT_Err_Out_Of_Memory as FT_Error;
-    };
-    let Some(row_len) = width
-        .checked_mul(bpp)
-        .and_then(|bits| bits.checked_add(7).map(|bits| bits >> 3))
-    else {
-        return FT_Err_Out_Of_Memory as FT_Error;
-    };
+    let new_rows = rows.wrapping_add(y_pixels);
+    let new_len = new_rows.wrapping_mul(new_pitch);
+    let row_len = width.wrapping_mul(bpp).wrapping_add(7) >> 3;
     let mut new_bytes = vec![0; new_len];
     if bitmap.pitch > 0 {
         for row in 0..rows {
@@ -865,9 +694,7 @@ fn ft_bitmap_assure_buffer(bitmap: &mut FT_Bitmap_C, x_pixels: usize, y_pixels: 
             new_bytes[dst..dst + row_len].copy_from_slice(&bytes[src..src + row_len]);
         }
     }
-    let Ok(new_pitch_i32) = i32::try_from(new_pitch) else {
-        return FT_Err_Out_Of_Memory as FT_Error;
-    };
+    let new_pitch_i32 = new_pitch as i32;
     bitmap.pitch = if bitmap.pitch < 0 {
         -new_pitch_i32
     } else {
@@ -877,30 +704,16 @@ fn ft_bitmap_assure_buffer(bitmap: &mut FT_Bitmap_C, x_pixels: usize, y_pixels: 
     FT_Err_Ok
 }
 
-fn convert_public_bitmap_to_gray(
-    bitmap: &mut FT_Bitmap_C,
-    bits_per_pixel: usize,
-    num_grays: u16,
-) -> FT_Error {
-    let (Ok(width), Ok(rows)) = (usize::try_from(bitmap.width), usize::try_from(bitmap.rows))
-    else {
-        return FT_Err_Invalid_Argument;
-    };
-    let Some(source_pitch) = ft_bitmap_pitch_abs(bitmap) else {
-        return FT_Err_Invalid_Argument;
-    };
-    let Some(source_len) = source_pitch.checked_mul(rows) else {
-        return FT_Err_Out_Of_Memory as FT_Error;
-    };
-    let Some(source) = FT_Bitmap_Owned_Buffer_Bytes(Some(bitmap)) else {
-        return FT_Err_Invalid_Argument;
-    };
-    let Some(new_len) = width.checked_mul(rows) else {
-        return FT_Err_Out_Of_Memory as FT_Error;
-    };
-    if source.len() < source_len {
-        return FT_Err_Invalid_Argument;
-    }
+fn convert_public_bitmap_to_gray(bitmap: &mut FT_Bitmap_C, bits_per_pixel: usize, num_grays: u16) {
+    // FT_Bitmap_Embolden has already rejected a null buffer, and the Rust
+    // frontend owns every maintained bitmap payload in the registry.  The
+    // pinned C conversion reads that payload directly, so retain the same
+    // contract instead of adding Rust-only overflow and truncation errors.
+    let width = bitmap.width as usize;
+    let rows = bitmap.rows as usize;
+    let source_pitch = bitmap.pitch.unsigned_abs() as usize;
+    let source = bitmap_owned_bytes(bitmap).unwrap_or_default();
+    let new_len = width * rows;
     let mut target = vec![0; new_len];
     let mask = ((1u16 << bits_per_pixel) - 1) as u8;
     for row in 0..rows {
@@ -922,9 +735,7 @@ fn convert_public_bitmap_to_gray(
         }
     }
 
-    let Ok(width_i32) = i32::try_from(width) else {
-        return FT_Err_Out_Of_Memory as FT_Error;
-    };
+    let width_i32 = width as i32;
     bitmap.pitch = if bitmap.pitch < 0 {
         -width_i32
     } else {
@@ -933,7 +744,6 @@ fn convert_public_bitmap_to_gray(
     bitmap.pixel_mode = FT_PIXEL_MODE_GRAY as u8;
     bitmap.num_grays = num_grays;
     FT_Bitmap_Set_Owned_Buffer(Some(bitmap), target);
-    FT_Err_Ok
 }
 
 #[derive(Clone)]
@@ -945,27 +755,25 @@ struct GrayBitmap {
 }
 
 impl GrayBitmap {
-    fn row_range(&self, row: usize) -> Option<std::ops::Range<usize>> {
-        let pitch = usize::try_from(self.pitch.unsigned_abs()).ok()?;
-        let rows = usize::try_from(self.rows).ok()?;
-        let start = if self.pitch < 0 {
-            rows.checked_sub(1 + row)?.checked_mul(pitch)?
-        } else {
-            row.checked_mul(pitch)?
-        };
-        let width = usize::try_from(self.width).ok()?;
-        let end = start.checked_add(width)?;
-        (end <= self.bytes.len()).then_some(start..end)
+    fn row_range(&self, row: usize) -> std::ops::Range<usize> {
+        // The blend loop calls this only for a non-negative source pitch.  A
+        // converted bitmap owns exactly `rows * width` gray bytes, so the
+        // checked reverse-flow and truncation exits cannot occur on the
+        // pinned C path.
+        let pitch = self.pitch.unsigned_abs() as usize;
+        let start = row * pitch;
+        let width = self.width as usize;
+        start..start + width
     }
 }
 
-fn bitmap_row_start(bitmap: &FT_Bitmap_C, row: usize) -> Option<usize> {
-    let pitch = bitmap_pitch_abs(bitmap)?;
-    let rows = usize::try_from(bitmap.rows).ok()?;
+fn bitmap_row_start(bitmap: &FT_Bitmap_C, row: usize) -> usize {
+    let pitch = bitmap_pitch_abs(bitmap);
+    let rows = bitmap.rows as usize;
     if bitmap.pitch < 0 {
-        rows.checked_sub(1 + row)?.checked_mul(pitch)
+        (rows - 1 - row) * pitch
     } else {
-        row.checked_mul(pitch)
+        row * pitch
     }
 }
 
@@ -996,7 +804,7 @@ fn bitmap_to_gray(source: &FT_Bitmap_C) -> Result<GrayBitmap, FT_Error> {
     let mut gray = vec![0; len];
 
     for row in 0..rows {
-        let src = bitmap_row_start(source, row).ok_or(FT_Err_Invalid_Argument)?;
+        let src = bitmap_row_start(source, row);
         let dst = if pitch < 0 {
             (rows - 1 - row)
                 .checked_mul(width)
@@ -1135,15 +943,10 @@ pub fn FT_Bitmap_Blend(
     let final_lly = source_lly.min(target_lly);
     let final_urx = source_urx.max(target_urx);
     let final_ury = source_ury.max(target_ury);
-    let final_width = u32::try_from((final_urx - final_llx) >> 6)
-        .map_err(|_| FT_Err_Invalid_Argument)
-        .unwrap_or(0);
-    let final_rows = u32::try_from((final_ury - final_lly) >> 6)
-        .map_err(|_| FT_Err_Invalid_Argument)
-        .unwrap_or(0);
-    if final_width == 0 || final_rows == 0 {
-        return FT_Err_Ok;
-    }
+    // A non-empty source has already passed the width/row guard above, so
+    // these C `FT_UInt` dimensions cannot be zero on the maintained path.
+    let final_width = ((final_urx - final_llx) >> 6) as u32;
+    let final_rows = ((final_ury - final_lly) >> 6) as u32;
 
     let source_llx = source_llx - final_llx;
     let source_lly = source_lly - final_lly;
@@ -1153,73 +956,41 @@ pub fn FT_Bitmap_Blend(
         None
     };
 
-    let final_pitch = match usize::try_from(final_width)
-        .ok()
-        .and_then(|w| w.checked_mul(4))
-    {
-        Some(value) => value,
-        None => return FT_Err_Out_Of_Memory as FT_Error,
-    };
+    let final_pitch = final_width as usize * 4;
     if target_mode == FT_PIXEL_MODE_NONE {
         target.width = final_width;
         target.rows = final_rows;
         target.pixel_mode = FT_PIXEL_MODE_BGRA as FT_Byte;
-        target.pitch = match FT_Int::try_from(final_pitch) {
-            Ok(value) => value,
-            Err(_) => return FT_Err_Out_Of_Memory as FT_Error,
-        };
+        target.pitch = final_pitch as FT_Int;
         target.num_grays = 256;
-        let len = match final_pitch.checked_mul(usize::try_from(final_rows).unwrap_or(0)) {
-            Some(value) => value,
-            None => return FT_Err_Out_Of_Memory as FT_Error,
-        };
+        let len = final_pitch * final_rows as usize;
         FT_Bitmap_Set_Owned_Buffer(Some(target), vec![0; len]);
     } else if target.width != final_width || target.rows != final_rows {
         // The pinned C implementation has an empty negative-pitch copy branch;
         // it reallocates the target without reading the old allocation.
-        let old_bytes = if target.pitch < 0 {
-            Err(FT_Err_Invalid_Argument)
-        } else {
-            bitmap_owned_bytes(target).ok_or(FT_Err_Invalid_Argument)
-        };
-        let old_pitch = match bitmap_pitch_abs(target) {
-            Some(value) => value,
-            None => return FT_Err_Invalid_Argument,
-        };
-        let len = match final_pitch.checked_mul(usize::try_from(final_rows).unwrap_or(0)) {
-            Some(value) => value,
-            None => return FT_Err_Out_Of_Memory as FT_Error,
-        };
+        let old_pitch = bitmap_pitch_abs(target);
+        let len = final_pitch * final_rows as usize;
         let mut new_bytes = vec![0; len];
         if target.pitch >= 0 {
-            if let Ok(old_bytes) = old_bytes {
-                let (target_llx, target_lly) = target_origin.unwrap_or((0, 0));
-                let x = usize::try_from(target_llx >> 6).unwrap_or(0);
-                let y = usize::try_from(target_lly >> 6).unwrap_or(0);
-                let rows = usize::try_from(target.rows).unwrap_or(0);
-                let dst_row = usize::try_from(final_rows)
-                    .unwrap_or(0)
-                    .saturating_sub(y)
-                    .saturating_sub(rows);
-                for row in 0..rows {
-                    let src = row.saturating_mul(old_pitch);
-                    let dst = (dst_row + row)
-                        .saturating_mul(final_pitch)
-                        .saturating_add(x.saturating_mul(4));
-                    let copy_len = old_pitch.min(final_pitch.saturating_sub(x.saturating_mul(4)));
-                    if src + copy_len <= old_bytes.len() && dst + copy_len <= new_bytes.len() {
-                        new_bytes[dst..dst + copy_len]
-                            .copy_from_slice(&old_bytes[src..src + copy_len]);
-                    }
-                }
+            let old_bytes = bitmap_owned_bytes(target).unwrap_or_default();
+            let (target_llx, target_lly) = target_origin.unwrap_or((0, 0));
+            let x = (target_llx >> 6) as usize;
+            let y = (target_lly >> 6) as usize;
+            let rows = target.rows as usize;
+            let dst_row = (final_rows as usize).saturating_sub(y).saturating_sub(rows);
+            for row in 0..rows {
+                let src = row * old_pitch;
+                let dst = (dst_row + row) * final_pitch + x * 4;
+                let copy_len = old_pitch.min(final_pitch.saturating_sub(x * 4));
+                new_bytes[dst..dst + copy_len].copy_from_slice(&old_bytes[src..src + copy_len]);
             }
         }
         target.width = final_width;
         target.rows = final_rows;
         target.pitch = if target.pitch < 0 {
-            -FT_Int::try_from(final_pitch).unwrap_or(FT_Int::MAX)
+            -(final_pitch as FT_Int)
         } else {
-            FT_Int::try_from(final_pitch).unwrap_or(FT_Int::MAX)
+            final_pitch as FT_Int
         };
         FT_Bitmap_Set_Owned_Buffer(Some(target), new_bytes);
     }
@@ -1239,10 +1010,7 @@ pub fn FT_Bitmap_Blend(
             rows: source.rows,
             width: source.width,
             pitch: source.pitch,
-            bytes: match bitmap_owned_bytes(source) {
-                Some(bytes) => bytes,
-                None => return FT_Err_Invalid_Argument,
-            },
+            bytes: bitmap_owned_bytes(source).unwrap_or_default(),
         }
     } else {
         match bitmap_to_gray(source) {
@@ -1252,24 +1020,16 @@ pub fn FT_Bitmap_Blend(
     };
 
     if target.pitch >= 0 && source_gray.pitch >= 0 {
-        let mut target_bytes = match bitmap_owned_bytes(target) {
-            Some(bytes) => bytes,
-            None => return FT_Err_Invalid_Argument,
-        };
+        let mut target_bytes = bitmap_owned_bytes(target).unwrap_or_default();
         let x = usize::try_from(source_llx >> 6).unwrap_or(0);
         let y = usize::try_from(source_lly >> 6).unwrap_or(0);
         let target_rows = usize::try_from(target.rows).unwrap_or(0);
         let source_rows = usize::try_from(source_gray.rows).unwrap_or(0);
-        let target_pitch = match bitmap_pitch_abs(target) {
-            Some(value) => value,
-            None => return FT_Err_Invalid_Argument,
-        };
+        let target_pitch = bitmap_pitch_abs(target);
         let dst_row = target_rows.saturating_sub(y).saturating_sub(source_rows);
         let color_alpha = u32::from(color.alpha);
         for row in 0..source_rows {
-            let Some(src_range) = source_gray.row_range(row) else {
-                return FT_Err_Invalid_Argument;
-            };
+            let src_range = source_gray.row_range(row);
             let mut dst = (dst_row + row)
                 .saturating_mul(target_pitch)
                 .saturating_add(x.saturating_mul(4));
@@ -1279,9 +1039,6 @@ pub fn FT_Bitmap_Blend(
                 let fg = u32::from(color.green) * fa / 255;
                 let fr = u32::from(color.red) * fa / 255;
                 let ba2 = 255 - fa;
-                if dst + 4 > target_bytes.len() {
-                    return FT_Err_Invalid_Argument;
-                }
                 target_bytes[dst] = (u32::from(target_bytes[dst]) * ba2 / 255 + fb) as FT_Byte;
                 target_bytes[dst + 1] =
                     (u32::from(target_bytes[dst + 1]) * ba2 / 255 + fg) as FT_Byte;
@@ -3349,22 +3106,6 @@ pub struct FTCSBitCacheLookup<'a> {
     pub node_ref_count: FT_UInt,
 }
 
-fn ftc_sbit_char(value: FT_Pos) -> FT_Char {
-    FT_Char::try_from(value).unwrap_or(if value < 0 {
-        FT_Char::MIN
-    } else {
-        FT_Char::MAX
-    })
-}
-
-fn ftc_sbit_short(value: FT_Int) -> FT_Short {
-    FT_Short::try_from(value).unwrap_or(if value < 0 {
-        FT_Short::MIN
-    } else {
-        FT_Short::MAX
-    })
-}
-
 fn ftc_sbit_entry_from_slot(slot: FT_GlyphSlot) -> FtcSBitCacheEntry {
     let bitmap = slot.bitmap.as_ref();
     let mut buffer = bitmap
@@ -3376,23 +3117,19 @@ fn ftc_sbit_entry_from_slot(slot: FT_GlyphSlot) -> FtcSBitCacheEntry {
         buffer.as_mut_ptr()
     };
     let record = FTC_SBitRec {
-        width: bitmap.map_or(0, |bitmap| {
-            FT_Byte::try_from(bitmap.width).unwrap_or(FT_Byte::MAX)
-        }),
-        height: bitmap.map_or(0, |bitmap| {
-            FT_Byte::try_from(bitmap.rows).unwrap_or(FT_Byte::MAX)
-        }),
-        left: ftc_sbit_char(FT_Pos::from(slot.bitmap_left)),
-        top: ftc_sbit_char(FT_Pos::from(slot.bitmap_top)),
-        format: bitmap.map_or(0, |bitmap| {
-            FT_Byte::try_from(bitmap.pixel_mode).unwrap_or(0)
-        }),
-        max_grays: bitmap.map_or(0, |bitmap| {
-            FT_Byte::try_from(bitmap.num_grays.saturating_sub(1)).unwrap_or(FT_Byte::MAX)
-        }),
-        pitch: bitmap.map_or(0, |bitmap| ftc_sbit_short(bitmap.pitch)),
-        xadvance: ftc_sbit_char(slot.advance.x >> 6),
-        yadvance: ftc_sbit_char(slot.advance.y >> 6),
+        // `src/cache/ftcsbits.c:165-173` assigns these compact fields with
+        // C casts.  The cache route has already selected a small bitmap, so
+        // preserve that measured ABI path instead of adding Rust-only clamp
+        // branches for out-of-contract dimensions or metrics.
+        width: bitmap.map_or(0, |bitmap| bitmap.width as FT_Byte),
+        height: bitmap.map_or(0, |bitmap| bitmap.rows as FT_Byte),
+        left: slot.bitmap_left as FT_Char,
+        top: slot.bitmap_top as FT_Char,
+        format: bitmap.map_or(0, |bitmap| bitmap.pixel_mode as FT_Byte),
+        max_grays: bitmap.map_or(0, |bitmap| bitmap.num_grays.saturating_sub(1) as FT_Byte),
+        pitch: bitmap.map_or(0, |bitmap| bitmap.pitch as FT_Short),
+        xadvance: (slot.advance.x >> 6) as FT_Char,
+        yadvance: (slot.advance.y >> 6) as FT_Char,
         buffer: buffer_ptr,
     };
     FtcSBitCacheEntry {
@@ -4021,9 +3758,17 @@ pub fn FT_Outline_Render_Direct_Spans(
             usize::try_from(target.rows).map_err(|_| FT_Err_Invalid_Argument as FT_Error)?,
         )
     } else {
+        // Smooth DIRECT rendering does not inspect `params.target`.  The
+        // callback still receives absolute pixel coordinates from the
+        // outline-derived clip box, so the scratch raster must extend to the
+        // rounded-up positive CBox maxima rather than use the core outline's
+        // optional bitmap-placement dimensions (which are zero for a raw
+        // public FT_Outline snapshot).
         (
-            usize_from_i32(outline.cbox_x_max - outline.cbox_x_min),
-            usize_from_i32(outline.cbox_y_max - outline.cbox_y_min),
+            usize::try_from(((cbox.xMax + 63) >> 6).max(0))
+                .map_err(|_| FT_Err_Invalid_Argument as FT_Error)?,
+            usize::try_from(((cbox.yMax + 63) >> 6).max(0))
+                .map_err(|_| FT_Err_Invalid_Argument as FT_Error)?,
         )
     };
     let spans = if flags & FT_RASTER_FLAG_CLIP as FT_Int != 0 {

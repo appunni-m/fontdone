@@ -75,7 +75,8 @@
             "FTC_Manager_LookupSize",
             "FTC_SBitCache_Lookup"
           ],
-          "requester": "counting_memory_face_requester"
+          "requester": "counting_memory_face_requester",
+          "edge_probes": true
         }
       },
       "classifiers": [
@@ -100,7 +101,12 @@
             "requester_calls",
             "face_finalizer_counts",
             "size_identity_classes",
-            "node_identity_classes"
+            "node_identity_classes",
+            "edge_probes.invalid_unref_noops",
+            "edge_probes.post_done.lookup_face_status",
+            "edge_probes.post_done.lookup_size_status",
+            "edge_probes.post_done.sbit_without_output_status",
+            "edge_probes.post_done.reset_called"
           ]
         },
         "fixture_requirements": [

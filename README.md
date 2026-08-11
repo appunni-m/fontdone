@@ -102,19 +102,19 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The latest full parity snapshot was recorded on **2026-08-10** (UTC):
+The latest full parity snapshot was recorded on **2026-08-11** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 7,853 |
-| Passed cases | 7,853 |
+| Runnable exact-comparison cases | 7,873 |
+| Passed cases | 7,873 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
-| Covered manifest cases | 4,230 |
+| Covered manifest cases | 4,237 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,323 |
-| Concrete expanded cases | 7,856 |
+| Logical declared cases | 4,330 |
+| Concrete expanded cases | 7,876 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
 `7,650 / 7,650` means every runnable case in that execution matched; the 3
@@ -143,7 +143,7 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest pushed-commit all-lane coverage snapshot was recorded on
-**2026-08-10** for the worktree based at commit
+**2026-08-11** for the worktree based at commit
 `06a8ce2b91d041d1bc75618e579480d11f182dcd`
 (Coverage MCP run `669d796d-c1aa-411c-ad12-98a6d2089fc0`, snapshot
 `feb0e45d-3088-4a50-918b-ae580a6fb5f9`):

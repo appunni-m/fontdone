@@ -7,6 +7,7 @@
     "success_existing_bgra_reallocates_negative_flow",
     "success_existing_bgra_reallocates_negative_non_gray_flow",
     "success_existing_bgra_same_bounds_preserves",
+    "success_existing_bgra_partial_rows_ignored",
     "success_source_pixel_modes_and_flow",
     "success_empty_source_noop",
     "success_empty_source_zero_rows_noop",
@@ -406,6 +407,80 @@
         },
         "fixture_requirements": [
           "Synthetic 2x2 grayscale source and identically bounded BGRA target"
+        ]
+      }
+    },
+    {
+      "case_id": "ftbitmap.FT_Bitmap_Blend.success_existing_bgra_partial_rows_ignored",
+      "subject": "ftbitmap.FT_Bitmap_Blend",
+      "case": "success_existing_bgra_partial_rows_ignored",
+      "operation": "ftbitmap.bitmap_blend",
+      "schema": "bitmap_operation",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "f1",
+            "params": {
+              "scenario": "success_existing_bgra_partial_rows_ignored",
+              "source_dimensions": [
+                "2x2"
+              ],
+              "target_initial_state": "existing_bgra_zero_rows",
+              "source_pixel_mode": "GRAY",
+              "source_offset": [
+                64,
+                128
+              ],
+              "target_offset": [
+                64,
+                128
+              ],
+              "load_flags": 0
+            },
+            "coverage": [
+              "ftbitmap.bitmap_blend:explicit-f1"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftbitmap",
+        "area:bitmap"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "bitmap_fields": [
+            "rows",
+            "width",
+            "pitch",
+            "pixel_mode",
+            "num_grays",
+            "buffer"
+          ],
+          "buffer_bytes": true,
+          "allocator_events": true,
+          "target_offset": "FT_Vector",
+          "color": "FT_Color premultiplied BGRA blend"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "error",
+            "target.rows",
+            "target.width",
+            "target.pitch",
+            "target.pixel_mode",
+            "target.buffer_bgra_bytes",
+            "target_offset",
+            "allocator.events"
+          ]
+        },
+        "fixture_requirements": [
+          "Synthetic 2x2 grayscale source and an existing BGRA target whose width is nonzero while rows is zero"
         ]
       }
     },

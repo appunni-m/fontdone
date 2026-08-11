@@ -2667,6 +2667,8 @@ subjects:
         description: Loaded glyph outlines whose cbox and bbox coincide return the exact same FT_BBox 26.6 coordinates as C.
       - id: success_curve_extrema_bbox
         description: Outlines with conic or cubic extrema between endpoints return exact C bbox values rather than only point control-box values.
+      - id: success_synthetic_curve_branch_matrix
+        description: Maintained synthetic conic and cubic outlines exercise both control-box sides and cubic peak scaling branches with exact C bbox results.
       - id: success_empty_outline_bbox
         description: Empty outlines return the same success/error classification and zero or preserved bbox behavior as C.
       - id: no_scale_tricky_font_behavior
@@ -2730,6 +2732,8 @@ subjects:
         description: A non-GRAY source on the negative-target-pitch path is converted before C's documented no-op blend branch, with exact target fields and offset.
       - id: success_existing_bgra_same_bounds_preserves
         description: Blending into an existing BGRA target with identical bounds preserves its allocation shape and updates pixels exactly like C.
+      - id: success_existing_bgra_partial_rows_ignored
+        description: A pre-existing BGRA target with a nonzero width but zero rows is treated as an empty rectangle before C recomputes the blend bounds.
       - id: success_source_pixel_modes_and_flow
         description: MONO, GRAY2, GRAY4, GRAY, LCD, LCD_V, BGRA, and NONE sources with positive and negative pitch produce exact C BGRA bytes or the defined no-op.
       - id: success_empty_source_noop
@@ -5642,6 +5646,8 @@ subjects:
     cases:
       - id: value_matches_header
         description: Numeric value is exactly 145, matching FT_ERRORDEF_(Name_Table_Missing, 0x91) in the pinned header.
+      - id: sfnt_name_invalid_directory_diagnostic
+        description: The controlled SFNT name loader reports FT_Err_Invalid_Stream_Operation when the offset table has no directory records.
       - id: sfnt_name_storage_out_of_bounds
         description: Loading an SFNT name table where 6 + 12*numNameRecords exceeds the table length returns FT_Err_Name_Table_Missing from ttload.c.
       - id: sfnt_name_table_missing_diagnostic
@@ -9673,6 +9679,8 @@ subjects:
     cases:
       - id: line_conic_cubic_event_order
         description: Callback event order and implied conic midpoint handling match C for line, quadratic, cubic, and multi-contour outlines.
+      - id: implied_start_and_closing_segments
+        description: Conic-first contours use C's implied start rules, while conic and cubic closing segments return to the computed contour start.
       - id: shift_delta_applied_to_callbacks
         description: Callback coordinates use C's (coord << shift) - delta transform.
       - id: callback_error_propagates
@@ -9791,6 +9799,8 @@ subjects:
         description: DIRECT rendering overwrites params.source with the outline and presets clip_box from cbox unless FT_RASTER_FLAG_CLIP is set, then emits C-equivalent spans.
       - id: direct_render_without_gray_spans
         description: AA plus DIRECT rendering returns success without emitting spans when gray_spans is null, preserving the target buffer and the C-compatible clip-box observation.
+      - id: direct_render_without_target
+        description: AA plus DIRECT rendering accepts a null target bitmap, derives its working extent from the outline CBox, and emits the same spans and clip-box mutation as C.
       - id: renderer_fallback_and_errors
         description: Null library, null outline, null params, oversized cbox, invalid target, missing callbacks, and unsupported renderer modes return the same C error code.
     # needs-input: operation=FT_Outline_Render; fixture_asset=outline glyphs from tests/fixtures/input/fonts/DejaVuSans.ttf plus synthetic clipped, empty, malformed, and oversized outlines; params={FT_Raster_Params flags, target bitmap, gray_spans callback, clip_box}; expected output shape={FT_Error, mutated params.source, clip_box, bitmap bytes/hash, span event log}; comparison=exact C oracle fields, byte output/spans, and error code.
@@ -10422,9 +10432,11 @@ subjects:
         description: With destroy set, C releases the original glyph after the replacement glyph is successfully built.
       - id: invalid_glyph_arguments
         description: Null pglyph, null glyph, and non-outline glyph inputs return Invalid_Argument.
+      - id: invalid_outline_parse_rejected
+        description: A loaded outline with a cubic first point is rejected by the public glyph-stroke ParseOutline path.
       - id: failure_sets_output_null_when_preserving_original
         description: If stroking or allocation fails after copying and destroy is false, C frees the copy and stores null in *pglyph.
-    # needs-input: operation=FT_Get_Glyph followed by FT_Glyph_Stroke; fixture_asset=outline glyph from tests/fixtures/input/fonts/DejaVuSans.ttf plus bitmap glyph fixture and allocator-failure hook; params={glyph_index,size,load_flags,radius,line_cap,line_join,miter_limit,destroy}; expected output shape={FT_Error, glyph_pointer_class, original_destroyed, outline point_count/contour_count, points/tags/contours, cbox}; comparison=exact C oracle status, ownership transition, counts, and 26.6 outline geometry.
+    # fixture-backed invalid-input route: operation=FT_Glyph_Stroke with null pglyph, null glyph, and a loaded outline plus null stroker; fixture_asset=tests/fixtures/input/fonts/DejaVuSans.ttf; params={glyph_index,load_flags,scenarios,destroy}; expected output shape={rows[*].status,rows[*].pglyph_after}; comparison=exact pinned-C error matrix.
 
   - id: ftstroke.FT_Glyph_StrokeBorder
     kind: function
@@ -10440,7 +10452,9 @@ subjects:
         description: With destroy set, C releases the original glyph only after a replacement border glyph is successfully built.
       - id: invalid_glyph_arguments
         description: Null pglyph, null glyph, and non-outline glyph inputs return Invalid_Argument.
-    # needs-input: operation=FT_Get_Glyph followed by FT_Glyph_StrokeBorder; fixture_asset=TrueType and CFF outline glyphs with opposite orientations plus bitmap glyph fixture; params={glyph_index,size,load_flags,radius,line_cap,line_join,miter_limit,inside,destroy}; expected output shape={FT_Error, selected_border, glyph_pointer_class, outline point_count/contour_count, points/tags/contours, cbox}; comparison=exact C oracle status, border enum, ownership transition, counts, and 26.6 outline geometry.
+      - id: invalid_outline_parse_rejected
+        description: A loaded outline with a cubic first point is rejected by the public border-stroke ParseOutline path.
+    # fixture-backed invalid-input route: operation=FT_Glyph_StrokeBorder with null pglyph, null glyph, and a loaded outline plus null stroker; fixture_asset=tests/fixtures/input/fonts/DejaVuSans.ttf; params={glyph_index,load_flags,scenarios,inside,destroy}; expected output shape={rows[*].status,rows[*].pglyph_after}; comparison=exact pinned-C error matrix.
 
   - id: ftstroke.FT_Outline_GetInsideBorder
     kind: function
@@ -10649,7 +10663,7 @@ subjects:
     description: Public convenience parser that feeds an FT_Outline into a stroker as an open or closed path.
     cases:
       - id: line_conic_cubic_success
-        description: C parses on-curve lines, implied conic starts/midpoints, conic arcs, and cubic segments into stroker operations in exact order.
+        description: C parses on-curve lines, implied conic starts/midpoints, conic arcs, and cubic segments, including all small-vector threshold combinations, into stroker operations in exact order.
       - id: opened_outline_success
         description: With opened set, C treats contours as open subpaths and produces a single capped stroke border.
       - id: invalid_outline

@@ -37,13 +37,7 @@
         },
         "params": {
           "opened": false,
-          "outline_rows": [
-            "line_contour",
-            "conic_implied_start",
-            "conic_implied_midpoints",
-            "cubic_contour",
-            "glyph_outline_from_font"
-          ],
+          "outline_rows": ["line_contour", "conic_implied_start", "conic_implied_midpoints", "cubic_contour", "conic_edges_both_small", "conic_control_small_only", "conic_endpoint_small_only", "conic_edges_both_large", "cubic_edges_all_small", "cubic_endpoint_large_only", "cubic_middle_large_only", "cubic_middle_and_endpoint_large", "cubic_head_large_only", "cubic_head_and_endpoint_large", "cubic_head_and_middle_large", "cubic_edges_all_large", "glyph_outline_from_font"],
           "stroker": {
             "radius": 96,
             "line_cap": "FT_STROKER_LINECAP_ROUND",
@@ -82,7 +76,7 @@
           ]
         },
         "fixture_requirements": [
-          "parse-line-conic-cubic.json must contain explicit tags for on-curve, conic, and cubic controls, including implied conic start/midpoint cases."
+          "parse-line-conic-cubic.json must contain explicit tags for on-curve, conic, and cubic controls, including implied conic start/midpoint cases and all conic/cubic small-vector threshold combinations."
         ],
         "source_refs": [
           "freetype/include/freetype/ftstroke.h:338-370",

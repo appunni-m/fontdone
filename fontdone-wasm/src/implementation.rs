@@ -2314,6 +2314,8 @@ impl AbiCacheManagerOwnershipHarness {
         };
         let _ = self.manager.unref_sbit_node(&image_type, 36);
         let _ = self.manager.unref_sbit_node(&image_type, 36);
+        let _ = self.manager.unref_sbit_node(&image_type, 37);
+        let _ = self.manager.unref_sbit_node(&image_type, 36);
         let finalizers_before_reset = self.manager.finalized_faces();
         self.manager.reset();
         let finalizers_after_reset = self.manager.finalized_faces();
@@ -2367,6 +2369,49 @@ impl AbiCacheManagerOwnershipHarness {
             reset_preserved_cache_handle,
         }
     }
+
+    /// Exercises the manager's post-done rejection and reset-no-op states.
+    pub fn post_done_edge_probe(
+        &mut self,
+    ) -> (
+        rust_ffi::FT_Error,
+        rust_ffi::FT_Error,
+        rust_ffi::FT_Error,
+        rust_ffi::FT_Error,
+    ) {
+        let post_done_lookup_face_status = self
+            .manager
+            .lookup_face()
+            .map_or_else(|error| error, |_| rust_ffi::FT_Err_Ok);
+        let post_done_lookup_size_status = self
+            .manager
+            .lookup_pixel_size(0, 12)
+            .map_or_else(|error| error, |_| rust_ffi::FT_Err_Ok);
+        let image_type = rust_ffi::FTC_ImageTypeRec {
+            face_id: ptr::null_mut(),
+            width: 0,
+            height: 12,
+            flags: rust_ffi::FT_LOAD_DEFAULT,
+        };
+        let mut ignored_lookup = None;
+        let mut ignored_node = false;
+        let post_done_sbit_status = self.manager.lookup_sbit(
+            Some(&image_type),
+            36,
+            Some(&mut ignored_lookup),
+            Some(&mut ignored_node),
+        );
+        let post_done_sbit_without_output_status =
+            self.manager
+                .lookup_sbit(Some(&image_type), 36, None, Some(&mut ignored_node));
+        self.manager.reset();
+        (
+            post_done_lookup_face_status,
+            post_done_lookup_size_status,
+            post_done_sbit_status,
+            post_done_sbit_without_output_status,
+        )
+    }
 }
 
 #[cfg(feature = "abi-test-support")]
@@ -2395,6 +2440,22 @@ pub fn abi_support_corrupt_outline_glyph_for_render_failure(glyph_handle: usize)
         return false;
     };
     *endpoint = invalid_endpoint;
+    owned.refresh_record();
+    true
+}
+
+#[cfg(feature = "abi-test-support")]
+pub fn abi_support_corrupt_outline_glyph_for_stroke_parse(glyph_handle: usize) -> bool {
+    let glyph = ptr::with_exposed_provenance_mut::<FontdoneWasmGlyph>(glyph_handle);
+    let Some(owned) = wasm_owned_outline_glyph_from_root_mut(glyph) else {
+        return false;
+    };
+    let Some(tag) = owned.core.outline.tags.first_mut() else {
+        return false;
+    };
+    // Keep this malformed record in the maintained parity route: the first
+    // cubic tag is rejected by ParseOutline before stroker geometry runs.
+    *tag = rust_ffi::FT_CURVE_TAG_CUBIC as rust_ffi::FT_Byte;
     owned.refresh_record();
     true
 }
@@ -3946,6 +4007,38 @@ pub fn abi_support_glyph_stroke_border_destroy_option(
         }
         Err(error) => error,
     }
+}
+
+#[cfg(feature = "abi-test-support")]
+pub fn abi_support_glyph_stroke_invalid_arguments(
+    glyph_handle: usize,
+    border: FT_Bool,
+) -> [FT_Error; 3] {
+    let null_glyph_status = if border != 0 {
+        rust_ffi::FT_Outline_Glyph_StrokeBorder(None, ptr::null_mut(), 1)
+    } else {
+        rust_ffi::FT_Outline_Glyph_Stroke(None, ptr::null_mut())
+    }
+    .map_or_else(|error| error, |_| rust_ffi::FT_Err_Ok);
+    let null_pointer_status = if border != 0 {
+        rust_ffi::FT_Outline_Glyph_StrokeBorder(None, ptr::null_mut(), 1)
+    } else {
+        rust_ffi::FT_Outline_Glyph_Stroke(None, ptr::null_mut())
+    }
+    .map_or_else(|error| error, |_| rust_ffi::FT_Err_Ok);
+    let glyph = ptr::with_exposed_provenance::<FontdoneWasmGlyph>(glyph_handle);
+    let null_stroker_status = wasm_owned_outline_glyph_from_root(glyph).map_or_else(
+        || rust_ffi::FT_Err_Invalid_Argument,
+        |owned| {
+            if border != 0 {
+                rust_ffi::FT_Outline_Glyph_StrokeBorder(Some(&owned.core), ptr::null_mut(), 1)
+            } else {
+                rust_ffi::FT_Outline_Glyph_Stroke(Some(&owned.core), ptr::null_mut())
+            }
+            .map_or_else(|error| error, |_| rust_ffi::FT_Err_Ok)
+        },
+    );
+    [null_glyph_status, null_pointer_status, null_stroker_status]
 }
 
 #[unsafe(no_mangle)]

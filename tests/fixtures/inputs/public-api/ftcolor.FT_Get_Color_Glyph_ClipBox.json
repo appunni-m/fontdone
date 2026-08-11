@@ -332,23 +332,127 @@
       "schema": "api_result",
       "expect_error": true,
       "inputs": {
-        "assets": {
-          "font": {
-            "kind": "ref",
-            "id": "input/fonts/color/malformed/colr-v1-clipbox-invalid-offsets.ttf",
-            "asset_kind": "font"
+        "variants": [
+          {
+            "id": "cliplist_format_0",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/color/malformed/colr-v1-cliplist-format-unsupported.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "symbol_under_test": "FT_Get_Color_Glyph_ClipBox",
+              "prefill_clip_box": "sentinel-vectors"
+            },
+            "coverage": [
+              "ftcolor.get_color_glyph_clipbox:malformed-cliplist-format"
+            ]
+          },
+          {
+            "id": "clipbox_format_3",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/color/malformed/colr-v1-clipbox-format-unsupported.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "symbol_under_test": "FT_Get_Color_Glyph_ClipBox",
+              "prefill_clip_box": "sentinel-vectors"
+            },
+            "coverage": [
+              "ftcolor.get_color_glyph_clipbox:malformed-clipbox-format"
+            ]
+          },
+          {
+            "id": "truncated_coords",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/color/malformed/colr-v1-clipbox-truncated-coordinates.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "symbol_under_test": "FT_Get_Color_Glyph_ClipBox",
+              "prefill_clip_box": "sentinel-vectors"
+            },
+            "coverage": [
+              "ftcolor.get_color_glyph_clipbox:malformed-truncated-coordinates"
+            ]
+          },
+          {
+            "id": "offset_out_of_range",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/color/malformed/colr-v1-clipbox-offset-out-of-range.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "symbol_under_test": "FT_Get_Color_Glyph_ClipBox",
+              "prefill_clip_box": "sentinel-vectors"
+            },
+            "coverage": [
+              "ftcolor.get_color_glyph_clipbox:malformed-offset-out-of-range"
+            ]
+          },
+          {
+            "id": "cliplist_records_truncated",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/color/malformed/colr-v1-cliplist-truncated-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "symbol_under_test": "FT_Get_Color_Glyph_ClipBox",
+              "prefill_clip_box": "sentinel-vectors"
+            },
+            "coverage": [
+              "ftcolor.get_color_glyph_clipbox:malformed-cliplist-records-truncated"
+            ]
+          },
+          {
+            "id": "truncated_var_index",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/color/malformed/colr-v1-clipbox-truncated-var-index.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "symbol_under_test": "FT_Get_Color_Glyph_ClipBox",
+              "prefill_clip_box": "sentinel-vectors"
+            },
+            "coverage": [
+              "ftcolor.get_color_glyph_clipbox:malformed-truncated-var-index"
+            ]
+          },
+          {
+            "id": "layer_offsets_truncated",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/color/malformed/colr-v1-layer-list-truncated-offsets.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "symbol_under_test": "FT_Get_Color_Glyph_ClipBox",
+              "prefill_clip_box": "sentinel-vectors"
+            },
+            "coverage": [
+              "ftcolor.get_color_glyph_clipbox:malformed-layer-offsets-truncated"
+            ]
           }
-        },
-        "params": {
-          "symbol_under_test": "FT_Get_Color_Glyph_ClipBox",
-          "base_glyphs": [
-            "cliplist_format_0",
-            "clipbox_format_3",
-            "truncated_coords",
-            "offset_out_of_range"
-          ],
-          "prefill_clip_box": "sentinel-vectors"
-        }
+        ]
       },
       "classifiers": [
         "kind:function",
@@ -381,7 +485,7 @@
           "freetype/src/base/ftcolor.c"
         ],
         "fixture_requirements": [
-          "Needs malformed COLR v1 ClipList fixtures for unsupported list/box formats, short records, and out-of-range offsets."
+          "Needs malformed COLR v1 ClipList and LayerV1List fixtures for unsupported formats, truncated records/coordinates/variation indices, and out-of-range offsets."
         ]
       }
     }

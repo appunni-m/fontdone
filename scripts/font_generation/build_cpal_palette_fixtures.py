@@ -106,6 +106,24 @@ def build_cpal_variant(path: Path, variant: str) -> None:
 
     if variant == "no_optional_metadata":
         data[table_offset + extensions_offset : table_offset + extensions_offset + 12] = b"\0" * 12
+    elif variant == "truncated_header":
+        # Keep the SFNT directory and file intact while exposing only the first
+        # CPAL byte through FT_Load_Sfnt_Table.  FreeType ignores this optional
+        # table failure at face open; the runtime parser must take the same
+        # short-read exits without rejecting the surrounding face.
+        data[record_start + 12 : record_start + 16] = (1).to_bytes(4, "big")
+    elif variant == "truncated_palette_counts":
+        data[record_start + 12 : record_start + 16] = (6).to_bytes(4, "big")
+    elif variant == "truncated_palette_entry_count":
+        data[record_start + 12 : record_start + 16] = (3).to_bytes(4, "big")
+    elif variant == "truncated_palette_count":
+        data[record_start + 12 : record_start + 16] = (5).to_bytes(4, "big")
+    elif variant == "truncated_color_records_offset":
+        data[record_start + 12 : record_start + 16] = (10).to_bytes(4, "big")
+    elif variant == "truncated_palette_records":
+        data[record_start + 12 : record_start + 16] = (16).to_bytes(4, "big")
+    elif variant == "truncated_color_record_bytes":
+        data[table_offset + 8 : table_offset + 12] = (table_length - 1).to_bytes(4, "big")
     elif variant == "truncated_indices":
         data[record_start + 12 : record_start + 16] = (12).to_bytes(4, "big")
     elif variant in {"truncated_types", "truncated_labels", "truncated_entry_labels"}:
@@ -1500,6 +1518,95 @@ def build_colr_v1_clipbox_font(
     font.save(path, reorderTables=False)
 
 
+def build_colr_v1_malformed_clipbox_font(path: Path, mutation: str) -> None:
+    """Build an openable COLRv1 face with one malformed ClipList control.
+
+    FreeType keeps COLR ClipList validation lazy, so these derivatives retain
+    the complete SFNT and only mutate the ClipList bytes. Each mutation is a
+    separate input because ClipList format is table-global while the other
+    malformed records are per-ClipBox.
+    """
+    source = COLOR_OUTPUT_DIR / "colr-v1-clipbox-format1-format2.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    table = font.reader.tables.get(b"COLR")
+    if table is None or table.length < 30:
+        raise RuntimeError(f"canonical COLRv1 clipbox fixture has no usable COLR table: {source}")
+
+    data = bytearray(source.read_bytes())
+    table_offset = table.offset
+    table_end = table_offset + table.length
+    clip_list_offset = int.from_bytes(data[table_offset + 22 : table_offset + 26], "big")
+    clip_list_position = table_offset + clip_list_offset
+    if clip_list_offset == 0 or clip_list_position + 12 > table_end:
+        raise RuntimeError(f"canonical COLRv1 clipbox fixture has no usable ClipList: {source}")
+    if data[clip_list_position] != 1:
+        raise RuntimeError("canonical COLRv1 clipbox fixture does not use ClipList format 1")
+
+    if mutation == "cliplist_format_0":
+        data[clip_list_position] = 0
+    elif mutation == "cliplist_records_truncated":
+        data[clip_list_position + 1 : clip_list_position + 5] = (0xFFFFFFFF).to_bytes(
+            4, "big"
+        )
+    else:
+        # The first record is glyph 36 and its 24-bit box offset begins four
+        # bytes into the seven-byte ClipBox record. Keep the record itself
+        # present so the parser reaches the selected malformed box branch.
+        first_record = clip_list_position + 5
+        box_offset_position = first_record + 4
+        box_format_position = clip_list_position + 0x13
+        if int.from_bytes(data[first_record : first_record + 2], "big") != 36:
+            raise RuntimeError("canonical COLRv1 clipbox fixture first record is not glyph 36")
+        if mutation == "clipbox_format_3":
+            data[box_format_position] = 3
+        elif mutation == "truncated_coords":
+            # Place a valid format byte at the final table byte; all eight
+            # coordinate bytes then fall beyond the retained COLR table.
+            relative_offset = table.length - clip_list_offset - 1
+            data[box_offset_position : box_offset_position + 3] = relative_offset.to_bytes(
+                3, "big"
+            )
+            data[table_end - 1] = 1
+        elif mutation == "offset_out_of_range":
+            data[box_offset_position : box_offset_position + 3] = (0x00FFFF).to_bytes(3, "big")
+        elif mutation == "truncated_var_index":
+            second_record = first_record + 7
+            if int.from_bytes(data[second_record : second_record + 2], "big") != 37:
+                raise RuntimeError("canonical COLRv1 clipbox fixture second record is not glyph 37")
+            var_box_offset_position = second_record + 4
+            relative_offset = table.length - clip_list_offset - 9
+            data[
+                var_box_offset_position : var_box_offset_position + 3
+            ] = relative_offset.to_bytes(3, "big")
+            data[table_end - 9] = 2
+        else:
+            raise ValueError(f"unknown malformed COLRv1 clipbox mutation: {mutation}")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
+def build_colr_v1_malformed_layer_offsets_font(path: Path) -> None:
+    """Build an openable COLRv1 face whose LayerV1List ends at the table boundary."""
+    source = COLOR_OUTPUT_DIR / "colr-v1-all-paints.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    table = font.reader.tables.get(b"COLR")
+    if table is None or table.length < 22:
+        raise RuntimeError(f"canonical COLRv1 fixture has no usable COLR table: {source}")
+
+    data = bytearray(source.read_bytes())
+    table_offset = table.offset
+    table_end = table_offset + table.length
+    layer_list_offset = int.from_bytes(data[table_offset + 18 : table_offset + 22], "big")
+    layer_list_position = table_offset + layer_list_offset
+    if layer_list_offset == 0 or layer_list_position + 4 > table_end:
+        raise RuntimeError(f"canonical COLRv1 fixture has no usable LayerV1List: {source}")
+
+    data[layer_list_position : layer_list_position + 4] = (0xFFFFFFFF).to_bytes(4, "big")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
 def main() -> None:
     for name in (
         "cpal-palettes-names-flags.ttf",
@@ -1509,6 +1616,33 @@ def main() -> None:
     build_cpal_zero_entry_font(OUTPUT_DIR / "cpal-zero-entries.ttf")
     build_cpal_variant(
         OUTPUT_DIR / "cpal-v1-no-optional-metadata.ttf", "no_optional_metadata"
+    )
+    build_cpal_variant(
+        OUTPUT_DIR / "malformed" / "cpal-v1-truncated-header.ttf", "truncated_header"
+    )
+    build_cpal_variant(
+        OUTPUT_DIR / "malformed" / "cpal-v1-truncated-palette-counts.ttf",
+        "truncated_palette_counts",
+    )
+    build_cpal_variant(
+        OUTPUT_DIR / "malformed" / "cpal-v1-truncated-palette-entry-count.ttf",
+        "truncated_palette_entry_count",
+    )
+    build_cpal_variant(
+        OUTPUT_DIR / "malformed" / "cpal-v1-truncated-palette-count.ttf",
+        "truncated_palette_count",
+    )
+    build_cpal_variant(
+        OUTPUT_DIR / "malformed" / "cpal-v1-truncated-color-records-offset.ttf",
+        "truncated_color_records_offset",
+    )
+    build_cpal_variant(
+        OUTPUT_DIR / "malformed" / "cpal-v1-truncated-palette-records.ttf",
+        "truncated_palette_records",
+    )
+    build_cpal_variant(
+        OUTPUT_DIR / "malformed" / "cpal-v1-truncated-color-record-bytes.ttf",
+        "truncated_color_record_bytes",
     )
     build_cpal_variant(OUTPUT_DIR / "malformed" / "cpal-v1-truncated-indices.ttf", "truncated_indices")
     build_cpal_variant(OUTPUT_DIR / "malformed" / "cpal-v1-truncated-types.ttf", "truncated_types")
@@ -1589,6 +1723,33 @@ def main() -> None:
         variable_clip_box=True,
     )
     build_colr_v1_clipbox_font(COLOR_OUTPUT_DIR / "colr-v1-no-clipbox-control.ttf", False)
+    build_colr_v1_malformed_clipbox_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-cliplist-format-unsupported.ttf",
+        "cliplist_format_0",
+    )
+    build_colr_v1_malformed_clipbox_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-clipbox-format-unsupported.ttf",
+        "clipbox_format_3",
+    )
+    build_colr_v1_malformed_clipbox_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-clipbox-truncated-coordinates.ttf",
+        "truncated_coords",
+    )
+    build_colr_v1_malformed_clipbox_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-clipbox-offset-out-of-range.ttf",
+        "offset_out_of_range",
+    )
+    build_colr_v1_malformed_clipbox_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-cliplist-truncated-records.ttf",
+        "cliplist_records_truncated",
+    )
+    build_colr_v1_malformed_clipbox_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-clipbox-truncated-var-index.ttf",
+        "truncated_var_index",
+    )
+    build_colr_v1_malformed_layer_offsets_font(
+        COLOR_OUTPUT_DIR / "malformed" / "colr-v1-layer-list-truncated-offsets.ttf"
+    )
 
 
 if __name__ == "__main__":

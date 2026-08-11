@@ -5,6 +5,7 @@
     "outline_glyph_stroked_success",
     "destroy_original_option",
     "invalid_glyph_arguments",
+    "invalid_outline_parse_rejected",
     "failure_sets_output_null_when_preserving_original"
   ],
   "cases": [
@@ -158,14 +159,15 @@
       },
       "inputs": {
         "assets": {
-          "bitmap_glyph_font": {
+          "font": {
             "kind": "ref",
-            "id": "input/fonts/bitmap/embedded-bitmap-glyph.ttf",
-            "asset_kind": "font",
-            "status": "required_future_asset"
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
           }
         },
         "params": {
+          "glyph_index": 36,
+          "load_flags": 8,
           "scenarios": [
             {
               "pglyph": "null"
@@ -174,7 +176,7 @@
               "pglyph": "valid_pointer_to_null_glyph"
             },
             {
-              "pglyph": "valid_pointer_to_non_outline_glyph"
+              "pglyph": "outline_with_null_stroker"
             }
           ],
           "destroy": false
@@ -195,16 +197,83 @@
         },
         "compare": {
           "mode": "exact_error",
+          "compare_error_output": true,
           "paths": [
             "rows[*].status",
             "rows[*].pglyph_after"
           ]
         },
         "fixture_requirements": [
-          "bitmap glyph asset must produce an FT_Glyph whose clazz is not ft_outline_glyph_class."
+          "DejaVuSans glyph 36 must load as an outline glyph before the null-stroker probe."
         ],
         "source_refs": [
           "freetype/src/base/ftstroke.c:2254-2264"
+        ]
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_Stroke.invalid_outline_parse_rejected",
+      "subject": "ftstroke.FT_Glyph_Stroke",
+      "case": "invalid_outline_parse_rejected",
+      "covers_manifest_cases": [
+        "invalid_outline_parse_rejected"
+      ],
+      "operation": "ftstroke.glyph_stroke",
+      "schema": "api_result",
+      "expect_error": true,
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "symbol": "FT_Glyph_Stroke",
+        "signature": "FT_Error FT_Glyph_Stroke(FT_Glyph* pglyph, FT_Stroker stroker, FT_Bool destroy)"
+      },
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "glyph_index": 36,
+          "size_26_6": 1536,
+          "load_flags": [
+            "FT_LOAD_NO_BITMAP"
+          ],
+          "invalid_outline": "cubic_first_contour",
+          "stroker": {
+            "radius": 96,
+            "line_cap": "FT_STROKER_LINECAP_ROUND",
+            "line_join": "FT_STROKER_LINEJOIN_ROUND",
+            "miter_limit": 65536
+          },
+          "destroy": false
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:glyph",
+        "area:stroker",
+        "area:error"
+      ],
+      "expectation": {
+        "status": "error",
+        "error": "FT_Err_Invalid_Outline",
+        "output_shape": {
+          "status": "FT_Error",
+          "pglyph_after": "null when preserving original"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "status"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:2254-2264",
+          "freetype/src/base/ftstroke.c:2283-2315"
         ]
       }
     },

@@ -3,6 +3,7 @@
   "subject": "fterrdef.FT_Err_Name_Table_Missing",
   "manifest_cases": [
     "value_matches_header",
+    "sfnt_name_invalid_directory_diagnostic",
     "sfnt_name_storage_out_of_bounds",
     "sfnt_name_table_missing_diagnostic",
     "sfnt_name_header_truncated_diagnostic",
@@ -57,6 +58,57 @@
             "error_string"
           ]
         }
+      }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_invalid_directory_diagnostic",
+      "subject": "fterrdef.FT_Err_Name_Table_Missing",
+      "case": "sfnt_name_invalid_directory_diagnostic",
+      "operation": "fterrdef.sfnt_load_name_diagnostic",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/synthetic/sfnt/recognized-broken-sfnt.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "expected_error_symbol": "FT_Err_Invalid_Stream_Operation",
+          "expected_error_value_source": "pinned fterrdef.h",
+          "face_index": 0,
+          "runtime_route": "internal_sfnt_load_name_service",
+          "table": "name",
+          "condition": "the SFNT offset table has no directory records"
+        }
+      },
+      "classifiers": [
+        "kind:error",
+        "header:fterrdef",
+        "area:error-code",
+        "error-trigger",
+        "route:controlled-pinned-service"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "error": "FT_Error",
+          "error_symbol": "FT_Err_*",
+          "name_count": "zero when directory parsing fails"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "status",
+            "output.name_count"
+          ]
+        },
+        "error": "FT_Err_Invalid_Stream_Operation",
+        "fixture_requirements": "The maintained twelve-byte recognized-broken SFNT is rejected before the optional name service can run; all diagnostic routes preserve zero names."
       }
     },
     {

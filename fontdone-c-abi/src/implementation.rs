@@ -7456,6 +7456,23 @@ pub fn abi_support_corrupt_outline_glyph_for_render_failure(glyph: FT_Glyph) -> 
 }
 
 #[cfg(feature = "abi-test-support")]
+pub fn abi_support_corrupt_outline_glyph_for_stroke_parse(glyph: FT_Glyph) -> bool {
+    let Some(owned) = owned_outline_glyph_from_root_mut(glyph) else {
+        return false;
+    };
+    let Some(tag) = owned.core.outline.tags.first_mut() else {
+        return false;
+    };
+    // FreeType's public glyph-stroke wrapper reaches ParseOutline through the
+    // copied outline. A cubic first point is rejected before any segment can
+    // be sent to the stroker, which makes this a durable input-driven error
+    // probe for that exact wrapper path.
+    *tag = rust_ffi::FT_CURVE_TAG_CUBIC as rust_ffi::FT_Byte;
+    owned.refresh_record();
+    true
+}
+
+#[cfg(feature = "abi-test-support")]
 pub fn abi_support_corrupt_outline_glyph_for_record_sync(glyph: FT_Glyph) -> bool {
     let Some(owned) = owned_outline_glyph_from_root_mut(glyph) else {
         return false;

@@ -120,6 +120,15 @@ root remains discoverable through `FT_Get_Color_Glyph_Paint`, while
 `FT_Get_Paint` exercises the pinned layer-bounds rejection; glyph 50 remains
 the valid solid control.
 
+The seven `malformed/colr-v1-clip*.ttf` controls are deterministic derivatives
+of `colr-v1-clipbox-format1-format2.ttf`, with the LayerV1List control derived
+from `colr-v1-all-paints.ttf`. They retain an openable SFNT and mutate only
+COLRv1 bounds: unsupported list format 0, unsupported ClipBox format 3,
+truncated ClipList records, coordinates or variation index, a 24-bit box
+offset outside the table, and truncated LayerV1List offsets. The public
+clipbox parity variants compare the pinned false-return and caller-output-
+preservation behavior for each control.
+
 ## 3. Review requirements
 
 Before adding or changing a generator:

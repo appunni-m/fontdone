@@ -147,6 +147,15 @@
         },
         "params": {
           "source_creation": "FT_Get_Glyph bitmap",
+          "face_index": 0,
+          "pixel_size": {
+            "x": 0,
+            "y": 20
+          },
+          "glyph_index": 1,
+          "load_flags": [
+            "FT_LOAD_SBITS_ONLY"
+          ],
           "bbox_modes": [
             0,
             1,

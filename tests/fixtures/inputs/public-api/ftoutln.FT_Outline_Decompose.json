@@ -1,7 +1,7 @@
 {
   "version": 1,
   "subject": "ftoutln.FT_Outline_Decompose",
-  "manifest_cases": ["line_conic_cubic_event_order", "shift_delta_applied_to_callbacks", "callback_error_propagates", "invalid_outline_or_interface_errors"],
+  "manifest_cases": ["line_conic_cubic_event_order", "implied_start_and_closing_segments", "shift_delta_applied_to_callbacks", "callback_error_propagates", "invalid_outline_or_interface_errors"],
   "cases": [
     {
       "case_id": "ftoutln.FT_Outline_Decompose.line_conic_cubic_event_order",
@@ -26,6 +26,18 @@
       "classifiers": ["kind:function", "header:ftoutln", "surface:public-c-api", "behavior:callback-scaling"],
       "metadata": {"abi": {"header": "freetype/ftoutln.h", "symbol": "FT_Outline_Decompose", "kind": "function", "c_signature": "FT_Error FT_Outline_Decompose(FT_Outline* outline, const FT_Outline_Funcs* func_interface, void* user)"}, "source_behavior": "Callback coordinates apply the function table shift and delta before emission."},
       "expectation": {"status": "ok", "output_shape": {"return": "FT_Error", "events": [{"kind": "string", "points": ["FT_Vector"]}]}, "compare": {"mode": "exact", "paths": ["return", "events"]}, "source_refs": ["freetype/src/base/ftoutln.c:45-46", "freetype/src/base/ftoutln.c:74-207"], "fixture_requirements": ["Outline with nonzero coordinates so shift and delta are observable."]}
+    },
+    {
+      "case_id": "ftoutln.FT_Outline_Decompose.implied_start_and_closing_segments",
+      "subject": "ftoutln.FT_Outline_Decompose",
+      "case": "implied_start_and_closing_segments",
+      "operation": "ftoutln.outline_decompose",
+      "schema": "callback_trace",
+      "expect_error": false,
+      "inputs": {"assets": {"outline": {"kind": "ref", "id": "outlines/decompose/implied-start-and-closing-segments.json", "asset_kind": "outline_model"}}, "params": {"funcs": {"shift": 0, "delta": 0}, "trace_callbacks": ["move_to", "line_to", "conic_to", "cubic_to"]}},
+      "classifiers": ["kind:function", "header:ftoutln", "surface:public-c-api", "behavior:closure-routes"],
+      "metadata": {"abi": {"header": "freetype/ftoutln.h", "symbol": "FT_Outline_Decompose", "kind": "function", "c_signature": "FT_Error FT_Outline_Decompose(FT_Outline* outline, const FT_Outline_Funcs* func_interface, void* user)"}, "source_behavior": "The walker accepts conic-first contours, synthesizes implied conic starts and midpoints, and closes conic or cubic contours at the computed start point."},
+      "expectation": {"status": "ok", "output_shape": {"return": "FT_Error", "events": [{"kind": "string", "points": ["FT_Vector"]}]}, "compare": {"mode": "exact", "paths": ["return", "events"]}, "source_refs": ["freetype/src/base/ftoutln.c:109-131", "freetype/src/base/ftoutln.c:163-222", "freetype/src/base/ftoutln.c:224-273"], "fixture_requirements": ["Three contours covering an implied conic start, a conic-first contour ending on-curve, and a cubic pair that closes directly to the start."]}
     },
     {
       "case_id": "ftoutln.FT_Outline_Decompose.callback_error_propagates",

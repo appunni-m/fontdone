@@ -2890,13 +2890,14 @@ def ftcolor_colrv1_composite_real_parity_reason(row: ConcreteInput) -> str | Non
         "ftcolor.FT_ClipBox.color_glyph_clipbox_values",
         "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed",
         "ftcolor.FT_Get_Color_Glyph_ClipBox.no_clipbox_returns_false_preserves_output",
+        "ftcolor.FT_Get_Color_Glyph_ClipBox.malformed_clipbox_false_behavior",
     }:
         return (
             "FT_Get_Color_Glyph_ClipBox validates ClipList format 1 scaling, "
             "active face transform application, public FT_ClipBox field "
-            "copying, and false-return output preservation through the "
-            "maintained COLRv1 clipbox fixture, pinned C oracle, Rust FFI, "
-            "C ABI, and WASM ABI"
+            "copying, malformed-list rejection, and false-return output "
+            "preservation through the maintained COLRv1 clipbox fixtures, "
+            "pinned C oracle, Rust FFI, C ABI, and WASM ABI"
         )
     # These rows are routed by `emit_colr_all_paints_case` and the matching
     # Rust/C-ABI/WASM all-paints harness path.  Their fixture JSON still
@@ -6643,6 +6644,7 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
         row.operation == "fterrdef.sfnt_load_name_diagnostic"
         and row.case_id
         in {
+            "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_invalid_directory_diagnostic",
             "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_storage_out_of_bounds",
             "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_table_missing_diagnostic",
             "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_header_truncated_diagnostic",

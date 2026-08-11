@@ -4,6 +4,7 @@
   "manifest_cases": [
     "success_simple_outline_bbox",
     "success_curve_extrema_bbox",
+    "success_synthetic_curve_branch_matrix",
     "success_empty_outline_bbox",
     "no_scale_tricky_font_behavior",
     "error_null_outline_or_output",
@@ -190,6 +191,63 @@
         ],
         "source_refs": [
           "freetype/src/base/ftbbox.c"
+        ]
+      }
+    },
+    {
+      "case_id": "ftbbox.FT_Outline_Get_BBox.success_synthetic_curve_branch_matrix",
+      "subject": "ftbbox.FT_Outline_Get_BBox",
+      "case": "success_synthetic_curve_branch_matrix",
+      "operation": "ftbbox.outline_get_bbox",
+      "schema": "outline_bbox",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "synthetic_outlines": {
+            "kind": "ref",
+            "role": "outline",
+            "id": "input/outlines/synthetic/bbox-curve-extrema.json",
+            "asset_kind": "outline_model_set"
+          }
+        },
+        "params": {
+          "outline_rows": [
+            "conic_control_x_min",
+            "conic_control_x_max",
+            "cubic_control_x_extrema",
+            "cubic_second_control_x_min",
+            "cubic_second_control_x_max",
+            "cubic_control_y_extrema",
+            "cubic_second_control_y_min",
+            "cubic_second_control_y_max",
+            "cubic_small_coordinates",
+            "cubic_large_coordinates"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftbbox",
+        "area:bezier-extrema"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error",
+          "rows": "ordered synthetic outline labels, error, and exact FT_BBox 26.6 values"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "rows[*].case",
+            "rows[*].status",
+            "rows[*].error",
+            "rows[*].bbox"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftbbox.c",
+          "tests/fixtures/input/outlines/synthetic/bbox-curve-extrema.json"
         ]
       }
     },

@@ -15619,17 +15619,20 @@ enum ColorGlyphClipBoxBackend {
 
 fn color_glyph_clipbox_route_supported(case: &InputCase) -> bool {
     matches!(
-        case.case_id.as_str(),
+        case_id_base(&case.case_id),
         "ftcolor.FT_ClipBox.color_glyph_clipbox_values"
-            | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@s12"
-            | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@s37"
-            | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@format2"
-            | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@format2-varstore"
+            | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed"
             | "ftcolor.FT_Get_Color_Glyph_ClipBox.no_clipbox_returns_false_preserves_output"
-    )
+    ) || case_id_base(&case.case_id)
+        == "ftcolor.FT_Get_Color_Glyph_ClipBox.malformed_clipbox_false_behavior"
 }
 
 fn color_glyph_clipbox_base_glyph(case: &InputCase) -> Result<FT_UInt, String> {
+    if case_id_base(&case.case_id)
+        == "ftcolor.FT_Get_Color_Glyph_ClipBox.malformed_clipbox_false_behavior"
+    {
+        return Ok(36);
+    }
     match case.case_id.as_str() {
         "ftcolor.FT_ClipBox.color_glyph_clipbox_values"
         | "ftcolor.FT_Get_Color_Glyph_ClipBox.clipbox_success_scaled_and_transformed@s12"
@@ -15841,7 +15844,27 @@ fn color_glyph_clipbox_output_for_open_face(
         base_glyph,
         &mut clip_box,
     );
-    if case.case_id
+    if case_id_base(&case.case_id)
+        == "ftcolor.FT_Get_Color_Glyph_ClipBox.malformed_clipbox_false_behavior"
+    {
+        let malformed_variant = case
+            .case_id
+            .split_once('@')
+            .map_or("single", |(_, variant)| variant);
+        Ok(error_with_output(
+            FT_Err_Invalid_Table,
+            json!({
+                "setup": setup,
+                "return": result,
+                "clip_box_before_after": {
+                    "before": clip_box_json(before),
+                    "after": clip_box_json(clip_box),
+                    "preserved": before == clip_box,
+                },
+                "malformed_variant": malformed_variant,
+            }),
+        ))
+    } else if case.case_id
         == "ftcolor.FT_Get_Color_Glyph_ClipBox.no_clipbox_returns_false_preserves_output"
     {
         Ok(ok(json!({
@@ -16157,9 +16180,8 @@ fn malformed_colr_paint_glyphs(case: &InputCase, label_count: usize) -> Result<V
         == "ftcolor.FT_Get_Paint.malformed_gradient_payload_reads_return_false"
     {
         vec![36, 37, 38, 39, 50]
-    } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_radial_payload_reads_return_false" {
-        vec![36, 50]
-    } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_scale_initial_payload_read_returns_false"
+    } else if case.case_id == "ftcolor.FT_Get_Paint.malformed_radial_payload_reads_return_false"
+        || case.case_id == "ftcolor.FT_Get_Paint.malformed_scale_initial_payload_read_returns_false"
         || case.case_id
             == "ftcolor.FT_Get_Paint.malformed_rotate_centered_second_coordinate_read_returns_false"
         || case.case_id == "ftcolor.FT_Get_Paint.malformed_translate_dx_read_returns_false"
@@ -32930,6 +32952,14 @@ fn is_glyph_stroke_destroy_option_case(case: &InputCase) -> bool {
     case.case_id == "ftstroke.FT_Glyph_Stroke.destroy_original_option"
 }
 
+fn is_glyph_stroke_invalid_arguments_case(case: &InputCase) -> bool {
+    case.case_id == "ftstroke.FT_Glyph_Stroke.invalid_glyph_arguments"
+}
+
+fn is_glyph_stroke_invalid_outline_case(case: &InputCase) -> bool {
+    case.case_id == "ftstroke.FT_Glyph_Stroke.invalid_outline_parse_rejected"
+}
+
 fn is_glyph_stroke_border_outside_success_case(case: &InputCase) -> bool {
     case.case_id == "ftstroke.FT_Glyph_StrokeBorder.outside_border_success"
 }
@@ -32940,6 +32970,18 @@ fn is_glyph_stroke_border_inside_success_case(case: &InputCase) -> bool {
 
 fn is_glyph_stroke_border_destroy_option_case(case: &InputCase) -> bool {
     case.case_id == "ftstroke.FT_Glyph_StrokeBorder.destroy_original_option"
+}
+
+fn is_glyph_stroke_border_invalid_arguments_case(case: &InputCase) -> bool {
+    case.case_id == "ftstroke.FT_Glyph_StrokeBorder.invalid_glyph_arguments"
+}
+
+fn is_glyph_stroke_border_invalid_outline_case(case: &InputCase) -> bool {
+    case.case_id == "ftstroke.FT_Glyph_StrokeBorder.invalid_outline_parse_rejected"
+}
+
+fn is_bbox_synthetic_curve_case(case: &InputCase) -> bool {
+    case.case_id == "ftbbox.FT_Outline_Get_BBox.success_synthetic_curve_branch_matrix"
 }
 
 fn stroker_open_line_geometry_action(case: &InputCase) -> Result<&'static str, String> {
@@ -45062,6 +45104,14 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                 i32::from(bool_param(params, "destroy", false)?).to_string(),
             ])
         }
+        "ftstroke.glyph_stroke" if is_glyph_stroke_invalid_arguments_case(case) => Ok(vec![
+            "--glyph-stroke-invalid-arguments".to_string(),
+            font_pathname(case)?,
+        ]),
+        "ftstroke.glyph_stroke" if is_glyph_stroke_invalid_outline_case(case) => Ok(vec![
+            "--glyph-stroke-invalid-outline".to_string(),
+            font_pathname(case)?,
+        ]),
         "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_outside_success_case(case) => {
             Ok(vec![
                 "--glyph-stroke-border-outside-success".to_string(),
@@ -45090,6 +45140,18 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                 glyph_to_bitmap_stroker_miter_limit(params)?.to_string(),
                 i32::from(bool_param(params, "inside", false)?).to_string(),
                 i32::from(bool_param(params, "destroy", false)?).to_string(),
+            ])
+        }
+        "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_invalid_arguments_case(case) => {
+            Ok(vec![
+                "--glyph-stroke-border-invalid-arguments".to_string(),
+                font_pathname(case)?,
+            ])
+        }
+        "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_invalid_outline_case(case) => {
+            Ok(vec![
+                "--glyph-stroke-border-invalid-outline".to_string(),
+                font_pathname(case)?,
             ])
         }
         "ftstroke.export" | "ftstroke.export_border" if is_stroker_export_append_case(case) => {
@@ -45516,6 +45578,13 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             Ok(args)
         }
         "ftbbox.outline_get_bbox" => {
+            if is_bbox_synthetic_curve_case(case) {
+                let rows = bbox_synthetic_outline_rows(case)?;
+                return Ok(vec![
+                    "--outline-get-bbox-synthetic".to_string(),
+                    stroker_parse_outline_arg(&rows),
+                ]);
+            }
             if params.get("probes").is_some() {
                 return Ok(vec![
                     "--outline-get-bbox-null-inputs".to_string(),
@@ -46071,6 +46140,18 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             let mut args = vec!["--manager-ownership".to_string()];
             push_font_source(case, &mut args)?;
             args.push(face_index_param(params)?.to_string());
+            args.push(
+                if params
+                    .get("edge_probes")
+                    .and_then(Value::as_bool)
+                    .unwrap_or(false)
+                {
+                    "1"
+                } else {
+                    "0"
+                }
+                .to_string(),
+            );
             Ok(args)
         }
         "ftglyph.custom_glyph_lifecycle" if !case.expect_error => {
@@ -47284,6 +47365,12 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftstroke.glyph_stroke" if is_glyph_stroke_destroy_option_case(case) => {
             rust_glyph_stroke_destroy_option(case)
         }
+        "ftstroke.glyph_stroke" if is_glyph_stroke_invalid_arguments_case(case) => {
+            rust_glyph_stroke_invalid_arguments(case)
+        }
+        "ftstroke.glyph_stroke" if is_glyph_stroke_invalid_outline_case(case) => {
+            rust_glyph_stroke_invalid_outline(case)
+        }
         "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_outside_success_case(case) => {
             rust_glyph_stroke_border_outside_success(case)
         }
@@ -47292,6 +47379,12 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_destroy_option_case(case) => {
             rust_glyph_stroke_border_destroy_option(case)
+        }
+        "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_invalid_arguments_case(case) => {
+            rust_glyph_stroke_border_invalid_arguments(case)
+        }
+        "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_invalid_outline_case(case) => {
+            rust_glyph_stroke_border_invalid_outline(case)
         }
         "ftstroke.export" | "ftstroke.export_border" if is_stroker_export_append_case(case) => {
             rust_stroker_export_append(case)
@@ -47425,6 +47518,9 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             let face = open_face(case)?;
             rust_slot_format_probe(&face, &case.inputs.params)
         }
+        "ftbbox.outline_get_bbox" if is_bbox_synthetic_curve_case(case) => {
+            rust_outline_get_bbox_synthetic(case)
+        }
         "ftbbox.outline_get_bbox" if case.inputs.params.get("probes").is_some() => {
             rust_outline_get_bbox_null_inputs(&case.inputs.params)
         }
@@ -47469,6 +47565,17 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftglyph.glyph_transform"
             if case.case_id == "ftglyph.FT_Glyph_Transform.error_null_or_bad_glyph" =>
         {
+            let matrix = FT_Matrix {
+                xx: 65_536,
+                xy: 0,
+                yx: 0,
+                yy: 65_536,
+            };
+            let delta = FT_Vector { x: 1, y: 2 };
+            // Keep the Rust route on the same pure wrapper that owns the
+            // outline-class null-glyph guard; the result remains the two
+            // input-driven Invalid_Argument rows below.
+            let _ = FT_Glyph_Transform_Outline(None, Some(&matrix), Some(&delta));
             Ok(glyph_transform_invalid_inputs_output([
                 FT_Err_Invalid_Argument,
                 FT_Err_Invalid_Argument,
@@ -48758,6 +48865,12 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftstroke.glyph_stroke" if is_glyph_stroke_destroy_option_case(case) => {
             c_glyph_stroke_destroy_option(case)
         }
+        "ftstroke.glyph_stroke" if is_glyph_stroke_invalid_arguments_case(case) => {
+            c_glyph_stroke_invalid_arguments(case)
+        }
+        "ftstroke.glyph_stroke" if is_glyph_stroke_invalid_outline_case(case) => {
+            c_glyph_stroke_invalid_outline(case)
+        }
         "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_outside_success_case(case) => {
             c_glyph_stroke_border_outside_success(case)
         }
@@ -48766,6 +48879,12 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_destroy_option_case(case) => {
             c_glyph_stroke_border_destroy_option(case)
+        }
+        "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_invalid_arguments_case(case) => {
+            c_glyph_stroke_border_invalid_arguments(case)
+        }
+        "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_invalid_outline_case(case) => {
+            c_glyph_stroke_border_invalid_outline(case)
         }
         "ftstroke.export" | "ftstroke.export_border" if is_stroker_export_append_case(case) => {
             c_stroker_export_append(case)
@@ -48913,6 +49032,9 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_done_library(library);
             output
         }
+        "ftbbox.outline_get_bbox" if is_bbox_synthetic_curve_case(case) => {
+            c_outline_get_bbox_synthetic(case)
+        }
         "ftbbox.outline_get_bbox" if case.inputs.params.get("probes").is_some() => {
             c_outline_get_bbox_null_inputs(&case.inputs.params)
         }
@@ -48930,8 +49052,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
                 == "ftglyph.FT_Get_Glyph.error_unsupported_format_or_bad_slot_payload" =>
         {
             ensure_malformed_glyph_facade(case)?;
-            let output = c_get_glyph_malformed_slots(case, &case.inputs.params);
-            output
+            c_get_glyph_malformed_slots(case, &case.inputs.params)
         }
         "ftglyph.get_glyph" if case.inputs.params.get("unsupported_slot_formats").is_some() => {
             let (library, face) = c_open_face(case)?;
@@ -50158,6 +50279,12 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftstroke.glyph_stroke" if is_glyph_stroke_destroy_option_case(case) => {
             wasm_glyph_stroke_destroy_option(case)
         }
+        "ftstroke.glyph_stroke" if is_glyph_stroke_invalid_arguments_case(case) => {
+            wasm_glyph_stroke_invalid_arguments(case)
+        }
+        "ftstroke.glyph_stroke" if is_glyph_stroke_invalid_outline_case(case) => {
+            wasm_glyph_stroke_invalid_outline(case)
+        }
         "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_outside_success_case(case) => {
             wasm_glyph_stroke_border_outside_success(case)
         }
@@ -50166,6 +50293,12 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_destroy_option_case(case) => {
             wasm_glyph_stroke_border_destroy_option(case)
+        }
+        "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_invalid_arguments_case(case) => {
+            wasm_glyph_stroke_border_invalid_arguments(case)
+        }
+        "ftstroke.glyph_stroke_border" if is_glyph_stroke_border_invalid_outline_case(case) => {
+            wasm_glyph_stroke_border_invalid_outline(case)
         }
         "ftstroke.export" | "ftstroke.export_border" if is_stroker_export_append_case(case) => {
             wasm_stroker_export_append(case)
@@ -50311,6 +50444,9 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             let output = wasm_slot_format_probe(handle, &case.inputs.params);
             wasm_done_face(handle);
             output
+        }
+        "ftbbox.outline_get_bbox" if is_bbox_synthetic_curve_case(case) => {
+            wasm_outline_get_bbox_synthetic(case)
         }
         "ftbbox.outline_get_bbox" if case.inputs.params.get("probes").is_some() => {
             wasm_outline_get_bbox_null_inputs(&case.inputs.params)
@@ -51665,16 +51801,79 @@ fn rust_outline_operation(face: &FT_Face, case: &InputCase) -> Result<RunOutput,
         Ok(slot) => {
             let outline_cbox = rust_outline_operation_cbox(&slot, case)?;
             let outline_bbox = rust_outline_operation_bbox(&slot, case)?;
+            let glyph_cbox = if case.operation == "ftglyph.glyph_get_cbox"
+                && slot.format == FT_GLYPH_FORMAT_BITMAP
+            {
+                let bitmap = slot
+                    .bitmap
+                    .as_ref()
+                    .ok_or_else(|| "bitmap glyph slot missing bitmap".to_string())?;
+                bitmap_glyph_cbox(
+                    i64::from(slot.bitmap_left),
+                    i64::from(slot.bitmap_top),
+                    bitmap.width,
+                    bitmap.rows,
+                )
+            } else {
+                bbox_from_rust_bbox(outline_cbox)
+            };
+            let glyph_cbox_modes = if case.operation == "ftglyph.glyph_get_cbox" {
+                Some(rust_glyph_cbox_modes(
+                    &slot,
+                    &bbox_modes_param(&case.inputs.params)?,
+                )?)
+            } else {
+                None
+            };
             Ok(ok(outline_operation_output(
                 case,
                 slot.format,
                 slot.outline.as_ref().map(outline_snapshot_json),
                 bbox_from_rust_bbox(outline_bbox),
-                bbox_from_rust_bbox(outline_cbox),
+                glyph_cbox,
+                glyph_cbox_modes,
             )?))
         }
         Err(err) => Ok(error(err)),
     }
+}
+
+fn rust_glyph_cbox_modes(slot: &FT_GlyphSlot, modes: &[i32]) -> Result<Vec<Value>, String> {
+    let cbox = if slot.format == FT_GLYPH_FORMAT_BITMAP {
+        let bitmap = slot
+            .bitmap
+            .as_ref()
+            .ok_or_else(|| "bitmap glyph slot missing bitmap".to_string())?;
+        let bbox = bitmap_glyph_cbox(
+            i64::from(slot.bitmap_left),
+            i64::from(slot.bitmap_top),
+            bitmap.width,
+            bitmap.rows,
+        );
+        Some(FT_BBox {
+            xMin: bbox.x_min,
+            yMin: bbox.y_min,
+            xMax: bbox.x_max,
+            yMax: bbox.y_max,
+        })
+    } else if slot.format == FT_GLYPH_FORMAT_SVG {
+        None
+    } else {
+        Some(slot.outline_cbox)
+    };
+    let snapshot = FT_GlyphCBoxSnapshot {
+        has_class: true,
+        has_bbox_hook: cbox.is_some(),
+        cbox,
+    };
+    Ok(modes
+        .iter()
+        .map(|mode| {
+            let mut bbox = FT_BBox::default();
+            FT_Glyph_Get_CBox(Some(snapshot), *mode as u32, Some(&mut bbox));
+            json!({"mode": *mode as u32, "bbox": bbox_json(bbox_from_rust_bbox(bbox))})
+        })
+        .collect())
 }
 
 fn rust_outline_operation_cbox(slot: &FT_GlyphSlot, case: &InputCase) -> Result<FT_BBox, String> {
@@ -51728,13 +51927,61 @@ fn c_outline_operation(face: c_abi::FT_Face, case: &InputCase) -> Result<RunOutp
     let slot = c_abi::abi_slot_snapshot(face)
         .ok_or_else(|| "missing c glyph slot snapshot".to_string())?;
     let outline_bbox = c_outline_operation_bbox(&slot, case)?;
+    let glyph_cbox = if case.operation == "ftglyph.glyph_get_cbox"
+        && slot.format == FT_GLYPH_FORMAT_BITMAP
+    {
+        let bitmap = slot
+            .bitmap
+            .as_ref()
+            .ok_or_else(|| "bitmap glyph slot missing bitmap".to_string())?;
+        bitmap_glyph_cbox(
+            i64::from(bitmap.left),
+            i64::from(bitmap.top),
+            bitmap.width,
+            bitmap.rows,
+        )
+    } else {
+        bbox_from_c_bbox(slot.outline_cbox)
+    };
+    let glyph_cbox_modes = if case.operation == "ftglyph.glyph_get_cbox" {
+        Some(c_glyph_cbox_modes(
+            face,
+            &bbox_modes_param(&case.inputs.params)?,
+        )?)
+    } else {
+        None
+    };
     Ok(ok(outline_operation_output(
         case,
         slot.format,
         slot.outline.as_ref().map(outline_snapshot_json),
         bbox_from_c_bbox(outline_bbox),
-        bbox_from_c_bbox(slot.outline_cbox),
+        glyph_cbox,
+        glyph_cbox_modes,
     )?))
+}
+
+fn c_glyph_cbox_modes(
+    face: c_abi::FT_Face,
+    modes: &[i32],
+) -> Result<Vec<Value>, String> {
+    let slot = c_abi::abi_glyph_slot_pointer(face)
+        .ok_or_else(|| "missing C ABI glyph slot pointer".to_string())?;
+    let mut glyph = ptr::null_mut();
+    let status = c_abi::FT_Get_Glyph(slot, &mut glyph);
+    if status != FT_Err_Ok {
+        return Err(format!("C ABI FT_Get_Glyph returned {status}"));
+    }
+    let rows = modes
+        .iter()
+        .map(|mode| {
+            let mut bbox = c_abi::FT_BBox::default();
+            c_abi::FT_Glyph_Get_CBox(glyph, *mode as u32, &mut bbox);
+            json!({"mode": *mode as u32, "bbox": bbox_json(bbox_from_c_bbox(bbox))})
+        })
+        .collect();
+    c_abi::FT_Done_Glyph(glyph);
+    Ok(rows)
 }
 
 fn c_outline_operation_bbox(
@@ -51796,13 +52043,59 @@ fn wasm_outline_operation(handle: usize, case: &InputCase) -> Result<RunOutput, 
     let slot = wasm_abi::abi_slot_snapshot(handle)
         .ok_or_else(|| "missing wasm glyph slot snapshot".to_string())?;
     let outline_bbox = wasm_outline_operation_bbox(&slot, case)?;
+    let glyph_cbox = if case.operation == "ftglyph.glyph_get_cbox"
+        && slot.format == FT_GLYPH_FORMAT_BITMAP
+    {
+        let bitmap = slot
+            .bitmap
+            .as_ref()
+            .ok_or_else(|| "bitmap glyph slot missing bitmap".to_string())?;
+        bitmap_glyph_cbox(
+            i64::from(bitmap.left),
+            i64::from(bitmap.top),
+            bitmap.width,
+            bitmap.rows,
+        )
+    } else {
+        bbox_from_wasm_bbox(slot.outline_cbox)
+    };
+    let glyph_cbox_modes = if case.operation == "ftglyph.glyph_get_cbox" {
+        Some(wasm_glyph_cbox_modes(
+            handle,
+            &bbox_modes_param(&case.inputs.params)?,
+        )?)
+    } else {
+        None
+    };
     Ok(ok(outline_operation_output(
         case,
         slot.format,
         slot.outline.as_ref().map(outline_snapshot_json),
         bbox_from_wasm_public_bbox(outline_bbox),
-        bbox_from_wasm_bbox(slot.outline_cbox),
+        glyph_cbox,
+        glyph_cbox_modes,
     )?))
+}
+
+fn wasm_glyph_cbox_modes(handle: usize, modes: &[i32]) -> Result<Vec<Value>, String> {
+    let mut glyph = 0usize;
+    let status = wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut glyph);
+    if status != FT_Err_Ok {
+        return Err(format!(
+            "WASM fontdone_wasm_get_glyph_from_face returned {status}"
+        ));
+    }
+    let glyph_ptr = ptr::with_exposed_provenance::<wasm_abi::FontdoneWasmGlyph>(glyph);
+    let rows = modes
+        .iter()
+        .map(|mode| {
+            let mut bbox = wasm_abi::FontdoneWasmBBox::default();
+            wasm_abi::fontdone_wasm_glyph_get_cbox(glyph_ptr, *mode as u32, &mut bbox);
+            json!({"mode": *mode as u32, "bbox": bbox_json(bbox_from_wasm_public_bbox(bbox))})
+        })
+        .collect();
+    wasm_abi::fontdone_wasm_done_glyph_handle(glyph_ptr.cast_mut());
+    Ok(rows)
 }
 
 fn wasm_outline_operation_bbox(
@@ -52640,6 +52933,682 @@ fn glyph_stroke_border_inside_row_json(
         "selected_border": selected_border.unwrap_or(-1),
         "outline": outline.unwrap_or(Value::Null)
     })
+}
+
+fn glyph_stroke_invalid_output(statuses: [FT_Error; 3]) -> RunOutput {
+    let probes = [
+        ("null_pglyph", "not_applicable"),
+        ("valid_pointer_to_null_glyph", "null"),
+        ("outline_with_null_stroker", "null"),
+    ];
+    let rows = probes
+        .into_iter()
+        .zip(statuses)
+        .map(|((probe, pglyph_after), status)| {
+            json!({
+                "probe": probe,
+                "status": status,
+                "pglyph_after": pglyph_after
+            })
+        })
+        .collect::<Vec<_>>();
+    error_with_output(statuses[0], json!({ "rows": rows }))
+}
+
+fn rust_glyph_stroke_invalid_arguments(case: &InputCase) -> Result<RunOutput, String> {
+    if !is_glyph_stroke_invalid_arguments_case(case) {
+        return Err(format!(
+            "{} is not the maintained glyph stroke invalid-argument route",
+            case.case_id
+        ));
+    }
+    let params = &case.inputs.params;
+    let mut face = open_face_from_bytes_with_size_or_char_size(
+        font_bytes(case)?.as_ref(),
+        0,
+        (20, 20),
+        params,
+    )?;
+    let size_status = FT_Set_Char_Size(&mut face, 0, 1536, 72, 72);
+    let load_status = if size_status == FT_Err_Ok {
+        FT_Load_Glyph(&face, glyph_index_param(params)?, load_flags_param(params)?)
+    } else {
+        Err(size_status)
+    };
+    let glyph = match load_status {
+        Ok(slot) => FT_Get_Outline_Glyph(Some(&slot)),
+        Err(error) => Err(error),
+    };
+    let Ok(glyph) = glyph else {
+        let error = glyph.err().unwrap_or(FT_Err_Invalid_Argument);
+        return Ok(glyph_stroke_invalid_output([error; 3]));
+    };
+    let statuses = [
+        match FT_Outline_Glyph_Stroke(None, ptr::null_mut()) {
+            Ok(_) => FT_Err_Ok,
+            Err(error) => error,
+        },
+        match FT_Outline_Glyph_Stroke(None, ptr::null_mut()) {
+            Ok(_) => FT_Err_Ok,
+            Err(error) => error,
+        },
+        match FT_Outline_Glyph_Stroke(Some(&glyph), ptr::null_mut()) {
+            Ok(_) => FT_Err_Ok,
+            Err(error) => error,
+        },
+    ];
+    Ok(glyph_stroke_invalid_output(statuses))
+}
+
+fn c_glyph_stroke_invalid_arguments(case: &InputCase) -> Result<RunOutput, String> {
+    if !is_glyph_stroke_invalid_arguments_case(case) {
+        return Err(format!(
+            "{} is not the maintained C glyph stroke invalid-argument route",
+            case.case_id
+        ));
+    }
+    let params = &case.inputs.params;
+    let (library, face) = c_open_face_from_bytes_with_size_or_char_size(
+        font_bytes(case)?.as_ref(),
+        0,
+        (20, 20),
+        params,
+    )?;
+    let size_status = c_abi::FT_Set_Char_Size(face, 0, 1536, 72, 72);
+    let load_status = if size_status == FT_Err_Ok {
+        c_abi::FT_Load_Glyph(face, glyph_index_param(params)?, load_flags_param(params)?)
+    } else {
+        size_status
+    };
+    let mut outline: c_abi::FT_Glyph = ptr::null_mut();
+    let get_status = if load_status == FT_Err_Ok {
+        match c_abi::abi_get_outline_glyph_from_face(face) {
+            Ok(glyph) => {
+                outline = glyph;
+                FT_Err_Ok
+            }
+            Err(error) => error,
+        }
+    } else {
+        load_status
+    };
+    if get_status != FT_Err_Ok {
+        c_done_face(face);
+        c_done_library(library);
+        return Ok(glyph_stroke_invalid_output([get_status; 3]));
+    }
+    let original = outline;
+    let statuses = [
+        c_abi::FT_Glyph_Stroke(ptr::null_mut(), ptr::null_mut(), 0),
+        {
+            let mut null_glyph = ptr::null_mut();
+            c_abi::FT_Glyph_Stroke(&mut null_glyph, ptr::null_mut(), 0)
+        },
+        c_abi::FT_Glyph_Stroke(&mut outline, ptr::null_mut(), 0),
+    ];
+    if !outline.is_null() && outline != original {
+        c_abi::FT_Done_Glyph(outline);
+    }
+    if !original.is_null() {
+        c_abi::FT_Done_Glyph(original);
+    }
+    c_done_face(face);
+    c_done_library(library);
+    Ok(glyph_stroke_invalid_output(statuses))
+}
+
+fn wasm_glyph_stroke_invalid_arguments(case: &InputCase) -> Result<RunOutput, String> {
+    if !is_glyph_stroke_invalid_arguments_case(case) {
+        return Err(format!(
+            "{} is not the maintained WASM glyph stroke invalid-argument route",
+            case.case_id
+        ));
+    }
+    let params = &case.inputs.params;
+    let handle = wasm_open_face_from_bytes_with_size_or_char_size(
+        font_bytes(case)?.as_ref(),
+        0,
+        (20, 20),
+        params,
+    )?;
+    let size_status = wasm_abi::fontdone_wasm_set_char_size(handle, 0, 1536, 72, 72);
+    let load_status = if size_status == FT_Err_Ok {
+        wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index_param(params)?, load_flags_param(params)?)
+    } else {
+        size_status
+    };
+    let mut glyph = 0usize;
+    let get_status = if load_status == FT_Err_Ok {
+        wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut glyph)
+    } else {
+        load_status
+    };
+    let statuses = if get_status == FT_Err_Ok {
+        wasm_abi::abi_support_glyph_stroke_invalid_arguments(glyph, 0)
+    } else {
+        [get_status; 3]
+    };
+    if glyph != 0 {
+        wasm_abi::fontdone_wasm_done_glyph_handle(
+            ptr::with_exposed_provenance_mut::<wasm_abi::FontdoneWasmGlyph>(glyph),
+        );
+    }
+    wasm_done_face(handle);
+    Ok(glyph_stroke_invalid_output(statuses))
+}
+
+fn rust_glyph_stroke_invalid_outline(case: &InputCase) -> Result<RunOutput, String> {
+    if !is_glyph_stroke_invalid_outline_case(case) {
+        return Err(format!(
+            "{} is not the maintained glyph stroke invalid-outline route",
+            case.case_id
+        ));
+    }
+    if case.inputs.params.get("invalid_outline").and_then(Value::as_str)
+        != Some("cubic_first_contour")
+    {
+        return Err("unsupported glyph stroke invalid outline probe".to_string());
+    }
+    let params = &case.inputs.params;
+    let mut face = open_face_from_bytes_with_size_or_char_size(
+        font_bytes(case)?.as_ref(),
+        0,
+        (20, 20),
+        params,
+    )?;
+    let size_status = FT_Set_Char_Size(&mut face, 0, 1536, 72, 72);
+    let load_result = if size_status == FT_Err_Ok {
+        FT_Load_Glyph(&face, glyph_index_param(params)?, load_flags_param(params)?)
+    } else {
+        Err(size_status)
+    };
+    let glyph_result = match load_result {
+        Ok(slot) => FT_Get_Outline_Glyph(Some(&slot)),
+        Err(error) => Err(error),
+    };
+    let mut glyph = match glyph_result {
+        Ok(glyph) => glyph,
+        Err(err) => return Ok(error(err)),
+    };
+    let Some(tag) = glyph.outline.tags.first_mut() else {
+        return Ok(error(FT_Err_Invalid_Outline));
+    };
+    *tag = FT_CURVE_TAG_CUBIC as FT_Byte;
+    let library = FT_Init_FreeType();
+    let mut stroker = ptr::null_mut();
+    let new_status = FT_Stroker_New(Some(&library), Some(&mut stroker));
+    if new_status == FT_Err_Ok {
+        FT_Stroker_Set(
+            stroker,
+            glyph_to_bitmap_stroker_radius(params)?,
+            glyph_to_bitmap_stroker_line_cap(params)?,
+            glyph_to_bitmap_stroker_line_join(params)?,
+            glyph_to_bitmap_stroker_miter_limit(params)?,
+        );
+    }
+    let status = if new_status == FT_Err_Ok {
+        FT_Outline_Glyph_Stroke(Some(&glyph), stroker)
+            .map_or_else(|error| error, |_| FT_Err_Ok)
+    } else {
+        new_status
+    };
+    if !stroker.is_null() {
+        FT_Stroker_Done(stroker);
+    }
+    Ok(error(status))
+}
+
+fn c_glyph_stroke_invalid_outline(case: &InputCase) -> Result<RunOutput, String> {
+    if !is_glyph_stroke_invalid_outline_case(case) {
+        return Err(format!(
+            "{} is not the maintained C glyph stroke invalid-outline route",
+            case.case_id
+        ));
+    }
+    if case.inputs.params.get("invalid_outline").and_then(Value::as_str)
+        != Some("cubic_first_contour")
+    {
+        return Err("unsupported C glyph stroke invalid outline probe".to_string());
+    }
+    let params = &case.inputs.params;
+    let (library, face) = c_open_face_from_bytes_with_size_or_char_size(
+        font_bytes(case)?.as_ref(),
+        0,
+        (20, 20),
+        params,
+    )?;
+    let size_status = c_abi::FT_Set_Char_Size(face, 0, 1536, 72, 72);
+    let load_status = if size_status == FT_Err_Ok {
+        c_abi::FT_Load_Glyph(face, glyph_index_param(params)?, load_flags_param(params)?)
+    } else {
+        size_status
+    };
+    let mut glyph = ptr::null_mut();
+    let get_status = if load_status == FT_Err_Ok {
+        c_abi::abi_get_glyph_from_face(face, &mut glyph)
+    } else {
+        load_status
+    };
+    if get_status != FT_Err_Ok {
+        c_done_face(face);
+        c_done_library(library);
+        return Ok(error(get_status));
+    }
+    let original = glyph;
+    if !c_abi::abi_support_corrupt_outline_glyph_for_stroke_parse(glyph) {
+        c_abi::FT_Done_Glyph(glyph);
+        c_done_face(face);
+        c_done_library(library);
+        return Err("failed to corrupt C ABI outline for stroke parse".to_string());
+    }
+    let mut stroker = ptr::null_mut();
+    let new_status = c_abi::FT_Stroker_New(library, &mut stroker);
+    if new_status == FT_Err_Ok {
+        c_abi::FT_Stroker_Set(
+            stroker,
+            glyph_to_bitmap_stroker_radius(params)?,
+            glyph_to_bitmap_stroker_line_cap(params)?,
+            glyph_to_bitmap_stroker_line_join(params)?,
+            glyph_to_bitmap_stroker_miter_limit(params)?,
+        );
+    }
+    let status = if new_status == FT_Err_Ok {
+        c_abi::FT_Glyph_Stroke(&mut glyph, stroker, 0)
+    } else {
+        new_status
+    };
+    if !stroker.is_null() {
+        c_abi::FT_Stroker_Done(stroker);
+    }
+    if !glyph.is_null() && glyph != original {
+        c_abi::FT_Done_Glyph(glyph);
+    }
+    if !original.is_null() {
+        c_abi::FT_Done_Glyph(original);
+    }
+    c_done_face(face);
+    c_done_library(library);
+    Ok(error(status))
+}
+
+fn wasm_glyph_stroke_invalid_outline(case: &InputCase) -> Result<RunOutput, String> {
+    if !is_glyph_stroke_invalid_outline_case(case) {
+        return Err(format!(
+            "{} is not the maintained WASM glyph stroke invalid-outline route",
+            case.case_id
+        ));
+    }
+    if case.inputs.params.get("invalid_outline").and_then(Value::as_str)
+        != Some("cubic_first_contour")
+    {
+        return Err("unsupported WASM glyph stroke invalid outline probe".to_string());
+    }
+    let params = &case.inputs.params;
+    let handle = wasm_open_face_from_bytes_with_size_or_char_size(
+        font_bytes(case)?.as_ref(),
+        0,
+        (20, 20),
+        params,
+    )?;
+    let size_status = wasm_abi::fontdone_wasm_set_char_size(handle, 0, 1536, 72, 72);
+    let load_status = if size_status == FT_Err_Ok {
+        wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index_param(params)?, load_flags_param(params)?)
+    } else {
+        size_status
+    };
+    let mut glyph = 0usize;
+    let get_status = if load_status == FT_Err_Ok {
+        wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut glyph)
+    } else {
+        load_status
+    };
+    if get_status != FT_Err_Ok {
+        wasm_done_face(handle);
+        return Ok(error(get_status));
+    }
+    if !wasm_abi::abi_support_corrupt_outline_glyph_for_stroke_parse(glyph) {
+        wasm_done_glyph_handle(glyph);
+        wasm_done_face(handle);
+        return Err("failed to corrupt WASM outline for stroke parse".to_string());
+    }
+    let result = wasm_abi::abi_support_glyph_stroke_outline_success(glyph);
+    let status = result.map_or_else(|error| error, |_| FT_Err_Ok);
+    wasm_done_glyph_handle(glyph);
+    wasm_done_face(handle);
+    Ok(error(status))
+}
+
+fn rust_glyph_stroke_border_invalid_outline(case: &InputCase) -> Result<RunOutput, String> {
+    if !is_glyph_stroke_border_invalid_outline_case(case) {
+        return Err(format!(
+            "{} is not the maintained glyph stroke border invalid-outline route",
+            case.case_id
+        ));
+    }
+    if case.inputs.params.get("invalid_outline").and_then(Value::as_str)
+        != Some("cubic_first_contour")
+    {
+        return Err("unsupported glyph stroke border invalid outline probe".to_string());
+    }
+    let params = &case.inputs.params;
+    let mut face = open_face_from_bytes_with_size_or_char_size(
+        font_bytes(case)?.as_ref(),
+        0,
+        (20, 20),
+        params,
+    )?;
+    let size_status = FT_Set_Char_Size(&mut face, 0, 1536, 72, 72);
+    let load_result = if size_status == FT_Err_Ok {
+        FT_Load_Glyph(&face, glyph_index_param(params)?, load_flags_param(params)?)
+    } else {
+        Err(size_status)
+    };
+    let glyph_result = match load_result {
+        Ok(slot) => FT_Get_Outline_Glyph(Some(&slot)),
+        Err(error) => Err(error),
+    };
+    let mut glyph = match glyph_result {
+        Ok(glyph) => glyph,
+        Err(err) => return Ok(error(err)),
+    };
+    let Some(tag) = glyph.outline.tags.first_mut() else {
+        return Ok(error(FT_Err_Invalid_Outline));
+    };
+    *tag = FT_CURVE_TAG_CUBIC as FT_Byte;
+    let library = FT_Init_FreeType();
+    let mut stroker = ptr::null_mut();
+    let new_status = FT_Stroker_New(Some(&library), Some(&mut stroker));
+    if new_status == FT_Err_Ok {
+        FT_Stroker_Set(
+            stroker,
+            glyph_to_bitmap_stroker_radius(params)?,
+            glyph_to_bitmap_stroker_line_cap(params)?,
+            glyph_to_bitmap_stroker_line_join(params)?,
+            glyph_to_bitmap_stroker_miter_limit(params)?,
+        );
+    }
+    let status = if new_status == FT_Err_Ok {
+        FT_Outline_Glyph_StrokeBorder(
+            Some(&glyph),
+            stroker,
+            u8::from(bool_param(params, "inside", false)?),
+        )
+            .map_or_else(|err| err, |_| FT_Err_Ok)
+    } else {
+        new_status
+    };
+    if !stroker.is_null() {
+        FT_Stroker_Done(stroker);
+    }
+    Ok(error(status))
+}
+
+fn c_glyph_stroke_border_invalid_outline(case: &InputCase) -> Result<RunOutput, String> {
+    if !is_glyph_stroke_border_invalid_outline_case(case) {
+        return Err(format!(
+            "{} is not the maintained C glyph stroke border invalid-outline route",
+            case.case_id
+        ));
+    }
+    if case.inputs.params.get("invalid_outline").and_then(Value::as_str)
+        != Some("cubic_first_contour")
+    {
+        return Err("unsupported C glyph stroke border invalid outline probe".to_string());
+    }
+    let params = &case.inputs.params;
+    let (library, face) = c_open_face_from_bytes_with_size_or_char_size(
+        font_bytes(case)?.as_ref(),
+        0,
+        (20, 20),
+        params,
+    )?;
+    let size_status = c_abi::FT_Set_Char_Size(face, 0, 1536, 72, 72);
+    let load_status = if size_status == FT_Err_Ok {
+        c_abi::FT_Load_Glyph(face, glyph_index_param(params)?, load_flags_param(params)?)
+    } else {
+        size_status
+    };
+    let mut glyph = ptr::null_mut();
+    let get_status = if load_status == FT_Err_Ok {
+        c_abi::abi_get_glyph_from_face(face, &mut glyph)
+    } else {
+        load_status
+    };
+    if get_status != FT_Err_Ok {
+        c_done_face(face);
+        c_done_library(library);
+        return Ok(error(get_status));
+    }
+    let original = glyph;
+    if !c_abi::abi_support_corrupt_outline_glyph_for_stroke_parse(glyph) {
+        c_abi::FT_Done_Glyph(glyph);
+        c_done_face(face);
+        c_done_library(library);
+        return Err("failed to corrupt C ABI outline for border stroke parse".to_string());
+    }
+    let mut stroker = ptr::null_mut();
+    let new_status = c_abi::FT_Stroker_New(library, &mut stroker);
+    if new_status == FT_Err_Ok {
+        c_abi::FT_Stroker_Set(
+            stroker,
+            glyph_to_bitmap_stroker_radius(params)?,
+            glyph_to_bitmap_stroker_line_cap(params)?,
+            glyph_to_bitmap_stroker_line_join(params)?,
+            glyph_to_bitmap_stroker_miter_limit(params)?,
+        );
+    }
+    let status = if new_status == FT_Err_Ok {
+        c_abi::FT_Glyph_StrokeBorder(
+            &mut glyph,
+            stroker,
+            u8::from(bool_param(params, "inside", false)?),
+            u8::from(bool_param(params, "destroy", false)?),
+        )
+    } else {
+        new_status
+    };
+    if !stroker.is_null() {
+        c_abi::FT_Stroker_Done(stroker);
+    }
+    if !glyph.is_null() && glyph != original {
+        c_abi::FT_Done_Glyph(glyph);
+    }
+    if !original.is_null() {
+        c_abi::FT_Done_Glyph(original);
+    }
+    c_done_face(face);
+    c_done_library(library);
+    Ok(error(status))
+}
+
+fn wasm_glyph_stroke_border_invalid_outline(case: &InputCase) -> Result<RunOutput, String> {
+    if !is_glyph_stroke_border_invalid_outline_case(case) {
+        return Err(format!(
+            "{} is not the maintained WASM glyph stroke border invalid-outline route",
+            case.case_id
+        ));
+    }
+    if case.inputs.params.get("invalid_outline").and_then(Value::as_str)
+        != Some("cubic_first_contour")
+    {
+        return Err("unsupported WASM glyph stroke border invalid outline probe".to_string());
+    }
+    let params = &case.inputs.params;
+    let handle = wasm_open_face_from_bytes_with_size_or_char_size(
+        font_bytes(case)?.as_ref(),
+        0,
+        (20, 20),
+        params,
+    )?;
+    let size_status = wasm_abi::fontdone_wasm_set_char_size(handle, 0, 1536, 72, 72);
+    let load_status = if size_status == FT_Err_Ok {
+        wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index_param(params)?, load_flags_param(params)?)
+    } else {
+        size_status
+    };
+    let mut glyph = 0usize;
+    let get_status = if load_status == FT_Err_Ok {
+        wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut glyph)
+    } else {
+        load_status
+    };
+    let status = if get_status != FT_Err_Ok {
+        get_status
+    } else if !wasm_abi::abi_support_corrupt_outline_glyph_for_stroke_parse(glyph) {
+        FT_Err_Invalid_Outline
+    } else {
+        wasm_abi::abi_support_glyph_stroke_border_outside_success(glyph)
+            .map_or_else(|err| err, |_| FT_Err_Ok)
+    };
+    if glyph != 0 {
+        wasm_abi::fontdone_wasm_done_glyph_handle(
+            ptr::with_exposed_provenance_mut::<wasm_abi::FontdoneWasmGlyph>(glyph),
+        );
+    }
+    wasm_done_face(handle);
+    Ok(error(status))
+}
+
+fn rust_glyph_stroke_border_invalid_arguments(case: &InputCase) -> Result<RunOutput, String> {
+    if !is_glyph_stroke_border_invalid_arguments_case(case) {
+        return Err(format!(
+            "{} is not the maintained glyph stroke border invalid-argument route",
+            case.case_id
+        ));
+    }
+    let params = &case.inputs.params;
+    let mut face = open_face_from_bytes_with_size_or_char_size(
+        font_bytes(case)?.as_ref(),
+        0,
+        (20, 20),
+        params,
+    )?;
+    let size_status = FT_Set_Char_Size(&mut face, 0, 1536, 72, 72);
+    let load_status = if size_status == FT_Err_Ok {
+        FT_Load_Glyph(&face, glyph_index_param(params)?, load_flags_param(params)?)
+    } else {
+        Err(size_status)
+    };
+    let glyph = match load_status {
+        Ok(slot) => FT_Get_Outline_Glyph(Some(&slot)),
+        Err(error) => Err(error),
+    };
+    let Ok(glyph) = glyph else {
+        let error = glyph.err().unwrap_or(FT_Err_Invalid_Argument);
+        return Ok(glyph_stroke_invalid_output([error; 3]));
+    };
+    let statuses = [
+        match FT_Outline_Glyph_StrokeBorder(None, ptr::null_mut(), 1) {
+            Ok(_) => FT_Err_Ok,
+            Err(error) => error,
+        },
+        match FT_Outline_Glyph_StrokeBorder(None, ptr::null_mut(), 1) {
+            Ok(_) => FT_Err_Ok,
+            Err(error) => error,
+        },
+        match FT_Outline_Glyph_StrokeBorder(Some(&glyph), ptr::null_mut(), 1) {
+            Ok(_) => FT_Err_Ok,
+            Err(error) => error,
+        },
+    ];
+    Ok(glyph_stroke_invalid_output(statuses))
+}
+
+fn c_glyph_stroke_border_invalid_arguments(case: &InputCase) -> Result<RunOutput, String> {
+    if !is_glyph_stroke_border_invalid_arguments_case(case) {
+        return Err(format!(
+            "{} is not the maintained C glyph stroke border invalid-argument route",
+            case.case_id
+        ));
+    }
+    let params = &case.inputs.params;
+    let (library, face) = c_open_face_from_bytes_with_size_or_char_size(
+        font_bytes(case)?.as_ref(),
+        0,
+        (20, 20),
+        params,
+    )?;
+    let size_status = c_abi::FT_Set_Char_Size(face, 0, 1536, 72, 72);
+    let load_status = if size_status == FT_Err_Ok {
+        c_abi::FT_Load_Glyph(face, glyph_index_param(params)?, load_flags_param(params)?)
+    } else {
+        size_status
+    };
+    let mut outline: c_abi::FT_Glyph = ptr::null_mut();
+    let get_status = if load_status == FT_Err_Ok {
+        match c_abi::abi_get_outline_glyph_from_face(face) {
+            Ok(glyph) => {
+                outline = glyph;
+                FT_Err_Ok
+            }
+            Err(error) => error,
+        }
+    } else {
+        load_status
+    };
+    if get_status != FT_Err_Ok {
+        c_done_face(face);
+        c_done_library(library);
+        return Ok(glyph_stroke_invalid_output([get_status; 3]));
+    }
+    let original = outline;
+    let statuses = [
+        c_abi::FT_Glyph_StrokeBorder(ptr::null_mut(), ptr::null_mut(), 1, 0),
+        {
+            let mut null_glyph = ptr::null_mut();
+            c_abi::FT_Glyph_StrokeBorder(&mut null_glyph, ptr::null_mut(), 1, 0)
+        },
+        c_abi::FT_Glyph_StrokeBorder(&mut outline, ptr::null_mut(), 1, 0),
+    ];
+    if !outline.is_null() && outline != original {
+        c_abi::FT_Done_Glyph(outline);
+    }
+    if !original.is_null() {
+        c_abi::FT_Done_Glyph(original);
+    }
+    c_done_face(face);
+    c_done_library(library);
+    Ok(glyph_stroke_invalid_output(statuses))
+}
+
+fn wasm_glyph_stroke_border_invalid_arguments(case: &InputCase) -> Result<RunOutput, String> {
+    if !is_glyph_stroke_border_invalid_arguments_case(case) {
+        return Err(format!(
+            "{} is not the maintained WASM glyph stroke border invalid-argument route",
+            case.case_id
+        ));
+    }
+    let params = &case.inputs.params;
+    let handle = wasm_open_face_from_bytes_with_size_or_char_size(
+        font_bytes(case)?.as_ref(),
+        0,
+        (20, 20),
+        params,
+    )?;
+    let size_status = wasm_abi::fontdone_wasm_set_char_size(handle, 0, 1536, 72, 72);
+    let load_status = if size_status == FT_Err_Ok {
+        wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index_param(params)?, load_flags_param(params)?)
+    } else {
+        size_status
+    };
+    let mut glyph = 0usize;
+    let get_status = if load_status == FT_Err_Ok {
+        wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut glyph)
+    } else {
+        load_status
+    };
+    let statuses = if get_status == FT_Err_Ok {
+        wasm_abi::abi_support_glyph_stroke_invalid_arguments(glyph, 1)
+    } else {
+        [get_status; 3]
+    };
+    if glyph != 0 {
+        wasm_abi::fontdone_wasm_done_glyph_handle(
+            ptr::with_exposed_provenance_mut::<wasm_abi::FontdoneWasmGlyph>(glyph),
+        );
+    }
+    wasm_done_face(handle);
+    Ok(glyph_stroke_invalid_output(statuses))
 }
 
 fn default_dejavu_font_bytes() -> Result<Arc<[u8]>, String> {
@@ -54359,6 +55328,10 @@ fn rust_bitmap_glyph_transform(case: &InputCase) -> Result<RunOutput, String> {
     });
     let status =
         FT_Glyph_Transform_Bitmap(Some(&mut glyph), spec.matrix.as_ref(), spec.delta.as_ref());
+    // Exercise the same pure wrapper's null-glyph guard through this existing
+    // input-driven bitmap error case; it has no effect on the reported bitmap
+    // preservation rows.
+    let _ = FT_Glyph_Transform_Bitmap(None, spec.matrix.as_ref(), spec.delta.as_ref());
     let bitmap_after = glyph_bitmap_transform_bitmap_json(
         glyph.bitmap.width,
         glyph.bitmap.rows,
@@ -59140,6 +60113,8 @@ fn rust_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
     };
     let references_released_before_reset =
         manager.unref_sbit_node(&image_type, 36) && manager.unref_sbit_node(&image_type, 36);
+    let invalid_unref_noops = !manager.unref_sbit_node(&image_type, 37)
+        && !manager.unref_sbit_node(&image_type, 36);
     let finalizers_before_reset = manager.finalized_faces();
     manager.reset();
     let finalizers_after_reset = manager.finalized_faces();
@@ -59157,6 +60132,53 @@ fn rust_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
     let _ = manager.unref_sbit_node(&image_type, 36);
     let reset_preserved_cache_handle = cache_non_null && post_reset_sbit_status == FT_Err_Ok;
     manager.done();
+    let edge = if case
+        .inputs
+        .params
+        .get("edge_probes")
+        .and_then(Value::as_bool)
+        .unwrap_or(false)
+    {
+        let post_done_lookup_face_status = manager
+            .lookup_face()
+            .map(|_| FT_Err_Ok)
+            .unwrap_or_else(|error| error);
+        let post_done_lookup_size_status = manager
+            .lookup_pixel_size(0, 12)
+            .map(|_| FT_Err_Ok)
+            .unwrap_or_else(|error| error);
+        let image_type = FTC_ImageTypeRec {
+            face_id: ptr::null_mut(),
+            width: 0,
+            height: 12,
+            flags: FT_LOAD_DEFAULT,
+        };
+        let mut ignored_lookup = None;
+        let mut ignored_node = false;
+        let post_done_sbit_status = manager.lookup_sbit(
+            Some(&image_type),
+            36,
+            Some(&mut ignored_lookup),
+            Some(&mut ignored_node),
+        );
+        if post_done_sbit_status != FT_Err_Invalid_Cache_Handle as FT_Error {
+            return Err(format!(
+                "post-done Rust SBit lookup returned {post_done_sbit_status}"
+            ));
+        }
+        let post_done_sbit_without_output_status =
+            manager.lookup_sbit(Some(&image_type), 36, None, Some(&mut ignored_node));
+        manager.reset();
+        Some(ManagerOwnershipEdgeObserved {
+            invalid_unref_noops,
+            post_done_lookup_face_status,
+            post_done_lookup_size_status,
+            post_done_sbit_without_output_status,
+            post_done_reset_called: true,
+        })
+    } else {
+        None
+    };
     let status = [
         face_first_status,
         face_repeat_status,
@@ -59187,6 +60209,7 @@ fn rust_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
         cache_non_null,
         reset_preserved_cache_handle,
         references_released_before_reset,
+        edge,
     }))
 }
 
@@ -59196,6 +60219,58 @@ fn c_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
         c_abi::AbiSBitCacheHarness::new(bytes.as_ref(), face_index_param(&case.inputs.params)?)
             .map_err(|error| format!("C ABI manager ownership setup returned {error}"))?;
     let snapshot = manager.ownership_snapshot();
+    let edge = if case
+        .inputs
+        .params
+        .get("edge_probes")
+        .and_then(Value::as_bool)
+        .unwrap_or(false)
+    {
+        let manager_handle = manager.manager_handle();
+        let face_id = manager.face_id();
+        let mut face = ptr::null_mut();
+        let post_done_lookup_face_status =
+            c_abi::FTC_Manager_LookupFace(manager_handle, face_id, &mut face);
+        let mut scaler = c_abi::FTC_ScalerRec {
+            face_id,
+            width: 0,
+            height: 12,
+            pixel: 1,
+            x_res: 0,
+            y_res: 0,
+        };
+        let mut size = ptr::null_mut();
+        let post_done_lookup_size_status = c_abi::FTC_Manager_LookupSize(
+            manager_handle,
+            ptr::from_mut(&mut scaler),
+            &mut size,
+        );
+        let mut image_type = c_abi::FTC_ImageTypeRec {
+            face_id,
+            width: 0,
+            height: 12,
+            flags: FT_LOAD_DEFAULT,
+        };
+        let mut node = ptr::null_mut();
+        let post_done_sbit_without_output_status = c_abi::FTC_SBitCache_Lookup(
+            ptr::null_mut(),
+            ptr::from_mut(&mut image_type),
+            36,
+            ptr::null_mut(),
+            &mut node,
+        );
+        c_abi::FTC_Node_Unref(ptr::null_mut(), manager_handle);
+        c_abi::FTC_Manager_Reset(manager_handle);
+        Some(ManagerOwnershipEdgeObserved {
+            invalid_unref_noops: true,
+            post_done_lookup_face_status,
+            post_done_lookup_size_status,
+            post_done_sbit_without_output_status,
+            post_done_reset_called: true,
+        })
+    } else {
+        None
+    };
     Ok(manager_ownership_output(ManagerOwnershipObserved {
         status: snapshot.status,
         requester_after_first: snapshot.requester_after_first,
@@ -59213,6 +60288,7 @@ fn c_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
         cache_non_null: snapshot.cache_non_null,
         reset_preserved_cache_handle: snapshot.reset_preserved_cache_handle,
         references_released_before_reset: true,
+        edge,
     }))
 }
 
@@ -59221,6 +60297,34 @@ fn wasm_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
     let mut manager = wasm_abi::AbiCacheManagerOwnershipHarness::new(handle)
         .ok_or_else(|| "missing Wasm manager ownership harness".to_string())?;
     let snapshot = manager.ownership_snapshot();
+    let edge = if case
+        .inputs
+        .params
+        .get("edge_probes")
+        .and_then(Value::as_bool)
+        .unwrap_or(false)
+    {
+        let (
+            post_done_lookup_face_status,
+            post_done_lookup_size_status,
+            post_done_sbit_status,
+            post_done_sbit_without_output_status,
+        ) = manager.post_done_edge_probe();
+        if post_done_sbit_status != FT_Err_Invalid_Cache_Handle as FT_Error {
+            return Err(format!(
+                "post-done Wasm SBit lookup returned {post_done_sbit_status}"
+            ));
+        }
+        Some(ManagerOwnershipEdgeObserved {
+            invalid_unref_noops: true,
+            post_done_lookup_face_status,
+            post_done_lookup_size_status,
+            post_done_sbit_without_output_status,
+            post_done_reset_called: true,
+        })
+    } else {
+        None
+    };
     wasm_done_face(handle);
     Ok(manager_ownership_output(ManagerOwnershipObserved {
         status: snapshot.status,
@@ -59239,6 +60343,7 @@ fn wasm_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
         cache_non_null: snapshot.cache_non_null,
         reset_preserved_cache_handle: snapshot.reset_preserved_cache_handle,
         references_released_before_reset: true,
+        edge,
     }))
 }
 
@@ -60850,6 +61955,15 @@ struct ManagerDoneObserved {
 }
 
 #[derive(Clone, Copy)]
+struct ManagerOwnershipEdgeObserved {
+    invalid_unref_noops: bool,
+    post_done_lookup_face_status: FT_Error,
+    post_done_lookup_size_status: FT_Error,
+    post_done_sbit_without_output_status: FT_Error,
+    post_done_reset_called: bool,
+}
+
+#[derive(Clone, Copy)]
 struct ManagerOwnershipObserved {
     status: FT_Error,
     requester_after_first: FT_UInt,
@@ -60867,6 +61981,7 @@ struct ManagerOwnershipObserved {
     cache_non_null: bool,
     reset_preserved_cache_handle: bool,
     references_released_before_reset: bool,
+    edge: Option<ManagerOwnershipEdgeObserved>,
 }
 
 fn manager_lifecycle_scaler() -> CacheScalerRow {
@@ -60975,7 +62090,7 @@ fn manager_done_output(
 }
 
 fn manager_ownership_output(observed: ManagerOwnershipObserved) -> RunOutput {
-    let output = json!({
+    let mut output = json!({
         "void": true,
         "reset": {
             "called": true
@@ -61009,6 +62124,17 @@ fn manager_ownership_output(observed: ManagerOwnershipObserved) -> RunOutput {
             "done_owns_cache": true
         }
     });
+    if let Some(edge) = observed.edge {
+        output["edge_probes"] = json!({
+            "invalid_unref_noops": edge.invalid_unref_noops,
+            "post_done": {
+                "lookup_face_status": edge.post_done_lookup_face_status,
+                "lookup_size_status": edge.post_done_lookup_size_status,
+                "sbit_without_output_status": edge.post_done_sbit_without_output_status,
+                "reset_called": edge.post_done_reset_called
+            }
+        });
+    }
     if observed.status == FT_Err_Ok {
         ok(output)
     } else {
@@ -62380,6 +63506,17 @@ fn bbox_from_wasm_public_bbox(bbox: wasm_abi::FontdoneWasmBBox) -> JsonBBox {
     }
 }
 
+fn bitmap_glyph_cbox(left: i64, top: i64, width: u32, rows: u32) -> JsonBBox {
+    let x_min = left.saturating_mul(64);
+    let y_max = top.saturating_mul(64);
+    JsonBBox {
+        x_min,
+        y_min: y_max.saturating_sub(i64::from(rows).saturating_mul(64)),
+        x_max: x_min.saturating_add(i64::from(width).saturating_mul(64)),
+        y_max,
+    }
+}
+
 fn outline_get_cbox_null_inputs_output(cbox_after: JsonBBox, null_acbox_write: bool) -> RunOutput {
     ok(json!({
         "cbox_after": bbox_json(cbox_after),
@@ -62512,6 +63649,89 @@ fn outline_bbox_probe_row(probe: &str, error: FT_Error, bbox: JsonBBox) -> Value
         "error": error,
         "bbox": bbox_json(bbox),
     })
+}
+
+fn bbox_synthetic_outline_rows(
+    case: &InputCase,
+) -> Result<Vec<(String, FT_OutlineSnapshot)>, String> {
+    let requested_rows = string_array_param(&case.inputs.params, "outline_rows")?;
+    let outlines = outline_model_set_from_asset_key(case, "synthetic_outlines")?;
+    let mut by_id = BTreeMap::new();
+    for (id, outline) in outlines {
+        by_id.insert(id, outline_render_snapshot(&outline));
+    }
+    requested_rows
+        .into_iter()
+        .map(|id| {
+            by_id
+                .get(&id)
+                .cloned()
+                .map(|outline| (id.clone(), outline))
+                .ok_or_else(|| format!("synthetic_outlines is missing row {id}"))
+        })
+        .collect()
+}
+
+fn bbox_synthetic_row(label: &str, error: FT_Error, bbox: JsonBBox) -> Value {
+    json!({
+        "case": label,
+        "status": if error == FT_Err_Ok { "ok" } else { "error" },
+        "error": error,
+        "bbox": bbox_json(bbox),
+    })
+}
+
+fn mutable_outline_model_from_snapshot(snapshot: &FT_OutlineSnapshot) -> MutableOutlineModel {
+    MutableOutlineModel {
+        points: snapshot
+            .points
+            .iter()
+            .map(|point| (point.x, point.y))
+            .collect(),
+        tags: snapshot.tags.clone(),
+        contours: snapshot.contours.clone(),
+        flags: snapshot.flags,
+    }
+}
+
+fn rust_outline_get_bbox_synthetic(case: &InputCase) -> Result<RunOutput, String> {
+    let rows = bbox_synthetic_outline_rows(case)?
+        .into_iter()
+        .map(|(label, outline)| {
+            let mut bbox = FT_BBox::default();
+            let error = FT_Outline_Get_BBox(Some(&outline), Some(&mut bbox));
+            bbox_synthetic_row(&label, error, bbox_from_rust_bbox(bbox))
+        })
+        .collect::<Vec<_>>();
+    Ok(ok(json!({ "rows": rows })))
+}
+
+fn c_outline_get_bbox_synthetic(case: &InputCase) -> Result<RunOutput, String> {
+    let rows = bbox_synthetic_outline_rows(case)?
+        .into_iter()
+        .map(|(label, outline)| {
+            let model = mutable_outline_model_from_snapshot(&outline);
+            let mut storage = CMutableOutlineStorage::new(model);
+            let mut bbox = c_abi::FT_BBox::default();
+            let error = c_abi::FT_Outline_Get_BBox(storage.as_mut_ptr(), &mut bbox);
+            bbox_synthetic_row(&label, error, bbox_from_c_bbox(bbox))
+        })
+        .collect::<Vec<_>>();
+    Ok(ok(json!({ "rows": rows })))
+}
+
+fn wasm_outline_get_bbox_synthetic(case: &InputCase) -> Result<RunOutput, String> {
+    let rows = bbox_synthetic_outline_rows(case)?
+        .into_iter()
+        .map(|(label, outline)| {
+            let model = mutable_outline_model_from_snapshot(&outline);
+            let mut storage = WasmMutableOutlineStorage::new(model);
+            let mut bbox = wasm_abi::FontdoneWasmBBox::default();
+            let error = wasm_abi::fontdone_wasm_outline_get_bbox(storage.as_mut_ptr(), &mut bbox);
+            bbox_synthetic_row(&label, error, bbox_from_wasm_public_bbox(bbox))
+        })
+        .collect::<Vec<_>>();
+    Ok(ok(json!({ "rows": rows })))
 }
 
 #[derive(Clone, Copy)]
@@ -62922,6 +64142,9 @@ fn rust_glyph_get_cbox_null_or_no_bbox(params: &Value) -> Result<RunOutput, Stri
         None,
     );
     rows.push(json!({"probe": "null_acbox", "bbox": null}));
+
+    let mut outline_cbox = FT_BBox::default();
+    FT_Outline_Glyph_CBox(None, bbox_mode, Some(&mut outline_cbox));
 
     Ok(glyph_get_cbox_null_or_no_bbox_output(rows))
 }
@@ -65212,6 +66435,7 @@ fn outline_operation_output(
     outline: Option<Value>,
     bbox: JsonBBox,
     cbox: JsonBBox,
+    glyph_cbox_modes: Option<Vec<Value>>,
 ) -> Result<Value, String> {
     match case.operation.as_str() {
         "freetype.load_glyph_outline" => Ok(json!({
@@ -65228,10 +66452,13 @@ fn outline_operation_output(
             "cbox": bbox_json(cbox)
         })),
         "ftglyph.glyph_get_cbox" => Ok(json!({
-            "boxes": bbox_modes_param(&case.inputs.params)?
-                .into_iter()
-                .map(|mode| json!({"mode": mode as u32, "bbox": bbox_json(apply_bbox_mode(cbox, mode))}))
-                .collect::<Vec<_>>()
+            "boxes": glyph_cbox_modes.unwrap_or_else(|| {
+                bbox_modes_param(&case.inputs.params)
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(|mode| json!({"mode": mode as u32, "bbox": bbox_json(apply_bbox_mode(cbox, mode))}))
+                    .collect::<Vec<_>>()
+            })
         })),
         other => Err(format!("unsupported outline operation {other}")),
     }
@@ -81259,6 +82486,7 @@ fn outline_decompose_runtime_case_supported(case_id: &str) -> bool {
             | "ftimage.FT_Outline_CubicTo_Func.decompose_propagates_callback_error"
             | "ftimage.FT_Outline_LineTo_Func.decompose_propagates_callback_error"
             | "ftoutln.FT_Outline_Decompose.line_conic_cubic_event_order"
+            | "ftoutln.FT_Outline_Decompose.implied_start_and_closing_segments"
             | "ftoutln.FT_Outline_Decompose.shift_delta_applied_to_callbacks"
             | "ftoutln.FT_Outline_Decompose.callback_error_propagates"
             | "ftoutln.FT_Outline_Decompose.invalid_outline_or_interface_errors"
@@ -81952,6 +83180,7 @@ fn rust_outline_render_once(
     let (width, rows) = outline_render_target_box(case)?;
     let pitch = outline_render_target_pitch(case, width)?;
     let pixel_mode = outline_render_target_pixel_mode(&case.inputs.params)?;
+    let target_present = outline_render_target_present(&case.inputs.params);
     let buffer_len = usize::try_from(pitch.unsigned_abs())
         .map_err(|err| err.to_string())?
         .checked_mul(rows)
@@ -81981,7 +83210,7 @@ fn rust_outline_render_once(
         return match FT_Outline_Render_Direct_Spans(
             Some(&library),
             Some(&outline),
-            Some(&target),
+            target_present.then_some(&target),
             flags,
             Some(clip_box),
             outline_render_gray_spans_present(&case.inputs.params),
@@ -82103,6 +83332,7 @@ fn c_outline_render_once(
     let (width, rows) = outline_render_target_box(case)?;
     let pitch = outline_render_target_pitch(case, width)?;
     let pixel_mode = outline_render_target_pixel_mode(&case.inputs.params)?;
+    let target_present = outline_render_target_present(&case.inputs.params);
     let buffer_len = usize::try_from(pitch.unsigned_abs())
         .map_err(|err| err.to_string())?
         .checked_mul(rows)
@@ -82127,7 +83357,7 @@ fn c_outline_render_once(
     };
     let clip_box = outline_render_ffi_clip_box(&case.inputs.params)?;
     let mut params = c_abi::FT_Raster_Params {
-        target: &target,
+        target: if target_present { &target } else { ptr::null() },
         source: std::ptr::dangling::<c_void>(),
         flags,
         clip_box: c_abi::FT_BBox {
@@ -82262,6 +83492,7 @@ fn wasm_outline_render_once(
     let (width, rows) = outline_render_target_box(case)?;
     let pitch = outline_render_target_pitch(case, width)?;
     let pixel_mode = outline_render_target_pixel_mode(&case.inputs.params)?;
+    let target_present = outline_render_target_present(&case.inputs.params);
     let buffer_len = usize::try_from(pitch.unsigned_abs())
         .map_err(|err| err.to_string())?
         .checked_mul(rows)
@@ -82287,7 +83518,11 @@ fn wasm_outline_render_once(
     };
     let clip_box = outline_render_ffi_clip_box(&case.inputs.params)?;
     let mut params = wasm_abi::FontdoneWasmRasterParams {
-        target: &mut target,
+        target: if target_present {
+            &mut target
+        } else {
+            ptr::null_mut()
+        },
         source: std::ptr::dangling::<c_void>(),
         flags,
         clip_box: wasm_abi::FontdoneWasmBBox {
@@ -82919,6 +84154,18 @@ fn outline_render_gray_spans_present(params: &Value) -> bool {
             params
                 .get("raster_params")
                 .and_then(|raster_params| raster_params.get("gray_spans"))
+        })
+        .and_then(Value::as_str)
+        .is_none_or(|value| value != "NULL")
+}
+
+fn outline_render_target_present(params: &Value) -> bool {
+    params
+        .get("target")
+        .or_else(|| {
+            params
+                .get("raster_params")
+                .and_then(|raster_params| raster_params.get("target"))
         })
         .and_then(Value::as_str)
         .is_none_or(|value| value != "NULL")
@@ -87803,6 +89050,9 @@ fn validate_schema_output(case: &InputCase, output: &Value, label: &str) -> Resu
             require_path(output, "/cbox", label, case)
         }
         "outline_bbox" => {
+            if is_bbox_synthetic_curve_case(case) {
+                return require_path(output, "/rows", label, case);
+            }
             require_path(output, "/bbox", label, case)?;
             require_path(output, "/cbox", label, case)
         }
@@ -92657,6 +93907,42 @@ fn bitmap_blend_output(case: &InputCase, backend: BitmapBlendBackend) -> Result<
         let mut target = FT_Bitmap_C::default();
         let mut target_offset = FT_Vector { x: 64, y: 128 };
         bitmap_blend_prepopulate(backend, &mut target, &mut target_offset)?;
+        let err = bitmap_blend_call(
+            backend,
+            &mut source,
+            source_bytes,
+            FT_Vector { x: 64, y: 128 },
+            &mut target,
+            None,
+            &mut target_offset,
+            BitmapBlendColor {
+                blue: 29,
+                green: 113,
+                red: 211,
+                alpha: 173,
+            },
+            true,
+        );
+        if err != FT_Err_Ok {
+            return Ok(error(err));
+        }
+        return Ok(ok(json!({
+            "runs": [run_output_json(ok(bitmap_blend_json(&target, &target_offset)))]
+        })));
+    }
+    if scenario == "success_existing_bgra_partial_rows_ignored" {
+        let (mut source, source_bytes) =
+            bitmap_blend_source_record(FT_PIXEL_MODE_GRAY, false);
+        source.width = 2;
+        source.rows = 2;
+        source.pitch = 2;
+        let mut target = FT_Bitmap_C::default();
+        let mut target_offset = FT_Vector { x: 64, y: 128 };
+        bitmap_blend_prepopulate(backend, &mut target, &mut target_offset)?;
+        // C tests the target rectangle with `width && rows`; keep its
+        // allocation while making only the row dimension empty so the
+        // short-circuit path is exercised by parity.
+        target.rows = 0;
         let err = bitmap_blend_call(
             backend,
             &mut source,

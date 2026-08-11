@@ -334,6 +334,7 @@ document_abi_test_support!(
     abi_get_outline_glyph_from_face,
     abi_outline_glyph_snapshot,
     abi_support_corrupt_outline_glyph_for_render_failure,
+    abi_support_corrupt_outline_glyph_for_stroke_parse,
     abi_support_corrupt_outline_glyph_for_record_sync,
     abi_support_corrupt_outline_glyph_points_for_record_sync,
     abi_bitmap_glyph_snapshot,

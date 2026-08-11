@@ -158,6 +158,38 @@ the tracked fixture, manifest, contract, script, source, and coverage-option
 state. A changed preparation input or either optional-preparation flag reruns
 the preparation, and `make coverage-clean` removes both state markers.
 
+The `FT_Glyph_Stroke` parity inputs include a maintained malformed-outline case.
+It mutates a loaded outline's first tag to cubic, then compares the Rust,
+C-ABI, WASM, and pinned-oracle Invalid_Outline result through the public glyph
+stroke wrapper; this keeps the ParseOutline error path input-driven and visible
+to the all-lane coverage target.
+
+The matching `FT_Glyph_StrokeBorder` parity input uses the same maintained
+malformed outline and exercises the public border-stroke ParseOutline rejection
+through all three runtime backends and the pinned oracle.
+
+The maintained `FT_Outline_Get_BBox` synthetic curve matrix now exercises both
+conic control-box sides, cubic x/y extrema, and small/large cubic peak scaling
+through the Rust, C-ABI, WASM, and pinned-oracle routes. It is an input-driven
+coverage case rather than a unit-test-only probe.
+
+The maintained `FT_Outline_Decompose` closure input covers both C conic-first
+start rules, consecutive conic midpoint emission, conic closure, and a cubic
+pair that closes directly to the computed start through the Rust, C-ABI, WASM,
+and pinned-oracle routes. It is an input-driven coverage case rather than a
+unit-test-only probe.
+
+The maintained `FT_Stroker_ParseOutline` input also includes the four conic and
+eight cubic small-vector threshold combinations used by the pinned stroker
+implementation. This keeps the curve subdivision and angle-classification
+branches input-driven across all runtime routes.
+
+The malformed optional-table face-open matrix now includes CPAL v1 short-header,
+short-count, short-color-record, and short-palette-record inputs. FreeType keeps
+the surrounding SFNT face open while ignoring those optional-table failures;
+the same maintained inputs exercise the Rust parser's short-read exits through
+the Rust, C-ABI, WASM, and pinned-oracle routes.
+
 By default, `COVERAGE_UNIFIED_LANE_SPLIT=1` builds one instrumented
 `unified_fixture_parity` binary, then runs it in three independent shards on
 hosts with at least 12 logical CPUs, or two shards on smaller runners, for each
@@ -342,6 +374,10 @@ The existing `FT_Select_Size` coverage-only probe also opens the maintained
 CBLC/CBDT gray-format-1 input and loads missing glyph 0 with
 `FT_LOAD_SBITS_ONLY`, reaching the Cblc empty-bitmap fallback and checking its
 zero dimensions and empty storage without changing parity outputs.
+The `FTC_Manager` ownership parity input also probes missing and zero node
+references plus face, size, SBit, and reset calls after manager completion;
+these lifecycle edges run through the Rust, C-ABI, and WASM routes and remain
+part of the exact input-driven comparison.
 
 ```bash
 make test-coverage
@@ -674,8 +710,8 @@ or reason is stale.
 |---|---:|---|
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
-| R03 | 1,662 | executable parity tests and public contracts |
-| R04 | 740 | licensed canonical fixture inputs |
+| R03 | 1,663 | executable parity tests and public contracts |
+| R04 | 755 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -683,7 +719,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,624** | **all retained paths** |
+| **Total** | **2,640** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

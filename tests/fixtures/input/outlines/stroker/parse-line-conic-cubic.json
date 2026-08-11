@@ -49,6 +49,146 @@
       "flags": 0
     },
     {
+      "id": "conic_edges_both_small",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 1, "y": 0},
+        {"x": 2, "y": 0}
+      ],
+      "tags": [1, 0, 1],
+      "contours": [2],
+      "flags": 0
+    },
+    {
+      "id": "conic_control_small_only",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 1, "y": 0},
+        {"x": 65, "y": 0}
+      ],
+      "tags": [1, 0, 1],
+      "contours": [2],
+      "flags": 0
+    },
+    {
+      "id": "conic_endpoint_small_only",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 64, "y": 0},
+        {"x": 65, "y": 0}
+      ],
+      "tags": [1, 0, 1],
+      "contours": [2],
+      "flags": 0
+    },
+    {
+      "id": "conic_edges_both_large",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 64, "y": 0},
+        {"x": 128, "y": 0}
+      ],
+      "tags": [1, 0, 1],
+      "contours": [2],
+      "flags": 0
+    },
+    {
+      "id": "cubic_edges_all_small",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 1, "y": 0},
+        {"x": 2, "y": 0},
+        {"x": 3, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
+      "id": "cubic_endpoint_large_only",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 1, "y": 0},
+        {"x": 2, "y": 0},
+        {"x": 66, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
+      "id": "cubic_middle_large_only",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 1, "y": 0},
+        {"x": 65, "y": 0},
+        {"x": 66, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
+      "id": "cubic_middle_and_endpoint_large",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 1, "y": 0},
+        {"x": 65, "y": 0},
+        {"x": 129, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
+      "id": "cubic_head_large_only",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 64, "y": 0},
+        {"x": 65, "y": 0},
+        {"x": 66, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
+      "id": "cubic_head_and_endpoint_large",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 64, "y": 0},
+        {"x": 65, "y": 0},
+        {"x": 129, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
+      "id": "cubic_head_and_middle_large",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 64, "y": 0},
+        {"x": 128, "y": 0},
+        {"x": 129, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
+      "id": "cubic_edges_all_large",
+      "points": [
+        {"x": 0, "y": 0},
+        {"x": 64, "y": 0},
+        {"x": 128, "y": 0},
+        {"x": 192, "y": 0}
+      ],
+      "tags": [1, 2, 2, 1],
+      "contours": [3],
+      "flags": 0
+    },
+    {
       "id": "glyph_outline_from_font",
       "points": [
         {"x": 64, "y": 0},
