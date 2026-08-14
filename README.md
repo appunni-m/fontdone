@@ -106,18 +106,18 @@ The latest full parity snapshot was recorded on **2026-08-14** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 15,794 |
-| Passed cases | 15,794 |
+| Runnable exact-comparison cases | 15,894 |
+| Passed cases | 15,894 |
 | Failed cases | 0 |
 | Explicitly pending cases | 4 |
 | Covered manifest cases | 4,293 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,433 |
-| Concrete expanded cases | 15,798 |
+| Concrete expanded cases | 15,898 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`15,794 / 15,794` means every runnable case in that execution matched; the 4
+`15,894 / 15,894` means every runnable case in that execution matched; the 4
 explicitly pending concrete cases are safety-extension or undefined-input exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
@@ -125,9 +125,9 @@ equivalent to complete behavior for every input, state, or platform.
 
 The latest worktree verification is the full parity snapshot recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-10,233 / 10,233 runnable comparisons with 0 failures and 4 explicitly pending
+15,894 / 15,894 runnable comparisons with 0 failures and 4 explicitly pending
 concrete cases. Its source-bound parity-tree digest is
-`a4e7292a9cee9a12f2373c2e504c4e5d4d130d0b0110adfea2d712abac49feda`.
+`3d465e17ac873b209f9a8c4a6f231e003f80d32cfbe2549327232753d916295c`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -141,31 +141,23 @@ their exact worktree than the committed release snapshot.
 
 The latest all-lane coverage snapshot was recorded on
 **2026-08-14** for the worktree based at commit
-`95dc33f12790c896f9a5c95571eec4360f22412e`
-(native nightly `llvm-cov` fallback; Coverage MCP was unavailable during
-initialization):
+`69719be396e15abcb77cba1ac4e4a19b29e319bc`
+by managed Coverage MCP 0.8.0 (registered command with the local sccache
+wrapper disabled):
 
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 62,361 / 80,509 | 77.46% |
-| Branches | 11,422 / 16,456 | 69.41% |
-| Functions | 3,663 / 5,180 | 70.71% |
-| Regions | 86,392 / 112,372 | 76.88% |
+| Lines | 63,010 / 65,224 | 96.61% |
+| Branches | 11,483 / 13,362 | 85.94% |
+| Functions | 3,665 / 3,953 | 92.71% |
+| Regions | 87,234 / 91,131 | 95.72% |
 
-The local fallback report records the three split backends passing all 15,794
-runnable comparisons. Its nine shard processes split
-the same exact matrix into disjoint slices before report generation. An earlier source-bound validation completed in 67.412 seconds after a
-50.13-second instrumented rebuild for the consolidated `glyf` loader. Its nine
-shard processes each compared 2,525 or 2,526 cases before report generation.
-The earlier warm validation completed in 17.349 seconds with
-`COVERAGE_UNIFIED_WORKERS=1`, `COVERAGE_UNIFIED_LANE_SPLIT=1`, and the
-adaptive three-shard default on this 12-logical-CPU host. Nine shard processes
-ran concurrently—three each for Rust FFI, C ABI, and WASM—and each compared
-2,524 or 2,525 cases before the raw profiles were merged. A repeat completed
-in 16.377 seconds; the two-shard baseline took 19.747 seconds. The coverage
-totals and current parity evidence are based on 8,282 / 8,282 runnable
-comparisons.
+The managed snapshot records the three split backends passing all 15,894
+runnable comparisons. Coverage MCP reports that LLVM JSON segments are
+normalized to segment-start lines while aggregate region totals are preserved.
+Relative to the clean c112 snapshot, this batch adds 649 covered lines, 61
+covered branches, and 842 covered regions.
 
 The maintained Apple full-Unicode format-13 font and malformed format-13
 matrix remain exercised by their existing character-index and parser routes.
