@@ -487,6 +487,34 @@ def build_platform0_variation_font() -> None:
     font.save(out, reorderTables=True)
 
 
+def build_platform3_nonunicode_variation_font() -> None:
+    font = TTFont(BASE_FONT, recalcTimestamp=False)
+    cmap = newTable("cmap")
+    cmap.tableVersion = 0
+    cmap.tables = [
+        # Microsoft symbol encoding is parsed but is not a Unicode charmap;
+        # retaining the format-14 table keeps the face usable for UVS queries.
+        cmap_subtable(
+            4,
+            3,
+            0,
+            0,
+            {
+                0x0041: "base",
+                0x0042: "mark",
+            },
+        ),
+        variation_selector_subtable(),
+    ]
+    font["cmap"] = cmap
+
+    CHARMAP_OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = CHARMAP_OUT_DIR / "cmap-platform3-nonunicode-variation.ttf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    font.save(out, reorderTables=True)
+
+
 def build_non_uvs_format14_platforms_font() -> None:
     font = TTFont(BASE_FONT, recalcTimestamp=False)
     font["cmap"] = raw_cmap_table(
@@ -542,6 +570,7 @@ def main() -> None:
     build_format14_only_font()
     build_codepoint_zero_mapped_font()
     build_platform0_variation_font()
+    build_platform3_nonunicode_variation_font()
     build_non_uvs_format14_platforms_font()
     build_apple_full_unicode_format13_font()
 

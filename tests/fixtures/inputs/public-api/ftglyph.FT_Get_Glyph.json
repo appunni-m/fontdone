@@ -6,6 +6,8 @@
     "success_bitmap_slot_deep_copy",
     "success_svg_slot_deep_copy",
     "error_null_slot_or_output",
+    "mcp_null_face_handle_batch",
+    "mcp_unimplemented_output_clear_batch",
     "error_unsupported_synthetic_format",
     "error_unsupported_format_or_bad_slot_payload",
     "error_advance_out_of_16_16_range"
@@ -83,7 +85,7 @@
               "glyph_index": 74
             },
             "coverage": [
-              "ftglyph.get_glyph:explicit-g74"
+             "ftglyph.get_glyph:explicit-g74"
             ]
           }
         ]
@@ -313,6 +315,60 @@
       }
     },
     {
+      "case_id": "ftglyph.FT_Get_Glyph.mcp_null_face_handle_batch",
+      "subject": "ftglyph.FT_Get_Glyph",
+      "case": "mcp_null_face_handle_batch",
+      "covers_manifest_cases": ["error_null_slot_or_output"],
+      "operation": "ftglyph.get_glyph",
+      "schema": "glyph_get",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c61-null-face-001",
+            "params": {
+              "probes": ["null_slot", "null_aglyph"],
+              "sentinel_output": "non_null",
+              "face_handle_probe": true
+            },
+            "expect_error": true,
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3597"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph",
+        "area:coverage"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the invalid-face return in fontdone_wasm_get_glyph_from_face. A 100-case batch keeps a null face handle and valid output pointer across all parity lanes; one witness is retained after pruning redundant variants."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "rows": "null-slot, null-output, and null-face-handle observations"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "rows"
+          ]
+        },
+        "source_refs": [
+          "fontdone-wasm/src/implementation.rs:3590-3600",
+          "freetype/src/base/ftglyph.c:632-645"
+        ],
+        "error": "FT_Err_Invalid_Slot_Handle"
+      }
+    },
+    {
       "case_id": "ftglyph.FT_Get_Glyph.error_unsupported_synthetic_format",
       "subject": "ftglyph.FT_Get_Glyph",
       "case": "error_unsupported_synthetic_format",
@@ -366,6 +422,56 @@
         "error": {
           "unsupported_format": "FT_Err_Invalid_Glyph_Format"
         }
+      }
+    },
+    {
+      "case_id": "ftglyph.FT_Get_Glyph.mcp_unimplemented_output_clear_batch",
+      "subject": "ftglyph.FT_Get_Glyph",
+      "case": "mcp_unimplemented_output_clear_batch",
+      "covers_manifest_cases": ["error_null_slot_or_output"],
+      "operation": "ftglyph.get_glyph",
+      "schema": "glyph_get",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c62-unimplemented-001",
+            "params": { "slot_present": 1 },
+            "expect_error": true,
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3541"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph",
+        "area:coverage"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the output-clear guard in fontdone_wasm_get_glyph and the shared FT_Get_Glyph unimplemented return. One hundred nonzero slot-presence values exercise the adapter's boolean normalization; redundant variants are pruned only after a post-batch coverage comparison."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "rows": "synthetic slot-presence value, error, and cleared output pointer"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "rows"
+          ]
+        },
+        "source_refs": [
+          "fontdone-wasm/src/implementation.rs:3537-3544",
+          "src/ffi/handles.rs:2050-2060"
+        ],
+        "error": "FT_Err_Unimplemented_Feature"
       }
     },
     {

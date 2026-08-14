@@ -778,6 +778,534 @@
             "params": { "face_index": 0, "memory_source": "whole_file" },
             "coverage": [ "tt/cff:cid-zero-glyph-charset-short-circuit" ]
           },
+                        {
+            "id": "batch9-face-001",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/attach-afm-base.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/attach-afm-base.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/attach-afm-base.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-003",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/bbox-array-type1.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/bbox-array-type1.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/bbox-array-type1.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-005",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/custom-encoding-array.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/custom-encoding-array.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/custom-encoding-array.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-007",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/expert-encoding.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/expert-encoding.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/expert-encoding.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-009",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/fixed-pitch-type1.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/fixed-pitch-type1.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/fixed-pitch-type1.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-011",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/font-value-populated.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/font-value-populated.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/font-value-populated.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-013",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/isolatin1-encoding.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/isolatin1-encoding.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/isolatin1-encoding.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-015",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/no-gx-service.pfa"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/no-gx-service.pfa"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/no-gx-service.pfa"
+            ]
+          },
+          {
+            "id": "batch9-face-017",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/non-mm-force-bold.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/non-mm-force-bold.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/non-mm-force-bold.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-019",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/parser-opcodes.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/parser-opcodes.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/parser-opcodes.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-021",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/simple-type1.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/simple-type1.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/simple-type1.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-023",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/standard-encoding.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/standard-encoding.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/standard-encoding.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-025",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/track-kern-base.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/track-kern-base.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/track-kern-base.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-027",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/metadata-bold-invalid-bool.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/metadata-bold-invalid-bool.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/metadata-bold-invalid-bool.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-029",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/mm-blend-fontinfo-private.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/mm-blend-fontinfo-private.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1/mm-blend-fontinfo-private.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-031",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-mm/adobe-mm-two-axis.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-mm/adobe-mm-two-axis.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1-mm/adobe-mm-two-axis.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-033",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-mm/underline-position.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-mm/underline-position.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1-mm/underline-position.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-035",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-mm/underline-thickness.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-mm/underline-thickness.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1-mm/underline-thickness.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-037",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-encoding/expert.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-encoding/expert.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1-encoding/expert.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-039",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-encoding/custom-array.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-encoding/custom-array.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1-encoding/custom-array.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-041",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-encoding/no-recognized-encoding.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-encoding/no-recognized-encoding.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1-encoding/no-recognized-encoding.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-043",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-encoding/isolatin1.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-encoding/isolatin1.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1-encoding/isolatin1.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-045",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-encoding/standard.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1-encoding/standard.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/type1-encoding/standard.pfb"
+            ]
+          },
+          {
+            "id": "batch9-face-047",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/mm/adobe-multiple-master.pfb"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/mm/adobe-multiple-master.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "memory_source": "whole_file"
+            },
+            "coverage": [
+              "batch9:type1-face:input/fonts/mm/adobe-multiple-master.pfb"
+            ]
+          },
           {
             "id": "long-min-normalizes-face-zero",
             "assets": {
@@ -799,8 +1327,48 @@
             "coverage": [
               "ffi:face-index-long-min-low-31-bit-normalization"
             ]
-          }
-        ]
+          },
+          {"id":"b14-face-001","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"},"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/DejaVuSans.ttf"]},
+          {"id":"b14-face-002","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/LiberationSerif-Regular.ttf"},"font":{"kind":"ref","role":"font","id":"input/fonts/LiberationSerif-Regular.ttf"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/LiberationSerif-Regular.ttf"]},
+          {"id":"b14-face-003","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/NotoSans-Regular.ttf"},"font":{"kind":"ref","role":"font","id":"input/fonts/NotoSans-Regular.ttf"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/NotoSans-Regular.ttf"]},
+          {"id":"b14-face-004","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/cff/pure-cff-cubic.otf"},"font":{"kind":"ref","role":"font","id":"input/fonts/cff/pure-cff-cubic.otf"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/cff/pure-cff-cubic.otf"]},
+          {"id":"b14-face-005","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/cff/pure-cff-cubic-vmtx.otf"},"font":{"kind":"ref","role":"font","id":"input/fonts/cff/pure-cff-cubic-vmtx.otf"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/cff/pure-cff-cubic-vmtx.otf"]},
+          {"id":"b14-face-006","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/cff/fontinfo-populated.otf"},"font":{"kind":"ref","role":"font","id":"input/fonts/cff/fontinfo-populated.otf"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/cff/fontinfo-populated.otf"]},
+          {"id":"b14-face-007","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/cid/fontinfo-populated.cid"},"font":{"kind":"ref","role":"font","id":"input/fonts/cid/fontinfo-populated.cid"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/cid/fontinfo-populated.cid"]},
+          {"id":"b14-face-008","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/cid/ot-cff-cid-keyed-format0.otf"},"font":{"kind":"ref","role":"font","id":"input/fonts/cid/ot-cff-cid-keyed-format0.otf"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/cid/ot-cff-cid-keyed-format0.otf"]},
+          {"id":"b14-face-009","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/cid/ot-cff-cid-keyed-format1.otf"},"font":{"kind":"ref","role":"font","id":"input/fonts/cid/ot-cff-cid-keyed-format1.otf"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/cid/ot-cff-cid-keyed-format1.otf"]},
+          {"id":"b14-face-010","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/cid/ot-cff-cid-keyed-format2.otf"},"font":{"kind":"ref","role":"font","id":"input/fonts/cid/ot-cff-cid-keyed-format2.otf"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/cid/ot-cff-cid-keyed-format2.otf"]},
+          {"id":"b14-face-011","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type42/fontinfo-and-glyph-names.t42"},"font":{"kind":"ref","role":"font","id":"input/fonts/type42/fontinfo-and-glyph-names.t42"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/type42/fontinfo-and-glyph-names.t42"]},
+          {"id":"b14-face-012","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/pfr/basic-metrics-and-kerning.pfr"},"font":{"kind":"ref","role":"font","id":"input/fonts/pfr/basic-metrics-and-kerning.pfr"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/pfr/basic-metrics-and-kerning.pfr"]},
+          {"id":"b14-face-013","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/custom-encoding-array.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/custom-encoding-array.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/type1/custom-encoding-array.pfb"]},
+          {"id":"b14-face-014","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/pfr/fixed-advance.pfr"},"font":{"kind":"ref","role":"font","id":"input/fonts/pfr/fixed-advance.pfr"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/pfr/fixed-advance.pfr"]},
+          {"id":"b14-face-015","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/cid/ot-cff-cid-keyed-single-glyph.otf"},"font":{"kind":"ref","role":"font","id":"input/fonts/cid/ot-cff-cid-keyed-single-glyph.otf"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["batch14:memory-face:input/fonts/cid/ot-cff-cid-keyed-single-glyph.otf"]},
+          {"id":"b27-face-001","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-edge-fields.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-edge-fields.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:private-edge-fields"]},
+          {"id":"b27-face-002","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-negative-leniv.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-negative-leniv.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:negative-leniv"]},
+          {"id":"b27-face-004","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-opcodes.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-opcodes.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:parser-opcodes"]},
+          {"id":"b27-face-005","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-vmoveto.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-vmoveto.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:parser-vmoveto"]},
+          {"id":"b27-face-006","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-hmoveto.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-hmoveto.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:parser-hmoveto"]},
+          {"id":"b27-face-007","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-number-boundaries.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-number-boundaries.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:parser-number-boundaries"]},
+          {"id":"b27-face-008","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-vhcurveto.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-vhcurveto.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:parser-vhcurveto"]},
+          {"id":"b27-face-009","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-hvcurveto.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-hvcurveto.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:parser-hvcurveto"]},
+          {"id":"b27-face-010","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-callothersubr.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-callothersubr.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:parser-callothersubr"]},
+          {"id":"b27-face-011","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-setcurrentpoint.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-setcurrentpoint.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:parser-setcurrentpoint"]},
+          {"id":"b27-face-012","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-sbw.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/parser-sbw.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:parser-sbw"]},
+          {"id":"b27-face-013","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/simple-type1.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/simple-type1.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:simple-type1"]},
+          {"id":"b27-face-014","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/custom-encoding-array.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/custom-encoding-array.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:custom-encoding-array"]},
+          {"id":"b27-face-015","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/standard-encoding.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/standard-encoding.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:standard-encoding"]},
+          {"id":"b27-face-016","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/isolatin1-encoding.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/isolatin1-encoding.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:isolatin1-encoding"]},
+          {"id":"b27-face-017","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/expert-encoding.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/expert-encoding.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:expert-encoding"]},
+          {"id":"b27-face-018","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/fixed-pitch-type1.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/fixed-pitch-type1.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:fixed-pitch"]},
+          {"id":"b27-face-019","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/bbox-array-type1.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/bbox-array-type1.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:bbox-array"]},
+          {"id":"b27-face-020","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/metadata-bold-invalid-bool.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/metadata-bold-invalid-bool.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:metadata-invalid-bool"]},
+          {"id":"b27-face-021","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/font-value-populated.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/font-value-populated.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:font-value-populated"]},
+          {"id":"b27-face-022","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/mm-blend-fontinfo-private.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/mm-blend-fontinfo-private.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:mm-blend-private"]},
+          {"id":"b27-face-023","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/non-mm-force-bold.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/non-mm-force-bold.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:non-mm-force-bold"]},
+          {"id":"b27-face-024","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/track-kern-base.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/track-kern-base.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:track-kern-base"]},
+          {"id":"b27-face-025","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/attach-afm-base.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/attach-afm-base.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:attach-afm-base"]},
+          {"id":"b27-face-027","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-no-charstrings-begin.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-no-charstrings-begin.pfb"}},"params":{"face_index":0,"memory_source":"whole_file"},"coverage":["b27:type1:no-charstrings-begin-open"]}
+     ]
       },
       "classifiers": [
         "kind:function",
@@ -3629,7 +4197,38 @@
             },
             "params": { "variants": [ { "face_index": 0 } ] },
             "coverage": [ "tt/cff2:global-index-object-overflow-error" ]
-          }
+          },
+          {"id":"bdf-batch-01","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_malformed_field.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_malformed_field.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:1"]},
+          {"id":"bdf-batch-02","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_outside_glyph.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_outside_glyph.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:2"]},
+          {"id":"bdf-batch-03","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bitmap_outside_glyph.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bitmap_outside_glyph.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:3"]},
+          {"id":"bdf-batch-04","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/endchar_outside_glyph.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/endchar_outside_glyph.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:4"]},
+          {"id":"bdf-batch-05","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/endchar_missing_encoding.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/endchar_missing_encoding.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:5"]},
+          {"id":"bdf-batch-06","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/endchar_missing_bbx.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/endchar_missing_bbx.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:6"]},
+          {"id":"bdf-batch-07","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_zero_dimensions_missing_encoding.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_zero_dimensions_missing_encoding.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:7"]},
+          {"id":"bdf-batch-08","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_small_missing_encoding.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_small_missing_encoding.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:8"]},
+          {"id":"bdf-batch-09","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/missing_encoding_field.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/missing_encoding_field.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:9"]},
+          {"id":"bdf-batch-10","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/missing_bbx_field.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/missing_bbx_field.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:10"]},
+          {"id":"bdf-batch-11","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/nested_startchar_before_endchar.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/nested_startchar_before_endchar.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:11"]},
+          {"id":"bdf-batch-12","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/endfont_before_endchar.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/endfont_before_endchar.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:12"]},
+          {"id":"bdf-batch-13","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/missing_startchar_field.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/missing_startchar_field.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:13"]},
+          {"id":"bdf-batch-14","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/missing_font_field.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/missing_font_field.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:14"]},
+          {"id":"bdf-batch-15","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/missing_size_field.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/missing_size_field.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:15"]},
+          {"id":"bdf-batch-16","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/missing_fontboundingbox_field.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/missing_fontboundingbox_field.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:16"]},
+          {"id":"bdf-batch-17","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/missing_startfont_field.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/missing_startfont_field.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:17"]},
+          {"id":"bdf-batch-18","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_malformed_field.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_malformed_field.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:18"]},
+          {"id":"bdf-batch-19","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/endchar_missing_encoding.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/endchar_missing_encoding.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:19"]},
+          {"id":"bdf-batch-20","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bitmap_outside_glyph.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bitmap_outside_glyph.bdf"}},"params":{"face_index":0},"coverage":["batch2:bdf:20"]},
+          {"id":"b17-bdf-001","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_too_wide.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_too_wide.bdf"}},"params":{"face_index":0},"coverage":["batch17:bdf:bbx_too_wide.bdf"]},
+          {"id":"b17-bdf-002","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_too_tall.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_too_tall.bdf"}},"params":{"face_index":0},"coverage":["batch17:bdf:bbx_too_tall.bdf"]},
+          {"id":"b17-bdf-004","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_bad_height.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bbx_bad_height.bdf"}},"params":{"face_index":0},"coverage":["batch17:bdf:bbx_bad_height.bdf"]},
+          {"id":"b17-bdf-005","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bitmap_missing_encoding.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/bitmap_missing_encoding.bdf"}},"params":{"face_index":0},"coverage":["batch17:bdf:bitmap_missing_encoding.bdf"]},
+          {"id":"b17-bdf-006","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/startchar_before_chars.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/startchar_before_chars.bdf"}},"params":{"face_index":0},"coverage":["batch17:bdf:startchar_before_chars.bdf"]},
+          {"id":"b17-bdf-007","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/encoding_outside_glyph.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/encoding_outside_glyph.bdf"}},"params":{"face_index":0},"coverage":["batch17:bdf:encoding_outside_glyph.bdf"]},
+          {"id":"b17-bdf-008","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/header_eof.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/header_eof.bdf"}},"params":{"face_index":0},"coverage":["batch17:bdf:header_eof.bdf"]},
+          {"id":"b17-bdf-009","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/glyph_eof.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/glyph_eof.bdf"}},"params":{"face_index":0},"coverage":["batch17:bdf:glyph_eof.bdf"]},
+          {"id":"b17-bdf-010","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/chars_before_font.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/chars_before_font.bdf"}},"params":{"face_index":0},"coverage":["batch17:bdf:chars_before_font.bdf"]},
+          {"id":"b17-bdf-011","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/chars_before_size.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/chars_before_size.bdf"}},"params":{"face_index":0},"coverage":["batch17:bdf:chars_before_size.bdf"]},
+          {"id":"b17-bdf-012","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/chars_before_fontboundingbox.bdf"},"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/bdf/chars_before_fontboundingbox.bdf"}},"params":{"face_index":0},"coverage":["batch17:bdf:chars_before_fontboundingbox.bdf"]}
         ]
       },
       "classifiers": [
@@ -3664,6 +4263,479 @@
           "Generated OpenType CFF fixtures with valid SFNT tables and deliberately malformed CFF table bytes."
         ]
       }
+    },
+    {
+      "case_id": "freetype.FT_New_Memory_Face.error_pcf_table_count_too_large",
+      "subject": "freetype.FT_New_Memory_Face",
+      "case": "error_bad_size_or_unknown_format",
+      "operation": "new_memory_face",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {"id":"b18-pcf-001","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663700a000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663700a000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-10"]},
+          {"id":"b18-pcf-002","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663700b000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663700b000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-11"]},
+          {"id":"b18-pcf-003","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663700c000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663700c000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-12"]},
+          {"id":"b18-pcf-004","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663700d000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663700d000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-13"]},
+          {"id":"b18-pcf-005","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663700e000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663700e000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-14"]},
+          {"id":"b18-pcf-006","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663700f000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663700f000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-15"]},
+          {"id":"b18-pcf-007","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"0166637010000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"0166637010000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-16"]},
+          {"id":"b18-pcf-008","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"0166637011000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"0166637011000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-17"]},
+          {"id":"b18-pcf-009","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"0166637012000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"0166637012000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-18"]},
+          {"id":"b18-pcf-010","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"0166637013000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"0166637013000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-19"]},
+          {"id":"b18-pcf-011","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"0166637014000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"0166637014000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-20"]},
+          {"id":"b18-pcf-012","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"0166637015000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"0166637015000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-21"]},
+          {"id":"b18-pcf-013","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"0166637016000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"0166637016000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-22"]},
+          {"id":"b18-pcf-014","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"0166637017000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"0166637017000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-23"]},
+          {"id":"b18-pcf-015","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"0166637018000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"0166637018000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-24"]},
+          {"id":"b18-pcf-016","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"0166637019000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"0166637019000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-25"]},
+          {"id":"b18-pcf-017","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663701a000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663701a000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-26"]},
+          {"id":"b18-pcf-018","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663701b000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663701b000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-27"]},
+          {"id":"b18-pcf-019","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663701c000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663701c000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-28"]},
+          {"id":"b18-pcf-020","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663701d000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663701d000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch18:pcf:table-count-29"]},
+          {"id":"b19-pcf-001","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663700a0000000000000000000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663700a0000000000000000000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:pcf:table-count-format-10"]},
+          {"id":"b19-type42-001","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920312e300a2f466f6e744e616d65202f42313954797065343231206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c303e5d206465660a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920312e300a2f466f6e744e616d65202f42313954797065343231206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c303e5d206465660a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:type42:malformed-sfnts-1"]},
+          {"id":"b19-type42-002","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920322e300a2f466f6e744e616d65202f42313954797065343232206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c30303e5d206465660a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920322e300a2f466f6e744e616d65202f42313954797065343232206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c30303e5d206465660a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:type42:malformed-sfnts-2"]},
+          {"id":"b19-type42-003","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920332e300a2f466f6e744e616d65202f42313954797065343233206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c303030313e5d206465660a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920332e300a2f466f6e744e616d65202f42313954797065343233206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c303030313e5d206465660a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:type42:malformed-sfnts-3"]},
+          {"id":"b19-type42-004","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920342e300a2f466f6e744e616d65202f42313954797065343234206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c41423e5d206465660a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920342e300a2f466f6e744e616d65202f42313954797065343234206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c41423e5d206465660a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:type42:malformed-sfnts-4"]},
+          {"id":"b19-type42-005","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920352e300a2f466f6e744e616d65202f42313954797065343235206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c61423e5d206465660a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920352e300a2f466f6e744e616d65202f42313954797065343235206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c61423e5d206465660a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:type42:malformed-sfnts-5"]},
+          {"id":"b19-type42-006","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920362e300a2f466f6e744e616d65202f42313954797065343236206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c3132333e5d206465660a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920362e300a2f466f6e744e616d65202f42313954797065343236206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c3132333e5d206465660a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:type42:malformed-sfnts-6"]},
+          {"id":"b19-type42-007","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920372e300a2f466f6e744e616d65202f42313954797065343237206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c3020313e5d206465660a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920372e300a2f466f6e744e616d65202f42313954797065343237206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c3020313e5d206465660a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:type42:malformed-sfnts-7"]},
+          {"id":"b19-type42-008","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920382e300a2f466f6e744e616d65202f42313954797065343238206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c30303e203c30313e5d206465660a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920382e300a2f466f6e744e616d65202f42313954797065343238206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c30303e203c30313e5d206465660a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:type42:malformed-sfnts-8"]},
+          {"id":"b19-type42-009","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920392e300a2f466f6e744e616d65202f42313954797065343239206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c3030303130323e5d206465660a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a2042313920392e300a2f466f6e744e616d65202f42313954797065343239206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c3030303130323e5d206465660a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:type42:malformed-sfnts-9"]},
+          {"id":"b19-type42-010","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a204231392031302e300a2f466f6e744e616d65202f4231395479706534323130206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c64656164626565663e5d206465660a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d5472756554797065466f6e742d312e303a204231392031302e300a2f466f6e744e616d65202f4231395479706534323130206465660a2f466f6e7454797065203432206465660a2f466f6e7442426f78205b302030203120315d206465660a2f73666e7473205b3c64656164626565663e5d206465660a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:type42:malformed-sfnts-10"]},
+          {"id":"b19-cid-001","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a5374617274446174610a3c30303e0a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a5374617274446174610a3c30303e0a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:cid-type1:metadata-error-1"]},
+          {"id":"b19-cid-002","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f42313943494432206465660a5374617274446174610a3c30303e0a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f42313943494432206465660a5374617274446174610a3c30303e0a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:cid-type1:metadata-error-2"]},
+          {"id":"b19-cid-003","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e7442426f78205b302030203120315d206465660a5374617274446174610a3c30303e0a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e7442426f78205b302030203120315d206465660a5374617274446174610a3c30303e0a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:cid-type1:metadata-error-3"]},
+          {"id":"b19-cid-004","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f42313943494434206465660a2f466f6e7442426f78205b302030203120315d206465660a5374617274446174610a3c30303e0a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f42313943494434206465660a2f466f6e7442426f78205b302030203120315d206465660a5374617274446174610a3c30303e0a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:cid-type1:metadata-error-4"]},
+          {"id":"b19-cid-005","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f42313943494435206465660a2f466f6e7442426f78205b302030203120315d206465660a2f5265676973747279202841646f626529206465660a5374617274446174610a3c30303e0a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f42313943494435206465660a2f466f6e7442426f78205b302030203120315d206465660a2f5265676973747279202841646f626529206465660a5374617274446174610a3c30303e0a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:cid-type1:metadata-error-5"]},
+          {"id":"b19-cid-006","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f42313943494436206465660a2f466f6e7442426f78205b302030203120315d206465660a2f5265676973747279202841646f626529206465660a2f4f72646572696e6720284964656e7469747929206465660a5374617274446174610a3c30303e0a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f42313943494436206465660a2f466f6e7442426f78205b302030203120315d206465660a2f5265676973747279202841646f626529206465660a2f4f72646572696e6720284964656e7469747929206465660a5374617274446174610a3c30303e0a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:cid-type1:metadata-error-6"]},
+          {"id":"b19-cid-007","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f42313943494437206465660a2f466f6e7442426f78205b302030203120315d206465660a2f5265676973747279202841646f626529206465660a2f4f72646572696e6720284964656e7469747929206465660a2f537570706c656d656e742030206465660a5374617274446174610a3c30303e0a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f42313943494437206465660a2f466f6e7442426f78205b302030203120315d206465660a2f5265676973747279202841646f626529206465660a2f4f72646572696e6720284964656e7469747929206465660a2f537570706c656d656e742030206465660a5374617274446174610a3c30303e0a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:cid-type1:metadata-error-7"]},
+          {"id":"b19-cid-008","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f42313943494438206465660a2f466f6e7442426f78205b302030203120315d206465660a2f5265676973747279202841646f626529206465660a2f4f72646572696e6720284964656e7469747929206465660a2f537570706c656d656e742030206465660a2f434944436f756e742030206465660a5374617274446174610a3c30303e0a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f42313943494438206465660a2f466f6e7442426f78205b302030203120315d206465660a2f5265676973747279202841646f626529206465660a2f4f72646572696e6720284964656e7469747929206465660a2f537570706c656d656e742030206465660a2f434944436f756e742030206465660a5374617274446174610a3c30303e0a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:cid-type1:metadata-error-8"]},
+          {"id":"b19-cid-009","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f42313943494439206465660a2f466f6e7442426f78205b302030203120315d206465660a2f5265676973747279202841646f626529206465660a2f4f72646572696e6720284964656e7469747929206465660a2f537570706c656d656e742030206465660a2f434944436f756e742031206465660a5374617274446174610a3c30303e0a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f42313943494439206465660a2f466f6e7442426f78205b302030203120315d206465660a2f5265676973747279202841646f626529206465660a2f4f72646572696e6720284964656e7469747929206465660a2f537570706c656d656e742030206465660a2f434944436f756e742031206465660a5374617274446174610a3c30303e0a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:cid-type1:metadata-error-9"]},
+          {"id":"b19-cid-010","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f4231394349443130206465660a2f466f6e7442426f78205b302030203120315d206465660a2f5265676973747279202841646f626529206465660a2f4f72646572696e6720284964656e7469747929206465660a2f537570706c656d656e742030206465660a2f434944436f756e742031206465660a2f464442797465732031206465660a5374617274446174610a3c30303e0a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f4231394349443130206465660a2f466f6e7442426f78205b302030203120315d206465660a2f5265676973747279202841646f626529206465660a2f4f72646572696e6720284964656e7469747929206465660a2f537570706c656d656e742030206465660a2f434944436f756e742031206465660a2f464442797465732031206465660a5374617274446174610a3c30303e0a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:cid-type1:metadata-error-10"]},
+{"id":"b19-cid-020","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f4231394349443230206465660a2f466f6e7442426f78205b302030203120315d206465660a2f5265676973747279202841646f626529206465660a2f4f72646572696e6720284964656e7469747929206465660a2f537570706c656d656e742030206465660a2f434944436f756e742031206465660a2f464442797465732031206465660a2f474442797465732031206465660a5374617274446174610a3c30303e0a"},"font":{"kind":"inline_bytes","encoding":"hex","data":"252150532d41646f62652d332e30205265736f757263652d434944466f6e740a2f466f6e744e616d65202f4231394349443230206465660a2f466f6e7442426f78205b302030203120315d206465660a2f5265676973747279202841646f626529206465660a2f4f72646572696e6720284964656e7469747929206465660a2f537570706c656d656e742030206465660a2f434944436f756e742031206465660a2f464442797465732031206465660a2f474442797465732031206465660a5374617274446174610a3c30303e0a"}},"params":{"variants":[{"face_index":0}]},"coverage":["batch19:cid-type1:metadata-error-20"]},
+          {"id":"c121-pcf-invalid-001","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"0166637005000000010000000000000002000000580000000200000000000000000000005a0000000400000000000000000000005a0000000800000000000000000000005a0000002000000000000000000000005a0000000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"0166637005000000010000000000000002000000580000000200000000000000000000005a0000000400000000000000000000005a0000000800000000000000000000005a0000002000000000000000000000005a0000000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["c121:pcf-invalid:props-format-short"]},
+          {"id":"c121-pcf-invalid-002","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"0166637005000000010000000000000004000000580000000200000000000000000000005c0000000400000000000000000000005c0000000800000000000000000000005c0000002000000000000000000000005c00000000000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"0166637005000000010000000000000004000000580000000200000000000000000000005c0000000400000000000000000000005c0000000800000000000000000000005c0000002000000000000000000000005c00000000000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["c121:pcf-invalid:props-count-short"]},
+          {"id":"c121-pcf-invalid-003","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663700500000001000000000000000800000058000000020000000000000000000000600000000400000000000000000000006000000008000000000000000000000060000000200000000000000000000000600000000000000001000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663700500000001000000000000000800000058000000020000000000000000000000600000000400000000000000000000006000000008000000000000000000000060000000200000000000000000000000600000000000000001000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["c121:pcf-invalid:props-record-short"]},
+          {"id":"c121-pcf-invalid-004","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663700500000001000000000000000c0000005800000002000000000000000000000064000000040000000000000000000000640000000800000000000000000000006400000020000000000000000000000064000000000000000000000000010000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663700500000001000000000000000c0000005800000002000000000000000000000064000000040000000000000000000000640000000800000000000000000000006400000020000000000000000000000064000000000000000000000000010000"}},"params":{"variants":[{"face_index":0}]},"coverage":["c121:pcf-invalid:props-string-range"]},
+          {"id":"c121-pcf-invalid-006","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663700500000001000000000000002000000058000000020000000000000000000000780000000400000000000000000000007800000008000000000000000000000078000000200000000000000000000000780000000000000001000000ffffffff0000000000000000020000004100000000000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663700500000001000000000000002000000058000000020000000000000000000000780000000400000000000000000000007800000008000000000000000000000078000000200000000000000000000000780000000000000001000000ffffffff0000000000000000020000004100000000000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["c121:pcf-invalid:props-name-negative"]},
+          {"id":"c121-pcf-invalid-007","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663700500000001000000000000002000000058000000020000000000000000000000780000000400000000000000000000007800000008000000000000000000000078000000200000000000000000000000780000000000000001000000040000000000000000000000020000004100000000000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663700500000001000000000000002000000058000000020000000000000000000000780000000400000000000000000000007800000008000000000000000000000078000000200000000000000000000000780000000000000001000000040000000000000000000000020000004100000000000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["c121:pcf-invalid:props-name-oob"]},
+          {"id":"c121-pcf-invalid-008","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"0166637005000000010000000000000020000000580000000200000000000000000000007800000004000000000000000000000078000000080000000000000000000000780000002000000000000000000000007800000000000000010000000000000001ffffffff000000020000004100000000000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"0166637005000000010000000000000020000000580000000200000000000000000000007800000004000000000000000000000078000000080000000000000000000000780000002000000000000000000000007800000000000000010000000000000001ffffffff000000020000004100000000000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["c121:pcf-invalid:props-atom-negative"]},
+          {"id":"c121-pcf-invalid-009","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663700500000001000000000000002000000058000000020000000000000000000000780000000400000000000000000000007800000008000000000000000000000078000000200000000000000000000000780000000000000001000000000000000104000000000000020000004100000000000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663700500000001000000000000002000000058000000020000000000000000000000780000000400000000000000000000007800000008000000000000000000000078000000200000000000000000000000780000000000000001000000000000000104000000000000020000004100000000000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["c121:pcf-invalid:props-atom-oob"]},
+          {"id":"c121-pcf-invalid-010","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"016663700500000001000000000000002000000058000000020000000000000000000000780000000400000000000000000000007800000008000000000000000000000078000000200000000000000000000000780000000000000001000000000000000000000000000000020000004142000000000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"016663700500000001000000000000002000000058000000020000000000000000000000780000000400000000000000000000007800000008000000000000000000000078000000200000000000000000000000780000000000000001000000000000000000000000000000020000004142000000000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["c121:pcf-invalid:props-name-no-nul"]},
+          {"id":"c121-pcf-invalid-015","assets":{"font_bytes":{"kind":"inline_bytes","encoding":"hex","data":"0166637005000000010000000000000020000000580000000200000000000000080000007800000004000000000000000000000080000000080000000000000000000000800000002000000000000000000000008000000000000000010000000000000000000000000000000200000041000000000000000000000000000000"},"font":{"kind":"inline_bytes","encoding":"hex","data":"0166637005000000010000000000000020000000580000000200000000000000080000007800000004000000000000000000000080000000080000000000000000000000800000002000000000000000000000008000000000000000010000000000000000000000000000000200000041000000000000000000000000000000"}},"params":{"variants":[{"face_index":0}]},"coverage":["c121:pcf-invalid:metrics-zero-count"]},
+          {"id":"b27-face-error-06","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/invalid-first-segment-type1.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/invalid-first-segment-type1.pfb"}},"params":{"variants":[{"face_index":0}]},"coverage":["b27:type1:error:invalid-first-segment"]},
+          {"id":"b27-face-003","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-invalid-encoding.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-invalid-encoding.pfb"}},"params":{"variants":[{"face_index":0}]},"coverage":["b27:type1:error:invalid-encoding"]},
+          {"id":"b27-face-error-01","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-no-charstrings.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-no-charstrings.pfb"}},"params":{"variants":[{"face_index":0}]},"coverage":["b27:type1:error:no-charstrings"]},
+          {"id":"b27-face-error-03","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-invalid-length.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-invalid-length.pfb"}},"params":{"variants":[{"face_index":0}]},"coverage":["b27:type1:error:invalid-charstring-length"]},
+          {"id":"b27-face-error-04","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-truncated-charstring.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-truncated-charstring.pfb"}},"params":{"variants":[{"face_index":0}]},"coverage":["b27:type1:error:truncated-charstring"]},
+          {"id":"b27-face-error-05","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-missing-eexec-fields.pfb"},"font":{"kind":"ref","role":"font","id":"input/fonts/type1/private-parser-missing-eexec-fields.pfb"}},"params":{"variants":[{"face_index":0}]},"coverage":["b27:type1:error:missing-eexec-fields"]}
+    ]
+      },
+      "classifiers": ["kind:function","header:freetype","area:pcf"],
+      "expectation": {
+        "status": "error",
+        "output_shape": {"return": "FT_Error", "face": "not_created"},
+        "compare": {"mode": "exact_error", "compare_error_output": true, "paths": ["outputs[*].status","outputs[*].error","outputs[*].face_nullness"]},
+        "error": "c_oracle",
+       "source_refs": ["freetype/src/pcf/pcfread.c:pcf_load_font", "freetype/src/pcf/pcfread.c:pcf_read_TOC"]
+     }
+    },
+    {
+      "case_id": "freetype.FT_New_Memory_Face.c130_cid_type1_missing_startdata",
+      "subject": "freetype.FT_New_Memory_Face",
+      "case": "error_bad_size_or_unknown_format",
+      "operation": "new_memory_face",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c130-cid-startdata-001",
+            "assets": {
+              "font_bytes": {
+                "kind": "inline_bytes",
+                "encoding": "hex",
+                "data": "252150532d41646f62652d332e30205265736f757263652d434944466f6e740a252063313330206d697373696e672d7374617274646174612070726f6265203030310a"
+              },
+              "font": {
+                "kind": "inline_bytes",
+                "encoding": "hex",
+                "data": "252150532d41646f62652d332e30205265736f757263652d434944466f6e740a252063313330206d697373696e672d7374617274646174612070726f6265203030310a"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "c130:font:cid-type1:missing-startdata:001"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:type1",
+        "area:cid",
+        "coverage:batch130-cid-startdata"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "face": "not_created"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "outputs[*].status",
+            "outputs[*].error",
+            "outputs[*].face_nullness"
+          ]
+        },
+        "error": "c_oracle",
+        "source_refs": [
+          "freetype/src/type1/t1load.c",
+          "src/font.rs:parse_cid_type1_metadata"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_New_Memory_Face.c131_type1_encoding_name_guard",
+      "subject": "freetype.FT_New_Memory_Face",
+      "case": "error_bad_size_or_unknown_format",
+      "operation": "new_memory_face",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c131-type1-encoding-name-001",
+            "assets": {
+              "font_bytes": {
+                "kind": "inline_bytes",
+                "encoding": "hex",
+                "data": "8001170300002521466f6e7454797065312d312e313a2050726976617465506172736572496e76616c6964456e636f64696e670a257431466f6e743a2028666f6e74646f6e652066697874757265290a2525426567696e5265736f757263653a20666f6e742050726976617465506172736572496e76616c6964456e636f64696e670a313220646963742064757020626567696e0a2f466f6e744e616d65202f50726976617465506172736572496e76616c6964456e636f64696e67206465660a2f466f6e74496e666f20313220646963742064757020626567696e0a2f76657273696f6e20283030312e30303029206465660a2f4e6f74696365202847656e65726174656420666f7220666f6e74646f6e652054797065203120656e636f64696e67207061727365722070617269747929206465660a2f46756c6c4e616d652028507269766174652050617273657220496e76616c696420456e636f64696e6729206465660a2f46616d696c794e616d652028507269766174652050617273657220496e76616c696420456e636f64696e6729206465660a2f5765696768742028526567756c617229206465660a2f4974616c6963416e676c652030206465660a2f6973466978656450697463682066616c7365206465660a2f556e6465726c696e65506f736974696f6e202d313030206465660a2f556e6465726c696e65546869636b6e657373203530206465660a656e64206465660a2f456e636f64696e67203235362061727261790a30203120323535207b3120696e6465782065786368202f2e6e6f74646566207075747d20666f720a647570203635204261644e616d65207075740a647570203637202f43207075740a647570203635204261644e616d65207075740a647570203636202f42207075740a726561646f6e6c79206465660a2f5061696e74547970652030206465660a2f466f6e74547970652031206465660a2f466f6e744d6174726978205b302e3030312030203020302e303031203020305d206465660a2f466f6e7442426f78207b30203020353030203730307d206465660a656e640a63757272656e7466696c652065657865632080020e020000bab431ea06bb0a1031e1aa11919e714ac69fc6474167b617c8ff56014245e5c1290c81d55ef3cfaedd994ceb9249fa3315aad124650c94eb3535ae6b913d9efd23ca2219bd9d678b1205f5ea06778cb5a14586f4764a8b0720e7a3b7428b4978018e85c14ff8726f1a7389fc7d22af62c5d158bba96611f29acea543f648f8e4d231492d045e2c01fc225c94fa1ca45911545040e548852e5f6b57f26a6d67381981081a2b44d4b4cb38415fd14ada7cf166d5853e3787a6cefa8b52e7e143dcbefa9c6b7b072f67f605ef324effad5a391e4a8fa0aae3b9cdba1fa20387709db8c76e33f2672952acb231f43a749c441fa778d5a3535f635fc700e80e4601e4ab4a4b7a89c0136a267a538a8dbcf9ff24b303a90352caddb46e09f23826238b3d21514e85b3289f1d518cf24710e6dbc9edd1426126921c7719b3969c9ea27a68ecd2ee8fcd635f01f292709b2b2266b70928b0e9933eef1cf29bc0e1519014ed5810436e2b2691ff6b29511023e6dc9c9ef67363c8833e1cb843ae6895011969d2ab103475d6c397ef4ab54ce811d7f290bfaec281f8e94f7689b84263a29b91db0c999ccdaa8ed978438ed08a5bab0830d8d6103dba31cd9946bd02a60a3966a71123b1b43d4af8ed610827aecedcff93f87ad1c6727a694283ffb67449603129b4cce5e67bbd78a2e42049147c05b3f0661b23672f8d43e74ad3be4beef689b19a3fe77bd8220900a83dbb2d800127020000303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a636c656172746f6d61726b0a2525456e645265736f757263650a2525454f468003"
+              },
+              "font": {
+                "kind": "inline_bytes",
+                "encoding": "hex",
+                "data": "8001170300002521466f6e7454797065312d312e313a2050726976617465506172736572496e76616c6964456e636f64696e670a257431466f6e743a2028666f6e74646f6e652066697874757265290a2525426567696e5265736f757263653a20666f6e742050726976617465506172736572496e76616c6964456e636f64696e670a313220646963742064757020626567696e0a2f466f6e744e616d65202f50726976617465506172736572496e76616c6964456e636f64696e67206465660a2f466f6e74496e666f20313220646963742064757020626567696e0a2f76657273696f6e20283030312e30303029206465660a2f4e6f74696365202847656e65726174656420666f7220666f6e74646f6e652054797065203120656e636f64696e67207061727365722070617269747929206465660a2f46756c6c4e616d652028507269766174652050617273657220496e76616c696420456e636f64696e6729206465660a2f46616d696c794e616d652028507269766174652050617273657220496e76616c696420456e636f64696e6729206465660a2f5765696768742028526567756c617229206465660a2f4974616c6963416e676c652030206465660a2f6973466978656450697463682066616c7365206465660a2f556e6465726c696e65506f736974696f6e202d313030206465660a2f556e6465726c696e65546869636b6e657373203530206465660a656e64206465660a2f456e636f64696e67203235362061727261790a30203120323535207b3120696e6465782065786368202f2e6e6f74646566207075747d20666f720a647570203635204261644e616d65207075740a647570203637202f43207075740a647570203635204261644e616d65207075740a647570203636202f42207075740a726561646f6e6c79206465660a2f5061696e74547970652030206465660a2f466f6e74547970652031206465660a2f466f6e744d6174726978205b302e3030312030203020302e303031203020305d206465660a2f466f6e7442426f78207b30203020353030203730307d206465660a656e640a63757272656e7466696c652065657865632080020e020000bab431ea06bb0a1031e1aa11919e714ac69fc6474167b617c8ff56014245e5c1290c81d55ef3cfaedd994ceb9249fa3315aad124650c94eb3535ae6b913d9efd23ca2219bd9d678b1205f5ea06778cb5a14586f4764a8b0720e7a3b7428b4978018e85c14ff8726f1a7389fc7d22af62c5d158bba96611f29acea543f648f8e4d231492d045e2c01fc225c94fa1ca45911545040e548852e5f6b57f26a6d67381981081a2b44d4b4cb38415fd14ada7cf166d5853e3787a6cefa8b52e7e143dcbefa9c6b7b072f67f605ef324effad5a391e4a8fa0aae3b9cdba1fa20387709db8c76e33f2672952acb231f43a749c441fa778d5a3535f635fc700e80e4601e4ab4a4b7a89c0136a267a538a8dbcf9ff24b303a90352caddb46e09f23826238b3d21514e85b3289f1d518cf24710e6dbc9edd1426126921c7719b3969c9ea27a68ecd2ee8fcd635f01f292709b2b2266b70928b0e9933eef1cf29bc0e1519014ed5810436e2b2691ff6b29511023e6dc9c9ef67363c8833e1cb843ae6895011969d2ab103475d6c397ef4ab54ce811d7f290bfaec281f8e94f7689b84263a29b91db0c999ccdaa8ed978438ed08a5bab0830d8d6103dba31cd9946bd02a60a3966a71123b1b43d4af8ed610827aecedcff93f87ad1c6727a694283ffb67449603129b4cce5e67bbd78a2e42049147c05b3f0661b23672f8d43e74ad3be4beef689b19a3fe77bd8220900a83dbb2d800127020000303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a636c656172746f6d61726b0a2525456e645265736f757263650a2525454f468003"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "coverage": [
+              "c131:font:type1-encoding-name:001"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:type1",
+        "coverage:batch131-type1-encoding-name"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "face": "created_from_memory",
+          "face_state": [
+            "num_faces",
+            "family_name",
+            "style_name",
+            "face_flags",
+            "num_glyphs",
+            "charmap_encoding"
+          ]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "face_state"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/type1/t1load.c",
+          "src/font.rs:parse_type1_encoding"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_New_Memory_Face.c137_type42_face_index",
+      "subject": "freetype.FT_New_Memory_Face",
+      "case": "error_bad_size_or_unknown_format",
+      "operation": "new_memory_face",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+        {"id":"c137-type42-face-index-001","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/type42/fontinfo-and-glyph-names.t42"},"font":{"kind":"ref","role":"font","id":"input/fonts/type42/fontinfo-and-glyph-names.t42"}},"params":{"face_index":1},"coverage":["c137:type42:face-index:001"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:type42",
+        "coverage:batch137-type42-face-index"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "face": "not_created"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "outputs[*].status",
+            "outputs[*].error",
+            "outputs[*].face_nullness"
+          ]
+        },
+        "error": "c_oracle",
+        "source_refs": [
+          "freetype/src/type42/t42objs.c",
+          "src/font.rs:3761"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_New_Memory_Face.c135_cid_type1_face_index",
+      "subject": "freetype.FT_New_Memory_Face",
+      "case": "error_bad_size_or_unknown_format",
+      "operation": "new_memory_face",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {"id":"c135-cid-type1-face-index-001","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/cid/fontinfo-populated.cid"},"font":{"kind":"ref","role":"font","id":"input/fonts/cid/fontinfo-populated.cid"}},"params":{"face_index":1},"coverage":["c135:cid-type1:face-index:001"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:type1",
+        "area:cid",
+        "coverage:batch135-cid-type1-face-index"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "face": "not_created"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "outputs[*].status",
+            "outputs[*].error",
+            "outputs[*].face_nullness"
+          ]
+        },
+        "error": "c_oracle",
+        "source_refs": [
+          "freetype/src/type1/t1load.c",
+          "src/font.rs:3707"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_New_Memory_Face.c138_bdf_face_index",
+      "subject": "freetype.FT_New_Memory_Face",
+      "case": "error_bad_size_or_unknown_format",
+      "operation": "new_memory_face",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {"id":"c138-bdf-face-index-001","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/bdf/charset-registry.bdf"},"font":{"kind":"ref","role":"font","id":"input/fonts/bdf/charset-registry.bdf"}},"params":{"face_index":1},"coverage":["c138:bdf:face-index:001"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:bdf",
+        "coverage:batch138-bdf-face-index"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "face": "not_created"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "outputs[*].status",
+            "outputs[*].error",
+            "outputs[*].face_nullness"
+          ]
+        },
+        "error": "c_oracle",
+        "source_refs": [
+          "freetype/src/bdf/bdfdrivr.c",
+          "src/font.rs:3887"
+        ]
+      }
+    },
+    {"case_id":"freetype.FT_New_Memory_Face.c128_cff_parser_021","subject":"freetype.FT_New_Memory_Face","case":"error_bad_size_or_unknown_format","operation":"new_memory_face","schema":"api_result","expect_error":true,"inputs":{"assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/cff2/malformed-charstrings-index-offsize-missing.otf"},"font":{"kind":"ref","role":"font","id":"input/fonts/cff2/malformed-charstrings-index-offsize-missing.otf"}},"params":{"face_index":0,"memory_source":"whole_file"}},"classifiers":["kind:function","header:freetype","area:cff"],"expectation":{"status":"error","output_shape":{"return":"FT_Error","face":"not_created"},"compare":{"mode":"exact_error","compare_error_output":true,"paths":["status","error","face_nullness"]},"error":"c_oracle"}},
+    {
+      "case_id": "freetype.FT_New_Memory_Face.c179_missing_outline_tables",
+      "subject": "freetype.FT_New_Memory_Face",
+      "case": "error_bad_size_or_unknown_format",
+      "operation": "new_memory_face",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {"id":"c179-missing-loca-001","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:001"]},
+          {"id":"c179-missing-loca-002","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:002"]},
+          {"id":"c179-missing-loca-003","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:003"]},
+          {"id":"c179-missing-loca-004","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:004"]},
+          {"id":"c179-missing-loca-005","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:005"]},
+          {"id":"c179-missing-loca-006","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:006"]},
+          {"id":"c179-missing-loca-007","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:007"]},
+          {"id":"c179-missing-loca-008","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:008"]},
+          {"id":"c179-missing-loca-009","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:009"]},
+          {"id":"c179-missing-loca-010","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:010"]},
+          {"id":"c179-missing-loca-011","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:011"]},
+          {"id":"c179-missing-loca-012","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:012"]},
+          {"id":"c179-missing-loca-013","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:013"]},
+          {"id":"c179-missing-loca-014","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:014"]},
+          {"id":"c179-missing-loca-015","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:015"]},
+          {"id":"c179-missing-loca-016","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:016"]},
+          {"id":"c179-missing-loca-017","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:017"]},
+          {"id":"c179-missing-loca-018","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:018"]},
+          {"id":"c179-missing-loca-019","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:019"]},
+          {"id":"c179-missing-loca-020","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:020"]},
+          {"id":"c179-missing-loca-021","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:021"]},
+          {"id":"c179-missing-loca-022","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:022"]},
+          {"id":"c179-missing-loca-023","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:023"]},
+          {"id":"c179-missing-loca-024","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:024"]},
+          {"id":"c179-missing-loca-025","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:025"]},
+          {"id":"c179-missing-loca-026","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:026"]},
+          {"id":"c179-missing-loca-027","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:027"]},
+          {"id":"c179-missing-loca-028","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:028"]},
+          {"id":"c179-missing-loca-029","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:029"]},
+          {"id":"c179-missing-loca-030","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:030"]},
+          {"id":"c179-missing-loca-031","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:031"]},
+          {"id":"c179-missing-loca-032","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:032"]},
+          {"id":"c179-missing-loca-033","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:033"]},
+          {"id":"c179-missing-loca-034","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:034"]},
+          {"id":"c179-missing-loca-035","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:035"]},
+          {"id":"c179-missing-loca-036","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:036"]},
+          {"id":"c179-missing-loca-037","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:037"]},
+          {"id":"c179-missing-loca-038","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:038"]},
+          {"id":"c179-missing-loca-039","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:039"]},
+          {"id":"c179-missing-loca-040","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:040"]},
+          {"id":"c179-missing-loca-041","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:041"]},
+          {"id":"c179-missing-loca-042","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:042"]},
+          {"id":"c179-missing-loca-043","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:043"]},
+          {"id":"c179-missing-loca-044","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:044"]},
+          {"id":"c179-missing-loca-045","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:045"]},
+          {"id":"c179-missing-loca-046","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:046"]},
+          {"id":"c179-missing-loca-047","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:047"]},
+          {"id":"c179-missing-loca-048","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:048"]},
+          {"id":"c179-missing-loca-049","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:049"]},
+          {"id":"c179-missing-loca-050","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:050"]},
+          {"id":"c179-missing-loca-051","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:051"]},
+          {"id":"c179-missing-loca-052","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:052"]},
+          {"id":"c179-missing-loca-053","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:053"]},
+          {"id":"c179-missing-loca-054","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:054"]},
+          {"id":"c179-missing-loca-055","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:055"]},
+          {"id":"c179-missing-loca-056","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:056"]},
+          {"id":"c179-missing-loca-057","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:057"]},
+          {"id":"c179-missing-loca-058","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:058"]},
+          {"id":"c179-missing-loca-059","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:059"]},
+          {"id":"c179-missing-loca-060","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:060"]},
+          {"id":"c179-missing-loca-061","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:061"]},
+          {"id":"c179-missing-loca-062","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:062"]},
+          {"id":"c179-missing-loca-063","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:063"]},
+          {"id":"c179-missing-loca-064","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:064"]},
+          {"id":"c179-missing-loca-065","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:065"]},
+          {"id":"c179-missing-loca-066","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:066"]},
+          {"id":"c179-missing-loca-067","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:067"]},
+          {"id":"c179-missing-loca-068","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:068"]},
+          {"id":"c179-missing-loca-069","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:069"]},
+          {"id":"c179-missing-loca-070","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:070"]},
+          {"id":"c179-missing-loca-071","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:071"]},
+          {"id":"c179-missing-loca-072","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:072"]},
+          {"id":"c179-missing-loca-073","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:073"]},
+          {"id":"c179-missing-loca-074","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:074"]},
+          {"id":"c179-missing-loca-075","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:075"]},
+          {"id":"c179-missing-loca-076","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:076"]},
+          {"id":"c179-missing-loca-077","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:077"]},
+          {"id":"c179-missing-loca-078","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:078"]},
+          {"id":"c179-missing-loca-079","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:079"]},
+          {"id":"c179-missing-loca-080","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:080"]},
+          {"id":"c179-missing-loca-081","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:081"]},
+          {"id":"c179-missing-loca-082","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:082"]},
+          {"id":"c179-missing-loca-083","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:083"]},
+          {"id":"c179-missing-loca-084","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:084"]},
+          {"id":"c179-missing-loca-085","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:085"]},
+          {"id":"c179-missing-loca-086","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:086"]},
+          {"id":"c179-missing-loca-087","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:087"]},
+          {"id":"c179-missing-loca-088","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:088"]},
+          {"id":"c179-missing-loca-089","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:089"]},
+          {"id":"c179-missing-loca-090","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:090"]},
+          {"id":"c179-missing-loca-091","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:091"]},
+          {"id":"c179-missing-loca-092","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:092"]},
+          {"id":"c179-missing-loca-093","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:093"]},
+          {"id":"c179-missing-loca-094","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:094"]},
+          {"id":"c179-missing-loca-095","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:095"]},
+          {"id":"c179-missing-loca-096","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:096"]},
+          {"id":"c179-missing-loca-097","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:097"]},
+          {"id":"c179-missing-loca-098","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:098"]},
+          {"id":"c179-missing-loca-099","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:099"]},
+          {"id":"c179-missing-loca-100","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"},"font":{"kind":"ref","role":"font","id":"input/generated/sfnt/glyf-present-loca-missing.ttf"}},"params":{"face_index":0},"coverage":["c179:sfnt:missing-loca:100"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:sfnt",
+        "coverage:c179:missing-outline-tables"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "face": "not_created"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "status",
+            "error",
+            "face_nullness"
+          ]
+        },
+        "error": "c_oracle",
+        "source_refs": [
+          "freetype/src/truetype/ttobjs.c",
+          "src/font.rs:4282-4287"
+        ]
+      }
     }
-  ]
+ ]
 }

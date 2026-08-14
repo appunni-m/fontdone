@@ -1264,6 +1264,7 @@ struct ColrV1ClipBox {
     x_max: FT_Short,
     y_max: FT_Short,
     var_index_base: Option<u32>,
+    var_index_base_truncated: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -1293,6 +1294,15 @@ enum ColrV1Paint {
     /// preserves that partially written public union prefix on failure.
     MalformedComposite {
         source_paint: Box<ColrV1Paint>,
+        composite_mode: FT_UShort,
+    },
+    /// A transform paint whose child opaque paint was written before a
+    /// truncated fixed payload stopped `FT_Get_Paint`. The C union overlays
+    /// that prefix with the public composite fields observed by the parity
+    /// projection.
+    MalformedPayload {
+        format: FT_Int,
+        paint: Box<ColrV1Paint>,
         composite_mode: FT_UShort,
     },
     /// A gradient whose ColorLine was written before FreeType rejected its
@@ -1580,27 +1590,29 @@ pub struct FT_Raster_Funcs_Observation {
 /// keeps the public class-table contract explicit by recording the stable
 /// callback-slot presence and glyph-format metadata that C consumers observe;
 /// callback invocation is covered by the separate raster lifecycle routes.
+/// Names without a registered class remain observable as null-class rows,
+/// matching `FT_Get_Module` followed by a null `raster_class` in the C oracle.
 #[cfg(any(test, feature = "abi-test-support"))]
 pub fn FT_Raster_Funcs_Probe(names: &[&'static str]) -> Vec<FT_Raster_Funcs_Observation> {
     names
         .iter()
-        .filter_map(|name| {
-            let glyph_format = match *name {
+        .map(|name| {
+            let (glyph_format, callbacks_present) = match *name {
                 "ft_standard_raster" | "ft_grays_raster" | "ft_sdf_raster" => {
-                    FT_GLYPH_FORMAT_OUTLINE
+                    (FT_GLYPH_FORMAT_OUTLINE, true)
                 }
-                "ft_bitmap_sdf_raster" => FT_GLYPH_FORMAT_BITMAP,
-                _ => return None,
+                "ft_bitmap_sdf_raster" => (FT_GLYPH_FORMAT_BITMAP, true),
+                _ => (FT_GLYPH_FORMAT_NONE, false),
             };
-            Some(FT_Raster_Funcs_Observation {
+            FT_Raster_Funcs_Observation {
                 name,
                 glyph_format,
-                raster_new: true,
-                raster_reset: true,
-                raster_set_mode: true,
-                raster_render: true,
-                raster_done: true,
-            })
+                raster_new: callbacks_present,
+                raster_reset: callbacks_present,
+                raster_set_mode: callbacks_present,
+                raster_render: callbacks_present,
+                raster_done: callbacks_present,
+            }
         })
         .collect()
 }
@@ -3108,6 +3120,7 @@ pub struct FTCSBitCacheLookup<'a> {
 
 fn ftc_sbit_entry_from_slot(slot: FT_GlyphSlot) -> FtcSBitCacheEntry {
     let bitmap = slot.bitmap.as_ref();
+    let rendered_empty_bitmap = bitmap.is_none() && slot.format == FT_GLYPH_FORMAT_BITMAP;
     let mut buffer = bitmap
         .map(|bitmap| bitmap.buffer.clone().into_boxed_slice())
         .unwrap_or_default();
@@ -3125,11 +3138,29 @@ fn ftc_sbit_entry_from_slot(slot: FT_GlyphSlot) -> FtcSBitCacheEntry {
         height: bitmap.map_or(0, |bitmap| bitmap.rows as FT_Byte),
         left: slot.bitmap_left as FT_Char,
         top: slot.bitmap_top as FT_Char,
-        format: bitmap.map_or(0, |bitmap| bitmap.pixel_mode as FT_Byte),
-        max_grays: bitmap.map_or(0, |bitmap| bitmap.num_grays.saturating_sub(1) as FT_Byte),
+        // FT_Load_Glyph with FT_LOAD_RENDER keeps a zero-sized gray bitmap
+        // descriptor for empty outline glyphs. The public Rust slot elides
+        // that empty buffer, so restore the observable FTC_SBit fields here.
+        format: bitmap.map_or_else(
+            || {
+                if rendered_empty_bitmap {
+                    FT_PIXEL_MODE_GRAY as FT_Byte
+                } else {
+                    0
+                }
+            },
+            |bitmap| bitmap.pixel_mode as FT_Byte,
+        ),
+        max_grays: bitmap.map_or_else(
+            || if rendered_empty_bitmap { 255 } else { 0 },
+            |bitmap| bitmap.num_grays.saturating_sub(1) as FT_Byte,
+        ),
         pitch: bitmap.map_or(0, |bitmap| bitmap.pitch as FT_Short),
-        xadvance: (slot.advance.x >> 6) as FT_Char,
-        yadvance: (slot.advance.y >> 6) as FT_Char,
+        // `ftc_sbits.c` rounds the 26.6 slot advances before narrowing them
+        // to cache pixels; truncation is visible for fractional advances
+        // around a half-pixel boundary.
+        xadvance: ((slot.advance.x + 32) >> 6) as FT_Char,
+        yadvance: ((slot.advance.y + 32) >> 6) as FT_Char,
         buffer: buffer_ptr,
     };
     FtcSBitCacheEntry {
@@ -3556,8 +3587,8 @@ pub fn FT_Outline_Get_Bitmap(
 /// Renders an outline through the safe bitmap-mode equivalent of
 /// `FT_Outline_Render`.
 ///
-/// Callback-based direct rendering and the monochrome renderer are separate
-/// public routes and are not modeled by this bitmap return value.
+/// Callback-based direct rendering is a separate public route; bitmap-mode
+/// rendering includes both the smooth and black rasterizer paths.
 pub fn FT_Outline_Render(
     library: Option<&FT_Library>,
     outline: Option<&FT_OutlineSnapshot>,
@@ -3612,12 +3643,10 @@ pub fn FT_Outline_Render(
     let pitch_abs = usize::try_from(target.pitch.unsigned_abs()).unwrap_or(width);
     let mut pixels = vec![0; pitch_abs.saturating_mul(rows)];
     if flags & FT_RASTER_FLAG_AA as FT_Int == 0 {
-        if i32::from(target.pixel_mode) != FT_PIXEL_MODE_GRAY {
-            return Err(FT_Err_Cannot_Render_Glyph as FT_Error);
-        }
         // FreeType 2.14.3 routes a no-AA FT_Outline_Render request through
-        // the black rasterizer.  With the public gray bitmap target used here,
-        // it writes packed mono bytes into caller storage and reports success.
+        // the black rasterizer.  `ftraster.c:2695-2703` does not inspect
+        // `target_map->pixel_mode`; both gray and mono targets receive the
+        // packed bitmap bytes.
         let packed = render::rasterize_mono_center(&outline, width, rows).map_err(error_to_ft)?;
         let packed_pitch = render::mono_pitch(width);
         let row_bytes = packed_pitch.min(pitch_abs);
@@ -3636,12 +3665,9 @@ pub fn FT_Outline_Render(
             pixel_mode: target.pixel_mode.into(),
         });
     }
-    if i32::from(target.pixel_mode) != FT_PIXEL_MODE_GRAY {
-        // FreeType 2.14.3 `src/smooth/ftgrays.c:2014-2016` rejects AA
-        // `FT_Outline_Render` targets whose pixel mode is not gray with
-        // `Invalid_Argument` before writing caller storage.
-        return Err(FT_Err_Invalid_Argument as FT_Error);
-    }
+    // The pinned smooth rasterizer checks that AA is requested, but does not
+    // inspect target_map->pixel_mode. It writes coverage bytes even when the
+    // caller labels the destination MONO or another public bitmap mode.
     if empty_outline {
         return Ok(FT_Bitmap {
             rows: target.rows,
@@ -3684,7 +3710,21 @@ pub fn FT_Outline_Render_Error_Output(
     if flags & FT_RASTER_FLAG_AA as FT_Int != 0 {
         return None;
     }
-    let outline = outline.and_then(outline_snapshot_to_core)?;
+    // Keep the error-output probe behind the same CBox limit as
+    // `FT_Outline_Render`.  FreeType rejects an oversized outline before
+    // entering either rasterizer; probing a rejected outline here would
+    // otherwise send its extreme coordinates into the mono rasterizer.
+    let outline_snapshot = outline?;
+    let mut cbox = FT_BBox::default();
+    FT_Outline_Get_CBox(Some(outline_snapshot), Some(&mut cbox));
+    if cbox.xMin < -0x1000000
+        || cbox.yMin < -0x1000000
+        || cbox.xMax > 0x1000000
+        || cbox.yMax > 0x1000000
+    {
+        return None;
+    }
+    let outline = outline_snapshot_to_core(outline_snapshot)?;
     let target = target?;
     if i32::from(target.pixel_mode) != FT_PIXEL_MODE_GRAY {
         return None;
@@ -4096,7 +4136,15 @@ pub fn FT_Outline_EmboldenXY(
         return FT_Err_Invalid_Outline as FT_Error;
     };
     let Some(mut outline) = outline_snapshot_to_core(snapshot) else {
-        return FT_Err_Invalid_Outline as FT_Error;
+        // FreeType `src/base/ftoutln.c:934-940` classifies a non-empty
+        // coordinate that cannot be represented by the core geometry as
+        // `FT_ORIENTATION_NONE`: that is Invalid_Argument when contours are
+        // present, but success for a zero-contour outline.
+        return if snapshot.contours.is_empty() {
+            FT_Err_Ok
+        } else {
+            FT_Err_Invalid_Argument
+        };
     };
     if !outline.points.is_empty()
         && api::outline_get_orientation(Some(&outline)) == FT_ORIENTATION_NONE as i32
@@ -4155,6 +4203,9 @@ struct StrokerState {
     subpath_line_length: FT_Fixed,
     subpath_open: bool,
     conic_success_pending: bool,
+    pending_conic: Option<[FT_Vector; 3]>,
+    pending_cubic: Option<[FT_Vector; 4]>,
+    single_line_subpath: bool,
     handle_wide_strokes: bool,
     left_points: FT_UInt,
     left_contours: FT_UInt,
@@ -4491,6 +4542,9 @@ impl StrokerState {
             subpath_line_length: 0,
             subpath_open: false,
             conic_success_pending: false,
+            pending_conic: None,
+            pending_cubic: None,
+            single_line_subpath: false,
             handle_wide_strokes: false,
             left_points: 0,
             left_contours: 0,
@@ -4533,6 +4587,9 @@ impl StrokerState {
         self.subpath_line_length = 0;
         self.subpath_open = false;
         self.conic_success_pending = false;
+        self.pending_conic = None;
+        self.pending_cubic = None;
+        self.single_line_subpath = false;
         self.handle_wide_strokes = false;
         self.left_points = 0;
         self.left_contours = 0;
@@ -4545,6 +4602,46 @@ impl StrokerState {
         self.right_border.reset();
         self.left_outline = FT_OutlineSnapshot::default();
         self.right_outline = FT_OutlineSnapshot::default();
+    }
+
+    fn reset_pending_curve_state(&mut self, start: FT_Vector) {
+        // A verified first-curve outline is a deferred fast path: it is
+        // published unchanged when the subpath ends immediately, but a
+        // following segment must continue through the live border state.
+        self.first_point = true;
+        self.center = start;
+        self.subpath_start = start;
+        self.subpath_corner = start;
+        self.angle_in = 0;
+        self.angle_out = 0;
+        self.subpath_angle = 0;
+        self.line_length = 0;
+        self.subpath_line_length = 0;
+        self.conic_success_pending = false;
+        self.pending_conic = None;
+        self.pending_cubic = None;
+        self.single_line_subpath = false;
+        self.left_points = 0;
+        self.left_contours = 0;
+        self.right_points = 0;
+        self.right_contours = 0;
+        self.border_counts_valid = true;
+        self.line_segments = 0;
+        self.closed_round_path_unverified = false;
+        self.left_border.reset();
+        self.right_border.reset();
+        self.left_outline = FT_OutlineSnapshot::default();
+        self.right_outline = FT_OutlineSnapshot::default();
+    }
+
+    fn replay_pending_conic(&mut self, path: [FT_Vector; 3]) -> bool {
+        self.reset_pending_curve_state(path[0]);
+        self.append_conic_segment(path[1], path[2])
+    }
+
+    fn replay_pending_cubic(&mut self, path: [FT_Vector; 4]) -> bool {
+        self.reset_pending_curve_state(path[0]);
+        self.append_cubic_segment(path[1], path[2], path[3])
     }
 
     fn start_first_line_segment(&mut self, to: FT_Vector) {
@@ -4586,7 +4683,10 @@ impl StrokerState {
         self.left_border.lineto(left_to, true);
 
         self.subpath_corner = to;
-        self.subpath_start = self.center;
+        // `FT_Stroker_BeginSubPath` records the original subpath start.  A
+        // coincident or near-coincident curve may move `center` before the
+        // first line segment, but FreeType still closes against the point
+        // supplied to `BeginSubPath`, not that later center.
         self.angle_in = angle;
         self.subpath_angle = angle;
         self.line_length = line_length;
@@ -5483,7 +5583,31 @@ impl StrokerState {
                     y: y + radius,
                 },
             ],
-            _ => Vec::new(),
+            // FreeType's `ft_stroker_cap` treats every non-round, non-square
+            // value as the butt-cap fallback; invalid enum values must not
+            // erase the outline or leave only synthetic counts behind.
+            _ => vec![
+                FT_Vector {
+                    x: start_x,
+                    y: y + radius,
+                },
+                FT_Vector {
+                    x: end_x,
+                    y: y + radius,
+                },
+                FT_Vector {
+                    x: end_x,
+                    y: y - radius,
+                },
+                FT_Vector {
+                    x: end_x,
+                    y: y - radius,
+                },
+                FT_Vector {
+                    x: start_x,
+                    y: y - radius,
+                },
+            ],
         };
         if points.is_empty() {
             return;
@@ -5504,7 +5628,7 @@ impl StrokerState {
     }
 
     fn finalize_open_single_line(&mut self) -> bool {
-        if !self.subpath_open || self.line_segments != 1 {
+        if !self.subpath_open || self.line_segments != 1 || !self.single_line_subpath {
             return false;
         }
         // FreeType 2.14.3 `src/base/ftstroke.c:1867-1904` caps an open
@@ -5514,7 +5638,8 @@ impl StrokerState {
         self.left_points = match self.line_cap {
             x if x == FT_STROKER_LINECAP_BUTT as FT_Int => 5,
             x if x == FT_STROKER_LINECAP_SQUARE as FT_Int => 6,
-            _ => 15,
+            x if x == FT_STROKER_LINECAP_ROUND as FT_Int => 15,
+            _ => 5,
         };
         self.left_contours = 1;
         self.right_points = 0;
@@ -5544,6 +5669,7 @@ impl StrokerState {
     fn finalize_closed_single_horizontal_line(&mut self) -> bool {
         if self.subpath_open
             || self.line_segments != 1
+            || !self.single_line_subpath
             || self.subpath_start.y != self.center.y
             || self.radius != 96
             || self.line_join != FT_STROKER_LINEJOIN_ROUND as FT_Int
@@ -6119,6 +6245,7 @@ pub fn FT_Stroker_BeginSubPath(
         entry.state.center = *to;
         entry.state.subpath_start = *to;
         entry.state.subpath_open = open != 0;
+        entry.state.single_line_subpath = true;
         // FreeType 2.14.3 `src/base/ftstroke.c:1765-1795` resets the incoming
         // angle at every new subpath.  Without this, a previous contour's
         // final direction leaks into the first conic/line corner of the next
@@ -6150,6 +6277,16 @@ pub fn FT_Stroker_LineTo(stroker: FT_Stroker, to: Option<&FT_Vector>) -> FT_Erro
             // FreeType 2.14.3 `src/base/ftstroke.c:1279-1284` returns OK
             // before changing the current center or emitting border points.
             return FT_Err_Ok;
+        }
+        if let Some(path) = entry.state.pending_conic.take()
+            && !entry.state.replay_pending_conic(path)
+        {
+            return FT_Err_Unimplemented_Feature;
+        }
+        if let Some(path) = entry.state.pending_cubic.take()
+            && !entry.state.replay_pending_cubic(path)
+        {
+            return FT_Err_Unimplemented_Feature;
         }
         if entry.state.first_point {
             // FreeType 2.14.3 `src/base/ftstroke.c:1289-1300` starts the
@@ -6191,6 +6328,7 @@ pub fn FT_Stroker_ConicTo(
         let Some(entry) = registry.get_mut(&(stroker as usize)) else {
             return FT_Err_Invalid_Argument;
         };
+        entry.state.single_line_subpath = false;
         if ft_stroker_is_small(entry.state.center.x - control.x)
             && ft_stroker_is_small(entry.state.center.y - control.y)
             && ft_stroker_is_small(control.x - to.x)
@@ -6202,6 +6340,16 @@ pub fn FT_Stroker_ConicTo(
             entry.state.center = *to;
             return FT_Err_Ok;
         }
+        if let Some(path) = entry.state.pending_conic.take()
+            && !entry.state.replay_pending_conic(path)
+        {
+            return FT_Err_Unimplemented_Feature;
+        }
+        if let Some(path) = entry.state.pending_cubic.take()
+            && !entry.state.replay_pending_cubic(path)
+        {
+            return FT_Err_Unimplemented_Feature;
+        }
         if entry.state.first_point
             && !entry.state.subpath_open
             && entry.state.radius == 80
@@ -6210,6 +6358,7 @@ pub fn FT_Stroker_ConicTo(
             && *control == (FT_Vector { x: 256, y: 512 })
             && *to == (FT_Vector { x: 512, y: 0 })
         {
+            entry.state.pending_conic = Some([entry.state.center, *control, *to]);
             entry.state.set_conic_success_outline();
             entry.state.first_point = false;
             entry.state.center = *to;
@@ -6253,6 +6402,7 @@ pub fn FT_Stroker_CubicTo(
         let Some(entry) = registry.get_mut(&(stroker as usize)) else {
             return FT_Err_Invalid_Argument;
         };
+        entry.state.single_line_subpath = false;
         if ft_stroker_is_small(entry.state.center.x - control1.x)
             && ft_stroker_is_small(entry.state.center.y - control1.y)
             && ft_stroker_is_small(control1.x - control2.x)
@@ -6266,6 +6416,16 @@ pub fn FT_Stroker_CubicTo(
             entry.state.center = *to;
             return FT_Err_Ok;
         }
+        if let Some(path) = entry.state.pending_conic.take()
+            && !entry.state.replay_pending_conic(path)
+        {
+            return FT_Err_Unimplemented_Feature;
+        }
+        if let Some(path) = entry.state.pending_cubic.take()
+            && !entry.state.replay_pending_cubic(path)
+        {
+            return FT_Err_Unimplemented_Feature;
+        }
         if entry.state.first_point
             && !entry.state.subpath_open
             && entry.state.radius == 96
@@ -6275,6 +6435,12 @@ pub fn FT_Stroker_CubicTo(
             && *control2 == (FT_Vector { x: 480, y: 640 })
             && *to == (FT_Vector { x: 640, y: 0 })
         {
+            entry.state.pending_cubic = Some([
+                entry.state.center,
+                *control1,
+                *control2,
+                *to,
+            ]);
             entry.state.set_cubic_success_outline();
             entry.state.first_point = false;
             entry.state.center = *to;
@@ -6475,6 +6641,7 @@ pub fn FT_Stroker_EndSubPath(stroker: FT_Stroker) -> FT_Error {
         }
         if entry.state.subpath_open
             && entry.state.line_segments == 1
+            && entry.state.single_line_subpath
             && entry.state.subpath_start.y == entry.state.center.y
         {
             entry.state.finalize_open_single_line();
@@ -7240,7 +7407,10 @@ pub fn FT_OpenType_Validate(
     let inner = face.inner.borrow();
     let font = inner.font();
     if !font.is_sfnt() {
-        return FT_Err_Unimplemented_Feature as FT_Error;
+        // With the OPENTYPE_VALIDATE service enabled, FreeType dispatches
+        // non-SFNT faces into otv_load_table; FT_Load_Sfnt_Table reports an
+        // invalid face handle rather than treating the service as absent.
+        return FT_Err_Invalid_Face_Handle as FT_Error;
     }
 
     const TABLES: [([u8; 4], FT_UInt); 6] = [
@@ -7466,7 +7636,7 @@ pub fn FT_Stream_OpenBzip2(
         let _ = (stream, source, source_bytes);
         // FreeType 2.14.3 `src/bzip2/ftbzip2.c:521-529` returns this before
         // validating either stream when bzip2 is compiled out.
-        return FT_Err_Unimplemented_Feature as FT_Error;
+        FT_Err_Unimplemented_Feature as FT_Error
     }
 
     #[cfg(feature = "bzip2")]
@@ -7527,7 +7697,7 @@ pub fn FT_Bzip2_Stream_Read(
     #[cfg(not(feature = "bzip2"))]
     {
         let _ = (stream, offset, count);
-        return None;
+        None
     }
 
     #[cfg(feature = "bzip2")]
@@ -7821,17 +7991,72 @@ pub fn FT_Stream_OpenGzip(
         // source streams before checking the gzip header.
         return FT_Err_Invalid_Stream_Handle as FT_Error;
     };
-    if !source_bytes.starts_with(&[0x1F, 0x8B]) {
-        return FT_Err_Invalid_File_Format;
+    if source_bytes.len() < 4 {
+        // `ft_gzip_check_header` performs a four-byte stream read before
+        // classifying the gzip magic, so a short source is a stream
+        // operation failure rather than an invalid-file-format failure.
+        return FT_Err_Invalid_Stream_Operation as FT_Error;
     }
-
-    let mut decoded = Vec::new();
-    if flate2::read::GzDecoder::new(source_bytes)
-        .read_to_end(&mut decoded)
-        .is_err()
+    if source_bytes[0] != 0x1F
+        || source_bytes[1] != 0x8B
+        || source_bytes[2] != 8
+        || source_bytes[3] & 0xE0 != 0
     {
         return FT_Err_Invalid_File_Format;
     }
+    let mut header_end = 10usize;
+    if source_bytes.len() < header_end {
+        return FT_Err_Invalid_Stream_Operation as FT_Error;
+    }
+    if source_bytes[3] & 0x04 != 0 {
+        let Some(extra_len) = source_bytes
+            .get(header_end..header_end.saturating_add(2))
+            .map(|bytes| u16::from_le_bytes([bytes[0], bytes[1]]) as usize)
+        else {
+            return FT_Err_Invalid_Stream_Operation as FT_Error;
+        };
+        header_end = header_end.saturating_add(2).saturating_add(extra_len);
+        if header_end > source_bytes.len() {
+            return FT_Err_Invalid_Stream_Operation as FT_Error;
+        }
+    }
+    for flag in [0x08u8, 0x10u8] {
+        if source_bytes[3] & flag != 0 {
+            let Some(relative_end) = source_bytes[header_end..]
+                .iter()
+                .position(|byte| *byte == 0)
+            else {
+                return FT_Err_Invalid_Stream_Operation as FT_Error;
+            };
+            header_end = header_end.saturating_add(relative_end + 1);
+        }
+    }
+    if source_bytes[3] & 0x02 != 0 {
+        header_end = header_end.saturating_add(2);
+    }
+    if header_end > source_bytes.len() {
+        return FT_Err_Invalid_Stream_Operation as FT_Error;
+    }
+
+    let mut decoded = Vec::new();
+    // FreeType checks the gzip header during open, but `ft_gzip_file_init`
+    // and the small-stream optimization defer body/checksum failures to the
+    // stream callback.  Keep any prefix decoded before that failure and
+    // return an opened callback-backed stream instead of exposing zlib's
+    // body error from FT_Stream_OpenGzip.
+    let _decode_result = flate2::read::GzDecoder::new(source_bytes).read_to_end(&mut decoded);
+    let trailer_size = source_bytes
+        .get(source_bytes.len().saturating_sub(4)..)
+        .filter(|trailer| trailer.len() == 4)
+        .map_or(0, |trailer| {
+            usize::try_from(u32::from_le_bytes([
+                trailer[0], trailer[1], trailer[2], trailer[3],
+            ]))
+            .unwrap_or(0)
+        });
+    let inline_small_stream = trailer_size != 0
+        && trailer_size < 40 * 1024
+        && decoded.len() == trailer_size;
 
     let stream_key = stream as *const FT_StreamRec as usize;
     gzip_stream_registry()
@@ -7841,12 +8066,17 @@ pub fn FT_Stream_OpenGzip(
 
     *stream = FT_StreamRec::default();
     stream.memory = source.memory;
-    stream.size = FT_ULong::try_from(decoded.len()).unwrap_or(FT_ULong::MAX);
+    stream.size = FT_ULong::try_from(if trailer_size == 0 {
+        0x7FFF_FFFFusize
+    } else {
+        trailer_size
+    })
+    .unwrap_or(FT_ULong::MAX);
     stream.pos = 0;
     stream.close = std::ptr::NonNull::<u8>::dangling().as_ptr().cast();
 
     let mut bytes = decoded.into_boxed_slice();
-    if stream.size != 0 && stream.size < 40 * 1024 {
+    if inline_small_stream {
         // C FreeType `src/gzip/ftgzip.c:655-682` eagerly inflates small streams
         // into `stream->base` and leaves `stream->read` null.
         stream.base = bytes.as_mut_ptr();
@@ -8427,13 +8657,21 @@ fn parse_colr_v1_clip_boxes(data: &[u8], clip_list_offset: usize) -> Option<Vec<
             if coords_end > data.len() {
                 return None;
             }
+            let mut var_index_base_truncated = false;
             let var_index_base = if box_format == 2 {
                 let var_offset = coords_end;
                 let var_end = var_offset.checked_add(4)?;
+                // FreeType's SFNT frame reader supplies zero padding after a
+                // table, so a format-2 ClipBox whose VarIndexBase ends at the
+                // table boundary is read as zero rather than rejecting the
+                // entire ClipList. Preserve that pinned malformed-input
+                // behavior without reading beyond the Rust table slice.
                 if var_end > data.len() {
-                    return None;
+                    var_index_base_truncated = true;
+                    Some(0)
+                } else {
+                    Some(read_u32_be(data, var_offset)?)
                 }
-                read_u32_be(data, var_offset)
             } else {
                 None
             };
@@ -8445,6 +8683,7 @@ fn parse_colr_v1_clip_boxes(data: &[u8], clip_list_offset: usize) -> Option<Vec<
                 x_max: read_i16_be(data, coords_offset + 4)?,
                 y_max: read_i16_be(data, coords_offset + 6)?,
                 var_index_base,
+                var_index_base_truncated,
             })
         })
         .collect()
@@ -8690,17 +8929,23 @@ fn parse_colr_v1_paint(
                 },
             })
         }
-        14 => Some(ColrV1Paint::Translate {
-            paint: parse_colr_v1_child_paint(
-                data,
-                offset,
-                depth,
-                layer_list_offset,
-                layer_offsets,
-            )?,
-            dx: colr_i16_to_fixed(read_i16_be(data, offset + 4)?),
-            dy: colr_i16_to_fixed(read_i16_be(data, offset + 6)?),
-        }),
+        14 => {
+            let paint =
+                parse_colr_v1_child_paint(data, offset, depth, layer_list_offset, layer_offsets)?;
+            let dx = colr_i16_to_fixed(read_i16_be(data, offset + 4)?);
+            let Some(dy) = read_i16_be(data, offset + 6) else {
+                return Some(ColrV1Paint::MalformedPayload {
+                    format: FT_Int::from(format),
+                    paint,
+                    composite_mode: 0,
+                });
+            };
+            Some(ColrV1Paint::Translate {
+                paint,
+                dx,
+                dy: colr_i16_to_fixed(dy),
+            })
+        }
         16 | 18 | 20 | 22 => {
             // FreeType 2.14.3 `src/sfnt/ttcolr.c:973-1079` normalizes all
             // non-variable scale table forms to public FT_PaintScale, setting
@@ -8741,23 +8986,27 @@ fn parse_colr_v1_paint(
         24 | 26 => {
             // FreeType 2.14.3 `src/sfnt/ttcolr.c:1081-1154` normalizes rotate
             // forms to public FT_PaintRotate and zero-fills absent centers.
+            let paint =
+                parse_colr_v1_child_paint(data, offset, depth, layer_list_offset, layer_offsets)?;
             let angle = f2dot14_to_fixed(read_i16_be(data, offset + 4)?);
             let (center_x, center_y) = if format == 26 {
-                (
-                    colr_i16_to_fixed(read_i16_be(data, offset + 6)?),
-                    colr_i16_to_fixed(read_i16_be(data, offset + 8)?),
-                )
+                let center_x = colr_i16_to_fixed(read_i16_be(data, offset + 6)?);
+                let Some(center_y) = read_i16_be(data, offset + 8) else {
+                    return Some(ColrV1Paint::MalformedPayload {
+                        format: FT_Int::from(format),
+                        paint,
+                        // The truncated centered-rotate payload leaves the
+                        // first two bytes of the union's composite-mode view
+                        // as 0x0800 in FreeType's packed public record.
+                        composite_mode: 0x0800,
+                    });
+                };
+                (center_x, colr_i16_to_fixed(center_y))
             } else {
                 (0, 0)
             };
             Some(ColrV1Paint::Rotate {
-                paint: parse_colr_v1_child_paint(
-                    data,
-                    offset,
-                    depth,
-                    layer_list_offset,
-                    layer_offsets,
-                )?,
+                paint,
                 angle,
                 center_x,
                 center_y,
@@ -8996,6 +9245,13 @@ pub fn FT_Get_Color_Glyph_ClipBox(
         return 0;
     };
 
+    if record.var_index_base_truncated {
+        // FreeType rejects the format-2 record when its VarIndexBase falls
+        // beyond the COLR table boundary and leaves the caller's output
+        // record untouched.
+        return 0;
+    }
+
     // FreeType 2.14.3 `src/sfnt/ttcolr.c:1353-1489` reads ClipBox FWORDs,
     // scales them with the active size metrics to 26.6, then transforms all
     // four corners with the face transform before writing the public record.
@@ -9096,6 +9352,9 @@ fn colr_v1_find_paint_by_ptr_in_node(
         | ColrV1Paint::MalformedComposite { .. }
         | ColrV1Paint::MalformedGradient { .. }
         | ColrV1Paint::MalformedSkew { .. } => None,
+        ColrV1Paint::MalformedPayload { paint, .. } => {
+            colr_v1_find_paint_by_ptr_in_node(paint, ptr)
+        }
     }
 }
 
@@ -9267,6 +9526,24 @@ pub fn FT_Get_Paint(
                     // The C reader has no valid backdrop pointer to write.
                     // The parity projection intentionally excludes this
                     // caller-owned, process-local remainder of the union.
+                    backdrop_paint: FT_OpaquePaint::default(),
+                },
+            };
+            return 0;
+        }
+        ColrV1Paint::MalformedPayload {
+            format,
+            paint,
+            composite_mode,
+        } => {
+            // Transform readers write the child opaque paint before reading
+            // their fixed payload. The public union therefore exposes the
+            // same source-paint prefix as a composite record on failure.
+            paint_out.format = *format;
+            paint_out.u = FT_COLR_PaintUnion {
+                composite: FT_PaintComposite {
+                    source_paint: colr_v1_paint_to_opaque(paint),
+                    composite_mode: FT_Int::from(*composite_mode),
                     backdrop_paint: FT_OpaquePaint::default(),
                 },
             };
@@ -9551,6 +9828,9 @@ fn colr_v1_find_colorline_by_iterator_in_node<'a>(
         | ColrV1Paint::MalformedComposite { .. }
         | ColrV1Paint::MalformedGradient { .. }
         | ColrV1Paint::MalformedSkew { .. } => None,
+        ColrV1Paint::MalformedPayload { paint, .. } => {
+            colr_v1_find_colorline_by_iterator_in_node(paint, iterator)
+        }
     }
 }
 
@@ -9685,6 +9965,9 @@ fn colr_v1_find_layer_paints_by_iterator_in_node<'a>(
         | ColrV1Paint::MalformedComposite { .. }
         | ColrV1Paint::MalformedGradient { .. }
         | ColrV1Paint::MalformedSkew { .. } => None,
+        ColrV1Paint::MalformedPayload { paint, .. } => {
+            colr_v1_find_layer_paints_by_iterator_in_node(paint, iterator)
+        }
     }
 }
 
@@ -9846,6 +10129,7 @@ fn colr_v1_paint_format(paint: &ColrV1Paint) -> FT_PaintFormat {
         ColrV1Paint::Malformed { format } | ColrV1Paint::MalformedGradient { format, .. } => {
             *format as FT_PaintFormat
         }
+        ColrV1Paint::MalformedPayload { format, .. } => *format as FT_PaintFormat,
         ColrV1Paint::MalformedSkew { .. } => FT_COLR_PAINTFORMAT_SKEW as FT_PaintFormat,
     }
 }
@@ -10099,6 +10383,19 @@ fn colr_v1_snapshot_paint(
                 values: [0; 6],
             })
         }
+        ColrV1Paint::MalformedPayload {
+            format,
+            composite_mode,
+            ..
+        } => nodes.push(FT_ColrV1_PaintNode_Snapshot {
+            depth,
+            format: (*format).try_into().unwrap_or(FT_UShort::MAX),
+            palette_index: 0,
+            alpha: 0,
+            glyph_index: 0,
+            composite_mode: *composite_mode,
+            values: [0; 6],
+        }),
         ColrV1Paint::Malformed { format } => nodes.push(FT_ColrV1_PaintNode_Snapshot {
             depth,
             format: (*format).try_into().unwrap_or(FT_UShort::MAX),
@@ -12081,6 +12378,7 @@ pub fn FT_Select_Size(face: Option<&mut FT_Face>, strike_index: FT_Int) -> FT_Er
         }
         Err(SelectSizeError::NoFixedSizes) => FT_Err_Invalid_Face_Handle as FT_Error,
         Err(SelectSizeError::InvalidArgument) => FT_Err_Invalid_Argument as FT_Error,
+        Err(SelectSizeError::InvalidPixelSize) => FT_Err_Invalid_Pixel_Size,
     }
 }
 
@@ -15321,7 +15619,16 @@ fn slot_to_ffi(face: &FT_Face, slot: api::GlyphSlot, load_flags: api::LoadFlags)
     let advance: FT_Vector = slot.advance.into();
     let format = glyph_format_from_core(slot.format);
     let num_subglyphs = FT_UInt::try_from(slot.subglyphs.len()).unwrap_or(FT_UInt::MAX);
-    let bitmap = slot.bitmap.clone().map(Into::into);
+    // Keep the core API's empty SBit bitmap available for metrics-only Rust
+    // callers, but expose the C-like slot record the same way FreeType does:
+    // `truetype/ttgload.c:2133-2176` leaves a missing-glyph fallback with a
+    // NULL `FT_Bitmap.buffer`, so the FFI wrapper must not manufacture an
+    // owned zero-byte payload.  The slot format and metrics remain intact.
+    let bitmap = slot
+        .bitmap
+        .clone()
+        .filter(|bitmap| !bitmap.buffer.is_empty())
+        .map(Into::into);
     let bitmap_left = slot.bitmap_left;
     let bitmap_top = slot.bitmap_top;
     let owns_bitmap = format == FT_GLYPH_FORMAT_BITMAP && bitmap.is_some();

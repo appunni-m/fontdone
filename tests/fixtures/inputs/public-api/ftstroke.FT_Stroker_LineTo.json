@@ -5,7 +5,8 @@
     "line_segment_success",
     "first_segment_starts_subpath",
     "zero_length_line_noop",
-    "invalid_arguments"
+    "invalid_arguments",
+    "mcp_gap_matrix"
   ],
   "cases": [
     {
@@ -305,6 +306,55 @@
         },
         "source_refs": [
           "freetype/src/base/ftstroke.c:1274-1275"
+        ]
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Stroker_LineTo.mcp_gap_matrix",
+      "subject": "ftstroke.FT_Stroker_LineTo",
+      "case": "mcp_gap_matrix",
+      "operation": "ftstroke.line_to",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+          "variants": [
+          {"id":"c41-finalizer-001","params":{"validation":"non_horizontal_single_line","family":"closed_finalizer","variant":1},"coverage":["src/ffi/handles.rs:5670-5675"]},
+          {"id":"c41-finalizer-026","params":{"validation":"non_default_radius","family":"closed_finalizer","variant":1},"coverage":["src/ffi/handles.rs:5670-5675"]},
+          {"id":"c41-finalizer-051","params":{"validation":"non_round_join","family":"closed_finalizer","variant":1},"coverage":["src/ffi/handles.rs:5670-5675"]},
+          {"id":"c43-line-001","params":{"validation":"null_to","stroker":"null","variant":1},"coverage":["src/ffi/handles.rs:6263-6267"]},
+          {"id":"c43-line-018","params":{"validation":"null_stroker","to":"present","variant":18},"coverage":["src/ffi/handles.rs:6266-6267"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:stroker",
+        "area:finalizer"
+      ],
+      "metadata": {
+        "coverage_intent": "Retain one public witness for each closed-line finalizer branch from c41 and each null-argument guard family from c43."
+      },
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "symbol": "FT_Stroker_LineTo",
+        "signature": "FT_Error FT_Stroker_LineTo(FT_Stroker stroker, FT_Vector* to)"
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error",
+          "status_sequence": "FT_Error[]"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "status_sequence"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:1266-1337",
+          "src/ffi/handles.rs:5669-5677"
         ]
       }
     }

@@ -5,7 +5,9 @@
     "value_matches_header",
     "interpreter_version_property_roundtrip",
     "default_interpreter_version",
-    "glyph_hinting_runtime_effect"
+    "glyph_hinting_runtime_effect",
+    "mcp_wasm_null_file_batch",
+    "mcp_wasm_invalid_face_batch"
   ],
   "cases": [
     {
@@ -228,6 +230,120 @@
           "TrueType fixture with bytecode sensitive to interpreter-version GETINFO, subpixel/minimal behavior, backward compatibility, component offsets, and phantom point handling."
         ]
       }
+    },
+    {
+      "case_id": "ftdriver.TT_INTERPRETER_VERSION_40.mcp_wasm_null_file_batch",
+      "subject": "ftdriver.TT_INTERPRETER_VERSION_40",
+      "case": "mcp_wasm_null_file_batch",
+      "operation": "ftdriver.interpreter_version_glyph_output",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c84-interpreter-null-file-001",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3158-3159"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:constant",
+        "header:ftdriver",
+        "area:truetype-interpreter",
+        "area:coverage",
+        "runtime:wasm-facade",
+        "null-validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the direct file_base null guard in fontdone_wasm_interpreter_version_open. A 100-variant probe batch executed the real WASM Invalid_Argument return; MCP showed no additional line, branch, or region gain after the first witness, so one labeled witness is retained while Rust, C ABI, and the offline oracle preserve the same explicit safety contract."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "probe": "null_file_base=<value>",
+          "file_pointer_class": "null",
+          "readback_pointer_class": "nonnull"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "probe",
+            "file_pointer_class",
+            "readback_pointer_class"
+          ]
+        },
+        "source_refs": [
+          "fontdone-wasm/src/implementation.rs:3158-3159",
+          "freetype/include/freetype/freetype.h"
+        ],
+        "error": "FT_Err_Invalid_Argument"
+      }
+    },
+    {
+      "case_id": "ftdriver.TT_INTERPRETER_VERSION_40.mcp_wasm_invalid_face_batch",
+      "subject": "ftdriver.TT_INTERPRETER_VERSION_40",
+      "case": "mcp_wasm_invalid_face_batch",
+      "operation": "ftdriver.interpreter_version_glyph_output",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c85-interpreter-invalid-face-001",
+            "assets": {},
+            "params": {
+              "invalid_face_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3201"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:constant",
+        "header:ftdriver",
+        "area:truetype-interpreter",
+        "area:coverage",
+        "runtime:wasm-facade",
+        "error-path"
+      ],
+      "metadata": {
+          "coverage_intent": "Coverage MCP selected the face-open error arm in fontdone_wasm_interpreter_version_open. The 100-variant run used a non-null zero-length file buffer so property setup succeeded and the real FT_New_Memory_Face error return was exercised across all ABI lanes and the pinned C oracle; it added one covered line and two regions with no branch gain, so c85-interpreter-invalid-face-001 is retained and the other 99 variants are pruned."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "probe": "empty_file=<value>",
+          "file_pointer_class": "nonnull",
+          "readback_pointer_class": "nonnull"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "probe",
+            "file_pointer_class",
+            "readback_pointer_class"
+          ]
+        },
+        "source_refs": [
+          "fontdone-wasm/src/implementation.rs:3190-3201",
+          "freetype/src/base/ftobjs.c"
+        ],
+        "error": "FT_Err_Invalid_Stream_Operation"
+      }
     }
-  ]
+ ]
 }

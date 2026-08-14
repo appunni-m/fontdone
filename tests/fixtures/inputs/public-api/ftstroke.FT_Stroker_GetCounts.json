@@ -5,7 +5,8 @@
     "combined_closed_path_counts",
     "combined_open_path_counts",
     "invalid_stroker",
-    "optional_output_pointers"
+    "optional_output_pointers",
+    "mcp_gap_matrix"
   ],
   "cases": [
     {
@@ -216,6 +217,48 @@
         },
         "source_refs": [
           "freetype/src/base/ftstroke.c:1999-2006"
+        ]
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Stroker_GetCounts.mcp_gap_matrix",
+      "subject": "ftstroke.FT_Stroker_GetCounts",
+      "case": "mcp_gap_matrix",
+      "operation": "ftstroke.get_counts",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"c45-counts-001","params":{"validation":"null_stroker","family":"null_stroker","variant":1},"coverage":["src/ffi/handles.rs:6745-6746"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:stroker",
+        "area:validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Batch safe null-stroker witnesses for the GetCounts argument guard identified by the advancing Coverage MCP cursor."
+      },
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "symbol": "FT_Stroker_GetCounts",
+        "signature": "FT_Error FT_Stroker_GetCounts(FT_Stroker stroker, FT_UInt* anum_points, FT_UInt* anum_contours)"
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status"
+          ]
+        },
+        "source_refs": [
+          "src/ffi/handles.rs:6745-6746"
         ]
       }
     }

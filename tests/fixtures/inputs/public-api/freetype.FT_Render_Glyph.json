@@ -171,7 +171,128 @@
             "coverage": [
               "render:noto-normal"
             ]
-          }
+          },
+          {
+            "id": "batch12-render-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/attach-afm-base.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size_ppem": 12,
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "batch12:render:input/fonts/type1/attach-afm-base.pfb:FT_RENDER_MODE_NORMAL"
+            ]
+          },
+          {
+            "id": "batch12-render-002",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/attach-afm-base.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size_ppem": 12,
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_MONO"
+            },
+            "coverage": [
+              "batch12:render:input/fonts/type1/attach-afm-base.pfb:FT_RENDER_MODE_MONO"
+            ]
+          },
+          {
+            "id": "b19-render-001",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size_ppem": 1,
+              "glyph_index": 0,
+              "load_flags": ["FT_LOAD_DEFAULT"],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": ["batch19:render:empty-outline:FT_RENDER_MODE_NORMAL:1"]
+          },
+          {
+            "id": "b19-render-002",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size_ppem": 2,
+              "glyph_index": 0,
+              "load_flags": ["FT_LOAD_DEFAULT"],
+              "render_mode": "FT_RENDER_MODE_MONO"
+            },
+            "coverage": ["batch19:render:empty-outline:FT_RENDER_MODE_MONO:2"]
+          },
+          {
+            "id": "b19-render-003",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size_ppem": 3,
+              "glyph_index": 0,
+              "load_flags": ["FT_LOAD_DEFAULT"],
+              "render_mode": "FT_RENDER_MODE_LCD"
+            },
+            "coverage": ["batch19:render:empty-outline:FT_RENDER_MODE_LCD:3"]
+          },
+          {
+            "id": "b19-render-004",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size_ppem": 4,
+              "glyph_index": 0,
+              "load_flags": ["FT_LOAD_DEFAULT"],
+              "render_mode": "FT_RENDER_MODE_LCD_V"
+            },
+            "coverage": ["batch19:render:empty-outline:FT_RENDER_MODE_LCD_V:4"]
+          },
+{"id":"b24-sbit-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray_format1.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":1,"load_flags":["FT_LOAD_SBITS_ONLY"],"render_mode":"FT_RENDER_MODE_SDF"},"coverage":["batch24:sbit:gray-format1:sdf"]},
+{"id":"b22-render-021","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/hinter-control-matrix.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":16},"glyph_index":9,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_NORMAL"},"coverage":["batch22:render:normal:gid-9"]},
+{"id":"b22-render-022","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/hinter-control-matrix.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":16},"glyph_index":9,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_MONO"},"coverage":["batch22:render:mono:gid-9"]},
+{"id":"b22-render-023","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/hinter-control-matrix.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":16},"glyph_index":9,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_LCD"},"coverage":["batch22:render:lcd:gid-9"]},
+{"id":"b22-render-024","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/hinter-control-matrix.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":16},"glyph_index":9,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_LCD_V"},"coverage":["batch22:render:lcd-v:gid-9"]}
         ]
       },
       "classifiers": [
@@ -356,6 +477,758 @@
       "expect_error": false,
       "inputs": {
         "variants": [
+          {
+            "id": "b15-render-001",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 0,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "batch15:render:001:input/fonts/DejaVuSans.ttf:0:FT_RENDER_MODE_NORMAL"
+            ]
+          },
+          {
+            "id": "b15-render-002",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "batch15:render:002:input/fonts/DejaVuSans.ttf:1:FT_RENDER_MODE_NORMAL"
+            ]
+          },
+          {
+            "id": "b15-render-003",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 16
+              },
+              "glyph_index": 3,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "render_mode": "FT_RENDER_MODE_MONO"
+            },
+            "coverage": [
+              "batch15:render:003:input/fonts/DejaVuSans.ttf:3:FT_RENDER_MODE_MONO"
+            ]
+          },
+          {
+            "id": "b15-render-004",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 24
+              },
+              "glyph_index": 36,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "render_mode": "FT_RENDER_MODE_LIGHT"
+            },
+            "coverage": [
+              "batch15:render:004:input/fonts/DejaVuSans.ttf:36:FT_RENDER_MODE_LIGHT"
+            ]
+          },
+          {
+            "id": "b15-render-005",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 43,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "render_mode": "FT_RENDER_MODE_LCD"
+            },
+            "coverage": [
+              "batch15:render:005:input/fonts/DejaVuSans.ttf:43:FT_RENDER_MODE_LCD"
+            ]
+          },
+          {
+            "id": "b15-render-006",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 10
+              },
+              "glyph_index": 68,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "render_mode": "FT_RENDER_MODE_LCD_V"
+            },
+            "coverage": [
+              "batch15:render:006:input/fonts/DejaVuSans.ttf:68:FT_RENDER_MODE_LCD_V"
+            ]
+          },
+          {
+            "id": "b15-render-007",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 74,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "batch15:render:007:input/fonts/DejaVuSans.ttf:74:FT_RENDER_MODE_NORMAL"
+            ]
+          },
+          {
+            "id": "b15-render-008",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 24
+              },
+              "glyph_index": 77,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "batch15:render:008:input/fonts/DejaVuSans.ttf:77:FT_RENDER_MODE_SDF"
+            ]
+          },
+          {
+            "id": "b15-render-009",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 16
+              },
+              "glyph_index": 80,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "batch15:render:009:input/fonts/DejaVuSans.ttf:80:FT_RENDER_MODE_NORMAL"
+            ]
+          },
+          {
+            "id": "b15-render-010",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 82,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "render_mode": "FT_RENDER_MODE_MONO"
+            },
+            "coverage": [
+              "batch15:render:010:input/fonts/DejaVuSans.ttf:82:FT_RENDER_MODE_MONO"
+            ]
+          },
+          {
+            "id": "b15-render-011",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 28
+              },
+              "glyph_index": 90,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "batch15:render:011:input/fonts/DejaVuSans.ttf:90:FT_RENDER_MODE_NORMAL"
+            ]
+          },
+          {
+            "id": "b15-render-012",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 92,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT",
+                "FT_LOAD_NO_AUTOHINT"
+              ],
+              "render_mode": "FT_RENDER_MODE_LIGHT"
+            },
+            "coverage": [
+              "batch15:render:012:input/fonts/DejaVuSans.ttf:92:FT_RENDER_MODE_LIGHT"
+            ]
+          },
+          {
+            "id": "b15-render-013",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 14
+              },
+              "glyph_index": 130,
+              "load_flags": [
+                "FT_LOAD_NO_AUTOHINT"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "batch15:render:013:input/fonts/DejaVuSans.ttf:130:FT_RENDER_MODE_NORMAL"
+            ]
+          },
+          {
+            "id": "b15-render-014",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 41,
+              "load_flags": [
+                "FT_LOAD_NO_SCALE"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "batch15:render:014:input/fonts/glyf/hinter-control-matrix.ttf:41:FT_RENDER_MODE_NORMAL"
+            ]
+          },
+          {
+            "id": "b15-render-015",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 41,
+              "load_flags": [
+                "FT_LOAD_NO_SCALE"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "batch15:render:015:input/fonts/glyf/hinter-control-matrix.ttf:41:FT_RENDER_MODE_SDF"
+            ]
+          },
+          {
+            "id": "b15-render-016",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 24
+              },
+              "glyph_index": 43,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "batch15:render:016:input/fonts/glyf/hinter-control-matrix.ttf:43:FT_RENDER_MODE_NORMAL"
+            ]
+          },
+          {
+            "id": "b15-render-017",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 46,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_MONO"
+            },
+            "coverage": [
+              "batch15:render:017:input/fonts/glyf/hinter-control-matrix.ttf:46:FT_RENDER_MODE_MONO"
+            ]
+          },
+          {
+            "id": "b15-render-018",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 47,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_MONO"
+            },
+            "coverage": [
+              "batch15:render:018:input/fonts/glyf/hinter-control-matrix.ttf:47:FT_RENDER_MODE_MONO"
+            ]
+          },
+          {
+            "id": "b15-render-019",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 24
+              },
+              "glyph_index": 52,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "batch15:render:019:input/fonts/glyf/hinter-control-matrix.ttf:52:FT_RENDER_MODE_SDF"
+            ]
+          },
+          {
+            "id": "b15-render-020",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 16
+              },
+              "glyph_index": 53,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "batch15:render:020:input/fonts/glyf/hinter-control-matrix.ttf:53:FT_RENDER_MODE_SDF"
+            ]
+          },
+          {
+            "id": "b15-render-021",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 56,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "render_mode": "FT_RENDER_MODE_MONO"
+            },
+            "coverage": [
+              "batch15:render:021:input/fonts/glyf/hinter-control-matrix.ttf:56:FT_RENDER_MODE_MONO"
+            ]
+          },
+          {
+            "id": "b15-render-022",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/cff/pure-cff-cubic.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 16
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "batch15:render:022:input/fonts/cff/pure-cff-cubic.otf:1:FT_RENDER_MODE_NORMAL"
+            ]
+          },
+          {
+            "id": "b15-render-023",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/cff/pure-cff-cubic.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_MONO"
+            },
+            "coverage": [
+              "batch15:render:023:input/fonts/cff/pure-cff-cubic.otf:2:FT_RENDER_MODE_MONO"
+            ]
+          },
+          {
+            "id": "b15-render-024",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/cff/pure-cff-cubic.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 24
+              },
+              "glyph_index": 3,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "batch15:render:024:input/fonts/cff/pure-cff-cubic.otf:3:FT_RENDER_MODE_SDF"
+            ]
+          },
+          {
+            "id": "b15-render-025",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/cff/pure-cff-cubic.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 34,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_MONO"
+            },
+            "coverage": [
+              "batch15:render:025:input/fonts/cff/pure-cff-cubic.otf:34:FT_RENDER_MODE_MONO"
+            ]
+          },
+          {
+            "id": "b15-render-026",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/cff/pure-cff-cubic.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 18
+              },
+              "glyph_index": 35,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_MONO"
+            },
+            "coverage": [
+              "batch15:render:026:input/fonts/cff/pure-cff-cubic.otf:35:FT_RENDER_MODE_MONO"
+            ]
+          },
+          {
+            "id": "b15-render-027",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/cff/pure-cff-cubic.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 28
+              },
+              "glyph_index": 40,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_LCD"
+            },
+            "coverage": [
+              "batch15:render:027:input/fonts/cff/pure-cff-cubic.otf:40:FT_RENDER_MODE_LCD"
+            ]
+          },
+          {
+            "id": "b15-render-028",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/type1/simple-type1.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 16
+              },
+              "glyph_index": 0,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "batch15:render:028:input/fonts/type1/simple-type1.pfb:0:FT_RENDER_MODE_NORMAL"
+            ]
+          },
+          {
+            "id": "b15-render-029",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/type1/custom-encoding-array.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 0,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_MONO"
+            },
+            "coverage": [
+              "batch15:render:029:input/fonts/type1/custom-encoding-array.pfb:0:FT_RENDER_MODE_MONO"
+            ]
+          },
+          {
+            "id": "b15-render-030",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/NotoSans-Regular.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 16
+              },
+              "glyph_index": 82,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_MONO"
+            },
+            "coverage": [
+              "batch15:render:030:input/fonts/NotoSans-Regular.ttf:82:FT_RENDER_MODE_MONO"
+            ]
+          },
           {
             "id": "dejavu-a-normal",
             "assets": {

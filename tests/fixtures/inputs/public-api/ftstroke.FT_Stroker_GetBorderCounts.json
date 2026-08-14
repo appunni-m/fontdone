@@ -5,7 +5,8 @@
     "closed_path_border_counts",
     "open_path_single_border_counts",
     "invalid_stroker_or_border",
-    "optional_output_pointers"
+    "optional_output_pointers",
+    "mcp_gap_matrix"
   ],
   "cases": [
     {
@@ -233,6 +234,49 @@
         },
         "source_refs": [
           "freetype/src/base/ftstroke.c:1957-1964"
+        ]
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Stroker_GetBorderCounts.mcp_gap_matrix",
+      "subject": "ftstroke.FT_Stroker_GetBorderCounts",
+      "case": "mcp_gap_matrix",
+      "operation": "ftstroke.get_border_counts",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"c45-border-001","params":{"validation":"null_stroker","family":"null_stroker","border":"left","variant":1},"coverage":["src/ffi/handles.rs:6687-6692"]},
+          {"id":"c45-border-013","params":{"validation":"invalid_border","family":"invalid_border","stroker":"valid","border":2,"variant":13},"coverage":["src/ffi/handles.rs:6687-6692"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:stroker",
+        "area:validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Batch safe witnesses cover both sides of the public null-stroker-or-invalid-border short-circuit."
+      },
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "symbol": "FT_Stroker_GetBorderCounts",
+        "signature": "FT_Error FT_Stroker_GetBorderCounts(FT_Stroker stroker, FT_StrokerBorder border, FT_UInt* anum_points, FT_UInt* anum_contours)"
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status"
+          ]
+        },
+        "source_refs": [
+          "src/ffi/handles.rs:6687-6692"
         ]
       }
     }

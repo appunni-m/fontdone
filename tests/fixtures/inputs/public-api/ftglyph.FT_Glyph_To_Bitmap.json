@@ -5,6 +5,9 @@
     "success_outline_to_bitmap_destroy_false",
     "success_outline_to_bitmap_destroy_true",
     "success_already_bitmap_noop",
+    "mcp_bitmap_noop_batch",
+    "mcp_null_handle_batch",
+    "mcp_null_glyph_handle_batch",
     "success_origin_translation_affects_render",
     "error_invalid_outline_record_rejected",
     "pending_stroked_mono_target_outline_to_bitmap",
@@ -425,7 +428,189 @@
       }
     },
     {
-      "case_id": "ftglyph.FT_Glyph_To_Bitmap.success_origin_translation_affects_render",
+      "case_id": "ftglyph.FT_Glyph_To_Bitmap.mcp_bitmap_noop_batch",
+      "subject": "ftglyph.FT_Glyph_To_Bitmap",
+      "case": "mcp_bitmap_noop_batch",
+      "operation": "ftglyph.glyph_to_bitmap",
+      "schema": "glyph_to_bitmap",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c55-bitmap-noop-001",
+            "assets": {
+              "bitmap_strike_font": {
+                "kind": "ref",
+                "id": "input/fixtures/assets/fonts/sbit_gray_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "source_creation": "FT_Get_Glyph bitmap",
+              "destroy": false,
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3810"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph",
+        "area:coverage"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the valid already-bitmap early-success branch in fontdone_wasm_glyph_to_bitmap_handle. The retained witness keeps a maintained embedded-bitmap strike, glyph index, SBITS-only load, render mode, and destroy=false ownership path valid."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "handle": "unchanged",
+          "bitmap_bytes": "unchanged",
+          "ownership": "unchanged"
+        },
+        "compare": {
+          "mode": "identity_class",
+          "paths": [
+            "error",
+            "handle_identity_class",
+            "bitmap_before_after",
+            "free_events"
+          ]
+        },
+        "source_refs": [
+          "freetype/include/freetype/ftglyph.h",
+          "freetype/src/base/ftglyph.c"
+        ],
+        "fixture_requirements": [
+          "input/fixtures/assets/fonts/sbit_gray_format1.ttf contains a loadable embedded bitmap strike at glyph index 1 for the requested 20 ppem size."
+        ]
+      }
+    },
+    {
+      "case_id": "ftglyph.FT_Glyph_To_Bitmap.mcp_null_handle_batch",
+      "subject": "ftglyph.FT_Glyph_To_Bitmap",
+      "case": "mcp_null_handle_batch",
+      "operation": "ftglyph.glyph_to_bitmap",
+      "schema": "glyph_to_bitmap",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c67-null-handle-001",
+            "assets": {},
+            "params": {
+              "null_handle_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3804"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph",
+        "area:coverage",
+        "runtime:wasm-facade",
+        "null_validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the null output-handle validation return in fontdone_wasm_glyph_to_bitmap_handle. The 100 probes vary only a labeled payload so every lane executes the same real null-pointer contract and the batch can be pruned by measured line and region delta."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "caller_handle_class": "null",
+          "probe": "null_handle=<value>"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "probe",
+            "caller_handle_class"
+          ]
+        },
+        "source_refs": [
+          "freetype/include/freetype/ftglyph.h",
+          "fontdone-wasm/src/implementation.rs:3797-3804",
+          "src/ffi/handles.rs:3274-3288"
+        ],
+        "error": "FT_Err_Invalid_Argument"
+      }
+    },
+    {
+      "case_id": "ftglyph.FT_Glyph_To_Bitmap.mcp_null_glyph_handle_batch",
+      "subject": "ftglyph.FT_Glyph_To_Bitmap",
+      "case": "mcp_null_glyph_handle_batch",
+      "operation": "ftglyph.glyph_to_bitmap",
+      "schema": "glyph_to_bitmap",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c68-null-glyph-handle-001",
+            "assets": {},
+            "params": {
+              "null_glyph_handle_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3813"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph",
+        "area:coverage",
+        "runtime:wasm-facade",
+        "null_validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the non-null output pointer plus null contained glyph fallback in fontdone_wasm_glyph_to_bitmap_handle. The 100 probes vary only a labeled payload so every lane executes the same real invalid-glyph contract and the batch can be pruned by measured line and region delta."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "caller_handle_class": "null",
+          "probe": "null_handle=<value>"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "probe",
+            "caller_handle_class"
+          ]
+        },
+        "source_refs": [
+          "freetype/include/freetype/ftglyph.h",
+          "fontdone-wasm/src/implementation.rs:3797-3813",
+          "src/ffi/handles.rs:3274-3288"
+        ],
+        "error": "FT_Err_Invalid_Argument"
+      }
+    },
+    {
+     "case_id": "ftglyph.FT_Glyph_To_Bitmap.success_origin_translation_affects_render",
       "subject": "ftglyph.FT_Glyph_To_Bitmap",
       "case": "success_origin_translation_affects_render",
       "operation": "ftglyph.glyph_to_bitmap",

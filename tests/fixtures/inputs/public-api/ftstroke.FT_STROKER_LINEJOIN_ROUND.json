@@ -121,6 +121,1292 @@
       }
     },
     {
+      "case_id": "ftstroke.FT_STROKER_LINEJOIN_ROUND.c31_manual_path_matrix",
+      "subject": "ftstroke.FT_STROKER_LINEJOIN_ROUND",
+      "case": "round_join_geometry",
+      "operation": "ftstroke.stroke_manual_path",
+      "schema": "api_result",
+      "expect_error": false,
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "setter": "void FT_Stroker_Set(FT_Stroker stroker, FT_Fixed radius, FT_Stroker_LineCap line_cap, FT_Stroker_LineJoin line_join, FT_Fixed miter_limit)",
+        "line_join": "FT_STROKER_LINEJOIN_ROUND"
+      },
+      "inputs": {
+        "variants": [
+          {
+            "id": "c31-033",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 32,
+              "line_cap": 0,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-034",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 32,
+              "line_cap": 0,
+              "line_join": 1,
+              "miter_limit": 32768,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-035",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 32,
+              "line_cap": 0,
+              "line_join": 2,
+              "miter_limit": 65536,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-036",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 32,
+              "line_cap": 0,
+              "line_join": 3,
+              "miter_limit": 131072,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-037",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 0,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-038",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 0,
+              "line_join": 1,
+              "miter_limit": 32768,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-039",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 0,
+              "line_join": 2,
+              "miter_limit": 65536,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-040",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 0,
+              "line_join": 3,
+              "miter_limit": 131072,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-041",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 0,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-042",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 0,
+              "line_join": 1,
+              "miter_limit": 32768,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-043",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 0,
+              "line_join": 2,
+              "miter_limit": 65536,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-044",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 0,
+              "line_join": 3,
+              "miter_limit": 131072,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-045",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 128,
+              "line_cap": 0,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-046",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 128,
+              "line_cap": 0,
+              "line_join": 1,
+              "miter_limit": 32768,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-047",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 128,
+              "line_cap": 0,
+              "line_join": 2,
+              "miter_limit": 65536,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-048",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 128,
+              "line_cap": 0,
+              "line_join": 3,
+              "miter_limit": 131072,
+              "paths": [
+                "cubic_join"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6340"
+            ]
+          },
+          {
+            "id": "c31-049",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 0,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "conic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4741"
+            ]
+          },
+          {
+            "id": "c31-050",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 1,
+              "line_join": 1,
+              "miter_limit": 32768,
+              "paths": [
+                "conic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4741"
+            ]
+          },
+          {
+            "id": "c31-051",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 2,
+              "line_join": 2,
+              "miter_limit": 65536,
+              "paths": [
+                "conic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4741"
+            ]
+          },
+          {
+            "id": "c31-052",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 0,
+              "line_join": 3,
+              "miter_limit": 131072,
+              "paths": [
+                "conic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4741"
+            ]
+          },
+          {
+            "id": "c31-053",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 0,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "conic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4741"
+            ]
+          },
+          {
+            "id": "c31-054",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 1,
+              "line_join": 1,
+              "miter_limit": 32768,
+              "paths": [
+                "conic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4741"
+            ]
+          },
+          {
+            "id": "c31-055",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 2,
+              "line_join": 2,
+              "miter_limit": 65536,
+              "paths": [
+                "conic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4741"
+            ]
+          },
+          {
+            "id": "c31-056",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 0,
+              "line_join": 3,
+              "miter_limit": 131072,
+              "paths": [
+                "conic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4741"
+            ]
+          },
+          {
+            "id": "c31-057",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 0,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "cubic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4755"
+            ]
+          },
+          {
+            "id": "c31-058",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 1,
+              "line_join": 1,
+              "miter_limit": 32768,
+              "paths": [
+                "cubic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4755"
+            ]
+          },
+          {
+            "id": "c31-059",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 2,
+              "line_join": 2,
+              "miter_limit": 65536,
+              "paths": [
+                "cubic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4755"
+            ]
+          },
+          {
+            "id": "c31-060",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 0,
+              "line_join": 3,
+              "miter_limit": 131072,
+              "paths": [
+                "cubic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4755"
+            ]
+          },
+          {
+            "id": "c31-061",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 0,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "cubic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4755"
+            ]
+          },
+          {
+            "id": "c31-062",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 1,
+              "line_join": 1,
+              "miter_limit": 32768,
+              "paths": [
+                "cubic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4755"
+            ]
+          },
+          {
+            "id": "c31-063",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 2,
+              "line_join": 2,
+              "miter_limit": 65536,
+              "paths": [
+                "cubic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4755"
+            ]
+          },
+          {
+            "id": "c31-064",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 0,
+              "line_join": 3,
+              "miter_limit": 131072,
+              "paths": [
+                "cubic_then_line"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4755"
+            ]
+          },
+          {
+            "id": "c31-065",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 0,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "open_line"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5526"
+            ]
+          },
+          {
+            "id": "c31-066",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 1,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "open_line"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5526"
+            ]
+          },
+          {
+            "id": "c31-067",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 2,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "open_line"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5526"
+            ]
+          },
+          {
+            "id": "c31-068",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 3,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "open_line"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5526"
+            ]
+          },
+          {
+            "id": "c31-069",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 0,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "open_line"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5526"
+            ]
+          },
+          {
+            "id": "c31-070",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 1,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "open_line"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5526"
+            ]
+          },
+          {
+            "id": "c31-071",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 2,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "open_line"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5526"
+            ]
+          },
+          {
+            "id": "c31-073",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 0,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "open_diagonal"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5548"
+            ]
+          },
+          {
+            "id": "c31-074",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 1,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "open_diagonal"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5548"
+            ]
+          },
+          {
+            "id": "c31-075",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 2,
+              "line_join": 1,
+              "miter_limit": 65536,
+              "paths": [
+                "open_diagonal"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5548"
+            ]
+          },
+          {
+            "id": "c31-076",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 3,
+              "line_join": 1,
+              "miter_limit": 65536,
+              "paths": [
+                "open_diagonal"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5548"
+            ]
+          },
+          {
+            "id": "c31-077",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 128,
+              "line_cap": 0,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "open_diagonal"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5548"
+            ]
+          },
+          {
+            "id": "c31-078",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 128,
+              "line_cap": 1,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "open_diagonal"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5548"
+            ]
+          },
+          {
+            "id": "c31-079",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 128,
+              "line_cap": 2,
+              "line_join": 1,
+              "miter_limit": 65536,
+              "paths": [
+                "open_diagonal"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5548"
+            ]
+          },
+          {
+            "id": "c31-080",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 128,
+              "line_cap": 3,
+              "line_join": 1,
+              "miter_limit": 65536,
+              "paths": [
+                "open_diagonal"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5548"
+            ]
+          },
+          {
+            "id": "c31-081",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 0,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "flat_conic"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6239"
+            ]
+          },
+          {
+            "id": "c31-085",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 64,
+              "line_cap": 0,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "flat_cubic"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:6303"
+            ]
+          },
+          {
+            "id": "c31-097",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 128,
+              "line_cap": 0,
+              "line_join": 1,
+              "miter_limit": 32768,
+              "paths": [
+                "curve_chain"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4854"
+            ]
+          },
+          {
+            "id": "c31-098",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 128,
+              "line_cap": 1,
+              "line_join": 3,
+              "miter_limit": 131072,
+              "paths": [
+                "curve_chain"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5139"
+            ]
+          },
+          {
+            "id": "c31-099",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 0,
+              "line_join": 2,
+              "miter_limit": 65536,
+              "paths": [
+                "reverse_turn"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4755"
+            ]
+          },
+          {
+            "id": "c31-100",
+            "assets": {
+              "paths": {
+                "kind": "ref",
+                "id": "input/outlines/stroker/round-join-line-conic-cubic.json",
+                "asset_kind": "outline_path_records",
+                "status": "required"
+              }
+            },
+            "params": {
+              "radius": 96,
+              "line_cap": 3,
+              "line_join": 0,
+              "miter_limit": 65536,
+              "paths": [
+                "open_line"
+              ],
+              "open": true
+            },
+            "coverage": [
+              "src/ffi/handles.rs:5529"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:enum_variant",
+        "header:ftstroke",
+        "area:stroker",
+        "area:geometry",
+        "area:coverage-batch"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status_sequence": "FT_Error[]",
+          "point_count": "FT_UInt",
+          "contour_count": "FT_UInt",
+          "exported_outline": "points/tags/contours in 26.6 coordinates",
+          "cbox": "FT_BBox"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status_sequence",
+            "point_count",
+            "contour_count",
+            "exported_outline.points",
+            "exported_outline.tags",
+            "exported_outline.contours",
+            "cbox"
+          ]
+        },
+        "source_refs": [
+          "freetype/include/freetype/ftstroke.h:104-139",
+          "freetype/src/base/ftstroke.c:824-846",
+          "freetype/src/base/ftstroke.c:1266-1760"
+        ]
+      }
+    },
+    {
       "case_id": "ftstroke.FT_STROKER_LINEJOIN_ROUND.wide_curve_join_restoration",
       "subject": "ftstroke.FT_STROKER_LINEJOIN_ROUND",
       "case": "wide_curve_join_restoration",

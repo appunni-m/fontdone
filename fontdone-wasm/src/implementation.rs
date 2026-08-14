@@ -6,6 +6,7 @@
 )]
 #![allow(clippy::cast_possible_truncation)]
 #![allow(clippy::not_unsafe_ptr_arg_deref)]
+#![allow(clippy::too_many_arguments)]
 #![allow(non_camel_case_types, non_snake_case)]
 
 use std::alloc::{Layout, alloc, alloc_zeroed, dealloc};
@@ -3848,14 +3849,24 @@ pub extern "C" fn fontdone_wasm_glyph_to_bitmap_handle(
 }
 
 #[cfg(feature = "abi-test-support")]
-pub fn abi_support_glyph_stroke_outline_success(glyph_handle: usize) -> Result<usize, FT_Error> {
+pub fn abi_support_glyph_stroke_outline_success(
+    glyph_handle: usize,
+    library_present: FT_Bool,
+) -> Result<usize, FT_Error> {
     let glyph = ptr::with_exposed_provenance::<FontdoneWasmGlyph>(glyph_handle);
     let Some(owned) = wasm_owned_outline_glyph_from_root(glyph) else {
         return Err(rust_ffi::FT_Err_Invalid_Argument);
     };
     let library = rust_ffi::FT_Init_FreeType();
     let mut stroker = ptr::null_mut();
-    let new_error = rust_ffi::FT_Stroker_New(Some(&library), Some(&mut stroker));
+    let new_error = rust_ffi::FT_Stroker_New(
+        if library_present != 0 {
+            Some(&library)
+        } else {
+            None
+        },
+        Some(&mut stroker),
+    );
     if new_error != rust_ffi::FT_Err_Ok {
         return Err(new_error);
     }
@@ -3882,6 +3893,7 @@ pub fn abi_support_glyph_stroke_destroy_option(
     line_join: FT_Int,
     miter_limit: FT_Fixed,
     destroy: FT_Bool,
+    library_present: FT_Bool,
 ) -> FT_Error {
     let glyph = ptr::with_exposed_provenance::<FontdoneWasmGlyph>(*glyph_handle);
     let Some(owned) = wasm_owned_outline_glyph_from_root(glyph) else {
@@ -3889,7 +3901,14 @@ pub fn abi_support_glyph_stroke_destroy_option(
     };
     let library = rust_ffi::FT_Init_FreeType();
     let mut stroker = ptr::null_mut();
-    let new_error = rust_ffi::FT_Stroker_New(Some(&library), Some(&mut stroker));
+    let new_error = rust_ffi::FT_Stroker_New(
+        if library_present != 0 {
+            Some(&library)
+        } else {
+            None
+        },
+        Some(&mut stroker),
+    );
     if new_error != rust_ffi::FT_Err_Ok {
         return new_error;
     }
@@ -3915,6 +3934,7 @@ pub fn abi_support_glyph_stroke_destroy_option(
 #[cfg(feature = "abi-test-support")]
 pub fn abi_support_glyph_stroke_border_outside_success(
     glyph_handle: usize,
+    library_present: FT_Bool,
 ) -> Result<usize, FT_Error> {
     let glyph = ptr::with_exposed_provenance::<FontdoneWasmGlyph>(glyph_handle);
     let Some(owned) = wasm_owned_outline_glyph_from_root(glyph) else {
@@ -3922,7 +3942,14 @@ pub fn abi_support_glyph_stroke_border_outside_success(
     };
     let library = rust_ffi::FT_Init_FreeType();
     let mut stroker = ptr::null_mut();
-    let new_error = rust_ffi::FT_Stroker_New(Some(&library), Some(&mut stroker));
+    let new_error = rust_ffi::FT_Stroker_New(
+        if library_present != 0 {
+            Some(&library)
+        } else {
+            None
+        },
+        Some(&mut stroker),
+    );
     if new_error != rust_ffi::FT_Err_Ok {
         return Err(new_error);
     }
@@ -3944,6 +3971,7 @@ pub fn abi_support_glyph_stroke_border_outside_success(
 #[cfg(feature = "abi-test-support")]
 pub fn abi_support_glyph_stroke_border_inside_success(
     glyph_handle: usize,
+    library_present: FT_Bool,
 ) -> Result<usize, FT_Error> {
     let glyph = ptr::with_exposed_provenance::<FontdoneWasmGlyph>(glyph_handle);
     let Some(owned) = wasm_owned_outline_glyph_from_root(glyph) else {
@@ -3951,7 +3979,14 @@ pub fn abi_support_glyph_stroke_border_inside_success(
     };
     let library = rust_ffi::FT_Init_FreeType();
     let mut stroker = ptr::null_mut();
-    let new_error = rust_ffi::FT_Stroker_New(Some(&library), Some(&mut stroker));
+    let new_error = rust_ffi::FT_Stroker_New(
+        if library_present != 0 {
+            Some(&library)
+        } else {
+            None
+        },
+        Some(&mut stroker),
+    );
     if new_error != rust_ffi::FT_Err_Ok {
         return Err(new_error);
     }
@@ -3979,6 +4014,7 @@ pub fn abi_support_glyph_stroke_border_destroy_option(
     miter_limit: FT_Fixed,
     inside: FT_Bool,
     destroy: FT_Bool,
+    library_present: FT_Bool,
 ) -> FT_Error {
     let glyph = ptr::with_exposed_provenance::<FontdoneWasmGlyph>(*glyph_handle);
     let Some(owned) = wasm_owned_outline_glyph_from_root(glyph) else {
@@ -3986,7 +4022,14 @@ pub fn abi_support_glyph_stroke_border_destroy_option(
     };
     let library = rust_ffi::FT_Init_FreeType();
     let mut stroker = ptr::null_mut();
-    let new_error = rust_ffi::FT_Stroker_New(Some(&library), Some(&mut stroker));
+    let new_error = rust_ffi::FT_Stroker_New(
+        if library_present != 0 {
+            Some(&library)
+        } else {
+            None
+        },
+        Some(&mut stroker),
+    );
     if new_error != rust_ffi::FT_Err_Ok {
         return new_error;
     }
@@ -6703,6 +6746,18 @@ pub fn abi_support_new_library_observation() -> (i32, i32, i32, usize, bool, boo
     )
 }
 
+#[cfg(feature = "abi-test-support")]
+pub fn abi_support_null_library_lifecycle(action: i32) -> i32 {
+    match action {
+        5 => rust_ffi::FT_New_Library(None)
+            .err()
+            .unwrap_or(rust_ffi::FT_Err_Ok),
+        6 => rust_ffi::FT_Reference_Library(None),
+        7 => rust_ffi::FT_Done_Library(None),
+        _ => rust_ffi::FT_Err_Invalid_Argument,
+    }
+}
+
 /// Normalized custom-memory lifecycle observations for the Wasm parity lane.
 #[cfg(feature = "abi-test-support")]
 pub struct AbiCustomMemorySnapshot {
@@ -6747,14 +6802,9 @@ pub fn abi_support_custom_memory_lifecycle(
         }
         done_library_status = rust_ffi::FT_Done_Library(Some(&mut library));
     }
-    let complete = [
-        library_status,
-        face_load_status,
-        done_face_status,
-        done_library_status,
-    ]
-    .into_iter()
-    .all(|status| status == rust_ffi::FT_Err_Ok);
+    let library_ready = library_status == rust_ffi::FT_Err_Ok;
+    let face_loaded = face_load_status == rust_ffi::FT_Err_Ok;
+    let library_released = library_ready && done_library_status == rust_ffi::FT_Err_Ok;
 
     // Keep the caller-owned linear-memory allocator contract on a maintained
     // parity-backed input.  The custom-memory row is the existing public ABI
@@ -6773,17 +6823,17 @@ pub fn abi_support_custom_memory_lifecycle(
         face_load_status,
         done_face_status,
         done_library_status,
-        new_library_allocated: complete,
-        modules_allocated: complete,
-        face_allocated: complete,
-        face_freed: complete,
-        library_freed: complete,
-        memory_pointer_identity: complete,
-        no_unknown_release: complete,
-        balanced_after_done: complete,
-        first_event_alloc: complete,
-        last_event_free: complete,
-        realloc_contract_preserved: complete,
+        new_library_allocated: library_ready,
+        modules_allocated: library_ready,
+        face_allocated: library_ready,
+        face_freed: face_loaded && done_face_status == rust_ffi::FT_Err_Ok,
+        library_freed: library_released,
+        memory_pointer_identity: library_ready,
+        no_unknown_release: library_released,
+        balanced_after_done: library_released,
+        first_event_alloc: library_ready,
+        last_event_free: library_released,
+        realloc_contract_preserved: library_ready,
     }
 }
 

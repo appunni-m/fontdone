@@ -85,6 +85,21 @@
               ],
               "face_index": 0
             }
+          },
+          {
+            "id": "b19-bdf-001",
+            "coverage": ["batch19:bdf:zero-dimensions:property-set-1"],
+            "assets": {
+              "bdf_font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/zero-dimensions-encoded.bdf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "properties": ["FAMILY_NAME","POINT_SIZE","PIXEL_SIZE","RESOLUTION_X"],
+              "face_index": 0
+            }
           }
         ]
       },

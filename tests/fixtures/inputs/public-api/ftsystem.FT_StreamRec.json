@@ -4,7 +4,8 @@
   "manifest_cases": [
     "layout_matches_c",
     "memory_stream_field_contract",
-    "callback_stream_field_contract"
+    "callback_stream_field_contract",
+    "mcp_wasm_external_stream_error_batch"
   ],
   "metadata": {
     "abi": {
@@ -254,6 +255,70 @@
           "paths": ["face_load_status", "stream_after", "callback_events", "close_called_by_face_done"]
         },
         "fixture_requirements": ["The tracked external-stream callback harness defines read(count==0), read(count>0), and close probes without embedding font bytes in JSON."]
+      }
+    },
+    {
+      "case_id": "ftsystem.FT_StreamRec.mcp_wasm_external_stream_error_batch",
+      "subject": "ftsystem.FT_StreamRec",
+      "case": "mcp_wasm_external_stream_error_batch",
+      "operation": "freetype.open_face_stream",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c86-external-stream-invalid-face-001",
+            "assets": {},
+            "params": {
+              "invalid_face_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3264"
+            ]
+          }
+        ]
+      },
+      "classifiers": ["kind:record", "header:ftsystem", "area:stream", "area:coverage", "runtime:wasm-facade", "error-path"],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the external-stream face-open Err arm in fontdone_wasm_open_external_stream_face. The local registered coverage run completed while MCP transport was unavailable and added one covered line and two regions in the target WASM file, so c86-external-stream-invalid-face-001 is retained and the other 99 variants are pruned pending MCP re-ingestion."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "probe": "empty_file=<value>",
+          "return": "FT_Error",
+          "status": "FT_Error",
+          "opened": false,
+          "face_flags": 0,
+          "bit_set": false,
+          "stream_pointer_identity": false,
+          "close_callback_stream_identity": true,
+          "stream_close_calls": 1,
+          "client_stream_alive_after_done_face": true
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "probe",
+            "return",
+            "status",
+            "opened",
+            "face_flags",
+            "bit_set",
+            "stream_pointer_identity",
+            "close_callback_stream_identity",
+            "stream_close_calls",
+            "client_stream_alive_after_done_face"
+          ]
+        },
+        "source_refs": [
+          "fontdone-wasm/src/implementation.rs:3238-3264",
+          "freetype/src/base/ftobjs.c"
+        ],
+        "error": "FT_Err_Invalid_Stream_Operation"
       }
     }
   ]

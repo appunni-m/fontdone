@@ -6,6 +6,13 @@
     "inside_border_success",
     "destroy_original_option",
     "invalid_glyph_arguments",
+    "mcp_null_outside_handle_batch",
+    "mcp_null_outside_library_batch",
+    "mcp_null_inside_handle_batch",
+    "mcp_null_inside_library_batch",
+    "mcp_null_destroy_handle_batch",
+    "mcp_null_destroy_library_batch",
+    "mcp_invalid_destroy_outline_batch",
     "invalid_outline_parse_rejected"
   ],
   "cases": [
@@ -266,6 +273,398 @@
         "source_refs": [
           "freetype/src/base/ftstroke.c:2336-2346"
         ]
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_StrokeBorder.mcp_null_outside_handle_batch",
+      "subject": "ftstroke.FT_Glyph_StrokeBorder",
+      "case": "mcp_null_outside_handle_batch",
+      "operation": "ftstroke.glyph_stroke_border",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c74-null-outside-handle-001",
+            "assets": {},
+            "params": {
+              "null_border_outside_handle_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3939"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "runtime:wasm-facade",
+        "null_validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the invalid-handle return in abi_support_glyph_stroke_border_outside_success. The 100 probes call the public outside-border parity shape on Rust and C while the WASM lane sends a null detached-glyph handle directly to the support helper; the batch is pruned by measured line and region delta."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:2336-2346",
+          "fontdone-wasm/src/implementation.rs:3934-3939"
+        ],
+        "error": "FT_Err_Invalid_Argument"
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_StrokeBorder.mcp_null_outside_library_batch",
+      "subject": "ftstroke.FT_Glyph_StrokeBorder",
+      "case": "mcp_null_outside_library_batch",
+      "operation": "ftstroke.glyph_stroke_border",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c75-null-outside-library-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "glyph_index": 36,
+              "size_26_6": 1536,
+              "load_flags": [
+                "FT_LOAD_NO_BITMAP"
+              ],
+              "null_border_outside_library_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3945"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "runtime:wasm-facade",
+        "null_validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the FT_Stroker_New error return in abi_support_glyph_stroke_border_outside_success. The 100 probes use a valid DejaVuSans outline for WASM and pass a null library into the border-outside support helper; Rust, C, and the oracle execute the equivalent FT_Stroker_New null-library contract, and the batch is pruned by measured line and region delta."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:793-815",
+          "fontdone-wasm/src/implementation.rs:3934-3945"
+        ],
+        "error": "FT_Err_Invalid_Library_Handle"
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_StrokeBorder.mcp_null_inside_handle_batch",
+      "subject": "ftstroke.FT_Glyph_StrokeBorder",
+      "case": "mcp_null_inside_handle_batch",
+      "operation": "ftstroke.glyph_stroke_border",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c76-null-inside-handle-001",
+            "assets": {},
+            "params": {
+              "null_border_inside_handle_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3976"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "runtime:wasm-facade",
+        "null_validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the invalid-handle return in abi_support_glyph_stroke_border_inside_success. The 100 probes pass a null glyph handle through the inside-border support helper; Rust, C, and the oracle execute the equivalent FT_Glyph_StrokeBorder null-handle contract, and the batch is pruned by measured line and region delta."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:2336-2346",
+          "fontdone-wasm/src/implementation.rs:3971-3976"
+        ],
+        "error": "FT_Err_Invalid_Argument"
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_StrokeBorder.mcp_null_inside_library_batch",
+      "subject": "ftstroke.FT_Glyph_StrokeBorder",
+      "case": "mcp_null_inside_library_batch",
+      "operation": "ftstroke.glyph_stroke_border",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c77-null-inside-library-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "glyph_index": 36,
+              "size_26_6": 1536,
+              "load_flags": [
+                "FT_LOAD_NO_BITMAP"
+              ],
+              "null_border_inside_library_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3989"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "runtime:wasm-facade",
+        "null_validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the FT_Stroker_New error return in abi_support_glyph_stroke_border_inside_success. The 100 probes use a valid DejaVuSans outline for WASM and pass a null library into the inside-border support helper; Rust, C, and the oracle execute the equivalent FT_Stroker_New null-library contract, and the batch is pruned by measured line and region delta."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:793-815",
+          "fontdone-wasm/src/implementation.rs:3971-3989"
+        ],
+        "error": "FT_Err_Invalid_Library_Handle"
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_StrokeBorder.mcp_null_destroy_handle_batch",
+      "subject": "ftstroke.FT_Glyph_StrokeBorder",
+      "case": "mcp_null_destroy_handle_batch",
+      "operation": "ftstroke.glyph_stroke_border",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c78-null-border-destroy-handle-001",
+            "assets": {},
+            "params": {
+              "null_border_destroy_handle_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4019"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "runtime:wasm-facade",
+        "null_validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the invalid-handle return in abi_support_glyph_stroke_border_destroy_option. The 100 probes pass a null detached-glyph handle through the WASM border destroy-option support path; Rust, C, and the oracle execute the equivalent FT_Glyph_StrokeBorder null-handle contract, and the batch is pruned by measured line and region delta."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:2336-2346",
+          "fontdone-wasm/src/implementation.rs:4008-4019"
+        ],
+        "error": "FT_Err_Invalid_Argument"
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_StrokeBorder.mcp_null_destroy_library_batch",
+      "subject": "ftstroke.FT_Glyph_StrokeBorder",
+      "case": "mcp_null_destroy_library_batch",
+      "operation": "ftstroke.glyph_stroke_border",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c79-null-border-destroy-library-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "glyph_index": 36,
+              "size_26_6": 1536,
+              "load_flags": [
+                "FT_LOAD_NO_BITMAP"
+              ],
+              "null_border_destroy_library_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4033"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "runtime:wasm-facade",
+        "null_validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the FT_Stroker_New error return in abi_support_glyph_stroke_border_destroy_option. The 100 probes use a valid DejaVuSans outline for WASM and pass a null library into the border destroy-option support helper; Rust, C, and the oracle execute the equivalent FT_Stroker_New null-library contract, and the batch is pruned by measured line and region delta."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:793-815",
+          "fontdone-wasm/src/implementation.rs:4008-4033"
+        ],
+        "error": "FT_Err_Invalid_Library_Handle"
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_StrokeBorder.mcp_invalid_destroy_outline_batch",
+      "subject": "ftstroke.FT_Glyph_StrokeBorder",
+      "case": "mcp_invalid_destroy_outline_batch",
+      "operation": "ftstroke.glyph_stroke_border",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c80-invalid-border-destroy-outline-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "glyph_index": 36,
+              "size_26_6": 1536,
+              "load_flags": [
+                "FT_LOAD_NO_BITMAP"
+              ],
+              "invalid_outline": "cubic_first_contour",
+              "invalid_destroy_border_outline_probe": 1,
+              "inside": false,
+              "destroy": false,
+              "stroker": {
+                "radius": 96,
+                "line_cap": "FT_STROKER_LINECAP_ROUND",
+                "line_join": "FT_STROKER_LINEJOIN_ROUND",
+                "miter_limit": 65536
+              }
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4050"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:glyph",
+        "area:border",
+        "area:error",
+        "runtime:wasm-facade",
+        "invalid_outline"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the Err(error) arm in abi_support_glyph_stroke_border_destroy_option. The 100 probes corrupt the first outline tag before border destroy-option stroking; Rust and C run the maintained invalid-outline contract while WASM reaches the helper result error arm, and the batch is pruned by measured line and region delta."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:2330-2398",
+          "fontdone-wasm/src/implementation.rs:4008-4050"
+        ],
+        "error": "FT_Err_Invalid_Outline"
       }
     },
     {

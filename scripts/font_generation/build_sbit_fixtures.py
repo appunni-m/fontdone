@@ -719,6 +719,31 @@ def cblc_strike_metrics_tables() -> tuple[bytes, bytes]:
     return eblc, ebdt
 
 
+def cblc_select_size_matrix_tables() -> tuple[bytes, bytes]:
+    """Build one selectable CBLC strike for each public strike index."""
+    image = bytes([2, 2, 1, 2, 3]) + bytes([0x11, 0x80, 0xC0, 0xFF])
+    index_array = struct.pack(">HHI", 1, 1, 8)
+    index_subtable = struct.pack(">HHI", 1, 1, 4) + struct.pack(">II", 0, len(image))
+    index_tables = index_array + index_subtable
+    strike_count = 100
+    index_array_offset = 8 + strike_count * 48
+    strikes = b"".join(
+        bitmap_size_table(
+            index_array_offset,
+            len(index_tables),
+            1,
+            1,
+            x_ppem=ppem,
+            y_ppem=ppem,
+            bit_depth=8,
+        )
+        for ppem in range(1, strike_count + 1)
+    )
+    cblc = struct.pack(">II", 0x00020000, strike_count) + strikes + index_tables
+    cbdt = struct.pack(">I", 0x00020000) + image
+    return cblc, cbdt
+
+
 def no_matching_strike_eblc() -> bytes:
     index_array = struct.pack(">HHI", 1, 1, 8)
     index_subtable = struct.pack(">HHI", 1, 1, 0) + struct.pack(">II", 0, 0)
@@ -1055,12 +1080,15 @@ def save_sbit_font(
     *,
     vertical_metrics: tuple[int, int] | None = None,
     table_tags: tuple[str, str] = ("EBLC", "EBDT"),
+    remove_os2: bool = False,
     output_dir: Path = OUT_DIR,
 ) -> None:
     font = TTFont(BASE_FONT, recalcTimestamp=False)
     index_tag, data_tag = table_tags
     font[index_tag] = raw_table(index_tag, eblc)
     font[data_tag] = raw_table(data_tag, ebdt)
+    if remove_os2 and "OS/2" in font:
+        del font["OS/2"]
     if vertical_metrics is not None:
         add_vertical_metrics(font, *vertical_metrics)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -1254,6 +1282,27 @@ def build_sbit_table_tag_and_strike_probes() -> None:
         eblc,
         ebdt,
         table_tags=("CBLC", "CBDT"),
+    )
+    eblc, ebdt = cblc_select_size_matrix_tables()
+    save_sbit_font(
+        "sbit_cblc_cbdt_select_size_matrix.ttf",
+        eblc,
+        ebdt,
+        table_tags=("CBLC", "CBDT"),
+    )
+    save_sbit_font(
+        "sbit_cblc_cbdt_select_size_no_os2.ttf",
+        eblc,
+        ebdt,
+        table_tags=("CBLC", "CBDT"),
+        remove_os2=True,
+    )
+    save_sbit_font(
+        "sbit_cblc_cbdt_select_size_vmtx.ttf",
+        eblc,
+        ebdt,
+        table_tags=("CBLC", "CBDT"),
+        vertical_metrics=(2, 880),
     )
 
 

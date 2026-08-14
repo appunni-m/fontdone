@@ -8,6 +8,7 @@
     "reads_malformed_lzw_streams",
     "invalid_header_error",
     "null_stream_or_source_error",
+    "mcp_stream_gap_matrix",
     "unsupported_build_error"
   ],
   "cases": [
@@ -436,6 +437,46 @@
         "error": "FT_Err_Unimplemented_Feature",
         "source_refs": [
           "freetype/src/lzw/ftlzw.c:390-399"
+        ]
+      }
+    },
+    {
+      "case_id": "ftlzw.FT_Stream_OpenLZW.mcp_stream_gap_matrix",
+      "subject": "ftlzw.FT_Stream_OpenLZW",
+      "case": "mcp_stream_gap_matrix",
+      "operation": "ftlzw.stream_open_lzw",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+      "variants": [
+          {"id":"c48-lzw-001","assets":{"lzw_streams":{"kind":"ref","id":"compressed/lzw/small-streams.json","asset_kind":"manifest"}},"params":{"read_plan":"null_close_after_open","case_variant":1},"coverage":["src/ffi/handles.rs:7973-7981"]}
+      ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftlzw",
+        "area:lzw-stream",
+        "area:coverage"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "rows": "decoded stream rows",
+          "null_close_safe": "bool"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "rows[*].status",
+            "rows[*].decoded_reads[*].bytes",
+            "null_close_safe"
+          ]
+        },
+        "source_refs": [
+          "src/ffi/handles.rs:7973-7981"
         ]
       }
     }

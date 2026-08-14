@@ -1253,6 +1253,7 @@ impl<'a> Type2Decoder<'a> {
             xmax,
             ymax,
             bbox_xmin: xmin,
+            bbox_ymax: ymax,
             is_composite: false,
             sub_lsb: 0,
             instructions: Vec::new(),

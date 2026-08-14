@@ -62,6 +62,51 @@
       "classifiers": ["kind:function", "header:ftmm", "surface:public-c-api", "error:unsupported-face"],
       "metadata": {"abi": {"header": "freetype/ftmm.h", "symbol": "FT_Set_MM_WeightVector", "kind": "function"}, "source_behavior": "The TrueType variation service table has set_mm_weightvector set to NULL, so the wrapper returns Invalid_Argument."},
       "expectation": {"status": "error", "output_shape": {"return": "FT_Error", "variation_state_changed": false}, "compare": {"mode": "exact_error", "paths": ["return", "variation_state_changed"]}, "error": "FT_Err_Invalid_Argument", "source_refs": ["freetype/src/base/ftmm.c:229-236", "freetype/src/truetype/ttdriver.c:532-538"]}
+    },
+    {
+      "case_id": "ftmm.FT_Set_MM_WeightVector.c182_coordinate_conversion_overflow",
+      "subject": "ftmm.FT_Set_MM_WeightVector",
+      "case": "error_unsupported_on_true_type_variations",
+      "covers_manifest_cases": ["error_unsupported_on_true_type_variations"],
+      "operation": "ftmm.set_mm_weight_vector",
+      "schema": "api_result",
+      "expect_error": true,
+      "expectation": {
+        "status": "error",
+        "output_shape": {"return": "FT_Error"},
+        "compare": {"mode": "exact_error", "paths": ["return"]},
+        "error": "FT_Err_Invalid_Argument",
+        "source_refs": ["src/ffi/handles.rs:12737-12743"]
+      },
+      "inputs": {
+        "variants": [
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:001"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:002"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-003","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:003"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-004","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:004"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-005","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:005"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-006","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:006"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-007","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:007"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-008","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:008"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-009","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:009"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-010","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:010"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-011","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:011"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-012","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:012"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-013","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:013"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-014","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:014"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-015","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:015"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-016","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:016"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-017","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:017"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-018","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:018"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-019","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:019"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-020","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:020"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-021","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:021"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-022","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:022"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-023","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:023"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-024","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:024"]},
+          {"id":"ftmm-FT_Set_MM_WeightVector-c182_coordinate_conversion_overflow-025","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/inter-wght.ttf","asset_kind":"font"}},"params":{"face_index":0,"len":1,"weightvector_16_16":[2147483648]},"coverage":["c182:ffi:mm-weight-conversion:025"]}
+        ]
+      }
     }
   ]
 }

@@ -3,7 +3,8 @@
   "subject": "ftmodapi.FT_Reference_Library",
   "manifest_cases": [
     "increments_refcount",
-    "rejects_null_library"
+    "rejects_null_library",
+    "mcp_null_handle_batch"
   ],
   "cases": [
     {
@@ -73,6 +74,376 @@
         "area:library",
         "area:error"
       ],
+      "expectation": {
+        "status": "error",
+        "error": "FT_Err_Invalid_Library_Handle",
+        "output_shape": {
+          "status": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "status"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftobjs.c:FT_Reference_Library"
+        ]
+      }
+    },
+    {
+      "case_id": "ftmodapi.FT_Reference_Library.mcp_null_handle_batch",
+      "subject": "ftmodapi.FT_Reference_Library",
+      "case": "mcp_null_handle_batch",
+      "operation": "ftmodapi.reference_library",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "null-reference-001",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-001"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-002",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-002"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-003",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-003"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-004",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-004"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-005",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-005"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-006",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-006"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-007",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-007"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-008",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-008"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-009",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-009"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-010",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-010"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-011",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-011"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-012",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-012"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-013",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-013"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-014",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-014"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-015",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-015"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-016",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-016"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-017",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-017"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-018",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-018"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-019",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-019"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-020",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-020"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-021",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-021"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-022",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-022"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-023",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-023"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-024",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-024"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-025",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-025"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-026",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-026"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-027",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-027"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-028",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-028"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-029",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-029"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-030",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-030"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-031",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-031"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-032",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-032"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          },
+          {
+            "id": "null-reference-033",
+            "params": {
+              "library": "null",
+              "probe": "null-reference-033"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1903"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftmodapi",
+        "area:library",
+        "area:error",
+        "area:coverage"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP batch exercises the null-handle return in FT_Reference_Library."
+      },
       "expectation": {
         "status": "error",
         "error": "FT_Err_Invalid_Library_Handle",

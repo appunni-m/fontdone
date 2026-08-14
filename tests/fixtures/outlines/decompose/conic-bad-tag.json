@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "kind": "outline_model",
+  "points": [
+    {"x": 512, "y": 1024},
+    {"x": 1024, "y": 1792},
+    {"x": 1536, "y": 1024}
+  ],
+  "tags": [1, 0, 2],
+  "contours": [2],
+  "flags": 0
+}

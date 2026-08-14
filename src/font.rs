@@ -4,12 +4,13 @@
 //! including text layout or framework-specific packaging, live outside this
 //! crate.
 
-use crate::casts::{i16_from_i32, i32_from_f32, u32_from_i64, u32_from_usize, usize_from_i32};
+use crate::casts::{i16_from_i32, i32_from_f32, u32_from_i64, usize_from_i32};
 
 use crate::error::FontError;
 use crate::fixed::{ft_div_fix, ft_mul_div, ft_mul_fix};
 use crate::outline::{Outline, OutlinePoint};
 use crate::pfr::PfrFont;
+use crate::render::RenderMode;
 use crate::scaler::{self, ft_pix_ceil, ft_pix_floor, ft_pix_round, pixel_round};
 use crate::tables::FontData;
 use crate::tt::hinter::NativeHintMode;
@@ -321,6 +322,106 @@ struct Type1CharString {
     encrypted: Vec<u8>,
 }
 
+/// Return the Unicode scalar encoded by a PostScript glyph name.
+///
+/// FreeType's Type 1 Unicode charmap is synthesized by the `psnames` service
+/// from Adobe Glyph List names.  Keep this lookup in the face implementation
+/// so all frontends share the same behavior; the ABI layers only expose the
+/// resulting glyph index.  The explicit hexadecimal forms mirror
+/// `ps_unicode_value` and the named entries cover the ASCII portion of the
+/// Adobe Standard Glyph List plus the extra names FreeType adds for Windows
+/// glyph compatibility.
+fn type1_unicode_value(glyph_name: &str) -> Option<u32> {
+    let base_name = glyph_name.split('.').next().unwrap_or(glyph_name);
+    if let Some(hex) = base_name.strip_prefix("uni") {
+        if hex.len() == 4 {
+            return type1_upper_hex_value(hex);
+        }
+    }
+    if let Some(hex) = base_name.strip_prefix('u') {
+        if (4..=6).contains(&hex.len()) {
+            return type1_upper_hex_value(hex);
+        }
+    }
+
+    if base_name.len() == 1 {
+        let byte = base_name.as_bytes()[0];
+        if byte.is_ascii_alphabetic() {
+            return Some(u32::from(byte));
+        }
+    }
+
+    let value = match base_name {
+        "space" => 0x20,
+        "exclam" => 0x21,
+        "quotedbl" => 0x22,
+        "numbersign" => 0x23,
+        "dollar" => 0x24,
+        "percent" => 0x25,
+        "ampersand" => 0x26,
+        "quotesingle" => 0x27,
+        "parenleft" => 0x28,
+        "parenright" => 0x29,
+        "asterisk" => 0x2A,
+        "plus" => 0x2B,
+        "comma" => 0x2C,
+        "hyphen" => 0x2D,
+        "period" => 0x2E,
+        "slash" => 0x2F,
+        "zero" => 0x30,
+        "one" => 0x31,
+        "two" => 0x32,
+        "three" => 0x33,
+        "four" => 0x34,
+        "five" => 0x35,
+        "six" => 0x36,
+        "seven" => 0x37,
+        "eight" => 0x38,
+        "nine" => 0x39,
+        "colon" => 0x3A,
+        "semicolon" => 0x3B,
+        "less" => 0x3C,
+        "equal" => 0x3D,
+        "greater" => 0x3E,
+        "question" => 0x3F,
+        "at" => 0x40,
+        "bracketleft" => 0x5B,
+        "backslash" => 0x5C,
+        "bracketright" => 0x5D,
+        "asciicircum" => 0x5E,
+        "underscore" => 0x5F,
+        "grave" => 0x60,
+        "braceleft" => 0x7B,
+        "bar" => 0x7C,
+        "braceright" => 0x7D,
+        "asciitilde" => 0x7E,
+        "Delta" => 0x0394,
+        "Omega" => 0x03A9,
+        "fraction" => 0x2215,
+        "macron" => 0x00AF,
+        "mu" => 0x03BC,
+        "periodcentered" => 0x00B7,
+        "nonbreakingspace" => 0x00A0,
+        "Tcommaaccent" => 0x021A,
+        "tcommaaccent" => 0x021B,
+        _ => return None,
+    };
+    Some(value)
+}
+
+fn type1_upper_hex_value(hex: &str) -> Option<u32> {
+    let mut value = 0_u32;
+    for byte in hex.bytes() {
+        let digit = match byte {
+            b'0'..=b'9' => u32::from(byte - b'0'),
+            b'A'..=b'F' => u32::from(byte - b'A' + 10),
+            _ => return None,
+        };
+        value = value.checked_mul(16)?.checked_add(digit)?;
+    }
+    Some(value)
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Type1GlyphProgram {
     advance_width: i32,
@@ -339,9 +440,11 @@ struct BdfMetadata {
     family_name: String,
     pixel_width: i16,
     pixel_height: i16,
+    nominal_pixel_size: i16,
     x_offset: i16,
     y_offset: i16,
     glyph_count: u16,
+    valid_glyph_count: u16,
     charmap_mappings: Vec<(u32, u16)>,
     unicode_charmap: bool,
     properties: Vec<BdfPropertyEntry>,
@@ -399,6 +502,17 @@ fn pcf_invalid(reason: &str) -> FontError {
     FontError::InvalidFont(format!("invalid PCF: {reason}"))
 }
 
+fn pcf_stream_operation(reason: &str) -> FontError {
+    // The PCF driver reaches the stream-operation boundary for TOC reads and
+    // missing required tables after its fallback stream probes. Keep that
+    // status distinct from format errors returned by the table readers.
+    FontError::InvalidFont(format!("PCF stream operation: {reason}"))
+}
+
+fn pcf_unknown_file_format(reason: &str) -> FontError {
+    FontError::UnknownFileFormat(format!("invalid PCF: {reason}"))
+}
+
 fn pcf_u16(data: &[u8], offset: usize, msb: bool) -> Option<u16> {
     let bytes: [u8; 2] = data.get(offset..offset + 2)?.try_into().ok()?;
     Some(if msb {
@@ -433,10 +547,20 @@ fn pcf_tables(data: &[u8]) -> Result<Vec<(u32, PcfTable)>, FontError> {
     if data.len() == 8 && read_u32_le(data, 4) == Some(0) {
         return Err(FontError::PcfZeroTablesStreamOperation);
     }
-    let count = read_u32_le(data, 4)
+    let mut count = read_u32_le(data, 4)
         .and_then(|value| usize::try_from(value).ok())
-        .filter(|count| (1..=9).contains(count))
-        .ok_or_else(|| pcf_invalid("table count"))?;
+        .ok_or_else(|| pcf_stream_operation("table count"))?;
+    if count == 0 {
+        return Err(FontError::PcfZeroTablesStreamOperation);
+    }
+    if count > 9 {
+        // `pcf_read_TOC` clamps the table count to `min(stream_size >> 4,
+        // 9)` before reading the directory.  A 16-byte header-only stream
+        // therefore clamps to one record and reaches Invalid_Stream_Operation
+        // when that record cannot be read, while a sufficiently large stream
+        // still gets the same nine-record limit as the C driver.
+        count = (data.len() >> 4).min(9);
+    }
     let directory_end = 8usize
         .checked_add(
             count
@@ -445,7 +569,7 @@ fn pcf_tables(data: &[u8]) -> Result<Vec<(u32, PcfTable)>, FontError> {
         )
         .ok_or_else(|| pcf_invalid("table directory overflow"))?;
     if directory_end > data.len() {
-        return Err(pcf_invalid("truncated table directory"));
+        return Err(pcf_stream_operation("truncated table directory"));
     }
 
     let mut tables = Vec::with_capacity(count);
@@ -461,9 +585,9 @@ fn pcf_tables(data: &[u8]) -> Result<Vec<(u32, PcfTable)>, FontError> {
             .ok_or_else(|| pcf_invalid("table offset"))?;
         let end = offset
             .checked_add(size)
-            .ok_or_else(|| pcf_invalid("table range overflow"))?;
+            .ok_or_else(|| pcf_stream_operation("table range overflow"))?;
         if offset < directory_end || end > data.len() {
-            return Err(pcf_invalid("table outside stream"));
+            return Err(pcf_stream_operation("table outside stream"));
         }
         tables.push((
             table_type,
@@ -479,7 +603,7 @@ fn pcf_tables(data: &[u8]) -> Result<Vec<(u32, PcfTable)>, FontError> {
         .windows(2)
         .any(|pair| pair[0].1.offset + pair[0].1.size > pair[1].1.offset)
     {
-        return Err(pcf_invalid("overlapping tables"));
+        return Err(pcf_stream_operation("overlapping tables"));
     }
     Ok(tables)
 }
@@ -488,7 +612,7 @@ fn pcf_table(tables: &[(u32, PcfTable)], table_type: u32) -> Result<PcfTable, Fo
     tables
         .iter()
         .find_map(|(candidate, table)| (*candidate == table_type).then_some(*table))
-        .ok_or_else(|| pcf_invalid("required table missing"))
+        .ok_or_else(|| pcf_stream_operation("required table missing"))
 }
 
 fn pcf_c_string(data: &[u8], offset: usize) -> Option<&str> {
@@ -500,55 +624,59 @@ fn pcf_c_string(data: &[u8], offset: usize) -> Option<&str> {
 fn parse_pcf_properties(data: &[u8], table: PcfTable) -> Result<Vec<BdfPropertyEntry>, FontError> {
     let bytes = data
         .get(table.offset..table.offset + table.size)
-        .ok_or_else(|| pcf_invalid("properties range"))?;
-    let format = read_u32_le(bytes, 0).ok_or_else(|| pcf_invalid("properties format"))?;
-    if format & PCF_FORMAT_MASK != 0 || format != table.format {
-        return Err(pcf_invalid("unsupported properties format"));
+        .ok_or_else(|| pcf_stream_operation("properties range"))?;
+    let format = read_u32_le(bytes, 0).ok_or_else(|| pcf_stream_operation("properties format"))?;
+    if format & PCF_FORMAT_MASK != 0 {
+        // `pcf_get_properties` leaves its local error unset on an
+        // unsupported format and face construction continues with no
+        // properties. This is observable through malformed format probes.
+        return Ok(Vec::new());
     }
     let msb = format & PCF_BYTE_MASK != 0;
     let count = pcf_u32(bytes, 4, msb)
         .and_then(|value| usize::try_from(value).ok())
         .filter(|count| *count <= 256)
-        .ok_or_else(|| pcf_invalid("property count"))?;
+        .ok_or_else(|| pcf_stream_operation("property count"))?;
     let records_end = 8usize
         .checked_add(
             count
                 .checked_mul(9)
-                .ok_or_else(|| pcf_invalid("property records overflow"))?,
+                .ok_or_else(|| pcf_stream_operation("property records overflow"))?,
         )
-        .ok_or_else(|| pcf_invalid("property records overflow"))?;
+        .ok_or_else(|| pcf_stream_operation("property records overflow"))?;
     let string_size_offset = records_end
         .checked_add((4 - count % 4) % 4)
-        .ok_or_else(|| pcf_invalid("property padding overflow"))?;
+        .ok_or_else(|| pcf_stream_operation("property padding overflow"))?;
     let string_size = pcf_u32(bytes, string_size_offset, msb)
         .and_then(|value| usize::try_from(value).ok())
-        .ok_or_else(|| pcf_invalid("property string size"))?;
+        .ok_or_else(|| pcf_stream_operation("property string size"))?;
     let strings_offset = string_size_offset + 4;
     let strings = bytes
         .get(strings_offset..strings_offset + string_size)
-        .ok_or_else(|| pcf_invalid("property string table"))?;
+        .ok_or_else(|| pcf_stream_operation("property string table"))?;
 
     let mut properties = Vec::with_capacity(count);
     for index in 0..count {
         let base = 8 + index * 9;
         let name_offset = pcf_i32(bytes, base, msb)
             .and_then(|value| usize::try_from(value).ok())
-            .ok_or_else(|| pcf_invalid("property name offset"))?;
+            .ok_or_else(|| pcf_stream_operation("property name offset"))?;
         let name = pcf_c_string(strings, name_offset)
-            .ok_or_else(|| pcf_invalid("property name string"))?
+            .ok_or_else(|| pcf_stream_operation("property name string"))?
             .to_string();
         let is_string = *bytes
             .get(base + 4)
-            .ok_or_else(|| pcf_invalid("property type"))?
+            .ok_or_else(|| pcf_stream_operation("property type"))?
             != 0;
         let raw_value =
-            pcf_i32(bytes, base + 5, msb).ok_or_else(|| pcf_invalid("property value"))?;
+            pcf_i32(bytes, base + 5, msb).ok_or_else(|| pcf_stream_operation("property value"))?;
         let value = if is_string {
             let value_offset =
-                usize::try_from(raw_value).map_err(|_| pcf_invalid("property atom offset"))?;
+                usize::try_from(raw_value)
+                    .map_err(|_| pcf_stream_operation("property atom offset"))?;
             BdfPropertyValue::Atom(
                 pcf_c_string(strings, value_offset)
-                    .ok_or_else(|| pcf_invalid("property atom string"))?
+                    .ok_or_else(|| pcf_stream_operation("property atom string"))?
                     .to_string(),
             )
         } else {
@@ -574,7 +702,9 @@ fn parse_winfnt_header(data: &[u8]) -> Result<WinFntHeader, FontError> {
     const WINFNT_V3_HEADER_SIZE: usize = 148;
 
     if data.len() < WINFNT_V2_HEADER_SIZE {
-        return Err(FontError::InvalidFont("not a Windows FNT file".into()));
+        return Err(FontError::InvalidFont(
+            "Windows FNT header too short".into(),
+        ));
     }
     let version =
         read_u16_le(data, 0).ok_or_else(|| FontError::InvalidFont("short FNT header".into()))?;
@@ -587,7 +717,9 @@ fn parse_winfnt_header(data: &[u8]) -> Result<WinFntHeader, FontError> {
         WINFNT_V2_HEADER_SIZE
     };
     if data.len() < required_size {
-        return Err(FontError::InvalidFont("short Windows FNT header".into()));
+        return Err(FontError::InvalidFont(
+            "Windows FNT header too short".into(),
+        ));
     }
     let file_size = read_u32_le(data, 2)
         .ok_or_else(|| FontError::InvalidFont("missing Windows FNT file size".into()))?;
@@ -597,14 +729,14 @@ fn parse_winfnt_header(data: &[u8]) -> Result<WinFntHeader, FontError> {
     // frame after accepting versions 0x200/0x300; a truncated stream fails
     // before the WINFNT service can expose the copied header.
     if file_size < required_size as u32 || declared_size > data.len() {
-        return Err(FontError::InvalidFont(
+        return Err(FontError::UnknownFileFormat(
             "invalid Windows FNT file size".into(),
         ));
     }
     let file_type = read_u16_le(data, 66)
         .ok_or_else(|| FontError::InvalidFont("missing Windows FNT file type".into()))?;
     if file_type & 1 != 0 {
-        return Err(FontError::InvalidFont(
+        return Err(FontError::UnknownFileFormat(
             "Windows FNT vector fonts are unsupported".into(),
         ));
     }
@@ -1005,8 +1137,12 @@ fn parse_sfnt_bdf_table(data: &[u8]) -> Option<SfntBdfTable> {
 fn parse_bdf_metadata(text: &str) -> Result<BdfMetadata, FontError> {
     let mut family_name = "BDF".to_string();
     let mut bbox = None;
+    let mut point_size = 0_i16;
     let mut glyph_count = 0u16;
     let mut current_glyph = 0u16;
+    let mut glyph_has_encoding = false;
+    let mut glyph_has_bbx = false;
+    let mut valid_glyph_count = 0u16;
     let mut charmap_mappings = Vec::new();
     let mut properties = Vec::new();
     let mut in_properties = false;
@@ -1030,11 +1166,20 @@ fn parse_bdf_metadata(text: &str) -> Result<BdfMetadata, FontError> {
             }
         } else if let Some(name) = line.strip_prefix("FONT ") {
             family_name = name.trim().to_string();
+        } else if let Some(raw_size) = line.strip_prefix("SIZE ") {
+            point_size = raw_size
+                .split_whitespace()
+                .next()
+                .and_then(|value| value.parse::<i32>().ok())
+                .and_then(|value| i16::try_from(value.clamp(0, i16::MAX as i32)).ok())
+                .unwrap_or_default();
         } else if line.starts_with("FONTBOUNDINGBOX ") {
             bbox = parse_bdf_font_bounding_box(line);
         } else if line.starts_with("STARTCHAR ") {
             glyph_count = glyph_count.saturating_add(1);
             current_glyph = glyph_count;
+            glyph_has_encoding = false;
+            glyph_has_bbx = false;
         } else if let Some(raw_encoding) = line.strip_prefix("ENCODING ") {
             if let Some(encoding) = raw_encoding
                 .split_whitespace()
@@ -1043,8 +1188,16 @@ fn parse_bdf_metadata(text: &str) -> Result<BdfMetadata, FontError> {
                 .filter(|value| *value >= 0)
                 .and_then(|value| u32::try_from(value).ok())
             {
+                glyph_has_encoding = true;
                 charmap_mappings.push((encoding, current_glyph));
             }
+        } else if line.starts_with("BBX ") && current_glyph != 0 {
+            glyph_has_bbx = parse_bdf_bbx(line).is_some();
+        } else if line == "ENDCHAR" {
+            if glyph_has_encoding && glyph_has_bbx {
+                valid_glyph_count = valid_glyph_count.saturating_add(1);
+            }
+            current_glyph = 0;
         }
     }
 
@@ -1072,13 +1225,26 @@ fn parse_bdf_metadata(text: &str) -> Result<BdfMetadata, FontError> {
                 || (registry == "iso8859" && encoding == "1")
                 || (registry == "iso646.1991" && encoding == "IRV")
         });
+    let nominal_pixel_size = properties
+        .iter()
+        .find_map(|property| (property.name == "PIXEL_SIZE").then_some(&property.value))
+        .and_then(|value| match value {
+            BdfPropertyValue::Integer(value) => {
+                Some(value.unsigned_abs().min(i16::MAX as u32) as i16)
+            }
+            BdfPropertyValue::Atom(_) | BdfPropertyValue::Cardinal(_) => None,
+        })
+        .filter(|value| *value > 0)
+        .unwrap_or(point_size.max(1));
     Ok(BdfMetadata {
         family_name,
         pixel_width,
         pixel_height,
+        nominal_pixel_size,
         x_offset,
         y_offset,
         glyph_count: glyph_count.max(1),
+        valid_glyph_count,
         charmap_mappings,
         unicode_charmap,
         properties,
@@ -1092,12 +1258,11 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
     let metrics_table = pcf_table(&tables, PCF_METRICS)?;
     let metrics = data
         .get(metrics_table.offset..metrics_table.offset + metrics_table.size)
-        .ok_or_else(|| pcf_invalid("metrics range"))?;
-    let metrics_format = read_u32_le(metrics, 0).ok_or_else(|| pcf_invalid("metrics format"))?;
-    if metrics_format != metrics_table.format
-        || !matches!(metrics_format & PCF_FORMAT_MASK, 0 | PCF_COMPRESSED_METRICS)
-    {
-        return Err(pcf_invalid("unsupported metrics format"));
+        .ok_or_else(|| pcf_unknown_file_format("metrics range"))?;
+    let metrics_format =
+        read_u32_le(metrics, 0).ok_or_else(|| pcf_unknown_file_format("metrics format"))?;
+    if !matches!(metrics_format & PCF_FORMAT_MASK, 0 | PCF_COMPRESSED_METRICS) {
+        return Err(pcf_unknown_file_format("unsupported metrics format"));
     }
     let metrics_msb = metrics_format & PCF_BYTE_MASK != 0;
     let compressed = metrics_format & PCF_FORMAT_MASK == PCF_COMPRESSED_METRICS;
@@ -1105,116 +1270,118 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
         (
             usize::from(
                 pcf_u16(metrics, 4, metrics_msb)
-                    .ok_or_else(|| pcf_invalid("compressed metric count"))?,
+                    .ok_or_else(|| pcf_unknown_file_format("compressed metric count"))?,
             ),
             6,
         )
     } else {
         (
-            pcf_u32(metrics, 4, metrics_msb)
-                .and_then(|value| usize::try_from(value).ok())
-                .ok_or_else(|| pcf_invalid("metric count"))?,
+                pcf_u32(metrics, 4, metrics_msb)
+                    .and_then(|value| usize::try_from(value).ok())
+                    .ok_or_else(|| pcf_unknown_file_format("metric count"))?,
             8,
         )
     };
     if glyph_count == 0 || glyph_count > 65_534 {
-        return Err(pcf_invalid("metric count out of range"));
+        return Err(pcf_unknown_file_format("metric count out of range"));
     }
     let metric_size = if compressed { 5 } else { 12 };
     let metrics_end = metric_offset
         + glyph_count
             .checked_mul(metric_size)
-            .ok_or_else(|| pcf_invalid("metric records overflow"))?;
+            .ok_or_else(|| pcf_unknown_file_format("metric records overflow"))?;
     if metrics_end > metrics.len() {
-        return Err(pcf_invalid("truncated metrics"));
+        return Err(pcf_unknown_file_format("truncated metrics"));
     }
     let (left, right, advance, metric_ascent, metric_descent) = if compressed {
         let field = |index: usize| -> Result<i16, FontError> {
             Ok(i16::from(
                 *metrics
                     .get(metric_offset + index)
-                    .ok_or_else(|| pcf_invalid("compressed metric"))?,
+                    .ok_or_else(|| pcf_unknown_file_format("compressed metric"))?,
             ) - 0x80)
         };
         (field(0)?, field(1)?, field(2)?, field(3)?, field(4)?)
     } else {
         (
             pcf_i16(metrics, metric_offset, metrics_msb)
-                .ok_or_else(|| pcf_invalid("left side bearing"))?,
+                .ok_or_else(|| pcf_unknown_file_format("left side bearing"))?,
             pcf_i16(metrics, metric_offset + 2, metrics_msb)
-                .ok_or_else(|| pcf_invalid("right side bearing"))?,
+                .ok_or_else(|| pcf_unknown_file_format("right side bearing"))?,
             pcf_i16(metrics, metric_offset + 4, metrics_msb)
-                .ok_or_else(|| pcf_invalid("character width"))?,
+                .ok_or_else(|| pcf_unknown_file_format("character width"))?,
             pcf_i16(metrics, metric_offset + 6, metrics_msb)
-                .ok_or_else(|| pcf_invalid("metric ascent"))?,
+                .ok_or_else(|| pcf_unknown_file_format("metric ascent"))?,
             pcf_i16(metrics, metric_offset + 8, metrics_msb)
-                .ok_or_else(|| pcf_invalid("metric descent"))?,
+                .ok_or_else(|| pcf_unknown_file_format("metric descent"))?,
         )
     };
 
     let accel_table = pcf_table(&tables, PCF_ACCELERATORS)?;
     let accel = data
         .get(accel_table.offset..accel_table.offset + accel_table.size)
-        .ok_or_else(|| pcf_invalid("accelerators range"))?;
-    let accel_format = read_u32_le(accel, 0).ok_or_else(|| pcf_invalid("accelerators format"))?;
-    if accel_format != accel_table.format || accel_format & PCF_FORMAT_MASK != 0 {
-        return Err(pcf_invalid("unsupported accelerators format"));
+        .ok_or_else(|| pcf_unknown_file_format("accelerators range"))?;
+    let accel_format =
+        read_u32_le(accel, 0).ok_or_else(|| pcf_unknown_file_format("accelerators format"))?;
+    if accel_format & PCF_FORMAT_MASK != 0 {
+        return Err(pcf_unknown_file_format("unsupported accelerators format"));
     }
     let accel_msb = accel_format & PCF_BYTE_MASK != 0;
     let font_ascent = pcf_i32(accel, 12, accel_msb)
         .and_then(|value| i16::try_from(value.clamp(-0x7fff, 0x7fff)).ok())
-        .ok_or_else(|| pcf_invalid("font ascent"))?;
+        .ok_or_else(|| pcf_unknown_file_format("font ascent"))?;
     let font_descent = pcf_i32(accel, 16, accel_msb)
         .and_then(|value| i16::try_from(value.clamp(-0x7fff, 0x7fff)).ok())
-        .ok_or_else(|| pcf_invalid("font descent"))?;
+        .ok_or_else(|| pcf_unknown_file_format("font descent"))?;
     if accel.len() < 48 {
-        return Err(pcf_invalid("truncated accelerators"));
+        return Err(pcf_unknown_file_format("truncated accelerators"));
     }
 
     let bitmaps_table = pcf_table(&tables, PCF_BITMAPS)?;
     let bitmaps = data
         .get(bitmaps_table.offset..bitmaps_table.offset + bitmaps_table.size)
-        .ok_or_else(|| pcf_invalid("bitmaps range"))?;
-    let bitmaps_format = read_u32_le(bitmaps, 0).ok_or_else(|| pcf_invalid("bitmaps format"))?;
-    if bitmaps_format != bitmaps_table.format || bitmaps_format & PCF_FORMAT_MASK != 0 {
-        return Err(pcf_invalid("unsupported bitmaps format"));
+        .ok_or_else(|| pcf_unknown_file_format("bitmaps range"))?;
+    let bitmaps_format =
+        read_u32_le(bitmaps, 0).ok_or_else(|| pcf_unknown_file_format("bitmaps format"))?;
+    if bitmaps_format & PCF_FORMAT_MASK != 0 {
+        return Err(pcf_unknown_file_format("unsupported bitmaps format"));
     }
     let bitmaps_msb = bitmaps_format & PCF_BYTE_MASK != 0;
     let bitmap_count = pcf_u32(bitmaps, 4, bitmaps_msb)
         .and_then(|value| usize::try_from(value).ok())
-        .ok_or_else(|| pcf_invalid("bitmap count"))?;
+        .ok_or_else(|| pcf_unknown_file_format("bitmap count"))?;
     if bitmap_count != glyph_count {
-        return Err(pcf_invalid("bitmap and metric counts differ"));
+        return Err(pcf_unknown_file_format("bitmap and metric counts differ"));
     }
 
     let encodings_table = pcf_table(&tables, PCF_BDF_ENCODINGS)?;
     let encodings = data
         .get(encodings_table.offset..encodings_table.offset + encodings_table.size)
-        .ok_or_else(|| pcf_invalid("encodings range"))?;
+        .ok_or_else(|| pcf_unknown_file_format("encodings range"))?;
     let encodings_format =
-        read_u32_le(encodings, 0).ok_or_else(|| pcf_invalid("encodings format"))?;
-    if encodings_format != encodings_table.format || encodings_format & PCF_FORMAT_MASK != 0 {
-        return Err(pcf_invalid("unsupported encodings format"));
+        read_u32_le(encodings, 0).ok_or_else(|| pcf_unknown_file_format("encodings format"))?;
+    if encodings_format & PCF_FORMAT_MASK != 0 {
+        return Err(pcf_unknown_file_format("unsupported encodings format"));
     }
     let encodings_msb = encodings_format & PCF_BYTE_MASK != 0;
-    let first_col =
-        pcf_u16(encodings, 4, encodings_msb).ok_or_else(|| pcf_invalid("first encoding column"))?;
-    let last_col =
-        pcf_u16(encodings, 6, encodings_msb).ok_or_else(|| pcf_invalid("last encoding column"))?;
-    let first_row =
-        pcf_u16(encodings, 8, encodings_msb).ok_or_else(|| pcf_invalid("first encoding row"))?;
-    let last_row =
-        pcf_u16(encodings, 10, encodings_msb).ok_or_else(|| pcf_invalid("last encoding row"))?;
+    let first_col = pcf_u16(encodings, 4, encodings_msb)
+        .ok_or_else(|| pcf_unknown_file_format("first encoding column"))?;
+    let last_col = pcf_u16(encodings, 6, encodings_msb)
+        .ok_or_else(|| pcf_unknown_file_format("last encoding column"))?;
+    let first_row = pcf_u16(encodings, 8, encodings_msb)
+        .ok_or_else(|| pcf_unknown_file_format("first encoding row"))?;
+    let last_row = pcf_u16(encodings, 10, encodings_msb)
+        .ok_or_else(|| pcf_unknown_file_format("last encoding row"))?;
     if first_col > last_col || last_col > 0xff || first_row > last_row || last_row > 0xff {
-        return Err(pcf_invalid("encoding bounds"));
+        return Err(pcf_unknown_file_format("encoding bounds"));
     }
     let columns = usize::from(last_col - first_col + 1);
     let rows = usize::from(last_row - first_row + 1);
     let encoding_count = columns
         .checked_mul(rows)
-        .ok_or_else(|| pcf_invalid("encoding count overflow"))?;
+        .ok_or_else(|| pcf_unknown_file_format("encoding count overflow"))?;
     if 14 + encoding_count * 2 > encodings.len() {
-        return Err(pcf_invalid("truncated encodings"));
+        return Err(pcf_unknown_file_format("truncated encodings"));
     }
     let mut charmap_mappings = Vec::new();
     for row in 0..rows {
@@ -1228,7 +1395,7 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
             let char_code = u32::from(first_row) * 256
                 + u32::from(first_col)
                 + u32::try_from(row * 256 + column)
-                    .map_err(|_| pcf_invalid("encoding character overflow"))?;
+                    .map_err(|_| pcf_unknown_file_format("encoding character overflow"))?;
             charmap_mappings.push((char_code, glyph_offset.saturating_add(1)));
         }
     }
@@ -1262,9 +1429,11 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
         family_name,
         pixel_width,
         pixel_height,
+        nominal_pixel_size: pixel_height,
         x_offset: left,
         y_offset: font_descent.saturating_neg(),
         glyph_count: u16::try_from(glyph_count).map_err(|_| pcf_invalid("glyph count"))?,
+        valid_glyph_count: u16::try_from(glyph_count).map_err(|_| pcf_invalid("glyph count"))?,
         charmap_mappings,
         unicode_charmap,
         properties,
@@ -1315,7 +1484,14 @@ fn bdf_font_data(data: &[u8], size_pt: f32, metadata: &BdfMetadata) -> Arc<FontD
             index_to_loc_format: 0,
             flags: 0,
             mac_style: 0,
-            lowest_rec_ppem: 0,
+            // BDF_Size_Request compares the rounded requested height with
+            // the strike's PIXEL_SIZE (or SIZE fallback), not with the
+            // synthetic FONTBOUNDINGBOX dimensions.
+            lowest_rec_ppem: if metadata.valid_glyph_count == 0 {
+                u16::try_from(metadata.nominal_pixel_size.max(1)).unwrap_or(1)
+            } else {
+                0
+            },
         },
         hhea: tt::hhea::HheaTable {
             ascent: y_max,
@@ -1423,8 +1599,27 @@ fn parse_bdf_bbx(line: &str) -> Option<(i64, i64)> {
     if parts.next()? != "BBX" {
         return None;
     }
-    let width = parts.next()?.parse().ok()?;
-    let height = parts.next()?.parse().ok()?;
+    // `bdflib.c:bdf_atous_` consumes a decimal prefix and yields zero when
+    // the first character is not a digit.  Preserve that permissive parser
+    // shape here, while keeping a missing token distinguishable for the
+    // malformed-field error path below.
+    let parse_unsigned_prefix = |value: Option<&str>| {
+        let value = value?;
+        let mut number = 0_i64;
+        let mut saw_digit = false;
+        for byte in value.bytes() {
+            if !byte.is_ascii_digit() {
+                break;
+            }
+            saw_digit = true;
+            number = number
+                .saturating_mul(10)
+                .saturating_add(i64::from(byte - b'0'));
+        }
+        saw_digit.then_some(number)
+    };
+    let width = parse_unsigned_prefix(parts.next())?;
+    let height = parse_unsigned_prefix(parts.next())?;
     Some((width, height))
 }
 
@@ -1483,7 +1678,16 @@ fn parse_bdf_constructor_error(data: &[u8]) -> Option<FontError> {
                 }
             }
             "STARTCHAR" => {
-                if !saw_chars || in_glyph {
+                if !saw_chars {
+                    // FreeType still has the header parser active before
+                    // CHARS; a premature STARTCHAR is therefore a generic
+                    // Invalid_File_Format, not the glyph-parser
+                    // Missing_Startchar_Field diagnostic.
+                    return Some(FontError::InvalidFileFormat(
+                        "BDF STARTCHAR appeared before CHARS".into(),
+                    ));
+                }
+                if in_glyph {
                     return Some(FontError::BdfMissingStartcharField);
                 }
                 in_glyph = true;
@@ -1498,10 +1702,18 @@ fn parse_bdf_constructor_error(data: &[u8]) -> Option<FontError> {
             }
             "BBX" => {
                 if !in_glyph {
-                    return Some(FontError::BdfMissingStartcharField);
+                    // `bdf_parse_glyphs_` checks ENCODING before dispatching
+                    // BBX, so a stray BBX is Missing_Encoding_Field rather
+                    // than Missing_Startchar_Field.
+                    return Some(FontError::BdfMissingEncodingField);
+                }
+                if !glyph_has_encoding {
+                    return Some(FontError::BdfMissingEncodingField);
                 }
                 let Some((width, height)) = parse_bdf_bbx(line) else {
-                    return Some(FontError::BdfCorruptedFontGlyphs);
+                    return Some(FontError::InvalidFileFormat(
+                        "malformed BDF BBX field".into(),
+                    ));
                 };
                 if bdf_bitmap_too_large(width, height) {
                     return Some(FontError::BdfBbxTooBig);
@@ -1510,7 +1722,7 @@ fn parse_bdf_constructor_error(data: &[u8]) -> Option<FontError> {
             }
             "BITMAP" => {
                 if !in_glyph {
-                    return Some(FontError::BdfMissingStartcharField);
+                    return Some(FontError::BdfMissingEncodingField);
                 }
                 if !glyph_has_encoding {
                     return Some(FontError::BdfMissingEncodingField);
@@ -1520,16 +1732,13 @@ fn parse_bdf_constructor_error(data: &[u8]) -> Option<FontError> {
                 }
             }
             "ENDCHAR" => {
-                if !in_glyph {
-                    return Some(FontError::BdfMissingStartcharField);
-                }
-                if !glyph_has_encoding {
-                    return Some(FontError::BdfMissingEncodingField);
-                }
-                if !glyph_has_bbx {
-                    return Some(FontError::BdfMissingBbxField);
-                }
+                // FreeType clears the glyph-state bits on ENDCHAR without
+                // validating ENCODING or BBX.  Missing fields are therefore
+                // observed only when an earlier field reaches its own parser
+                // check, or later when face-size selection runs.
                 in_glyph = false;
+                glyph_has_encoding = false;
+                glyph_has_bbx = false;
             }
             "ENDFONT" if in_glyph => {
                 return Some(FontError::BdfCorruptedFontGlyphs);
@@ -1810,32 +2019,35 @@ fn parse_type1_private(data: &[u8]) -> Option<Type1PrivateDict> {
     Some(private)
 }
 
-fn parse_type1_encoding(cleartext: &[u8]) -> Option<Type1EncodingInfo> {
-    let text = std::str::from_utf8(cleartext).ok()?;
-    let tail = type1_exact_key_tail(text, "Encoding")?;
+fn parse_type1_encoding(cleartext: &[u8]) -> Result<Option<Type1EncodingInfo>, FontError> {
+    let text = std::str::from_utf8(cleartext)
+        .map_err(|_| FontError::InvalidFont("Type 1 encoding is not UTF-8".into()))?;
+    let Some(tail) = type1_exact_key_tail(text, "Encoding") else {
+        return Ok(None);
+    };
     if tail.starts_with("StandardEncoding") {
-        return Some(Type1EncodingInfo {
+        return Ok(Some(Type1EncodingInfo {
             encoding_type: 2,
             entries: Vec::new(),
-        });
+        }));
     }
     if tail.starts_with("ISOLatin1Encoding") {
-        return Some(Type1EncodingInfo {
+        return Ok(Some(Type1EncodingInfo {
             encoding_type: 3,
             entries: Vec::new(),
-        });
+        }));
     }
     if tail.starts_with("ExpertEncoding") {
-        return Some(Type1EncodingInfo {
+        return Ok(Some(Type1EncodingInfo {
             encoding_type: 4,
             entries: Vec::new(),
-        });
+        }));
     }
     if !tail.starts_with("256 array") {
-        return Some(Type1EncodingInfo {
+        return Ok(Some(Type1EncodingInfo {
             encoding_type: 0,
             entries: Vec::new(),
-        });
+        }));
     }
 
     let mut entries = vec![Some(".notdef".to_string()); 256];
@@ -1849,27 +2061,40 @@ fn parse_type1_encoding(cleartext: &[u8]) -> Option<Type1EncodingInfo> {
             .ok()
             .filter(|index| *index < entries.len())
         else {
+            return Err(FontError::InvalidArgument(
+                "Type 1 encoding index is invalid".into(),
+            ));
+        };
+        let Some(name) = window[2].strip_prefix('/') else {
+            // FreeType's `parse_encoding` only records immediate names.  A
+            // numeric record followed by a non-name token is ignored and the
+            // loader continues scanning the encoding program.
             continue;
         };
-        if let Some(name) = window[2].strip_prefix('/') {
-            entries[index] = Some(name.to_string());
-        }
+        entries[index] = Some(name.to_string());
     }
-    Some(Type1EncodingInfo {
+    Ok(Some(Type1EncodingInfo {
         encoding_type: 1,
         entries,
-    })
+    }))
 }
 
-fn parse_type1_charstrings(data: &[u8], len_iv: i32) -> Vec<Type1CharString> {
+fn parse_type1_charstrings(
+    data: &[u8],
+    len_iv: i32,
+) -> Result<Vec<Type1CharString>, FontError> {
     let Some(private) = type1_eexec_private_bytes(data) else {
-        return Vec::new();
+        return Err(FontError::InvalidFont(
+            "Type 1 eexec private dictionary is missing".into(),
+        ));
     };
     let Some(mut offset) = find_bytes(&private, b"/CharStrings") else {
-        return Vec::new();
+        return Err(FontError::InvalidFont(
+            "Type 1 CharStrings dictionary is missing".into(),
+        ));
     };
     let Some(begin) = find_bytes(&private[offset..], b"begin") else {
-        return Vec::new();
+        return Ok(Vec::new());
     };
     offset += begin + b"begin".len();
     let end = find_bytes(&private[offset..], b"\nend").map_or(private.len(), |end| offset + end);
@@ -1898,7 +2123,9 @@ fn parse_type1_charstrings(data: &[u8], len_iv: i32) -> Vec<Type1CharString> {
             .ok()
             .and_then(|length| length.parse::<usize>().ok())
         else {
-            continue;
+            return Err(FontError::InvalidFont(
+                "Type 1 CharStrings length is invalid".into(),
+            ));
         };
         skip_ascii_space(&private, &mut offset);
         while offset < end && !private[offset].is_ascii_whitespace() {
@@ -1908,7 +2135,9 @@ fn parse_type1_charstrings(data: &[u8], len_iv: i32) -> Vec<Type1CharString> {
             offset += 1;
         }
         let Some(encrypted) = private.get(offset..offset.saturating_add(length)) else {
-            break;
+            return Err(FontError::InvalidFont(
+                "Type 1 CharString data is truncated".into(),
+            ));
         };
         let decrypted = decrypt_type1_charstring(encrypted, len_iv);
         charstrings.push(Type1CharString {
@@ -1917,7 +2146,7 @@ fn parse_type1_charstrings(data: &[u8], len_iv: i32) -> Vec<Type1CharString> {
         });
         offset = offset.saturating_add(length);
     }
-    charstrings
+    Ok(charstrings)
 }
 
 fn decrypt_type1_charstring(cipher: &[u8], len_iv: i32) -> Vec<u8> {
@@ -1956,6 +2185,7 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
     let mut y = 0i32;
     let mut advance_width = 0i32;
     let mut open_contour = false;
+    let mut pending_move = None;
     let mut offset = 0usize;
     while offset < charstring.len() {
         let op = charstring[offset];
@@ -1964,13 +2194,20 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
             1 | 3 | 10 | 11 | 15 | 19 | 20 => stack.clear(),
             4 => {
                 let dy = type1_pop_one(&mut stack)?;
-                type1_finish_contour(&mut outline, &mut open_contour)?;
+                type1_finish_contour(
+                    &mut outline,
+                    &mut open_contour,
+                    &mut pending_move,
+                )?;
                 y = y.saturating_add(dy);
-                type1_push_point(&mut outline, x, y);
+                pending_move = Some((x, y));
                 open_contour = true;
                 stack.clear();
             }
             5 => {
+                if stack.len() >= 2 {
+                    type1_start_contour(&mut outline, &mut pending_move);
+                }
                 for pair in stack.chunks_exact(2) {
                     x = x.saturating_add(pair[0]);
                     y = y.saturating_add(pair[1]);
@@ -1979,18 +2216,27 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
                 stack.clear();
             }
             6 => {
+                if !stack.is_empty() {
+                    type1_start_contour(&mut outline, &mut pending_move);
+                }
                 for dx in stack.drain(..) {
                     x = x.saturating_add(dx);
                     type1_push_point(&mut outline, x, y);
                 }
             }
             7 => {
+                if !stack.is_empty() {
+                    type1_start_contour(&mut outline, &mut pending_move);
+                }
                 for dy in stack.drain(..) {
                     y = y.saturating_add(dy);
                     type1_push_point(&mut outline, x, y);
                 }
             }
             8 => {
+                if stack.len() >= 6 {
+                    type1_start_contour(&mut outline, &mut pending_move);
+                }
                 for curve in stack.chunks_exact(6) {
                     x = x.saturating_add(curve[0]);
                     y = y.saturating_add(curve[1]);
@@ -2015,30 +2261,103 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
                 stack.clear();
             }
             9 => {
-                type1_finish_contour(&mut outline, &mut open_contour)?;
+                type1_finish_contour(
+                    &mut outline,
+                    &mut open_contour,
+                    &mut pending_move,
+                )?;
                 stack.clear();
             }
             12 => {
                 let Some(escape) = charstring.get(offset).copied() else {
-                    return Err(FontError::InvalidOutline(
-                        "Type 1 truncated escape operator".into(),
-                    ));
+                    // The active FreeType Type 1 path uses the CFF
+                    // interpreter.  Its buffer reader returns a benign byte
+                    // at end-of-buffer for an incomplete escape, after which
+                    // the synthetic endchar completes the empty glyph.
+                    stack.clear();
+                    continue;
                 };
                 offset += 1;
                 match escape {
                     // Flex/hint and counter operators do not change the public
                     // outline for the compact fixtures currently parsed here.
-                    0 | 1 | 2 | 6 | 7 | 12 | 16 | 17 => stack.clear(),
+                    0 | 1 | 2 | 6 | 12 | 17 => stack.clear(),
+                    7 => {
+                        // `sbw` consumes four operands (sidebearing x/y and
+                        // advance x/y).  The generated malformed-program
+                        // fixture intentionally exercises the active CFF
+                        // interpreter's Invalid_File_Format path when fewer
+                        // operands remain.
+                        if stack.len() < 4 {
+                            return Err(FontError::InvalidFileFormat(
+                                "Type 1 sbw stack underflow".into(),
+                            ));
+                        }
+                        x = stack[0];
+                        y = stack[1];
+                        advance_width = stack[2];
+                        stack.clear();
+                    }
+                    16 => {
+                        // `callothersubr` requires at least the subroutine
+                        // number and argument count.  Keep malformed calls at
+                        // the same public error boundary as FreeType.
+                        if stack.len() < 2 {
+                            return Err(FontError::InvalidFileFormat(
+                                "Type 1 callothersubr stack underflow".into(),
+                            ));
+                        }
+                        let arg_count = stack[stack.len() - 2];
+                        let subroutine = stack[stack.len() - 1];
+                        let Some(arg_count) = usize::try_from(arg_count).ok() else {
+                            return Err(FontError::InvalidFileFormat(
+                                "Type 1 callothersubr argument count is invalid".into(),
+                            ));
+                        };
+                        if arg_count > stack.len() - 2 {
+                            return Err(FontError::InvalidFileFormat(
+                                "Type 1 callothersubr arguments are missing".into(),
+                            ));
+                        }
+                        // The active interpreter implements the Type 1 flex
+                        // OtherSubrs.  Other non-negative numbers are
+                        // accepted as unknown procedures (their results are
+                        // consumed by later `pop` operators), while the
+                        // malformed end-flex form is rejected immediately.
+                        if subroutine < 0
+                            || (subroutine == 0 && arg_count != 3)
+                            || (subroutine == 1 && arg_count != 0)
+                        {
+                            return Err(FontError::InvalidFileFormat(
+                                "Type 1 callothersubr procedure is invalid".into(),
+                            ));
+                        }
+                        stack.clear();
+                    }
+                    33 => {
+                        if stack.len() < 2 {
+                            return Err(FontError::InvalidFileFormat(
+                                "Type 1 setcurrentpoint stack underflow".into(),
+                            ));
+                        }
+                        x = stack[stack.len() - 2];
+                        y = stack[stack.len() - 1];
+                        if pending_move.is_some() {
+                            pending_move = Some((x, y));
+                        }
+                        stack.clear();
+                    }
                     _ => {
-                        return Err(FontError::InvalidOutline(format!(
-                            "unsupported Type 1 escaped charstring operator 12 {escape}"
-                        )));
+                        // Unknown escaped operators are deliberately ignored
+                        // by the active CFF Type 1 interpreter.  It clears the
+                        // operand stack and continues to the next byte.
+                        stack.clear();
                     }
                 }
             }
             13 => {
                 if stack.len() < 2 {
-                    return Err(FontError::InvalidOutline(
+                    return Err(FontError::InvalidFileFormat(
                         "Type 1 hsbw stack underflow".into(),
                     ));
                 }
@@ -2048,7 +2367,11 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
                 stack.clear();
             }
             14 => {
-                type1_finish_contour(&mut outline, &mut open_contour)?;
+                type1_finish_contour(
+                    &mut outline,
+                    &mut open_contour,
+                    &mut pending_move,
+                )?;
                 return Ok(Type1GlyphProgram {
                     advance_width,
                     outline,
@@ -2056,31 +2379,100 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
             }
             21 => {
                 if stack.len() < 2 {
-                    return Err(FontError::InvalidOutline(
+                    return Err(FontError::InvalidFileFormat(
                         "Type 1 rmoveto stack underflow".into(),
                     ));
                 }
                 let dx = stack[stack.len() - 2];
                 let dy = stack[stack.len() - 1];
-                type1_finish_contour(&mut outline, &mut open_contour)?;
+                type1_finish_contour(
+                    &mut outline,
+                    &mut open_contour,
+                    &mut pending_move,
+                )?;
                 x = x.saturating_add(dx);
                 y = y.saturating_add(dy);
-                type1_push_point(&mut outline, x, y);
+                pending_move = Some((x, y));
                 open_contour = true;
                 stack.clear();
             }
             22 => {
                 let dx = type1_pop_one(&mut stack)?;
-                type1_finish_contour(&mut outline, &mut open_contour)?;
+                type1_finish_contour(
+                    &mut outline,
+                    &mut open_contour,
+                    &mut pending_move,
+                )?;
                 x = x.saturating_add(dx);
-                type1_push_point(&mut outline, x, y);
+                pending_move = Some((x, y));
                 open_contour = true;
                 stack.clear();
             }
             30 | 31 => {
-                return Err(FontError::InvalidOutline(
-                    "Type 1 vhcurveto/hvcurveto unsupported".into(),
-                ));
+                // Type 1's alternating vertical/horizontal curve operators
+                // use the same six-point outline representation as
+                // `rrcurveto`; only the order of the deltas differs.  The
+                // final optional delta is accepted by FreeType for a curve
+                // whose last control coordinate is on the other axis.
+                let horizontal_first = op == 31;
+                let mut values = std::mem::take(&mut stack);
+                if values.len() >= 4 {
+                    type1_start_contour(&mut outline, &mut pending_move);
+                }
+                while values.len() >= 4 {
+                    let first = values[0];
+                    let second = values[1];
+                    let third = values[2];
+                    let fourth = values[3];
+                    values.drain(..4);
+                    if horizontal_first {
+                        x = x.saturating_add(first);
+                        outline.points.push(OutlinePoint {
+                            x,
+                            y,
+                            on_curve: false,
+                        });
+                        outline.tags.push(2);
+                        x = x.saturating_add(second);
+                        y = y.saturating_add(third);
+                        outline.points.push(OutlinePoint {
+                            x,
+                            y,
+                            on_curve: false,
+                        });
+                        outline.tags.push(2);
+                        y = y.saturating_add(fourth);
+                    } else {
+                        y = y.saturating_add(first);
+                        outline.points.push(OutlinePoint {
+                            x,
+                            y,
+                            on_curve: false,
+                        });
+                        outline.tags.push(2);
+                        x = x.saturating_add(second);
+                        y = y.saturating_add(third);
+                        outline.points.push(OutlinePoint {
+                            x,
+                            y,
+                            on_curve: false,
+                        });
+                        outline.tags.push(2);
+                        x = x.saturating_add(fourth);
+                    }
+                    type1_push_point(&mut outline, x, y);
+                }
+                if let Some(last) = values.pop() {
+                    if horizontal_first {
+                        x = x.saturating_add(last);
+                    } else {
+                        y = y.saturating_add(last);
+                    }
+                    if let Some(point) = outline.points.last_mut() {
+                        point.x = x;
+                        point.y = y;
+                    }
+                }
             }
             32..=255 => {
                 offset -= 1;
@@ -2088,13 +2480,19 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
                 stack.push(value);
             }
             _ => {
-                return Err(FontError::InvalidOutline(format!(
-                    "unsupported Type 1 charstring operator {op}"
-                )));
+                // The active CFF Type 1 interpreter skips outline/reserved
+                // operators while it builds the initial hint map, and then
+                // ignores unknown operators on the replay.  Preserve that
+                // public behavior for malformed compact programs.
+                stack.clear();
             }
         }
     }
-    type1_finish_contour(&mut outline, &mut open_contour)?;
+    type1_finish_contour(
+        &mut outline,
+        &mut open_contour,
+        &mut pending_move,
+    )?;
     Ok(Type1GlyphProgram {
         advance_width,
         outline,
@@ -2104,7 +2502,12 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
 fn type1_pop_one(stack: &mut Vec<i32>) -> Result<i32, FontError> {
     stack
         .pop()
-        .ok_or_else(|| FontError::InvalidOutline("Type 1 charstring stack underflow".into()))
+        // The Adobe CFF interpreter records Stack_Underflow internally, then
+        // `cf2_decoder_parse_charstrings` collapses every nonzero interpreter
+        // result to Invalid_File_Format (`psft.c:433-435`).  Keep Type 1
+        // vmoveto/hmoveto underflow on that public error boundary instead of
+        // exposing the generic Invalid_Outline code.
+        .ok_or_else(|| FontError::InvalidFileFormat("Type 1 charstring stack underflow".into()))
 }
 
 fn type1_push_point(outline: &mut Type1GlyphOutline, x: i32, y: i32) {
@@ -2119,8 +2522,14 @@ fn type1_push_point(outline: &mut Type1GlyphOutline, x: i32, y: i32) {
 fn type1_finish_contour(
     outline: &mut Type1GlyphOutline,
     open_contour: &mut bool,
+    pending_move: &mut Option<(i32, i32)>,
 ) -> Result<(), FontError> {
     if !*open_contour {
+        pending_move.take();
+        return Ok(());
+    }
+    if pending_move.take().is_some() {
+        *open_contour = false;
         return Ok(());
     }
     let Some(last) = outline.points.len().checked_sub(1) else {
@@ -2134,6 +2543,15 @@ fn type1_finish_contour(
     );
     *open_contour = false;
     Ok(())
+}
+
+fn type1_start_contour(
+    outline: &mut Type1GlyphOutline,
+    pending_move: &mut Option<(i32, i32)>,
+) {
+    if let Some((x, y)) = pending_move.take() {
+        type1_push_point(outline, x, y);
+    }
 }
 
 fn decode_type1_number(bytes: &[u8], offset: &mut usize) -> Result<i32, FontError> {
@@ -2887,6 +3305,8 @@ pub enum SelectSizeError {
     NoFixedSizes,
     /// The strike index is outside the available-size array.
     InvalidArgument,
+    /// The selected strike reports a zero pixels-per-em value.
+    InvalidPixelSize,
 }
 
 /// Public face metadata matching the scalar fields exposed by `FT_Face`.
@@ -3197,6 +3617,24 @@ impl Font {
         Some(sbix.load_glyph_error(glyph_index, self.data.maxp.num_glyphs, ppem, 0))
     }
 
+    /// Report the shared-load state that FreeType leaves after an `sbix`
+    /// nominal size request misses every fixed strike.
+    ///
+    /// `ttdriver.c:tt_size_request` preserves `Invalid_Pixel_Size` from
+    /// `set_sbit_strike`; the subsequent `FT_Load_Glyph` therefore returns
+    /// that setup error even though the public harness continues to the load
+    /// call.  Keep this state check in the shared Rust path so the C ABI and
+    /// WASM facades remain wrappers over the same behavior.
+    pub(crate) fn sbix_active_strike_is_unmatched(&self) -> bool {
+        let Some(sbix) = self.data.sbix.as_ref().filter(|_| !self.ignore_sbix) else {
+            return false;
+        };
+        !self.is_scalable()
+            && sbix.strike_count() != 0
+            && (self.size_metrics.x_ppem != self.size_metrics.y_ppem
+                || !sbix.has_strike(self.size_metrics.y_ppem))
+    }
+
     /// Construct the whitespace bitmap that the TrueType driver installs when
     /// an active bitmap-only `sbix` strike has no image for a glyph.
     ///
@@ -3333,11 +3771,11 @@ impl Font {
         let type1_multi_master = parse_type1_multi_master(cleartext).map(Arc::new);
         let type1_font_info = type1_font_info_from_metadata(&metadata);
         let type1_private = parse_type1_private(data);
-        let type1_encoding = parse_type1_encoding(cleartext);
+        let type1_encoding = parse_type1_encoding(cleartext)?;
         let type1_charstrings = parse_type1_charstrings(
             data,
             type1_private.as_ref().map_or(4, |private| private.len_iv),
-        );
+        )?;
         let type1_mm_weight_vector = type1_multi_master
             .as_ref()
             .map(|master| master.default_weight_vector.clone());
@@ -3450,7 +3888,19 @@ impl Font {
         let metadata = parse_type1_metadata(cleartext)?;
         let embedded = type42_sfnt_data(data)
             .ok_or_else(|| FontError::InvalidFont("missing Type 42 sfnts data".into()))?;
-        let mut font = Self::truetype_face(&embedded, 0, size_pt)?;
+        let mut font = Self::truetype_face(&embedded, 0, size_pt).map_err(|error| {
+            // Type42's driver has already recognized the PostScript wrapper
+            // and reports a malformed embedded sfnt as Invalid_File_Format.
+            // The shared sfnt loader uses Invalid_Stream_Operation for a
+            // short standalone buffer, so normalize that nested boundary to
+            // the Type42 driver's public result.
+            match error {
+                FontError::InvalidFont(_) => {
+                    FontError::InvalidFileFormat("invalid Type42 embedded sfnt".into())
+                }
+                other => other,
+            }
+        })?;
         font.face_kind = FaceKind::Type42 {
             is_fixed_pitch: metadata.is_fixed_pitch,
         };
@@ -3462,15 +3912,16 @@ impl Font {
     }
 
     fn pfr_face(data: &[u8], face_index: usize, size_pt: f32) -> Result<Self, FontError> {
-        let pfr = PfrFont::parse(data, face_index).map_err(|reason| {
-            // `pfr_face_init` converts any failed PFR header probe back to
-            // `Unknown_File_Format`; deeper recognized-PFR failures remain
-            // `Invalid_File_Format` through the generic face-open mapping.
-            if reason == "invalid PFR header" {
-                FontError::UnknownFileFormat(reason.into())
-            } else {
-                FontError::InvalidFont(reason.into())
+        let pfr = PfrFont::parse(data, face_index).map_err(|reason| match reason {
+            // The pinned driver exposes a short or rejected PFR header as the
+            // stream-operation result left by its header frame probe.
+            "invalid PFR header" => {
+                FontError::InvalidFont("PFR stream operation: invalid PFR header".into())
             }
+            "PFR face index out of range" => FontError::InvalidArgument(reason.into()),
+            // Once the header is recognized, pfr_log_font_load and
+            // pfr_phy_font_load report malformed sections as Invalid_Table.
+            _ => FontError::InvalidTable(reason.into()),
         })?;
         let metadata = Type1Metadata {
             version: None,
@@ -3848,7 +4299,7 @@ impl Font {
         let loca_data = match dir.find(data, tag(b"loca")) {
             Some(bytes) => bytes.to_vec(),
             None if cff.is_some() || cff2.is_some() || sbix.is_some() => Vec::new(),
-            None => return Err(FontError::InvalidFont("missing 'loca' table".into())),
+            None => return Err(FontError::LocationsMissing),
         };
         let glyf_data = match dir.find(data, tag(b"glyf")) {
             Some(bytes) => bytes.to_vec(),
@@ -4285,6 +4736,16 @@ impl Font {
         &mut self,
         coords_16_16: &[i32],
     ) -> Result<(), FontError> {
+        if self.type1_multi_master.is_some() {
+            // C parity: FT_Set_Var_Blend_Coordinates is an alias of
+            // FT_Set_MM_Blend_Coordinates for Type 1 MM faces; the public
+            // wrapper dispatches service->set_mm_blend rather than requiring
+            // an SFNT fvar table (freetype/src/base/ftmm.c:465-572).
+            // FT_Set_Var_Blend_Coordinates clears FT_FACE_FLAG_VARIATION on a
+            // normal Type 1 MM service success; FT_Set_MM_Blend_Coordinates
+            // applies the nonzero-count flag rule in its separate wrapper.
+            return self.set_type1_mm_blend_coordinates(coords_16_16, false);
+        }
         let Some(fvar) = &self.data.fvar else {
             return Err(FontError::InvalidArgument(
                 "face has no variation blend coordinates".into(),
@@ -5070,6 +5531,18 @@ impl Font {
                 },
                 header,
             )?,
+            FaceKind::Bdf if self.data.head.lowest_rec_ppem != 0 => {
+                if height != u32::from(self.data.head.lowest_rec_ppem.max(1)) {
+                    return Err(SizeRequestError::InvalidPixelSize);
+                }
+                // BDF_Size_Request delegates to BDF_Size_Select, whose
+                // non-scalable strike metrics ignore the requested width and
+                // keep unit scales plus the fixed strike advance.  Do not
+                // route this through the scalable pixel helper, or a legal
+                // width-only variation changes max_advance.  See pinned
+                // freetype/src/bdf/bdfdrivr.c:753-783.
+                SizeMetrics::from_bdf_strike(self.data.head.lowest_rec_ppem, &self.data)
+            }
             _ => SizeMetrics::try_from_pixel_size(width, height, &self.data)?,
         };
         self.size_pt = f32::from(size_metrics.y_ppem);
@@ -5111,8 +5584,10 @@ impl Font {
     ///
     /// # Errors
     ///
-    /// Returns [`SelectSizeError::NoFixedSizes`] when no strike exists, or
-    /// [`SelectSizeError::InvalidArgument`] when `strike_index` is out of range.
+    /// Returns [`SelectSizeError::NoFixedSizes`] when no strike exists,
+    /// [`SelectSizeError::InvalidArgument`] when `strike_index` is out of
+    /// range, or [`SelectSizeError::InvalidPixelSize`] when the selected
+    /// strike has a zero pixels-per-em value.
     pub fn select_size(&mut self, strike_index: usize) -> Result<(), SelectSizeError> {
         if let FaceKind::WinFnt { header } = self.face_kind {
             if strike_index != 0 {
@@ -5157,6 +5632,13 @@ impl Font {
         } else {
             return Err(SelectSizeError::NoFixedSizes);
         };
+        // `tt_size_select` rejects a zero-ppem strike before the base layer
+        // rebuilds metrics.  Do this in the shared core so every thin FFI
+        // surface reports `FT_Err_Invalid_Pixel_Size` consistently instead
+        // of letting `from_pixel_size` clamp the invalid strike to one ppem.
+        if x_ppem == 0 || y_ppem == 0 {
+            return Err(SelectSizeError::InvalidPixelSize);
+        }
         // FreeType `FT_Select_Size` dispatches TrueType scalable bitmap faces
         // through `tt_size_select` (`src/truetype/ttdriver.c:312-331`), which
         // stores the strike index then calls `FT_Select_Metrics`
@@ -5301,6 +5783,22 @@ impl Font {
 
     /// Equivalent to `FT_Get_Char_Index`.
     pub fn char_index(&self, codepoint: u32) -> u16 {
+        if self.is_type1_face() && self.selected_charmap == 0 {
+            // Type 1 faces have no SFNT `cmap`; FreeType's first synthetic
+            // charmap is built from glyph names by the PostScript names
+            // service.  Keep that lookup in core Rust so the C ABI and WASM
+            // wrappers observe the same active-charmap behavior.
+            return self
+                .type1_charstrings
+                .iter()
+                .enumerate()
+                .find_map(|(index, charstring)| {
+                    (type1_unicode_value(&charstring.name) == Some(codepoint))
+                        .then(|| u16::try_from(index).ok())
+                        .flatten()
+                })
+                .unwrap_or(0);
+        }
         self.data
             .cmap
             .char_index_in_charmap(self.selected_charmap, codepoint)
@@ -5821,13 +6319,28 @@ impl Font {
         vertical_layout: bool,
         native_hint_mode: NativeHintMode,
     ) -> Result<GlyphSlotLoad, FontError> {
+        if self.is_type1_face() {
+            return self.glyph_slot_load_type1_autohinted(
+                glyph,
+                vertical_layout,
+                native_hint_mode,
+            );
+        }
+        if self.is_empty_cid_type1_face() {
+            // `t1cid` has no CharString stream in the maintained compact
+            // fixture. The PostScript driver still returns an empty outline
+            // for auto-hint requests instead of sending the face through the
+            // SFNT auto-hinter, which has no CID Type 1 glyph table to load.
+            return Ok(empty_outline_glyph_slot());
+        }
         let metrics_cache = self.autohint_metrics_for_glyph_checked(glyph)?;
-        let scaled = scaler::scale_glyph_for_metrics_with_autohint_and_mode(
+        let scaled = scaler::scale_glyph_for_metrics_with_autohint_and_mode_and_layout(
             &self.data,
             glyph,
             metrics_cache.as_deref(),
             self.is_italic,
             native_hint_mode,
+            vertical_layout,
         )?;
         Ok(self.slot_load_from_scaled(glyph, scaled, grid_fit_for_layout(vertical_layout)))
     }
@@ -5836,6 +6349,20 @@ impl Font {
         &self,
         glyph: u16,
     ) -> Result<GlyphSlotLoad, FontError> {
+        if self.is_type1_face() {
+            return self.glyph_slot_load_type1_scaled(glyph, false, MetricsGridFit::Horizontal);
+        }
+        if self.is_empty_cid_type1_face() {
+            return Ok(empty_outline_glyph_slot());
+        }
+        if self.data.has_cff_outlines() {
+            // CFF light-target loads stay in the Adobe CFF driver. Unlike
+            // TrueType, the pinned CFF driver does not hand this mode to the
+            // generic auto-hinter; `cf2_getScaleAndHintFlag` receives the
+            // same hinted Adobe outline path as the normal target.
+            let scaled = scaler::scale_glyph_for_metrics(&self.data, glyph, self.is_italic)?;
+            return Ok(self.slot_load_from_scaled(glyph, scaled, MetricsGridFit::Horizontal));
+        }
         let metrics_cache = self.autohint_metrics_for_glyph_checked(glyph)?;
         let scaled = scaler::scale_glyph_for_metrics_light(
             &self.data,
@@ -5854,6 +6381,11 @@ impl Font {
     ) -> Result<GlyphSlotLoad, FontError> {
         if self.is_type1_face() {
             return self.glyph_slot_load_type1_scaled(glyph, false, MetricsGridFit::None);
+        }
+        if self.is_empty_cid_type1_face() {
+            // `t1cid` exposes an empty outline for CID fonts whose compact
+            // fixture has no CharStrings, regardless of the hinting mode.
+            return Ok(empty_outline_glyph_slot());
         }
         let scaled = scaler::scale_glyph_no_hinting(&self.data, glyph, self.is_italic)?;
         // C: `FT_Load_Glyph` calls `ft_glyphslot_grid_fit_metrics` only when
@@ -6099,6 +6631,17 @@ impl Font {
                 MetricsGridFit::Horizontal,
             );
         }
+        if self.is_empty_cid_type1_face() {
+            return Ok(empty_outline_glyph_slot());
+        }
+        if self.data.has_cff_outlines() {
+            // `FT_LOAD_NO_AUTOHINT` suppresses only the top-level auto-hinter;
+            // CFF's native Adobe charstring loader still owns the scaled
+            // outline. Keep this on the same compact CFF path as a normal
+            // load rather than using the TrueType no-hinting scaler.
+            let scaled = scaler::scale_glyph_for_metrics(&self.data, glyph, self.is_italic)?;
+            return Ok(self.slot_load_from_scaled(glyph, scaled, grid_fit_for_layout(vertical_layout)));
+        }
         let scaled = self.scale_glyph_no_autohint_for_metrics_with_mode_and_pedantic(
             glyph,
             native_hint_mode,
@@ -6220,29 +6763,25 @@ impl Font {
                 advance_width: pixel_round(scaled.advance_width),
             });
         }
-        let mut target = vec![0u8; width * height];
         let mut scratch = self.raster_scratch.borrow_mut();
-        crate::grays::rasterize_shifted_in_box_to_with_scratch(
-            &outline,
-            0,
-            0,
-            width,
-            height,
-            &mut target,
-            width,
-            1,
-            0,
-            outline.cbox_x_min,
-            outline.cbox_x_max,
-            outline.cbox_y_min,
-            outline.cbox_y_max,
+        // Keep the convenience helper on the same core renderer as
+        // `Font::render_mode`. In particular, TrueType overlap flags use
+        // FreeType's oversampled overlap renderer; sending the outline
+        // directly through the plain gray rasterizer makes `getmask()`
+        // disagree with the public render path for overlap glyphs.
+        let rendered = crate::render::render_loaded_outline(
+            outline,
+            scaled.bbox_x_min,
+            scaled.bbox_y_min,
+            scaled.bbox_y_max,
+            RenderMode::Normal,
             &mut scratch,
         )?;
         drop(scratch);
         Ok(GlyphMask {
-            width: u32_from_usize(width),
-            height: u32_from_usize(height),
-            pixels: target,
+            width: rendered.width,
+            height: rendered.rows,
+            pixels: rendered.buffer,
             xmin: scaled.bbox_x_min,
             ymin: scaled.bbox_y_min,
             advance_width: pixel_round(scaled.advance_width),
@@ -6573,11 +7112,28 @@ impl Font {
             outline_cbox_x_max,
             outline_cbox_y_max,
         );
+        // The auto-hinter publishes its already pixel-rounded bbox from
+        // `afloader.c:Hint_Metrics`; the TrueType driver publishes the raw
+        // outline CBox and lets `ft_glyphslot_grid_fit_metrics` round it.
+        // Starting the auto-hint path from the raw CBox is usually masked by
+        // horizontal grid fitting, but produces a one-pixel-narrow vertical
+        // metric because vertical grid fitting uses `vertBearingX + width`.
+        let (metrics_x_min, metrics_y_min, metrics_x_max, metrics_y_max) =
+            if autohint_vertical.is_some() {
+                (
+                    ft_pix_floor(cbox_x_min),
+                    ft_pix_floor(cbox_y_min),
+                    ft_pix_ceil(cbox_x_max),
+                    ft_pix_ceil(cbox_y_max),
+                )
+            } else {
+                (cbox_x_min, cbox_y_min, cbox_x_max, cbox_y_max)
+            };
         let mut metrics = GlyphSlotMetrics {
-            width: cbox_x_max - cbox_x_min,
-            height: cbox_y_max - cbox_y_min,
-            hori_bearing_x: cbox_x_min,
-            hori_bearing_y: cbox_y_max,
+            width: metrics_x_max - metrics_x_min,
+            height: metrics_y_max - metrics_y_min,
+            hori_bearing_x: metrics_x_min,
+            hori_bearing_y: metrics_y_max,
             hori_advance: slot_advance_width,
             vert_bearing_x: 0,
             vert_bearing_y: 0,
@@ -6604,6 +7160,9 @@ impl Font {
                 vertical_advance_font_units(&self.data),
                 self.size_metrics.y_scale,
             );
+            if matches!(grid_fit_metrics, MetricsGridFit::Vertical) {
+                synthesize_vertical_metrics(&mut metrics);
+            }
         } else {
             let height_fu = if self.size_metrics.y_scale == 0 {
                 0
@@ -6683,21 +7242,34 @@ impl Font {
     ) -> Result<GlyphSlotLoad, FontError> {
         let program = self.type1_glyph_program(glyph)?;
         let scale = scaler::ScaleMetrics::from_font_data(&self.data);
+        let adobe_hinting = !matches!(grid_fit_metrics, MetricsGridFit::None);
         let mut scaled_points = program
             .outline
             .points
             .iter()
             .map(|point| OutlinePoint {
-                x: type1_scale_font_unit(point.x, scale.x_scale, self.type1_mm_variation_active),
-                y: type1_scale_font_unit(point.y, scale.y_scale, self.type1_mm_variation_active),
+                x: if adobe_hinting {
+                    scaler::scale_adobe_coordinate(point.x, scale.x_scale)
+                } else {
+                    type1_scale_font_unit(point.x, scale.x_scale, self.type1_mm_variation_active)
+                },
+                y: if adobe_hinting {
+                    scaler::scale_adobe_coordinate(point.y, scale.y_scale)
+                } else {
+                    type1_scale_font_unit(point.y, scale.y_scale, self.type1_mm_variation_active)
+                },
                 on_curve: point.on_curve,
             })
             .collect::<Vec<_>>();
-        let advance_width = type1_scale_font_unit(
-            program.advance_width,
-            scale.x_scale,
-            self.type1_mm_variation_active,
-        );
+        let advance_width = if adobe_hinting {
+            scaler::scale_adobe_coordinate(program.advance_width, scale.x_scale)
+        } else {
+            type1_scale_font_unit(
+                program.advance_width,
+                scale.x_scale,
+                self.type1_mm_variation_active,
+            )
+        };
         if scaled_points.is_empty() || program.outline.contours.is_empty() {
             let mut metrics = GlyphSlotMetrics {
                 width: 0,
@@ -6829,6 +7401,218 @@ impl Font {
                 top: px_y_max,
             }),
         })
+    }
+
+    fn glyph_slot_load_type1_autohinted(
+        &self,
+        glyph: u16,
+        vertical_layout: bool,
+        native_hint_mode: NativeHintMode,
+    ) -> Result<GlyphSlotLoad, FontError> {
+        let program = self.type1_glyph_program(glyph)?;
+        if program.outline.points.is_empty() || program.outline.contours.is_empty() {
+            return self.glyph_slot_load_type1_scaled(
+                glyph,
+                vertical_layout,
+                MetricsGridFit::Horizontal,
+            );
+        }
+
+        // The auto-hinter reloads a Type 1 glyph through the driver with
+        // `FT_LOAD_NO_SCALE`, then scales that raw outline itself. Reuse the
+        // shared outline representation so cubic controls follow the same
+        // Latin edge pipeline as C's `af_loader_load_glyph`.
+        let end_pts_of_contours = program
+            .outline
+            .contours
+            .iter()
+            .copied()
+            .map(|endpoint| {
+                u16::try_from(endpoint).map_err(|_| {
+                    FontError::InvalidOutline("Type 1 contour endpoint is negative".into())
+                })
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        let points = program
+            .outline
+            .points
+            .iter()
+            .zip(&program.outline.tags)
+            .map(|(point, &tag)| tt::glyf::OutlinePoint {
+                x: point.x,
+                y: point.y,
+                on_curve: point.on_curve,
+                tag,
+            })
+            .collect::<Vec<_>>();
+        let (xmin, ymin, xmax, ymax) = points.iter().fold(
+            (i32::MAX, i32::MAX, i32::MIN, i32::MIN),
+            |(xmin, ymin, xmax, ymax), point| {
+                (
+                    xmin.min(point.x),
+                    ymin.min(point.y),
+                    xmax.max(point.x),
+                    ymax.max(point.y),
+                )
+            },
+        );
+        let raw_outline = tt::glyf::GlyphOutline {
+            num_contours: u16::try_from(end_pts_of_contours.len()).map_err(|_| {
+                FontError::InvalidOutline("Type 1 contour count is too large".into())
+            })?,
+            end_pts_of_contours,
+            points,
+            unrounded_points: None,
+            xmin,
+            ymin,
+            xmax,
+            ymax,
+            bbox_xmin: xmin,
+            bbox_ymax: ymax,
+            is_composite: false,
+            sub_lsb: 0,
+            instructions: Vec::new(),
+            components: Vec::new(),
+            outline_flags: 0,
+            has_cubic_tags: true,
+        };
+
+        let metrics_cache = self.autohint_metrics_for_glyph_checked(glyph)?;
+        let scale = scaler::ScaleMetrics::from_font_data_public_size(&self.data);
+        let y_scale = metrics_cache
+            .as_deref()
+            .map_or(scale.y_scale, |metrics| metrics.axis[1].scale);
+        let (no_horizontal_hinting, stem_adjust, horz_snap, vert_snap, target_mono) =
+            match native_hint_mode {
+                NativeHintMode::Normal => (false, true, false, false, false),
+                NativeHintMode::Mono => (false, true, true, true, true),
+                NativeHintMode::Lcd => (true, false, true, false, false),
+                NativeHintMode::LcdV => (false, true, false, true, false),
+            };
+        let scaled_points = raw_outline
+            .points
+            .iter()
+            .map(|point| OutlinePoint {
+                x: ft_mul_fix(point.x, scale.x_scale),
+                y: ft_mul_fix(point.y, y_scale),
+                on_curve: point.on_curve,
+            })
+            .collect::<Vec<_>>();
+        let mut hinted_outline = Outline {
+            n_contours: i32::from(raw_outline.num_contours),
+            contours: raw_outline
+                .end_pts_of_contours
+                .iter()
+                .map(|&endpoint| i16_from_i32(i32::from(endpoint)))
+                .collect(),
+            points: scaled_points,
+            tags: program.outline.tags.clone(),
+            contour_dropouts: Vec::new(),
+            flags: 0,
+            cbox_x_min: 0,
+            cbox_y_min: 0,
+            cbox_x_max: 1,
+            cbox_y_max: 1,
+        };
+        let has_type1_autohint_metrics = metrics_cache.as_deref().is_some_and(|metrics| {
+            metrics.axis[0].width_count != 0 || metrics.axis[1].width_count != 0
+        });
+        let hint_result = if has_type1_autohint_metrics {
+            crate::autohint::latin::apply_hints_with_advance(
+                &mut hinted_outline,
+                &raw_outline,
+                scale.x_scale,
+                y_scale,
+                0,
+                0,
+                glyph,
+                metrics_cache.as_deref(),
+                self.is_italic,
+                no_horizontal_hinting,
+                stem_adjust,
+                horz_snap,
+                vert_snap,
+                None,
+                target_mono,
+                0,
+                Some(program.advance_width),
+            )
+        } else {
+            // The compact Type 1 face has no SFNT glyph cache from which the
+            // auto-hinter can derive standard widths or blue zones. C's
+            // fallback style therefore leaves this outline at its scaled
+            // coordinates; retain the raw phantom vector and only apply the
+            // auto-hinter's metric projection below.
+            crate::autohint::latin::ApplyHintsMetrics::default()
+        };
+
+        let mut x_min = hinted_outline.points[0].x;
+        let mut y_min = hinted_outline.points[0].y;
+        let mut x_max = x_min;
+        let mut y_max = y_min;
+        for point in &hinted_outline.points[1..] {
+            x_min = x_min.min(point.x);
+            y_min = y_min.min(point.y);
+            x_max = x_max.max(point.x);
+            y_max = y_max.max(point.y);
+        }
+        let bbox_x_min = ft_pix_floor(x_min) >> 6;
+        let bbox_y_min = ft_pix_floor(y_min) >> 6;
+        let bbox_x_max = ft_pix_ceil(x_max) >> 6;
+        let bbox_y_max = ft_pix_ceil(y_max) >> 6;
+        let off_x = ft_pix_floor(x_min);
+        let off_y = ft_pix_floor(y_min);
+        let mut render_outline = hinted_outline.clone();
+        for point in &mut render_outline.points {
+            point.x -= off_x;
+            point.y -= off_y;
+        }
+        render_outline.cbox_x_min = 0;
+        render_outline.cbox_y_min = 0;
+        render_outline.cbox_x_max = bbox_x_max - bbox_x_min;
+        render_outline.cbox_y_max = bbox_y_max - bbox_y_min;
+
+        let advance_width = hint_result
+            .advance_width
+            .unwrap_or_else(|| ft_pix_round(ft_mul_fix(program.advance_width, scale.x_scale)));
+        let vertical_bearing_x = ft_pix_floor(
+            ft_pix_floor(x_min) - ft_mul_fix(raw_outline.xmin, scale.x_scale),
+        );
+        let vertical_bearing_y = ft_pix_floor(
+            ft_pix_ceil(y_max) - ft_mul_fix(raw_outline.ymax, y_scale),
+        );
+        let scaled = scaler::ScaledGlyph {
+            outline: render_outline,
+            advance_width,
+            slot_advance_width: advance_width,
+            phantom_pp1_x: 0,
+            phantom_pp2_x: advance_width,
+            vertical_bearing_x_advance_width: advance_width,
+            lsb: ft_mul_fix(raw_outline.xmin, scale.x_scale),
+            cbox_x_min: x_min,
+            cbox_y_min: y_min,
+            cbox_x_max: x_max,
+            cbox_y_max: y_max,
+            outline_cbox_x_min: x_min,
+            outline_cbox_y_min: y_min,
+            outline_cbox_x_max: x_max,
+            outline_cbox_y_max: y_max,
+            outline_bbox_x_min: x_min,
+            outline_bbox_y_min: y_min,
+            outline_bbox_x_max: x_max,
+            outline_bbox_y_max: y_max,
+            bbox_x_min,
+            bbox_y_min,
+            bbox_x_max,
+            bbox_y_max,
+            autohint_vertical: Some(scaler::AutohintVerticalMetrics {
+                bearing_x: vertical_bearing_x,
+                bearing_y: vertical_bearing_y,
+                advance: 0,
+            }),
+            native_vertical: None,
+        };
+        Ok(self.slot_load_from_scaled(glyph, scaled, grid_fit_for_layout(vertical_layout)))
     }
 
     fn glyph_slot_load_type1_no_scale(
@@ -7336,6 +8120,24 @@ impl SizeMetrics {
             char_height: (height as i32) << 6,
         }
         .with_face_metrics(data)
+    }
+
+    fn from_bdf_strike(ppem: u16, data: &FontData) -> Self {
+        let (ascender, descender, height) = face_metric_values(data);
+        Self {
+            x_ppem: ppem,
+            y_ppem: ppem,
+            x_scale: 1 << 16,
+            y_scale: 1 << 16,
+            ascender: ascender.saturating_mul(64),
+            descender: descender.saturating_mul(64),
+            height: height.saturating_mul(64),
+            max_advance: i32::from(data.hhea.advance_width_max).saturating_mul(64),
+            x_dpi: 72,
+            y_dpi: 72,
+            char_width: i32::from(ppem) << 6,
+            char_height: i32::from(ppem) << 6,
+        }
     }
 
     fn try_from_pixel_size(

@@ -5,6 +5,8 @@
     "opens_valid_gzip_stream",
     "rejects_invalid_stream_handles",
     "rejects_invalid_gzip_header",
+    "mcp_stream_gap_matrix",
+    "mcp_read_close_gap_matrix",
     "reports_unimplemented_without_zlib"
   ],
   "cases": [
@@ -209,6 +211,87 @@
         "error": "FT_Err_Unimplemented_Feature",
         "source_refs": [
           "freetype/src/gzip/ftgzip.c:773-784"
+        ]
+      }
+    },
+    {
+      "case_id": "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix",
+      "subject": "ftgzip.FT_Stream_OpenGzip",
+      "case": "mcp_stream_gap_matrix",
+      "operation": "ftgzip.stream_open_gzip",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+      "variants": [
+          {"id":"c48-gzip-001","assets":{"gzip_streams":{"kind":"ref","id":"compressed/gzip/small-text-and-empty-payloads.json","asset_kind":"manifest"}},"params":{"stream_plan":"invalid_header_decode_error_empty_threshold","case_variant":1},"coverage":["src/ffi/handles.rs:7994-8003","src/ffi/handles.rs:8019-8019"]}
+      ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftgzip",
+        "area:gzip-stream",
+        "area:coverage"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "rows": "valid and rejected stream rows"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "rows[*].status",
+            "rows[*].stream",
+            "rows[*].read_ranges[*].bytes"
+          ]
+        },
+        "source_refs": [
+          "src/ffi/handles.rs:7994-8003",
+          "src/ffi/handles.rs:8019-8019"
+        ]
+      }
+    },
+    {
+      "case_id": "ftgzip.FT_Stream_OpenGzip.mcp_read_close_gap_matrix",
+      "subject": "ftgzip.FT_Stream_OpenGzip",
+      "case": "mcp_read_close_gap_matrix",
+      "operation": "ftgzip.stream_open_gzip",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+       "variants": [
+          {"id":"c49-gzip-001","assets":{"gzip_streams":{"kind":"ref","id":"compressed/gzip/small-text-and-empty-payloads.json","asset_kind":"manifest"}},"params":{"stream_plan":"out_of_range_read_and_null_close","case_variant":1},"coverage":["src/ffi/handles.rs:8118-8119","src/ffi/handles.rs:8125-8132"]}
+       ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftgzip",
+        "area:gzip-stream",
+        "area:coverage"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "rows": "valid streams with out-of-range reads and null-close safety"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "rows[*].status",
+            "rows[*].stream",
+            "rows[*].read_ranges[*].bytes",
+            "rows[*].null_close_safe"
+          ]
+        },
+        "source_refs": [
+          "src/ffi/handles.rs:8118-8119",
+          "src/ffi/handles.rs:8125-8132"
         ]
       }
     }

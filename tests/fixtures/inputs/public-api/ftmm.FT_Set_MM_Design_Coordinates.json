@@ -75,6 +75,51 @@
       "classifiers": ["kind:function", "header:ftmm", "surface:public-c-api", "coverage:glyph-output"],
       "metadata": {"abi": {"header": "freetype/ftmm.h", "symbol": "FT_Set_MM_Design_Coordinates", "kind": "function"}, "source_behavior": "Pinned FreeType 2.14.3 accepts glyph index 1 in the maintained Adobe MM fixture after FT_Set_MM_Design_Coordinates; the broader glyph_index=42 row remains pending because C returns Invalid_Glyph_Index for that input."},
       "expectation": {"status": "ok", "output_shape": {"return": "FT_Error", "glyph_metrics": "FT_Glyph_Metrics", "outline_cbox": "FT_BBox", "bitmap": {"buffer_hash": "sha256"}}, "compare": {"mode": "bytes", "paths": ["return", "glyph_metrics", "outline_cbox", "bitmap.buffer"]}, "source_refs": ["freetype/src/base/ftmm.c:201-208", "freetype/src/type1/t1load.c"], "fixture_requirements": ["Adobe MM font with a C-loadable glyph index after design coordinate mutation."]}
+    },
+    {
+      "case_id": "ftmm.FT_Set_MM_Design_Coordinates.c182_coordinate_conversion_overflow",
+      "subject": "ftmm.FT_Set_MM_Design_Coordinates",
+      "case": "error_null_coords_with_nonzero_count",
+      "covers_manifest_cases": ["error_null_coords_with_nonzero_count"],
+      "operation": "ftmm.set_mm_design_coordinates",
+      "schema": "api_result",
+      "expect_error": true,
+      "expectation": {
+        "status": "error",
+        "output_shape": {"return": "FT_Error"},
+        "compare": {"mode": "exact_error", "paths": ["return"]},
+        "error": "FT_Err_Invalid_Argument",
+        "source_refs": ["src/ffi/handles.rs:12850-12861"]
+      },
+      "inputs": {
+        "variants": [
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:001"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:002"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-003","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:003"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-004","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:004"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-005","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:005"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-006","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:006"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-007","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:007"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-008","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:008"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-009","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:009"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-010","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:010"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-011","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:011"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-012","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:012"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-013","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:013"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-014","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:014"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-015","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:015"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-016","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:016"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-017","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:017"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-018","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:018"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-019","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:019"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-020","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:020"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-021","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:021"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-022","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:022"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-023","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:023"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-024","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:024"]},
+          {"id":"ftmm-FT_Set_MM_Design_Coordinates-c182_coordinate_conversion_overflow-025","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1-mm/adobe-mm-two-axis.pfb","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_ft_long":[2147483648,-2147483649]},"coverage":["c182:ffi:mm-design-conversion:025"]}
+        ]
+      }
     }
   ]
 }

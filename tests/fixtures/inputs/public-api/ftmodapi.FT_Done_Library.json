@@ -4,7 +4,8 @@
   "manifest_cases": [
     "rejects_null_library",
     "decrements_reference_without_destroying",
-    "final_destroy_closes_faces_and_modules"
+    "final_destroy_closes_faces_and_modules",
+    "mcp_null_handle_batch"
   ],
   "cases": [
     {
@@ -183,6 +184,376 @@
         "source_refs": [
           "freetype/src/base/ftobjs.c:FT_Done_Library",
           "freetype/src/base/ftobjs.c:Destroy_Module"
+        ]
+      }
+    },
+    {
+      "case_id": "ftmodapi.FT_Done_Library.mcp_null_handle_batch",
+      "subject": "ftmodapi.FT_Done_Library",
+      "case": "mcp_null_handle_batch",
+      "operation": "ftmodapi.done_library",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "null-done-001",
+            "params": {
+              "library": "null",
+              "probe": "null-done-001"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-002",
+            "params": {
+              "library": "null",
+              "probe": "null-done-002"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-003",
+            "params": {
+              "library": "null",
+              "probe": "null-done-003"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-004",
+            "params": {
+              "library": "null",
+              "probe": "null-done-004"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-005",
+            "params": {
+              "library": "null",
+              "probe": "null-done-005"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-006",
+            "params": {
+              "library": "null",
+              "probe": "null-done-006"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-007",
+            "params": {
+              "library": "null",
+              "probe": "null-done-007"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-008",
+            "params": {
+              "library": "null",
+              "probe": "null-done-008"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-009",
+            "params": {
+              "library": "null",
+              "probe": "null-done-009"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-010",
+            "params": {
+              "library": "null",
+              "probe": "null-done-010"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-011",
+            "params": {
+              "library": "null",
+              "probe": "null-done-011"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-012",
+            "params": {
+              "library": "null",
+              "probe": "null-done-012"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-013",
+            "params": {
+              "library": "null",
+              "probe": "null-done-013"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-014",
+            "params": {
+              "library": "null",
+              "probe": "null-done-014"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-015",
+            "params": {
+              "library": "null",
+              "probe": "null-done-015"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-016",
+            "params": {
+              "library": "null",
+              "probe": "null-done-016"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-017",
+            "params": {
+              "library": "null",
+              "probe": "null-done-017"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-018",
+            "params": {
+              "library": "null",
+              "probe": "null-done-018"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-019",
+            "params": {
+              "library": "null",
+              "probe": "null-done-019"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-020",
+            "params": {
+              "library": "null",
+              "probe": "null-done-020"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-021",
+            "params": {
+              "library": "null",
+              "probe": "null-done-021"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-022",
+            "params": {
+              "library": "null",
+              "probe": "null-done-022"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-023",
+            "params": {
+              "library": "null",
+              "probe": "null-done-023"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-024",
+            "params": {
+              "library": "null",
+              "probe": "null-done-024"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-025",
+            "params": {
+              "library": "null",
+              "probe": "null-done-025"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-026",
+            "params": {
+              "library": "null",
+              "probe": "null-done-026"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-027",
+            "params": {
+              "library": "null",
+              "probe": "null-done-027"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-028",
+            "params": {
+              "library": "null",
+              "probe": "null-done-028"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-029",
+            "params": {
+              "library": "null",
+              "probe": "null-done-029"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-030",
+            "params": {
+              "library": "null",
+              "probe": "null-done-030"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-031",
+            "params": {
+              "library": "null",
+              "probe": "null-done-031"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-032",
+            "params": {
+              "library": "null",
+              "probe": "null-done-032"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          },
+          {
+            "id": "null-done-033",
+            "params": {
+              "library": "null",
+              "probe": "null-done-033"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1913"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftmodapi",
+        "area:library",
+        "area:error",
+        "area:coverage"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP batch exercises the null-handle return in FT_Done_Library."
+      },
+      "expectation": {
+        "status": "error",
+        "error": "FT_Err_Invalid_Library_Handle",
+        "output_shape": {
+          "status": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "status"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftobjs.c:FT_Done_Library"
         ]
       }
     }

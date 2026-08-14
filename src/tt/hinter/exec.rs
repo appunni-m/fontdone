@@ -318,6 +318,47 @@ impl ExecContext {
         self.stack.push(val);
     }
 
+    /// Fixed operand counts copied from FreeType's `Pop_Push_Count` table.
+    /// Each row covers one opcode block (`0x00`, `0x10`, ..., `0xF0`).
+    /// Variable-arity push and loop instructions use zero here and retain
+    /// their existing dynamic handling in the dispatch arms below.
+    const FIXED_POP_COUNT: [u8; 256] = [
+        0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0, 0, 0, 5,
+        1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1,
+        1, 1, 0, 2, 0, 1, 1, 2, 0, 1, 2, 1, 1, 0, 1, 1,
+        0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 2, 2, 0, 0, 2, 2,
+        0, 0, 2, 1, 2, 1, 1, 1, 2, 2, 0, 0, 0, 0, 0, 1,
+        2, 2, 2, 2, 2, 2, 1, 1, 1, 0, 2, 2, 1, 1, 1, 1,
+        2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 0, 0, 0, 0, 1, 1,
+        0, 2, 2, 0, 0, 1, 2, 2, 1, 1, 3, 2, 2, 1, 2, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    ];
+
+    /// Return the fixed operand count for one opcode.
+    fn fixed_pop_count(opcode: u8) -> usize {
+        usize::from(Self::FIXED_POP_COUNT[opcode as usize])
+    }
+
+    fn normalize_nonpedantic_operands(&mut self, opcode: u8) -> Result<(), FontError> {
+        let required = Self::fixed_pop_count(opcode);
+        if self.stack.len() >= required {
+            return Ok(());
+        }
+        if self.pedantic_hinting {
+            return Err(FontError::BytecodeTooFewArguments);
+        }
+        self.stack.clear();
+        self.stack.resize(required, 0);
+        Ok(())
+    }
+
     /// Pop a value from the data stack. Returns 0 if stack is empty.
     /// This matches C's non-pedantic mode where stack errors are ignored.
     pub fn pop(&mut self) -> Result<i32, FontError> {
@@ -1118,6 +1159,7 @@ impl ExecContext {
             }
             step_count += 1;
             let opcode = self.fetch_byte_glyph()?;
+            self.normalize_nonpedantic_operands(opcode)?;
 
             match opcode {
                 // ── Push small bytes (0xB0-0xB7) ────────────────

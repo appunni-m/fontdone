@@ -8,7 +8,8 @@
     "error_null_source_target_or_class",
     "error_svg_zero_length_source_real",
     "error_svg_zero_length_source_preserves_document",
-    "error_copy_hook_failure_cleans_target"
+    "error_copy_hook_failure_cleans_target",
+    "mcp_bitmap_sync_error_batch"
   ],
   "cases": [
     {
@@ -469,6 +470,142 @@
           "freetype/src/base/ftglyph.c"
         ],
         "error": "C allocator or class hook error"
+      }
+    },
+    {
+      "case_id": "ftglyph.FT_Glyph_Copy.mcp_bitmap_sync_error_batch",
+      "subject": "ftglyph.FT_Glyph_Copy",
+      "case": "mcp_bitmap_sync_error_batch",
+      "operation": "ftglyph.glyph_copy",
+      "schema": "glyph_copy",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c63-bitmap-sync-001",
+            "assets": {
+              "bitmap_strike_font": {
+                "kind": "ref",
+                "id": "input/fixtures/assets/fonts/sbit_gray_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "source_creation": "FT_Get_Glyph bitmap",
+              "source_mutation": "bitmap.buffer_len=0;bitmap.rows=16;bitmap.pitch=8",
+              "bitmap_buffer_len": 0
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3674"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph",
+        "runtime:wasm-facade",
+        "malformed_record"
+      ],
+      "metadata": {
+        "source_behavior": "The WASM bitmap-glyph record rejects a non-null buffer pointer whose published buffer_len is smaller than rows*abs(pitch), before forming the payload slice or allocating a copy target. The native C surface has no buffer_len field, so the oracle lane asserts this adapter-specific record contract explicitly.",
+        "batch_history": "Initial MCP coverage batch exercised buffer_len values 0 through 99 with rows=16 and pitch=8 (required_bytes=128); MCP measured lines 634 and 3674 plus two branches and three regions, so 99 redundant variants were pruned to witness c63-bitmap-sync-001."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "probe": "bitmap.buffer_len=<value>,rows=16,pitch=8",
+          "buffer_len": "<value>",
+          "required_bytes": 128,
+          "target_pointer_class": "null"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "output.probe",
+            "output.buffer_len",
+            "output.required_bytes",
+            "output.target_pointer_class"
+          ]
+        },
+        "error": "FT_Err_Invalid_Argument",
+        "source_refs": [
+          "freetype/include/freetype/ftglyph.h",
+          "fontdone-wasm/src/implementation.rs:624-646",
+          "fontdone-wasm/src/implementation.rs:3668-3675"
+        ]
+      }
+    },
+    {
+      "case_id": "ftglyph.FT_Glyph_Copy.mcp_svg_format_error_batch",
+      "subject": "ftglyph.FT_Glyph_Copy",
+      "case": "mcp_svg_format_error_batch",
+      "operation": "ftglyph.glyph_copy",
+      "schema": "glyph_copy",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c64-svg-format-001",
+            "assets": {
+              "svg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_COLOR"
+              ],
+              "source_mutation": "root.format=1;svg_document_preserved",
+              "svg_copy_format": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3692"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph",
+        "runtime:wasm-facade",
+        "malformed_record",
+        "validation-order"
+      ],
+      "metadata": {
+        "source_behavior": "The WASM SVG-glyph record imports a nonempty document and the published root format before FT_Svg_Glyph_Copy validates the class-specific format. Unsupported root formats return FT_Err_Invalid_Glyph_Format and leave the wrapper target null. The native C surface has no equivalent public record mutation route, so the oracle lane asserts this adapter-specific validation result explicitly.",
+        "batch_history": "Initial MCP coverage batch exercised unsupported root formats 1 through 100 with the SVG document preserved; MCP measured lines 3692 and 2275 plus one branch and three regions, so 99 redundant variants were pruned to witness c64-svg-format-001."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "probe": "root.format=<value>",
+          "source_format": "<value>",
+          "source_document_nonempty": true,
+          "target_pointer_class": "null"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "output.probe",
+            "output.source_format",
+            "output.source_document_nonempty",
+            "output.target_pointer_class"
+          ]
+        },
+        "error": "FT_Err_Invalid_Glyph_Format",
+        "source_refs": [
+          "freetype/include/freetype/ftglyph.h",
+          "fontdone-wasm/src/implementation.rs:541-580",
+          "fontdone-wasm/src/implementation.rs:3687-3692"
+        ]
       }
     }
   ]

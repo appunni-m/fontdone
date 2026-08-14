@@ -195,6 +195,7 @@
           "freetype/src/sdf/ftbsdf.c:1236-1307"
         ]
       }
-    }
+    },
+    {"case_id":"ftimage.FT_Raster_Funcs.callback_slots_match_registered_renderers@b25-raster-001","subject":"ftimage.FT_Raster_Funcs","case":"callback_slots_match_registered_renderers","operation":"renderer.class_probe","schema":"api_result","expect_error":false,"inputs":{"assets":{},"params":{"renderers":["unknown","ft_standard_raster"],"probe":["glyph_format","raster_new_nullness","raster_reset_nullness","raster_set_mode_nullness","raster_render_nullness","raster_done_nullness"]}},"classifiers":["kind:record","header:ftimage","area:raster","path:unknown-class-probe"],"expectation":{"status":"ok","output_shape":{"renderer_classes":"array<object>"},"compare":{"mode":"exact","paths":["renderer_classes[].name","renderer_classes[].glyph_format","renderer_classes[].raster_new_nullness","renderer_classes[].raster_reset_nullness","renderer_classes[].raster_set_mode_nullness","renderer_classes[].raster_render_nullness","renderer_classes[].raster_done_nullness"]}}}
   ]
 }

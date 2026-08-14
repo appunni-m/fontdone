@@ -5,7 +5,9 @@
     "declaration_matches_header",
     "null_face_noop",
     "frees_validated_table_with_face_memory",
-    "null_table_noop"
+    "null_table_noop",
+    "mcp_gap_matrix",
+    "mcp_c_abi_unowned_table_free_batch"
   ],
   "cases": [
     {
@@ -188,6 +190,187 @@
         },
         "source_refs": [
           "freetype/src/base/ftotval.c"
+        ]
+      }
+    },
+    {
+      "case_id": "ftotval.FT_OpenType_Free.mcp_gap_matrix",
+      "subject": "ftotval.FT_OpenType_Free",
+      "case": "mcp_gap_matrix",
+      "operation": "ftotval.open_type_validate_then_free",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c46-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "validation_flags": [
+                "FT_VALIDATE_GDEF"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7409-7410"
+            ]
+          },
+          {
+            "id": "c46-021",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/variable/ubuntu-sans-variable.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "validation_flags": [
+                "FT_VALIDATE_GDEF"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7515-7517",
+              "src/ffi/handles.rs:7525-7528"
+            ]
+          },
+          {
+            "id": "c46-041",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/variable/compact-variable.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "validation_flags": [
+                "FT_VALIDATE_GDEF"
+              ]
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7515-7517",
+              "src/ffi/handles.rs:7525-7528"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftotval",
+        "area:opentype_validation",
+        "area:coverage"
+      ],
+      "metadata": {
+        "coverage_intent": "100-case batch from Coverage MCP uncovered lines in src/ffi/handles.rs; includes non-SFNT, versioned-GDEF, valid ownership, and malformed-table controls."
+      },
+      "abi": {
+        "header": "freetype/ftotval.h",
+        "symbol": "FT_OpenType_Free",
+        "signature": "void FT_OpenType_Free(FT_Face face, FT_Bytes table)"
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "validate_error": "FT_Error",
+          "table_pointer": "identity_class",
+          "free_event_count": "usize",
+          "allocator_identity": "identity_class"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "validate_error",
+            "table_pointer",
+            "free_event_count",
+            "allocator_identity"
+          ]
+        },
+        "source_refs": [
+          "src/ffi/handles.rs:7410",
+          "src/ffi/handles.rs:7515-7528"
+        ]
+      }
+    },
+    {
+      "case_id": "ftotval.FT_OpenType_Free.mcp_c_abi_unowned_table_free_batch",
+      "subject": "ftotval.FT_OpenType_Free",
+      "case": "mcp_c_abi_unowned_table_free_batch",
+      "operation": "ftotval.open_type_free",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c87-unowned-table-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/opentype/valid-all-layout.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "validation_flags": [
+                "FT_VALIDATE_GDEF"
+              ],
+              "table_pointer_class": "non_null_unowned",
+             "probe": 1
+           },
+           "coverage": [
+             "fontdone-c-abi/src/implementation.rs:168"
+           ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftotval",
+        "area:opentype_validation",
+        "area:coverage",
+        "ownership:mismatch"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the ownership-mismatch return at fontdone-c-abi/src/implementation.rs:168. Each variant validates a real GDEF table with one face, passes that allocated pointer to a distinct foreign face, then cleans it up through its owner; the Rust FFI, C ABI wrapper, WASM wrapper, and pinned C oracle preserve the normalized no-op observation for the wrong-owner call.",
+        "batch_size": 100,
+        "batch_id": "c87",
+        "measured_delta": "MCP c86 to c87: +1 covered line, +2 covered branches, +2 covered regions; line 168 reached with 100 hits",
+        "retained_variants": 1,
+        "pruned_variants": 99,
+        "pruning_policy": "retain one representative witness after the batch has measured its line/region gain; remove redundant variants that do not add a distinct measured line"
+      },
+      "abi": {
+        "header": "freetype/ftotval.h",
+        "symbol": "FT_OpenType_Free",
+        "signature": "void FT_OpenType_Free(FT_Face face, FT_Bytes table)"
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "returned": "void",
+          "free_event_count": "usize",
+          "table_pointer_observed": "identity_class"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "free_event_count",
+            "table_pointer_observed"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftotval.c",
+          "fontdone-c-abi/src/implementation.rs:168",
+          "src/ffi/handles.rs:6918"
         ]
       }
     }

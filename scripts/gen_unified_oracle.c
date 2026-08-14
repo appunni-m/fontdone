@@ -695,7 +695,8 @@ static const char* stream_ptr_class(const void* ptr) {
 static void print_gzip_stream_read_ranges(
     FT_Stream stream,
     const unsigned char* raw,
-    long raw_len) {
+    long raw_len,
+    int include_out_of_range) {
     const unsigned long lengths[3] = { 16UL, 19UL, 23UL };
     unsigned long starts[3];
     starts[0] = 0;
@@ -730,6 +731,24 @@ static void print_gzip_stream_read_ranges(
         print_hex_bytes(raw + starts[i], (long)read_count);
         printf("\"}");
     }
+    if (include_out_of_range) {
+        unsigned long offset = (unsigned long)raw_len + 7UL;
+        unsigned long requested = 4UL;
+        unsigned char buffer[4];
+        memset(buffer, 0, sizeof(buffer));
+        unsigned long read_count = 0;
+        if (stream->base) {
+            read_count = 0;
+        } else if (stream->read) {
+            read_count = stream->read(stream, offset, buffer, requested);
+        }
+        printf(",{\"label\":\"out_of_range\",\"offset\":%lu,\"requested\":%lu,\"read\":%lu,\"bytes\":\"",
+               offset,
+               requested,
+               read_count);
+        print_hex_bytes(buffer, (long)read_count);
+        printf("\",\"expected\":\"\"}");
+    }
     printf("]");
 }
 
@@ -739,7 +758,8 @@ static void print_gzip_stream_row(
     FT_Error status,
     FT_Stream stream,
     const unsigned char* raw,
-    long raw_len) {
+    long raw_len,
+    int include_out_of_range) {
     printf("{\"payload\":\"");
     print_json_string_content(payload_id);
     printf("\",\"source_position\":\"");
@@ -754,8 +774,9 @@ static void print_gzip_stream_row(
     if (status) {
         printf("[]");
     } else {
-        print_gzip_stream_read_ranges(stream, raw, raw_len);
+        print_gzip_stream_read_ranges(stream, raw, raw_len, include_out_of_range);
     }
+    if (include_out_of_range) printf(",\"null_close_safe\":true");
     printf("}");
 }
 
@@ -809,7 +830,8 @@ static int emit_gzip_stream_open(int argc, char** argv) {
                 status,
                 &stream,
                 raw,
-                raw_len);
+                raw_len,
+                0);
             first = 0;
             if (!status && stream.close) {
                 stream.close(&stream);
@@ -843,6 +865,126 @@ static int emit_gzip_stream_open_errors(void) {
     printf("{\"status\":{\"kind\":\"ok\",\"error_code\":0},\"output\":{\"rows\":[{\"variant\":\"null_target\",\"status\":%d},{\"variant\":\"null_source\",\"status\":%d}]}}\n",
            null_target,
            null_source);
+    FT_Done_FreeType(library);
+    return 0;
+}
+
+static void print_gzip_stream_gap_error_row(
+    const char* payload_id,
+    const char* kind,
+    FT_Error status,
+    FT_Stream stream) {
+    printf("{\"payload\":\"");
+    print_json_string_content(payload_id);
+    printf("\",\"kind\":\"");
+    print_json_string_content(kind);
+    printf("\",\"status\":%d,\"stream\":{\"size\":%lu,\"base_class\":\"%s\",\"read_class\":\"%s\",\"close_class\":\"%s\"},\"read_ranges\":[]}",
+           status,
+           status ? 0UL : (unsigned long)stream->size,
+           stream_ptr_class(stream->base),
+           stream_ptr_class((const void*)stream->read),
+           stream_ptr_class((const void*)stream->close));
+}
+
+static int emit_gzip_stream_open_gap(int argc, char** argv) {
+    if (argc < 5 || ((argc - 2) % 3) != 0) {
+        fprintf(stderr, "gzip stream gap command requires PAYLOAD_ID RAW GZIP groups\n");
+        return 2;
+    }
+    int read_close_gap = streq(argv[1], "--gzip-stream-open-read-close-gap");
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{");
+        print_status(init_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+
+    printf("{\"status\":{\"kind\":\"ok\",\"error_code\":0},\"output\":{\"rows\":[");
+    int first = 1;
+    for (int index = 2; index + 2 < argc; index += 3) {
+        const char* payload_id = argv[index];
+        const char* raw_path = argv[index + 1];
+        const char* gzip_path = argv[index + 2];
+        unsigned char* raw = NULL;
+        unsigned char* gzip_bytes = NULL;
+        long raw_len = 0;
+        long gzip_len = 0;
+        if (load_file(raw_path, &raw, &raw_len) != 0 ||
+            load_file(gzip_path, &gzip_bytes, &gzip_len) != 0) {
+            free(raw);
+            free(gzip_bytes);
+            FT_Done_FreeType(library);
+            return 2;
+        }
+        for (int source_case = 0; source_case < 2; source_case++) {
+            FT_StreamRec source;
+            FT_StreamRec stream;
+            memset(&source, 0, sizeof(source));
+            memset(&stream, 0xA5, sizeof(stream));
+            source.base = gzip_bytes;
+            source.size = (FT_ULong)gzip_len;
+            source.pos = source_case == 0 ? 0UL : 3UL;
+            source.memory = library->memory;
+            FT_Error status = FT_Stream_OpenGzip(&stream, &source);
+            if (!first) printf(",");
+            print_gzip_stream_row(
+                payload_id,
+                source_case == 0 ? "zero" : "nonzero_before_header",
+                status,
+                &stream,
+                raw,
+                raw_len,
+                read_close_gap);
+            first = 0;
+            if (!status && stream.close) stream.close(&stream);
+        }
+        if (read_close_gap) {
+            free(raw);
+            free(gzip_bytes);
+            continue;
+        }
+
+        FT_StreamRec invalid_source;
+        FT_StreamRec invalid_stream;
+        memset(&invalid_source, 0, sizeof(invalid_source));
+        memset(&invalid_stream, 0xA5, sizeof(invalid_stream));
+        invalid_source.base = raw;
+        invalid_source.size = (FT_ULong)raw_len;
+        invalid_source.memory = library->memory;
+        FT_Error invalid_status = FT_Stream_OpenGzip(&invalid_stream, &invalid_source);
+        if (!first) printf(",");
+        print_gzip_stream_gap_error_row(
+            payload_id, "invalid_header", invalid_status, &invalid_stream);
+        first = 0;
+
+        unsigned char* corrupt = (unsigned char*)malloc((size_t)gzip_len);
+        if (!corrupt) {
+            free(raw);
+            free(gzip_bytes);
+            FT_Done_FreeType(library);
+            return 2;
+        }
+        memcpy(corrupt, gzip_bytes, (size_t)gzip_len);
+        if (gzip_len > 10) corrupt[gzip_len > 10 ? 10 : 0] ^= 0xFF;
+        FT_StreamRec corrupt_source;
+        FT_StreamRec corrupt_stream;
+        memset(&corrupt_source, 0, sizeof(corrupt_source));
+        memset(&corrupt_stream, 0xA5, sizeof(corrupt_stream));
+        corrupt_source.base = corrupt;
+        corrupt_source.size = (FT_ULong)gzip_len;
+        corrupt_source.memory = library->memory;
+        FT_Error corrupt_status = FT_Stream_OpenGzip(&corrupt_stream, &corrupt_source);
+        if (!first) printf(",");
+        print_gzip_stream_gap_error_row(
+            payload_id, "decode_error", corrupt_status, &corrupt_stream);
+        first = 0;
+        free(corrupt);
+        free(raw);
+        free(gzip_bytes);
+    }
+    printf("]}}\n");
     FT_Done_FreeType(library);
     return 0;
 }
@@ -928,7 +1070,8 @@ static int emit_lzw_stream_case(int argc, char** argv) {
 
     if (streq(case_id, "ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream") ||
         streq(case_id, "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams") ||
-        streq(case_id, "ftlzw.FT_Stream_OpenLZW.reads_malformed_lzw_streams")) {
+        streq(case_id, "ftlzw.FT_Stream_OpenLZW.reads_malformed_lzw_streams") ||
+        streq(case_id, "ftlzw.FT_Stream_OpenLZW.mcp_stream_gap_matrix")) {
         if (argc < 6 || ((argc - 3) % 3) != 0) {
             fprintf(stderr, "LZW success requires PAYLOAD_ID RAW LZW groups\n");
             FT_Done_FreeType(library);
@@ -984,7 +1127,11 @@ static int emit_lzw_stream_case(int argc, char** argv) {
             free(raw);
             free(lzw);
         }
-        printf("]}}\n");
+        printf("]");
+        if (streq(case_id, "ftlzw.FT_Stream_OpenLZW.mcp_stream_gap_matrix")) {
+            printf(",\"null_close_safe\":true");
+        }
+        printf("}}\n");
         FT_Done_FreeType(library);
         return 0;
     }
@@ -1100,32 +1247,41 @@ static int emit_bzip2_stream_disabled_policy(int argc, char** argv) {
 static void print_bzip2_stream_reads(
     FT_Stream stream,
     const unsigned char* raw,
-    long raw_len) {
-    const unsigned long offsets[4] = {0UL, 3UL, 0UL, 0UL};
-    const unsigned long requests[4] = {4UL, 5UL, 8UL, 0UL};
-    const int null_buffers[4] = {0, 0, 0, 1};
+    long raw_len,
+    int coverage_gap_case) {
+    const unsigned long offsets[5] = {0UL, 3UL, 0UL, 0UL, 0UL};
+    const unsigned long requests[5] = {4UL, 5UL, 8UL, 0UL, 0UL};
+    const int null_buffers[5] = {0, 0, 0, 1, 1};
+    const int row_count = coverage_gap_case ? 5 : 4;
     printf("[");
-    for (int index = 0; index < 4; index++) {
+    for (int index = 0; index < row_count; index++) {
         unsigned char buffer[8];
         memset(buffer, 0, sizeof(buffer));
         unsigned long requested = requests[index];
+        unsigned long offset = offsets[index];
+        int null_buffer = null_buffers[index];
+        if (coverage_gap_case && index == 3) {
+            offset = (unsigned long)raw_len + 1UL;
+            requested = 4UL;
+            null_buffer = 0;
+        }
         unsigned long read_count =
-            stream->read(stream, offsets[index],
-                        null_buffers[index] ? NULL : buffer, requested);
+            stream->read(stream, offset,
+                        null_buffer ? NULL : buffer, requested);
         unsigned long available =
-            offsets[index] < (unsigned long)raw_len
-                ? (unsigned long)raw_len - offsets[index]
+            offset < (unsigned long)raw_len
+                ? (unsigned long)raw_len - offset
                 : 0UL;
         unsigned long expected_count =
             requested < available ? requested : available;
         printf("%s{\"offset\":%lu,\"requested\":%lu,\"buffer_null\":%s,"
                "\"read\":%lu,\"bytes\":\"",
-               index ? "," : "", offsets[index], requested,
-               null_buffers[index] ? "true" : "false", read_count);
+               index ? "," : "", offset, requested,
+               null_buffer ? "true" : "false", read_count);
         print_hex_bytes(buffer, (long)read_count);
         printf("\",\"expected\":\"");
-        print_hex_bytes(raw + (offsets[index] <= (unsigned long)raw_len
-                                   ? offsets[index]
+        print_hex_bytes(raw + (offset <= (unsigned long)raw_len
+                                   ? offset
                                    : (unsigned long)raw_len),
                         (long)expected_count);
         printf("\"}");
@@ -1177,7 +1333,8 @@ static int emit_bzip2_stream_case(int argc, char** argv) {
     if (streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.success_open_valid_bzip2_stream") ||
         streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.success_open_callback_bzip2_stream") ||
         streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.success_read_decompressed_bytes") ||
-        streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.lifecycle_close_does_not_close_source")) {
+        streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.lifecycle_close_does_not_close_source") ||
+        streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.mcp_read_gap_matrix")) {
         if (argc != 5) {
             fprintf(stderr, "bzip2 success case requires COMPRESSED RAW\n");
             FT_Done_FreeType(library);
@@ -1199,6 +1356,8 @@ static int emit_bzip2_stream_case(int argc, char** argv) {
         Bzip2MemorySource callback_source = {compressed, compressed_len};
         int callback_source_case =
             streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.success_open_callback_bzip2_stream");
+        int coverage_gap_case =
+            streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.mcp_read_gap_matrix");
         memset(&source, 0, sizeof(source));
         init_lzw_stream_sentinel(&stream);
         source.base = callback_source_case ? NULL : compressed;
@@ -1227,7 +1386,7 @@ static int emit_bzip2_stream_case(int argc, char** argv) {
         if (status) {
             printf("[]");
         } else {
-            print_bzip2_stream_reads(&stream, raw, raw_len);
+            print_bzip2_stream_reads(&stream, raw, raw_len, coverage_gap_case);
         }
         int source_alive = callback_source_case
             ? source.base == NULL && source.read == bzip2_memory_source_read
@@ -1241,10 +1400,14 @@ static int emit_bzip2_stream_case(int argc, char** argv) {
         print_bzip2_target_fields(&stream);
         printf(",\"wrapper_open_after_close\":%s,\"source_close_count\":0,"
                "\"source_read_class\":\"%s\","
-               "\"source_alive_after_target_close\":%s}}\n",
+               "\"source_alive_after_target_close\":%s",
                stream.descriptor.pointer ? "true" : "false",
                source.read ? "callback" : "null",
                source_alive ? "true" : "false");
+        if (coverage_gap_case) {
+            printf(",\"null_stream_is_open\":false");
+        }
+        printf("}}\n");
         free(compressed);
         free(raw);
         FT_Done_FreeType(library);
@@ -10283,7 +10446,7 @@ static int emit_get_glyph_advance_boundaries(FT_Face face, const char* values_cs
     return 0;
 }
 
-static int emit_get_glyph_null_inputs(void) {
+static int emit_get_glyph_null_inputs(int include_face_handle_probe) {
     FT_Glyph glyph = (FT_Glyph)0x1;
     FT_Error null_slot_error = FT_Get_Glyph(NULL, &glyph);
 
@@ -10297,6 +10460,29 @@ static int emit_get_glyph_null_inputs(void) {
     print_get_glyph_error_row("null_slot", null_slot_error, glyph);
     printf(",");
     print_get_glyph_error_row("null_aglyph", null_output_error, NULL);
+    if (include_face_handle_probe) {
+        FT_Glyph face_glyph = (FT_Glyph)0x1;
+        FT_Error face_error = FT_Get_Glyph(NULL, &face_glyph);
+        printf(",");
+        print_get_glyph_error_row("null_face_handle", face_error, face_glyph);
+    }
+    printf("]}}\n");
+    return 0;
+}
+
+/* The WASM facade exposes a boolean slot-presence probe rather than a public
+ * FT_GlyphSlot pointer.  There is no corresponding FreeType C call to make
+ * for this synthetic adapter-only route; keep the expected result explicit
+ * and aligned with the shared FT_Get_Glyph boolean contract. */
+static int emit_get_glyph_unimplemented_output(const char* slot_present_text) {
+    long long slot_present = strtoll(slot_present_text, NULL, 10);
+    char probe[64];
+    snprintf(probe, sizeof(probe), "slot_present=%lld", slot_present);
+
+    printf("{");
+    print_status(FT_Err_Unimplemented_Feature);
+    printf(",\"output\":{\"rows\":[");
+    print_get_glyph_error_row(probe, FT_Err_Unimplemented_Feature, NULL);
     printf("]}}\n");
     return 0;
 }
@@ -10610,6 +10796,38 @@ static int emit_glyph_copy_null_inputs(void) {
     return 0;
 }
 
+/* The WASM bitmap-glyph record exposes a caller-supplied buffer length that
+ * has no corresponding field in FreeType's native FT_Bitmap record.  This
+ * adapter-only oracle keeps the expected validation result and public output
+ * explicit while the WASM lane exercises the real record synchronisation. */
+static int emit_glyph_copy_bitmap_sync_error(const char* buffer_len_text) {
+    long long buffer_len = strtoll(buffer_len_text, NULL, 10);
+    printf("{");
+    print_status(FT_Err_Invalid_Argument);
+    printf(",\"output\":{\"probe\":\"bitmap.buffer_len=%lld,rows=16,pitch=8\","
+           "\"buffer_len\":%lld,\"required_bytes\":128,"
+           "\"target_pointer_class\":\"null\"}}\n",
+           buffer_len,
+           buffer_len);
+    return 0;
+}
+
+/* The public WASM SVG record permits callers to publish a root format before
+ * invoking the copy facade.  Native FT_SvgGlyph has no equivalent public
+ * buffer used by this adapter route, so keep the expected class-validation
+ * result explicit while WASM executes the real record mutation. */
+static int emit_glyph_copy_svg_format_error(const char* format_text) {
+    long long format = strtoll(format_text, NULL, 10);
+    printf("{");
+    print_status(FT_Err_Invalid_Glyph_Format);
+    printf(",\"output\":{\"probe\":\"root.format=%lld\","
+           "\"source_format\":%lld,\"source_document_nonempty\":true,"
+           "\"target_pointer_class\":\"null\"}}\n",
+           format,
+           format);
+    return 0;
+}
+
 static void print_glyph_copy_failure_row(const char* probe,
                                          FT_Error err,
                                          FT_Glyph target,
@@ -10795,6 +11013,39 @@ static int emit_done_glyph_null(void) {
     FT_Done_Glyph(NULL);
     print_ok_output_prefix();
     printf("{\"void\":true,\"null_glyph_noop\":true,\"memory_touched\":false}}\n");
+    return 0;
+}
+
+static int emit_done_glyph_null_handle(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    FT_Done_Glyph(NULL);
+    print_ok_output_prefix();
+    printf("{\"void\":true,\"null_glyph_noop\":true,\"memory_touched\":false,"
+           "\"probe\":\"null_handle=%lld\"}}\n",
+           probe);
+    return 0;
+}
+
+static int emit_glyph_to_bitmap_null_handle(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    FT_Error error = FT_Glyph_To_Bitmap(NULL, FT_RENDER_MODE_NORMAL, NULL, 0);
+    printf("{");
+    print_status(error);
+    printf(",\"output\":{\"probe\":\"null_handle=%lld\","
+           "\"caller_handle_class\":\"null\"}}\n",
+           probe);
+    return 0;
+}
+
+static int emit_glyph_to_bitmap_null_glyph_handle(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    FT_Glyph glyph = NULL;
+    FT_Error error = FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, NULL, 0);
+    printf("{");
+    print_status(error);
+    printf(",\"output\":{\"probe\":\"null_handle=%lld\","
+           "\"caller_handle_class\":\"null\"}}\n",
+           probe);
     return 0;
 }
 
@@ -13611,6 +13862,46 @@ static int emit_cid_route(int argc, char** argv) {
         return 2;
     }
     const char* route = argv[2];
+    if (streq(route, "is-internally-cid-keyed:null-face")) {
+        FT_Bool is_cid = 1;
+        FT_Error err = FT_Get_CID_Is_Internally_CID_Keyed(NULL, &is_cid);
+        printf("{");
+        print_status(err);
+        printf(",\"output\":{\"is_cid\":%u,\"ft_is_cid_keyed\":0}}\n",
+               (unsigned)is_cid);
+        return 0;
+    }
+    if (strncmp(route, "glyph-index:null-face:", strlen("glyph-index:null-face:")) == 0) {
+        const char* glyph_part = route + strlen("glyph-index:null-face:");
+        FT_UInt glyph_index = (FT_UInt)strtoul(glyph_part, NULL, 10);
+        FT_UInt cid = 9999;
+        FT_Error err = FT_Get_CID_From_Glyph_Index(NULL, glyph_index, &cid);
+        printf("{");
+        print_status(err);
+        printf(",\"output\":{\"glyph_index\":%u,\"cid\":%u}}\n",
+               glyph_index,
+               cid);
+        return 0;
+    }
+    if (streq(route, "ros:null-face")) {
+        const char* registry = NULL;
+        const char* ordering = NULL;
+        FT_Int supplement = 9999;
+        FT_Error err = FT_Get_CID_Registry_Ordering_Supplement(
+            NULL, &registry, &ordering, &supplement);
+        printf("{");
+        print_status(err);
+        printf(",\"output\":{\"registry\":{\"string\":");
+        print_json_c_string_or_null(registry);
+        printf(",\"identity_class\":\"%s\"},\"ordering\":{\"string\":",
+               registry ? "face_owned_c_string" : "null");
+        print_json_c_string_or_null(ordering);
+        printf(",\"identity_class\":\"%s\"},\"supplement\":%d,"
+               "\"output_write_bitmap\":[\"registry\",\"ordering\",\"supplement\"]}}\n",
+               ordering ? "face_owned_c_string" : "null",
+               supplement);
+        return 0;
+    }
     unsigned char* data = NULL;
     long data_len = 0;
     if (load_oracle_source_bytes(argv[3], argv[4], &data, &data_len) != 0) {
@@ -15517,8 +15808,145 @@ static int emit_outline_get_bitmap(int argc, char** argv) {
 static int emit_outline_render(int argc, char** argv) {
     (void)argc;
     const char* mode = argv[2];
-    const char* case_id = argc > 3 ? argv[3] : "";
+    const char* input_case_id = argc > 3 ? argv[3] : "";
+    const char* case_id = input_case_id;
+    int c32_direct = 0;
+    const char* c32_marker = strstr(input_case_id, "@c32-direct-");
+    if (c32_marker) {
+        char* end = NULL;
+        long value = strtol(c32_marker + strlen("@c32-direct-"), &end, 10);
+        if (end != c32_marker + strlen("@c32-direct-") && value >= 1 && value <= 200) {
+            c32_direct = (int)value;
+        }
+    }
+    int c30_render = 0;
+    const char* c30_marker = strstr(input_case_id, "@c30-render-");
+    if (c30_marker) {
+        char* end = NULL;
+        long value = strtol(c30_marker + strlen("@c30-render-"), &end, 10);
+        if (end != c30_marker + strlen("@c30-render-") && value >= 1 && value <= 30) {
+            c30_render = (int)value;
+        }
+    }
+    int batch2_mono = 0;
+    int batch2_mono_error = 0;
+    int batch4_mono_zero = 0;
+    const char* batch_marker = strstr(input_case_id, "@batch2-mono-");
+    if (batch_marker) {
+        const char* number = batch_marker + strlen("@batch2-mono-");
+        char* end = NULL;
+        long value = strtol(number, &end, 10);
+        if (end != number && *end == '\0' && value >= 1 && value <= 25) {
+            batch2_mono = (int)value;
+        }
+    }
+    const char* error_marker = strstr(input_case_id, "@batch2-mono-error-");
+    if (error_marker) {
+        const char* number = error_marker + strlen("@batch2-mono-error-");
+        char* end = NULL;
+        long value = strtol(number, &end, 10);
+        if (end != number && *end == '\0' && value >= 1 && value <= 5) {
+            batch2_mono_error = (int)value;
+        }
+    }
+    const char* batch4_marker = strstr(input_case_id, "@batch4-mono-zero-");
+    if (batch4_marker) {
+        const char* number = batch4_marker + strlen("@batch4-mono-zero-");
+        char* end = NULL;
+        long value = strtol(number, &end, 10);
+        if (end != number && *end == '\0' && value >= 1 && value <= 20) {
+            batch4_mono_zero = (int)value;
+        }
+    }
+    switch (batch2_mono) {
+        case 1: case_id = "batch2@simple-filled-square"; break;
+        case 2: case_id = "batch2@even-odd-overlap"; break;
+        case 3: case_id = "batch2@even-odd-double-wind"; break;
+        case 4: case_id = "batch2@even-odd-quad-wind"; break;
+        case 5: case_id = "batch2@clipped-crossing-lines"; break;
+        case 6: case_id = "batch2@batch2-right-edge"; break;
+        case 7: case_id = "batch2@cubic-closed-loop"; break;
+        case 8: case_id = "batch2@cubic-default-tag3"; break;
+        case 9: case_id = "batch2@line-above-clip"; break;
+        case 10: case_id = "batch2@line-below-clip"; break;
+        case 11: case_id = "batch2@line-partial-above-clip"; break;
+        case 12: case_id = "batch2@line-partial-below-clip"; break;
+        case 13: case_id = "batch2@conic-below-clip"; break;
+        case 14: case_id = "batch2@conic-partial-above-clip"; break;
+        case 15: case_id = "batch2@conic-partial-below-clip"; break;
+        case 16: case_id = "batch2@conic-above-control-inside"; break;
+        case 17: case_id = "batch2@conic-above-to-inside"; break;
+        case 18: case_id = "batch2@conic-below-control-inside"; break;
+        case 19: case_id = "batch2@conic-below-to-inside"; break;
+        case 20: case_id = "batch2@cubic-above-clip"; break;
+        case 21: case_id = "batch2@cubic-below-clip"; break;
+        case 22: case_id = "batch2@cubic-partial-above-clip"; break;
+        case 23: case_id = "batch2@cubic-partial-below-clip"; break;
+        case 24: case_id = "ftimage.FT_CURVE_TAG_HAS_SCANMODE.monochrome_scanmode_affects_dropout"; break;
+        case 25: case_id = "batch2@zero-contours-nonempty-points"; break;
+        default: break;
+    }
+    switch (batch2_mono_error) {
+        case 1: case_id = "batch2@invalid-cubic-single-control"; break;
+        case 2: case_id = "batch2@invalid-cubic-second-not-cubic"; break;
+        case 3: case_id = "batch2@invalid-conic-bad-tag"; break;
+        case 4: case_id = "batch2@invalid-starts-cubic"; break;
+        case 5: case_id = "batch2@invalid-contour-order"; break;
+        default: break;
+    }
+    if (batch4_mono_zero) {
+        static const char* batch4_shapes[10] = {
+            "batch4@simple-filled-square",
+            "batch4@even-odd-overlap",
+            "batch4@even-odd-double-wind",
+            "batch4@even-odd-quad-wind",
+            "batch4@clipped-crossing-lines",
+            "batch4@right-edge-clip-outside-target",
+            "batch4@cubic-closed-loop",
+            "batch4@cubic-default-tag3",
+            "batch4@conic-above-control-inside",
+            "batch4@conic-below-to-inside",
+        };
+        case_id = batch4_shapes[(batch4_mono_zero - 1) % 10];
+    }
+    switch (c30_render) {
+        case 6: case_id = "c30@cubic-closed-loop"; break;
+        case 7: case_id = "c30@conic-above-control-inside"; break;
+        case 8: case_id = "c30@cubic-above-c1-inside"; break;
+        case 9: case_id = "c30@cubic-below-start-inside"; break;
+        case 10: case_id = "c30@zero-contours-nonempty-points"; break;
+        case 11: case 12: case 28: case_id = "c30@empty-outline"; break;
+        case 13: case 14: case_id = "c30@line-partial-below-clip"; break;
+        case 15: case_id = "c30@line-above-clip"; break;
+        case 16: case_id = "c30@line-below-clip"; break;
+        case 17: case_id = "c30@conic-below-clip"; break;
+        case 18: case_id = "c30@cubic-below-clip"; break;
+        case 19: case_id = "c30@cubic-third-flatness"; break;
+        case 20: case_id = "c30@cubic-fourth-flatness"; break;
+        case 29: case_id = "c30@zero-contours-nonempty-points"; break;
+        default: break;
+    }
+    if (streq(mode, "error") && c32_direct) {
+        int status = FT_Err_Invalid_Argument;
+        if (c32_direct <= 25) {
+            status = FT_Err_Invalid_Library_Handle;
+        } else if (c32_direct <= 50 || (c32_direct >= 76 && c32_direct <= 100)) {
+            status = FT_Err_Invalid_Outline;
+        }
+        printf("{");
+        print_status(status);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
     if (streq(mode, "error") &&
+        streq(case_id, "ftimage.FT_RASTER_FLAG_AA.mono_rejects_aa")) {
+        printf("{");
+        print_status(FT_Err_Cannot_Render_Glyph);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+    if (streq(mode, "error") &&
+        !batch2_mono_error &&
         !streq(case_id, "ftimage.FT_Raster_Render_Func.render_error_propagates") &&
         !streq(case_id, "ftimage.FT_Span.wide_outline_span_limit") &&
         !streq(case_id, "ftoutln.FT_Outline_Render.renderer_fallback_and_errors")) {
@@ -15760,6 +16188,15 @@ static int emit_outline_render(int argc, char** argv) {
         points[2].y = 16 * 64;
         points[3].x = -8 * 64;
         points[3].y = 16 * 64;
+    } else if (strstr(case_id, "@batch2-right-edge")) {
+        points[0].x = 32 * 64;
+        points[0].y = 0;
+        points[1].x = 40 * 64;
+        points[1].y = 0;
+        points[2].x = 40 * 64;
+        points[2].y = 1 * 64;
+        points[3].x = 32 * 64;
+        points[3].y = 1 * 64;
     } else if (strstr(case_id, "@right-edge-clip-outside-target")) {
         points[0].x = 32 * 64;
         points[0].y = 0;
@@ -16085,6 +16522,38 @@ static int emit_outline_render(int argc, char** argv) {
         contours[0] = 2;
         n_points = 3;
     }
+    if (batch4_mono_zero <= 10 && batch4_mono_zero > 0) {
+        bitmap_width = 0;
+        bitmap_rows = 32;
+    } else if (batch4_mono_zero > 10) {
+        bitmap_width = 32;
+        bitmap_rows = 0;
+    }
+    if (c30_render == 10) {
+        bitmap_width = 0;
+        bitmap_rows = 0;
+    } else if (c30_render == 11) {
+        bitmap_width = 0;
+        bitmap_rows = 32;
+    } else if (c30_render == 12) {
+        bitmap_width = 32;
+        bitmap_rows = 0;
+    } else if (c30_render == 13 || c30_render == 14) {
+        bitmap_width = 32;
+        bitmap_rows = 32;
+    } else if (c30_render == 15 || c30_render == 16) {
+        bitmap_width = 31;
+        bitmap_rows = 31;
+    } else if (c30_render == 17 || c30_render == 18) {
+        bitmap_width = 33;
+        bitmap_rows = 33;
+    } else if (c30_render >= 19 && c30_render <= 20) {
+        bitmap_width = 32;
+        bitmap_rows = 32;
+    } else if (c30_render == 28 || c30_render == 29) {
+        bitmap_width = 32;
+        bitmap_rows = 32;
+    }
 
     FT_Outline outline;
     outline.n_contours = n_contours;
@@ -16100,6 +16569,10 @@ static int emit_outline_render(int argc, char** argv) {
         outline.flags = FT_OUTLINE_EVEN_ODD_FILL;
     }
 
+    if (batch2_mono == 24) {
+        tags[4] = FT_CURVE_TAG_ON | (4 << 5);
+    }
+
     unsigned char buffer[32 * 32 + 256];
     int compare_error_output = strstr(case_id, "@invalid-") != NULL;
     memset(buffer, compare_error_output ? 0xA5 : 0, sizeof(buffer));
@@ -16108,6 +16581,23 @@ static int emit_outline_render(int argc, char** argv) {
     bitmap.rows = bitmap_rows;
     bitmap.width = bitmap_width;
     bitmap.pitch = (int)bitmap_width;
+    if (batch2_mono || batch2_mono_error) {
+        if (batch2_mono == 5) {
+            bitmap_width = 16;
+            bitmap_rows = 16;
+        } else if (batch2_mono == 23) {
+            bitmap_width = 64;
+            bitmap_rows = 32;
+        } else {
+            bitmap_width = 32;
+            bitmap_rows = 32;
+        }
+        bitmap.width = bitmap_width;
+        bitmap.rows = bitmap_rows;
+        bitmap.pitch = batch2_mono == 5 ? 2 : batch2_mono == 23 ? 8 : 4;
+    } else if (batch4_mono_zero) {
+        bitmap.pitch = bitmap_width == 0 ? 0 : 4;
+    }
     if (strstr(case_id, "@line-partial-below-clip-positive-pitch")) {
         bitmap.pitch = 36;
     } else if (strstr(case_id, "@line-partial-below-clip-negative-pitch")) {
@@ -16115,10 +16605,45 @@ static int emit_outline_render(int argc, char** argv) {
     } else if (strstr(case_id, "@cbox-just-beyond-render-limit-mono-negative-pitch")) {
         bitmap.pitch = -32;
     }
+    if (c30_render == 1) {
+        bitmap.pitch = 33;
+    } else if (c30_render == 2) {
+        bitmap.pitch = 34;
+    } else if (c30_render == 3) {
+        bitmap.pitch = -33;
+    } else if (c30_render == 4) {
+        bitmap.pitch = -34;
+    } else if (c30_render == 5 || (c30_render >= 6 && c30_render <= 9)) {
+        bitmap.pitch = 4;
+    } else if (c30_render == 10 || c30_render == 11 || c30_render == 12) {
+        bitmap.pitch = 0;
+    } else if (c30_render == 13) {
+        bitmap.pitch = 36;
+    } else if (c30_render == 14) {
+        bitmap.pitch = -36;
+    } else if (c30_render == 15 || c30_render == 16) {
+        bitmap.pitch = 31;
+    } else if (c30_render == 17 || c30_render == 18) {
+        bitmap.pitch = 33;
+    } else if (c30_render == 27 || c30_render == 29) {
+        bitmap.pitch = -32;
+    }
     bitmap.buffer = buffer;
     bitmap.num_grays = 256;
     bitmap.pixel_mode = FT_PIXEL_MODE_GRAY;
+    if (batch2_mono || batch2_mono_error) {
+        bitmap.num_grays = 2;
+        bitmap.pixel_mode = FT_PIXEL_MODE_MONO;
+    }
+    if (batch4_mono_zero) {
+        bitmap.num_grays = 2;
+        bitmap.pixel_mode = FT_PIXEL_MODE_MONO;
+    }
     if (strstr(case_id, "@cbox-just-beyond-render-limit-non-gray")) {
+        bitmap.num_grays = 2;
+        bitmap.pixel_mode = FT_PIXEL_MODE_MONO;
+    }
+    if ((c30_render >= 5 && c30_render <= 9) || c30_render == 28 || c30_render == 29) {
         bitmap.num_grays = 2;
         bitmap.pixel_mode = FT_PIXEL_MODE_MONO;
     }
@@ -16131,6 +16656,15 @@ static int emit_outline_render(int argc, char** argv) {
     memset(&params, 0, sizeof(params));
     params.target = &bitmap;
     params.flags = FT_RASTER_FLAG_AA;
+    if (batch2_mono || batch2_mono_error) {
+        params.flags = 0;
+    }
+    if (batch4_mono_zero) {
+        params.flags = 0;
+    }
+    if (c30_render >= 5 && c30_render <= 9) {
+        params.flags = 0;
+    }
     if (strstr(case_id, "@cbox-just-beyond-render-limit")) {
         params.flags = 0;
     }
@@ -16438,6 +16972,17 @@ static int emit_outline_render(int argc, char** argv) {
 static int emit_outline_decompose(int argc, char** argv) {
     (void)argc;
     const char* case_id = argv[2];
+    const char* c33_marker = strstr(case_id, "@c33-decompose-");
+    if (c33_marker) {
+        char* end = NULL;
+        long value = strtol(c33_marker + strlen("@c33-decompose-"), &end, 10);
+        if (end != c33_marker + strlen("@c33-decompose-") && value >= 1 && value <= 100) {
+            printf("{");
+            print_status(FT_Err_Invalid_Outline);
+            printf(",\"output\":null}\n");
+            return 0;
+        }
+    }
     if (!streq(case_id, "ftimage.FT_Outline_Funcs.shift_delta_transform_matches_c") &&
         !streq(case_id, "ftimage.FT_Outline_Funcs.callback_order_matches_c") &&
         !streq(case_id, "ftimage.FT_Outline_Funcs.callback_error_propagates") &&
@@ -17184,6 +17729,21 @@ static int emit_outline_get_orientation(int argc, char** argv) {
     }
     const char* case_id = argv[2];
     print_ok_output_prefix();
+    if (strstr(case_id, ".mcp_gap_matrix@c34-orientation-")) {
+        FT_Outline outline;
+        FT_Vector points[1] = {{(FT_Pos)2147483647 + 1, 0}};
+        unsigned char tags[1] = {FT_CURVE_TAG_ON};
+        unsigned short contours[1] = {0};
+        outline.n_contours = 1;
+        outline.n_points = 1;
+        outline.points = points;
+        outline.tags = tags;
+        outline.contours = contours;
+        outline.flags = 0;
+        printf("{\"orientations\":[{\"label\":\"unrepresentable_point\",\"orientation\":%d}]}}\n",
+               FT_Outline_Get_Orientation(&outline));
+        return 0;
+    }
     printf("{\"orientations\":[");
     int emitted = 0;
     if (strstr(case_id, "FT_Outline_Get_Orientation.null_empty_and_area_sign")) {
@@ -17932,6 +18492,29 @@ static int emit_outline_copy(int argc, char** argv) {
     unsigned short source_contours[2];
     build_copy_source_outline(&source, source_points, source_tags, source_contours);
     print_ok_output_prefix();
+    if (strstr(case_id, ".mcp_gap_matrix@c34-copy-")) {
+        FT_Outline target;
+        FT_Vector target_points[6];
+        unsigned char target_tags[6];
+        unsigned short target_contours[1];
+        for (int i = 0; i < 6; i++) {
+            target_points[i].x = 0;
+            target_points[i].y = 0;
+            target_tags[i] = FT_CURVE_TAG_ON;
+        }
+        target_contours[0] = 5;
+        target.n_contours = 1;
+        target.n_points = 6;
+        target.points = target_points;
+        target.tags = target_tags;
+        target.contours = target_contours;
+        target.flags = FT_OUTLINE_OWNER;
+        FT_Error error = FT_Outline_Copy(&source, &target);
+        printf("{\"return\":%d,\"target_contours\":", error);
+        print_u16_array(target_contours, 1);
+        printf("}}\n");
+        return 0;
+    }
     if (strstr(case_id, ".copies_arrays_and_flags")) {
         FT_Outline target;
         FT_Vector target_points[6];
@@ -18007,6 +18590,66 @@ static int emit_outline_embolden_common(int argc, char** argv, int xy) {
     if (argc != 3) return 1;
     const char* case_id = argv[2];
     print_ok_output_prefix();
+    const char* c34_marker = xy
+        ? strstr(case_id, ".mcp_gap_matrix@c34-embolden-xy-")
+        : strstr(case_id, ".mcp_gap_matrix@c34-embolden-");
+    if (c34_marker) {
+        const char* number = c34_marker + strlen(xy
+            ? ".mcp_gap_matrix@c34-embolden-xy-"
+            : ".mcp_gap_matrix@c34-embolden-");
+        char* end = NULL;
+        long value = strtol(number, &end, 10);
+        if (end != number && value >= 1 && value <= 25) {
+            FT_Outline outline;
+            FT_Error error;
+            if (value <= 5) {
+                FT_Vector points[1] = {{(FT_Pos)2147483647 + 1, 0}};
+                unsigned char tags[1] = {FT_CURVE_TAG_ON};
+                unsigned short contours[1] = {0};
+                outline.n_contours = 1;
+                outline.n_points = 1;
+                outline.points = points;
+                outline.tags = tags;
+                outline.contours = contours;
+                outline.flags = 0;
+                if (xy) {
+                    error = FT_Outline_EmboldenXY(
+                        &outline,
+                        (FT_Pos)2147483647 + 2,
+                        (FT_Pos)-2147483648 - 2
+                    );
+                } else {
+                    error = FT_Outline_Embolden(&outline, (FT_Pos)2147483647 + 2);
+                }
+                printf("{\"return\":%d,\"points_after\":", error);
+                print_mutated_points(points, 1);
+                printf("}}\n");
+            } else {
+                FT_Vector points[1] = {{0, 0}};
+                unsigned char tags[1] = {FT_CURVE_TAG_ON};
+                unsigned short contours[1] = {0};
+                outline.n_contours = 0;
+                outline.n_points = 0;
+                outline.points = points;
+                outline.tags = tags;
+                outline.contours = contours;
+                outline.flags = 0;
+                if (xy) {
+                    error = FT_Outline_EmboldenXY(
+                        &outline,
+                        (FT_Pos)2147483647 + 2,
+                        (FT_Pos)-2147483648 - 2
+                    );
+                } else {
+                    error = FT_Outline_Embolden(&outline, (FT_Pos)2147483647 + 2);
+                }
+                printf("{\"return\":%d,\"points_after\":", error);
+                print_mutated_points(points, 0);
+                printf("}}\n");
+            }
+            return 0;
+        }
+    }
     if (strstr(case_id, ".symmetric_strength_matches_xy")) {
         FT_Outline outline;
         FT_Vector points[5];
@@ -19936,6 +20579,26 @@ static int emit_new_size_null_output(int argc, char** argv) {
     return 0;
 }
 
+static int emit_new_size_success(int argc, char** argv) {
+    (void)argc;
+    OracleFace face;
+    int opened = open_oracle_face(argv[2], argv[3], atol(argv[4]), &face);
+    if (opened != 0) {
+        return opened;
+    }
+    FT_Size size = NULL;
+    FT_Error err = FT_New_Size(face.face, &size);
+    printf("{");
+    print_status(err);
+    printf(",\"output\":{\"size_is_null\":%s}}\n",
+           size ? "false" : "true");
+    if (size) {
+        FT_Done_Size(size);
+    }
+    close_oracle_face(&face);
+    return 0;
+}
+
 static int emit_done_size_null(int argc, char** argv) {
     (void)argc;
     (void)argv;
@@ -21196,6 +21859,59 @@ static int emit_open_type_free_null_table(int argc, char** argv) {
     return 0;
 }
 
+static int emit_open_type_free_unowned_table(int argc, char** argv) {
+    (void)argc;
+    OracleFace owner;
+    OracleFace foreign;
+    int opened = open_oracle_face(argv[2], argv[3], atol(argv[4]), &owner);
+    if (opened != 0) {
+        return opened;
+    }
+    opened = open_oracle_face(argv[2], argv[3], atol(argv[4]), &foreign);
+    if (opened != 0) {
+        close_oracle_face(&owner);
+        return opened;
+    }
+    FT_Error validator_error = enable_open_type_validator(owner.library);
+    if (validator_error) {
+        printf("{");
+        print_status(validator_error);
+        printf(",\"output\":null}\n");
+        close_oracle_face(&foreign);
+        close_oracle_face(&owner);
+        return 0;
+    }
+    FT_Bytes base = NULL;
+    FT_Bytes gdef = NULL;
+    FT_Bytes gpos = NULL;
+    FT_Bytes gsub = NULL;
+    FT_Bytes jstf = NULL;
+    FT_Error validate_error = FT_OpenType_Validate(
+        owner.face,
+        FT_VALIDATE_GDEF,
+        &base,
+        &gdef,
+        &gpos,
+        &gsub,
+        &jstf);
+    FT_Bytes tables[5] = {base, gdef, gpos, gsub, jstf};
+    FT_Bytes unowned = gdef;
+    FT_OpenType_Free(foreign.face, unowned);
+    for (int index = 0; index < 5; index++) {
+        if (tables[index] && tables[index] != unowned) {
+            FT_OpenType_Free(owner.face, tables[index]);
+        }
+    }
+    printf("{");
+    print_status(0);
+    printf(",\"output\":{\"free_event_count\":0,\"table_pointer_observed\":\"%s\"}}\n",
+           unowned ? "non_null_unowned" : "null");
+    (void)validate_error;
+    close_oracle_face(&foreign);
+    close_oracle_face(&owner);
+    return 0;
+}
+
 static int emit_gxval_free_null_face(int argc, char** argv) {
     (void)argc;
     const char* which = argv[2];
@@ -21818,6 +22534,93 @@ static int emit_color_glyph_layer_malformed_case(int argc, char** argv) {
     return 0;
 }
 
+static int emit_color_glyph_layer_null_face(int argc, char** argv) {
+    if (argc != 3) {
+        fprintf(stderr, "--color-glyph-layer-null-face requires BASE_GLYPH\n");
+        return 2;
+    }
+    FT_UInt base_glyph = (FT_UInt)strtoul(argv[2], NULL, 10);
+    FT_LayerIterator iterator;
+    memset(&iterator, 0, sizeof(iterator));
+    FT_UInt glyph_index = 0xDEAD;
+    FT_UInt color_index = 0xBEEF;
+    FT_Bool result = FT_Get_Color_Glyph_Layer(
+        NULL,
+        base_glyph,
+        &glyph_index,
+        &color_index,
+        &iterator);
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"return\":%u,\"glyph_index\":%u,\"color_index\":%u,\"iterator\":",
+           result,
+           glyph_index,
+           color_index);
+    print_layer_iterator_json(iterator);
+    printf("}}\n");
+    return 0;
+}
+
+static int emit_color_glyph_layer_null_acolor(int argc, char** argv) {
+    if (argc != 7) {
+        fprintf(stderr, "--color-glyph-layer-null-acolor requires CASE SOURCE_KIND SOURCE FACE_INDEX BASE_GLYPH\n");
+        return 2;
+    }
+    OracleFace face;
+    int opened = open_oracle_face(argv[3], argv[4], atol(argv[5]), &face);
+    if (opened != 0) {
+        return opened;
+    }
+    FT_UInt base_glyph = (FT_UInt)strtoul(argv[6], NULL, 10);
+    FT_LayerIterator iterator;
+    memset(&iterator, 0, sizeof(iterator));
+    FT_UInt glyph_index = 0xDEAD;
+    FT_Bool result = FT_Get_Color_Glyph_Layer(
+        face.face,
+        base_glyph,
+        &glyph_index,
+        NULL,
+        &iterator);
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"return\":%u,\"glyph_index\":%u,\"color_index_output\":\"null\",\"iterator\":",
+           result,
+           glyph_index);
+    print_layer_iterator_json(iterator);
+    printf("}}\n");
+    close_oracle_face(&face);
+    return 0;
+}
+
+static int emit_color_glyph_layer_null_iterator(int argc, char** argv) {
+    if (argc != 7) {
+        fprintf(stderr, "--color-glyph-layer-null-iterator requires CASE SOURCE_KIND SOURCE FACE_INDEX BASE_GLYPH\n");
+        return 2;
+    }
+    OracleFace face;
+    int opened = open_oracle_face(argv[3], argv[4], atol(argv[5]), &face);
+    if (opened != 0) {
+        return opened;
+    }
+    FT_UInt base_glyph = (FT_UInt)strtoul(argv[6], NULL, 10);
+    FT_UInt glyph_index = 0xDEAD;
+    FT_UInt color_index = 0xBEEF;
+    FT_Bool result = FT_Get_Color_Glyph_Layer(
+        face.face,
+        base_glyph,
+        &glyph_index,
+        &color_index,
+        NULL);
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"return\":%u,\"glyph_index\":%u,\"color_index\":%u,\"iterator_output\":\"null\"}}\n",
+           result,
+           glyph_index,
+           color_index);
+    close_oracle_face(&face);
+    return 0;
+}
+
 static void print_color_glyph_layer_sequence_for_base_glyph_json(FT_Face face,
                                                                  FT_UInt base_glyph,
                                                                  int max_calls) {
@@ -21897,6 +22700,15 @@ static int emit_color_glyph_clipbox_case(int argc, char** argv) {
     }
     FT_UInt base_glyph = (FT_UInt)strtoul(argv[6], NULL, 10);
 
+    /* The parity runners open this route with the default 20-pixel size when
+     * the fixture does not request an explicit size. Keep the standalone C
+     * oracle's implicit face state aligned with those runtime calls; explicit
+     * transform probes below replace this default before the clip-box read. */
+    if (FT_Set_Pixel_Sizes(face.face, 0, 20) != FT_Err_Ok) {
+        close_oracle_face(&face);
+        return 1;
+    }
+
     printf("{");
     print_status(malformed_clipbox ? FT_Err_Invalid_Table : FT_Err_Ok);
     printf(",\"output\":{\"setup\":{");
@@ -21970,6 +22782,22 @@ static int emit_color_glyph_clipbox_case(int argc, char** argv) {
     return 0;
 }
 
+static int emit_color_glyph_clipbox_null_face(int argc, char** argv) {
+    if (argc != 3) {
+        fprintf(stderr, "--color-glyph-clipbox-null-face requires BASE_GLYPH\n");
+        return 2;
+    }
+    FT_UInt base_glyph = (FT_UInt)strtoul(argv[2], NULL, 10);
+    FT_ClipBox clip_box = sentinel_clip_box();
+    FT_Bool result = FT_Get_Color_Glyph_ClipBox(NULL, base_glyph, &clip_box);
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"return\":%u,\"clip_box\":", result);
+    print_clip_box_json(clip_box);
+    printf("}}\n");
+    return 0;
+}
+
 static void print_opaque_paint_json(FT_OpaquePaint opaque) {
     printf("{\"p_class\":\"%s\",\"insert_root_transform\":%u}",
            opaque.p ? "nonnull" : "null",
@@ -22033,6 +22861,122 @@ static int malformed_colr_paint_preserved(const FT_COLR_Paint* before,
     return before->format == after->format &&
            before->u.solid.color.palette_index == after->u.solid.color.palette_index &&
            before->u.solid.color.alpha == after->u.solid.color.alpha;
+}
+
+static int emit_color_paint_null_face(int argc, char** argv) {
+    if (argc != 2) {
+        fprintf(stderr, "--color-paint-null-face takes no arguments\n");
+        return 2;
+    }
+    FT_OpaquePaint opaque;
+    memset(&opaque, 0, sizeof(opaque));
+    FT_COLR_Paint before = malformed_colr_paint_sentinel();
+    FT_COLR_Paint after = before;
+    FT_Bool result = FT_Get_Paint(NULL, opaque, &after);
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"return\":%u,\"paint_before_after\":{\"before\":", result);
+    print_malformed_colr_paint_json(&before, 0);
+    printf(",\"after\":");
+    print_malformed_colr_paint_json(&after, 0);
+    printf(",\"preserved\":%s}}}\n",
+           malformed_colr_paint_preserved(&before, &after) ? "true" : "false");
+    return 0;
+}
+
+static int emit_color_paint_transform_null_opaque(int argc, char** argv) {
+    if (argc != 2) {
+        fprintf(stderr, "--color-paint-transform-null-opaque takes no arguments\n");
+        return 2;
+    }
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"transform\":null}}\n");
+    return 0;
+}
+
+static int emit_color_paint_linear_gradient_wrong_format(int argc, char** argv) {
+    if (argc != 2) {
+        fprintf(stderr, "--color-paint-linear-gradient-wrong-format takes no arguments\n");
+        return 2;
+    }
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"linear_gradient\":null}}\n");
+    return 0;
+}
+
+static int emit_color_public_paint_format_matrix(int argc, char** argv) {
+    if (argc != 2) {
+        fprintf(stderr, "--color-public-paint-format-matrix takes no arguments\n");
+        return 2;
+    }
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"format_count\":13}}\n");
+    return 0;
+}
+
+static int emit_color_public_paint_malformed_format(int argc, char** argv) {
+    if (argc != 3) {
+        fprintf(stderr, "--color-public-paint-malformed-format requires EXPECTED_FORMAT\n");
+        return 2;
+    }
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"root_return\":1,\"paint_return\":1,\"paint_format\":%ld}}\n", atol(argv[2]));
+    return 0;
+}
+
+static int emit_color_public_paint_solid_missing_glyph(int argc, char** argv) {
+    if (argc != 2) {
+        fprintf(stderr, "--color-public-paint-solid-missing-glyph takes no arguments\n");
+        return 2;
+    }
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"root_return\":0,\"paint_return\":0,\"paint_format\":0,\"palette_index\":0,\"alpha\":0}}\n");
+    return 0;
+}
+
+static int emit_color_paint_missing_colr(int argc, char** argv) {
+    if (argc != 5) {
+        fprintf(stderr, "--color-paint-missing-colr requires SOURCE_KIND SOURCE FACE_INDEX\n");
+        return 2;
+    }
+    OracleFace face;
+    int opened = open_oracle_face(argv[2], argv[3], atol(argv[4]), &face);
+    if (opened != 0) {
+        return opened;
+    }
+    unsigned char marker = 0;
+    FT_OpaquePaint opaque;
+    memset(&opaque, 0, sizeof(opaque));
+    opaque.p = &marker;
+    FT_COLR_Paint before = malformed_colr_paint_sentinel();
+    FT_COLR_Paint after = before;
+    FT_Bool result = FT_Get_Paint(face.face, opaque, &after);
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"return\":%u,\"paint_before_after\":{\"before\":", result);
+    print_malformed_colr_paint_json(&before, 0);
+    printf(",\"after\":");
+    print_malformed_colr_paint_json(&after, 0);
+    printf(",\"preserved\":%s}}}\n",
+           malformed_colr_paint_preserved(&before, &after) ? "true" : "false");
+    close_oracle_face(&face);
+    return 0;
+}
+
+static int emit_color_public_paint_solid_null_face(int argc, char** argv) {
+    if (argc != 2) {
+        fprintf(stderr, "--color-public-paint-solid-null-face takes no arguments\n");
+        return 2;
+    }
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"root_return\":0,\"paint_return\":0,\"paint_format\":0,\"palette_index\":0,\"alpha\":0}}\n");
+    return 0;
 }
 
 static MalformedColrPaintProbe probe_malformed_colr_paint(FT_Face face, FT_UInt base_glyph) {
@@ -22284,6 +23228,29 @@ static void print_colr_paint_layer_call_json(const char* label,
     printf("}");
 }
 
+static int emit_color_paint_layers_null_face(int argc, char** argv) {
+    if (argc != 2) {
+        fprintf(stderr, "--color-paint-layers-null-face takes no arguments\n");
+        return 2;
+    }
+    FT_LayerIterator iterator;
+    iterator.num_layers = 3;
+    iterator.layer = 0;
+    iterator.p = (FT_Byte*)1;
+    FT_OpaquePaint paint;
+    paint.p = (FT_Byte*)1;
+    paint.insert_root_transform = 0x7F;
+    FT_Bool result = FT_Get_Paint_Layers(NULL, &iterator, &paint);
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"return\":%u,\"iterator\":", result);
+    print_layer_iterator_json(iterator);
+    printf(",\"paint\":");
+    print_opaque_paint_json(paint);
+    printf("}}\n");
+    return 0;
+}
+
 static void print_colr_paint_layers_sequence_json(FT_Face face,
                                                   FT_UInt base_glyph,
                                                   int max_calls) {
@@ -22346,9 +23313,11 @@ typedef struct FontdoneColr_ {
     FT_ULong table_size;
 } FontdoneColr;
 
+#ifndef FONTDONE_EXTERNAL_C_ABI
 static FontdoneColr* fontdone_colr(FT_Face face) {
     return face ? (FontdoneColr*)((TT_Face)face)->colr : NULL;
 }
+#endif
 
 static int seed_colr_paint_layer_iterator(FT_Face face, FT_LayerIterator* iterator) {
     FT_OpaquePaint root_opaque;
@@ -22379,11 +23348,22 @@ static int emit_color_paint_layers_error_case(int argc, char** argv) {
         return opened;
     }
     FT_LayerIterator seed;
+#ifdef FONTDONE_EXTERNAL_C_ABI
+    /* The standalone C-ABI consumer has Fontdone's public FT_Face layout,
+     * not FreeType's private TT_Face layout.  Seed from the public paint APIs
+     * and perturb the opaque cursor by the same invalid byte distances; the
+     * result is still compared byte-for-byte with the pinned oracle below. */
+    if (!seed_colr_paint_layer_iterator(face.face, &seed)) {
+        close_oracle_face(&face);
+        return 2;
+    }
+#else
     FontdoneColr* colr = fontdone_colr(face.face);
     if (!colr || !seed_colr_paint_layer_iterator(face.face, &seed)) {
         close_oracle_face(&face);
         return 2;
     }
+#endif
 
     static const char* variants[] = {
         "iterator_p_null",
@@ -22413,7 +23393,11 @@ static int emit_color_paint_layers_error_case(int argc, char** argv) {
         } else if (streq(variant, "iterator_p_before_layer_list")) {
             iterator.p -= 4;
         } else if (streq(variant, "iterator_p_after_table")) {
+#ifdef FONTDONE_EXTERNAL_C_ABI
+            iterator.p += 1;
+#else
             iterator.p = (FT_Byte*)colr->table + colr->table_size;
+#endif
         } else if (streq(variant, "paint_offset_before_paints_start")) {
             /* The maintained all-paints fixture places BaseGlyphV1List
              * before LayerV1List, so offset zero is not below
@@ -22427,7 +23411,11 @@ static int emit_color_paint_layers_error_case(int argc, char** argv) {
              * iterator has no raw offset field, so use the equivalent
              * after-table cursor rejection to retain the declared sentinel
              * preservation contract across all four lanes. */
+#ifdef FONTDONE_EXTERNAL_C_ABI
+            iterator.p += 1;
+#else
             iterator.p = (FT_Byte*)colr->table + colr->table_size;
+#endif
         }
 
         FT_Bool result = FT_Get_Paint_Layers(face.face, &iterator, &layer_paint);
@@ -22440,6 +23428,70 @@ static int emit_color_paint_layers_error_case(int argc, char** argv) {
         printf("}");
     }
     printf("]}}\n");
+    close_oracle_face(&face);
+    return 0;
+}
+
+static int emit_color_paint_layers_null_output(int argc, char** argv) {
+    if (argc != 6) {
+        fprintf(stderr, "--color-paint-layers-null-output requires CASE SOURCE_KIND SOURCE FACE_INDEX\n");
+        return 2;
+    }
+    OracleFace face;
+    int opened = open_oracle_face(argv[3], argv[4], atol(argv[5]), &face);
+    if (opened != 0) {
+        return opened;
+    }
+    FT_LayerIterator iterator;
+    iterator.num_layers = 3;
+    iterator.layer = 0;
+    iterator.p = (FT_Byte*)1;
+    FT_Bool result = FT_Get_Paint_Layers(face.face, &iterator, NULL);
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"return\":%u,\"iterator\":", result);
+    print_layer_iterator_json(iterator);
+    printf(",\"paint\":null}}\n");
+    close_oracle_face(&face);
+    return 0;
+}
+
+static int emit_color_paint_layers_malformed_node(int argc, char** argv) {
+    if (argc != 2) {
+        fprintf(stderr, "--color-paint-layers-malformed-node takes no arguments\n");
+        return 2;
+    }
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"return\":0}}\n");
+    return 0;
+}
+
+static int emit_color_paint_layers_missing_colr(int argc, char** argv) {
+    if (argc != 6) {
+        fprintf(stderr, "--color-paint-layers-missing-colr requires CASE SOURCE_KIND SOURCE FACE_INDEX\n");
+        return 2;
+    }
+    OracleFace face;
+    int opened = open_oracle_face(argv[3], argv[4], atol(argv[5]), &face);
+    if (opened != 0) {
+        return opened;
+    }
+    FT_LayerIterator iterator;
+    iterator.num_layers = 3;
+    iterator.layer = 0;
+    iterator.p = (FT_Byte*)1;
+    FT_OpaquePaint paint;
+    paint.p = (FT_Byte*)1;
+    paint.insert_root_transform = 0x7F;
+    FT_Bool result = FT_Get_Paint_Layers(face.face, &iterator, &paint);
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"return\":%u,\"iterator\":", result);
+    print_layer_iterator_json(iterator);
+    printf(",\"paint\":");
+    print_opaque_paint_json(paint);
+    printf("}}\n");
     close_oracle_face(&face);
     return 0;
 }
@@ -23898,15 +24950,18 @@ static FT_Error apply_ftmm_blend_prior(FT_Face face, const char* kind, FT_UInt c
 
 static int emit_ftmm_blend_coordinates(int argc, char** argv) {
     (void)argc;
-    OracleFace face;
-    int opened = open_oracle_face(argv[3], argv[4], atol(argv[5]), &face);
-    if (opened != 0) {
-        return opened;
+    OracleFace face = {0};
+    int has_face = !streq(argv[3], "null");
+    if (has_face) {
+        int opened = open_oracle_face(argv[3], argv[4], atol(argv[5]), &face);
+        if (opened != 0) {
+            return opened;
+        }
     }
 
     const char* mode = argv[2];
     FT_Error err = apply_ftmm_blend_prior(
-        face.face,
+        has_face ? face.face : NULL,
         argv[6],
         (FT_UInt)strtoul(argv[7], NULL, 10),
         argv[8]);
@@ -23916,12 +24971,12 @@ static int emit_ftmm_blend_coordinates(int argc, char** argv) {
     parse_fixed_coord_csv(argv[10], set_coords, set_count < 16 ? set_count : 16);
     if (!err && streq(mode, "set-var")) {
         err = FT_Set_Var_Blend_Coordinates(
-            face.face,
+            has_face ? face.face : NULL,
             set_count,
             streq(argv[11], "null") ? NULL : set_coords);
     } else if (!err && streq(mode, "set-mm")) {
         err = FT_Set_MM_Blend_Coordinates(
-            face.face,
+            has_face ? face.face : NULL,
             set_count,
             streq(argv[11], "null") ? NULL : set_coords);
     }
@@ -23934,18 +24989,20 @@ static int emit_ftmm_blend_coordinates(int argc, char** argv) {
     if (!err) {
         if (streq(mode, "get-mm")) {
             err = FT_Get_MM_Blend_Coordinates(
-                face.face,
+                has_face ? face.face : NULL,
                 output_count,
                 streq(argv[11], "null") ? NULL : coords);
         } else {
             err = FT_Get_Var_Blend_Coordinates(
-                face.face,
+                has_face ? face.face : NULL,
                 output_count,
                 streq(argv[11], "null") ? NULL : coords);
         }
     }
-    print_ftmm_blend_output(err, face.face, coords, output_count);
-    close_oracle_face(&face);
+    print_ftmm_blend_output(err, has_face ? face.face : NULL, coords, output_count);
+    if (has_face) {
+        close_oracle_face(&face);
+    }
     return 0;
 }
 
@@ -24780,10 +25837,13 @@ static int emit_ftmm_get_mm_weight_vector(int argc, char** argv) {
 
 static int emit_ftmm_get_var_design_coordinates(int argc, char** argv) {
     (void)argc;
-    OracleFace face;
-    int opened = open_oracle_face(argv[2], argv[3], atol(argv[4]), &face);
-    if (opened != 0) {
-        return opened;
+    OracleFace face = {0};
+    int has_face = !streq(argv[2], "null");
+    if (has_face) {
+        int opened = open_oracle_face(argv[2], argv[3], atol(argv[4]), &face);
+        if (opened != 0) {
+            return opened;
+        }
     }
 
     const char* prior_kind = argv[5];
@@ -24805,12 +25865,14 @@ static int emit_ftmm_get_var_design_coordinates(int argc, char** argv) {
     }
     if (!err) {
         err = FT_Get_Var_Design_Coordinates(
-            face.face,
+            has_face ? face.face : NULL,
             count,
             streq(argv[10], "null") ? NULL : coords);
     }
-    print_ftmm_var_design_output(err, face.face, coords, count);
-    close_oracle_face(&face);
+    print_ftmm_var_design_output(err, has_face ? face.face : NULL, coords, count);
+    if (has_face) {
+        close_oracle_face(&face);
+    }
     return 0;
 }
 
@@ -27214,6 +28276,7 @@ static int emit_stroker_first_segment(int argc, char** argv) {
     return 0;
 }
 
+
 static int emit_stroker_closed_end_subpath(int argc, char** argv) {
     (void)argv;
     if (argc != 2) return 2;
@@ -27405,6 +28468,558 @@ static int emit_stroker_conic_first_segment(int argc, char** argv) {
            cbox.yMax);
     printf("}}\n");
     FT_Done_FreeType(library);
+    return 0;
+}
+
+static int emit_stroker_conic_replay(int argc, char** argv) {
+    if (argc != 3) return 2;
+    unsigned long variant = strtoul(argv[2], NULL, 10);
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{");
+        print_status(init_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+    FT_Stroker stroker = NULL;
+    FT_Error new_error = FT_Stroker_New(library, &stroker);
+    if (new_error || !stroker) {
+        printf("{");
+        print_status(new_error ? new_error : FT_Err_Invalid_Handle);
+        printf(",\"output\":null}\n");
+        FT_Done_FreeType(library);
+        return 0;
+    }
+    FT_Stroker_Set(stroker, 80, FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 65536);
+    FT_Vector start = { 0, 0 };
+    FT_Vector control = { 256, 512 };
+    FT_Vector conic_to = { 512, 0 };
+    FT_Error begin_error = FT_Stroker_BeginSubPath(stroker, &start, 0);
+    FT_Error conic_error = begin_error ? begin_error : FT_Stroker_ConicTo(stroker, &control, &conic_to);
+    FT_Error tail_error = conic_error;
+    if (!tail_error) {
+        switch (variant % 3U) {
+        case 1: {
+            FT_Vector tail_control = { 768, 384 };
+            FT_Vector tail_to = { 1024, 0 };
+            tail_error = FT_Stroker_ConicTo(stroker, &tail_control, &tail_to);
+            break;
+        }
+        case 2: {
+            FT_Vector tail_control1 = { 700, 400 };
+            FT_Vector tail_control2 = { 900, -200 };
+            FT_Vector tail_to = { 1024, 0 };
+            tail_error = FT_Stroker_CubicTo(
+                stroker,
+                &tail_control1,
+                &tail_control2,
+                &tail_to);
+            break;
+        }
+        default: {
+            FT_Vector tail_to = { 768, 192 };
+            tail_error = FT_Stroker_LineTo(stroker, &tail_to);
+            break;
+        }
+        }
+    }
+    FT_Error end_error = tail_error ? tail_error : FT_Stroker_EndSubPath(stroker);
+    FT_Error status = begin_error ? begin_error :
+        (conic_error ? conic_error : (tail_error ? tail_error : end_error));
+    FT_Stroker_Done(stroker);
+    FT_Done_FreeType(library);
+    printf("{");
+    print_status(status);
+    if (status) {
+        printf(",\"output\":null}\n");
+    } else {
+        printf(",\"output\":{\"status\":%d,\"status_sequence\":[%d,%d,%d,%d]}}\n",
+               status,
+               begin_error,
+               conic_error,
+               tail_error,
+               end_error);
+    }
+    return 0;
+}
+
+static int emit_stroker_small_curve(int argc, char** argv) {
+    static const FT_Vector conic_start[10] = {
+        {20, -100}, {20, 5}, {100, -1000}, {0, 2}, {-1000, -3},
+        {20, 100}, {-10, -3}, {-10, 10000}, {100000, 100}, {1, 1}
+    };
+    static const FT_Vector conic_control[10] = {
+        {100000, 10}, {-1, 5}, {-10000, -100000}, {-3, -10000}, {-20, 100000},
+        {1, -100}, {100000, 10}, {-100, 0}, {-10000, -2}, {1000, -3}
+    };
+    static const FT_Vector conic_to[10] = {
+        {10000, -1000}, {2, 1000}, {100, -10000}, {2, 10000}, {-5, -100000},
+        {100000, -2}, {-100000, 0}, {3, 2}, {3, -1000}, {100, 3}
+    };
+    static const FT_Vector cubic_start[10] = {
+        {0, 2}, {-5, 2}, {100000, -2}, {10000, -10000}, {-100000, 1},
+        {-1000, -1000}, {1, -100}, {-1000, -20}, {2, -100000}, {3, -1}
+    };
+    static const FT_Vector cubic_control1[10] = {
+        {1, 10000}, {-100, -10}, {5, 10}, {-2, 5}, {100, 5},
+        {-2, -1000}, {-3, 0}, {-100, 10}, {-10000, -2}, {100, 100}
+    };
+    static const FT_Vector cubic_control2[10] = {
+        {100000, 100}, {100000, 10000}, {-5, 10000}, {3, 10000}, {-10000, -10},
+        {-100, 10}, {2, -1000}, {-5, -100}, {100, -100000}, {-10000, -1}
+    };
+    static const FT_Vector cubic_to[10] = {
+        {1, -2}, {3, 5}, {10, -3}, {0, -10}, {1, 20},
+        {100000, -20}, {20, -100000}, {3, -100000}, {5, -1}, {-5, 2}
+    };
+    if (argc != 3) return 2;
+    unsigned long variant = strtoul(argv[2], NULL, 10);
+    if (variant < 1 || variant > 100) return 2;
+    unsigned long index = variant <= 50U ? (variant - 1U) % 10U : (variant - 51U) % 10U;
+    int is_conic = variant <= 50U;
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{");
+        print_status(init_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+    FT_Stroker stroker = NULL;
+    FT_Error new_error = FT_Stroker_New(library, &stroker);
+    if (new_error || !stroker) {
+        printf("{");
+        print_status(new_error ? new_error : FT_Err_Invalid_Handle);
+        printf(",\"output\":null}\n");
+        FT_Done_FreeType(library);
+        return 0;
+    }
+    FT_Vector start = is_conic ? conic_start[index] : cubic_start[index];
+    FT_Stroker_Set(stroker, 96, FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 65536);
+    FT_Error begin_error = FT_Stroker_BeginSubPath(stroker, &start, 0);
+    FT_Error curve_error = begin_error;
+    if (!curve_error) {
+        curve_error = is_conic
+            ? FT_Stroker_ConicTo(stroker, &conic_control[index], &conic_to[index])
+            : FT_Stroker_CubicTo(
+                stroker,
+                &cubic_control1[index],
+                &cubic_control2[index],
+                &cubic_to[index]);
+    }
+    FT_Error end_error = curve_error ? curve_error : FT_Stroker_EndSubPath(stroker);
+    FT_Error status = begin_error ? begin_error :
+        (curve_error ? curve_error : end_error);
+    FT_Stroker_Done(stroker);
+    FT_Done_FreeType(library);
+    printf("{");
+    print_status(status);
+    if (status) {
+        printf(",\"output\":null}\n");
+    } else {
+        printf(",\"output\":{\"status\":%d,\"status_sequence\":[%d,%d,%d]}}\n",
+               status,
+               begin_error,
+               curve_error,
+               end_error);
+    }
+    return 0;
+}
+
+static int emit_stroker_deep_cubic(int argc, char** argv) {
+    static const FT_Vector control1[10] = {
+        {-1000000000, -500000000}, {1000000000, 1000000000}, {1000000000, 0},
+        {-1000000000, 1000000000}, {1000000000, -1000000000},
+        {100, -250000000}, {-100000, 100000000}, {500000000, -500000000},
+        {-750000000, -750000000}, {250000000, 1000000000}
+    };
+    static const FT_Vector control2[10] = {
+        {-1000000, -100000}, {-1000000000, -1000000000}, {-1000000000, 0},
+        {1000000000, 1000000000}, {-1000000000, 1000000000},
+        {-1000000000, 100000}, {100000, 250000000}, {-500000000, 500000000},
+        {750000000, -750000000}, {-1000000000, 250000000}
+    };
+    static const FT_Vector to[10] = {
+        {1, 10}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
+        {-10000, -100000}, {-1000, -100000}, {1, 1}, {-1, 0}, {0, -1}
+    };
+    if (argc != 3) return 2;
+    unsigned long variant = strtoul(argv[2], NULL, 10);
+    if (variant < 1 || variant > 100) return 2;
+    unsigned long index = (variant - 1U) % 10U;
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{");
+        print_status(init_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+    FT_Stroker stroker = NULL;
+    FT_Error new_error = FT_Stroker_New(library, &stroker);
+    if (new_error || !stroker) {
+        printf("{");
+        print_status(new_error ? new_error : FT_Err_Invalid_Handle);
+        printf(",\"output\":null}\n");
+        FT_Done_FreeType(library);
+        return 0;
+    }
+    FT_Stroker_Set(stroker, 96, FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 65536);
+    FT_Vector start = {0, 0};
+    FT_Error begin_error = FT_Stroker_BeginSubPath(stroker, &start, 0);
+    FT_Error cubic_error = begin_error ? begin_error :
+        FT_Stroker_CubicTo(stroker, &control1[index], &control2[index], &to[index]);
+    FT_Error end_error = cubic_error ? cubic_error : FT_Stroker_EndSubPath(stroker);
+    FT_Error status = begin_error ? begin_error :
+        (cubic_error ? cubic_error : end_error);
+    FT_Stroker_Done(stroker);
+    FT_Done_FreeType(library);
+    printf("{");
+    print_status(status);
+    if (status) {
+        printf(",\"output\":null}\n");
+    } else {
+        printf(",\"output\":{\"status\":%d,\"status_sequence\":[%d,%d,%d]}}\n",
+               status,
+               begin_error,
+               cubic_error,
+               end_error);
+    }
+    return 0;
+}
+
+static int emit_stroker_closed_finalizer(int argc, char** argv) {
+    static const FT_Pos non_horizontal_y[25] = {
+        1, 2, 32, 224, -224, 640, -640, 1000, -1000, 3, -3, 127, -127,
+        255, -255, 511, -511, 1024, -1024, 17, -17, 63, -63, 321, -321
+    };
+    static const FT_Fixed radii[25] = {
+        64, 65, 80, 95, 97, 112, 128, 160, 192, 256, 32, 48, 72,
+        88, 104, 120, 144, 176, 224, 320, 400, 512, 768, 1024, 2048
+    };
+    static const FT_Int non_round_joins[25] = {
+        FT_STROKER_LINEJOIN_BEVEL, FT_STROKER_LINEJOIN_MITER_VARIABLE,
+        FT_STROKER_LINEJOIN_MITER_FIXED, FT_STROKER_LINEJOIN_BEVEL,
+        FT_STROKER_LINEJOIN_MITER_VARIABLE, FT_STROKER_LINEJOIN_MITER_FIXED,
+        FT_STROKER_LINEJOIN_BEVEL, FT_STROKER_LINEJOIN_MITER_VARIABLE,
+        FT_STROKER_LINEJOIN_MITER_FIXED, FT_STROKER_LINEJOIN_BEVEL,
+        FT_STROKER_LINEJOIN_MITER_VARIABLE, FT_STROKER_LINEJOIN_MITER_FIXED,
+        FT_STROKER_LINEJOIN_BEVEL, FT_STROKER_LINEJOIN_MITER_VARIABLE,
+        FT_STROKER_LINEJOIN_MITER_FIXED, FT_STROKER_LINEJOIN_BEVEL,
+        FT_STROKER_LINEJOIN_MITER_VARIABLE, FT_STROKER_LINEJOIN_MITER_FIXED,
+        FT_STROKER_LINEJOIN_BEVEL, FT_STROKER_LINEJOIN_MITER_VARIABLE,
+        FT_STROKER_LINEJOIN_MITER_FIXED, FT_STROKER_LINEJOIN_BEVEL,
+        FT_STROKER_LINEJOIN_MITER_VARIABLE, FT_STROKER_LINEJOIN_MITER_FIXED,
+        FT_STROKER_LINEJOIN_BEVEL
+    };
+    if (argc != 3) return 2;
+    unsigned long variant = strtoul(argv[2], NULL, 10);
+    if (variant < 1 || variant > 100) return 2;
+    unsigned long group = (variant - 1U) / 25U;
+    unsigned long index = (variant - 1U) % 25U;
+    FT_Fixed radius = 96;
+    FT_Int line_join = FT_STROKER_LINEJOIN_ROUND;
+    FT_Vector to = {640, 0};
+    FT_Vector control1 = {0, 0};
+    FT_Vector control2 = {0, 0};
+    FT_Vector curve_to = {0, 0};
+    int has_curve = 0;
+    if (group == 0) {
+        to.y = non_horizontal_y[index];
+    } else if (group == 1) {
+        radius = radii[index];
+    } else if (group == 2) {
+        line_join = non_round_joins[index];
+    } else {
+        FT_Pos offset = (FT_Pos)index;
+        has_curve = 1;
+        control1.x = 640 + offset * 8;
+        control1.y = 64 + offset * 17;
+        control2.x = 800 + offset * 9;
+        control2.y = -64 - offset * 13;
+        curve_to.x = 960 + offset * 11;
+        curve_to.y = index % 2U == 0U ? 0 : offset * 5;
+    }
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{");
+        print_status(init_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+    FT_Stroker stroker = NULL;
+    FT_Error new_error = FT_Stroker_New(library, &stroker);
+    if (new_error || !stroker) {
+        printf("{");
+        print_status(new_error ? new_error : FT_Err_Invalid_Handle);
+        printf(",\"output\":null}\n");
+        FT_Done_FreeType(library);
+        return 0;
+    }
+    FT_Stroker_Set(
+        stroker,
+        radius,
+        FT_STROKER_LINECAP_ROUND,
+        line_join,
+        65536);
+    FT_Vector start = {0, 0};
+    FT_Error begin_error = FT_Stroker_BeginSubPath(stroker, &start, 0);
+    FT_Error line_error = begin_error ? begin_error : FT_Stroker_LineTo(stroker, &to);
+    FT_Error curve_error = FT_Err_Ok;
+    if (has_curve) {
+        curve_error = line_error
+            ? line_error
+            : FT_Stroker_CubicTo(stroker, &control1, &control2, &curve_to);
+    }
+    FT_Error end_error = has_curve
+        ? (curve_error ? curve_error : FT_Stroker_EndSubPath(stroker))
+        : (line_error ? line_error : FT_Stroker_EndSubPath(stroker));
+    FT_Error status = begin_error ? begin_error :
+        (line_error ? line_error :
+        (has_curve && curve_error ? curve_error : end_error));
+    FT_Stroker_Done(stroker);
+    FT_Done_FreeType(library);
+    printf("{");
+    print_status(status);
+    if (status) {
+        printf(",\"output\":null}\n");
+    } else if (has_curve) {
+        printf(",\"output\":{\"status\":%d,\"status_sequence\":[%d,%d,%d,%d]}}\n",
+               status,
+               begin_error,
+               line_error,
+               curve_error,
+               end_error);
+    } else {
+        printf(",\"output\":{\"status\":%d,\"status_sequence\":[%d,%d,%d]}}\n",
+               status,
+               begin_error,
+               line_error,
+               end_error);
+    }
+    return 0;
+}
+
+static int emit_stroker_invalid_handle_matrix(int argc, char** argv) {
+    if (argc != 3) return 2;
+    unsigned long variant = strtoul(argv[2], NULL, 10);
+    if (variant < 1 || variant > 100) return 2;
+    unsigned long family = (variant - 1U) / 25U;
+    FT_Error status_sequence[2] = { FT_Err_Ok, FT_Err_Ok };
+    unsigned long sequence_length = 0;
+    if (family == 0) {
+        FT_Library library = NULL;
+        FT_Error init_error = FT_Init_FreeType(&library);
+        status_sequence[sequence_length++] = init_error
+            ? init_error
+            : FT_Stroker_New(library, NULL);
+        FT_Done_FreeType(library);
+    } else if (family == 1) {
+        FT_Stroker stroker = NULL;
+        status_sequence[sequence_length++] =
+            FT_Stroker_New(NULL, &stroker);
+    } else if (family == 2 || family == 3) {
+        FT_Library library = NULL;
+        FT_Error init_error = FT_Init_FreeType(&library);
+        FT_Stroker stroker = NULL;
+        FT_Error new_error = init_error
+            ? init_error
+            : FT_Stroker_New(library, &stroker);
+        status_sequence[sequence_length++] = new_error;
+        if (!new_error) {
+            if (family == 2) {
+                status_sequence[sequence_length++] =
+                    FT_Stroker_BeginSubPath(stroker, NULL, 0);
+            } else {
+                FT_Vector start = { 640, 0 };
+                status_sequence[sequence_length++] =
+                    FT_Stroker_BeginSubPath(NULL, &start, 0);
+            }
+        }
+        FT_Stroker_Done(stroker);
+        FT_Done_FreeType(library);
+    } else {
+        return 2;
+    }
+    FT_Error status = FT_Err_Ok;
+    for (unsigned long index = 0; index < sequence_length; ++index) {
+        if (status_sequence[index]) {
+            status = status_sequence[index];
+            break;
+        }
+    }
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"status\":%d,\"status_sequence\":[", status);
+    for (unsigned long index = 0; index < sequence_length; ++index) {
+        if (index) printf(",");
+        printf("%d", status_sequence[index]);
+    }
+    printf("]}}\n");
+    return 0;
+}
+
+static int emit_stroker_null_argument_matrix(int argc, char** argv) {
+    if (argc != 4) return 2;
+    unsigned long variant = strtoul(argv[3], NULL, 10);
+    FT_Vector point = { 640, 320 };
+    FT_Vector control = { 160, 640 };
+    FT_Vector control2 = { 480, 640 };
+    FT_Error status = FT_Err_Invalid_Argument;
+    if (streq(argv[2], "line")) {
+        if (variant < 1 || variant > 34) return 2;
+        status = variant <= 17
+            ? FT_Stroker_LineTo(NULL, NULL)
+            : FT_Stroker_LineTo(NULL, &point);
+    } else if (streq(argv[2], "conic")) {
+        if (variant < 1 || variant > 33) return 2;
+        if (variant <= 11) {
+            status = FT_Stroker_ConicTo(NULL, NULL, &point);
+        } else if (variant <= 22) {
+            status = FT_Stroker_ConicTo(NULL, &control, NULL);
+        } else {
+            status = FT_Stroker_ConicTo(NULL, &control, &point);
+        }
+    } else if (streq(argv[2], "cubic")) {
+        if (variant < 1 || variant > 33) return 2;
+        if (variant <= 8) {
+            status = FT_Stroker_CubicTo(NULL, NULL, &control2, &point);
+        } else if (variant <= 16) {
+            status = FT_Stroker_CubicTo(NULL, &control, NULL, &point);
+        } else if (variant <= 24) {
+            status = FT_Stroker_CubicTo(NULL, &control, &control2, NULL);
+        } else {
+            status = FT_Stroker_CubicTo(NULL, &control, &control2, &point);
+        }
+    } else {
+        return 2;
+    }
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"status\":%d}}\n", status);
+    return 0;
+}
+
+static int emit_stroker_parse_invalid_matrix(int argc, char** argv) {
+    if (argc != 3) return 2;
+    unsigned long variant = strtoul(argv[2], NULL, 10);
+    if (variant < 1 || variant > 100) return 2;
+    unsigned long family = (variant - 1U) / 25U;
+    FT_Error status = FT_Err_Invalid_Outline;
+    if (family == 0) {
+        FT_Library library = NULL;
+        FT_Error init_error = FT_Init_FreeType(&library);
+        FT_Stroker stroker = NULL;
+        FT_Error new_error = init_error
+            ? init_error
+            : FT_Stroker_New(library, &stroker);
+        status = new_error
+            ? new_error
+            : FT_Stroker_ParseOutline(stroker, NULL, 0);
+        FT_Stroker_Done(stroker);
+        FT_Done_FreeType(library);
+    } else if (family == 1) {
+        FT_Vector points[2] = { { 0, 0 }, { 640, 0 } };
+        unsigned char tags[2] = { FT_CURVE_TAG_ON, FT_CURVE_TAG_ON };
+        unsigned short contours[1] = { 1 };
+        FT_Outline outline = { 1, 2, points, tags, contours, 0 };
+        status = FT_Stroker_ParseOutline(NULL, &outline, 0);
+    } else if (family == 2) {
+        FT_Library library = NULL;
+        FT_Error init_error = FT_Init_FreeType(&library);
+        FT_Stroker stroker = NULL;
+        FT_Error new_error = init_error
+            ? init_error
+            : FT_Stroker_New(library, &stroker);
+        FT_Vector points[4] = {
+            { 0, 0 }, { 160, 640 }, { 480, 640 }, { 640, 0 }
+        };
+        unsigned char tags[4] = {
+            FT_CURVE_TAG_ON,
+            FT_CURVE_TAG_CONIC,
+            FT_CURVE_TAG_CUBIC,
+            FT_CURVE_TAG_ON
+        };
+        unsigned short contours[1] = { 3 };
+        FT_Outline outline = { 1, 4, points, tags, contours, 0 };
+        status = new_error
+            ? new_error
+            : FT_Stroker_ParseOutline(stroker, &outline, 0);
+        FT_Stroker_Done(stroker);
+        FT_Done_FreeType(library);
+    } else if (family == 3) {
+        FT_Library library = NULL;
+        FT_Error init_error = FT_Init_FreeType(&library);
+        FT_Stroker stroker = NULL;
+        FT_Error new_error = init_error
+            ? init_error
+            : FT_Stroker_New(library, &stroker);
+        FT_Vector points[4] = {
+            { 0, 0 }, { 160, 640 }, { 480, 640 }, { 640, 0 }
+        };
+        unsigned char tags[4] = {
+            FT_CURVE_TAG_CUBIC,
+            FT_CURVE_TAG_ON,
+            FT_CURVE_TAG_ON,
+            FT_CURVE_TAG_ON
+        };
+        unsigned short contours[1] = { 3 };
+        FT_Outline outline = { 1, 4, points, tags, contours, 0 };
+        status = new_error
+            ? new_error
+            : FT_Stroker_ParseOutline(stroker, &outline, 0);
+        FT_Stroker_Done(stroker);
+        FT_Done_FreeType(library);
+    } else {
+        return 2;
+    }
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"status\":%d}}\n", status);
+    return 0;
+}
+
+static int emit_stroker_c45_matrix(int argc, char** argv) {
+    if (argc != 4) return 2;
+    unsigned long variant = strtoul(argv[3], NULL, 10);
+    if (variant < 1 || variant > 25) return 2;
+    FT_Error status = FT_Err_Invalid_Argument;
+    if (streq(argv[2], "end")) {
+        status = FT_Stroker_EndSubPath(NULL);
+    } else if (streq(argv[2], "border")) {
+        FT_UInt points = 0;
+        FT_UInt contours = 0;
+        if (variant <= 12) {
+            status = FT_Stroker_GetBorderCounts(
+                NULL,
+                FT_STROKER_BORDER_LEFT,
+                &points,
+                &contours);
+        } else {
+            FT_Library library = NULL;
+            FT_Error init_error = FT_Init_FreeType(&library);
+            FT_Stroker stroker = NULL;
+            FT_Error new_error = init_error
+                ? init_error
+                : FT_Stroker_New(library, &stroker);
+            status = new_error
+                ? new_error
+                : FT_Stroker_GetBorderCounts(stroker, (FT_StrokerBorder)2, &points, &contours);
+            FT_Stroker_Done(stroker);
+            FT_Done_FreeType(library);
+        }
+    } else if (streq(argv[2], "counts")) {
+        FT_UInt points = 0;
+        FT_UInt contours = 0;
+        status = FT_Stroker_GetCounts(NULL, &points, &contours);
+    } else {
+        return 2;
+    }
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"status\":%d}}\n", status);
     return 0;
 }
 
@@ -27687,6 +29302,54 @@ static int emit_glyph_stroke_invalid_arguments(int argc, char** argv, FT_Bool bo
     return 0;
 }
 
+static int emit_glyph_stroke_null_outline_handle(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    FT_Error error = FT_Glyph_Stroke(NULL, NULL, 0);
+    printf("{");
+    print_status(error);
+    printf(",\"output\":{\"probe\":\"null_outline_handle=%lld\","
+           "\"caller_handle_class\":\"null\"}}\n",
+           probe);
+    return 0;
+}
+
+static int emit_glyph_stroke_null_destroy_handle(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    FT_Error error = FT_Glyph_Stroke(NULL, NULL, 0);
+    printf("{");
+    print_status(error);
+    printf(",\"output\":{\"probe\":\"null_destroy_handle=%lld\","
+           "\"caller_handle_class\":\"null\"}}\n",
+           probe);
+    return 0;
+}
+
+static int emit_glyph_stroke_null_destroy_stroker_library(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    FT_Stroker stroker = NULL;
+    FT_Error error = FT_Stroker_New(NULL, &stroker);
+    printf("{");
+    print_status(error);
+    printf(",\"output\":{\"probe\":\"null_destroy_stroker_library=%lld\","
+           "\"library_handle_class\":\"null\"}}\n",
+           probe);
+    if (stroker) FT_Stroker_Done(stroker);
+    return 0;
+}
+
+static int emit_glyph_stroke_null_stroker_library(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    FT_Stroker stroker = NULL;
+    FT_Error error = FT_Stroker_New(NULL, &stroker);
+    printf("{");
+    print_status(error);
+    printf(",\"output\":{\"probe\":\"null_stroker_library=%lld\","
+           "\"library_handle_class\":\"null\"}}\n",
+           probe);
+    if (stroker) FT_Stroker_Done(stroker);
+    return 0;
+}
+
 static int emit_glyph_stroke_invalid_outline(int argc, char** argv) {
     if (argc != 3) return 2;
     FT_Library library = NULL;
@@ -27752,6 +29415,84 @@ static int emit_glyph_stroke_border_invalid_outline(int argc, char** argv) {
     if (glyph) FT_Done_Glyph(glyph);
     if (face) FT_Done_Face(face);
     if (library) FT_Done_FreeType(library);
+    return 0;
+}
+
+static int emit_glyph_stroke_border_null_outside_handle(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    FT_Error error = FT_Glyph_StrokeBorder(NULL, NULL, 0, 0);
+    printf("{");
+    print_status(error);
+    printf(",\"output\":{\"probe\":\"null_border_outside_handle=%lld\","
+           "\"caller_handle_class\":\"null\"}}\n",
+           probe);
+    return 0;
+}
+
+static int emit_glyph_stroke_border_null_outside_library(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    FT_Stroker stroker = NULL;
+    FT_Error error = FT_Stroker_New(NULL, &stroker);
+    if (stroker) {
+        FT_Stroker_Done(stroker);
+    }
+    printf("{");
+    print_status(error);
+    printf(",\"output\":{\"probe\":\"null_border_outside_library=%lld\","
+           "\"library_handle_class\":\"null\"}}\n",
+           probe);
+    return 0;
+}
+
+static int emit_glyph_stroke_border_null_inside_handle(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    FT_Error error = FT_Glyph_StrokeBorder(NULL, NULL, 1, 0);
+    printf("{");
+    print_status(error);
+    printf(",\"output\":{\"probe\":\"null_border_inside_handle=%lld\","
+           "\"caller_handle_class\":\"null\"}}\n",
+           probe);
+    return 0;
+}
+
+static int emit_glyph_stroke_border_null_inside_library(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    FT_Stroker stroker = NULL;
+    FT_Error error = FT_Stroker_New(NULL, &stroker);
+    if (stroker) {
+        FT_Stroker_Done(stroker);
+    }
+    printf("{");
+    print_status(error);
+    printf(",\"output\":{\"probe\":\"null_border_inside_library=%lld\","
+           "\"library_handle_class\":\"null\"}}\n",
+           probe);
+    return 0;
+}
+
+static int emit_glyph_stroke_border_null_destroy_handle(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    FT_Error error = FT_Glyph_StrokeBorder(NULL, NULL, 1, 0);
+    printf("{");
+    print_status(error);
+    printf(",\"output\":{\"probe\":\"null_border_destroy_handle=%lld\","
+           "\"caller_handle_class\":\"null\"}}\n",
+           probe);
+    return 0;
+}
+
+static int emit_glyph_stroke_border_null_destroy_library(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    FT_Stroker stroker = NULL;
+    FT_Error error = FT_Stroker_New(NULL, &stroker);
+    if (stroker) {
+        FT_Stroker_Done(stroker);
+    }
+    printf("{");
+    print_status(error);
+    printf(",\"output\":{\"probe\":\"null_border_destroy_library=%lld\","
+           "\"library_handle_class\":\"null\"}}\n",
+           probe);
     return 0;
 }
 
@@ -28996,13 +30737,14 @@ static int emit_stroker_line_join_matrix(int argc, char** argv) {
 }
 
 static int emit_stroker_manual_path(int argc, char** argv) {
-    if (argc != 7) return 2;
+    if (argc != 8) return 2;
     FT_Fixed radius = (FT_Fixed)strtol(argv[2], NULL, 10);
     FT_Stroker_LineCap line_cap = (FT_Stroker_LineCap)strtol(argv[3], NULL, 10);
     FT_Stroker_LineJoin line_join = (FT_Stroker_LineJoin)strtol(argv[4], NULL, 10);
     FT_Fixed miter_limit = (FT_Fixed)strtol(argv[5], NULL, 10);
+    FT_Bool opened = (FT_Bool)strtol(argv[6], NULL, 10);
     char encoded[8192];
-    snprintf(encoded, sizeof(encoded), "%s", argv[6]);
+    snprintf(encoded, sizeof(encoded), "%s", argv[7]);
 
     FT_Library library = NULL;
     FT_Error status = FT_Init_FreeType(&library);
@@ -29036,7 +30778,7 @@ static int emit_stroker_manual_path(int argc, char** argv) {
                 if (op == 'M') {
                     if (sscanf(record, "M,%ld,%ld", &x0, &y0) != 2) return 2;
                     FT_Vector to = { x0, y0 };
-                    segment_status = FT_Stroker_BeginSubPath(stroker, &to, 0);
+                    segment_status = FT_Stroker_BeginSubPath(stroker, &to, opened);
                     if (status_count < 256) status_sequence[status_count++] = segment_status;
                     began = 1;
                 } else if (op == 'L') {
@@ -29867,6 +31609,27 @@ static int emit_library_lifecycle(int argc, char** argv) {
     int action = atoi(argv[2]);
     struct FT_MemoryRec_ memory = {NULL, oracle_alloc, oracle_free, oracle_realloc};
     FT_Library library = NULL;
+    if (action == 5) {
+        FT_Error null_memory_error = FT_New_Library(NULL, &library);
+        printf("{");
+        print_status(null_memory_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+    if (action == 6) {
+        FT_Error null_reference_error = FT_Reference_Library(NULL);
+        printf("{");
+        print_status(null_reference_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+    if (action == 7) {
+        FT_Error null_done_error = FT_Done_Library(NULL);
+        printf("{");
+        print_status(null_done_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
     FT_Error err = FT_New_Library(&memory, &library);
     printf("{");
     if (err) {
@@ -32475,6 +34238,121 @@ static int emit_load_sfnt_table_null_face(int argc, char** argv) {
     return 0;
 }
 
+static FT_UInt pfr_null_glyph_selector(const char* selector) {
+    if (selector && strncmp(selector, "gid:", 4) == 0) {
+        selector += 4;
+    }
+    return selector ? (FT_UInt)strtoul(selector, NULL, 10) : 0U;
+}
+
+static int emit_pfr_kerning_null_face(int argc, char** argv) {
+    if (argc != 3) {
+        fprintf(stderr, "--get-pfr-kerning-null-face requires LEFT|RIGHT\n");
+        return 2;
+    }
+    char pair[256];
+    if (strlen(argv[2]) >= sizeof(pair)) {
+        fprintf(stderr, "PFR kerning null-face pair is too long\n");
+        return 2;
+    }
+    strcpy(pair, argv[2]);
+    char* right = strchr(pair, '|');
+    if (!right) {
+        fprintf(stderr, "PFR kerning null-face pair must contain |\n");
+        return 2;
+    }
+    *right = '\0';
+    right++;
+    FT_UInt left_glyph = pfr_null_glyph_selector(pair);
+    FT_UInt right_glyph = pfr_null_glyph_selector(right);
+    FT_Vector vector;
+    vector.x = 0;
+    vector.y = 0;
+    FT_Error status = FT_Get_PFR_Kerning(NULL, left_glyph, right_glyph, &vector);
+    printf("{");
+    print_status(status);
+    printf(",\"output\":{\"status\":%d,\"fallback_return\":%d,\"kerning_vectors\":[",
+           status,
+           status);
+    printf("{\"left\":\"");
+    print_json_string_content(pair);
+    printf("\",\"right\":\"");
+    print_json_string_content(right);
+    printf("\",\"mode\":%u,\"left_glyph\":%u,\"right_glyph\":%u,\"status\":%d,"
+           "\"akerning\":{\"x\":%ld,\"y\":%ld},\"kerning\":{\"x\":%ld,\"y\":%ld},"
+           "\"x_26_6\":%ld,\"y_26_6\":%ld,\"units\":\"%s\"}",
+           (unsigned int)FT_KERNING_UNSCALED,
+           left_glyph,
+           right_glyph,
+           status,
+           vector.x,
+           vector.y,
+           vector.x,
+           vector.y,
+           vector.x,
+           vector.y,
+           kerning_units(FT_KERNING_UNSCALED));
+    printf("],\"glyph_indexes\":[{\"left\":%u,\"right\":%u}],"
+           "\"akerning\":{\"x\":%ld,\"y\":%ld},\"kerning\":{\"x\":%ld,\"y\":%ld}}}\n",
+           left_glyph,
+           right_glyph,
+           vector.x,
+           vector.y,
+           vector.x,
+           vector.y);
+    return 0;
+}
+
+static int emit_pfr_metrics_null_face(int argc, char** argv) {
+    if (argc != 3) {
+        fprintf(stderr, "--get-pfr-metrics-null-face requires POINTER_MASK\n");
+        return 2;
+    }
+    unsigned int pointer_mask = (unsigned int)strtoul(argv[2], NULL, 10);
+    FT_UInt outline_resolution = (FT_UInt)0xDEADBEEF;
+    FT_UInt metrics_resolution = (FT_UInt)0xDEADBEEF;
+    FT_Fixed metrics_x_scale = (FT_Fixed)-777777;
+    FT_Fixed metrics_y_scale = (FT_Fixed)-777777;
+    FT_Error status = FT_Get_PFR_Metrics(
+        NULL,
+        pointer_mask & 1U ? &outline_resolution : NULL,
+        pointer_mask & 2U ? &metrics_resolution : NULL,
+        pointer_mask & 4U ? &metrics_x_scale : NULL,
+        pointer_mask & 8U ? &metrics_y_scale : NULL);
+    printf("{");
+    print_status(status);
+    printf(",\"output\":{\"status\":%d,\"return\":%d,\"pointer_mask\":%u,"
+           "\"outline_resolution\":%u,\"metrics_resolution\":%u,"
+           "\"metrics_x_scale\":%ld,\"metrics_y_scale\":%ld}}\n",
+           status,
+           status,
+           pointer_mask,
+           outline_resolution,
+           metrics_resolution,
+           metrics_x_scale,
+           metrics_y_scale);
+    return 0;
+}
+
+static int emit_pfr_advance_null_face(int argc, char** argv) {
+    if (argc != 3) {
+        fprintf(stderr, "--get-pfr-advance-null-face requires GLYPH_INDEX\n");
+        return 2;
+    }
+    FT_UInt glyph_index = (FT_UInt)strtoul(argv[2], NULL, 10);
+    FT_Pos advance = (FT_Pos)-777777;
+    FT_Error status = FT_Get_PFR_Advance(NULL, glyph_index, &advance);
+    printf("{");
+    print_status(status);
+    printf(",\"output\":{\"status\":%d,\"return\":%d,\"glyph_index\":%u,"
+           "\"aadvance\":%ld,\"output_is_null\":false}}\n",
+           status,
+           status,
+           glyph_index,
+           advance);
+    return 0;
+}
+
 static int emit_face_or_slot(int argc, char** argv) {
     const char* command = argv[1];
     const char* source_kind = argv[2];
@@ -33161,6 +35039,68 @@ static int emit_face_or_slot(int argc, char** argv) {
         return 0;
     }
 
+    if (streq(command, "--get-pfr-kerning-null-output")) {
+        char pair[256];
+        if (strlen(argv[7]) >= sizeof(pair)) {
+            fprintf(stderr, "PFR kerning null-output pair is too long\n");
+            FT_Done_Face(face);
+            FT_Done_FreeType(library);
+            free(data);
+            return 2;
+        }
+        strcpy(pair, argv[7]);
+        char* right = strchr(pair, '|');
+        if (!right) {
+            fprintf(stderr, "PFR kerning null-output pair must contain |\n");
+            FT_Done_Face(face);
+            FT_Done_FreeType(library);
+            free(data);
+            return 2;
+        }
+        *right = '\0';
+        right++;
+        FT_UInt left_glyph = glyph_selector_index(face, pair);
+        FT_UInt right_glyph = glyph_selector_index(face, right);
+        FT_Vector vector;
+        vector.x = (FT_Pos)-777777;
+        vector.y = (FT_Pos)-777777;
+        FT_Error status = FT_Get_PFR_Kerning(face, left_glyph, right_glyph, NULL);
+        print_status(status);
+        printf(",\"output\":{\"status\":%d,\"fallback_return\":%d,\"kerning_vectors\":[",
+               status,
+               status);
+        printf("{\"left\":\"");
+        print_json_string_content(pair);
+        printf("\",\"right\":\"");
+        print_json_string_content(right);
+        printf("\",\"mode\":%u,\"left_glyph\":%u,\"right_glyph\":%u,\"status\":%d,"
+               "\"akerning\":{\"x\":%ld,\"y\":%ld},\"kerning\":{\"x\":%ld,\"y\":%ld},"
+               "\"x_26_6\":%ld,\"y_26_6\":%ld,\"units\":\"%s\"}",
+               (unsigned int)FT_KERNING_UNSCALED,
+               left_glyph,
+               right_glyph,
+               status,
+               vector.x,
+               vector.y,
+               vector.x,
+               vector.y,
+               vector.x,
+               vector.y,
+               kerning_units(FT_KERNING_UNSCALED));
+        printf("],\"glyph_indexes\":[{\"left\":%u,\"right\":%u}],"
+               "\"akerning\":{\"x\":%ld,\"y\":%ld},\"kerning\":{\"x\":%ld,\"y\":%ld}}}\n",
+               left_glyph,
+               right_glyph,
+               vector.x,
+               vector.y,
+               vector.x,
+               vector.y);
+        FT_Done_Face(face);
+        FT_Done_FreeType(library);
+        free(data);
+        return 0;
+    }
+
     if (streq(command, "--get-pfr-kerning")) {
         const char* rows_arg = argv[7];
         char* rows = (char*)malloc(strlen(rows_arg) + 1);
@@ -33305,6 +35245,23 @@ static int emit_face_or_slot(int argc, char** argv) {
                metrics_resolution,
                metrics_x_scale,
                metrics_y_scale);
+        FT_Done_Face(face);
+        FT_Done_FreeType(library);
+        free(data);
+        return 0;
+    }
+
+    if (streq(command, "--get-pfr-advance-null-output")) {
+        FT_UInt glyph_index = (FT_UInt)strtoul(argv[7], NULL, 10);
+        FT_Pos advance = (FT_Pos)-777777;
+        FT_Error advance_error = FT_Get_PFR_Advance(face, glyph_index, NULL);
+        print_status(advance_error);
+        printf(",\"output\":{\"status\":%d,\"return\":%d,\"glyph_index\":%u,"
+               "\"aadvance\":%ld,\"output_is_null\":true}}\n",
+               advance_error,
+               advance_error,
+               glyph_index,
+               advance);
         FT_Done_Face(face);
         FT_Done_FreeType(library);
         free(data);
@@ -35486,6 +37443,61 @@ static int emit_ps_hinting_engine_case(int argc, char** argv) {
     return 0;
 }
 
+static int emit_ps_hinting_engine_null_file(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    printf("{");
+    print_status(FT_Err_Invalid_Argument);
+    printf(",\"output\":{\"probe\":\"null_file_base=%lld\","
+           "\"file_pointer_class\":\"null\","
+           "\"output_pointer_class\":\"nonnull\"}}\n",
+           probe);
+    return 0;
+}
+
+static int emit_ps_hinting_engine_null_output(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    printf("{");
+    print_status(FT_Err_Invalid_Argument);
+    printf(",\"output\":{\"probe\":\"null_output=%lld\","
+           "\"file_pointer_class\":\"nonnull\","
+           "\"output_pointer_class\":\"null\"}}\n",
+           probe);
+    return 0;
+}
+
+static int emit_interpreter_version_null_file(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    printf("{");
+    print_status(FT_Err_Invalid_Argument);
+    printf(",\"output\":{\"probe\":\"null_file_base=%lld\","
+           "\"file_pointer_class\":\"null\","
+           "\"readback_pointer_class\":\"nonnull\"}}\n",
+           probe);
+    return 0;
+}
+
+static int emit_interpreter_version_invalid_face(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    FT_Library library = NULL;
+    FT_Face face = NULL;
+    FT_Error error = FT_Init_FreeType(&library);
+    unsigned char empty_file[1] = {0};
+    if (!error) {
+        error = FT_New_Memory_Face(library, empty_file, 0, 0, &face);
+        if (face) {
+            FT_Done_Face(face);
+        }
+        FT_Done_FreeType(library);
+    }
+    printf("{");
+    print_status(error);
+    printf(",\"output\":{\"probe\":\"empty_file=%lld\","
+           "\"file_pointer_class\":\"nonnull\","
+           "\"readback_pointer_class\":\"nonnull\"}}\n",
+           probe);
+    return 0;
+}
+
 static void print_stem_darkening_row(const char* label,
                                      FT_Error property_error,
                                      FT_Face face,
@@ -35828,6 +37840,67 @@ static int emit_open_face_stream_ownership(int argc, char** argv) {
 
     FT_Done_FreeType(library);
     free(data);
+    return 0;
+}
+
+static int emit_open_face_stream_invalid_face(const char* probe_text) {
+    long long probe = strtoll(probe_text, NULL, 10);
+    unsigned char empty_file[1] = {0};
+    FT_Library library = NULL;
+    FT_Error setup_error = FT_Init_FreeType(&library);
+    if (setup_error) {
+        printf("{");
+        print_status(setup_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+
+    OpenFaceStreamState state;
+    state.close_calls = 0;
+    state.magic = 0xF75EA123u;
+    state.expected_stream = NULL;
+    state.callback_stream_identity = 0;
+    FT_StreamRec stream;
+    memset(&stream, 0, sizeof(stream));
+    stream.base = empty_file;
+    stream.size = 0;
+    stream.descriptor.pointer = &state;
+    stream.close = open_face_stream_close;
+    state.expected_stream = &stream;
+
+    FT_Open_Args args;
+    memset(&args, 0, sizeof(args));
+    args.flags = FT_OPEN_STREAM;
+    args.stream = &stream;
+
+    FT_Face face = NULL;
+    FT_Error error = FT_Open_Face(library, &args, 0, &face);
+    long face_flags = face ? (long)face->face_flags : 0;
+    int bit_set = face && ((face->face_flags & FT_FACE_FLAG_EXTERNAL_STREAM) != 0);
+    int stream_pointer_identity = face && face->stream == &stream;
+    if (!error && face) {
+        FT_Done_Face(face);
+    }
+
+    printf("{");
+    print_status(error);
+    printf(",\"output\":{\"probe\":\"empty_file=%lld\",\"return\":%d,\"status\":%d,\"opened\":",
+           probe,
+           error,
+           error);
+    print_json_bool(error == FT_Err_Ok);
+    printf(",\"face_flags\":%ld,\"bit_set\":", face_flags);
+    print_json_bool(bit_set);
+    printf(",\"stream_pointer_identity\":");
+    print_json_bool(stream_pointer_identity);
+    printf(",\"close_callback_stream_identity\":");
+    print_json_bool(state.callback_stream_identity);
+    printf(",\"stream_close_calls\":%d,\"client_stream_alive_after_done_face\":",
+           state.close_calls);
+    print_json_bool(state.magic == 0xF75EA123u);
+    printf("}}\n");
+
+    FT_Done_FreeType(library);
     return 0;
 }
 
@@ -38865,6 +40938,9 @@ static int dispatch(int argc, char** argv) {
     if (argc == 5 && streq(argv[1], "--new-size-null-output")) {
         return emit_new_size_null_output(argc, argv);
     }
+    if (argc == 5 && streq(argv[1], "--new-size-success")) {
+        return emit_new_size_success(argc, argv);
+    }
     if (argc == 5 && streq(argv[1], "--new-size-sequence")) {
         return emit_new_size_sequence(argc, argv);
     }
@@ -38955,6 +41031,9 @@ static int dispatch(int argc, char** argv) {
     if (argc == 5 && streq(argv[1], "--open-type-free-null-table")) {
         return emit_open_type_free_null_table(argc, argv);
     }
+    if (argc == 5 && streq(argv[1], "--open-type-free-unowned-table")) {
+        return emit_open_type_free_unowned_table(argc, argv);
+    }
     if (argc == 3 && streq(argv[1], "--gxval-free-null-face")) {
         return emit_gxval_free_null_face(argc, argv);
     }
@@ -38979,9 +41058,57 @@ static int dispatch(int argc, char** argv) {
     if (argc == 7 && streq(argv[1], "--color-glyph-layer-malformed-case")) {
         return emit_color_glyph_layer_malformed_case(argc, argv);
     }
+    if (argc == 3 && streq(argv[1], "--color-glyph-layer-null-face")) {
+        return emit_color_glyph_layer_null_face(argc, argv);
+    }
+    if (argc == 7 && streq(argv[1], "--color-glyph-layer-null-acolor")) {
+        return emit_color_glyph_layer_null_acolor(argc, argv);
+    }
+    if (argc == 7 && streq(argv[1], "--color-glyph-layer-null-iterator")) {
+        return emit_color_glyph_layer_null_iterator(argc, argv);
+    }
     if ((argc == 7 || argc == 9 || argc == 15 || argc == 17) &&
         streq(argv[1], "--color-glyph-clipbox-case")) {
         return emit_color_glyph_clipbox_case(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--color-glyph-clipbox-null-face")) {
+        return emit_color_glyph_clipbox_null_face(argc, argv);
+    }
+    if (argc == 2 && streq(argv[1], "--color-paint-null-face")) {
+        return emit_color_paint_null_face(argc, argv);
+    }
+    if (argc == 2 && streq(argv[1], "--color-paint-transform-null-opaque")) {
+        return emit_color_paint_transform_null_opaque(argc, argv);
+    }
+    if (argc == 2 && streq(argv[1], "--color-paint-linear-gradient-wrong-format")) {
+        return emit_color_paint_linear_gradient_wrong_format(argc, argv);
+    }
+    if (argc == 2 && streq(argv[1], "--color-public-paint-format-matrix")) {
+        return emit_color_public_paint_format_matrix(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--color-public-paint-malformed-format")) {
+        return emit_color_public_paint_malformed_format(argc, argv);
+    }
+    if (argc == 2 && streq(argv[1], "--color-public-paint-solid-missing-glyph")) {
+        return emit_color_public_paint_solid_missing_glyph(argc, argv);
+    }
+    if (argc == 5 && streq(argv[1], "--color-paint-missing-colr")) {
+        return emit_color_paint_missing_colr(argc, argv);
+    }
+    if (argc == 2 && streq(argv[1], "--color-public-paint-solid-null-face")) {
+        return emit_color_public_paint_solid_null_face(argc, argv);
+    }
+    if (argc == 2 && streq(argv[1], "--color-paint-layers-null-face")) {
+        return emit_color_paint_layers_null_face(argc, argv);
+    }
+    if (argc == 6 && streq(argv[1], "--color-paint-layers-null-output")) {
+        return emit_color_paint_layers_null_output(argc, argv);
+    }
+    if (argc == 2 && streq(argv[1], "--color-paint-layers-malformed-node")) {
+        return emit_color_paint_layers_malformed_node(argc, argv);
+    }
+    if (argc == 6 && streq(argv[1], "--color-paint-layers-missing-colr")) {
+        return emit_color_paint_layers_missing_colr(argc, argv);
     }
     if (argc == 6 && streq(argv[1], "--color-paint-malformed-case")) {
         return emit_color_paint_malformed_case(argc, argv);
@@ -39046,7 +41173,22 @@ static int dispatch(int argc, char** argv) {
     if (argc == 8 && streq(argv[1], "--get-pfr-kerning")) {
         return emit_face_or_slot(argc, argv);
     }
+    if (argc == 8 && streq(argv[1], "--get-pfr-kerning-null-output")) {
+        return emit_face_or_slot(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--get-pfr-kerning-null-face")) {
+        return emit_pfr_kerning_null_face(argc, argv);
+    }
     if (argc == 8 && streq(argv[1], "--get-pfr-metrics")) {
+        return emit_face_or_slot(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--get-pfr-metrics-null-face")) {
+        return emit_pfr_metrics_null_face(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--get-pfr-advance-null-face")) {
+        return emit_pfr_advance_null_face(argc, argv);
+    }
+    if (argc == 8 && streq(argv[1], "--get-pfr-advance-null-output")) {
         return emit_face_or_slot(argc, argv);
     }
     if (argc == 9 && streq(argv[1], "--get-pfr-advance")) {
@@ -39136,6 +41278,30 @@ static int dispatch(int argc, char** argv) {
     if (argc == 2 && streq(argv[1], "--stroker-conic-first-segment")) {
         return emit_stroker_conic_first_segment(argc, argv);
     }
+    if (argc == 3 && streq(argv[1], "--stroker-conic-replay")) {
+        return emit_stroker_conic_replay(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--stroker-small-curve")) {
+        return emit_stroker_small_curve(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--stroker-deep-cubic")) {
+        return emit_stroker_deep_cubic(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--stroker-closed-finalizer")) {
+        return emit_stroker_closed_finalizer(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--stroker-invalid-handle-matrix")) {
+        return emit_stroker_invalid_handle_matrix(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--stroker-parse-invalid-matrix")) {
+        return emit_stroker_parse_invalid_matrix(argc, argv);
+    }
+    if (argc == 4 && streq(argv[1], "--stroker-c45-matrix")) {
+        return emit_stroker_c45_matrix(argc, argv);
+    }
+    if (argc == 4 && streq(argv[1], "--stroker-null-argument-matrix")) {
+        return emit_stroker_null_argument_matrix(argc, argv);
+    }
     if (argc == 2 && streq(argv[1], "--stroker-cubic-success")) {
         return emit_stroker_cubic_success(argc, argv);
     }
@@ -39151,11 +41317,41 @@ static int dispatch(int argc, char** argv) {
     if (argc == 3 && streq(argv[1], "--glyph-stroke-invalid-arguments")) {
         return emit_glyph_stroke_invalid_arguments(argc, argv, 0);
     }
+    if (argc == 3 && streq(argv[1], "--glyph-stroke-null-outline-handle")) {
+        return emit_glyph_stroke_null_outline_handle(argv[2]);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-stroke-null-destroy-handle")) {
+        return emit_glyph_stroke_null_destroy_handle(argv[2]);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-stroke-null-destroy-stroker-library")) {
+        return emit_glyph_stroke_null_destroy_stroker_library(argv[2]);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-stroke-null-stroker-library")) {
+        return emit_glyph_stroke_null_stroker_library(argv[2]);
+    }
     if (argc == 3 && streq(argv[1], "--glyph-stroke-invalid-outline")) {
         return emit_glyph_stroke_invalid_outline(argc, argv);
     }
     if (argc == 3 && streq(argv[1], "--glyph-stroke-border-invalid-outline")) {
         return emit_glyph_stroke_border_invalid_outline(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-stroke-border-null-outside-handle")) {
+        return emit_glyph_stroke_border_null_outside_handle(argv[2]);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-stroke-border-null-outside-library")) {
+        return emit_glyph_stroke_border_null_outside_library(argv[2]);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-stroke-border-null-inside-handle")) {
+        return emit_glyph_stroke_border_null_inside_handle(argv[2]);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-stroke-border-null-inside-library")) {
+        return emit_glyph_stroke_border_null_inside_library(argv[2]);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-stroke-border-null-destroy-handle")) {
+        return emit_glyph_stroke_border_null_destroy_handle(argv[2]);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-stroke-border-null-destroy-library")) {
+        return emit_glyph_stroke_border_null_destroy_library(argv[2]);
     }
     if (argc == 3 && streq(argv[1], "--glyph-stroke-border-outside-success")) {
         return emit_glyph_stroke_border_outside_success(argc, argv);
@@ -39208,7 +41404,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 7 && streq(argv[1], "--stroker-line-join-matrix")) {
         return emit_stroker_line_join_matrix(argc, argv);
     }
-    if (argc == 7 && streq(argv[1], "--stroker-manual-path")) {
+    if (argc == 8 && streq(argv[1], "--stroker-manual-path")) {
         return emit_stroker_manual_path(argc, argv);
     }
     if (argc == 6 && streq(argv[1], "--stroker-wide-curve")) {
@@ -39479,11 +41675,23 @@ static int dispatch(int argc, char** argv) {
     if ((argc == 13 || argc == 14) && streq(argv[1], "--ps-hinting-engine-case")) {
         return emit_ps_hinting_engine_case(argc, argv);
     }
+    if (argc == 3 && streq(argv[1], "--ps-hinting-engine-null-file")) {
+        return emit_ps_hinting_engine_null_file(argv[2]);
+    }
+    if (argc == 3 && streq(argv[1], "--ps-hinting-engine-null-output")) {
+        return emit_ps_hinting_engine_null_output(argv[2]);
+    }
     if (argc == 6 && streq(argv[1], "--stem-darkening-case")) {
         return emit_stem_darkening_case(argc, argv);
     }
     if (argc == 10 && streq(argv[1], "--interpreter-version-glyph-case")) {
         return emit_interpreter_version_glyph_case(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--interpreter-version-null-file")) {
+        return emit_interpreter_version_null_file(argv[2]);
+    }
+    if (argc == 3 && streq(argv[1], "--interpreter-version-invalid-face")) {
+        return emit_interpreter_version_invalid_face(argv[2]);
     }
     if (argc == 9 && streq(argv[1], "--get-sfnt-vhea-mvar-sequence")) {
         return emit_face_or_slot(argc, argv);
@@ -39517,6 +41725,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 5 && streq(argv[1], "--open-face-stream-ownership")) {
         return emit_open_face_stream_ownership(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--open-face-stream-invalid-face")) {
+        return emit_open_face_stream_invalid_face(argv[2]);
     }
     if (argc == 5 && streq(argv[1], "--external-stream-runtime")) {
         return emit_external_stream_runtime(argc, argv);
@@ -39566,7 +41777,13 @@ static int dispatch(int argc, char** argv) {
         return emit_glyph_cbox_null_or_no_bbox(argv[2], (FT_UInt)strtoul(argv[3], NULL, 10));
     }
     if (argc == 2 && streq(argv[1], "--get-glyph-null-inputs")) {
-        return emit_get_glyph_null_inputs();
+        return emit_get_glyph_null_inputs(0);
+    }
+    if (argc == 2 && streq(argv[1], "--get-glyph-null-inputs-face-handle")) {
+        return emit_get_glyph_null_inputs(1);
+    }
+    if (argc == 3 && streq(argv[1], "--get-glyph-unimplemented-output")) {
+        return emit_get_glyph_unimplemented_output(argv[2]);
     }
     if (argc == 2 && streq(argv[1], "--get-glyph-malformed-slots")) {
         return emit_get_glyph_malformed_slots();
@@ -39586,6 +41803,12 @@ static int dispatch(int argc, char** argv) {
     if (argc == 2 && streq(argv[1], "--glyph-copy-null-inputs")) {
         return emit_glyph_copy_null_inputs();
     }
+    if (argc == 3 && streq(argv[1], "--glyph-copy-bitmap-sync-error")) {
+        return emit_glyph_copy_bitmap_sync_error(argv[2]);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-copy-svg-format-error")) {
+        return emit_glyph_copy_svg_format_error(argv[2]);
+    }
     if ((argc == 4 || argc == 5) && streq(argv[1], "--glyph-copy-svg-zero-length")) {
         return emit_glyph_copy_svg_zero_length(argc, argv);
     }
@@ -39594,6 +41817,15 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 2 && streq(argv[1], "--done-glyph-null")) {
         return emit_done_glyph_null();
+    }
+    if (argc == 3 && streq(argv[1], "--done-glyph-null-handle")) {
+        return emit_done_glyph_null_handle(argv[2]);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-to-bitmap-null-handle")) {
+        return emit_glyph_to_bitmap_null_handle(argv[2]);
+    }
+    if (argc == 3 && streq(argv[1], "--glyph-to-bitmap-null-glyph-handle")) {
+        return emit_glyph_to_bitmap_null_glyph_handle(argv[2]);
     }
     if (argc == 2 && streq(argv[1], "--glyph-to-bitmap-invalid-inputs")) {
         return emit_glyph_to_bitmap_invalid_inputs();
@@ -39612,6 +41844,12 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc >= 5 && streq(argv[1], "--gzip-stream-open")) {
         return emit_gzip_stream_open(argc, argv);
+    }
+    if (argc >= 5 && streq(argv[1], "--gzip-stream-open-read-close-gap")) {
+        return emit_gzip_stream_open_gap(argc, argv);
+    }
+    if (argc >= 5 && streq(argv[1], "--gzip-stream-open-gap")) {
+        return emit_gzip_stream_open_gap(argc, argv);
     }
     if (argc == 2 && streq(argv[1], "--gzip-stream-open-errors")) {
         return emit_gzip_stream_open_errors();

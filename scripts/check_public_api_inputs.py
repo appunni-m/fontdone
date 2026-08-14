@@ -538,6 +538,7 @@ REAL_PARITY_OPERATIONS = {
     "ftgasp.get_gasp",
     "tttables.get_cmap_format",
     "tttables.get_cmap_language_id",
+    "ftsizes.new_size",
     "ftsizes.new_size_sequence",
     "ftsizes.done_size_sequence",
     "ftsizes.activate_size_sequence",
@@ -3435,6 +3436,7 @@ def ftdriver_subsystem_pending_reason(row: ConcreteInput) -> str | None:
             "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime",
             "ftdriver.FT_HINTING_FREETYPE.hinting_engine_property_runtime_rendered",
             "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_face_returns_load_error",
+            "ftdriver.FT_HINTING_FREETYPE.mcp_bitmap_invalid_size_batch",
         }
         and row.operation == "ftdriver.hinting_engine_property"
         and row.params.get("runtime_route") == "actual_ps_hinting_engine_property"
@@ -5403,6 +5405,7 @@ def hinting_engine_property_real_parity_reason(row: ConcreteInput) -> str | None
         "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_glyph_preserves_error",
         "ftdriver.FT_HINTING_FREETYPE.hinting_engine_null_string_invalid_glyph",
         "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_face_returns_load_error",
+        "ftdriver.FT_HINTING_FREETYPE.mcp_bitmap_invalid_size_batch",
     }
     if (
         row.operation == "ftdriver.hinting_engine_property"
@@ -5468,6 +5471,7 @@ def focused_success_real_parity_reason(row: ConcreteInput) -> str | None:
         "ftgxval.FT_TrueTypeGX_Validate.validates_all_gx_tables",
         "ftgxval.FT_VALIDATE_GX.validates_all_requested_tables",
         "ftgxval.FT_TrueTypeGX_Validate.respects_table_length",
+        "ftgxval.FT_TrueTypeGX_Validate.mcp_version1_kern_batch",
         "ftgxval.FT_VALIDATE_APPLE.runtime_selects_apple_classic_kern",
         "ftgxval.FT_VALIDATE_CKERN.runtime_accepts_ms_or_apple",
         "ftgxval.FT_VALIDATE_CKERN.output_table_lifetime",
@@ -7303,6 +7307,7 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
             "ftbzip2.FT_Stream_OpenBzip2.lifecycle_close_does_not_close_source",
             "ftbzip2.FT_Stream_OpenBzip2.error_null_stream_or_source",
             "ftbzip2.FT_Stream_OpenBzip2.error_invalid_or_truncated_bzip2_header",
+            "ftbzip2.FT_Stream_OpenBzip2.mcp_read_gap_matrix",
         }
         and unresolved_assets_reason(row) is None
     ):
@@ -7540,9 +7545,14 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
         return "FT_Gzip_Uncompress no-zlib unimplemented errors validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
     if (
         row.operation == "ftgzip.stream_open_gzip"
-        and row.case_id == "ftgzip.FT_Stream_OpenGzip.opens_valid_gzip_stream"
+        and row.case_id
+        in {
+            "ftgzip.FT_Stream_OpenGzip.opens_valid_gzip_stream",
+            "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix",
+            "ftgzip.FT_Stream_OpenGzip.mcp_read_close_gap_matrix",
+        }
     ):
-        return "FT_Stream_OpenGzip small/large gzip stream success validates stream classes and exact range reads through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+        return "FT_Stream_OpenGzip small/large gzip stream success, header rejection, deferred body fallback, out-of-range reads, null-close safety, and exact range reads validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
     if (
         row.operation == "ftgzip.stream_open_gzip"
         and row.case_id == "ftgzip.FT_Stream_OpenGzip.rejects_invalid_stream_handles"
@@ -7558,6 +7568,11 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
         and row.case_id == "ftgzip.FT_Stream_OpenGzip.reports_unimplemented_without_zlib"
     ):
         return "FT_Stream_OpenGzip no-zlib unimplemented errors validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "ftlzw.stream_open_lzw"
+        and row.case_id == "ftlzw.FT_Stream_OpenLZW.mcp_stream_gap_matrix"
+    ):
+        return "FT_Stream_OpenLZW decoded stream rows and null-close guard validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
     if (
         row.operation == "ftlzw.stream_open_lzw"
         and row.case_id == "ftlzw.FT_Stream_OpenLZW.invalid_header_error"

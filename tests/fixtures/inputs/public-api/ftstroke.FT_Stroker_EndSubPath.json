@@ -5,7 +5,8 @@
     "closed_subpath_closes_two_borders",
     "open_subpath_emits_caps_and_single_border",
     "invalid_stroker",
-    "no_segment_after_begin"
+    "no_segment_after_begin",
+    "mcp_gap_matrix"
   ],
   "cases": [
     {
@@ -286,6 +287,48 @@
         ],
         "notes": [
           "Pinned FreeType 2.14.3 returns OK for the direct closed no-segment EndSubPath status. A following GetCounts on this exact state segfaults in the pinned build, so counts-after-direct-no-segment must not be promoted through the normal same-process route."
+        ]
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Stroker_EndSubPath.mcp_gap_matrix",
+      "subject": "ftstroke.FT_Stroker_EndSubPath",
+      "case": "mcp_gap_matrix",
+      "operation": "ftstroke.end_subpath",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"c45-end-001","params":{"validation":"null_stroker","family":"null_stroker","variant":1},"coverage":["src/ffi/handles.rs:6625-6626"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:stroker",
+        "area:validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Batch safe null-stroker witnesses for the EndSubPath argument guard identified by the advancing Coverage MCP cursor."
+      },
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "symbol": "FT_Stroker_EndSubPath",
+        "signature": "FT_Error FT_Stroker_EndSubPath(FT_Stroker stroker)"
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status"
+          ]
+        },
+        "source_refs": [
+          "src/ffi/handles.rs:6625-6626"
         ]
       }
     }

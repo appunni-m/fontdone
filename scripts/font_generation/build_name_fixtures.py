@@ -171,6 +171,22 @@ def write_postscript_branch_matrix() -> None:
     )
 
 
+def write_mac_non_ascii_family() -> None:
+    records = [
+        # No English Windows family/subfamily records are present, so the
+        # Apple Roman selections below reach `tt_name_ascii_from_other`.
+        NameRecordSpec(1, 0, 1, 16, b"\x80ppleFamily"),
+        NameRecordSpec(1, 0, 0, 17, b"\x80ppleEnglishStyle"),
+        NameRecordSpec(3, 1, 0x0411, 16, utf16be("WinJPFamily")),
+        NameRecordSpec(3, 1, 0x0412, 16, utf16be("WinKRFamily")),
+    ]
+    write_name_payload(
+        BASE_STATIC,
+        NAME_OUT_DIR / "name-mac-nonascii-family.ttf",
+        build_name_table(records),
+    )
+
+
 def write_format1_langtag() -> None:
     records = [
         NameRecordSpec(3, 1, 0x0409, 1, utf16be("LangTag")),
@@ -531,6 +547,25 @@ def write_variable_prefix_branch_matrix() -> None:
     )
 
 
+def write_variable_windows_encoding_zero_prefix() -> None:
+    records = variable_base_without_instance_names()
+    records.extend(
+        [
+            # The unsupported encoding reaches the false arm of the selector;
+            # Windows encoding 0 is then accepted and is distinct from the
+            # Unicode encoding-1 fixtures above.
+            NameRecordSpec(3, 2, 0x0409, 25, utf16be("IgnoredEncoding")),
+            NameRecordSpec(3, 0, 0x0409, 25, utf16be("WinZeroVar")),
+            NameRecordSpec(3, 1, 0x0409, 259, utf16be("Thin")),
+        ]
+    )
+    write_name_payload(
+        BASE_VARIABLE,
+        VARIABLE_OUT_DIR / "variable-name-windows-encoding-zero-prefix.ttf",
+        build_name_table(records),
+    )
+
+
 def write_variable_apple_english_subfamily() -> None:
     records = variable_base_without_instance_names()
     records.extend(
@@ -621,6 +656,36 @@ def write_variable_long_postscript_name() -> None:
         VARIABLE_OUT_DIR / "variable-name-long-postscript.ttf",
         build_name_table(records),
     )
+
+
+def write_variable_without_explicit_default_instance() -> None:
+    """Keep valid fvar/name data while forcing the synthesized-default path."""
+    font = TTFont(BASE_VARIABLE)
+    axes = font["fvar"].axes
+    defaults = {axis.axisTag: axis.defaultValue for axis in axes}
+    font["fvar"].instances = [
+        instance
+        for instance in font["fvar"].instances
+        if any(instance.coordinates.get(tag) != value for tag, value in defaults.items())
+    ]
+    font.save(VARIABLE_OUT_DIR / "variable-name-no-explicit-default.ttf")
+
+
+def write_variable_apple_only_without_explicit_default_instance() -> None:
+    """Use Apple Roman names to exercise the alternate SFNT name predicate."""
+    font = TTFont(BASE_VARIABLE)
+    axes = font["fvar"].axes
+    defaults = {axis.axisTag: axis.defaultValue for axis in axes}
+    font["fvar"].instances = [
+        instance
+        for instance in font["fvar"].instances
+        if any(instance.coordinates.get(tag) != value for tag, value in defaults.items())
+    ]
+    name_table = font["name"]
+    name_table.names = []
+    for name_id, value in ((1, "Ubuntu"), (2, "Regular"), (6, "Ubuntu-Regular")):
+        name_table.setName(value, name_id, 1, 0, 0)
+    font.save(VARIABLE_OUT_DIR / "variable-name-apple-only-no-default.ttf")
 
 
 def write_name_cmap_fixture(
@@ -974,6 +1039,7 @@ def main() -> None:
     write_odd_windows_postscript_with_apple_fallback()
     write_non_ascii_postscript_with_apple_fallback()
     write_postscript_branch_matrix()
+    write_mac_non_ascii_family()
     write_format1_langtag()
     write_format1_langtag_malformed_controls()
     write_format1_invalid_langtag_references()
@@ -990,11 +1056,14 @@ def main() -> None:
     write_variable_unicode_prefix()
     write_variable_odd_windows_prefix()
     write_variable_prefix_branch_matrix()
+    write_variable_windows_encoding_zero_prefix()
     write_variable_apple_english_subfamily()
     write_variable_windows_subfamily_fallback()
     write_variable_subfamily_conversion()
     write_variable_missing_subfamily()
     write_variable_long_postscript_name()
+    write_variable_without_explicit_default_instance()
+    write_variable_apple_only_without_explicit_default_instance()
     write_name_cmap_fixtures()
 
 

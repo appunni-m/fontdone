@@ -319,7 +319,12 @@ impl FaceGlobals {
             }
 
             // Scale
-            let bs = crate::scaler::ScaleMetrics::from_font_data(&self.font_data);
+            // FreeType's auto-hinter receives `face->size->metrics`, which
+            // keeps the public fractional request scales.  The TrueType
+            // driver's integer-ppem scales belong to native bytecode only;
+            // using them here changes x-height optimization at non-integral
+            // character-size requests (`afloader.c:239-283`).
+            let bs = crate::scaler::ScaleMetrics::from_font_data_public_size(&self.font_data);
             let (_, ya) = if cjk_writing_system {
                 cjk_metrics_scale(&mut m, bs.x_scale, bs.y_scale, 0, 0)
             } else {

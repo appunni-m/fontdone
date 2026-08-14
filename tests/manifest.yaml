@@ -1919,6 +1919,10 @@ subjects:
         description: REAL_DIM, BBOX, CELL, and SCALES request types produce C-matching x/y ppem, scales, ascender, descender, height, and max advance.
       - id: success_bitmap_request_match
         description: Bitmap-only or embedded-bitmap faces select or match strikes according to C driver behavior when applicable.
+      - id: success_winfnt_real_dim_matrix
+        description: WinFNT REAL_DIM requests preserve C-matching fixed-strike metrics across rounded dimensions and widths.
+      - id: error_winfnt_unsupported_types
+        description: WinFNT BBOX, CELL, and SCALES requests return the pinned unimplemented-feature error.
       - id: error_null_face_or_request
         description: Null face and null FT_Size_Request pointer return the pinned C error classifications.
       - id: error_invalid_request_or_unavailable_strike
@@ -2894,6 +2898,8 @@ subjects:
         description: Null target or source stream returns Invalid_Stream_Handle and preserves target/source state.
       - id: error_invalid_or_truncated_bzip2_header
         description: Invalid, empty, or truncated compressed data returns the same C error and avoids unnecessary wrapper allocation.
+      - id: mcp_read_gap_matrix
+        description: A 100-variant parity batch exercises the out-of-range decompressed read and null-stream guard paths identified by Coverage MCP.
       - id: disabled_build_precedes_null_validation
         description: In the active pinned build without bzip2 support, FT_Stream_OpenBzip2 returns Unimplemented_Feature before null target/source validation.
       - id: disabled_build_precedes_header_validation
@@ -4685,6 +4691,16 @@ subjects:
         description: An absent FREETYPE_PROPERTIES string leaves the default property path unchanged while an out-of-range glyph index preserves the pinned Invalid_Argument error on every PostScript module.
       - id: hinting_engine_invalid_face_returns_load_error
         description: A maintained non-font byte input reaches the property set/get path but is rejected by FT_New_Memory_Face with the exact pinned load error on every PostScript module.
+      - id: mcp_bitmap_invalid_size_batch
+        description: A valid WinFNT bitmap face with render sizes that miss its only strike reaches the PostScript hinting wrapper's Invalid_Pixel_Size preservation path across all ABI lanes.
+      - id: mcp_wasm_null_file_batch
+        description: One hundred labeled safety variants pass a null file pointer to the WASM PostScript hinting facade and compare its Invalid_Argument guard with the corresponding Rust/C-ABI contract.
+      - id: mcp_wasm_null_output_batch
+        description: One hundred labeled safety variants pass a non-null file pointer and null output pointer to the WASM PostScript hinting facade and compare its Invalid_Argument guard with the corresponding Rust/C-ABI contract.
+      - id: mcp_wasm_post_error_batch
+        description: One hundred valid PostScript font variants exercise the WASM hinting wrapper's post-invalid-property reload and compare the complete slot-preservation result across all ABI lanes.
+      - id: mcp_wasm_type1_modes_batch
+        description: One hundred labeled Type 1 variants exercise force-autohint normal, mono, LCD, and LCD_V load modes across maintained Type 1 font families and render sizes.
     # needs-input: operation=FT_Property_Set and FT_Property_Get; fixture_asset=CFF, Type 1, and CID-keyed Type 1 fonts; params module_name in {"cff","type1","t1cid"}, property_name="hinting-engine", FT_UInt value FT_HINTING_FREETYPE, string value "freetype" when environment-property path is enabled, pinned build variants with and without old-engine support if available; expected output shape=FT_Error plus FT_UInt hinting_engine readback per module and representative glyph load/render status; comparison=exact C oracle macro value, old-engine-dependent acceptance or Unimplemented_Feature, property readback after success/rejection, string-vs-integer behavior, and output preservation on invalid values.
 
   - id: ftdriver.TT_INTERPRETER_VERSION_35
@@ -4731,6 +4747,10 @@ subjects:
         description: The pinned build default readback is 40 because ttobjs.c initializes the TrueType driver to TT_INTERPRETER_VERSION_40 when TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL is defined.
       - id: glyph_hinting_runtime_effect
         description: A TrueType glyph loaded after setting this value follows the pinned C version-40 bytecode interpreter behavior.
+      - id: mcp_wasm_null_file_batch
+        description: A retained null-file safety witness, selected from a 100-variant MCP probe batch, compares the WASM interpreter-version facade's Invalid_Argument guard with the corresponding Rust/C-ABI contract.
+      - id: mcp_wasm_invalid_face_batch
+        description: A retained zero-length-file witness, selected from a 100-variant MCP probe batch, exercises the WASM interpreter-version face-open error arm against the real C contract; the other 99 variants added no line, branch, or region coverage.
     # needs-input: operation=FT_Property_Get, FT_Property_Set, FT_New_Face, FT_Set_Char_Size, and FT_Load_Glyph; fixture_asset=TrueType font with bytecode sensitive to version-40 minimal subpixel hinting, GETINFO, backward compatibility, and phantom-point behavior; params module_name="truetype", property_name="interpreter-version", initial get before set, FT_UInt value TT_INTERPRETER_VERSION_40, string value "40" when environment-property path is enabled, invalid value controls; expected output shape=FT_Error plus FT_UInt initial and post-set interpreter_version readback, representative glyph metrics/outline/bitmap hashes, and GETINFO-observable behavior if fixture exposes it; comparison=exact C oracle macro value, default readback for pinned build config, set/get error codes, readback 40 or Unimplemented_Feature per build config, hinting outputs, string-vs-integer behavior, and output preservation on invalid values.
     # note: scalar property/default cases intentionally declare no font asset; only glyph_hinting_runtime_effect awaits the maintained bytecode-interpreter-version and backward-compat-phantom-points inputs.
   - id: ftdriver.FT_Prop_GlyphToScriptMap
@@ -6292,6 +6312,8 @@ subjects:
         description: A detached bitmap glyph created from an embedded bitmap slot with FT_Get_Glyph owns its bitmap buffer and is released once by FT_Done_Glyph.
       - id: success_null_is_noop
         description: Passing a null glyph returns without reading library memory or mutating observable state.
+      - id: mcp_null_handle_batch
+        description: A null pointer through the WASM handle-based done facade takes the no-op fallback and preserves the void result.
       - id: lifetime_before_library_done
         description: Detached glyphs are owned by the caller and must be destroyed before the owning library is finalized; fixture comparison records C lifetime ordering and invalid-use behavior through the FFI facade.
       - id: outline_glyph_before_library_done
@@ -6311,6 +6333,10 @@ subjects:
         description: When SVG glyph support is enabled and the slot contains a valid FT_SVG_Document, copies the SVG document bytes, metrics, glyph range, transform, and delta into FT_SvgGlyphRec.
       - id: error_null_slot_or_output
         description: A null slot returns FT_Err_Invalid_Slot_Handle, a null aglyph returns FT_Err_Invalid_Argument, and C output write/preservation behavior is recorded exactly.
+      - id: mcp_null_face_handle_batch
+        description: A null face handle through the WASM glyph-from-face wrapper returns the same Invalid_Slot_Handle and preserves the output pointer as the direct C contract.
+      - id: mcp_unimplemented_output_clear_batch
+        description: Nonzero synthetic slot-presence values through the WASM FT_Get_Glyph facade return Unimplemented_Feature and clear the caller output pointer.
       - id: error_unsupported_synthetic_format
         description: A live glyph slot with a synthetic unsupported public format returns FT_Err_Invalid_Glyph_Format and preserves the caller's output glyph pointer.
       - id: error_unsupported_format_or_bad_slot_payload
@@ -6338,6 +6364,10 @@ subjects:
         description: A zero-length SVG record with a still-valid document pointer returns before reading the pointer, proving the pinned C validation order without invoking undefined memory.
       - id: error_copy_hook_failure_cleans_target
         description: Allocation or class copy failure destroys the partial copy and leaves the returned target null.
+      - id: mcp_bitmap_sync_error_batch
+        description: Undersized WASM bitmap-record buffers return FT_Err_Invalid_Argument before the public bitmap payload is read and clear the copy target.
+      - id: mcp_svg_format_error_batch
+        description: Unsupported root formats published through the WASM SVG-glyph record return FT_Err_Invalid_Glyph_Format after record synchronisation and leave the copy target null.
     # needs-input: operation=FT_Get_Glyph then FT_Glyph_Copy; fixture_asset=outline, bitmap, and SVG fonts where available plus allocation-failure facade; params={glyph_kind, source_mutation_after_copy, source_destroy_before_target, null_source, null_target, bad_class}; output shape={FT_Error, target nullness, copied root fields, outline arrays/bitmap bytes/SVG bytes, allocation/free events}; comparison=exact C oracle deep-copy contents, independence after source mutation/free, and error cleanup.
   - id: ftglyph.FT_Glyph_Get_CBox
     kind: function
@@ -6355,6 +6385,8 @@ subjects:
         description: A null acbox returns immediately without zeroing or touching caller memory.
       - id: mode_aliases_and_unknown_modes
         description: UNSCALED and SUBPIXELS are both mode 0; unknown mode values only receive the raw class cbox because no gridfit or pixel conversion branch is selected.
+      - id: mcp_svg_cbox_batch
+        description: A 100-variant maintained OT-SVG batch exercises the valid SVG glyph class path, whose CBox hook is absent and therefore writes a zero box for every public bbox mode.
     # needs-input: operation=FT_Get_Glyph then FT_Glyph_Get_CBox; fixture_asset=outline glyphs with negative bearings/control points, bitmap glyphs with varied left/top, SVG glyph when enabled; params={bbox_mode:0,1,2,3,unknown, null_glyph, null_acbox}; output shape={FT_BBox xMin/yMin/xMax/yMax and write/no-write classification}; comparison=exact C oracle bbox fields including floor/ceil/truncate behavior and no-op behavior for null acbox.
   - id: ftglyph.FT_Glyph_To_Bitmap
     kind: function
@@ -6368,6 +6400,12 @@ subjects:
         description: Converts an outline glyph and destroys the original glyph only after successful bitmap creation and rendering.
       - id: success_already_bitmap_noop
         description: Passing a bitmap glyph returns FT_Err_Ok and leaves the glyph handle, bitmap bytes, and ownership unchanged.
+      - id: mcp_bitmap_noop_batch
+        description: A maintained bitmap-strike witness exercises the valid already-bitmap early-success path in the exported WASM FT_Glyph_To_Bitmap wrapper.
+      - id: mcp_null_handle_batch
+        description: A null output-handle pointer through the exported WASM FT_Glyph_To_Bitmap wrapper returns FT_Err_Invalid_Argument before dereferencing or allocating.
+      - id: mcp_null_glyph_handle_batch
+        description: A non-null output pointer containing a null glyph handle takes the exported WASM FT_Glyph_To_Bitmap invalid-glyph fallback and returns FT_Err_Invalid_Argument.
       - id: success_origin_translation_affects_render
         description: A non-null origin translates the glyph before rendering, affects bitmap left/top and pixels like C, and is undone on the original glyph when destroy is false.
       - id: pending_stroked_mono_target_outline_to_bitmap
@@ -6960,6 +6998,8 @@ subjects:
         description: Fonts without GX validator support or malformed requested tables return the same public error as C.
       - id: reports_unimplemented_when_validator_module_is_absent
         description: An openable GX face reports Unimplemented_Feature when the optional gxvalid module is absent and leaves a zero-length output array untouched.
+      - id: mcp_version1_kern_batch
+        description: A targeted parity case uses a synthetic Apple version-1 kern header to execute the GX validator's version-1 kern branch.
     # needs-input: operation=FT_TrueTypeGX_Validate; fixture_asset=AAT/GX fonts with feat/mort/morx/bsln/just/kern/opbd/trak/prop/lcar coverage, plus fonts without GX tables and malformed table variants; params validation_flags single-bit, multi-bit, FT_VALIDATE_GX, zero, unknown bits, and table_length 0/short/full; expected output shape=FT_Error plus tables array slot null/non-null and bytes/hash; comparison=exact C oracle error code, per-slot presence class, copied table bytes/hash, output preservation on errors, and same behavior for absent tables.
 
   - id: ftgzip.FT_Gzip_Uncompress
@@ -6992,6 +7032,10 @@ subjects:
         description: Null target or source stream reports Invalid_Stream_Handle like C.
       - id: rejects_invalid_gzip_header
         description: Non-gzip or malformed gzip headers return the same public error as C before allocating a wrapper.
+      - id: mcp_stream_gap_matrix
+        description: Batch parity inputs exercise gzip invalid-header, decode-error, empty-stream, and threshold branches selected from the current coverage snapshot.
+      - id: mcp_read_close_gap_matrix
+        description: Batch parity inputs exercise an out-of-range decompressed read and the null-close guard selected from the current coverage snapshot.
       - id: reports_unimplemented_without_zlib
         description: Builds without zlib support return Unimplemented_Feature for the same call surface.
     # needs-input: operation=FT_Stream_OpenGzip then stream read/close; fixture_asset=small gzip font/PCF payload under the in-memory threshold, large gzip payload over the streaming threshold, malformed gzip header, and plain uncompressed bytes; params source stream positions 0/nonzero and read ranges at beginning/middle/end; expected output shape=FT_Error plus opened stream fields and read bytes; comparison=exact C oracle error code, stream size/base/read/close presence class, decompressed read bytes/hash, source stream lifetime behavior, and close behavior.
@@ -8304,6 +8348,8 @@ subjects:
         description: With LZW support enabled, a source stream without the LZW magic/header returns the same C error before allocating the LZW descriptor.
       - id: null_stream_or_source_error
         description: A null target stream or source stream returns FT_Err_Invalid_Stream_Handle.
+      - id: mcp_stream_gap_matrix
+        description: Batch parity inputs exercise the null LZW close guard selected from the current coverage snapshot.
       - id: unsupported_build_error
         description: Without FT_CONFIG_OPTION_USE_LZW, the exported function returns FT_Err_Unimplemented_Feature for all arguments.
     # needs-input: operation=FT_Stream_OpenLZW then stream read/seek/close; fixture_asset=small valid .pcf.Z or synthetic .Z binary, dictionary/width/CLEAR/non-block streams, valid-magic malformed .Z binaries, invalid-header binary, and FT_Stream memory wrapper records; params={lzw_enabled:false/true, target_stream:null/valid, source_stream:null/valid, read_offsets:[0,forward,forward,backward], read_counts:[0,64,64,full], null_buffer_zero_count:true}; output shape={FT_Error, target stream field snapshot, decoded byte chunks/hash, close side effects, source stream ownership class}; comparison=exact C oracle error code, stream field mutation, decoded bytes, forward dictionary/CLEAR/malformed decoding, reset-to-zero behavior, and unsupported-build classification.
@@ -8908,6 +8954,8 @@ subjects:
       # needs-input: operation=FT_Done_Library; fixture asset=font with opened face and default modules; params={library: initialized}; output shape={FT_Error, module destructor order, face closure status}; comparison=exact C success and reverse module removal behavior.
       - id: final_destroy_closes_faces_and_modules
         description: Final destruction closes driver faces, removes modules in reverse table order, frees the library, and returns FT_Err_Ok.
+      - id: mcp_null_handle_batch
+        description: Coverage MCP batch of thirty-three concrete null-library calls exercises FT_Done_Library's Invalid_Library_Handle return.
 
   - id: ftmodapi.FT_Get_Module
     kind: function
@@ -8953,6 +9001,8 @@ subjects:
       # needs-input: operation=FT_New_Library; fixture asset=none; params={memory: allocator that fails library allocation, alibrary: sentinel}; output shape={FT_Error, alibrary sentinel preservation}; comparison=exact C allocation error and no output write.
       - id: allocation_failure_preserves_output
         description: If allocating the library object fails, C returns the allocator error and does not modify *alibrary.
+      - id: mcp_null_memory_batch
+        description: Coverage MCP batch of thirty-four concrete null-memory calls exercises FT_New_Library's Invalid_Argument return.
 
   - id: ftmodapi.FT_Property_Get
     kind: function
@@ -9004,6 +9054,8 @@ subjects:
       # needs-input: operation=FT_Reference_Library; fixture asset=none; params={library: null}; output shape={FT_Error}; comparison=exact C FT_Err_Invalid_Library_Handle.
       - id: rejects_null_library
         description: Null library returns Invalid_Library_Handle.
+      - id: mcp_null_handle_batch
+        description: Coverage MCP batch of thirty-three concrete null-library calls exercises FT_Reference_Library's Invalid_Library_Handle return.
 
   - id: ftmodapi.FT_Remove_Module
     kind: function
@@ -9542,6 +9594,10 @@ subjects:
         description: For a non-null face, the table is released through the face memory allocator exactly once.
       - id: null_table_noop
         description: Passing a null table with a valid face is accepted as the C FT_FREE macro path defines.
+      - id: mcp_gap_matrix
+        description: A 100-variant parity batch probes OpenType validation's non-SFNT, versioned-GDEF, ownership, and malformed-table paths identified by Coverage MCP.
+      - id: mcp_c_abi_unowned_table_free_batch
+        description: A 100-variant parity batch passes a valid face and a non-null table pointer not owned by that face, exercising the C ABI ownership-rejection path selected by Coverage MCP.
     # needs-input: operation=FT_OpenType_Validate followed by FT_OpenType_Free; fixture_asset=OpenType font producing at least one non-null validation table; params={face_valid, table_null, table_from_validate, double_free_attempt=false}; expected output shape={void_status, allocator free event count, pointer identity class}; comparison=exact C oracle no-op/free behavior and absence of observable output mutation.
 
   - id: ftotval.FT_OpenType_Validate
@@ -9667,6 +9723,8 @@ subjects:
         description: Points, tags, contour ends, and source flags are copied exactly while preserving the target FT_OUTLINE_OWNER bit.
       - id: self_copy_noop
         description: Passing the same outline for source and target returns success without changing data.
+      - id: self_copy_noop_batch
+        description: Retained self-copy witness for the same-pointer success path selected by Coverage MCP after pruning a 100-case probe.
       - id: invalid_pointer_or_size_mismatch
         description: Null source or target returns Invalid_Outline, while point or contour count mismatch returns Invalid_Argument.
     # needs-input: operation=FT_Outline_Copy; fixture_asset=synthetic outlines plus loaded glyph outlines from tests/fixtures/input/fonts/DejaVuSans.ttf; params={source_outline, target_outline, target_owner_flag}; expected output shape={FT_Error, target_points, target_tags, target_contours, target_flags}; comparison=exact C oracle arrays, flags, and error code.
@@ -9687,6 +9745,8 @@ subjects:
         description: A non-zero callback return stops traversal and is returned unchanged.
       - id: invalid_outline_or_interface_errors
         description: Null outline returns Invalid_Outline, null callback interface returns Invalid_Argument, cubic-first contours and malformed cubic pairs return Invalid_Outline.
+      - id: trace_validation_matrix
+        description: The decomposition trace rejects null snapshots, out-of-range point coordinates, and malformed conic tag sequences with Invalid_Outline.
     # needs-input: operation=FT_Outline_Decompose; fixture_asset=synthetic line/conic/cubic/malformed outline binaries and CFF/TrueType glyph outlines; params={points, tags, contours, shift, delta, callback_failure_at}; expected output shape={FT_Error, ordered_callback_events}; comparison=exact C oracle events, transformed coordinates, and propagated error.
 
   - id: ftoutln.FT_Outline_Done
@@ -9715,6 +9775,8 @@ subjects:
         description: Strength values that halve to zero return success without changing outline points.
       - id: invalid_or_indeterminate_orientation_errors
         description: Null outlines return Invalid_Outline, and non-empty outlines whose orientation is NONE return Invalid_Argument.
+      - id: mcp_gap_matrix
+        description: A focused validation case exercises out-of-range point conversion and strength conversion fallback on an empty outline.
     # needs-input: operation=FT_Outline_Embolden and FT_Outline_EmboldenXY; fixture_asset=TrueType and CFF outline glyphs plus synthetic zero-area outline; params={glyph_index, size, load_flags, strength}; expected output shape={FT_Error, mutated_points, cbox, orientation_before}; comparison=exact C oracle error code and 26.6 point/cbox values.
 
   - id: ftoutln.FT_Outline_EmboldenXY
@@ -9771,6 +9833,8 @@ subjects:
         description: Collapsed cboxes, zero area, and cboxes outside +/-0x1000000 return NONE.
       - id: transformed_and_reversed_outlines
         description: FT_Outline_Reverse and sign-changing transforms flip the orientation result exactly as C reports.
+      - id: mcp_gap_matrix
+        description: A focused validation case drives the pure-Rust orientation conversion guard for an FT_Pos coordinate outside the core i32 range.
     # needs-input: operation=FT_Outline_Get_Orientation after optional FT_Outline_Reverse/Transform; fixture_asset=synthetic oriented outlines and loaded glyph outlines from tests/fixtures/input/fonts/DejaVuSans.ttf; params={points, contours, transform_matrix, reverse_before_check}; expected output shape={orientation_enum}; comparison=exact C oracle enum result.
 
   - id: ftoutln.FT_Outline_New
@@ -9803,6 +9867,8 @@ subjects:
         description: AA plus DIRECT rendering accepts a null target bitmap, derives its working extent from the outline CBox, and emits the same spans and clip-box mutation as C.
       - id: renderer_fallback_and_errors
         description: Null library, null outline, null params, oversized cbox, invalid target, missing callbacks, and unsupported renderer modes return the same C error code.
+      - id: direct_validation_matrix
+        description: AA plus DIRECT rendering validates null library, null outline, missing DIRECT flags, and oversized outline CBoxes with the same C error codes.
     # needs-input: operation=FT_Outline_Render; fixture_asset=outline glyphs from tests/fixtures/input/fonts/DejaVuSans.ttf plus synthetic clipped, empty, malformed, and oversized outlines; params={FT_Raster_Params flags, target bitmap, gray_spans callback, clip_box}; expected output shape={FT_Error, mutated params.source, clip_box, bitmap bytes/hash, span event log}; comparison=exact C oracle fields, byte output/spans, and error code.
 
   - id: ftoutln.FT_Outline_Reverse
@@ -10184,6 +10250,8 @@ subjects:
       # needs-input: Open a scalable font, call FT_New_Size, set a pixel size only after FT_Activate_Size, and compare status plus resulting size metrics and glyph metrics against C FreeType exactly.
       - id: create_secondary_size_success
         description: A valid face and output pointer produce a non-null secondary size that can be activated and used.
+      - id: mcp_out_success_batch
+        description: A 100-variant maintained-face batch exercises the valid output-pointer success bookkeeping in the exported WASM FT_New_Size wrapper.
       # needs-input: Call FT_New_Size with null face and valid output pointer; compare exact FT_Err_Invalid_Face_Handle and null output.
       - id: null_face_error
         description: A null face returns Invalid_Face_Handle.
@@ -10432,6 +10500,16 @@ subjects:
         description: With destroy set, C releases the original glyph after the replacement glyph is successfully built.
       - id: invalid_glyph_arguments
         description: Null pglyph, null glyph, and non-outline glyph inputs return Invalid_Argument.
+      - id: mcp_null_outline_handle_batch
+        description: A null detached-glyph handle through the WASM outline-stroke support path returns FT_Err_Invalid_Argument before stroker allocation.
+      - id: mcp_null_stroker_library_batch
+        description: A valid outline glyph with a null stroker library handle returns FT_Err_Invalid_Library_Handle before stroker allocation.
+      - id: mcp_null_destroy_handle_batch
+        description: A null detached-glyph handle through the WASM destroy-option stroker support path returns FT_Err_Invalid_Argument before stroker allocation.
+      - id: mcp_null_destroy_stroker_library_batch
+        description: A valid outline glyph with a null stroker library handle through the WASM destroy-option support path returns FT_Err_Invalid_Library_Handle before stroker allocation.
+      - id: mcp_invalid_destroy_outline_batch
+        description: A malformed outline through the WASM destroy-option stroker support path returns FT_Err_Invalid_Outline from the stroker result arm.
       - id: invalid_outline_parse_rejected
         description: A loaded outline with a cubic first point is rejected by the public glyph-stroke ParseOutline path.
       - id: failure_sets_output_null_when_preserving_original
@@ -10452,6 +10530,20 @@ subjects:
         description: With destroy set, C releases the original glyph only after a replacement border glyph is successfully built.
       - id: invalid_glyph_arguments
         description: Null pglyph, null glyph, and non-outline glyph inputs return Invalid_Argument.
+      - id: mcp_null_outside_handle_batch
+        description: A null detached-glyph handle through the WASM outside-border stroker support path returns Invalid_Argument before stroker allocation.
+      - id: mcp_null_outside_library_batch
+        description: A valid outline glyph with a null library through the WASM outside-border stroker support path returns Invalid_Library_Handle before stroker allocation.
+      - id: mcp_null_inside_handle_batch
+        description: A null detached-glyph handle through the WASM inside-border stroker support path returns Invalid_Argument before stroker allocation.
+      - id: mcp_null_inside_library_batch
+        description: A valid outline glyph with a null library through the WASM inside-border stroker support path returns Invalid_Library_Handle before stroker allocation.
+      - id: mcp_null_destroy_handle_batch
+        description: A null detached-glyph handle through the WASM border destroy-option stroker support path returns Invalid_Argument before stroker allocation.
+      - id: mcp_null_destroy_library_batch
+        description: A valid outline glyph with a null library through the WASM border destroy-option stroker support path returns Invalid_Library_Handle before stroker allocation.
+      - id: mcp_invalid_destroy_outline_batch
+        description: A malformed outline through the WASM border destroy-option stroker support path returns Invalid_Outline from the stroker result arm.
       - id: invalid_outline_parse_rejected
         description: A loaded outline with a cubic first point is rejected by the public border-stroke ParseOutline path.
     # fixture-backed invalid-input route: operation=FT_Glyph_StrokeBorder with null pglyph, null glyph, and a loaded outline plus null stroker; fixture_asset=tests/fixtures/input/fonts/DejaVuSans.ttf; params={glyph_index,load_flags,scenarios,inside,destroy}; expected output shape={rows[*].status,rows[*].pglyph_after}; comparison=exact pinned-C error matrix.
@@ -10514,6 +10606,8 @@ subjects:
         description: A nearly coincident control/end curve updates the center and produces no border geometry.
       - id: invalid_arguments
         description: Null stroker, control vector, or destination vector returns Invalid_Argument.
+      - id: mcp_gap_matrix
+        description: 23 parity variants append nonzero segments after the maintained conic and probe integer-rounded conic and cubic subdivision collapse.
     # needs-input: operation=FT_Stroker_BeginSubPath/ConicTo/EndSubPath/GetCounts/Export; fixture_asset=synthetic conic path records including coincident and high-curvature cases; params={start,control,to,open,radius,line_cap,line_join,miter_limit}; expected output shape={FT_Error, point_count, contour_count, exported_outline points/tags/contours, cbox}; comparison=exact C oracle status, counts, and 26.6 outline geometry.
 
   - id: ftstroke.FT_Stroker_CubicTo
@@ -10530,6 +10624,8 @@ subjects:
         description: A nearly coincident cubic updates the center and produces no border geometry.
       - id: invalid_arguments
         description: Null stroker, either control vector, or destination vector returns Invalid_Argument.
+      - id: mcp_gap_matrix
+        description: 11 parity variants probe cubic subdivision arcs whose integer-rounded control points collapse and drive the fixed subdivision limit.
     # needs-input: operation=FT_Stroker_BeginSubPath/CubicTo/EndSubPath/GetCounts/Export; fixture_asset=synthetic cubic path records including coincident, inflection, and high-curvature cases; params={start,control1,control2,to,open,radius,line_cap,line_join,miter_limit}; expected output shape={FT_Error, point_count, contour_count, exported_outline points/tags/contours, cbox}; comparison=exact C oracle status, counts, and 26.6 outline geometry.
 
   - id: ftstroke.FT_Stroker_Done
@@ -10560,6 +10656,8 @@ subjects:
         description: Null stroker returns Invalid_Argument.
       - id: no_segment_after_begin
         description: A subpath that never received a drawable segment remains effectively empty when parsed through the public outline parser.
+      - id: mcp_gap_matrix
+        description: Batch safe null-stroker EndSubPath witnesses cover the argument guard identified by Coverage MCP.
     # needs-input: operation=FT_Stroker_BeginSubPath with LineTo/ConicTo/CubicTo then EndSubPath/GetBorderCounts/ExportBorder; fixture_asset=synthetic open line, closed triangle, and empty/degenerate subpaths; params={open,line_cap,line_join,radius,path}; expected output shape={FT_Error, left/right point_count, left/right contour_count, border outlines}; comparison=exact C oracle status, per-border counts, and 26.6 outline geometry.
 
   - id: ftstroke.FT_Stroker_Export
@@ -10606,6 +10704,8 @@ subjects:
         description: Null stroker or border values greater than 1 return Invalid_Argument and write zero counts where output pointers are non-null.
       - id: optional_output_pointers
         description: Null output count pointers are accepted and skipped while the function still returns the C status.
+      - id: mcp_gap_matrix
+        description: Batch safe witnesses cover both sides of the GetBorderCounts null-stroker-or-invalid-border guard identified by Coverage MCP.
     # needs-input: operation=FT_Stroker_BeginSubPath/LineTo/EndSubPath/GetBorderCounts; fixture_asset=synthetic open and closed paths; params={border,output_pointer_mask,path,radius,line_cap,line_join}; expected output shape={FT_Error, num_points, num_contours}; comparison=exact C oracle status and integer counts, including zeroing on invalid inputs.
 
   - id: ftstroke.FT_Stroker_GetCounts
@@ -10622,6 +10722,8 @@ subjects:
         description: Null stroker returns Invalid_Argument and writes zero counts where output pointers are non-null.
       - id: optional_output_pointers
         description: Null output count pointers are accepted and skipped while the function still returns the C status.
+      - id: mcp_gap_matrix
+        description: Batch safe null-stroker GetCounts witnesses cover the argument guard identified by Coverage MCP.
     # needs-input: operation=FT_Stroker_BeginSubPath/LineTo/ConicTo/CubicTo/EndSubPath/GetCounts; fixture_asset=synthetic open, closed, and mixed curve paths; params={output_pointer_mask,path,radius,line_cap,line_join,miter_limit}; expected output shape={FT_Error, num_points, num_contours}; comparison=exact C oracle status and integer counts, cross-checked against exported outline lengths.
 
   - id: ftstroke.FT_Stroker_LineTo
@@ -10638,6 +10740,8 @@ subjects:
         description: A destination equal to the current center is a no-op and avoids creating a spurious corner.
       - id: invalid_arguments
         description: Null stroker or null destination vector returns Invalid_Argument.
+      - id: mcp_gap_matrix
+        description: Retained public witnesses drive the closed-line finalizer through non-horizontal, non-default-radius, and non-round-join states.
     # needs-input: operation=FT_Stroker_BeginSubPath/LineTo/EndSubPath/GetCounts/Export; fixture_asset=synthetic line path records including zero-length and sharp-corner paths; params={start,to,open,radius,line_cap,line_join,miter_limit}; expected output shape={FT_Error, point_count, contour_count, exported_outline points/tags/contours, cbox}; comparison=exact C oracle status, counts, and 26.6 outline geometry.
 
   - id: ftstroke.FT_Stroker_New
@@ -10672,6 +10776,8 @@ subjects:
         description: Null stroker returns Invalid_Argument after the outline null check.
       - id: degenerate_contours_skipped
         description: Empty or single-point contours are skipped without generating subpath output.
+      - id: mcp_gap_matrix
+        description: Retained public witnesses cover ParseOutline null and malformed-outline validation guards identified from Coverage MCP.
     # needs-input: operation=FT_Stroker_ParseOutline/GetCounts/Export; fixture_asset=synthetic outline records with line, conic, cubic, implied conic, malformed cubic, and degenerate contour cases plus glyph outlines from tests/fixtures/input/fonts/DejaVuSans.ttf; params={opened,radius,line_cap,line_join,miter_limit,outline}; expected output shape={FT_Error, point_count, contour_count, exported_outline points/tags/contours, cbox}; comparison=exact C oracle status, parse event effects, counts, and 26.6 outline geometry.
 
   - id: ftstroke.FT_Stroker_Rewind
@@ -10720,6 +10826,8 @@ subjects:
         description: A non-null unparsed stroker handle can be constructed, configured, exported as a no-op, rewound, and destroyed with the same observable status and no-crash behavior as C.
       - id: lifecycle_contract
         description: Handles produced by FT_Stroker_New are consumed by FT_Stroker_Set, path commands, export/count queries, and FT_Stroker_Done.
+      - id: mcp_gap_matrix
+        description: Retained public witnesses cover safe constructor and BeginSubPath null-argument validation guards.
     # needs-input: operation=C import/ABI compile probe plus FT_Stroker_New/Done lifecycle fixture; fixture_asset=small C translation unit and no-font lifecycle run; params={include=freetype/ftstroke.h, declare_handle, pass_to_public_functions}; expected output shape={compile_status, pointer_size, lifecycle FT_Error sequence}; comparison=exact C compiler success, ABI pointer shape, and constructor/destructor status.
   - id: ftsynth.FT_GlyphSlot_AdjustWeight
     kind: function
@@ -10817,6 +10925,8 @@ subjects:
         description: A caller-owned external FT_StreamRec with base/size and close callback opens a face and preserves the same face flags, close-call count, and stream lifetime as C.
       - id: callback_stream_field_contract
         description: Callback streams use descriptor/pathname unions plus read and close function pointers without changing the public record shape.
+      - id: mcp_wasm_external_stream_error_batch
+        description: One hundred labeled non-null zero-length-file probes exercise the WASM external-stream face-open error arm against the real C contract before pruning redundant witnesses.
     # needs-input: operation=C ABI layout probe plus FT_Open_Args external stream fixture; fixture_asset=in-memory font bytes and custom callback stream binary harness; params={initial FT_StreamRec fields, read callback behavior, close callback behavior}; expected output shape={sizeof, alignof, field_offsets, stream positions, callback event log, face load status}; comparison=exact C ABI layout and stream callback observations.
 
   - id: ftsystem.FT_Memory
@@ -10831,6 +10941,10 @@ subjects:
         description: The handle has pointer size/alignment and is passed unchanged to alloc, free, and realloc callbacks.
       - id: custom_allocator_runtime_events
         description: A library initialized with custom memory records routes allocation, reallocation, and free events through the supplied callbacks.
+      - id: mcp_open_type_allocator_edges_batch
+        description: A 100-variant Coverage MCP batch drives the C ABI's live custom allocator through zero-length OpenType table retention, allocation failure, and a missing free callback after allocation; the Rust FFI and WASM routes retain the same lifecycle contract while the C ABI wrapper owns the raw callback edge cases.
+      - id: mcp_cabi_wrapper_edges_batch
+        description: A 100-variant Coverage MCP batch groups stream, cache, allocator, OpenType, and scaler edge probes behind the thin Rust C-ABI wrapper while the Rust FFI and WASM routes retain the same lifecycle contract.
     # needs-input: operation=FT_New_Library with custom FT_MemoryRec followed by face load and FT_Done_Library; fixture_asset=valid small font bytes; params={allocator success/failure plan, realloc behavior}; expected output shape={ABI pointer layout, callback event log, FT_Error, allocation counts}; comparison=exact C oracle callback order, pointer classes, and returned status.
 
   - id: ftsystem.FT_Stream

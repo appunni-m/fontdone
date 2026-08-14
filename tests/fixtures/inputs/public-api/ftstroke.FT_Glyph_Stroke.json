@@ -5,6 +5,11 @@
     "outline_glyph_stroked_success",
     "destroy_original_option",
     "invalid_glyph_arguments",
+    "mcp_null_outline_handle_batch",
+    "mcp_null_stroker_library_batch",
+    "mcp_null_destroy_handle_batch",
+    "mcp_null_destroy_stroker_library_batch",
+    "mcp_invalid_destroy_outline_batch",
     "invalid_outline_parse_rejected",
     "failure_sets_output_null_when_preserving_original"
   ],
@@ -212,7 +217,307 @@
       }
     },
     {
-      "case_id": "ftstroke.FT_Glyph_Stroke.invalid_outline_parse_rejected",
+      "case_id": "ftstroke.FT_Glyph_Stroke.mcp_null_outline_handle_batch",
+      "subject": "ftstroke.FT_Glyph_Stroke",
+      "case": "mcp_null_outline_handle_batch",
+      "operation": "ftstroke.glyph_stroke",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c69-null-outline-handle-001",
+            "assets": {},
+            "params": {
+              "null_outline_handle_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3854"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:coverage",
+        "runtime:wasm-facade",
+        "null_validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the invalid-handle return in abi_support_glyph_stroke_outline_success. The 100 probes pass handle zero to the WASM support helper while Rust and C exercise the corresponding null outline argument contract; the batch is pruned by measured line and region delta."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "caller_handle_class": "null",
+          "probe": "null_outline_handle=<value>"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "probe",
+            "caller_handle_class"
+          ]
+        },
+        "source_refs": [
+          "freetype/include/freetype/ftstroke.h",
+          "fontdone-wasm/src/implementation.rs:3851-3854",
+          "src/ffi/handles.rs:2557-2565"
+        ],
+        "error": "FT_Err_Invalid_Argument"
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_Stroke.mcp_null_stroker_library_batch",
+      "subject": "ftstroke.FT_Glyph_Stroke",
+      "case": "mcp_null_stroker_library_batch",
+      "operation": "ftstroke.glyph_stroke",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c70-null-stroker-library-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "glyph_index": 36,
+              "size_26_6": 1536,
+              "load_flags": [
+                "FT_LOAD_NO_BITMAP"
+              ],
+              "null_stroker_library_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3870"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:coverage",
+        "runtime:wasm-facade",
+        "null_validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the FT_Stroker_New error return in abi_support_glyph_stroke_outline_success. The 100 probes preserve a valid outline glyph long enough to pass a null library handle to the WASM support path; Rust and C call the same null-library contract directly, and the batch is pruned by measured line and region delta."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "library_handle_class": "null",
+          "probe": "null_stroker_library=<value>"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "probe",
+            "library_handle_class"
+          ]
+        },
+        "source_refs": [
+          "freetype/include/freetype/ftstroke.h:252-270",
+          "freetype/src/base/ftstroke.c:793-815",
+          "fontdone-wasm/src/implementation.rs:3851-3870"
+        ],
+        "error": "FT_Err_Invalid_Library_Handle"
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_Stroke.mcp_null_destroy_handle_batch",
+      "subject": "ftstroke.FT_Glyph_Stroke",
+      "case": "mcp_null_destroy_handle_batch",
+      "operation": "ftstroke.glyph_stroke",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c71-null-destroy-handle-001",
+            "assets": {},
+            "params": {
+              "null_destroy_handle_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3898"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:coverage",
+        "runtime:wasm-facade",
+        "null_validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the invalid-handle return in abi_support_glyph_stroke_destroy_option. The 100 probes pass handle zero through the WASM destroy-option support path while Rust and C exercise the corresponding null glyph contract; the batch is pruned by measured line and region delta."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "caller_handle_class": "null",
+          "probe": "null_destroy_handle=<value>"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "probe",
+            "caller_handle_class"
+          ]
+        },
+        "source_refs": [
+          "freetype/include/freetype/ftstroke.h:690-723",
+          "freetype/src/base/ftstroke.c:2248-2264",
+          "fontdone-wasm/src/implementation.rs:3894-3898",
+          "src/ffi/handles.rs:2557-2565"
+        ],
+        "error": "FT_Err_Invalid_Argument"
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_Stroke.mcp_null_destroy_stroker_library_batch",
+      "subject": "ftstroke.FT_Glyph_Stroke",
+      "case": "mcp_null_destroy_stroker_library_batch",
+      "operation": "ftstroke.glyph_stroke",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c72-null-destroy-stroker-library-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "glyph_index": 36,
+              "size_26_6": 1536,
+              "load_flags": [
+                "FT_LOAD_NO_BITMAP"
+              ],
+              "null_destroy_stroker_library_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3912"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:coverage",
+        "runtime:wasm-facade",
+        "null_validation"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the FT_Stroker_New error return in abi_support_glyph_stroke_destroy_option. The 100 probes preserve a valid outline glyph long enough to pass a null library handle to the WASM destroy-option support path; Rust and C exercise the same null-library constructor contract, and the batch is pruned by measured line and region delta."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "library_handle_class": "null",
+          "probe": "null_destroy_stroker_library=<value>"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "probe",
+            "library_handle_class"
+          ]
+        },
+        "source_refs": [
+          "freetype/include/freetype/ftstroke.h:252-270",
+          "freetype/src/base/ftstroke.c:793-815",
+          "fontdone-wasm/src/implementation.rs:3888-3912"
+        ],
+        "error": "FT_Err_Invalid_Library_Handle"
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_Stroke.mcp_invalid_destroy_outline_batch",
+      "subject": "ftstroke.FT_Glyph_Stroke",
+      "case": "mcp_invalid_destroy_outline_batch",
+      "operation": "ftstroke.glyph_stroke",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c73-invalid-destroy-outline-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "glyph_index": 36,
+              "size_26_6": 1536,
+              "load_flags": [
+                "FT_LOAD_NO_BITMAP"
+              ],
+              "invalid_outline": "cubic_first_contour",
+              "invalid_destroy_outline_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3929"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:coverage",
+        "runtime:wasm-facade",
+        "invalid_outline"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the Err(error) arm in abi_support_glyph_stroke_destroy_option. The 100 probes corrupt the first outline tag before destroy-option stroking; Rust and C run the maintained invalid-outline contract while WASM reaches the helper's result error arm, and the batch is pruned by measured line and region delta."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:2254-2264",
+          "fontdone-wasm/src/implementation.rs:3915-3929"
+        ],
+        "error": "FT_Err_Invalid_Outline"
+      }
+    },
+    {
+     "case_id": "ftstroke.FT_Glyph_Stroke.invalid_outline_parse_rejected",
       "subject": "ftstroke.FT_Glyph_Stroke",
       "case": "invalid_outline_parse_rejected",
       "covers_manifest_cases": [

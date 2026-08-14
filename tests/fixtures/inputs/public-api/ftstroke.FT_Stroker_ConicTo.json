@@ -5,7 +5,8 @@
     "conic_curve_success",
     "first_segment_starts_subpath",
     "coincident_control_and_end_noop",
-    "invalid_arguments"
+    "invalid_arguments",
+    "mcp_gap_matrix"
   ],
   "cases": [
     {
@@ -248,6 +249,68 @@
         },
         "source_refs": [
           "freetype/src/base/ftstroke.c:1351-1356"
+        ]
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Stroker_ConicTo.mcp_gap_matrix",
+      "subject": "ftstroke.FT_Stroker_ConicTo",
+      "case": "mcp_gap_matrix",
+      "operation": "ftstroke.conic_to",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"c35-conic-replay-001","params":{"validation":"replay_pending_conic","tail":"conic"},"coverage":["src/ffi/handles.rs:4637-4640"]},
+          {"id":"c35-conic-replay-002","params":{"validation":"replay_pending_conic","tail":"cubic"},"coverage":["src/ffi/handles.rs:4637-4640"]},
+          {"id":"c35-conic-replay-003","params":{"validation":"replay_pending_conic","tail":"line"},"coverage":["src/ffi/handles.rs:4637-4640"]},
+
+          {"id":"c38-conic-001","params":{"validation":"subdivision_point_collapse","family":"conic"},"coverage":["src/ffi/handles.rs:4911-4914"]},
+          {"id":"c38-conic-002","params":{"validation":"subdivision_point_collapse","family":"conic"},"coverage":["src/ffi/handles.rs:4911-4914"]},
+          {"id":"c38-conic-003","params":{"validation":"subdivision_point_collapse","family":"conic"},"coverage":["src/ffi/handles.rs:4911-4914"]},
+          {"id":"c38-conic-004","params":{"validation":"subdivision_point_collapse","family":"conic"},"coverage":["src/ffi/handles.rs:4911-4914"]},
+          {"id":"c38-conic-005","params":{"validation":"subdivision_point_collapse","family":"conic"},"coverage":["src/ffi/handles.rs:4911-4914"]},
+          {"id":"c38-conic-006","params":{"validation":"subdivision_point_collapse","family":"conic"},"coverage":["src/ffi/handles.rs:4911-4914"]},
+          {"id":"c38-conic-007","params":{"validation":"subdivision_point_collapse","family":"conic"},"coverage":["src/ffi/handles.rs:4911-4914"]},
+          {"id":"c38-conic-008","params":{"validation":"subdivision_point_collapse","family":"conic"},"coverage":["src/ffi/handles.rs:4911-4914"]},
+          {"id":"c38-conic-009","params":{"validation":"subdivision_point_collapse","family":"conic"},"coverage":["src/ffi/handles.rs:4911-4914"]},
+          {"id":"c38-conic-010","params":{"validation":"subdivision_point_collapse","family":"conic"},"coverage":["src/ffi/handles.rs:4911-4914"]},
+          {"id":"c43-conic-001","params":{"validation":"null_control","stroker":"null","variant":1},"coverage":["src/ffi/handles.rs:6320-6324"]},
+          {"id":"c43-conic-012","params":{"validation":"null_to","stroker":"null","variant":12},"coverage":["src/ffi/handles.rs:6320-6324"]},
+          {"id":"c43-conic-023","params":{"validation":"null_stroker","control":"present","to":"present","variant":23},"coverage":["src/ffi/handles.rs:6323-6324"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:stroker",
+        "area:state-replay"
+      ],
+      "metadata": {
+        "coverage_intent": "Follow the maintained closed conic with a nonzero line, conic, or cubic segment so the pending conic is replayed through the live border state, probe subdivision arcs whose integer-rounded points collapse, and retain one public witness for each c43 null-argument guard family."
+      },
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "symbol": "FT_Stroker_ConicTo",
+        "signature": "FT_Error FT_Stroker_ConicTo(FT_Stroker stroker, FT_Vector* control, FT_Vector* to)"
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error",
+          "status_sequence": "FT_Error[]"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "status_sequence"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:1342-1540",
+          "src/ffi/handles.rs:4637-4640",
+          "src/ffi/handles.rs:4911-4914"
         ]
       }
     }

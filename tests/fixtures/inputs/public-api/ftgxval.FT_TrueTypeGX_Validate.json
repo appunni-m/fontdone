@@ -7,7 +7,8 @@
     "rejects_invalid_arguments",
     "respects_table_length",
     "reports_unimplemented_or_invalid_table",
-    "reports_unimplemented_when_validator_module_is_absent"
+    "reports_unimplemented_when_validator_module_is_absent",
+    "mcp_version1_kern_batch"
   ],
   "cases": [
     {
@@ -360,6 +361,69 @@
         "source_refs": [
           "freetype/include/freetype/ftgxval.h:120-225",
           "freetype/src/base/ftgxval.c:37-70"
+        ]
+      }
+    },
+    {
+      "case_id": "ftgxval.FT_TrueTypeGX_Validate.mcp_version1_kern_batch",
+      "subject": "ftgxval.FT_TrueTypeGX_Validate",
+      "case": "mcp_version1_kern_batch",
+      "operation": "ftgxval.truetype_gx_validate",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c50-gx-001",
+            "assets": {
+              "version1_kern_font": {
+                "kind": "ref",
+                "id": "input/generated/fonts/aat-gx/valid-gx-kern-version1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "validation_flags": [
+                "FT_VALIDATE_kern"
+              ],
+              "table_length": 6
+            },
+            "coverage": [
+              "src/ffi/handles.rs:8311-8311"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftgxval",
+        "area:gx-validation",
+        "area:coverage"
+      ],
+      "metadata": {
+        "coverage_intent": "Targeted witness from Coverage MCP line 8311; a version-1 Apple kern header executes the GX validator's alternate kern branch while preserving exact rows."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error",
+          "rows": "GX kern validation rows with table slot and preservation state"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "rows[*].status",
+            "rows[*].tables[*].presence",
+            "rows[*].tables[*].bytes",
+            "rows[*].out_of_range_slots_preserved"
+          ]
+        },
+        "source_refs": [
+          "src/ffi/handles.rs:8311-8311",
+          "freetype/src/gxvalid/gxvkern.c:834-891"
         ]
       }
     }

@@ -33,9 +33,10 @@ def stable_generator_header(data: bytes) -> bytes:
     )
 
 
-def build_cid_type1(path: Path) -> None:
+def build_cid_type1(path: Path, *, is_fixed_pitch: bool = False) -> None:
     """Write a minimal synthetic CID-keyed Type 1 resource."""
-    postscript = """%!PS-Adobe-3.0 Resource-CIDFont
+    fixed_pitch = "true" if is_fixed_pitch else "false"
+    postscript = f"""%!PS-Adobe-3.0 Resource-CIDFont
 %%DocumentNeededResources: ProcSet (CIDInit)
 /CIDFontName /FontdoneCIDType1 def
 /CIDFontVersion 1.0 def
@@ -55,7 +56,7 @@ def build_cid_type1(path: Path) -> None:
 /FamilyName (Fontdone CID Type 1) def
 /Weight (Regular) def
 /ItalicAngle 0 def
-/isFixedPitch false def
+/isFixedPitch {fixed_pitch} def
 /UnderlinePosition -100 def
 /UnderlineThickness 50 def
 /FDArray 1 array def
@@ -168,6 +169,160 @@ def build_simple_type1(
         data = data.replace(before, after, 1)
     path.parent.mkdir(parents=True, exist_ok=True)
     write(str(path), data, kind="PFB")
+
+
+def build_unicode_charmap_fixture(path: Path) -> None:
+    """Build Type 1 glyph names for the synthetic Unicode charmap service.
+
+    The PostScript names service recognizes both ``uniXXXX`` and ``uXXXXXX``
+    forms independently of the font's Encoding array.  Keep valid and
+    malformed hexadecimal names together so public charmap probes exercise
+    the same pure-Rust name decoder used by every frontend.
+    """
+
+    def square(advance: int) -> T1CharString:
+        return charstring(
+            [
+                advance,
+                0,
+                "hsbw",
+                50,
+                0,
+                "rmoveto",
+                0,
+                700,
+                "rlineto",
+                400,
+                0,
+                "rlineto",
+                0,
+                -700,
+                "rlineto",
+                "closepath",
+                "endchar",
+            ]
+        )
+
+    build_simple_type1(
+        path,
+        "Type1UnicodeNames",
+        "Type 1 Unicode Names",
+        "Generated for fontdone Type 1 Unicode charmap name parity",
+        charstrings={
+            ".notdef": charstring([500, 0, "hsbw", "endchar"]),
+            "uni0041": square(500),
+            "u0042": square(500),
+            "uni00AF": square(500),
+            "u1F600": square(500),
+            "uni0041.alt": square(500),
+            "uni00G1": square(500),
+            "uZZZZ": square(500),
+        },
+    )
+
+
+def _pfb_segments(data: bytes) -> list[tuple[int, bytes]]:
+    segments: list[tuple[int, bytes]] = []
+    offset = 0
+    while offset + 6 <= len(data) and data[offset] == 0x80:
+        segment_type = data[offset + 1]
+        length = int.from_bytes(data[offset + 2 : offset + 6], "little")
+        start = offset + 6
+        end = start + length
+        if end > len(data):
+            raise ValueError("truncated PFB segment")
+        segments.append((segment_type, data[start:end]))
+        offset = end
+        if segment_type == 3:
+            break
+    return segments
+
+
+def _type1_eexec_crypt(data: bytes, seed: int) -> bytes:
+    r = seed
+    output = bytearray()
+    for plain_byte in data:
+        cipher_byte = plain_byte ^ (r >> 8)
+        r = ((cipher_byte + r) * 52845 + 22719) & 0xFFFF
+        output.append(cipher_byte)
+    return bytes(output)
+
+
+def _type1_eexec_decrypt(data: bytes) -> bytes:
+    r = 55665
+    output = bytearray()
+    for cipher_byte in data:
+        plain_byte = cipher_byte ^ (r >> 8)
+        r = ((cipher_byte + r) * 52845 + 22719) & 0xFFFF
+        output.append(plain_byte)
+    return bytes(output[4:])
+
+
+def _write_pfb_segments(path: Path, segments: list[tuple[int, bytes]]) -> None:
+    output = bytearray()
+    for segment_type, payload in segments:
+        output.extend(b"\x80")
+        output.append(segment_type)
+        output.extend(len(payload).to_bytes(4, "little"))
+        output.extend(payload)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(output)
+
+
+def build_private_parser_edge_fixture(
+    path: Path,
+    *,
+    private_replacement: tuple[bytes, bytes] | None = None,
+    private_text: bytes | None = None,
+) -> None:
+    """Derive a compact PFB while changing only its decrypted private program.
+
+    These fixtures keep the generated clear-text dictionary and PFB framing
+    stable, so each public parity row isolates one private-dictionary or
+    CharStrings parser branch.
+    """
+
+    segments = _pfb_segments((OUT_DIR / "simple-type1.pfb").read_bytes())
+    cleartext = segments[0][1]
+    encrypted = next(payload for kind, payload in segments if kind == 2)
+    private = private_text if private_text is not None else _type1_eexec_decrypt(encrypted)
+    if private_replacement is not None:
+        before, after = private_replacement
+        if before not in private:
+            raise ValueError(f"missing private Type 1 token: {before!r}")
+        private = private.replace(before, after, 1)
+    replaced = [(kind, payload) for kind, payload in segments]
+    for index, (kind, _payload) in enumerate(replaced):
+        if kind == 2:
+            replaced[index] = (kind, _type1_eexec_crypt(b"\x00\x00\x00\x00" + private, 55665))
+            break
+    _write_pfb_segments(path, replaced)
+
+
+def build_private_parser_trailing_space_fixture(path: Path) -> None:
+    """Add whitespace after a Type 1 CharStrings procedure terminator.
+
+    The parser's loop must consume the trailing ``None`` procedure token and
+    then take its end-of-dictionary break when whitespace reaches ``\nend``.
+    Keep the mutation in the decrypted private program so the fixture remains
+    a valid PFB accepted by the pinned C loader.
+    """
+
+    segments = _pfb_segments((OUT_DIR / "simple-type1.pfb").read_bytes())
+    encrypted = next(payload for kind, payload in segments if kind == 2)
+    private = _type1_eexec_decrypt(encrypted)
+    marker = b"/A 25 None "
+    marker_start = private.index(marker)
+    end_marker = private.index(b" None\nend", marker_start + len(marker))
+    insert_at = end_marker + len(b" None")
+    private = private[:insert_at] + b" " + private[insert_at:]
+    replaced = [(kind, payload) for kind, payload in segments]
+    for index, (kind, _payload) in enumerate(replaced):
+        if kind == 2:
+            replaced[index] = (kind, _type1_eexec_crypt(b"\x00\x00\x00\x00" + private, 55665))
+            break
+    _write_pfb_segments(path, replaced)
+    path.write_bytes(path.read_bytes() + b"\x80\x03")
 
 
 def invalidate_first_pfb_segment(path: Path) -> None:
@@ -382,6 +537,321 @@ def build_parser_opcode_coverage(path: Path) -> None:
     )
 
 
+def build_parser_edge_programs() -> None:
+    """Build small Type 1 programs for uncovered glyph-parser branches."""
+
+    programs = [
+        (
+            "parser-vmoveto.pfb",
+            "Type1ParserVMoveTo",
+            [
+                500,
+                0,
+                "hsbw",
+                100,
+                "vmoveto",
+                100,
+                0,
+                "rlineto",
+                100,
+                "hlineto",
+                "closepath",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-vmoveto-underflow.pfb",
+            "Type1ParserVMoveToUnderflow",
+            [
+                500,
+                0,
+                "hsbw",
+                "vmoveto",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-hmoveto.pfb",
+            "Type1ParserHMoveTo",
+            [
+                500,
+                0,
+                "hsbw",
+                100,
+                "hmoveto",
+                100,
+                "vlineto",
+                100,
+                "hlineto",
+                "closepath",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-number-boundaries.pfb",
+            "Type1ParserNumberBoundaries",
+            [
+                500,
+                0,
+                "hsbw",
+                -107,
+                108,
+                "rmoveto",
+                107,
+                1131,
+                "rlineto",
+                -108,
+                -1131,
+                "rlineto",
+                "closepath",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-vhcurveto.pfb",
+            "Type1ParserVhCurve",
+            [
+                500,
+                0,
+                "hsbw",
+                0,
+                0,
+                "rmoveto",
+                20,
+                20,
+                20,
+                20,
+                "vhcurveto",
+                "closepath",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-hvcurveto.pfb",
+            "Type1ParserHvCurve",
+            [
+                500,
+                0,
+                "hsbw",
+                0,
+                0,
+                "rmoveto",
+                20,
+                20,
+                20,
+                20,
+                "hvcurveto",
+                "closepath",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-callothersubr.pfb",
+            "Type1ParserCallOtherSubr",
+            [
+                500,
+                0,
+                "hsbw",
+                0,
+                0,
+                "rmoveto",
+                1,
+                0,
+                "callothersubr",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-setcurrentpoint.pfb",
+            "Type1ParserSetCurrentPoint",
+            [
+                500,
+                0,
+                "hsbw",
+                0,
+                0,
+                "rmoveto",
+                10,
+                10,
+                "setcurrentpoint",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-sbw.pfb",
+            "Type1ParserSbw",
+            [
+                500,
+                0,
+                "hsbw",
+                20,
+                30,
+                "sbw",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-truncated-escape.pfb",
+            "Type1ParserTruncatedEscape",
+            T1CharString(bytecode=bytes([12])),
+        ),
+        (
+            "parser-sbw-success.pfb",
+            "Type1ParserSbwSuccess",
+            [
+                500,
+                0,
+                "hsbw",
+                20,
+                30,
+                500,
+                0,
+                "sbw",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-callothersubr-underflow.pfb",
+            "Type1ParserCallOtherSubrUnderflow",
+            [
+                500,
+                0,
+                "hsbw",
+                "callothersubr",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-callothersubr-invalid-count.pfb",
+            "Type1ParserCallOtherSubrInvalidCount",
+            [
+                500,
+                0,
+                "hsbw",
+                -1,
+                0,
+                "callothersubr",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-callothersubr-invalid-procedure.pfb",
+            "Type1ParserCallOtherSubrInvalidProcedure",
+            [
+                500,
+                0,
+                "hsbw",
+                0,
+                0,
+                "callothersubr",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-callothersubr-success.pfb",
+            "Type1ParserCallOtherSubrSuccess",
+            [
+                500,
+                0,
+                "hsbw",
+                0,
+                1,
+                "callothersubr",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-setcurrentpoint-underflow.pfb",
+            "Type1ParserSetCurrentPointUnderflow",
+            [
+                500,
+                0,
+                "hsbw",
+                "setcurrentpoint",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-hsbw-underflow.pfb",
+            "Type1ParserHsbwUnderflow",
+            ["hsbw", "endchar"],
+        ),
+        (
+            "parser-rmoveto-underflow.pfb",
+            "Type1ParserRMoveToUnderflow",
+            [
+                500,
+                0,
+                "hsbw",
+                "rmoveto",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-vhcurveto-last-delta.pfb",
+            "Type1ParserVhCurveLastDelta",
+            [
+                500,
+                0,
+                "hsbw",
+                0,
+                0,
+                "rmoveto",
+                20,
+                20,
+                20,
+                20,
+                20,
+                "vhcurveto",
+                "closepath",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-hvcurveto-last-delta.pfb",
+            "Type1ParserHvCurveLastDelta",
+            [
+                500,
+                0,
+                "hsbw",
+                0,
+                0,
+                "rmoveto",
+                20,
+                20,
+                20,
+                20,
+                20,
+                "hvcurveto",
+                "closepath",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-unsupported-escape.pfb",
+            "Type1ParserUnsupportedEscape",
+            T1CharString(bytecode=bytes([12, 99])),
+        ),
+        (
+            "parser-unsupported-op.pfb",
+            "Type1ParserUnsupportedOp",
+            T1CharString(bytecode=bytes([27])),
+        ),
+    ]
+    for filename, font_name, program in programs:
+        glyph_program = program if isinstance(program, T1CharString) else charstring(program)
+        build_simple_type1(
+            INPUT_OUT_DIR / filename,
+            font_name,
+            font_name.replace("Type1", "Type 1 "),
+            "Generated for fontdone Type 1 glyph parser edge coverage",
+            charstrings={
+                ".notdef": charstring([500, 0, "hsbw", "endchar"]),
+                "A": glyph_program,
+            },
+        )
+
+
 def build_encoding_fixture(path: Path, font_name: str, family_name: str, encoding: bytes) -> None:
     """Build a Type 1 fixture with a specific clear-text Encoding object."""
 
@@ -529,6 +999,81 @@ def main() -> None:
         "Minimal NonSFNT",
         "Generated for fontdone non-SFNT coverage",
     )
+    build_unicode_charmap_fixture(OUT_DIR / "unicode-names-type1.pfb")
+    build_simple_type1(
+        OUT_DIR / "private-parser-edge-fields.pfb",
+        "PrivateParserEdgeFields",
+        "Private Parser Edge Fields",
+        "Generated for fontdone Type 1 private parser parity",
+        private_overrides={
+            "BlueValues": [-20, 0, 480, 500],
+            "OtherBlues": [-250, -230],
+            "FamilyBlues": [-15, 0, 470, 490],
+            "FamilyOtherBlues": [-260, -240],
+            "BlueScale": 0.047,
+            "BlueShift": 9,
+            "BlueFuzz": 3,
+            "UniqueID": 424242,
+            "StdHW": [],
+            "StdVW": [],
+            "StemSnapV": [78, 83, 91],
+            "StemSnapH": [38, 42, 46],
+        },
+    )
+    build_simple_type1(
+        OUT_DIR / "private-parser-negative-leniv.pfb",
+        "PrivateParserNegativeLenIV",
+        "Private Parser Negative LenIV",
+        "Generated for fontdone Type 1 negative lenIV parity",
+        private_overrides={"lenIV": -1},
+    )
+    build_simple_type1(
+        OUT_DIR / "private-parser-invalid-encoding.pfb",
+        "PrivateParserInvalidEncoding",
+        "Private Parser Invalid Encoding",
+        "Generated for fontdone Type 1 encoding parser parity",
+        cleartext_replacements=[
+            (
+                b"/Encoding StandardEncoding def",
+                b"/Encoding 256 array\n"
+                b"0 1 255 {1 index exch /.notdef put} for\n"
+                b"dup nope /Bad put\n"
+                b"dup 999 /OutOfRange put\n"
+                b"dup 65 BadName put\n"
+                b"dup 66 /B put\n"
+                b"readonly def",
+            )
+        ],
+    )
+    build_private_parser_edge_fixture(
+        OUT_DIR / "private-parser-no-charstrings.pfb",
+        private_replacement=(
+            b"dup /CharStrings\n2 dict dup begin\n/.notdef 9 None",
+            b"dup /NoCharStrings 0 dict def\n/.notdef 9 None",
+        ),
+    )
+    build_private_parser_edge_fixture(
+        OUT_DIR / "private-parser-no-charstrings-begin.pfb",
+        private_replacement=(
+            b"dup /CharStrings\n2 dict dup begin",
+            b"dup /CharStrings\n2 dict dup",
+        ),
+    )
+    build_private_parser_edge_fixture(
+        OUT_DIR / "private-parser-invalid-length.pfb",
+        private_replacement=(b"/A 25 None", b"/A nope None"),
+    )
+    build_private_parser_edge_fixture(
+        OUT_DIR / "private-parser-truncated-charstring.pfb",
+        private_replacement=(b"/A 25 None", b"/A 9999 None"),
+    )
+    build_private_parser_trailing_space_fixture(
+        OUT_DIR / "private-parser-trailing-space.pfb"
+    )
+    build_private_parser_edge_fixture(
+        OUT_DIR / "private-parser-missing-eexec-fields.pfb",
+        private_text=b"dup /Private 1 dict dup begin\n/lenIV 4 def\nend\n",
+    )
     build_simple_type1(
         OUT_DIR / "metadata-bold-invalid-bool.pfb",
         "MetadataProbe",
@@ -579,6 +1124,7 @@ def main() -> None:
     )
     build_font_value_populated(INPUT_OUT_DIR / "font-value-populated.pfb")
     build_parser_opcode_coverage(INPUT_OUT_DIR / "parser-opcodes.pfb")
+    build_parser_edge_programs()
     build_adobe_mm_two_axis(MM_OUT_DIR / "adobe-mm-two-axis.pfb")
     build_adobe_mm_two_axis(LEGACY_MM_OUT_DIR / "adobe-multiple-master.pfb")
     build_mm_blend_fontinfo_private(OUT_DIR / "mm-blend-fontinfo-private.pfb")
@@ -599,6 +1145,10 @@ def main() -> None:
     build_non_mm_force_bold(OUT_DIR / "non-mm-force-bold.pfb")
     build_type1_encoding_fixtures()
     build_cid_type1(CID_OUT_DIR / "fontinfo-populated.cid")
+    build_cid_type1(
+        CID_OUT_DIR / "fontinfo-fixed-pitch.cid",
+        is_fixed_pitch=True,
+    )
 
 
 if __name__ == "__main__":

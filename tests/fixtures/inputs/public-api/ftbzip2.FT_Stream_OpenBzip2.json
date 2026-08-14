@@ -10,7 +10,8 @@
     "error_invalid_or_truncated_bzip2_header",
     "disabled_build_precedes_null_validation",
     "disabled_build_precedes_header_validation",
-    "out_of_scope_uncompiled_bzip2_policy"
+    "out_of_scope_uncompiled_bzip2_policy",
+    "mcp_read_gap_matrix"
   ],
   "cases": [
     {
@@ -481,6 +482,82 @@
           ]
         },
         "error": "Unimplemented_Feature"
+      }
+    },
+    {
+      "case_id": "ftbzip2.FT_Stream_OpenBzip2.mcp_read_gap_matrix",
+      "subject": "ftbzip2.FT_Stream_OpenBzip2",
+      "case": "mcp_read_gap_matrix",
+      "operation": "ftbzip2.stream_open_bzip2",
+      "schema": "stream_wrapper",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c47-001",
+            "assets": {
+              "compressed": {
+                "kind": "ref",
+                "id": "compressed/bzip2/valid-pcf-header.pcf.bz2",
+                "asset_kind": "binary"
+              },
+              "raw": {
+                "kind": "ref",
+                "id": "compressed/bzip2/valid-pcf-header.raw",
+                "asset_kind": "binary"
+              }
+            },
+            "params": {
+              "read_plan": "mcp_out_of_range_then_null_guard",
+              "case_variant": 1
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7718-7719",
+              "src/ffi/handles.rs:7727-7734",
+              "src/ffi/handles.rs:7738-7739"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftbzip2",
+        "area:bzip2-stream",
+        "area:coverage"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "stream_fields": [
+            "memory",
+            "base",
+            "size",
+            "pos",
+            "read",
+            "close",
+            "descriptor"
+          ],
+          "source_ownership": "not_closed",
+          "decoded_reads": "bytes",
+          "null_stream_guards": "bool"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "error",
+            "decoded_reads[*].offset",
+            "decoded_reads[*].bytes",
+            "null_stream_is_open"
+          ]
+        },
+        "source_refs": [
+          "src/ffi/handles.rs:7718-7719",
+          "src/ffi/handles.rs:7727-7734",
+          "src/ffi/handles.rs:7738-7739"
+        ]
       }
     }
   ]

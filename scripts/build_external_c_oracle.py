@@ -1014,6 +1014,7 @@ def main() -> None:
         cc,
         "-std=c11",
         "-DFONTDONE_EXTERNAL_TRACE=1",
+        "-DFONTDONE_EXTERNAL_C_ABI=1",
         "-include",
         str(redirects),
         "-I",

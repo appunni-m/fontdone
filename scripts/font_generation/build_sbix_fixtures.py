@@ -15,7 +15,7 @@ from __future__ import annotations
 from pathlib import Path
 import struct
 
-from fontTools.ttLib import TTFont
+from fontTools.ttLib import TTFont, newTable
 from fontTools.ttLib.tables.DefaultTable import DefaultTable
 
 
@@ -34,6 +34,36 @@ def raw_table(tag: str, data: bytes) -> DefaultTable:
     return table
 
 
+def add_vertical_metrics(font: TTFont) -> None:
+    """Add deterministic vertical metrics for bitmap-only fallback probes."""
+
+    glyph_order = font.getGlyphOrder()
+    vhea = newTable("vhea")
+    vhea.tableVersion = 0x00010000
+    vhea.ascent = 800
+    vhea.descent = -200
+    vhea.lineGap = 0
+    vhea.advanceHeightMax = 1000
+    vhea.minTopSideBearing = 0
+    vhea.minBottomSideBearing = 0
+    vhea.yMaxExtent = 800
+    vhea.caretSlopeRise = 1
+    vhea.caretSlopeRun = 0
+    vhea.caretOffset = 0
+    vhea.reserved0 = 0
+    vhea.reserved1 = 0
+    vhea.reserved2 = 0
+    vhea.reserved3 = 0
+    vhea.reserved4 = 0
+    vhea.metricDataFormat = 0
+    vhea.numberOfVMetrics = len(glyph_order)
+    font["vhea"] = vhea
+
+    vmtx = newTable("vmtx")
+    vmtx.metrics = {name: (1000, 0) for name in glyph_order}
+    font["vmtx"] = vmtx
+
+
 def graphic_record(graphic_type: bytes, payload: bytes = b"") -> bytes:
     """Build one sbix glyph record with deterministic zero origins."""
 
@@ -46,6 +76,7 @@ def sbix_table(
     num_glyphs: int,
     flags: int,
     records: dict[int, bytes] | None = None,
+    strike_ppem: int = STRIKE_PPEM,
 ) -> bytes:
     """Build a one-strike 'sbix' table from per-glyph records.
 
@@ -57,7 +88,7 @@ def sbix_table(
       strike: u16 ppem, u16 ppi, u32 glyphDataOffset[numGlyphs + 1], data...
     """
     strike_offset = 8 + 4 * 1
-    strike_header = struct.pack(">HH", STRIKE_PPEM, STRIKE_PPI)
+    strike_header = struct.pack(">HH", strike_ppem, STRIKE_PPI)
     offsets_count = num_glyphs + 1
     first_data_offset = len(strike_header) + offsets_count * 4
     if records is None:
@@ -118,13 +149,22 @@ def save_sbix_font(
     *,
     records: dict[int, bytes] | None = None,
     drop_outlines: bool = False,
+    drop_os2: bool = False,
+    vertical_metrics: bool = False,
+    strike_ppem: int = STRIKE_PPEM,
 ) -> None:
     font = TTFont(BASE_FONT, recalcTimestamp=False)
     num_glyphs = font["maxp"].numGlyphs
-    font["sbix"] = raw_table("sbix", sbix_table(num_glyphs, flags, records))
+    font["sbix"] = raw_table(
+        "sbix", sbix_table(num_glyphs, flags, records, strike_ppem=strike_ppem)
+    )
     if drop_outlines:
         del font["glyf"]
         del font["loca"]
+    if drop_os2:
+        del font["OS/2"]
+    if vertical_metrics:
+        add_vertical_metrics(font)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / name
     if out.exists() or out.is_symlink():
@@ -232,7 +272,20 @@ def write_malformed_optional_fixtures() -> None:
 def main() -> None:
     save_sbix_font("sbix-with-outlines.ttf", flags=1)
     save_sbix_font("sbix-overlay.ttf", flags=3)
+    save_sbix_font("sbix-zero-ppem.ttf", flags=1, strike_ppem=0)
     save_sbix_font("sbix-bitmap-only.ttf", flags=1, drop_outlines=True)
+    save_sbix_font(
+        "sbix-bitmap-only-no-os2.ttf",
+        flags=1,
+        drop_outlines=True,
+        drop_os2=True,
+    )
+    save_sbix_font(
+        "sbix-bitmap-only-vmtx.ttf",
+        flags=1,
+        drop_outlines=True,
+        vertical_metrics=True,
+    )
     write_error_fixtures()
     write_malformed_optional_fixtures()
     for name in sorted(OUT_DIR.glob("*.ttf")):

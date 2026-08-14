@@ -120,7 +120,3107 @@
             "coverage": [
               "render_glyph:space-empty-outline-safe-render-agreement"
             ]
-          }
+          },
+          {
+            "id": "c145-getmask-zero-width-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 21
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-001"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 21
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-001"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-002",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 22
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-002"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-002",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 22
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-002"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-003",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 23
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-003"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-003",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 23
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-003"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-004",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 24
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-004"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-004",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 24
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-004"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-005",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 25
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-005"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-005",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 25
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-005"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-006",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 26
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-006"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-006",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 26
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-006"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-007",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 27
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-007"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-007",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 27
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-007"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-008",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 28
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-008"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-008",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 28
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-008"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-009",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 29
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-009"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-009",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 29
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-009"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-010",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 30
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-010"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-010",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 30
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-010"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-011",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 31
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-011"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-011",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 31
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-011"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-012",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-012"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-012",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-012"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-013",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 33
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-013"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-013",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 33
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-013"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-014",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 34
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-014"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-014",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 34
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-014"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-015",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 35
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-015"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-015",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 35
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-015"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-016",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 36
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-016"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-016",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 36
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-016"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-017",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 37
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-017"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-017",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 37
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-017"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-018",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 38
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-018"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-018",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 38
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-018"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-019",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 39
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-019"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-019",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 39
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-019"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-020",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 40
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-020"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-020",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 40
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-020"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-021",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 41
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-021"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-021",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 41
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-021"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-022",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 42
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-022"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-022",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 42
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-022"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-023",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 43
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-023"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-023",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 43
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-023"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-024",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 44
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-024"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-024",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 44
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-024"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-025",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 45
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-025"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-025",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 45
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-025"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-026",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 46
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-026"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-026",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 46
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-026"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-027",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 47
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-027"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-027",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 47
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-027"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-028",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 48
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-028"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-028",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 48
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-028"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-029",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 49
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-029"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-029",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 49
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-029"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-030",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 50
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-030"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-030",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 50
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-030"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-031",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 51
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-031"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-031",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 51
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-031"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-032",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 52
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-032"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-032",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 52
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-032"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-033",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 53
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-033"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-033",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 53
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-033"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-034",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 54
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-034"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-034",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 54
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-034"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-035",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 55
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-035"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-035",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 55
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-035"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-036",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 56
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-036"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-036",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 56
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-036"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-037",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 57
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-037"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-037",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 57
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-037"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-038",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 58
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-038"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-038",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 58
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-038"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-039",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 59
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-039"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-039",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 59
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-039"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-040",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 60
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-040"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-040",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 60
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-040"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-041",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 61
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-041"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-041",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 61
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-041"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-042",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 62
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-042"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-042",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 62
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-042"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-043",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 63
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-043"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-043",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 63
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-043"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-044",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-044"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-044",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-044"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-045",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 65
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-045"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-045",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 65
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-045"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-046",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 66
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-046"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-046",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 66
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-046"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-047",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 67
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-047"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-047",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 67
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-047"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-048",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 68
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-048"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-048",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 68
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-048"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-049",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 69
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-049"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-049",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 69
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-049"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-width-050",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 70
+              },
+              "char_code": 57387,
+              "glyph_index": 44,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02b",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-width-050"
+            ]
+          },
+          {
+            "id": "c145-getmask-zero-height-050",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-control-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 70
+              },
+              "char_code": 57388,
+              "glyph_index": 45,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL",
+              "font_render_text": "\ue02c",
+              "assert_font_render_mode_agrees": true,
+              "assert_font_getmask_agrees": true
+            },
+            "coverage": [
+              "c145:getmask-zero-height-050"
+            ]
+          },
+          {"id":"c165-font-getlength-missing-char-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":16},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:001"]},
+          {"id":"c165-font-getlength-missing-char-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":17},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:002"]},
+          {"id":"c165-font-getlength-missing-char-003","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":18},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:003"]},
+          {"id":"c165-font-getlength-missing-char-004","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":19},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:004"]},
+          {"id":"c165-font-getlength-missing-char-005","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:005"]},
+          {"id":"c165-font-getlength-missing-char-006","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":21},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:006"]},
+          {"id":"c165-font-getlength-missing-char-007","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":22},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:007"]},
+          {"id":"c165-font-getlength-missing-char-008","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":23},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:008"]},
+          {"id":"c165-font-getlength-missing-char-009","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":24},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:009"]},
+          {"id":"c165-font-getlength-missing-char-010","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":25},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:010"]},
+          {"id":"c165-font-getlength-missing-char-011","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":26},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:011"]},
+          {"id":"c165-font-getlength-missing-char-012","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":27},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:012"]},
+          {"id":"c165-font-getlength-missing-char-013","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":28},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:013"]},
+          {"id":"c165-font-getlength-missing-char-014","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":29},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:014"]},
+          {"id":"c165-font-getlength-missing-char-015","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":30},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:015"]},
+          {"id":"c165-font-getlength-missing-char-016","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":31},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:016"]},
+          {"id":"c165-font-getlength-missing-char-017","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":32},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:017"]},
+          {"id":"c165-font-getlength-missing-char-018","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":33},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:018"]},
+          {"id":"c165-font-getlength-missing-char-019","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":34},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:019"]},
+          {"id":"c165-font-getlength-missing-char-020","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":35},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:020"]},
+          {"id":"c165-font-getlength-missing-char-021","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":36},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:021"]},
+          {"id":"c165-font-getlength-missing-char-022","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":37},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:022"]},
+          {"id":"c165-font-getlength-missing-char-023","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":38},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:023"]},
+          {"id":"c165-font-getlength-missing-char-024","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":39},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:024"]},
+          {"id":"c165-font-getlength-missing-char-025","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":40},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:025"]},
+          {"id":"c165-font-getlength-missing-char-026","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":41},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:026"]},
+          {"id":"c165-font-getlength-missing-char-027","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":42},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:027"]},
+          {"id":"c165-font-getlength-missing-char-028","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":43},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:028"]},
+          {"id":"c165-font-getlength-missing-char-029","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":44},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:029"]},
+          {"id":"c165-font-getlength-missing-char-030","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":45},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:030"]},
+          {"id":"c165-font-getlength-missing-char-031","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":46},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:031"]},
+          {"id":"c165-font-getlength-missing-char-032","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":47},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:032"]},
+          {"id":"c165-font-getlength-missing-char-033","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":48},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:033"]},
+          {"id":"c165-font-getlength-missing-char-034","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":49},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:034"]},
+          {"id":"c165-font-getlength-missing-char-035","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":50},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:035"]},
+          {"id":"c165-font-getlength-missing-char-036","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":51},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:036"]},
+          {"id":"c165-font-getlength-missing-char-037","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":52},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:037"]},
+          {"id":"c165-font-getlength-missing-char-038","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":53},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:038"]},
+          {"id":"c165-font-getlength-missing-char-039","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":54},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:039"]},
+          {"id":"c165-font-getlength-missing-char-040","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":55},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:040"]},
+          {"id":"c165-font-getlength-missing-char-041","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":56},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:041"]},
+          {"id":"c165-font-getlength-missing-char-042","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":57},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:042"]},
+          {"id":"c165-font-getlength-missing-char-043","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":58},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:043"]},
+          {"id":"c165-font-getlength-missing-char-044","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":59},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:044"]},
+          {"id":"c165-font-getlength-missing-char-045","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":60},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:045"]},
+          {"id":"c165-font-getlength-missing-char-046","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":61},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:046"]},
+          {"id":"c165-font-getlength-missing-char-047","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":62},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:047"]},
+          {"id":"c165-font-getlength-missing-char-048","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":63},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:048"]},
+          {"id":"c165-font-getlength-missing-char-049","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":64},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:049"]},
+          {"id":"c165-font-getlength-missing-char-050","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":65},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:050"]},
+          {"id":"c165-font-getlength-missing-char-051","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":66},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:051"]},
+          {"id":"c165-font-getlength-missing-char-052","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":67},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:052"]},
+          {"id":"c165-font-getlength-missing-char-053","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":68},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:053"]},
+          {"id":"c165-font-getlength-missing-char-054","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":69},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:054"]},
+          {"id":"c165-font-getlength-missing-char-055","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":70},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:055"]},
+          {"id":"c165-font-getlength-missing-char-056","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":71},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:056"]},
+          {"id":"c165-font-getlength-missing-char-057","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":72},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:057"]},
+          {"id":"c165-font-getlength-missing-char-058","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":73},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:058"]},
+          {"id":"c165-font-getlength-missing-char-059","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":74},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:059"]},
+          {"id":"c165-font-getlength-missing-char-060","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":75},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:060"]},
+          {"id":"c165-font-getlength-missing-char-061","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":76},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:061"]},
+          {"id":"c165-font-getlength-missing-char-062","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":77},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:062"]},
+          {"id":"c165-font-getlength-missing-char-063","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":78},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:063"]},
+          {"id":"c165-font-getlength-missing-char-064","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":79},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:064"]},
+          {"id":"c165-font-getlength-missing-char-065","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":80},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:065"]},
+          {"id":"c165-font-getlength-missing-char-066","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":81},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:066"]},
+          {"id":"c165-font-getlength-missing-char-067","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":82},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:067"]},
+          {"id":"c165-font-getlength-missing-char-068","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":83},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:068"]},
+          {"id":"c165-font-getlength-missing-char-069","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":84},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:069"]},
+          {"id":"c165-font-getlength-missing-char-070","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":85},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:070"]},
+          {"id":"c165-font-getlength-missing-char-071","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":86},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:071"]},
+          {"id":"c165-font-getlength-missing-char-072","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":87},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:072"]},
+          {"id":"c165-font-getlength-missing-char-073","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":88},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:073"]},
+          {"id":"c165-font-getlength-missing-char-074","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":89},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:074"]},
+          {"id":"c165-font-getlength-missing-char-075","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":90},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:075"]},
+          {"id":"c165-font-getlength-missing-char-076","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":91},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:076"]},
+          {"id":"c165-font-getlength-missing-char-077","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":92},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:077"]},
+          {"id":"c165-font-getlength-missing-char-078","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":93},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:078"]},
+          {"id":"c165-font-getlength-missing-char-079","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":94},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:079"]},
+          {"id":"c165-font-getlength-missing-char-080","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":95},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:080"]},
+          {"id":"c165-font-getlength-missing-char-081","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":96},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:081"]},
+          {"id":"c165-font-getlength-missing-char-082","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":97},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:082"]},
+          {"id":"c165-font-getlength-missing-char-083","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":98},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:083"]},
+          {"id":"c165-font-getlength-missing-char-084","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":99},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:084"]},
+          {"id":"c165-font-getlength-missing-char-085","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":100},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:085"]},
+          {"id":"c165-font-getlength-missing-char-086","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":16},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:086"]},
+          {"id":"c165-font-getlength-missing-char-087","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":17},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:087"]},
+          {"id":"c165-font-getlength-missing-char-088","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":18},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:088"]},
+          {"id":"c165-font-getlength-missing-char-089","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":19},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:089"]},
+          {"id":"c165-font-getlength-missing-char-090","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:090"]},
+          {"id":"c165-font-getlength-missing-char-091","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":21},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:091"]},
+          {"id":"c165-font-getlength-missing-char-092","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":22},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:092"]},
+          {"id":"c165-font-getlength-missing-char-093","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":23},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:093"]},
+          {"id":"c165-font-getlength-missing-char-094","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":24},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:094"]},
+          {"id":"c165-font-getlength-missing-char-095","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":25},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:095"]},
+          {"id":"c165-font-getlength-missing-char-096","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":26},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:096"]},
+          {"id":"c165-font-getlength-missing-char-097","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":27},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:097"]},
+          {"id":"c165-font-getlength-missing-char-098","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":28},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:098"]},
+          {"id":"c165-font-getlength-missing-char-099","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":29},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:099"]},
+          {"id":"c165-font-getlength-missing-char-100","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":30},"char_code":65,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"A\u0378","assert_font_render_mode_agrees":true,"assert_font_getlength_agrees":true},"coverage":["c165:font:getlength:missing-char:100"]},
+          {"id":"c167-font-getmask-no-autohint-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":8},"char_code":57600,"glyph_index":1,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:001"]},
+          {"id":"c167-font-getmask-no-autohint-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":9},"char_code":57601,"glyph_index":2,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:002"]},
+          {"id":"c167-font-getmask-no-autohint-003","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":10},"char_code":57602,"glyph_index":3,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:003"]},
+          {"id":"c167-font-getmask-no-autohint-004","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":11},"char_code":57603,"glyph_index":4,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:004"]},
+          {"id":"c167-font-getmask-no-autohint-005","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":12},"char_code":57604,"glyph_index":5,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:005"]},
+          {"id":"c167-font-getmask-no-autohint-006","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":13},"char_code":57605,"glyph_index":6,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:006"]},
+          {"id":"c167-font-getmask-no-autohint-007","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":14},"char_code":57606,"glyph_index":7,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:007"]},
+          {"id":"c167-font-getmask-no-autohint-008","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":15},"char_code":57607,"glyph_index":8,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:008"]},
+          {"id":"c167-font-getmask-no-autohint-009","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":16},"char_code":57608,"glyph_index":9,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:009"]},
+          {"id":"c167-font-getmask-no-autohint-010","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":17},"char_code":57609,"glyph_index":10,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:010"]},
+          {"id":"c167-font-getmask-no-autohint-011","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":18},"char_code":57610,"glyph_index":11,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:011"]},
+          {"id":"c167-font-getmask-no-autohint-012","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":19},"char_code":57611,"glyph_index":12,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:012"]},
+          {"id":"c167-font-getmask-no-autohint-013","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"char_code":57612,"glyph_index":13,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:013"]},
+          {"id":"c167-font-getmask-no-autohint-014","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":21},"char_code":57613,"glyph_index":14,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:014"]},
+          {"id":"c167-font-getmask-no-autohint-015","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":22},"char_code":57614,"glyph_index":15,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:015"]},
+          {"id":"c167-font-getmask-no-autohint-016","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":23},"char_code":57615,"glyph_index":16,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:016"]},
+          {"id":"c167-font-getmask-no-autohint-017","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":24},"char_code":57600,"glyph_index":1,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:017"]},
+          {"id":"c167-font-getmask-no-autohint-018","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":25},"char_code":57601,"glyph_index":2,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:018"]},
+          {"id":"c167-font-getmask-no-autohint-019","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":26},"char_code":57602,"glyph_index":3,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:019"]},
+          {"id":"c167-font-getmask-no-autohint-020","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":27},"char_code":57603,"glyph_index":4,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:020"]},
+          {"id":"c167-font-getmask-no-autohint-021","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":28},"char_code":57604,"glyph_index":5,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:021"]},
+          {"id":"c167-font-getmask-no-autohint-022","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":29},"char_code":57605,"glyph_index":6,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:022"]},
+          {"id":"c167-font-getmask-no-autohint-023","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":30},"char_code":57606,"glyph_index":7,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:023"]},
+          {"id":"c167-font-getmask-no-autohint-024","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":31},"char_code":57607,"glyph_index":8,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:024"]},
+          {"id":"c167-font-getmask-no-autohint-025","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":32},"char_code":57608,"glyph_index":9,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:025"]},
+          {"id":"c167-font-getmask-no-autohint-026","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":33},"char_code":57609,"glyph_index":10,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:026"]},
+          {"id":"c167-font-getmask-no-autohint-027","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":34},"char_code":57610,"glyph_index":11,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:027"]},
+          {"id":"c167-font-getmask-no-autohint-028","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":35},"char_code":57611,"glyph_index":12,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:028"]},
+          {"id":"c167-font-getmask-no-autohint-029","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":36},"char_code":57612,"glyph_index":13,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:029"]},
+          {"id":"c167-font-getmask-no-autohint-030","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":37},"char_code":57613,"glyph_index":14,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:030"]},
+          {"id":"c167-font-getmask-no-autohint-031","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":38},"char_code":57614,"glyph_index":15,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:031"]},
+          {"id":"c167-font-getmask-no-autohint-032","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":39},"char_code":57615,"glyph_index":16,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:032"]},
+          {"id":"c167-font-getmask-no-autohint-033","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":8},"char_code":57600,"glyph_index":1,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:033"]},
+          {"id":"c167-font-getmask-no-autohint-034","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":9},"char_code":57601,"glyph_index":2,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:034"]},
+          {"id":"c167-font-getmask-no-autohint-035","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":10},"char_code":57602,"glyph_index":3,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:035"]},
+          {"id":"c167-font-getmask-no-autohint-036","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":11},"char_code":57603,"glyph_index":4,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:036"]},
+          {"id":"c167-font-getmask-no-autohint-037","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":12},"char_code":57604,"glyph_index":5,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:037"]},
+          {"id":"c167-font-getmask-no-autohint-038","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":13},"char_code":57605,"glyph_index":6,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:038"]},
+          {"id":"c167-font-getmask-no-autohint-039","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":14},"char_code":57606,"glyph_index":7,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:039"]},
+          {"id":"c167-font-getmask-no-autohint-040","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":15},"char_code":57607,"glyph_index":8,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:040"]},
+          {"id":"c167-font-getmask-no-autohint-041","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":16},"char_code":57608,"glyph_index":9,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:041"]},
+          {"id":"c167-font-getmask-no-autohint-042","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":17},"char_code":57609,"glyph_index":10,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:042"]},
+          {"id":"c167-font-getmask-no-autohint-043","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":18},"char_code":57610,"glyph_index":11,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:043"]},
+          {"id":"c167-font-getmask-no-autohint-044","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":19},"char_code":57611,"glyph_index":12,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:044"]},
+          {"id":"c167-font-getmask-no-autohint-045","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"char_code":57612,"glyph_index":13,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:045"]},
+          {"id":"c167-font-getmask-no-autohint-046","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":21},"char_code":57613,"glyph_index":14,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:046"]},
+          {"id":"c167-font-getmask-no-autohint-047","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":22},"char_code":57614,"glyph_index":15,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:047"]},
+          {"id":"c167-font-getmask-no-autohint-048","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":23},"char_code":57615,"glyph_index":16,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:048"]},
+          {"id":"c167-font-getmask-no-autohint-049","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":24},"char_code":57600,"glyph_index":1,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:049"]},
+          {"id":"c167-font-getmask-no-autohint-050","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":25},"char_code":57601,"glyph_index":2,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:050"]},
+          {"id":"c167-font-getmask-no-autohint-051","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":26},"char_code":57602,"glyph_index":3,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:051"]},
+          {"id":"c167-font-getmask-no-autohint-052","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":27},"char_code":57603,"glyph_index":4,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:052"]},
+          {"id":"c167-font-getmask-no-autohint-053","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":28},"char_code":57604,"glyph_index":5,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:053"]},
+          {"id":"c167-font-getmask-no-autohint-054","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":29},"char_code":57605,"glyph_index":6,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:054"]},
+          {"id":"c167-font-getmask-no-autohint-055","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":30},"char_code":57606,"glyph_index":7,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:055"]},
+          {"id":"c167-font-getmask-no-autohint-056","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":31},"char_code":57607,"glyph_index":8,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:056"]},
+          {"id":"c167-font-getmask-no-autohint-057","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":32},"char_code":57608,"glyph_index":9,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:057"]},
+          {"id":"c167-font-getmask-no-autohint-058","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":33},"char_code":57609,"glyph_index":10,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:058"]},
+          {"id":"c167-font-getmask-no-autohint-059","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":34},"char_code":57610,"glyph_index":11,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:059"]},
+          {"id":"c167-font-getmask-no-autohint-060","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":35},"char_code":57611,"glyph_index":12,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:060"]},
+          {"id":"c167-font-getmask-no-autohint-061","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":36},"char_code":57612,"glyph_index":13,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:061"]},
+          {"id":"c167-font-getmask-no-autohint-062","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":37},"char_code":57613,"glyph_index":14,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:062"]},
+          {"id":"c167-font-getmask-no-autohint-063","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":38},"char_code":57614,"glyph_index":15,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:063"]},
+          {"id":"c167-font-getmask-no-autohint-064","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":39},"char_code":57615,"glyph_index":16,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:064"]},
+          {"id":"c167-font-getmask-no-autohint-065","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":8},"char_code":57600,"glyph_index":1,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:065"]},
+          {"id":"c167-font-getmask-no-autohint-066","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":9},"char_code":57601,"glyph_index":2,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:066"]},
+          {"id":"c167-font-getmask-no-autohint-067","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":10},"char_code":57602,"glyph_index":3,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:067"]},
+          {"id":"c167-font-getmask-no-autohint-068","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":11},"char_code":57603,"glyph_index":4,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:068"]},
+          {"id":"c167-font-getmask-no-autohint-069","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":12},"char_code":57604,"glyph_index":5,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:069"]},
+          {"id":"c167-font-getmask-no-autohint-070","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":13},"char_code":57605,"glyph_index":6,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:070"]},
+          {"id":"c167-font-getmask-no-autohint-071","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":14},"char_code":57606,"glyph_index":7,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:071"]},
+          {"id":"c167-font-getmask-no-autohint-072","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":15},"char_code":57607,"glyph_index":8,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:072"]},
+          {"id":"c167-font-getmask-no-autohint-073","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":16},"char_code":57608,"glyph_index":9,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:073"]},
+          {"id":"c167-font-getmask-no-autohint-074","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":17},"char_code":57609,"glyph_index":10,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:074"]},
+          {"id":"c167-font-getmask-no-autohint-075","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":18},"char_code":57610,"glyph_index":11,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:075"]},
+          {"id":"c167-font-getmask-no-autohint-076","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":19},"char_code":57611,"glyph_index":12,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:076"]},
+          {"id":"c167-font-getmask-no-autohint-077","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"char_code":57612,"glyph_index":13,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:077"]},
+          {"id":"c167-font-getmask-no-autohint-078","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":21},"char_code":57613,"glyph_index":14,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:078"]},
+          {"id":"c167-font-getmask-no-autohint-079","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":22},"char_code":57614,"glyph_index":15,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:079"]},
+          {"id":"c167-font-getmask-no-autohint-080","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":23},"char_code":57615,"glyph_index":16,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:080"]},
+          {"id":"c167-font-getmask-no-autohint-081","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":24},"char_code":57600,"glyph_index":1,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:081"]},
+          {"id":"c167-font-getmask-no-autohint-082","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":25},"char_code":57601,"glyph_index":2,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:082"]},
+          {"id":"c167-font-getmask-no-autohint-083","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":26},"char_code":57602,"glyph_index":3,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:083"]},
+          {"id":"c167-font-getmask-no-autohint-084","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":27},"char_code":57603,"glyph_index":4,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:084"]},
+          {"id":"c167-font-getmask-no-autohint-085","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":28},"char_code":57604,"glyph_index":5,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:085"]},
+          {"id":"c167-font-getmask-no-autohint-086","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":29},"char_code":57605,"glyph_index":6,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:086"]},
+          {"id":"c167-font-getmask-no-autohint-087","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":30},"char_code":57606,"glyph_index":7,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:087"]},
+          {"id":"c167-font-getmask-no-autohint-088","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":31},"char_code":57607,"glyph_index":8,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:088"]},
+          {"id":"c167-font-getmask-no-autohint-089","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":32},"char_code":57608,"glyph_index":9,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:089"]},
+          {"id":"c167-font-getmask-no-autohint-090","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":33},"char_code":57609,"glyph_index":10,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:090"]},
+          {"id":"c167-font-getmask-no-autohint-091","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":34},"char_code":57610,"glyph_index":11,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:091"]},
+          {"id":"c167-font-getmask-no-autohint-092","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":35},"char_code":57611,"glyph_index":12,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:092"]},
+          {"id":"c167-font-getmask-no-autohint-093","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":36},"char_code":57612,"glyph_index":13,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:093"]},
+          {"id":"c167-font-getmask-no-autohint-094","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":37},"char_code":57613,"glyph_index":14,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:094"]},
+          {"id":"c167-font-getmask-no-autohint-095","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":38},"char_code":57614,"glyph_index":15,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:095"]},
+          {"id":"c167-font-getmask-no-autohint-096","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":39},"char_code":57615,"glyph_index":16,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:096"]},
+          {"id":"c167-font-getmask-no-autohint-097","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":8},"char_code":57600,"glyph_index":1,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:097"]},
+          {"id":"c167-font-getmask-no-autohint-098","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":9},"char_code":57601,"glyph_index":2,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:098"]},
+          {"id":"c167-font-getmask-no-autohint-099","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":10},"char_code":57602,"glyph_index":3,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:099"]},
+          {"id":"c167-font-getmask-no-autohint-100","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/render-coverage.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":11},"char_code":57603,"glyph_index":4,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL","font_render_text":"","assert_font_render_mode_agrees":true,"assert_font_getmask_agrees":true},"coverage":["c167:font:getmask:no-autohint:100"]}
         ]
       },
       "classifiers": [

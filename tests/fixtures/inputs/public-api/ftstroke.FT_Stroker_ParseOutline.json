@@ -6,7 +6,8 @@
     "opened_outline_success",
     "invalid_outline",
     "invalid_stroker",
-    "degenerate_contours_skipped"
+    "degenerate_contours_skipped",
+    "mcp_gap_matrix"
   ],
   "cases": [
     {
@@ -390,6 +391,55 @@
         "source_refs": [
           "freetype/src/base/ftstroke.c:2067-2102",
           "freetype/src/base/ftstroke.c:2229-2237"
+        ]
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Stroker_ParseOutline.mcp_gap_matrix",
+      "subject": "ftstroke.FT_Stroker_ParseOutline",
+      "case": "mcp_gap_matrix",
+      "operation": "ftstroke.parse_outline",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"c44-parse-001","params":{"validation":"null_outline","family":"null_outline","variant":1},"coverage":["src/ffi/handles.rs:6476-6477"]},
+          {"id":"c44-parse-026","params":{"validation":"null_stroker","family":"null_stroker","variant":26},"coverage":["src/ffi/handles.rs:6479-6480"]},
+          {"id":"c44-parse-051","params":{"validation":"invalid_conic_transition","family":"bad_conic","variant":51},"coverage":["src/ffi/handles.rs:6555-6556"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:stroker",
+        "area:outline-parser",
+        "area:error"
+      ],
+      "metadata": {
+        "coverage_intent": "Batch safe public invalid-input witnesses for ParseOutline null and bounded malformed-outline guards identified by Coverage MCP; contour endpoints beyond n_points are intentionally excluded because pinned C can read them unsafely."
+      },
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "symbol": "FT_Stroker_ParseOutline",
+        "signature": "FT_Error FT_Stroker_ParseOutline(FT_Stroker stroker, FT_Outline* outline, FT_Bool opened)"
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:2067-2080",
+          "freetype/src/base/ftstroke.c:2114-2116",
+          "src/ffi/handles.rs:6476-6480",
+          "src/ffi/handles.rs:6506-6507",
+          "src/ffi/handles.rs:6555-6556"
         ]
       }
     }

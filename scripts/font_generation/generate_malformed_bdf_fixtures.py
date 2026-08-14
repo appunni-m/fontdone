@@ -84,6 +84,21 @@ ENDFONT
 
 def main() -> None:
     write_fixture(
+        "input/fonts/bdf/zero-glyphs-strike.bdf",
+        """STARTFONT 2.1
+FONT FontdoneZeroGlyphsStrike
+SIZE 12 75 75
+FONTBOUNDINGBOX 8 12 0 -2
+STARTPROPERTIES 3
+FAMILY_NAME "FontdoneZeroGlyphsStrike"
+POINT_SIZE 120
+PIXEL_SIZE 12
+ENDPROPERTIES
+CHARS 0
+ENDFONT
+""",
+    )
+    write_fixture(
         "input/fonts/bdf/properties-atoms-integers-cardinals.bdf",
         """STARTFONT 2.1
 FONT PillowRsPropertiesAtomsIntegersCardinals

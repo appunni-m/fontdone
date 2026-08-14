@@ -151,21 +151,550 @@
       "schema": "callback_event_stream",
       "expect_error": true,
       "inputs": {
-        "assets": {
-          "renderer_module": {
-            "kind": "ref",
-            "id": "modules/raster/callback-logging-renderer.json"
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c90-raster-edge-001",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 1
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3296"
+            ]
+          },
+          {
+            "id": "c90-raster-edge-002",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 2
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3342"
+            ]
+          },
+          {
+            "id": "c90-raster-edge-003",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 3
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3450"
+            ]
+          },
+          {
+            "id": "c90-raster-edge-004",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 4
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3453"
+            ]
+          },
+          {
+            "id": "c90-raster-edge-005",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 5
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3456"
+            ]
+          },
+          {
+            "id": "c90-raster-edge-006",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 6
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3459"
+            ]
+          },
+          {
+            "id": "c90-raster-edge-007",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 7
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3573"
+            ]
+          },
+          {
+            "id": "c90-raster-edge-008",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 8
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3584",
+              "fontdone-c-abi/src/implementation.rs:3589"
+            ]
+          },
+          {
+            "id": "c90-raster-edge-009",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 9
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3610",
+              "fontdone-c-abi/src/implementation.rs:3614",
+              "fontdone-c-abi/src/implementation.rs:3615"
+            ]
+          },
+          {
+            "id": "c90-raster-edge-010",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 10
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3754"
+            ]
+          },
+          {
+            "id": "c90-raster-edge-011",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 11
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3761"
+            ]
+          },
+          {
+            "id": "c90-raster-edge-012",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 12
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3764"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-001",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 13
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:4252"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-002",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 14
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:4283"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-003",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 15
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:4259"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-004",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 16
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:4262"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-005",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 17
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:4255"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-006",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 18
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:4290"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-007",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 19
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:4286"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-008",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 20
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:4292"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-009",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 21
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3482"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-010",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 22
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3493"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-011",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 23
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3510"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-012",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 24
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3513"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-013",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 25
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3645"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-014",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 26
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3654"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-015",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 27
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3654"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-016",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 28
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3656"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-017",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 29
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:3808",
+              "fontdone-c-abi/src/implementation.rs:3809",
+              "fontdone-c-abi/src/implementation.rs:3810"
+            ]
+          },
+          {
+            "id": "c91-raster-guard-100",
+            "assets": {
+              "renderer_module": {
+                "kind": "ref",
+                "id": "modules/raster/callback-logging-renderer.json"
+              }
+            },
+            "params": {
+              "raster_new_result": "FT_Err_Out_Of_Memory",
+              "install_renderer": true,
+              "edge_probe": 255
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:4006"
+            ]
           }
-        },
-        "params": {
-          "raster_new_result": "FT_Err_Out_Of_Memory",
-          "install_renderer": true
+        ]
+      },
+      "metadata": {
+        "coverage_intent": "C90 covers defensive C-ABI callback-table guards through the Rust test-support wrapper while Rust FFI, C ABI, and WASM parity remain on the same public lifecycle result. One witness per callback-edge probe is retained after removing duplicate and zero-line variants.",
+        "batch_size": 100,
+        "batch_id": "c90",
+        "measured_delta": "MCP snapshot 952df145-4d3a-4470-8613-b99c8ade0d9f: 53748/56197 lines, 10796/12732 branches, 3576/3899 functions, and 73369/77393 regions. It exactly matches the pre-prune c90 snapshot a89729a9-35e1-4f87-8059-14f97f7c1f0a after pruning 88 duplicate witnesses; versus the final c89 snapshot 64f45f9b-deee-424c-9b08-6909e879eeba, covered lines increased by 141 and covered regions by 78.",
+        "retained_variants": 12,
+        "pruned_variants": 88,
+        "pruning_policy": "retain one representative witness for each distinct measured MCP line/region gain; remove redundant or zero-gain variants after the managed run",
+        "next_batch": {
+          "batch_id": "c91",
+          "batch_size": 100,
+          "coverage_intent": "Bulk probes for opaque incremental callback guards and incomplete renderer callback tables selected from the MCP uncovered-line report; all probes preserve the public raster-new error result.",
+          "pruning_policy": "Run the managed parity/coverage command, retain only variants with a distinct measured line or region gain, and document the exact snapshot.",
+          "measured_snapshot": "23965820-5357-41d2-bc8d-09b59986929e",
+          "measured_metrics": "53985/56421 lines, 10811/12734 branches, 3581/3904 functions, and 73521/77532 regions; versus c90 snapshot 952df145-4d3a-4470-8613-b99c8ade0d9f, covered lines +237, regions +152, branches +15, functions +5.",
+          "retained_variants": 18,
+          "pruned_variants": 82,
+          "pruning_note": "The initial 100 probes included 82 normalized duplicates. One duplicate was retained because it uniquely covered the normalization branch and its three recursive-call regions; the final retained set preserved the pre-prune snapshot exactly."
         }
       },
-      "classifiers": [
-        "kind:callback",
-        "header:ftimage",
-        "path:error"
+     "classifiers": [
+       "kind:callback",
+       "header:ftimage",
+       "path:error"
       ],
       "expectation": {
         "status": "error",

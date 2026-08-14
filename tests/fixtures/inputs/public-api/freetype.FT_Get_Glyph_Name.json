@@ -59,6 +59,2006 @@
             "coverage": [
               "freetype.get_glyph_name:explicit-gA"
             ]
+          },
+          {
+            "id": "c143-type1-glyph-name-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 1,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-001"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-002",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 2,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-002"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-003",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 3,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-003"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-004",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 4,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-004"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-005",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 5,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-005"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-006",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 6,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-006"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-007",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 7,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-007"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-008",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 8,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-008"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-009",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 9,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-009"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-010",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 10,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-010"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-011",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 11,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-011"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-012",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 12,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-012"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-013",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 13,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-013"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-014",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 14,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-014"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-015",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 15,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-015"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-016",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 16,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-016"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-017",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 17,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-017"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-018",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 18,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-018"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-019",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 19,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-019"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-020",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 20,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-020"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-021",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 21,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-021"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-022",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 22,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-022"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-023",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 23,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-023"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-024",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 24,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-024"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-025",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 25,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-025"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-026",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 26,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-026"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-027",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 27,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-027"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-028",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 28,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-028"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-029",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 29,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-029"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-030",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 30,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-030"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-031",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 31,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-031"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-032",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 32,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-032"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-033",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 33,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-033"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-034",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 34,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-034"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-035",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 35,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-035"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-036",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 36,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-036"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-037",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 37,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-037"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-038",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 38,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-038"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-039",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 39,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-039"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-040",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 40,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-040"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-041",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 41,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-041"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-042",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 42,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-042"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-043",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 43,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-043"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-044",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 44,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-044"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-045",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 45,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-045"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-046",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 46,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-046"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-047",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 47,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-047"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-048",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 48,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-048"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-049",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 49,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-049"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-050",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 50,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-050"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-051",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 51,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-051"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-052",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 52,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-052"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-053",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 53,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-053"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-054",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 54,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-054"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-055",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 55,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-055"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-056",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 56,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-056"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-057",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 57,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-057"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-058",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 58,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-058"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-059",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 59,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-059"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-060",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 60,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-060"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-061",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 61,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-061"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-062",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 62,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-062"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-063",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 63,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-063"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-064",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 64,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-064"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-065",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 65,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-065"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-066",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 66,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-066"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-067",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 67,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-067"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-068",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 68,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-068"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-069",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 69,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-069"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-070",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 70,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-070"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-071",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 71,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-071"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-072",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 72,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-072"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-073",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 73,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-073"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-074",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 74,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-074"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-075",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 75,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-075"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-076",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 76,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-076"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-077",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 77,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-077"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-078",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 78,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-078"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-079",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 79,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-079"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-080",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 80,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-080"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-081",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 81,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-081"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-082",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 82,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-082"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-083",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 83,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-083"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-084",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 84,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-084"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-085",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 85,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-085"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-086",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 86,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-086"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-087",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 87,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-087"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-088",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 88,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-088"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-089",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 89,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-089"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-090",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 90,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-090"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-091",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 91,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-091"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-092",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 92,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-092"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-093",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 93,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-093"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-094",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 94,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-094"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-095",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 95,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-095"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-096",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 96,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-096"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-097",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 97,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-097"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-098",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 98,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-098"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-099",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 99,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-099"
+            ]
+          },
+          {
+            "id": "c143-type1-glyph-name-100",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/type1-mm/adobe-mm-two-axis.pfb",
+                "requires": "Adobe Type 1 Multiple Master font with named charstrings"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 100,
+              "glyph_index": "gid:1"
+            },
+            "coverage": [
+              "type1:glyph-name-gid-1-buffer-100"
+            ]
           }
         ]
       },

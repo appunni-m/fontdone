@@ -409,14 +409,18 @@ fn render_normal(
     let width = usize_from_i32(outline.cbox_x_max - outline.cbox_x_min);
     let height = usize_from_i32(outline.cbox_y_max - outline.cbox_y_min);
     if width == 0 || height == 0 {
+        // C `ft_smooth_render` returns before publishing the outline origin
+        // when the raster box has no rows or columns (`ftsmooth.c:595-603`).
+        // A line-only glyph therefore exposes the same fully empty bitmap as
+        // an empty outline, including zero `left`/`top` placement.
         return Ok(RenderedBitmap {
             width: 0,
             rows: 0,
             pitch: 0,
             pixel_mode: PixelMode::Gray,
             num_grays: PixelMode::Gray.num_grays(),
-            left,
-            top,
+            left: 0,
+            top: 0,
             buffer: Vec::new(),
         });
     }
@@ -818,7 +822,6 @@ fn rasterize_mono_profiles(
     if profiles.is_empty() {
         return Ok(());
     }
-
     draw_mono_profile_sweep(profiles, buffer, width, height, pitch, precision);
     Ok(())
 }
@@ -847,7 +850,6 @@ fn rasterize_mono_horizontal_profiles(
     if profiles.is_empty() {
         return Ok(());
     }
-
     draw_mono_horizontal_profile_sweep(profiles, buffer, width, height, pitch, precision);
     Ok(())
 }
@@ -1384,7 +1386,11 @@ impl MonoOutlineProfileBuilder {
                         return Ok(());
                     }
                 }
-                _ => unreachable!(),
+                _ => {
+                    return Err(FontError::InvalidOutline(
+                        "outline: invalid curve tag".into(),
+                    ));
+                }
             }
         }
         self.line_to_scaled(v_start_scaled, contour);
@@ -2371,8 +2377,17 @@ fn curve_tag(on_curve: bool) -> u8 {
 }
 
 fn curve_tag_at(pts: &[crate::outline::OutlinePoint], tags: &[u8], index: usize) -> u8 {
-    tags.get(index)
-        .map_or_else(|| curve_tag(pts[index].on_curve), |tag| tag & 3)
+    tags.get(index).map_or_else(
+        || curve_tag(pts[index].on_curve),
+        |tag| match tag & 3 {
+            CURVE_TAG_ON => CURVE_TAG_ON,
+            CURVE_TAG_CONIC => CURVE_TAG_CONIC,
+            // `FT_Outline_Decompose` uses its default switch arm for every
+            // masked tag other than ON and CONIC; FreeType therefore treats
+            // tag 3 as a cubic control rather than rejecting it.
+            _ => CURVE_TAG_CUBIC,
+        },
+    )
 }
 
 #[derive(Debug, Clone, Copy)]

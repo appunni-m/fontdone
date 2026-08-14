@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "snapshot_kind": "committed_measured_evidence",
-  "snapshot_date": "2026-08-11",
+  "snapshot_date": "2026-08-14",
   "freetype_version": "2.14.3",
   "package_version": "2.14.3-alpha.1",
   "public_function_adoption": {
@@ -21,31 +21,31 @@
     "c_enums": 20,
     "c_enum_variants": 158,
     "c_error_codes": 119,
-    "fontdone_pub_functions": 710,
+    "fontdone_pub_functions": 714,
     "fontdone_pub_consts": 1329,
     "fontdone_pub_structs": 234,
     "fontdone_pub_enums": 19
   },
   "runtime_parity": {
-    "runnable": 7875,
-    "passed": 7875,
+    "runnable": 15794,
+    "passed": 15794,
     "failed": 0,
-    "pending": 3,
-    "covered_manifest": 4237,
+    "pending": 4,
+    "covered_manifest": 4293,
     "validated_input_subjects": 1543,
     "validated_input_files": 1537,
-    "logical_input_cases": 4330,
-    "concrete_input_cases": 7878,
+    "logical_input_cases": 4433,
+    "concrete_input_cases": 15798,
     "function_route_evidence": 218,
     "function_total": 218
   },
   "c_contract": {
-    "categories_complete": 10,
+    "categories_complete": 8,
     "categories_total": 12,
     "is_complete": false,
-    "runtime_contract_rows_complete": 5389,
-    "runtime_contract_rows_total": 5389,
-    "runtime_contract_rows_pending": 0,
+    "runtime_contract_rows_complete": 9684,
+    "runtime_contract_rows_total": 13538,
+    "runtime_contract_rows_pending": 3854,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
     "platform_lanes_complete": 1,
@@ -53,42 +53,42 @@
   },
   "coverage": {
     "measured": true,
-    "snapshot_date": "2026-08-10",
-    "source_commit": "06a8ce2b91d041d1bc75618e579480d11f182dcd",
+    "snapshot_date": "2026-08-14",
+    "source_commit": "95dc33f12790c896f9a5c95571eec4360f22412e",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "669d796d-c1aa-411c-ad12-98a6d2089fc0",
-    "snapshot_id": "feb0e45d-3088-4a50-918b-ae580a6fb5f9",
-    "duration_ms": 60622,
+    "run_id": "28fc2fb5-5286-4b09-b281-eb759933a9bd",
+    "snapshot_id": "2d0bb963-cd10-4a1f-8986-713fcaf09f07",
+    "duration_ms": null,
     "exit_code": 0,
-    "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; default coverage skips the duplicate ABI-only package preflight because make test-fast already executes that contract; the optional-feature contract is a separate make test-parity-smoke gate and is not rebuilt by coverage unless COVERAGE_PREPARE_OPTIONAL_FEATURES=1; unchanged generated oracle inputs preserved mtimes; optimized test profile opt-level=1 with no line-table debuginfo (COVERAGE_TEST_DEBUG=0); one instrumented test binary runs in three independent shards per backend (nine shard processes total), each shard compares a disjoint slice of the 7,650-case runnable matrix and writes a distinct raw profile; isolated COVERAGE_ALL_TARGET_DIR with cargo llvm-cov --no-clean and stale .profraw cleanup before measurement; the report merges every shard profile; source-digest-bound expanded input cache reused across the nine processes; preloaded content digests reused for face-cache keys and read-only SFNT table-load/info routes; clean binary preparation uses cargo llvm-cov --no-report -- --list; build-state and independent preparation-state markers reuse unchanged compiler and oracle/API-audit inputs while excluding worker/lane-split/shard orchestration settings; raw LLVM JSON is ingested directly, with segment normalization retained only as an opt-in compatibility rewrite; test-harness source excluded",
+    "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; native nightly LLVM coverage was used as the local fallback because Coverage MCP failed during initialization; the aggregate report is target/coverage/unified-runtime-all-lanes.json; the nine lane processes compare disjoint slices of the 15,794-case runnable matrix; test-harness source excluded",
     "lines": {
-      "covered": 50573,
-      "total": 54362,
-      "percent": 93.03005776093595
+      "covered": 62361,
+      "total": 80509,
+      "percent": 77.4584207976748
     },
     "branches": {
-      "covered": 10101,
-      "total": 12522,
-      "percent": 80.66602779108769
+      "covered": 11422,
+      "total": 16456,
+      "percent": 69.4093339815265
     },
     "functions": {
-      "covered": 3479,
-      "total": 3833,
-      "percent": 90.76441429689538
+      "covered": 3663,
+      "total": 5180,
+      "percent": 70.71428571428572
     },
     "regions": {
-      "covered": 69451,
-      "total": 75449,
-      "percent": 92.05025911542897
+      "covered": 86392,
+      "total": 112372,
+      "percent": 76.88036165592852
     },
     "runtime_parity": {
-      "runnable": 7650,
-      "passed": 7650,
+      "runnable": 15794,
+      "passed": 15794,
       "failed": 0,
-      "pending": 3
+      "pending": 4
     },
-    "warning": "LLVM JSON segments are normalized to segment start lines; aggregate region coverage is preserved from summaries.",
+    "warning": "Coverage MCP was unavailable because its server closed during initialization. The local fallback used the pinned nightly llvm-cov JSON report directly; aggregate region coverage is preserved from LLVM summaries.",
     "claim_scope": "The percentages apply only to the named source commit, suite, and toolchain; coverage is not a FreeType-parity percentage."
   },
   "performance": {
@@ -1358,9 +1358,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "7b2ab7f8255e8dbde395065eb41bea060534041bce26407452ee837c62479b6a",
-    "parity_tree_sha256": "0f3892feccc68fdbb185d50c1ef87b40a16df2c11a23140abb0071696c438f2b",
-    "log_sha256": "1c53727531a8a1374c9dfad07949745941c3ca5a57b4fc8c72b863e81d3104c2",
+    "sha256": "107d991998e48421ef6ca1e0eb387369fdcc12819bb8210d7f001185c46fb7fc",
+    "parity_tree_sha256": "733c4e7c91567522df95accd33638b16546b9f516ed05cc7f43afc2bc7436033",
+    "log_sha256": "00971f36781eeb6df69cd7ccc25ea828062fe62a34767b51382a07cffa463de4",
     "command": "make test-parity"
   }
 }

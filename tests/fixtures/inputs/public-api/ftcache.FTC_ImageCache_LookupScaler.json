@@ -284,14 +284,14 @@
       }
     },
     {
-      "case_id": "ftcache.FTC_ImageCache_LookupScaler.success_pixel_and_point_scalers",
-      "subject": "ftcache.FTC_ImageCache_LookupScaler",
-      "case": "success_pixel_and_point_scalers",
-      "operation": "ftcache.image_cache_lookup_scaler",
-      "schema": "cache_operation",
-      "expect_error": false,
-      "inputs": {
-        "variants": [
+     "case_id": "ftcache.FTC_ImageCache_LookupScaler.success_pixel_and_point_scalers",
+     "subject": "ftcache.FTC_ImageCache_LookupScaler",
+     "case": "success_pixel_and_point_scalers",
+     "operation": "ftcache.image_cache_lookup_scaler",
+     "schema": "cache_operation",
+     "expect_error": false,
+     "inputs": {
+       "variants": [
           {
             "id": "f1",
             "assets": {
@@ -556,14 +556,14 @@
       }
     },
     {
-      "case_id": "ftcache.FTC_ImageCache_LookupScaler.success_lookup_hit_miss_and_repeated",
-      "subject": "ftcache.FTC_ImageCache_LookupScaler",
-      "case": "success_lookup_hit_miss_and_repeated",
-      "operation": "ftcache.image_cache_lookup_scaler",
-      "schema": "cache_operation",
-      "expect_error": false,
-      "inputs": {
-        "variants": [
+     "case_id": "ftcache.FTC_ImageCache_LookupScaler.success_lookup_hit_miss_and_repeated",
+     "subject": "ftcache.FTC_ImageCache_LookupScaler",
+     "case": "success_lookup_hit_miss_and_repeated",
+     "operation": "ftcache.image_cache_lookup_scaler",
+     "schema": "cache_operation",
+     "expect_error": false,
+     "inputs": {
+       "variants": [
           {
             "id": "f1",
             "assets": {
@@ -836,6 +836,1741 @@
       "expect_error": false,
       "inputs": {
         "variants": [
+          {
+            "id": "b15-image-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 8,
+                  "height": 8
+                },
+                {
+                  "pixel": 0,
+                  "width": 512,
+                  "height": 512,
+                  "x_res": 72,
+                  "y_res": 72
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                36,
+                99999
+              ],
+              "load_flags": "DEFAULT"
+            },
+            "coverage": [
+              "batch15:image-scaler:001"
+            ]
+          },
+          {
+            "id": "b15-image-002",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 10,
+                  "height": 14
+                },
+                {
+                  "pixel": 0,
+                  "width": 640,
+                  "height": 768,
+                  "x_res": 72,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                1,
+                43,
+                68,
+                99999
+              ],
+              "load_flags": "NO_HINTING"
+            },
+            "coverage": [
+              "batch15:image-scaler:002"
+            ]
+          },
+          {
+            "id": "b15-image-003",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 12,
+                  "height": 18
+                },
+                {
+                  "pixel": 0,
+                  "width": 768,
+                  "height": 1024,
+                  "x_res": 96,
+                  "y_res": 72
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                1,
+                36,
+                130
+              ],
+              "load_flags": "RENDER"
+            },
+            "coverage": [
+              "batch15:image-scaler:003"
+            ]
+          },
+          {
+            "id": "b15-image-004",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 16,
+                  "height": 24
+                },
+                {
+                  "pixel": 0,
+                  "width": 1024,
+                  "height": 768,
+                  "x_res": 96,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                3,
+                50,
+                82,
+                99999
+              ],
+              "load_flags": "HIGH_BITS_SET"
+            },
+            "coverage": [
+              "batch15:image-scaler:004"
+            ]
+          },
+          {
+            "id": "b15-image-005",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 20,
+                  "height": 32
+                },
+                {
+                  "pixel": 0,
+                  "width": 1024,
+                  "height": 1536,
+                  "x_res": 120,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                36,
+                68,
+                130,
+                99999
+              ],
+              "load_flags": "DEFAULT"
+            },
+            "coverage": [
+              "batch15:image-scaler:005"
+            ]
+          },
+          {
+            "id": "b15-image-006",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 24,
+                  "height": 24
+                },
+                {
+                  "pixel": 1,
+                  "width": 32,
+                  "height": 32
+                },
+                {
+                  "pixel": 0,
+                  "width": 768,
+                  "height": 1024,
+                  "x_res": 72,
+                  "y_res": 120
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                3,
+                36,
+                43,
+                99999
+              ],
+              "load_flags": "NO_HINTING"
+            },
+            "coverage": [
+              "batch15:image-scaler:006"
+            ]
+          },
+          {
+            "id": "b15-image-007",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 8,
+                  "height": 8
+                },
+                {
+                  "pixel": 0,
+                  "width": 512,
+                  "height": 512,
+                  "x_res": 72,
+                  "y_res": 72
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                36,
+                99999
+              ],
+              "load_flags": "RENDER"
+            },
+            "coverage": [
+              "batch15:image-scaler:007"
+            ]
+          },
+          {
+            "id": "b15-image-008",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 10,
+                  "height": 14
+                },
+                {
+                  "pixel": 0,
+                  "width": 640,
+                  "height": 768,
+                  "x_res": 72,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                1,
+                43,
+                68,
+                99999
+              ],
+              "load_flags": "HIGH_BITS_SET"
+            },
+            "coverage": [
+              "batch15:image-scaler:008"
+            ]
+          },
+          {
+            "id": "b15-image-009",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 12,
+                  "height": 18
+                },
+                {
+                  "pixel": 0,
+                  "width": 768,
+                  "height": 1024,
+                  "x_res": 96,
+                  "y_res": 72
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                1,
+                36,
+                130
+              ],
+              "load_flags": "DEFAULT"
+            },
+            "coverage": [
+              "batch15:image-scaler:009"
+            ]
+          },
+          {
+            "id": "b15-image-010",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 16,
+                  "height": 24
+                },
+                {
+                  "pixel": 0,
+                  "width": 1024,
+                  "height": 768,
+                  "x_res": 96,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                3,
+                50,
+                82,
+                99999
+              ],
+              "load_flags": "NO_HINTING"
+            },
+            "coverage": [
+              "batch15:image-scaler:010"
+            ]
+          },
+          {
+            "id": "b15-image-011",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 20,
+                  "height": 32
+                },
+                {
+                  "pixel": 0,
+                  "width": 1024,
+                  "height": 1536,
+                  "x_res": 120,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                36,
+                68,
+                130,
+                99999
+              ],
+              "load_flags": "RENDER"
+            },
+            "coverage": [
+              "batch15:image-scaler:011"
+            ]
+          },
+          {
+            "id": "b15-image-012",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 24,
+                  "height": 24
+                },
+                {
+                  "pixel": 1,
+                  "width": 32,
+                  "height": 32
+                },
+                {
+                  "pixel": 0,
+                  "width": 768,
+                  "height": 1024,
+                  "x_res": 72,
+                  "y_res": 120
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                3,
+                36,
+                43,
+                99999
+              ],
+              "load_flags": "HIGH_BITS_SET"
+            },
+            "coverage": [
+              "batch15:image-scaler:012"
+            ]
+          },
+          {
+            "id": "b15-image-013",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 8,
+                  "height": 8
+                },
+                {
+                  "pixel": 0,
+                  "width": 512,
+                  "height": 512,
+                  "x_res": 72,
+                  "y_res": 72
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                36,
+                99999
+              ],
+              "load_flags": "DEFAULT"
+            },
+            "coverage": [
+              "batch15:image-scaler:013"
+            ]
+          },
+          {
+            "id": "b15-image-014",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 10,
+                  "height": 14
+                },
+                {
+                  "pixel": 0,
+                  "width": 640,
+                  "height": 768,
+                  "x_res": 72,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                1,
+                43,
+                68,
+                99999
+              ],
+              "load_flags": "NO_HINTING"
+            },
+            "coverage": [
+              "batch15:image-scaler:014"
+            ]
+          },
+          {
+            "id": "b15-image-015",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 12,
+                  "height": 18
+                },
+                {
+                  "pixel": 0,
+                  "width": 768,
+                  "height": 1024,
+                  "x_res": 96,
+                  "y_res": 72
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                1,
+                36,
+                130
+              ],
+              "load_flags": "RENDER"
+            },
+            "coverage": [
+              "batch15:image-scaler:015"
+            ]
+          },
+          {
+            "id": "b15-image-016",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 16,
+                  "height": 24
+                },
+                {
+                  "pixel": 0,
+                  "width": 1024,
+                  "height": 768,
+                  "x_res": 96,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                3,
+                50,
+                82,
+                99999
+              ],
+              "load_flags": "HIGH_BITS_SET"
+            },
+            "coverage": [
+              "batch15:image-scaler:016"
+            ]
+          },
+          {
+            "id": "b15-image-017",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 20,
+                  "height": 32
+                },
+                {
+                  "pixel": 0,
+                  "width": 1024,
+                  "height": 1536,
+                  "x_res": 120,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                36,
+                68,
+                130,
+                99999
+              ],
+              "load_flags": "DEFAULT"
+            },
+            "coverage": [
+              "batch15:image-scaler:017"
+            ]
+          },
+          {
+            "id": "b15-image-018",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 24,
+                  "height": 24
+                },
+                {
+                  "pixel": 1,
+                  "width": 32,
+                  "height": 32
+                },
+                {
+                  "pixel": 0,
+                  "width": 768,
+                  "height": 1024,
+                  "x_res": 72,
+                  "y_res": 120
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                3,
+                36,
+                43,
+                99999
+              ],
+              "load_flags": "NO_HINTING"
+            },
+            "coverage": [
+              "batch15:image-scaler:018"
+            ]
+          },
+          {
+            "id": "b15-image-019",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 8,
+                  "height": 8
+                },
+                {
+                  "pixel": 0,
+                  "width": 512,
+                  "height": 512,
+                  "x_res": 72,
+                  "y_res": 72
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                36,
+                99999
+              ],
+              "load_flags": "RENDER"
+            },
+            "coverage": [
+              "batch15:image-scaler:019"
+            ]
+          },
+          {
+            "id": "b15-image-020",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 10,
+                  "height": 14
+                },
+                {
+                  "pixel": 0,
+                  "width": 640,
+                  "height": 768,
+                  "x_res": 72,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                1,
+                43,
+                68,
+                99999
+              ],
+              "load_flags": "HIGH_BITS_SET"
+            },
+            "coverage": [
+              "batch15:image-scaler:020"
+            ]
+          },
+          {
+            "id": "b15-image-021",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 12,
+                  "height": 18
+                },
+                {
+                  "pixel": 0,
+                  "width": 768,
+                  "height": 1024,
+                  "x_res": 96,
+                  "y_res": 72
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                1,
+                36,
+                130
+              ],
+              "load_flags": "DEFAULT"
+            },
+            "coverage": [
+              "batch15:image-scaler:021"
+            ]
+          },
+          {
+            "id": "b15-image-022",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 16,
+                  "height": 24
+                },
+                {
+                  "pixel": 0,
+                  "width": 1024,
+                  "height": 768,
+                  "x_res": 96,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                3,
+                50,
+                82,
+                99999
+              ],
+              "load_flags": "NO_HINTING"
+            },
+            "coverage": [
+              "batch15:image-scaler:022"
+            ]
+          },
+          {
+            "id": "b15-image-023",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 20,
+                  "height": 32
+                },
+                {
+                  "pixel": 0,
+                  "width": 1024,
+                  "height": 1536,
+                  "x_res": 120,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                36,
+                68,
+                130,
+                99999
+              ],
+              "load_flags": "RENDER"
+            },
+            "coverage": [
+              "batch15:image-scaler:023"
+            ]
+          },
+          {
+            "id": "b15-image-024",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 24,
+                  "height": 24
+                },
+                {
+                  "pixel": 1,
+                  "width": 32,
+                  "height": 32
+                },
+                {
+                  "pixel": 0,
+                  "width": 768,
+                  "height": 1024,
+                  "x_res": 72,
+                  "y_res": 120
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                3,
+                36,
+                43,
+                99999
+              ],
+              "load_flags": "HIGH_BITS_SET"
+            },
+            "coverage": [
+              "batch15:image-scaler:024"
+            ]
+          },
+          {
+            "id": "b15-image-025",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 8,
+                  "height": 8
+                },
+                {
+                  "pixel": 0,
+                  "width": 512,
+                  "height": 512,
+                  "x_res": 72,
+                  "y_res": 72
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                36,
+                99999
+              ],
+              "load_flags": "DEFAULT"
+            },
+            "coverage": [
+              "batch15:image-scaler:025"
+            ]
+          },
+          {
+            "id": "b15-image-026",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 10,
+                  "height": 14
+                },
+                {
+                  "pixel": 0,
+                  "width": 640,
+                  "height": 768,
+                  "x_res": 72,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                1,
+                43,
+                68,
+                99999
+              ],
+              "load_flags": "NO_HINTING"
+            },
+            "coverage": [
+              "batch15:image-scaler:026"
+            ]
+          },
+          {
+            "id": "b15-image-027",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 12,
+                  "height": 18
+                },
+                {
+                  "pixel": 0,
+                  "width": 768,
+                  "height": 1024,
+                  "x_res": 96,
+                  "y_res": 72
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                1,
+                36,
+                130
+              ],
+              "load_flags": "RENDER"
+            },
+            "coverage": [
+              "batch15:image-scaler:027"
+            ]
+          },
+          {
+            "id": "b15-image-028",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 16,
+                  "height": 24
+                },
+                {
+                  "pixel": 0,
+                  "width": 1024,
+                  "height": 768,
+                  "x_res": 96,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                3,
+                50,
+                82,
+                99999
+              ],
+              "load_flags": "HIGH_BITS_SET"
+            },
+            "coverage": [
+              "batch15:image-scaler:028"
+            ]
+          },
+          {
+            "id": "b15-image-029",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 20,
+                  "height": 32
+                },
+                {
+                  "pixel": 0,
+                  "width": 1024,
+                  "height": 1536,
+                  "x_res": 120,
+                  "y_res": 96
+                }
+              ],
+              "glyph_indexes": [
+                36,
+                68,
+                130,
+                99999
+              ],
+              "load_flags": "DEFAULT"
+            },
+            "coverage": [
+              "batch15:image-scaler:029"
+            ]
+          },
+          {
+            "id": "b15-image-030",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "asset_kind": "font"
+              },
+              "alt_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf",
+                "asset_kind": "font"
+              },
+              "multi_charmap_font": {
+                "kind": "ref",
+                "id": "input/fonts/generated/sfnt-name-records.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {
+                "max_faces": 0,
+                "max_sizes": 0,
+                "max_bytes": 0
+              },
+              "face_ids": [
+                "face-A",
+                "face-B"
+              ],
+              "requester": "path_face_requester_with_log",
+              "scenario": "success_node_acquire_and_unref",
+              "scalers": [
+                {
+                  "pixel": 1,
+                  "width": 24,
+                  "height": 24
+                },
+                {
+                  "pixel": 1,
+                  "width": 32,
+                  "height": 32
+                },
+                {
+                  "pixel": 0,
+                  "width": 768,
+                  "height": 1024,
+                  "x_res": 72,
+                  "y_res": 120
+                }
+              ],
+              "glyph_indexes": [
+                0,
+                3,
+                36,
+                43,
+                99999
+              ],
+              "load_flags": "NO_HINTING"
+            },
+            "coverage": [
+              "batch15:image-scaler:030"
+            ]
+          },
           {
             "id": "f1",
             "assets": {

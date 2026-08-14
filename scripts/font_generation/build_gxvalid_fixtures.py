@@ -59,6 +59,11 @@ GX_TABLES = {
     "lcar": b"\x00\x01\x00\x00\x00\x00" + EMPTY_LOOKUP_FORMAT_8,
 }
 
+# Apple’s 32-bit `kern` header uses version 1, a zero reserved halfword, and
+# a zero 32-bit subtable count.  Keep this separate from the classic version-0
+# control so the public GX validator route can execute both header layouts.
+GX_KERN_VERSION1 = b"\x00\x01\x00\x00\x00\x00\x00\x00"
+
 
 def main() -> None:
     aat_dir = FONT_ROOT / "aat"
@@ -91,6 +96,10 @@ def main() -> None:
         ("morx", "valid-morx.ttf"),
     ):
         save_sfnt(generated_aat_dir / filename, {tag: GX_TABLES[tag]})
+    save_sfnt(
+        generated_aat_dir / "valid-gx-kern-version1.ttf",
+        {"kern": GX_KERN_VERSION1},
+    )
 
     # The public-contract matrix exercises both the selected table output and
     # the validator's absent/malformed controls.  Keep those controls as

@@ -130,9 +130,16 @@ pub(super) fn reload(
         pt.x = pt.ox;
         pt.y = pt.oy;
 
-        // Flags: control point (from scaled outline).
+        // Flags: preserve the curve kind from the source outline.  Type 2
+        // outlines carry cubic controls explicitly; `afhints.c` uses
+        // AF_FLAG_CUBIC to keep those controls out of quadratic-only weak
+        // interpolation paths.
         if !sp.on_curve {
-            pt.flags |= AF_FLAG_CONIC; // TrueType has only quadratic (conic) off-curve
+            if raw_outline.has_cubic_tags && (rp.tag & 3) == 2 {
+                pt.flags |= AF_FLAG_CUBIC;
+            } else {
+                pt.flags |= AF_FLAG_CONIC; // TrueType has only quadratic (conic) off-curve
+            }
         }
 
         hints.points.push(pt);

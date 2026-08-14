@@ -170,6 +170,16 @@ def write_missing_hmtx() -> None:
     save_generated_font("missing-hmtx.ttf", font)
 
 
+def write_missing_outline_tables() -> None:
+    # Keep the outline-table absence isolated. With `glyf` present, the pinned
+    # TrueType driver reports Locations_Missing for the absent `loca` table.
+    # This is a face-open control, not runtime glyph-load corruption, so it
+    # must remain free of bitmap/CFF fallbacks.
+    missing_loca = base_font()
+    del missing_loca["loca"]
+    save_generated_font("glyf-present-loca-missing.ttf", missing_loca)
+
+
 def write_malformed_maxp() -> None:
     # These files back `tttables.TT_MaxProfile.malformed_table_error_source`.
     # The previous fixture paths were DejaVuSans symlinks, which made the row a
@@ -222,6 +232,14 @@ def valid_opentype_layout_font() -> TTFont:
 def write_valid_opentype_layout() -> None:
     font = valid_opentype_layout_font()
     save_opentype_font("valid-all-layout.otf", font)
+
+    # Keep a present, zero-length GDEF directory entry.  The C ABI wrapper
+    # still has to marshal this raw table through its public validation route;
+    # the empty payload reaches the thin wrapper's null-output guard without
+    # changing the Rust validator's table semantics.
+    zero_length_gdef = valid_opentype_layout_font()
+    zero_length_gdef["GDEF"] = raw_table("GDEF", b"")
+    save_opentype_font("zero-length-gdef.otf", zero_length_gdef)
 
     # Keep one selected-table fixture per public validation flag.  The GDEF,
     # GPOS, and GSUB payloads come from the project-authored feature source
@@ -311,6 +329,7 @@ def main() -> None:
     write_vertical_present()
     write_no_os2()
     write_missing_hmtx()
+    write_missing_outline_tables()
     write_malformed_maxp()
     write_recognized_broken_sfnt()
     write_valid_opentype_layout()

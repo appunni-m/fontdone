@@ -70,6 +70,10 @@ pub struct GlyphOutline {
     /// Original glyf header bbox xMin for this glyph. Composite loading keeps
     /// `xmin` as the final subglyph cache used for pp1.x compatibility.
     pub bbox_xmin: i32,
+    /// Original glyf header bbox yMax used to seed the vertical phantom
+    /// point. Variation deltas change the outline CBox but do not rewrite the
+    /// loader's header bbox (`ttgload.c:324,1339`).
+    pub bbox_ymax: i32,
     /// Whether composite. If true, xmin tracks last sub-glyph's glyf header
     /// (matching C's loader->bbox ttgload.c:324) and lsb tracks last sub's.
     pub is_composite: bool,
@@ -291,6 +295,7 @@ fn load_glyph_inner(
         outline.xmax = xmax;
         outline.ymax = ymax;
         outline.bbox_xmin = xmin;
+        outline.bbox_ymax = ymax;
         outline.is_composite = false;
         outline.sub_lsb = hmtx.get(glyph_index).lsb as i32;
         Ok(outline)
@@ -401,6 +406,7 @@ fn load_glyph_inner(
             xmax,
             ymax,
             bbox_xmin: xmin,
+            bbox_ymax: ymax,
             is_composite: true,
             sub_lsb: last_sub_lsb,
             // C: TT_Process_Composite_Glyph in ttgload.c:1208-1234 reads
@@ -569,6 +575,7 @@ fn parse_simple_glyph(data: &[u8], num_contours: u16) -> Result<GlyphOutline, Fo
         xmax: 0,
         ymax: 0,
         bbox_xmin: 0,
+        bbox_ymax: 0,
         is_composite: false,
         sub_lsb: 0,
         instructions,

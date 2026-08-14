@@ -6,7 +6,8 @@
     "success_bitmap_modes",
     "success_null_or_no_bbox_zeroes_output",
     "success_null_output_is_noop",
-    "mode_aliases_and_unknown_modes"
+    "mode_aliases_and_unknown_modes",
+    "mcp_svg_cbox_batch"
   ],
   "cases": [
     {
@@ -97,6 +98,33 @@
             },
             "coverage": [
               "ftglyph.glyph_get_cbox:explicit-g74"
+            ]
+          },
+          {
+            "id": "batch10-cbox-017",
+            "assets": {
+              "outline_font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cid/fontinfo-populated.cid"
+              }
+            },
+            "params": {
+              "source_creation": "FT_Get_Glyph outline",
+              "bbox_modes": [
+                0,
+                1,
+                2,
+                3
+              ],
+              "pixel_size": 20,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "glyph_index": 1
+            },
+            "coverage": [
+              "batch10:cbox:input/fonts/cid/fontinfo-populated.cid:1:20"
             ]
           }
         ]
@@ -338,6 +366,85 @@
         "source_refs": [
           "freetype/include/freetype/ftglyph.h",
           "freetype/src/base/ftglyph.c"
+        ]
+      }
+    },
+    {
+      "case_id": "ftglyph.FT_Glyph_Get_CBox.mcp_svg_cbox_batch",
+      "subject": "ftglyph.FT_Glyph_Get_CBox",
+      "case": "mcp_svg_cbox_batch",
+      "operation": "ftglyph.glyph_get_cbox",
+      "schema": "glyph_cbox",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c54-svg-cbox-001",
+            "assets": {
+              "svg_font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/svg/otsvg-glyph.ttf"
+              }
+            },
+            "params": {
+              "source_creation": "FT_Get_Glyph svg",
+              "face_index": 0,
+              "pixel_size": 12,
+              "load_flags": [
+                "FT_LOAD_COLOR"
+              ],
+              "glyph_index": 1,
+              "bbox_modes": [
+                0,
+                1,
+                2,
+                3
+              ]
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3499"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph",
+        "area:coverage"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the SVG glyph class branch in wasm_glyph_cbox_snapshot. The batch uses both maintained OT-SVG fixtures, both valid covered glyph IDs, and varied pixel sizes while keeping FT_LOAD_COLOR and all public bbox modes stable."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "void",
+          "bbox": "zero FT_BBox for an SVG glyph without a bbox hook",
+          "modes": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "boxes[*].mode",
+            "boxes[*].bbox"
+          ]
+        },
+        "source_refs": [
+          "freetype/include/freetype/ftglyph.h",
+          "freetype/src/base/ftglyph.c",
+          "freetype/src/sfnt/ttsvg.c"
+        ],
+        "fixture_requirements": [
+          "input/fonts/svg/otsvg-glyph.ttf contains a valid OT-SVG document covering glyph index 1.",
+          "input/fonts/svg/otsvg-glyph-range-gap.ttf contains valid OT-SVG documents covering glyph indices 1 and 3."
         ]
       }
     }

@@ -13,6 +13,12 @@ pub enum FontError {
     #[error("Invalid TrueType font: {0}")]
     InvalidFont(String),
 
+    /// A TrueType outline has a `glyf` table but no corresponding `loca`
+    /// locations table. FreeType exposes this dedicated SFNT error at face
+    /// construction rather than collapsing it into `Invalid_File_Format`.
+    #[error("TrueType locations table is missing")]
+    LocationsMissing,
+
     /// A required SFNT subtable is structurally malformed.
     #[error("Invalid font table: {0}")]
     InvalidTable(String),
@@ -114,6 +120,10 @@ pub enum FontError {
     /// A TrueType outline or embedded bitmap composite is malformed.
     #[error("Invalid glyph composite")]
     InvalidComposite,
+
+    /// The requested fixed-size bitmap strike does not exist.
+    #[error("Invalid pixel size")]
+    InvalidPixelSize,
 
     /// BDF-like input did not start with `STARTFONT` at public face open.
     #[error("BDF stream is missing STARTFONT")]

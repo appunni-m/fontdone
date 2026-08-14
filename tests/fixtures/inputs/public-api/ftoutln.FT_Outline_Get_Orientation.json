@@ -1,7 +1,7 @@
 {
   "version": 1,
   "subject": "ftoutln.FT_Outline_Get_Orientation",
-  "manifest_cases": ["null_empty_and_area_sign", "collapsed_and_oversized_return_none", "transformed_and_reversed_outlines"],
+  "manifest_cases": ["null_empty_and_area_sign", "collapsed_and_oversized_return_none", "transformed_and_reversed_outlines", "mcp_gap_matrix"],
   "cases": [
     {
       "case_id": "ftoutln.FT_Outline_Get_Orientation.null_empty_and_area_sign",
@@ -38,6 +38,20 @@
       "classifiers": ["kind:function", "header:ftoutln", "surface:public-c-api", "behavior:mutation-effects"],
       "metadata": {"abi": {"header": "freetype/ftoutln.h", "symbol": "FT_Outline_Get_Orientation", "kind": "function", "c_signature": "FT_Orientation FT_Outline_Get_Orientation(FT_Outline* outline)"}, "source_behavior": "Orientation is recomputed from current point order and transformed coordinates, independent of flags."},
       "expectation": {"status": "ok", "output_shape": {"results": [{"return": "FT_Orientation", "points_after": ["FT_Vector"], "flags_after": "FT_Int"}]}, "compare": {"mode": "exact", "paths": ["results[*].return", "results[*].points_after", "results[*].flags_after"]}, "source_refs": ["freetype/src/base/ftoutln.c:545-603", "freetype/src/base/ftoutln.c:719-737", "freetype/src/base/ftoutln.c:1050-1116"], "fixture_requirements": ["Outline whose orientation changes after reversal and after a mirror transform."]}
+    },
+    {
+      "case_id": "ftoutln.FT_Outline_Get_Orientation.mcp_gap_matrix",
+      "subject": "ftoutln.FT_Outline_Get_Orientation",
+      "case": "mcp_gap_matrix",
+      "operation": "ftoutln.get_orientation",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {"variants": [
+        {"id":"c34-orientation-001","params":{"validation":"unrepresentable_point"},"coverage":["src/ffi/handles.rs:4069-4070"]}
+      ]},
+      "classifiers": ["kind:function", "header:ftoutln", "surface:public-c-api", "behavior:conversion-validation"],
+      "metadata": {"abi": {"header": "freetype/ftoutln.h", "symbol": "FT_Outline_Get_Orientation", "kind": "function", "c_signature": "FT_Orientation FT_Outline_Get_Orientation(FT_Outline* outline)"}, "source_behavior": "A point outside the pure-Rust core coordinate range is classified as FT_ORIENTATION_NONE, matching C's oversized-orientation guard."},
+      "expectation": {"status": "ok", "output_shape": {"orientations": [{"orientation": "FT_Orientation"}]}, "compare": {"mode": "exact", "paths": ["orientations[*].orientation"]}, "source_refs": ["freetype/src/base/ftoutln.c:1055-1116"], "fixture_requirements": ["A one-point outline with an FT_Pos coordinate beyond i32 range."]}
     }
   ]
 }

@@ -67,7 +67,7 @@ def embedded_sfnt() -> bytes:
     return output.getvalue()
 
 
-def type42_wrapper(sfnt: bytes) -> bytes:
+def type42_wrapper(sfnt: bytes, *, is_fixed_pitch: bool = False) -> bytes:
     hex_rows = [
         sfnt.hex().upper()[offset : offset + 128]
         for offset in range(0, len(sfnt) * 2, 128)
@@ -91,7 +91,7 @@ def type42_wrapper(sfnt: bytes) -> bytes:
         "/FamilyName (Fontdone Type42) def",
         "/Weight (Regular) def",
         "/ItalicAngle 0 def",
-        "/isFixedPitch false def",
+        f"/isFixedPitch {'true' if is_fixed_pitch else 'false'} def",
         "/UnderlinePosition -100 def",
         "/UnderlineThickness 50 def",
         "end readonly def",
@@ -112,6 +112,9 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     (OUT_DIR / "fontinfo-and-glyph-names.t42").write_bytes(
         type42_wrapper(embedded_sfnt())
+    )
+    (OUT_DIR / "fontinfo-fixed-pitch.t42").write_bytes(
+        type42_wrapper(embedded_sfnt(), is_fixed_pitch=True)
     )
 
 

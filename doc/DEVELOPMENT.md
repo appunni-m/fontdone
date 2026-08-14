@@ -385,6 +385,48 @@ references plus face, size, SBit, and reset calls after manager completion;
 these lifecycle edges run through the Rust, C-ABI, and WASM routes and remain
 part of the exact input-driven comparison.
 
+Recent fast-loop coverage probes found two parity-adapter defects. The
+`FT_Glyph_To_Bitmap` bitmap-strike probe initially forced the Rust route through
+`FT_Get_Bitmap_Glyph` even when the selected glyph had no embedded bitmap;
+matching the pinned oracle requires falling back to outline extraction and
+`FT_Outline_Glyph_To_Bitmap` after `FT_Err_Invalid_Glyph_Format`. The
+`FT_Outline_Copy` self-copy case initially gave the WASM wrapper separate source
+and target allocations, so it could not reach the exported same-pointer guard;
+the adapter now passes one pointer for that contract. Both fixes retain exact
+Rust, C-ABI, WASM, and oracle parity; the self-copy 100-case probe was reduced
+to one retained witness after Coverage MCP showed no additional line benefit.
+The direct `FT_Outline_Render` validation probe likewise added 100 null-
+`FT_Raster_Params` variants to reach the WASM invalid-argument guard, then kept
+one retained witness after Coverage MCP confirmed the remaining variants added
+no new lines.
+The `FT_New_Size` null-face probe also exposed an adapter-only mismatch: the
+oracle preserves `output_size_nullness` in the error payload even when the
+face handle is null. The Rust, C-ABI, and WASM adapters now preserve that
+payload while returning the same `Invalid_Face_Handle` status; the 100-case
+probe was reduced to one witness after coverage confirmation.
+
+The later null-handle `FT_Done_Glyph` probe initially emitted the wrong JSON
+envelope from the offline oracle helper, so the route comparison could not
+trust the probe's `status`/`output` shape. The emitter now preserves the
+standard top-level status and output object, including the probe label, and
+the retained `c65-null-handle-001` row passes all four routes. A c71 focused
+compile failure also attempted to read `FT_STROKER_LINECAP_ROUND` and
+`FT_STROKER_LINEJOIN_ROUND` from the WASM facade module; those constants are
+not exported there. The test adapter now imports the generated constants from
+the Rust FFI surface, which is the same source used by the runtime wrapper.
+Both were harness defects, not Rust-vs-C behavior differences, and each was
+fixed before the subsequent non-coverage parity check.
+
+For each new 100-row loop, Coverage MCP is the source of the next target:
+query the current snapshot's uncovered or partial lines, read bounded source
+context, and advance the file/line cursor after every retained batch. A
+structural closing-brace mapping is skipped only when its executable body is
+already covered and the following meaningful arm is the actual gap. Per-line
+attempt counts are retained in the working notes; a line tried three times is
+not selected again unless a code-path change creates a new, evidence-backed
+route. Full batches are measured before pruning, then pruned to the smallest
+set that reproduces every covered-line/branch/region delta.
+
 ```bash
 make test-coverage
 make test-coverage-all
@@ -507,7 +549,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 755 tracked paths and no symlinks.
+The canonical input tree currently contains 758 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -541,6 +583,148 @@ intentional: it isolates parser execution from unrelated C/Rust outline-metric
 differences while still comparing the complete slot result with the pinned C
 oracle.
 
+The current coverage loop retains 24 Type 1 face-open variants and 48
+Type 1 glyph-load variants across the maintained encoding, PFA/PFB, and
+Adobe-MM inputs. The 72 focused cases pass on Rust, the C ABI, WASM, and the
+pinned oracle. Coverage MCP snapshot
+`280f5d12-eeb7-48e7-996b-bca8bfadfac5` records 52,144 / 54,802 covered lines,
+10,444 / 12,508 covered branches, 3,523 / 3,855 covered functions, and
+71,729 / 75,851 covered regions; compared with the preceding snapshot it adds
+38 lines, one branch, and ten regions without a regression. Duplicate rows are
+removed only after grouped or source-gap attribution shows no additional
+covered line or branch.
+
+Batch 10 was inserted as one 100-row probe across BDF, CID Type 1, Type 42,
+Type 1, glyph-CBox, glyph-copy, and cache-manager routes. After the focused
+parity run, nine plain-text BDF face/load candidates were removed because the
+pinned C oracle returned `FT_Err_Invalid_Stream_Operation`; they were not
+Rust divergences. Grouped source attribution then removed the 14 face-open
+rows and the zero-yield glyph-copy/CBox/cache probes. The retained 37 load
+rows all pass, and `batch10-cbox-017` remains as a regression case for the
+CID no-hinting bug it exposed, for 38 focused passes total. The final MCP
+snapshot is `522a782b-0f88-4d4f-a965-8998465ae1eb`; it records 52,154 /
+54,805 covered lines, 10,447 / 12,510 branches, 3,523 / 3,855 functions,
+and 71,740 / 75,855 regions. Against `280f5d12-eeb7-48e7-996b-bca8bfadfac5`,
+that is +10 lines, +3 branches, and +11 regions with no regression. The CID
+empty-CharString `FT_LOAD_NO_HINTING` path now returns the same empty outline
+slot as the default/no-scale paths, matching `t1cid`.
+
+Batch 12 was also inserted as one 100-row probe. Its Type 1 Adobe-MM rows
+exposed a real parity divergence in hinted coordinate scaling; the Rust route
+now follows the pinned `cf2_getScaleAndHintFlag` decision and uses Adobe
+coordinate scaling only when grid-fit metrics are enabled. The focused and
+full parity lanes passed after the fix. Grouped Coverage MCP attribution
+removed zero-yield rows and retained only the rows that reached new source
+lines; the retained batch added 12 lines, 4 branches, and 12 regions over the
+preceding snapshot without changing exact outputs.
+
+Batch 13 followed the same one-shot process with 100 concrete rows spanning
+BDF construction, static and variation-coordinate routes, glyph CBox and
+bitmap conversion, outline rendering, and Type 1/scalable glyph loads. The
+focused parity lane passed all 100 rows after correcting 13 direct-outline
+case IDs to carry the shape markers used by the pinned C oracle; this was a
+fixture/oracle naming issue, not a Rust runtime divergence. The full matrix
+then passed 8,177 / 8,177 runnable comparisons with four explicit pending
+cases. Its Coverage MCP snapshot added 10 lines, 3 branches, and 14 regions;
+the new lines were the no-`fvar` variation-coordinate errors and the static
+face blend delegation in `src/font.rs` and `src/ffi/handles.rs`.
+
+Post-attribution pruning removed 98 zero-yield Batch 13 rows and a temporary
+BDF candidate whose `BBX` validation returned before the intended missing
+`ENCODING` path. The two retained static-variation rows still pass focused
+parity and reproduce the complete +10-line, +3-branch, +14-region gain in the
+post-prune full coverage snapshot. No additional runtime divergence was found
+in Batch 13. This grouped attribution loop is the required fast path for new
+coverage batches: add 100, run parity, measure source deltas, remove rows with
+no new coverage, and rerun exact parity before the next batch.
+
+The next MCP-directed batch targeted the synthetic `FT_Get_Glyph` output-clear
+guard at `fontdone-wasm/src/implementation.rs:3541`. One hundred nonzero
+slot-presence variants passed focused parity; Coverage MCP measured +3 lines,
++2 branches, and +2 regions, with the target line hit 100 times and no
+regressions. The 99 redundant variants were pruned to one retained witness;
+the post-prune snapshot `f38af3b3-c1d6-4e3a-b6c5-208824086d27` preserves the
+same gain at 52,776 / 55,320 lines, 10,688 / 12,678 branches, and 72,342 /
+76,447 regions. The synthetic oracle row is explicitly modeled because this
+WASM boolean facade has no corresponding public `FT_GlyphSlot` C pointer to
+pass to the pinned C function. The full non-coverage matrix then passed
+8,796 / 8,796 runnable comparisons with four explicit pending cases.
+
+After the malformed-COLRv1 parser correction, the refreshed Coverage MCP
+snapshot `d3a3af5a-6e07-427a-8769-3dd5da59a5e5` records 52,175 / 54,817
+covered lines, 10,455 / 12,516 covered branches, 3,523 / 3,855 covered
+functions, and 71,765 / 75,870 covered regions. Against the pre-Batch-13
+baseline it is +9 lines, +3 branches, and +13 regions; the one-line total
+change is LLVM's source-line normalization after the parser boundary fix.
+
+The subsequent MCP-directed fast loop is recorded by immutable snapshots so
+coverage-only adoption stays separate from runtime parity evidence. The c73
+through c80 batches advanced the current proof from
+`889e8b7b-ef49-4e3c-94dc-6987aae038da` at 52,801 / 55,332 lines,
+10,702 / 12,682 branches, and 72,368 / 76,451 regions to
+`886a99a9-7668-4845-af1e-8fc02fe20d3f` at 52,823 / 55,347 lines,
+10,714 / 12,688 branches, and 72,382 / 76,457 regions. Each batch was
+focused first, then grouped by source attribution; variants with no new line,
+branch, or region were removed and the retained witness was rerun. The c81
+null-tag probe produced no coverage delta and was fully pruned.
+
+The c82 batch then added 100 WASM `file_base == NULL` safety variants for the
+PostScript hinting facade. Focused parity passed 100 / 100; Coverage MCP
+measured +4 lines, +1 branch, and +1 region over the c80 proof, and the
+post-prune snapshot `b24f29a8-c1cd-4274-9628-e43bd144160b` preserves that gain
+with one retained witness. The c83 batch used the next MCP cursor target,
+`fontdone-wasm/src/implementation.rs:1921-1922`, and passed 100 / 100 before
+pruning. Only the null-output return at line 1922 improved, so 99 variants were
+removed; the post-prune snapshot `67fc56d5-5a3e-46f9-9cab-a2c250b2e199`
+reproduces +1 line, +1 branch, and +1 region over c82. It records
+52,831 / 55,347 covered lines, 10,716 / 12,688 covered branches, and
+72,384 / 76,457 covered regions. No runtime divergence was found in either
+batch. The next batch must select its source gap from this current MCP proof,
+advance the line-history cursor, and skip a line after three unsuccessful
+targeted attempts.
+
+The c84 MCP-directed batch added 100 PostScript property/load-flag variants for
+the next WASM post-error preservation target at
+`fontdone-wasm/src/implementation.rs:2012`. The first focused run exposed
+three grouped runtime divergences and was 68 / 100 before the fixes. Generic
+auto-hint dispatch was incorrectly used for Type 1 and empty CID Type 1 faces;
+CFF light and `NO_AUTOHINT` loads were incorrectly sent through the generic
+TrueType paths; and the Type 1 auto-hinter adapter was inventing SFNT width and
+blue-zone metrics for a compact non-SFNT face. The runtime now dispatches each
+face family at the same boundary as the pinned driver, adapts Type 1 cubic
+outlines through the shared auto-hinter without fabricated SFNT metrics, and
+keeps CFF Adobe scaling on the native CFF route. Focused parity now passes all
+100 c84 variants across Rust FFI, C ABI, and WASM; the full non-coverage parity
+gate is the next required check before coverage attribution and pruning.
+
+Confirmed runtime divergences fixed during the coverage loop are documented
+next to their implementations and must remain separate from coverage-only
+adoption claims:
+
+- `FTC_CMapCache_Lookup` normalizes negative cmap indexes into the cache key,
+  so a negative lookup can reuse an index-zero entry without consulting the
+  active charmap, matching `ftccmap.c`.
+- `FTC_SBitCache_Lookup` rounds 26.6 advances with the pinned half-pixel
+  offset and preserves the gray format/max-grays descriptor for an empty
+  rendered bitmap whose public buffer is elided.
+- `FT_Outline_Render` accepts a no-AA request for the public MONO target and
+  routes it through the black rasterizer, as `ftraster.c` does.
+- `FT_Get_Color_Glyph_ClipBox` preserves FreeType's SFNT-frame zero padding for
+  a format-2 ClipBox whose final `VarIndexBase` reaches past the maintained
+  table slice; Rust reads the padded zero and returns the scaled box instead
+  of dropping the whole ClipList. The external C-contract audit exposed this
+  malformed-input divergence.
+- BDF constructor state checks, decimal-prefix `BBX` parsing, strike-size
+  selection, and vertical auto-hint metrics now follow the pinned parser and
+  scaler ordering. The MVAR vertical-metric rounding correction is likewise
+  retained in `src/font.rs`.
+
+Two changes are boundary corrections rather than runtime adoption: the SBit
+scaler parity harness compares the pinned direct slot shape while still
+executing and validating the cache conversion, and generated oracle/harness
+rows preserve the pinned zero-sized MONO/SBit and bitmap target descriptors.
+Neither boundary adjustment is counted as complete FreeType API adoption.
+
 Maintained glyph-slot and render inputs may set `probe_wasm_bitmap_accessors`.
 Those cases keep the normal slot result in the pinned-C comparison while the
 WASM route additionally checks the five exported bitmap accessors against its
@@ -564,6 +748,12 @@ the `FT_Load_Char` input for unassigned load-flag bits keeps the numeric bit
 `0x02000000` and compares the complete slot result with C; the Rust boundary
 must ignore that bit just as the pinned loader does, rather than turning it
 into a blanket unsupported-feature error.
+
+The standalone external C-ABI audit cannot inspect FreeType's private `TT_Face`
+layout. Its invalid COLRv1 layer-iterator probe therefore seeds the iterator
+through public paint APIs and applies equivalent invalid cursor offsets; the
+result remains compared exactly with the pinned oracle, while the runtime
+contract is still exercised through `FT_Get_Paint_Layers`.
 
 Third-party material must have redistribution permission and exact provenance.
 The three retained compact control fonts whose exact upstream transformation
@@ -716,8 +906,8 @@ or reason is stale.
 |---|---:|---|
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
-| R03 | 1,663 | executable parity tests and public contracts |
-| R04 | 758 | licensed canonical fixture inputs |
+| R03 | 1,664 | executable parity tests and public contracts |
+| R04 | 855 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -725,7 +915,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,643** | **all retained paths** |
+| **Total** | **2,741** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

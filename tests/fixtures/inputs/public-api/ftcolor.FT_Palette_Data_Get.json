@@ -345,21 +345,21 @@
       "schema": "api_result",
       "expect_error": true,
       "inputs": {
-      "assets": {
-        "font": {
-          "kind": "ref",
-          "id": "input/fonts/color/cpal-palettes-names-flags.ttf",
-          "asset_kind": "font",
-          "properties": [
-            "CPAL table remains observable when the public APIs are compiled as disabled stubs"
-          ]
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/color/cpal-palettes-names-flags.ttf",
+            "asset_kind": "font",
+            "properties": [
+              "CPAL table remains observable when the public APIs are compiled as disabled stubs"
+            ]
+          }
+        },
+        "params": {
+          "build_feature": "TT_CONFIG_OPTION_COLOR_LAYERS disabled",
+          "face_index": 0,
+          "sentinel_palette_data": true
         }
-      },
-      "params": {
-        "build_feature": "TT_CONFIG_OPTION_COLOR_LAYERS disabled",
-        "face_index": 0,
-        "sentinel_palette_data": true
-      }
       },
       "classifiers": [
         "kind:function",

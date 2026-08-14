@@ -5,7 +5,8 @@
     "alias_defined",
     "opaque_handle_import_contract",
     "unparsed_handle_lifecycle_matches_c",
-    "lifecycle_contract"
+    "lifecycle_contract",
+    "mcp_gap_matrix"
   ],
   "cases": [
     {
@@ -244,6 +245,56 @@
           "freetype/include/freetype/ftstroke.h:50-78",
           "freetype/src/base/ftstroke.c:791-881",
           "freetype/src/base/ftstroke.c:1765-2038"
+        ]
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Stroker.mcp_gap_matrix",
+      "subject": "ftstroke.FT_Stroker",
+      "case": "mcp_gap_matrix",
+      "operation": "ftstroke.stroker_lifecycle",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+          "variants": [
+          {"id":"c42-invalid-001","params":{"validation":"new_null_output_pointer","family":"invalid_handle_guards","variant":1},"coverage":["src/ffi/handles.rs:6164-6168","src/ffi/handles.rs:6230-6234"]},
+          {"id":"c42-invalid-026","params":{"validation":"new_null_library","family":"invalid_handle_guards","variant":1},"coverage":["src/ffi/handles.rs:6164-6168","src/ffi/handles.rs:6230-6234"]},
+          {"id":"c42-invalid-051","params":{"validation":"begin_null_vector","family":"invalid_handle_guards","variant":1},"coverage":["src/ffi/handles.rs:6164-6168","src/ffi/handles.rs:6230-6234"]},
+          {"id":"c42-invalid-076","params":{"validation":"begin_null_stroker","family":"invalid_handle_guards","variant":1},"coverage":["src/ffi/handles.rs:6164-6168","src/ffi/handles.rs:6230-6234"]}
+        ]
+      },
+      "classifiers": [
+        "kind:type",
+        "header:ftstroke",
+        "area:stroker",
+        "area:error"
+      ],
+      "metadata": {
+        "coverage_intent": "Retain one public witness for each constructor and BeginSubPath null-argument guard covered by c42."
+      },
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "symbol": "FT_Stroker",
+        "typedef": "typedef struct FT_StrokerRec_* FT_Stroker"
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error",
+          "status_sequence": "FT_Error[]"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "status_sequence"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:791-819",
+          "freetype/src/base/ftstroke.c:1765-1795",
+          "src/ffi/handles.rs:6163-6168",
+          "src/ffi/handles.rs:6225-6239"
         ]
       }
     }

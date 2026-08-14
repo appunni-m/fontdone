@@ -5,7 +5,8 @@
     "cubic_curve_success",
     "first_segment_starts_subpath",
     "coincident_controls_and_end_noop",
-    "invalid_arguments"
+    "invalid_arguments",
+    "mcp_gap_matrix"
   ],
   "cases": [
     {
@@ -258,6 +259,65 @@
         },
         "source_refs": [
           "freetype/src/base/ftstroke.c:1555-1561"
+        ]
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Stroker_CubicTo.mcp_gap_matrix",
+      "subject": "ftstroke.FT_Stroker_CubicTo",
+      "case": "mcp_gap_matrix",
+      "operation": "ftstroke.cubic_to",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"c38-cubic-001","params":{"validation":"subdivision_point_collapse","family":"cubic"},"coverage":["src/ffi/handles.rs:5007-5012"]},
+          {"id":"c38-cubic-002","params":{"validation":"subdivision_point_collapse","family":"cubic"},"coverage":["src/ffi/handles.rs:5007-5012"]},
+          {"id":"c38-cubic-003","params":{"validation":"subdivision_point_collapse","family":"cubic"},"coverage":["src/ffi/handles.rs:5007-5012"]},
+          {"id":"c38-cubic-004","params":{"validation":"subdivision_point_collapse","family":"cubic"},"coverage":["src/ffi/handles.rs:5007-5012"]},
+          {"id":"c38-cubic-005","params":{"validation":"subdivision_point_collapse","family":"cubic"},"coverage":["src/ffi/handles.rs:5007-5012"]},
+          {"id":"c38-cubic-006","params":{"validation":"subdivision_point_collapse","family":"cubic"},"coverage":["src/ffi/handles.rs:5007-5012"]},
+          {"id":"c38-cubic-007","params":{"validation":"subdivision_point_collapse","family":"cubic"},"coverage":["src/ffi/handles.rs:5007-5012"]},
+          {"id":"c38-cubic-008","params":{"validation":"subdivision_point_collapse","family":"cubic"},"coverage":["src/ffi/handles.rs:5007-5012"]},
+          {"id":"c38-cubic-009","params":{"validation":"subdivision_point_collapse","family":"cubic"},"coverage":["src/ffi/handles.rs:5007-5012"]},
+          {"id":"c38-cubic-010","params":{"validation":"subdivision_point_collapse","family":"cubic"},"coverage":["src/ffi/handles.rs:5007-5012"]},
+          {"id":"c40-cubic-001","params":{"validation":"subdivision_limit","family":"cubic"},"coverage":["src/ffi/handles.rs:5346-5359"]},
+          {"id":"c43-cubic-001","params":{"validation":"null_control1","stroker":"null","variant":1},"coverage":["src/ffi/handles.rs:6394-6398"]},
+          {"id":"c43-cubic-009","params":{"validation":"null_control2","stroker":"null","variant":9},"coverage":["src/ffi/handles.rs:6394-6398"]},
+          {"id":"c43-cubic-017","params":{"validation":"null_to","stroker":"null","variant":17},"coverage":["src/ffi/handles.rs:6394-6398"]},
+          {"id":"c43-cubic-025","params":{"validation":"null_stroker","control1":"present","control2":"present","to":"present","variant":25},"coverage":["src/ffi/handles.rs:6397-6398"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:stroker",
+        "area:subdivision"
+      ],
+      "metadata": {
+        "coverage_intent": "Probe cubic subdivision arcs whose integer-rounded control points collapse to a point and retain one public witness for each c43 null-argument guard family."
+      },
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "symbol": "FT_Stroker_CubicTo",
+        "signature": "FT_Error FT_Stroker_CubicTo(FT_Stroker stroker, FT_Vector* control1, FT_Vector* control2, FT_Vector* to)"
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error",
+          "status_sequence": "FT_Error[]"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "status_sequence"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:1546-1760",
+          "src/ffi/handles.rs:5007-5012"
         ]
       }
     }

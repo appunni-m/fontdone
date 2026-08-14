@@ -90,7 +90,7 @@ fn scale_unrounded_fdot6(value: i32, scale: i32) -> i32 {
     ft_mul_fix(value, scale).wrapping_add(32) >> 6
 }
 
-/// Scale one CFF coordinate through FreeType's Adobe CFF2 path.
+/// Scale one PostScript outline coordinate through FreeType's Adobe path.
 ///
 /// `cf2_getScaleAndHintFlag` rounds the public 16.16 size scale to a
 /// 26.6-per-font-unit transform before the Adobe interpreter emits its
@@ -100,7 +100,7 @@ fn scale_unrounded_fdot6(value: i32, scale: i32) -> i32 {
 /// boundaries (for example, 240 units at 22 ppem becomes 337 in CFF and 338
 /// with the generic path).
 #[inline]
-fn scale_cff_adobe_coordinate(value: i32, scale: i32) -> i32 {
+pub(crate) fn scale_adobe_coordinate(value: i32, scale: i32) -> i32 {
     let cf2_scale = scale.wrapping_add(32) / 64;
     let cf2_value = value.wrapping_shl(16);
     ft_mul_fix(cf2_scale, cf2_value) >> 10
@@ -217,6 +217,7 @@ struct HintStyle {
     stem_adjust: bool,
     horz_snap: bool,
     vert_snap: bool,
+    vertical_layout: bool,
 }
 
 /// Scale a glyph's outline to 26.6 and translate it so its pixel bbox's
@@ -243,6 +244,7 @@ pub fn scale_glyph(
             stem_adjust: true,
             horz_snap: false,
             vert_snap: false,
+            vertical_layout: false,
         },
         true,
         false,
@@ -271,6 +273,7 @@ pub fn scale_glyph_for_metrics(
             stem_adjust: true,
             horz_snap: false,
             vert_snap: false,
+            vertical_layout: false,
         },
         true,
         false,
@@ -338,6 +341,7 @@ pub fn scale_glyph_for_metrics_with_bytecode_context_and_mode_and_hdmx(
             stem_adjust: true,
             horz_snap: false,
             vert_snap: false,
+            vertical_layout: false,
         },
         true,
         false,
@@ -373,6 +377,24 @@ pub fn scale_glyph_for_metrics_with_autohint_and_mode(
     is_italic: bool,
     native_hint_mode: NativeHintMode,
 ) -> Result<ScaledGlyph, FontError> {
+    scale_glyph_for_metrics_with_autohint_and_mode_and_layout(
+        data,
+        glyph_index,
+        latin_metrics,
+        is_italic,
+        native_hint_mode,
+        false,
+    )
+}
+
+pub fn scale_glyph_for_metrics_with_autohint_and_mode_and_layout(
+    data: &FontData,
+    glyph_index: u16,
+    latin_metrics: Option<&crate::autohint::AfLatinMetrics>,
+    is_italic: bool,
+    native_hint_mode: NativeHintMode,
+    vertical_layout: bool,
+) -> Result<ScaledGlyph, FontError> {
     let (style, target_mono) = match native_hint_mode {
         NativeHintMode::Normal => (
             HintStyle {
@@ -381,6 +403,7 @@ pub fn scale_glyph_for_metrics_with_autohint_and_mode(
                 stem_adjust: true,
                 horz_snap: false,
                 vert_snap: false,
+                vertical_layout,
             },
             false,
         ),
@@ -391,6 +414,7 @@ pub fn scale_glyph_for_metrics_with_autohint_and_mode(
                 stem_adjust: true,
                 horz_snap: true,
                 vert_snap: true,
+                vertical_layout,
             },
             true,
         ),
@@ -401,6 +425,7 @@ pub fn scale_glyph_for_metrics_with_autohint_and_mode(
                 stem_adjust: false,
                 horz_snap: true,
                 vert_snap: false,
+                vertical_layout,
             },
             false,
         ),
@@ -411,6 +436,7 @@ pub fn scale_glyph_for_metrics_with_autohint_and_mode(
                 stem_adjust: true,
                 horz_snap: false,
                 vert_snap: true,
+                vertical_layout,
             },
             false,
         ),
@@ -448,6 +474,7 @@ pub fn scale_glyph_for_metrics_with_autohint_preserve_advance(
             stem_adjust: true,
             horz_snap: false,
             vert_snap: false,
+            vertical_layout: false,
         },
         true,
         false,
@@ -477,6 +504,7 @@ pub fn scale_glyph_for_metrics_light(
             stem_adjust: false,
             horz_snap: false,
             vert_snap: false,
+            vertical_layout: false,
         },
         true,
         false,
@@ -507,6 +535,7 @@ pub fn scale_glyph_native_default(
             stem_adjust: true,
             horz_snap: false,
             vert_snap: false,
+            vertical_layout: false,
         },
         true,
         false,
@@ -555,6 +584,7 @@ pub fn scale_glyph_native_default_with_bytecode_context_and_mode(
             stem_adjust: true,
             horz_snap: false,
             vert_snap: false,
+            vertical_layout: false,
         },
         true,
         false,
@@ -584,6 +614,7 @@ pub fn scale_glyph_light(
             stem_adjust: false,
             horz_snap: false,
             vert_snap: false,
+            vertical_layout: false,
         },
         true,
         false,
@@ -617,6 +648,7 @@ pub fn scale_glyph_lcd(
             stem_adjust: false,
             horz_snap: true,
             vert_snap: false,
+            vertical_layout: false,
         },
         true,
         false,
@@ -650,6 +682,7 @@ pub fn scale_glyph_lcd_v(
             stem_adjust: true,
             horz_snap: false,
             vert_snap: true,
+            vertical_layout: false,
         },
         true,
         false,
@@ -680,6 +713,7 @@ pub fn scale_glyph_mono(
             stem_adjust: true,
             horz_snap: true,
             vert_snap: true,
+            vertical_layout: false,
         },
         true,
         true,
@@ -717,6 +751,7 @@ pub fn scale_glyph_no_hinting(
             stem_adjust: true,
             horz_snap: false,
             vert_snap: false,
+            vertical_layout: false,
         },
         false,
         false,
@@ -781,7 +816,15 @@ fn scale_glyph_impl_with_context(
     bytecode_context: Option<&crate::tt::hinter::exec::ExecContext>,
     use_hdmx: bool,
 ) -> Result<(ScaledGlyph, Option<crate::tt::hinter::exec::ExecContext>), FontError> {
-    let scale = ScaleMetrics::from_font_data(data);
+    let scale = if latin_metrics.is_some() || (allow_bytecode && should_use_default_autohint(data))
+    {
+        // `af_loader_load_glyph` seeds the auto-hinter scaler from the public
+        // FT_Size metrics.  Keep integer-ppem TrueType scales for native
+        // bytecode, but do not use them for the pure-Rust auto-hinter.
+        ScaleMetrics::from_font_data_public_size(data)
+    } else {
+        ScaleMetrics::from_font_data(data)
+    };
     scale_glyph_impl_with_scale(
         data,
         glyph_index,
@@ -887,7 +930,6 @@ fn scale_glyph_impl_with_scale(
     // loading; valid FreeType size setup never supplies a zero vertical scale.
     let y_adj = hint_metrics.map_or(scale.y_scale, |m| m.axis[1].scale);
     let use_autohint = hint_metrics.is_some();
-
     if outline_raw.num_contours == 0 || outline_raw.points.is_empty() {
         let autohint_vertical = if use_autohint {
             // C: the auto-hinter path still updates slot vertical metrics for
@@ -898,6 +940,7 @@ fn scale_glyph_impl_with_scale(
                 glyph_index,
                 hori_advance_fu,
                 y_adj,
+                style.vertical_layout,
             ))
         } else {
             None
@@ -906,10 +949,11 @@ fn scale_glyph_impl_with_scale(
             flags: outline_raw.outline_flags,
             ..Outline::default()
         };
-        // C `TT_Load_Glyph` applies `FT_OUTLINE_HIGH_PRECISION` to every
-        // scaled TrueType slot below 24 ppem, even when the glyph has no
-        // points (`src/truetype/ttgload.c:2569-2577`).
-        if scale.ppem < 24 {
+        // The auto-hinter reloads the slot with `FT_LOAD_NO_SCALE`; that
+        // second driver load replaces the initial outline flags, so its
+        // final no-point outline does not carry HIGH_PRECISION.  The native
+        // scaled TrueType path does (`src/truetype/ttgload.c:2569-2577`).
+        if scale.ppem < 24 && !use_autohint {
             outline.flags = OUTLINE_HIGH_PRECISION;
         }
         return Ok((
@@ -961,26 +1005,68 @@ fn scale_glyph_impl_with_scale(
     } else {
         hinted_pp1x_fu
     };
-    let autohint_scaled_pp1x_fu = if use_autohint && outline_raw.unrounded_points.is_some() {
-        // FreeType's autofit loader reloads glyph outlines with
-        // `FT_LOAD_NO_SCALE | FT_LOAD_IGNORE_TRANSFORM | FT_LOAD_LINEAR_DESIGN`
-        // and seeds the glyph zone from `hints->x_delta`, which is zero for
-        // this untransformed scaler path (`afloader.c`, loader pp1 setup).
-        // For variable outlines with fractional `gvar` sidecar data, do not
-        // reuse TrueType's left phantom origin here; doing so shifted
-        // named-instance autohint outlines left by one font unit. Static
-        // TrueType autohint rows still match C with the existing scaled
-        // phantom translation.
+    let autohint_composite_pp1x_fu = if use_autohint && outline_raw.is_composite {
+        Some(effective_composite_pp1x_fu(data, glyph_index, &outline_raw)? )
+    } else {
+        None
+    };
+    let autohint_scaled_pp1x_fu = if let Some(composite_pp1x_fu) = autohint_composite_pp1x_fu {
+        // `af_loader_load_glyph` reloads the outline through the TrueType
+        // driver with `FT_LOAD_NO_SCALE`; that driver has already translated
+        // a recursively loaded composite by the effective left phantom
+        // point (`ttgload.c:1838-1888,2578-2583`).  A `USE_MY_METRICS`
+        // component intentionally replaces that point with the selected
+        // child's phantom, so compute the same state rather than using the
+        // cached last-component bbox unconditionally.
+        composite_pp1x_fu
+    } else if data.has_cff_outlines() {
+        // CFF's `FT_LOAD_NO_SCALE` reload leaves the outline in its driver
+        // origin; unlike the TrueType reload it does not translate by the
+        // glyph-header left phantom before `af_loader_load_glyph` computes
+        // its hinted CBox (`cffgload.c:596-728`, `afloader.c:332-405`).
+        0
+    } else if use_autohint && outline_raw.unrounded_points.is_some() {
+        // For variable outlines with fractional `gvar` sidecar data, C's
+        // no-scale reload uses the integer driver origin rather than the
+        // scaled TrueType phantom translation.
         0
     } else {
         pp1x_fu
     };
-    let autohint_reload_pp1x_fu = pp1x_fu;
+    let autohint_reload_pp1x_fu = if data.has_cff_outlines() {
+        // The CFF no-scale reload keeps the driver's font-unit origin.  Its
+        // autofit coordinates therefore use the raw CFF x positions rather
+        // than the TrueType left-phantom translation.
+        0
+    } else {
+        autohint_composite_pp1x_fu.unwrap_or(pp1x_fu)
+    };
     let mut phantom_pp1_x = scale.scale_x(pp1x_fu);
     let mut phantom_pp2_x = scale.scale_x(pp1x_fu + hori_advance_fu);
-    let (raw_pp3_y, raw_pp4_y) = vertical_phantom_font_units(data, glyph_index, outline_raw.ymax);
-    let mut phantom_pp3_y = ft_mul_fix(raw_pp3_y, y_adj);
-    let mut phantom_pp4_y = ft_mul_fix(raw_pp4_y, y_adj);
+    let vertical_phantoms = vertical_phantom_font_units(
+        data,
+        glyph_index,
+        outline_raw.bbox_ymax,
+        outline_raw.points.len(),
+    )?;
+    // In an active variable instance FreeType keeps a second, 26.6 copy of
+    // each phantom point.  It scales that unrounded copy and rounds only at
+    // the final `FT_MulFix(...)+32 >> 6` conversion
+    // (`ttgload.c:920-977`).  Scaling the integer phantom coordinate directly
+    // loses the same fractional unit that the outline path preserves.
+    let (mut phantom_pp3_y, mut phantom_pp4_y) = if data.has_active_variation() {
+        (
+            scale_unrounded_fdot6(vertical_phantoms.unrounded_pp3_y, y_adj),
+            scale_unrounded_fdot6(vertical_phantoms.unrounded_pp4_y, y_adj),
+        )
+    } else {
+        (
+            ft_mul_fix(vertical_phantoms.pp3_y, y_adj),
+            ft_mul_fix(vertical_phantoms.pp4_y, y_adj),
+        )
+    };
+    let raw_pp3_y = vertical_phantoms.pp3_y;
+    let raw_pp4_y = vertical_phantoms.pp4_y;
 
     #[cfg(debug_assertions)]
     if log::log_enabled!(target: "autohint::pipeline", log::Level::Trace) {
@@ -1004,6 +1090,42 @@ fn scale_glyph_impl_with_scale(
     } else {
         None
     };
+    let no_hinting_composite_phantoms =
+        if !use_autohint && !allow_bytecode && outline_raw.is_composite {
+            // C preserves the selected component's phantom points when
+            // `USE_MY_METRICS` is set, including for the unhinted loader
+            // (`ttgload.c:1838-1869`).  The flattened outline still contains
+            // the component's translated points, so the final origin shift
+            // must use that component's pp1 rather than the parent header's.
+            // Reuse the same public scale while loading the selected child;
+            // reconstructing it from the face would use the integer TT scale
+            // at non-default size requests.
+            let mut selected = None;
+            for component in &outline_raw.components {
+                if component.use_my_metrics {
+                    let (sub, _) = scale_glyph_impl_with_scale(
+                        data,
+                        component.glyph_index,
+                        scale,
+                        None,
+                        style,
+                        false,
+                        false,
+                        native_hint_mode,
+                        false,
+                        false,
+                        false,
+                        false,
+                        None,
+                        use_hdmx,
+                    )?;
+                    selected = Some((sub.phantom_pp1_x, sub.phantom_pp2_x));
+                }
+            }
+            selected
+        } else {
+            None
+        };
     // FreeType translates TrueType outlines back by the scaled left phantom
     // point after loading. Apply it after scaling so FT_MulFix rounding stays
     // separate from point-coordinate rounding.
@@ -1043,10 +1165,18 @@ fn scale_glyph_impl_with_scale(
         // C `TT_Load_Glyph` translates every loaded TrueType outline by
         // `-loader.pp1.x` after scaling, even when the font has no fpgm/cvt
         // tables and no glyph bytecode runs (`src/truetype/ttgload.c:2578-2583`).
-        scale.scale_x(pp1x_fu)
+        no_hinting_composite_phantoms.map_or_else(
+            || scale.scale_x(pp1x_fu),
+            |(pp1, _)| pp1,
+        )
     } else {
         0
     };
+    if let Some((pp1, pp2)) = no_hinting_composite_phantoms {
+        slot_advance_width = pp2.wrapping_sub(pp1);
+        phantom_pp1_x = pp1;
+        phantom_pp2_x = pp2;
+    }
     let mut composite_use_my_metrics_advance = None;
     let mut composite_use_my_metrics_vertical_advance = None;
     let mut composite_use_my_metrics_phantoms = None;
@@ -1114,8 +1244,20 @@ fn scale_glyph_impl_with_scale(
                     || {
                         if use_cff_adobe_scale {
                             (
-                                scale_cff_adobe_coordinate(p.x, scale.x_scale),
-                                scale_cff_adobe_coordinate(p.y, y_adj),
+                                scale_adobe_coordinate(p.x, scale.x_scale),
+                                scale_adobe_coordinate(p.y, y_adj),
+                            )
+                        } else if data.has_active_variation() {
+                            // `TT_Process_Simple_Glyph` always keeps the
+                            // unrounded 26.6 source copy on a non-default
+                            // TrueType instance, even when this glyph has no
+                            // gvar tuple (`ttgload.c:920-977`).  Falling back
+                            // to integer-coordinate scaling here changes the
+                            // outline CBox and the vertical phantom metric by
+                            // one 26.6 unit at fractional scale boundaries.
+                            (
+                                scale_unrounded_fdot6(p.x << 6, scale.x_scale),
+                                scale_unrounded_fdot6(p.y << 6, y_adj),
                             )
                         } else {
                             (scale.scale_x(p.x), ft_mul_fix(p.y, y_adj))
@@ -1350,6 +1492,7 @@ fn scale_glyph_impl_with_scale(
             y_adj,
             x_min,
             y_max,
+            style.vertical_layout,
         ))
     } else {
         None
@@ -1371,15 +1514,16 @@ fn scale_glyph_impl_with_scale(
     }
 
     // C `TT_Load_Glyph` sets `FT_OUTLINE_HIGH_PRECISION` for scaled TrueType
-    // outlines below 24 ppem before the black rasterizer sees them
-    // (`src/truetype/ttgload.c:2569-2577`).
+    // outlines below 24 ppem before the black rasterizer sees them.  An
+    // auto-hinted slot is reloaded with `FT_LOAD_NO_SCALE` by `afloader.c`,
+    // which replaces those flags; preserve that distinction here.
     let mut outline_flags = outline_raw.outline_flags | tt_outline_flags;
     if data.has_cff_outlines() && allow_bytecode {
         // CFF/CFF2 `cff_slot_load` always marks recursive outlines as
         // reverse-fill before handing them to the rasterizer.
         outline_flags |= crate::outline::OUTLINE_REVERSE_FILL;
     }
-    if scale.ppem < 24 {
+    if scale.ppem < 24 && !use_autohint {
         outline_flags |= OUTLINE_HIGH_PRECISION;
     }
 
@@ -1449,6 +1593,7 @@ fn raw_public_curve_tag(outline: &GlyphOutline, point: &crate::tt::glyf::Outline
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn autohint_vertical_metrics(
     data: &FontData,
     glyph_index: u16,
@@ -1457,6 +1602,7 @@ fn autohint_vertical_metrics(
     y_scale: i32,
     hinted_x_min: i32,
     hinted_y_max: i32,
+    vertical_layout: bool,
 ) -> AutohintVerticalMetrics {
     let mut raw_x_min = raw_outline.points[0].x;
     let mut raw_y_min = raw_outline.points[0].y;
@@ -1483,13 +1629,34 @@ fn autohint_vertical_metrics(
                 ft_pix_floor(ft_pix_ceil(hinted_y_max) + vvector_y),
             )
         } else {
-            // CFF without `vmtx` leaves vertical bearings at zero in
-            // `cff_slot_load`; `af_loader_load_glyph` then builds `vvector`
-            // as zero minus the pre-hint horizontal cbox
-            // (`src/cff/cffgload.c:646-742`, `src/autofit/afloader.c:506-537`).
+            // CFF without `vmtx` leaves vertical bearings at zero unless
+            // `FT_LOAD_VERTICAL_LAYOUT` asks `cff_slot_load` to synthesize
+            // them.  Preserve both branches before the auto-hinter computes
+            // its scaled vector (`src/cff/cffgload.c:646-742`,
+            // `src/autofit/afloader.c:506-537`).
             let x_scale = ScaleMetrics::from_font_data(data).x_scale;
-            let cff_vvector_x = -ft_mul_fix(raw_x_min, x_scale);
-            let cff_vvector_y = -ft_mul_fix(raw_y_max, y_scale);
+            let cff_vvector_x = if vertical_layout {
+                -ft_mul_fix(hori_advance_fu / 2, x_scale)
+            } else {
+                -ft_mul_fix(raw_x_min, x_scale)
+            };
+            let cff_vvector_y = if vertical_layout {
+                // Match `ft_synthesize_vertical_metrics`: its adjusted
+                // height compensates for a bbox that is above or below the
+                // baseline before centering it on the vertical advance.
+                let mut synth_height = raw_y_max - raw_y_min;
+                if raw_y_max < 0 {
+                    if synth_height < raw_y_max {
+                        synth_height = raw_y_max;
+                    }
+                } else if raw_y_max > 0 {
+                    synth_height -= raw_y_max;
+                }
+                let synth_vert_bearing_y = (advance_fu - synth_height) / 2;
+                ft_mul_fix(synth_vert_bearing_y - raw_y_max, y_scale)
+            } else {
+                -ft_mul_fix(raw_y_max, y_scale)
+            };
             (
                 ft_pix_floor(ft_pix_floor(hinted_x_min) + cff_vvector_x),
                 ft_pix_floor(ft_pix_ceil(hinted_y_max) + cff_vvector_y),
@@ -1514,13 +1681,26 @@ fn empty_autohint_vertical_metrics(
     glyph_index: u16,
     hori_advance_fu: i32,
     y_scale: i32,
+    vertical_layout: bool,
 ) -> AutohintVerticalMetrics {
     let (top_fu, advance_fu) = vertical_top_and_advance_font_units(data, glyph_index, 0);
     let x_scale = ScaleMetrics::from_font_data(data).x_scale;
 
+    let (bearing_x, bearing_y) = if data.has_cff_outlines()
+        && data.vmtx.is_none()
+        && !vertical_layout
+    {
+        (0, 0)
+    } else {
+        (
+            ft_pix_floor(ft_mul_fix(-(hori_advance_fu / 2), x_scale)),
+            ft_pix_floor(ft_mul_fix(top_fu, y_scale)),
+        )
+    };
+
     AutohintVerticalMetrics {
-        bearing_x: ft_pix_floor(ft_mul_fix(-(hori_advance_fu / 2), x_scale)),
-        bearing_y: ft_pix_floor(ft_mul_fix(top_fu, y_scale)),
+        bearing_x,
+        bearing_y,
         advance: ft_pix_round(ft_mul_fix(advance_fu, y_scale)),
     }
 }
@@ -1555,21 +1735,74 @@ fn vertical_advance_font_units(data: &FontData) -> i32 {
     data.hhea.ascent as i32 - data.hhea.descent as i32
 }
 
-fn vertical_phantom_font_units(data: &FontData, glyph_index: u16, y_max: i32) -> (i32, i32) {
-    if let Some(vmtx) = &data.vmtx {
+#[derive(Debug, Clone, Copy)]
+struct VerticalPhantomFontUnits {
+    pp3_y: i32,
+    pp4_y: i32,
+    unrounded_pp3_y: i32,
+    unrounded_pp4_y: i32,
+}
+
+fn vertical_phantom_font_units(
+    data: &FontData,
+    glyph_index: u16,
+    y_max: i32,
+    outline_point_count: usize,
+) -> Result<VerticalPhantomFontUnits, crate::error::FontError> {
+    let (pp3_y, pp4_y) = if let Some(vmtx) = &data.vmtx {
         let vertical = vmtx.get(glyph_index);
         let pp3_y = y_max + vertical.tsb as i32;
-        return (pp3_y, pp3_y - vertical.advance_height as i32);
+        (pp3_y, pp3_y - vertical.advance_height as i32)
+    } else {
+        let (ascender, descender) = data
+            .os2
+            .as_ref()
+            .map_or((data.hhea.ascent as i32, data.hhea.descent as i32), |os2| {
+                (os2.s_typo_ascender as i32, os2.s_typo_descender as i32)
+            });
+        let advance = ascender.saturating_sub(descender).abs();
+        (ascender, ascender - advance)
+    };
+
+    let mut phantoms = VerticalPhantomFontUnits {
+        pp3_y,
+        pp4_y,
+        unrounded_pp3_y: pp3_y.wrapping_shl(6),
+        unrounded_pp4_y: pp4_y.wrapping_shl(6),
+    };
+
+    // FreeType applies gvar deltas to the vertical phantom points before
+    // compute_glyph_metrics derives vertBearingY and vertAdvance.
+    // Horizontal advances use HVAR when present, but the vertical phantom
+    // points remain part of the glyph's gvar delta stream.
+    if let Some(gvar) = &data.gvar {
+        if data.has_active_variation() {
+            if let Some(deltas) = gvar.glyph_deltas_fixed(
+                glyph_index,
+                outline_point_count + 4,
+                &data.normalized_variation_coords,
+            )? {
+                let pp3_index = outline_point_count + 2;
+                let pp4_index = outline_point_count + 3;
+                let pp3_delta = deltas.get(pp3_index).copied().unwrap_or_default().1;
+                let pp4_delta = deltas.get(pp4_index).copied().unwrap_or_default().1;
+                phantoms.pp3_y = phantoms
+                    .pp3_y
+                    .wrapping_add(crate::tt::gvar::fixed_to_int(pp3_delta));
+                phantoms.pp4_y = phantoms
+                    .pp4_y
+                    .wrapping_add(crate::tt::gvar::fixed_to_int(pp4_delta));
+                phantoms.unrounded_pp3_y = phantoms
+                    .unrounded_pp3_y
+                    .wrapping_add(crate::tt::gvar::fixed_to_fdot6(pp3_delta));
+                phantoms.unrounded_pp4_y = phantoms
+                    .unrounded_pp4_y
+                    .wrapping_add(crate::tt::gvar::fixed_to_fdot6(pp4_delta));
+            }
+        }
     }
 
-    let (ascender, descender) = data
-        .os2
-        .as_ref()
-        .map_or((data.hhea.ascent as i32, data.hhea.descent as i32), |os2| {
-            (os2.s_typo_ascender as i32, os2.s_typo_descender as i32)
-        });
-    let advance = ascender.saturating_sub(descender).abs();
-    (ascender, ascender - advance)
+    Ok(phantoms)
 }
 
 fn native_vertical_metrics(
@@ -1624,6 +1857,7 @@ fn scale_composite_components(
                 stem_adjust: true,
                 horz_snap: false,
                 vert_snap: false,
+                vertical_layout: false,
             },
             true,
             false,
@@ -2048,6 +2282,37 @@ pub fn pixel_floor(x: i32) -> i32 {
 #[inline]
 pub fn pixel_ceil(x: i32) -> i32 {
     to_pixel(ft_pix_ceil(x))
+}
+
+// ── Composite phantom state ──────────────────────────────────────────────
+
+/// Return the left phantom point that the TrueType driver leaves active after
+/// recursively loading a composite in the auto-hinter's no-scale reload.
+///
+/// `TT_Load_Composite_Glyph` restores the parent's phantom points after every
+/// component except one marked `USE_MY_METRICS`; a later selected component
+/// therefore replaces the state while an ordinary later component does not.
+/// The flattened outline stores the last component's header bbox separately,
+/// so its cached `xmin` cannot represent this state on its own.
+fn effective_composite_pp1x_fu(
+    data: &FontData,
+    glyph_index: u16,
+    outline: &crate::tt::glyf::GlyphOutline,
+) -> Result<i32, FontError> {
+    let h_metric = data.hmtx.get(glyph_index);
+    let parent_pp1 = outline.bbox_xmin - h_metric.lsb as i32;
+    if !outline.is_composite {
+        return Ok(parent_pp1);
+    }
+
+    let mut effective = parent_pp1;
+    for component in &outline.components {
+        if component.use_my_metrics {
+            let child = data.load_glyph_outline(component.glyph_index)?;
+            effective = effective_composite_pp1x_fu(data, component.glyph_index, &child)?;
+        }
+    }
+    Ok(effective)
 }
 
 // ── Auto-hinting bridge ───────────────────────────────────────────────────

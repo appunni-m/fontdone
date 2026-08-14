@@ -530,7 +530,8 @@
             "coverage": [
               "tt/name:variation-coordinate-negative-fractional-synthesized"
             ]
-          }
+          },
+          {"id":"c117-win0-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/variable-name-windows-encoding-zero-prefix.ttf"}},"params":{"face_index":65536},"coverage":["c117:name:variable-name-windows-encoding-zero-prefix"]}
         ]
       },
       "classifiers": [

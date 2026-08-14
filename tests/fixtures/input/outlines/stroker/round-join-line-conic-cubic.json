@@ -16,6 +16,59 @@
       {"op": "move", "to": [0, 0]},
       {"op": "line", "to": [512, 0]},
       {"op": "cubic", "control1": [768, 256], "control2": [768, 768], "to": [512, 1024]}
+    ],
+    "open_line": [
+      {"op": "move", "to": [0, 0]},
+      {"op": "line", "to": [640, 0]}
+    ],
+    "open_diagonal": [
+      {"op": "move", "to": [0, 0]},
+      {"op": "line", "to": [640, 256]}
+    ],
+    "conic_then_line": [
+      {"op": "move", "to": [0, 0]},
+      {"op": "conic", "control": [256, 512], "to": [512, 0]},
+      {"op": "line", "to": [512, 512]}
+    ],
+    "cubic_then_line": [
+      {"op": "move", "to": [0, 0]},
+      {"op": "cubic", "control1": [160, 640], "control2": [480, 640], "to": [640, 0]},
+      {"op": "line", "to": [640, 512]}
+    ],
+    "flat_conic": [
+      {"op": "move", "to": [0, 0]},
+      {"op": "conic", "control": [1, 1], "to": [1, 1]},
+      {"op": "line", "to": [512, 0]}
+    ],
+    "flat_cubic": [
+      {"op": "move", "to": [0, 0]},
+      {"op": "cubic", "control1": [1, 1], "control2": [1, 1], "to": [1, 1]},
+      {"op": "line", "to": [512, 0]}
+    ],
+    "closed_loop": [
+      {"op": "move", "to": [0, 0]},
+      {"op": "line", "to": [512, 0]},
+      {"op": "line", "to": [512, 512]},
+      {"op": "line", "to": [0, 512]},
+      {"op": "line", "to": [0, 0]}
+    ],
+    "zero_middle": [
+      {"op": "move", "to": [0, 0]},
+      {"op": "line", "to": [512, 0]},
+      {"op": "line", "to": [512, 0]},
+      {"op": "line", "to": [512, 512]}
+    ],
+    "reverse_turn": [
+      {"op": "move", "to": [0, 0]},
+      {"op": "line", "to": [512, 0]},
+      {"op": "line", "to": [0, 0]}
+    ],
+    "curve_chain": [
+      {"op": "move", "to": [0, 0]},
+      {"op": "line", "to": [512, 0]},
+      {"op": "conic", "control": [768, 512], "to": [512, 1024]},
+      {"op": "cubic", "control1": [256, 1280], "control2": [0, 1280], "to": [0, 1024]},
+      {"op": "line", "to": [0, 0]}
     ]
   }
 }

@@ -119,6 +119,23 @@
             "coverage": [
               "ftsizes.new_size_sequence:negative-face-index-probe-secondary-size"
             ]
+          },
+          {
+            "id": "c60-new-size-null-face-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "face": "null",
+              "output": "valid_pointer"
+            },
+            "expect_error": true,
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3331"
+            ]
           }
         ]
       },
@@ -127,6 +144,9 @@
         "header:ftsizes",
         "area:size_lifecycle"
       ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the invalid-face branch in fontdone_wasm_new_size. A 100-case null-face probe passed through the Rust, C ABI, WASM, and pinned-oracle paths; one witness is retained after MCP confirmed the remaining variants added no new line."
+      },
       "expectation": {
         "status": "ok",
         "output_shape": {
@@ -222,6 +242,65 @@
           ]
         },
         "error": "Invalid_Argument"
+      }
+    },
+    {
+      "case_id": "ftsizes.FT_New_Size.mcp_out_success_batch",
+      "subject": "ftsizes.FT_New_Size",
+      "case": "mcp_out_success_batch",
+      "operation": "ftsizes.new_size",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c53-new-size-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "output": "valid_pointer",
+              "coverage_probe": "new_size_out_success_1"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3363-3373"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftsizes",
+        "area:size_lifecycle",
+        "area:coverage"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected the valid-output success path in fontdone_wasm_new_size_out. The batch keeps the face and output pointer valid while varying maintained face formats so the WASM wrapper allocates, registers, records, and writes the opaque secondary-size handle through the same pinned FT_New_Size contract."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "size_is_null": false
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "error",
+            "size_is_null"
+          ]
+        },
+        "source_refs": [
+          "fontdone-wasm/src/implementation.rs:3355-3374",
+          "freetype/src/base/ftobjs.c"
+        ]
       }
     }
   ]

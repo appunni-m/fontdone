@@ -6,6 +6,7 @@
     "success_releases_owned_outline_glyph",
     "success_releases_owned_bitmap_glyph",
     "success_null_is_noop",
+    "mcp_null_handle_batch",
     "lifetime_before_library_done",
     "outline_glyph_before_library_done"
   ],
@@ -364,6 +365,62 @@
           "input/fixtures/assets/fonts/sbit_gray_format1.ttf must contain at least one loadable embedded bitmap strike whose FT_GlyphSlot format becomes FT_GLYPH_FORMAT_BITMAP.",
           "input/fonts/DejaVuSans.ttf is optional and must contain a valid OT-SVG document for SVG rows; builds without FT_CONFIG_OPTION_SVG classify these rows as unsupported.",
           "facades/glyph/malformed-slot-and-class-cases.json must describe synthetic C harness cases for null slot/output, bad clazz, unsupported formats, oversized advances, and render/copy allocation failures."
+        ]
+      }
+    },
+    {
+      "case_id": "ftglyph.FT_Done_Glyph.mcp_null_handle_batch",
+      "subject": "ftglyph.FT_Done_Glyph",
+      "case": "mcp_null_handle_batch",
+      "operation": "ftglyph.done_glyph",
+      "schema": "glyph_lifecycle",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c65-null-handle-001",
+            "assets": {},
+            "params": {
+              "null_handle_probe": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3726",
+              "fontdone-wasm/src/implementation.rs:3727"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph",
+        "runtime:wasm-facade",
+        "null_validation"
+      ],
+      "metadata": {
+        "source_behavior": "The handle-based WASM done facade first checks its three private owned-glyph classes, then delegates an unknown or null handle to the pure FT_Done_Glyph no-op route. A null pointer is safe and leaves no observable memory effect; the native C lane asserts the corresponding void contract.",
+        "batch_history": "Initial MCP coverage batch exercises 100 labeled null-handle probes; MCP measured +2 covered lines (fontdone-wasm/src/implementation.rs:3726-3727), +1 branch, and +6 regions with no regressions; 99 redundant variants are pruned to c65-null-handle-001."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "void",
+          "probe": "null_handle=<value>",
+          "null_glyph_noop": true,
+          "memory_touched": false
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "output.void",
+            "output.probe",
+            "output.null_glyph_noop",
+            "output.memory_touched"
+          ]
+        },
+        "source_refs": [
+          "freetype/include/freetype/ftglyph.h",
+          "fontdone-wasm/src/implementation.rs:3709-3727",
+          "src/ffi/handles.rs:2710-2716"
         ]
       }
     }

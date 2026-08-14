@@ -404,8 +404,9 @@ impl Face {
     ///
     /// # Errors
     ///
-    /// Returns [`SelectSizeError`] when the face has no strikes or the index
-    /// is out of range.
+    /// Returns [`SelectSizeError`] when the face has no strikes, the index
+    /// is out of range, or the selected strike has a zero pixels-per-em
+    /// value.
     pub fn select_size(&mut self, strike_index: usize) -> Result<(), SelectSizeError> {
         self.font.select_size(strike_index)?;
         self.render_fonts.clear();
@@ -675,6 +676,13 @@ impl Face {
         transform: Option<(i32, i32, i32, i32, i32, i32)>,
     ) -> Result<GlyphSlot, FontError> {
         flags = Self::normalize_load_flags(font, flags);
+        if font.sbix_active_strike_is_unmatched() {
+            // `ttdriver.c:tt_size_request` retains Invalid_Pixel_Size when
+            // `set_sbit_strike` cannot select a fixed sbix strike.  Model the
+            // load-time result here because the public C sequence continues
+            // after that setup return; all ABI facades share this guard.
+            return Err(FontError::InvalidPixelSize);
+        }
         let transform = if flags.contains(LoadFlags::NO_RECURSE) {
             None
         } else {

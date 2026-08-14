@@ -1,7 +1,7 @@
 {
   "version": 1,
   "subject": "ftoutln.FT_Outline_Decompose",
-  "manifest_cases": ["line_conic_cubic_event_order", "implied_start_and_closing_segments", "shift_delta_applied_to_callbacks", "callback_error_propagates", "invalid_outline_or_interface_errors"],
+  "manifest_cases": ["line_conic_cubic_event_order", "implied_start_and_closing_segments", "shift_delta_applied_to_callbacks", "callback_error_propagates", "invalid_outline_or_interface_errors", "trace_validation_matrix"],
   "cases": [
     {
       "case_id": "ftoutln.FT_Outline_Decompose.line_conic_cubic_event_order",
@@ -62,6 +62,2150 @@
       "classifiers": ["kind:function", "header:ftoutln", "surface:public-c-api", "error:invalid-outline"],
       "metadata": {"abi": {"header": "freetype/ftoutln.h", "symbol": "FT_Outline_Decompose", "kind": "function", "c_signature": "FT_Error FT_Outline_Decompose(FT_Outline* outline, const FT_Outline_Funcs* func_interface, void* user)"}, "source_behavior": "Null outline returns Invalid_Outline, null function interface returns Invalid_Argument, and malformed contours return Invalid_Outline."},
       "expectation": {"status": "error", "output_shape": {"results": [{"return": "FT_Error"}]}, "compare": {"mode": "exact_error", "paths": ["results[*].return"]}, "error": ["FT_Err_Invalid_Outline", "FT_Err_Invalid_Argument"], "source_refs": ["freetype/src/base/ftoutln.c:69-73", "freetype/src/base/ftoutln.c:83-90", "freetype/src/base/ftoutln.c:215-225"], "fixture_requirements": ["Malformed outline whose first tag is cubic.", "Malformed outline with decreasing contour endpoint."]}
+    },
+    {
+      "case_id": "ftoutln.FT_Outline_Decompose.trace_validation_matrix",
+      "subject": "ftoutln.FT_Outline_Decompose",
+      "case": "trace_validation_matrix",
+      "operation": "ftoutln.outline_decompose",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c33-decompose-001",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-002",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-003",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-004",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-005",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-006",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-007",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-008",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-009",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-010",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-011",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-012",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-013",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-014",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-015",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-016",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-017",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-018",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-019",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-020",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-021",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-022",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-023",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-024",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-025",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-026",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-027",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-028",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-029",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-030",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-031",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-032",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-033",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-034",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3879"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-035",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-036",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-037",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-038",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-039",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-040",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-041",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-042",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-043",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-044",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-045",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-046",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-047",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-048",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-049",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-050",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-051",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-052",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-053",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-054",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-055",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-056",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-057",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-058",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-059",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-060",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-061",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-062",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-063",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-064",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-065",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-066",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-067",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/line-conic-cubic.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "unrepresentable_point",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3882"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-068",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-069",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-070",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-071",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-072",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-073",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-074",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-075",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-076",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-077",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-078",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-079",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-080",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-081",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-082",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-083",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-084",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-085",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-086",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-087",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-088",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-089",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-090",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-091",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-092",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-093",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-094",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-095",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-096",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-097",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-098",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-099",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c33-decompose-100",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/decompose/conic-bad-tag.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "bad_conic_tag",
+              "funcs": {
+                "shift": 0,
+                "delta": 0
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:4024"
+            ],
+            "expect_error": true
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftoutln",
+        "surface:public-c-api",
+        "behavior:validation",
+        "error:invalid-outline"
+      ],
+      "metadata": {
+        "abi": {
+          "header": "freetype/ftoutln.h",
+          "symbol": "FT_Outline_Decompose",
+          "kind": "function",
+          "c_signature": "FT_Error FT_Outline_Decompose(FT_Outline* outline, const FT_Outline_Funcs* func_interface, void* user)"
+        },
+        "source_behavior": "The outline decomposition trace rejects null snapshots, points outside the representable core coordinate range, and malformed conic tag sequences."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "return"
+          ]
+        },
+        "source_refs": [
+          "src/ffi/handles.rs:3874-3883",
+          "src/ffi/handles.rs:4011-4025"
+        ]
+      }
     }
   ]
 }

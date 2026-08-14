@@ -167,7 +167,9 @@
               "charcode": "U+0041",
               "variant_selector": "U+FE0F"
             }
-          }
+          },
+          {"id":"c118-cmap-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/charmap/cmap-platform3-nonunicode-variation.ttf"}},"params":{"face_index":0,"charcode":"U+0042","variant_selector":"U+FE0F"},"coverage":["c118:cmap:platform3-encoding0"]},
+          {"id":"c118-cmap-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cmap/cmap-format-language-matrix.ttf"}},"params":{"face_index":0,"charcode":"U+0041","variant_selector":"U+FE01"},"coverage":["c118:cmap:missing-selector"]}
         ]
       },
       "classifiers": [

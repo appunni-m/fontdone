@@ -205,6 +205,13 @@ pub(super) fn error_to_ft(error: FontError) -> FT_Error {
         FontError::InvalidFont(message) if message.starts_with("data too short") => {
             FT_Err_Invalid_Stream_Operation as FT_Error
         }
+        FontError::InvalidFont(message)
+            if message.starts_with("PCF stream operation:")
+                || message.starts_with("PFR stream operation:")
+                || message == "Windows FNT header too short" =>
+        {
+            FT_Err_Invalid_Stream_Operation as FT_Error
+        }
         FontError::InvalidFont(message) if message == "font offset out of range" => {
             FT_Err_Array_Too_Large as FT_Error
         }
@@ -237,6 +244,7 @@ pub(super) fn error_to_ft(error: FontError) -> FT_Error {
         FontError::InvalidFont(message) if message == "missing 'hmtx' table" => {
             FT_Err_Hmtx_Table_Missing as FT_Error
         }
+        FontError::LocationsMissing => FT_Err_Locations_Missing as FT_Error,
         FontError::InvalidFont(message)
             if message == "gvar table too short" || message == "gvar offset array out of range" =>
         {
@@ -322,6 +330,7 @@ pub(super) fn error_to_ft(error: FontError) -> FT_Error {
         FontError::UnknownFileFormat(_) => FT_Err_Unknown_File_Format as FT_Error,
         FontError::MissingBitmap => FT_Err_Missing_Bitmap as FT_Error,
         FontError::InvalidComposite => FT_Err_Invalid_Composite as FT_Error,
+        FontError::InvalidPixelSize => FT_Err_Invalid_Pixel_Size,
         FontError::BdfMissingStartfontStreamOperation => {
             FT_Err_Invalid_Stream_Operation as FT_Error
         }

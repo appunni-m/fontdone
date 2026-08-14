@@ -1468,6 +1468,68 @@ def malformed_cff_payload(kind: str) -> bytes:
     def minimal_payload(top_dict: bytes) -> bytes:
         return header + cff_index([]) + cff_index([top_dict]) + cff_index([]) + cff_index([])
 
+    def with_charstrings(charstrings_index: bytes) -> bytes:
+        # Keep the CharStrings operand self-consistent while varying only the
+        # INDEX boundary under test.  The small synthetic top dictionary stays
+        # within the one-byte DICT integer encoding.
+        top_dict = b"\x8b\x11"
+        for _ in range(3):
+            prefix = (
+                header
+                + cff_index([])
+                + cff_index([top_dict])
+                + cff_index([])
+                + cff_index([])
+            )
+            top_dict = encode_cff_dict_integer(len(prefix)) + b"\x11"
+        return (
+            header
+            + cff_index([])
+            + cff_index([top_dict])
+            + cff_index([])
+            + cff_index([])
+            + charstrings_index
+        )
+
+    if kind == "empty_top_dict_index":
+        return header + cff_index([]) + cff_index([]) + cff_index([]) + cff_index([])
+    if kind == "strings_index_count_truncated":
+        return header + cff_index([]) + cff_index([b"\x8b\x0f"]) + b"\0"
+    if kind == "global_subr_index_count_truncated":
+        return header + cff_index([]) + cff_index([b"\x8b\x0f"]) + cff_index([]) + b"\0"
+    if kind == "charstrings_index_count_truncated":
+        return with_charstrings(b"\0")
+    if kind == "charstrings_index_offsize_missing":
+        return with_charstrings(b"\0\x01")
+    if kind == "charstrings_index_offset_truncated":
+        return with_charstrings(b"\0\x01\x01\x01")
+    if kind == "charstrings_index_offset_underflow":
+        return with_charstrings(b"\0\x01\x01\0\0")
+    if kind == "charstrings_index_offsets_out_of_order":
+        return with_charstrings(b"\0\x01\x01\x02\x01")
+    if kind == "charstrings_index_object_overflow":
+        return with_charstrings(b"\0\x01\x01\x01\x03")
+    if kind == "charstrings_index_empty":
+        return with_charstrings(b"\0\0")
+    if kind == "top_dict_shortint_valid":
+        return minimal_payload(b"\x1c\x00\x01\x0c\x03")
+    if kind == "top_dict_longint_valid":
+        return minimal_payload(b"\x1d\x00\x00\x00\x01\x0c\x03")
+    if kind == "top_dict_positive_valid":
+        return minimal_payload(b"\xf7\xff\x0c\x03")
+    if kind == "top_dict_negative_valid":
+        return minimal_payload(b"\xfb\xff\x0c\x03")
+    if kind == "top_dict_fixed_valid":
+        return minimal_payload(b"\xff\x00\x01\x00\x00\x0c\x02")
+    if kind == "top_dict_weight_operator":
+        return minimal_payload(b"\x8b\x04")
+    if kind == "top_dict_underline_thickness_operator":
+        return minimal_payload(b"\x8b\x0c\x04")
+    if kind == "top_dict_string_operators":
+        return minimal_payload(b"\x8b\x00\x8b\x01\x8b\x02\x8b\x03\x8b\x04")
+    if kind == "top_dict_unknown_operand":
+        return minimal_payload(b"\x8b\x0c\x05")
+
     if kind == "short_header":
         return b"\x01\x00\x04"
     if kind == "invalid_name_index_offsize":
@@ -1564,6 +1626,25 @@ def write_malformed_cff_faces() -> None:
         # SFNT metadata in every derived error fixture.
         build_cubic_cff(base, include_append_only_glyphs=False)
         for kind in [
+            "empty_top_dict_index",
+            "strings_index_count_truncated",
+            "global_subr_index_count_truncated",
+            "charstrings_index_count_truncated",
+            "charstrings_index_offsize_missing",
+            "charstrings_index_offset_truncated",
+            "charstrings_index_offset_underflow",
+            "charstrings_index_offsets_out_of_order",
+            "charstrings_index_object_overflow",
+            "charstrings_index_empty",
+            "top_dict_shortint_valid",
+            "top_dict_longint_valid",
+            "top_dict_positive_valid",
+            "top_dict_negative_valid",
+            "top_dict_fixed_valid",
+            "top_dict_weight_operator",
+            "top_dict_underline_thickness_operator",
+            "top_dict_string_operators",
+            "top_dict_unknown_operand",
             "short_header",
             "invalid_name_index_offsize",
             "name_index_offset_overflow",
@@ -1595,6 +1676,36 @@ def write_malformed_cff_faces() -> None:
 def malformed_cff2_payload(kind: str) -> bytes:
     """Return a compact CFF2 table that fails at one parser boundary."""
 
+    def with_charstrings(charstrings_index: bytes, global_index: bytes = b"\0\0\0\0") -> bytes:
+        top_dict = b"\x94\x11"
+        for _ in range(3):
+            top_dict_end = 5 + len(top_dict)
+            charstrings_offset = top_dict_end + len(global_index)
+            top_dict = encode_cff_dict_integer(charstrings_offset) + b"\x11"
+        header = b"\x02\x00\x05" + len(top_dict).to_bytes(2, "big")
+        return header + top_dict + global_index + charstrings_index
+
+    if kind == "charstrings_index_count_truncated":
+        return with_charstrings(b"\0\0")
+    if kind == "charstrings_index_offsize_missing":
+        return with_charstrings(b"\0\0\0\x01")
+    if kind == "charstrings_index_offset_truncated":
+        return with_charstrings(b"\0\0\0\x01\x01\x01")
+    if kind == "charstrings_index_offset_underflow":
+        return with_charstrings(b"\0\0\0\x01\0\0")
+    if kind == "charstrings_index_offsets_out_of_order":
+        return with_charstrings(b"\0\0\0\x01\x02\x01")
+    if kind == "charstrings_index_object_overflow":
+        return with_charstrings(b"\0\0\0\x01\x01\x01\x03")
+    if kind == "charstrings_index_empty":
+        return with_charstrings(b"\0\0\0\0")
+    if kind == "charstrings_index_one":
+        return with_charstrings(b"\0\0\0\x01\x01\x01\x02\x0e")
+    if kind == "global_index_one_object":
+        return with_charstrings(
+            b"\0\0\0\0",
+            global_index=b"\0\0\0\x01\x01\x01\x02\0",
+        )
     if kind == "short_header":
         return b"\x02\x00\x05\x00"
     if kind == "wrong_major_version":
@@ -1643,6 +1754,15 @@ def write_malformed_cff2_faces() -> None:
         base = Path(tmp) / "base-cff2.otf"
         build_cff2(base)
         for kind in [
+            "charstrings_index_count_truncated",
+            "charstrings_index_offsize_missing",
+            "charstrings_index_offset_truncated",
+            "charstrings_index_offset_underflow",
+            "charstrings_index_offsets_out_of_order",
+            "charstrings_index_object_overflow",
+            "charstrings_index_empty",
+            "charstrings_index_one",
+            "global_index_one_object",
             "short_header",
             "wrong_major_version",
             "invalid_header_size",

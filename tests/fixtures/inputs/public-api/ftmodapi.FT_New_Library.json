@@ -4,7 +4,8 @@
   "manifest_cases": [
     "creates_library_with_version_and_refcount",
     "rejects_null_inputs_preserving_output",
-    "allocation_failure_preserves_output"
+    "allocation_failure_preserves_output",
+    "mcp_null_memory_batch"
   ],
   "cases": [
     {
@@ -157,6 +158,420 @@
         "fixture_requirements": [
           "future ABI runner must provide a failing FT_MemoryRec allocator"
         ],
+        "source_refs": [
+          "freetype/src/base/ftobjs.c:FT_New_Library"
+        ]
+      }
+    },
+    {
+      "case_id": "ftmodapi.FT_New_Library.mcp_null_memory_batch",
+      "subject": "ftmodapi.FT_New_Library",
+      "case": "mcp_null_memory_batch",
+      "operation": "ftmodapi.new_library",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "null-memory-001",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-001"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-002",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-002"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-003",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-003"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-004",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-004"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-005",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-005"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-006",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-006"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-007",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-007"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-008",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-008"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-009",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-009"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-010",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-010"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-011",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-011"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-012",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-012"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-013",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-013"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-014",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-014"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-015",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-015"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-016",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-016"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-017",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-017"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-018",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-018"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-019",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-019"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-020",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-020"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-021",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-021"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-022",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-022"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-023",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-023"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-024",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-024"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-025",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-025"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-026",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-026"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-027",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-027"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-028",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-028"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-029",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-029"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-030",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-030"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-031",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-031"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-032",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-032"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-033",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-033"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          },
+          {
+            "id": "null-memory-034",
+            "params": {
+              "memory": "null",
+              "alibrary": "sentinel_pointer",
+              "probe": "null-memory-034"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:1872"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftmodapi",
+        "area:library",
+        "area:error",
+        "area:coverage"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP batch exercises the null-handle return in FT_New_Library."
+      },
+      "expectation": {
+        "status": "error",
+        "error": "FT_Err_Invalid_Argument",
+        "output_shape": {
+          "status": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "status"
+          ]
+        },
         "source_refs": [
           "freetype/src/base/ftobjs.c:FT_New_Library"
         ]

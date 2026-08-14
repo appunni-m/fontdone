@@ -326,8 +326,40 @@
             "params": {"raster_params": {"flags": [], "target": "bitmap", "source": "ignored_sentinel"}, "library": "valid"},
             "expect_error": true,
             "coverage": ["mono:error-output-non-gray-target"]
-          }
-        ]
+          },
+          {"id":"batch2-mono-1","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/simple-filled-square.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:1"]},
+          {"id":"batch2-mono-2","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/even-odd-overlap.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:2"]},
+          {"id":"batch2-mono-3","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/even-odd-double-wind.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:3"]},
+          {"id":"batch2-mono-4","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/even-odd-quad-wind.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:4"]},
+          {"id":"batch2-mono-5","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/clipped-crossing-lines.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":16,"rows":16,"pitch":2,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:5"]},
+          {"id":"batch2-mono-6","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/right-edge-clip-outside-target.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:6"]},
+          {"id":"batch2-mono-7","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/cubic-closed-loop.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:7"]},
+          {"id":"batch2-mono-8","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/cubic-default-tag3.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:8"]},
+          {"id":"batch2-mono-9","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/line-above-clip.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:9"]},
+          {"id":"batch2-mono-10","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/line-below-clip.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:10"]},
+          {"id":"batch2-mono-11","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/line-partial-above-clip.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:11"]},
+          {"id":"batch2-mono-12","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/line-partial-below-clip.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:12"]},
+          {"id":"batch2-mono-13","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/conic-below-clip.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:13"]},
+          {"id":"batch2-mono-14","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/conic-partial-above-clip.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:14"]},
+          {"id":"batch2-mono-15","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/conic-partial-below-clip.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:15"]},
+          {"id":"batch2-mono-16","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/conic-above-control-inside.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:16"]},
+          {"id":"batch2-mono-17","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/conic-above-to-inside.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:17"]},
+          {"id":"batch2-mono-18","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/conic-below-control-inside.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:18"]},
+          {"id":"batch2-mono-19","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/conic-below-to-inside.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:19"]},
+          {"id":"batch2-mono-20","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/cubic-above-clip.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:20"]},
+          {"id":"batch2-mono-21","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/cubic-below-clip.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:21"]},
+          {"id":"batch2-mono-22","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/cubic-partial-above-clip.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:22"]},
+          {"id":"batch2-mono-23","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/cubic-partial-below-clip.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":64,"rows":32,"pitch":8,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:23"]},
+          {"id":"batch2-mono-24","assets":{"outline":{"kind":"ref","id":"outlines/synthetic/dropout-thin-stems-scantype.json","asset_kind":"outline_model"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:24"]},
+          {"id":"batch2-mono-25","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/zero-contours-nonempty-points.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:25"]},
+          {"id":"batch2-mono-error-1","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/invalid-cubic-single-control.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:26"],"expect_error":true},
+          {"id":"batch2-mono-error-2","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/invalid-cubic-second-not-cubic.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:27"],"expect_error":true},
+          {"id":"batch2-mono-error-3","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/invalid-conic-bad-tag.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:28"],"expect_error":true},
+          {"id":"batch2-mono-error-4","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/invalid-starts-cubic.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:29"],"expect_error":true},
+          {"id":"batch2-mono-error-5","assets":{"outline":{"kind":"synthetic_outline","id":"outlines/render/invalid-contour-order.json","generator":"unified-inline-outline-v1"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":4,"pixel_mode":"FT_PIXEL_MODE_MONO","num_grays":2}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"target_bitmap":{"pixel_mode":"FT_PIXEL_MODE_MONO"},"library":"valid"},"coverage":["batch2:mono-render:30"],"expect_error":true},
+          {"id":"c30-render-026","assets":{"outline":{"kind":"ref","id":"outlines/render/cbox-beyond-render-limit.json","asset_kind":"outline_model"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":32,"pixel_mode":"FT_PIXEL_MODE_GRAY","num_grays":256}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"library":"valid"},"coverage":["c30:render:026"],"expect_error":true},
+          {"id":"c30-render-027","assets":{"outline":{"kind":"ref","id":"outlines/render/cbox-beyond-render-limit.json","asset_kind":"outline_model"},"bitmap":{"kind":"bitmap_target","width":32,"rows":32,"pitch":-32,"pixel_mode":"FT_PIXEL_MODE_GRAY","num_grays":256}},"params":{"raster_params":{"flags":[],"target":"bitmap","source":"ignored_sentinel"},"library":"valid"},"coverage":["c30:render:027"],"expect_error":true}
+       ]
       },
       "classifiers": ["kind:function", "header:ftoutln", "surface:public-c-api", "operation:render"],
       "metadata": {"abi": {"header": "freetype/ftoutln.h", "symbol": "FT_Outline_Render", "kind": "function", "c_signature": "FT_Error FT_Outline_Render(FT_Library library, FT_Outline* outline, FT_Raster_Params* params)"}, "source_behavior": "params->source is overwritten with the outline before raster_render; target bitmap contents are generated at runtime."},
@@ -380,6 +412,2651 @@
       "classifiers": ["kind:function", "header:ftoutln", "surface:public-c-api", "error:render"],
       "metadata": {"abi": {"header": "freetype/ftoutln.h", "symbol": "FT_Outline_Render", "kind": "function", "c_signature": "FT_Error FT_Outline_Render(FT_Library library, FT_Outline* outline, FT_Raster_Params* params)"}, "source_behavior": "The function validates library, outline, params, and cbox limits, then iterates renderers while errors are Cannot_Render_Glyph."},
       "expectation": {"status": "error", "output_shape": {"results": [{"return": "FT_Error", "renderer_attempts": "integer"}]}, "compare": {"mode": "exact_error", "compare_error_output": true, "paths": ["results[*].return", "results[*].renderer_attempts"]}, "error": ["FT_Err_Invalid_Library_Handle", "FT_Err_Invalid_Outline", "FT_Err_Invalid_Argument", "FT_Err_Cannot_Render_Glyph"], "source_refs": ["freetype/src/base/ftoutln.c:614-666"], "fixture_requirements": ["Synthetic library/renderer harness capable of modeling Cannot_Render_Glyph fallback without linking native FreeType at runtime."]}
+    },
+    {
+      "case_id": "ftoutln.FT_Outline_Render.c32_direct_validation_matrix",
+      "subject": "ftoutln.FT_Outline_Render",
+      "case": "direct_validation_matrix",
+      "operation": "ftoutln.outline_render",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "c32-direct-001",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-002",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-003",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-004",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-005",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-006",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-007",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-008",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-009",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-010",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-011",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-012",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-013",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-014",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-015",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-016",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-017",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-018",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-019",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-020",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-021",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-022",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-023",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-024",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-025",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_library",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3764"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-026",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-027",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-028",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-029",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-030",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-031",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-032",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-033",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-034",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-035",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-036",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-037",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-038",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-039",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-040",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-041",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-042",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-043",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-044",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-045",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-046",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-047",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-048",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-049",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-050",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_outline",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3767"
+            ],
+            "expect_error": true
+          },
+         {
+           "id": "c32-direct-051",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-052",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-053",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-054",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-055",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-056",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-057",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-058",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-059",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-060",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-061",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-062",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-063",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-064",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-065",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-066",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-067",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-068",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-069",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-070",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-071",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-072",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-073",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-074",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+         {
+           "id": "c32-direct-075",
+           "assets": {
+             "outline": {
+               "kind": "ref",
+               "id": "outlines/render/direct-spans-clipped.json",
+               "asset_kind": "outline_model"
+             }
+           },
+           "params": {
+              "validation": "missing_aa",
+             "raster_params": {
+               "flags": [
+                  "FT_RASTER_FLAG_DIRECT"
+               ],
+               "gray_spans": "recording_callback",
+               "target": "bitmap",
+               "source": "ignored_sentinel"
+             }
+           },
+           "coverage": [
+              "src/ffi/handles.rs:3773"
+           ],
+           "expect_error": true
+          },
+          {
+            "id": "c32-direct-076",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-077",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-078",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-079",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-080",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-081",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-082",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-083",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-084",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-085",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-086",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-087",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-088",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-089",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-090",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-091",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-092",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-093",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-094",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-095",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-096",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-097",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-098",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-099",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-100",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "oversized_cbox",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:3790"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "c32-direct-101",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "validation": "null_params",
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              }
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4229"
+            ],
+            "expect_error": true
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftoutln",
+        "surface:public-c-api",
+        "operation:direct-render",
+        "error:validation"
+      ],
+      "metadata": {
+        "abi": {
+          "header": "freetype/ftoutln.h",
+          "symbol": "FT_Outline_Render",
+          "kind": "function",
+          "c_signature": "FT_Error FT_Outline_Render(FT_Library library, FT_Outline* outline, FT_Raster_Params* params)"
+        },
+        "source_behavior": "Direct smooth rendering validates library, outline, params, flags, and outline CBox before rasterization; the coverage probe used 100 null-params variants and retains one witness after Coverage MCP confirmed no additional line benefit."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "return"
+          ]
+        },
+        "source_refs": [
+          "src/ffi/handles.rs:3755-3800",
+          "freetype/src/base/ftoutln.c:614-640"
+        ]
+      }
     }
   ]
 }

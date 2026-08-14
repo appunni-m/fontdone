@@ -1276,13 +1276,24 @@ pub fn metrics_init_blues_impl(
             if gid == 0 {
                 continue;
             }
-            let outline = match crate::tt::glyf::load_glyph(
-                &font_data.glyf_data,
-                &font_data.loca_data,
-                font_data.head.index_to_loc_format,
-                gid,
-                &font_data.hmtx,
-            ) {
+            let outline = match if font_data.has_cff_outlines() {
+                // CFF faces do not have a `glyf`/`loca` source for the legacy
+                // metrics scan; use the driver's Type 2 outline directly.
+                font_data.load_glyph_outline(gid)
+            } else {
+                // Keep the TrueType metrics scan on the raw `glyf` outline.
+                // Variation deltas are applied by the glyph load after the
+                // face-level style metrics have been initialized, matching
+                // `af_latin_metrics_init_blues`'s face-global timing.
+                crate::tt::glyf::load_glyph(
+                    &font_data.glyf_data,
+                    &font_data.loca_data,
+                    font_data.head.index_to_loc_format,
+                    gid,
+                    &font_data.hmtx,
+                )
+                .map(std::rc::Rc::new)
+            } {
                 Ok(o) => o,
                 Err(_) => continue,
             };
@@ -2808,6 +2819,51 @@ pub fn apply_hints(
     target_mono: bool,
     pp1x_shift: i32,
 ) -> ApplyHintsMetrics {
+    apply_hints_with_advance(
+        outline,
+        raw_outline,
+        x_scale,
+        y_scale,
+        x_delta,
+        y_delta,
+        glyph_index,
+        metrics,
+        is_italic,
+        no_horizontal_hinting,
+        stem_adjust,
+        horz_snap,
+        vert_snap,
+        font_data,
+        target_mono,
+        pp1x_shift,
+        None,
+    )
+}
+
+/// Apply the Latin auto-hinter with an optional advance from a non-SFNT
+/// driver. Type 1 charstrings carry their advance in the decoded program,
+/// not in `FontData::hmtx`; keeping this override at the auto-hinter boundary
+/// preserves the same phantom adjustment for both outline families.
+#[allow(clippy::too_many_arguments)]
+pub fn apply_hints_with_advance(
+    outline: &mut crate::outline::Outline,
+    raw_outline: &crate::tt::glyf::GlyphOutline,
+    x_scale: i32,
+    y_scale: i32,
+    x_delta: i32,
+    y_delta: i32,
+    glyph_index: u16,
+    metrics: Option<&AfLatinMetrics>,
+    is_italic: bool,
+    no_horizontal_hinting: bool,
+    stem_adjust: bool,
+    horz_snap: bool,
+    vert_snap: bool,
+    font_data: Option<&crate::tables::FontData>,
+    target_mono: bool,
+    pp1x_shift: i32,
+    advance_width_fu: Option<i32>,
+) -> ApplyHintsMetrics {
     let mut output = ApplyHintsMetrics::default();
     let Some(metrics) = metrics else {
         return output;
@@ -2815,11 +2871,21 @@ pub fn apply_hints(
     let mut hints = GlyphHints::new(x_scale, y_scale, x_delta, y_delta);
     hints.metrics = Some(metrics.clone());
 
-    // C: when no blue zones can be built for a Latin-style script, C remaps to
-    // NONE_DFLT. Our Latin pipeline with blue_count==0 produces different
-    // results than that dummy-style path, so skip it. Do not skip the CJK path:
-    // af_cjk_hints_apply still runs edge hinting without active blue zones.
-    if !metrics.no_advance_hinting && metrics.axis[1].blue_count == 0 {
+    // C remaps styles whose blue-zone scan fails to NONE_DFLT during face
+    // coverage construction.  Preserve that early exit for TrueType, where
+    // the face-global metrics are intentionally unavailable in this state.
+    // CFF force-autohint loads can still arrive here with the already-built
+    // Latin metrics (the driver has reloaded the CFF outline through
+    // `FT_LOAD_NO_SCALE`), and FreeType continues through the edge pipeline
+    // for that outline.  Keep the call live so cubic CFF controls receive the
+    // same weak/strong treatment as the pinned path.
+    let postscript_outline = raw_outline.has_cubic_tags;
+    let cff_outline = font_data.is_some_and(|data| data.has_cff_outlines());
+    if !cff_outline
+        && !postscript_outline
+        && !metrics.no_advance_hinting
+        && metrics.axis[1].blue_count == 0
+    {
         return output;
     }
     // Match FreeType's af_latin_hints_init target table:
@@ -2976,12 +3042,17 @@ pub fn apply_hints(
     {
         let haxis = &hints.axis[Dimension::Horz as usize];
         let num_horz_edges = haxis.edges.len();
-        let advance_width = font_data.map_or(0, |data| {
-            let advance_fu = data
-                .hmtx_hori_advance_with_gvar_delta(glyph_index, raw_outline.points.len())
-                .unwrap_or_else(|_| data.hmtx.get(glyph_index).advance_width as i32);
-            ft_mul_fix(advance_fu, x_scale)
-        });
+        let advance_width = advance_width_fu.map_or_else(
+            || {
+                font_data.map_or(0, |data| {
+                    let advance_fu = data
+                        .hmtx_hori_advance_with_gvar_delta(glyph_index, raw_outline.points.len())
+                        .unwrap_or_else(|_| data.hmtx.get(glyph_index).advance_width as i32);
+                    ft_mul_fix(advance_fu, x_scale)
+                })
+            },
+            |advance_fu| ft_mul_fix(advance_fu, x_scale),
+        );
         let target_light = no_horizontal_hinting && !stem_adjust && !horz_snap && !vert_snap;
         let preserve_original_advance = !target_light
             && (metrics.fixed_width

@@ -237,8 +237,12 @@ impl FontData {
         outline_point_count: usize,
     ) -> Result<i32, crate::error::FontError> {
         let advance = self.hmtx.get(glyph_index).advance_width as i32;
-        if let Some(hvar) = &self.hvar {
-            return Ok(advance + hvar.advance_delta(glyph_index, &self.normalized_variation_coords));
+        if self.has_active_variation() {
+            if let Some(hvar) = &self.hvar {
+                return Ok(
+                    advance + hvar.advance_delta(glyph_index, &self.normalized_variation_coords),
+                );
+            }
         }
         Ok(advance + self.gvar_hori_advance_delta(glyph_index, outline_point_count)?)
     }
