@@ -10293,6 +10293,66 @@
             "coverage": [
               "api/load_flags:monochrome-render-normal-target"
             ]
+          },
+          {
+            "id": "batch31-load-001",
+            "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"face_index": 0, "size": 11, "glyph_index": 0, "load_flags": ["FT_LOAD_RENDER"], "assert_api_load_glyph_agrees": true},
+            "coverage": ["batch31:load:empty-outline:normal:11"]
+          },
+          {
+            "id": "batch31-load-002",
+            "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"face_index": 0, "size": 12, "glyph_index": 0, "load_flags": ["FT_LOAD_RENDER", "FT_LOAD_TARGET_LIGHT"], "assert_api_load_glyph_agrees": true},
+            "coverage": ["batch31:load:empty-outline:light:12"]
+          },
+          {
+            "id": "batch31-load-003",
+            "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"face_index": 0, "size": 13, "glyph_index": 0, "load_flags": ["FT_LOAD_RENDER", "FT_LOAD_TARGET_MONO"], "assert_api_load_glyph_agrees": true},
+            "coverage": ["batch31:load:empty-outline:mono:13"]
+          },
+          {
+            "id": "batch31-load-004",
+            "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"face_index": 0, "size": 14, "glyph_index": 0, "load_flags": ["FT_LOAD_RENDER", "FT_LOAD_TARGET_LCD"], "assert_api_load_glyph_agrees": true},
+            "coverage": ["batch31:load:empty-outline:lcd:14"]
+          },
+          {
+            "id": "batch31-load-005",
+            "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"face_index": 0, "size": 15, "glyph_index": 0, "load_flags": ["FT_LOAD_RENDER", "FT_LOAD_TARGET_LCD_V"], "assert_api_load_glyph_agrees": true},
+            "coverage": ["batch31:load:empty-outline:lcd-v:15"]
+          },
+          {
+            "id": "batch31-load-006",
+            "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"face_index": 0, "size": 16, "glyph_index": 0, "load_flags": ["FT_LOAD_RENDER", "FT_LOAD_MONOCHROME"], "assert_api_load_glyph_agrees": true},
+            "coverage": ["batch31:load:empty-outline:monochrome:16"]
+          },
+          {
+            "id": "batch31-load-007",
+            "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"face_index": 0, "size": 17, "glyph_index": 0, "load_flags": ["FT_LOAD_RENDER", "FT_LOAD_MONOCHROME", "FT_LOAD_TARGET_LIGHT"], "assert_api_load_glyph_agrees": true},
+            "coverage": ["batch31:load:empty-outline:monochrome-light:17"]
+          },
+          {
+            "id": "batch31-load-008",
+            "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"face_index": 0, "size": 18, "glyph_index": 0, "load_flags": ["FT_LOAD_RENDER", "FT_LOAD_MONOCHROME", "FT_LOAD_TARGET_MONO"], "assert_api_load_glyph_agrees": true},
+            "coverage": ["batch31:load:empty-outline:monochrome-mono:18"]
+          },
+          {
+            "id": "batch31-load-009",
+            "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"face_index": 0, "size": 19, "glyph_index": 0, "load_flags": ["FT_LOAD_RENDER", "FT_LOAD_MONOCHROME", "FT_LOAD_TARGET_LCD"], "assert_api_load_glyph_agrees": true},
+            "coverage": ["batch31:load:empty-outline:monochrome-lcd:19"]
+          },
+          {
+            "id": "batch31-load-010",
+            "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"face_index": 0, "size": 20, "glyph_index": 0, "load_flags": ["FT_LOAD_RENDER", "FT_LOAD_MONOCHROME", "FT_LOAD_TARGET_LCD_V"], "assert_api_load_glyph_agrees": true},
+            "coverage": ["batch31:load:empty-outline:monochrome-lcd-v:20"]
           }
         ]
       },
@@ -13079,6 +13139,58 @@
           "freetype/src/truetype/ttgload.c:828-837",
           "freetype/src/truetype/ttgload.c:1838-1859"
         ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_Load_Glyph.matrix_load.batch34_autohint_topology_matrix",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "matrix_load",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"batch34-load-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":8},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"]},"coverage":["batch34:autohint:cjk:glyph-3:normal:8"]},
+          {"id":"batch34-load-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":17},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"]},"coverage":["batch34:autohint:cjk:glyph-3:mono:17"]},
+          {"id":"batch34-load-003","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":31},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD_V"]},"coverage":["batch34:autohint:cjk:glyph-3:lcd-v:31"]},
+          {"id":"batch34-load-004","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":9},"glyph_index":4,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"]},"coverage":["batch34:autohint:cjk:glyph-4:normal:9"]},
+          {"id":"batch34-load-005","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":18},"glyph_index":4,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"]},"coverage":["batch34:autohint:cjk:glyph-4:mono:18"]},
+          {"id":"batch34-load-006","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":33},"glyph_index":4,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD"]},"coverage":["batch34:autohint:cjk:glyph-4:lcd:33"]},
+          {"id":"batch34-load-007","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":8},"glyph_index":5,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"]},"coverage":["batch34:autohint:cjk:glyph-5:normal:8"]},
+          {"id":"batch34-load-008","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":17},"glyph_index":5,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"]},"coverage":["batch34:autohint:cjk:glyph-5:mono:17"]},
+          {"id":"batch34-load-009","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":31},"glyph_index":5,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD"]},"coverage":["batch34:autohint:cjk:glyph-5:lcd:31"]},
+          {"id":"batch34-load-010","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":48},"glyph_index":5,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD_V"]},"coverage":["batch34:autohint:cjk:glyph-5:lcd-v:48"]},
+          {"id":"batch34-load-011","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":7},"glyph_index":2,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"]},"coverage":["batch34:autohint:latin:glyph-2:normal:7"]},
+          {"id":"batch34-load-012","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":11},"glyph_index":2,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LIGHT"]},"coverage":["batch34:autohint:latin:glyph-2:light:11"]},
+          {"id":"batch34-load-013","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":17},"glyph_index":2,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"]},"coverage":["batch34:autohint:latin:glyph-2:mono:17"]},
+          {"id":"batch34-load-014","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":23},"glyph_index":2,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD"]},"coverage":["batch34:autohint:latin:glyph-2:lcd:23"]},
+          {"id":"batch34-load-015","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":31},"glyph_index":2,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD_V"]},"coverage":["batch34:autohint:latin:glyph-2:lcd-v:31"]},
+          {"id":"batch34-load-016","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":7},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"]},"coverage":["batch34:autohint:latin:glyph-3:normal:7"]},
+          {"id":"batch34-load-017","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":11},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LIGHT"]},"coverage":["batch34:autohint:latin:glyph-3:light:11"]},
+          {"id":"batch34-load-018","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":17},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"]},"coverage":["batch34:autohint:latin:glyph-3:mono:17"]},
+          {"id":"batch34-load-019","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":23},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD"]},"coverage":["batch34:autohint:latin:glyph-3:lcd:23"]},
+          {"id":"batch34-load-020","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":31},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD_V"]},"coverage":["batch34:autohint:latin:glyph-3:lcd-v:31"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-load",
+        "coverage:real-parity",
+        "font_variability:input/fonts"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "rows": "per-font glyph load status and slot snapshot"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "rows[].status",
+            "rows[].slot"
+          ]
+        }
       }
     }
   ]

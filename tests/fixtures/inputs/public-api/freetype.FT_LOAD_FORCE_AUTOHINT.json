@@ -5501,6 +5501,89 @@
         ],
         "fixture_requirements": "Glyph-index version of force-autohint behavior for the same autohint corpus."
       }
+    },
+    {
+      "case_id": "freetype.FT_LOAD_FORCE_AUTOHINT.load_glyph_force_autohint_behavior.batch35_cjk_latin_size_modes",
+      "subject": "freetype.FT_LOAD_FORCE_AUTOHINT",
+      "case": "load_glyph_force_autohint_behavior",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"batch35-load-001","assets":{"font":{"kind":"ref","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":8,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"glyph_index":{"from_char_code":20912},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:minor-same-position:normal:8"]},
+          {"id":"batch35-load-002","assets":{"font":{"kind":"ref","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":12,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"glyph_index":{"from_char_code":20912},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:minor-same-position:mono:12"]},
+          {"id":"batch35-load-003","assets":{"font":{"kind":"ref","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":17,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LIGHT"],"glyph_index":{"from_char_code":20912},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:minor-same-position:light:17"]},
+          {"id":"batch35-load-004","assets":{"font":{"kind":"ref","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":24,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD"],"glyph_index":{"from_char_code":20912},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:minor-same-position:lcd:24"]},
+          {"id":"batch35-load-005","assets":{"font":{"kind":"ref","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":31,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD_V"],"glyph_index":{"from_char_code":20912},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:minor-same-position:lcd-v:31"]},
+          {"id":"batch35-load-006","assets":{"font":{"kind":"ref","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":48,"load_flags":["FT_LOAD_FORCE_AUTOHINT"],"glyph_index":{"from_char_code":20912},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:minor-same-position:default:48"]},
+          {"id":"batch35-load-007","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":9,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"glyph_index":{"from_char_code":20913},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:grouped-shorter-link:normal:9"]},
+          {"id":"batch35-load-008","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":13,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"glyph_index":{"from_char_code":20913},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:grouped-shorter-link:mono:13"]},
+          {"id":"batch35-load-009","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":18,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LIGHT"],"glyph_index":{"from_char_code":20913},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:grouped-shorter-link:light:18"]},
+          {"id":"batch35-load-010","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":27,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD"],"glyph_index":{"from_char_code":20913},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:grouped-shorter-link:lcd:27"]},
+          {"id":"batch35-load-011","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":36,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD_V"],"glyph_index":{"from_char_code":20913},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:grouped-shorter-link:lcd-v:36"]},
+          {"id":"batch35-load-012","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":64,"load_flags":["FT_LOAD_FORCE_AUTOHINT"],"glyph_index":{"from_char_code":20913},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:grouped-shorter-link:default:64"]},
+          {"id":"batch35-load-013","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":7,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"glyph_index":{"from_char_code":20914},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:symmetric-stems:normal:7"]},
+          {"id":"batch35-load-014","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":11,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"glyph_index":{"from_char_code":20914},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:symmetric-stems:mono:11"]},
+          {"id":"batch35-load-015","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":17,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LIGHT"],"glyph_index":{"from_char_code":20914},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:symmetric-stems:light:17"]},
+          {"id":"batch35-load-016","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":25,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD"],"glyph_index":{"from_char_code":20914},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:symmetric-stems:lcd:25"]},
+          {"id":"batch35-load-017","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":33,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD_V"],"glyph_index":{"from_char_code":20914},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:symmetric-stems:lcd-v:33"]},
+          {"id":"batch35-load-018","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-remaining-branches.ttf"}},"params":{"face_index":0,"pixel_size":72,"load_flags":["FT_LOAD_FORCE_AUTOHINT"],"glyph_index":{"from_char_code":20914},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:cjk:symmetric-stems:default:72"]},
+          {"id":"batch35-load-019","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":7,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"glyph_index":{"from_char_code":67},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:latin:capital-blue-c:normal:7"]},
+          {"id":"batch35-load-020","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":13,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LIGHT"],"glyph_index":{"from_char_code":69},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:latin:capital-blue-e:light:13"]},
+          {"id":"batch35-load-021","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":19,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"glyph_index":{"from_char_code":72},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:latin:capital-blue-h:mono:19"]},
+          {"id":"batch35-load-022","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":29,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD"],"glyph_index":{"from_char_code":67},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:latin:capital-blue-c:lcd:29"]},
+          {"id":"batch35-load-023","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":37,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD_V"],"glyph_index":{"from_char_code":69},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:latin:capital-blue-e:lcd-v:37"]},
+          {"id":"batch35-load-024","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":53,"load_flags":["FT_LOAD_FORCE_AUTOHINT"],"glyph_index":{"from_char_code":72},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:latin:capital-blue-h:default:53"]},
+          {"id":"batch35-load-025","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":8,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"glyph_index":{"from_char_code":579},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:latin:wide-segment:normal:8"]},
+          {"id":"batch35-load-026","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":14,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LIGHT"],"glyph_index":{"from_char_code":579},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:latin:wide-segment:light:14"]},
+          {"id":"batch35-load-027","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":22,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"glyph_index":{"from_char_code":579},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:latin:wide-segment:mono:22"]},
+          {"id":"batch35-load-028","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":31,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD"],"glyph_index":{"from_char_code":579},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:latin:wide-segment:lcd:31"]},
+          {"id":"batch35-load-029","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":47,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD_V"],"glyph_index":{"from_char_code":579},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:latin:wide-segment:lcd-v:47"]},
+          {"id":"batch35-load-030","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/latin-remaining-topology.ttf"}},"params":{"face_index":0,"pixel_size":67,"load_flags":["FT_LOAD_FORCE_AUTOHINT"],"glyph_index":{"from_char_code":579},"assert_api_load_glyph_agrees":true},"coverage":["batch35:autohint:latin:wide-segment:default:67"]}
+        ]
+      },
+      "classifiers": [
+        "kind:flag",
+        "header:freetype",
+        "operation:load",
+        "coverage:runtime-observable",
+        "coverage:real-parity"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "error": "FT_Error",
+          "glyph_slot": {
+            "format": "FT_Glyph_Format",
+            "metrics": "FT_Glyph_Metrics",
+            "advance": "FT_Vector",
+            "linearHoriAdvance": "FT_Fixed",
+            "linearVertAdvance": "FT_Fixed",
+            "bitmap": "FT_Bitmap summary and bytes when rendered",
+            "outline": "point/contour/tag vectors when exposed",
+            "subglyphs": "subglyph metadata when non-recursive composite load is requested"
+          }
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "error",
+            "glyph_slot.glyph_index",
+            "glyph_slot.format",
+            "glyph_slot.metrics",
+            "glyph_slot.advance",
+            "glyph_slot.outline.cbox"
+          ]
+        },
+        "oracle": "generated_at_runtime_from_c_freetype",
+        "sources_checked": [
+          "freetype/include/freetype/freetype.h",
+          "freetype/src/base/ftobjs.c",
+          "freetype/src/truetype/ttgload.c"
+        ],
+        "fixture_requirements": "Valid existing CJK and Latin autohint fixtures with char-code glyph resolution and size/target-mode variation."
+      }
     }
   ]
 }

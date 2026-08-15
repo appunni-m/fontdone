@@ -15828,6 +15828,16 @@ static int emit_outline_render(int argc, char** argv) {
             c30_render = (int)value;
         }
     }
+    int batch31_outline = 0;
+    const char* batch31_marker = strstr(input_case_id, "@batch31-outline-");
+    if (batch31_marker) {
+        const char* number = batch31_marker + strlen("@batch31-outline-");
+        char* end = NULL;
+        long value = strtol(number, &end, 10);
+        if (end != number && *end == '\0' && value >= 1 && value <= 10) {
+            batch31_outline = (int)value;
+        }
+    }
     int batch2_mono = 0;
     int batch2_mono_error = 0;
     int batch4_mono_zero = 0;
@@ -15925,6 +15935,21 @@ static int emit_outline_render(int argc, char** argv) {
         case 20: case_id = "c30@cubic-fourth-flatness"; break;
         case 29: case_id = "c30@zero-contours-nonempty-points"; break;
         default: break;
+    }
+    if (batch31_outline) {
+        static const char* batch31_shapes[10] = {
+            "batch31@simple-filled-square",
+            "batch31@even-odd-overlap",
+            "batch31@even-odd-double-wind",
+            "batch31@even-odd-quad-wind",
+            "batch31@clipped-crossing-lines",
+            "batch31@cubic-closed-loop",
+            "batch31@cubic-default-tag3",
+            "batch31@line-partial-below-clip",
+            "batch31@conic-partial-above-clip",
+            "batch31@zero-contours-nonempty-points",
+        };
+        case_id = batch31_shapes[batch31_outline - 1];
     }
     if (streq(mode, "error") && c32_direct) {
         int status = FT_Err_Invalid_Argument;

@@ -221,6 +221,104 @@ def build_unicode_charmap_fixture(path: Path) -> None:
     )
 
 
+def build_agl_named_glyph_fixtures() -> None:
+    """Build one valid Type 1 face for each named ASCII Adobe glyph case.
+
+    Keeping each glyph in its own face makes the public parity rows isolate one
+    `ps_unicode_value` mapping at a time instead of hiding all mappings behind
+    a shared multi-glyph fixture.
+    """
+
+    named_glyphs = [
+        ("space", 0x20),
+        ("exclam", 0x21),
+        ("quotedbl", 0x22),
+        ("numbersign", 0x23),
+        ("dollar", 0x24),
+        ("percent", 0x25),
+        ("ampersand", 0x26),
+        ("quotesingle", 0x27),
+        ("parenleft", 0x28),
+        ("parenright", 0x29),
+        ("asterisk", 0x2A),
+        ("plus", 0x2B),
+        ("comma", 0x2C),
+        ("hyphen", 0x2D),
+        ("period", 0x2E),
+        ("slash", 0x2F),
+        ("zero", 0x30),
+        ("one", 0x31),
+        ("two", 0x32),
+        ("three", 0x33),
+        ("four", 0x34),
+        ("five", 0x35),
+        ("six", 0x36),
+        ("seven", 0x37),
+        ("eight", 0x38),
+        ("nine", 0x39),
+        ("colon", 0x3A),
+        ("semicolon", 0x3B),
+        ("less", 0x3C),
+        ("equal", 0x3D),
+    ]
+    empty_glyph = charstring([500, 0, "hsbw", "endchar"])
+    for glyph_name, _codepoint in named_glyphs:
+        build_simple_type1(
+            OUT_DIR / f"agl-{glyph_name}.pfb",
+            f"AGL{glyph_name.title()}",
+            f"AGL named glyph {glyph_name}",
+            "Generated for fontdone Type 1 Adobe glyph-name charmap parity",
+            charstrings={
+                ".notdef": charstring([500, 0, "hsbw", "endchar"]),
+                glyph_name: empty_glyph,
+            },
+        )
+
+    batch33_named_glyphs = [
+        ("greater", "greater", 0x3E),
+        ("question", "question", 0x3F),
+        ("at", "at", 0x40),
+        ("bracketleft", "bracketleft", 0x5B),
+        ("backslash", "backslash", 0x5C),
+        ("bracketright", "bracketright", 0x5D),
+        ("asciicircum", "asciicircum", 0x5E),
+        ("underscore", "underscore", 0x5F),
+        ("grave", "grave", 0x60),
+        ("braceleft", "braceleft", 0x7B),
+        ("bar", "bar", 0x7C),
+        ("braceright", "braceright", 0x7D),
+        ("asciitilde", "asciitilde", 0x7E),
+        ("Delta", "delta", 0x0394),
+        ("Omega", "omega", 0x03A9),
+        ("fraction", "fraction", 0x2215),
+        ("macron", "macron", 0x00AF),
+        ("mu", "mu", 0x03BC),
+        ("periodcentered", "periodcentered", 0x00B7),
+        ("nonbreakingspace", "nonbreakingspace", 0x00A0),
+        ("Tcommaaccent", "tcommaaccent", 0x021A),
+        ("tcommaaccent", "tcommaaccent-lower", 0x021B),
+        ("A", "letter-a", 0x41),
+        ("B", "letter-b", 0x42),
+        ("C", "letter-c", 0x43),
+        ("D", "letter-d", 0x44),
+        ("E", "letter-e", 0x45),
+        ("F", "letter-f", 0x46),
+        ("G", "letter-g", 0x47),
+        ("H", "letter-h", 0x48),
+    ]
+    for glyph_name, filename, _codepoint in batch33_named_glyphs:
+        build_simple_type1(
+            OUT_DIR / f"agl-{filename}.pfb",
+            f"AGL{filename.replace('-', '').title()}",
+            f"AGL named glyph {glyph_name}",
+            "Generated for fontdone Type 1 Adobe glyph-name charmap parity",
+            charstrings={
+                ".notdef": charstring([500, 0, "hsbw", "endchar"]),
+                glyph_name: empty_glyph,
+            },
+        )
+
+
 def _pfb_segments(data: bytes) -> list[tuple[int, bytes]]:
     segments: list[tuple[int, bytes]] = []
     offset = 0
@@ -1000,6 +1098,7 @@ def main() -> None:
         "Generated for fontdone non-SFNT coverage",
     )
     build_unicode_charmap_fixture(OUT_DIR / "unicode-names-type1.pfb")
+    build_agl_named_glyph_fixtures()
     build_simple_type1(
         OUT_DIR / "private-parser-edge-fields.pfb",
         "PrivateParserEdgeFields",

@@ -292,7 +292,17 @@
 {"id":"b22-render-021","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/hinter-control-matrix.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":16},"glyph_index":9,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_NORMAL"},"coverage":["batch22:render:normal:gid-9"]},
 {"id":"b22-render-022","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/hinter-control-matrix.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":16},"glyph_index":9,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_MONO"},"coverage":["batch22:render:mono:gid-9"]},
 {"id":"b22-render-023","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/hinter-control-matrix.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":16},"glyph_index":9,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_LCD"},"coverage":["batch22:render:lcd:gid-9"]},
-{"id":"b22-render-024","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/hinter-control-matrix.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":16},"glyph_index":9,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_LCD_V"},"coverage":["batch22:render:lcd-v:gid-9"]}
+{"id":"b22-render-024","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/glyf/hinter-control-matrix.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":16},"glyph_index":9,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_LCD_V"},"coverage":["batch22:render:lcd-v:gid-9"]},
+{"id":"batch31-render-001","assets":{"font":{"kind":"file","role":"font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"size_ppem":5,"glyph_index":0,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL"},"coverage":["batch31:render:empty-outline:normal:5"]},
+{"id":"batch31-render-002","assets":{"font":{"kind":"file","role":"font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"size_ppem":6,"glyph_index":0,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_LIGHT"},"coverage":["batch31:render:empty-outline:light:6"]},
+{"id":"batch31-render-003","assets":{"font":{"kind":"file","role":"font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"size_ppem":7,"glyph_index":0,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_MONO"},"coverage":["batch31:render:empty-outline:mono:7"]},
+{"id":"batch31-render-004","assets":{"font":{"kind":"file","role":"font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"size_ppem":8,"glyph_index":0,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_LCD"},"coverage":["batch31:render:empty-outline:lcd:8"]},
+{"id":"batch31-render-005","assets":{"font":{"kind":"file","role":"font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"size_ppem":9,"glyph_index":0,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_LCD_V"},"coverage":["batch31:render:empty-outline:lcd-v:9"]},
+{"id":"batch31-render-006","assets":{"font":{"kind":"file","role":"font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"size_ppem":10,"glyph_index":0,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL"},"coverage":["batch31:render:empty-outline:normal:10"]},
+{"id":"batch31-render-007","assets":{"font":{"kind":"file","role":"font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"size_ppem":11,"glyph_index":0,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_LIGHT"},"coverage":["batch31:render:empty-outline:light:11"]},
+{"id":"batch31-render-008","assets":{"font":{"kind":"file","role":"font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"size_ppem":12,"glyph_index":0,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_MONO"},"coverage":["batch31:render:empty-outline:mono:12"]},
+{"id":"batch31-render-009","assets":{"font":{"kind":"file","role":"font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"size_ppem":13,"glyph_index":0,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_LCD"},"coverage":["batch31:render:empty-outline:lcd:13"]},
+{"id":"batch31-render-010","assets":{"font":{"kind":"file","role":"font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"face_index":0,"size_ppem":14,"glyph_index":0,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_LCD_V"},"coverage":["batch31:render:empty-outline:lcd-v:14"]}
         ]
       },
       "classifiers": [
@@ -3388,6 +3398,50 @@
         "fixture_requirements": [
           "Runner support for new slot before load and synthetic unsupported glyph format; the composite no-recurse render error is an executable variant above."
         ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_Render_Glyph.matrix_render.batch34_cff_cubic_modes",
+      "subject": "freetype.FT_Render_Glyph",
+      "case": "matrix_render",
+      "operation": "render_glyph",
+      "schema": "glyph_slot",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"batch34-render-021","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cff/pure-cff-cubic.otf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":5},"glyph_index":4,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_MONO"},"coverage":["batch34:render:cff:glyph-4:mono:5"]},
+          {"id":"batch34-render-022","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cff/pure-cff-cubic.otf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":9},"glyph_index":5,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_LCD"},"coverage":["batch34:render:cff:glyph-5:lcd:9"]},
+          {"id":"batch34-render-023","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cff/pure-cff-cubic.otf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":13},"glyph_index":8,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_LCD_V"},"coverage":["batch34:render:cff:glyph-8:lcd-v:13"]},
+          {"id":"batch34-render-024","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cff/pure-cff-cubic.otf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":17},"glyph_index":13,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_NORMAL"},"coverage":["batch34:render:cff:glyph-13:normal:17"]},
+          {"id":"batch34-render-025","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cff/pure-cff-cubic.otf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":21},"glyph_index":14,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_SDF"},"coverage":["batch34:render:cff:glyph-14:sdf:21"]},
+          {"id":"batch34-render-026","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cff/pure-cff-cubic.otf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":27},"glyph_index":34,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_MONO"},"coverage":["batch34:render:cff:glyph-34:mono:27"]},
+          {"id":"batch34-render-027","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cff/pure-cff-cubic.otf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":33},"glyph_index":16,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_SDF"},"coverage":["batch34:render:cff:glyph-16:sdf:33"]},
+          {"id":"batch34-render-028","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cff/pure-cff-cubic.otf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":48},"glyph_index":34,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_LCD_V"},"coverage":["batch34:render:cff:glyph-34:lcd-v:48"]},
+          {"id":"batch34-render-029","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cff/pure-cff-cubic.otf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":64},"glyph_index":35,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_SDF"},"coverage":["batch34:render:cff:glyph-35:sdf:64"]},
+          {"id":"batch34-render-030","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cff/pure-cff-cubic.otf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":96},"glyph_index":40,"load_flags":["FT_LOAD_NO_HINTING"],"render_mode":"FT_RENDER_MODE_NORMAL"},"coverage":["batch34:render:cff:glyph-40:normal:96"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-render",
+        "coverage:real-parity",
+        "font_variability:input/fonts"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "matrix_outputs": "bitmap metrics and bytes per matrix row"
+        },
+        "compare": {
+          "mode": "bytes",
+          "paths": [
+            "rows[*].status",
+            "rows[*].bitmap",
+            "rows[*].metrics"
+          ]
+        }
       }
     }
   ]

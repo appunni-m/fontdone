@@ -504,6 +504,144 @@
           ]
         }
       }
+    },
+    {
+      "case_id": "freetype.FT_Select_Charmap.batch32_type1_agl_named_glyphs",
+      "subject": "freetype.FT_Select_Charmap",
+      "case": "success_select_unicode_best",
+      "operation": "freetype.select_charmap",
+      "schema": "charmap",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"batch32-agl-001-space","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-space.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[32]},"coverage":["batch32:type1:agl:space"]},
+          {"id":"batch32-agl-002-exclam","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-exclam.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[33]},"coverage":["batch32:type1:agl:exclam"]},
+          {"id":"batch32-agl-003-quotedbl","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-quotedbl.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[34]},"coverage":["batch32:type1:agl:quotedbl"]},
+          {"id":"batch32-agl-004-numbersign","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-numbersign.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[35]},"coverage":["batch32:type1:agl:numbersign"]},
+          {"id":"batch32-agl-005-dollar","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-dollar.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[36]},"coverage":["batch32:type1:agl:dollar"]},
+          {"id":"batch32-agl-006-percent","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-percent.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[37]},"coverage":["batch32:type1:agl:percent"]},
+          {"id":"batch32-agl-007-ampersand","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-ampersand.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[38]},"coverage":["batch32:type1:agl:ampersand"]},
+          {"id":"batch32-agl-008-quotesingle","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-quotesingle.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[39]},"coverage":["batch32:type1:agl:quotesingle"]},
+          {"id":"batch32-agl-009-parenleft","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-parenleft.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[40]},"coverage":["batch32:type1:agl:parenleft"]},
+          {"id":"batch32-agl-010-parenright","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-parenright.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[41]},"coverage":["batch32:type1:agl:parenright"]},
+          {"id":"batch32-agl-011-asterisk","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-asterisk.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[42]},"coverage":["batch32:type1:agl:asterisk"]},
+          {"id":"batch32-agl-012-plus","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-plus.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[43]},"coverage":["batch32:type1:agl:plus"]},
+          {"id":"batch32-agl-013-comma","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-comma.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[44]},"coverage":["batch32:type1:agl:comma"]},
+          {"id":"batch32-agl-014-hyphen","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-hyphen.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[45]},"coverage":["batch32:type1:agl:hyphen"]},
+          {"id":"batch32-agl-015-period","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-period.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[46]},"coverage":["batch32:type1:agl:period"]},
+          {"id":"batch32-agl-016-slash","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-slash.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[47]},"coverage":["batch32:type1:agl:slash"]},
+          {"id":"batch32-agl-017-zero","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-zero.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[48]},"coverage":["batch32:type1:agl:zero"]},
+          {"id":"batch32-agl-018-one","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-one.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[49]},"coverage":["batch32:type1:agl:one"]},
+          {"id":"batch32-agl-019-two","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-two.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[50]},"coverage":["batch32:type1:agl:two"]},
+          {"id":"batch32-agl-020-three","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-three.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[51]},"coverage":["batch32:type1:agl:three"]},
+          {"id":"batch32-agl-021-four","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-four.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[52]},"coverage":["batch32:type1:agl:four"]},
+          {"id":"batch32-agl-022-five","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-five.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[53]},"coverage":["batch32:type1:agl:five"]},
+          {"id":"batch32-agl-023-six","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-six.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[54]},"coverage":["batch32:type1:agl:six"]},
+          {"id":"batch32-agl-024-seven","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-seven.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[55]},"coverage":["batch32:type1:agl:seven"]},
+          {"id":"batch32-agl-025-eight","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-eight.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[56]},"coverage":["batch32:type1:agl:eight"]},
+          {"id":"batch32-agl-026-nine","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-nine.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[57]},"coverage":["batch32:type1:agl:nine"]},
+          {"id":"batch32-agl-027-colon","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-colon.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[58]},"coverage":["batch32:type1:agl:colon"]},
+          {"id":"batch32-agl-028-semicolon","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-semicolon.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[59]},"coverage":["batch32:type1:agl:semicolon"]},
+          {"id":"batch32-agl-029-less","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-less.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[60]},"coverage":["batch32:type1:agl:less"]},
+          {"id":"batch32-agl-030-equal","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-equal.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[61]},"coverage":["batch32:type1:agl:equal"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:charmap",
+        "coverage:real-parity"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "selected_charmap": [
+            "encoding",
+            "platform_id",
+            "encoding_id",
+            "format"
+          ],
+          "char_indices": "probe map"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "selected_charmap",
+            "char_indices"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "freetype.FT_Select_Charmap.batch33_type1_agl_remaining",
+      "subject": "freetype.FT_Select_Charmap",
+      "case": "success_select_unicode_best",
+      "operation": "freetype.select_charmap",
+      "schema": "charmap",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"batch33-agl-001-greater","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-greater.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[62]},"coverage":["batch33:type1:agl:greater"]},
+          {"id":"batch33-agl-002-question","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-question.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[63]},"coverage":["batch33:type1:agl:question"]},
+          {"id":"batch33-agl-003-at","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-at.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[64]},"coverage":["batch33:type1:agl:at"]},
+          {"id":"batch33-agl-004-bracketleft","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-bracketleft.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[91]},"coverage":["batch33:type1:agl:bracketleft"]},
+          {"id":"batch33-agl-005-backslash","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-backslash.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[92]},"coverage":["batch33:type1:agl:backslash"]},
+          {"id":"batch33-agl-006-bracketright","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-bracketright.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[93]},"coverage":["batch33:type1:agl:bracketright"]},
+          {"id":"batch33-agl-007-asciicircum","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-asciicircum.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[94]},"coverage":["batch33:type1:agl:asciicircum"]},
+          {"id":"batch33-agl-008-underscore","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-underscore.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[95]},"coverage":["batch33:type1:agl:underscore"]},
+          {"id":"batch33-agl-009-grave","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-grave.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[96]},"coverage":["batch33:type1:agl:grave"]},
+          {"id":"batch33-agl-010-braceleft","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-braceleft.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[123]},"coverage":["batch33:type1:agl:braceleft"]},
+          {"id":"batch33-agl-011-bar","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-bar.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[124]},"coverage":["batch33:type1:agl:bar"]},
+          {"id":"batch33-agl-012-braceright","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-braceright.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[125]},"coverage":["batch33:type1:agl:braceright"]},
+          {"id":"batch33-agl-013-asciitilde","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-asciitilde.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[126]},"coverage":["batch33:type1:agl:asciitilde"]},
+          {"id":"batch33-agl-014-Delta","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-delta.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[916]},"coverage":["batch33:type1:agl:Delta"]},
+          {"id":"batch33-agl-015-Omega","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-omega.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[937]},"coverage":["batch33:type1:agl:Omega"]},
+          {"id":"batch33-agl-016-fraction","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-fraction.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[8725]},"coverage":["batch33:type1:agl:fraction"]},
+          {"id":"batch33-agl-017-macron","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-macron.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[175]},"coverage":["batch33:type1:agl:macron"]},
+          {"id":"batch33-agl-018-mu","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-mu.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[956]},"coverage":["batch33:type1:agl:mu"]},
+          {"id":"batch33-agl-019-periodcentered","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-periodcentered.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[183]},"coverage":["batch33:type1:agl:periodcentered"]},
+          {"id":"batch33-agl-020-nonbreakingspace","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-nonbreakingspace.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[160]},"coverage":["batch33:type1:agl:nonbreakingspace"]},
+          {"id":"batch33-agl-021-Tcommaaccent","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-tcommaaccent.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[538]},"coverage":["batch33:type1:agl:Tcommaaccent"]},
+          {"id":"batch33-agl-022-tcommaaccent","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-tcommaaccent-lower.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[539]},"coverage":["batch33:type1:agl:tcommaaccent"]},
+          {"id":"batch33-agl-023-letter-a","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-letter-a.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[65]},"coverage":["batch33:type1:agl:letter-a"]},
+          {"id":"batch33-agl-024-letter-b","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-letter-b.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[66]},"coverage":["batch33:type1:agl:letter-b"]},
+          {"id":"batch33-agl-025-letter-c","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-letter-c.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[67]},"coverage":["batch33:type1:agl:letter-c"]},
+          {"id":"batch33-agl-026-letter-d","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-letter-d.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[68]},"coverage":["batch33:type1:agl:letter-d"]},
+          {"id":"batch33-agl-027-letter-e","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-letter-e.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[69]},"coverage":["batch33:type1:agl:letter-e"]},
+          {"id":"batch33-agl-028-letter-f","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-letter-f.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[70]},"coverage":["batch33:type1:agl:letter-f"]},
+          {"id":"batch33-agl-029-letter-g","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-letter-g.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[71]},"coverage":["batch33:type1:agl:letter-g"]},
+          {"id":"batch33-agl-030-letter-h","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/type1/agl-letter-h.pfb"}},"params":{"face_index":0,"encoding":"FT_ENCODING_UNICODE","post_probe_chars":[72]},"coverage":["batch33:type1:agl:letter-h"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:charmap",
+        "coverage:real-parity"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "selected_charmap": [
+            "encoding",
+            "platform_id",
+            "encoding_id",
+            "format"
+          ],
+          "char_indices": "probe map"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "selected_charmap",
+            "char_indices"
+          ]
+        }
+      }
     }
   ]
 }
