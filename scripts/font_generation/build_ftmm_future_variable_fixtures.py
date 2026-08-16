@@ -112,6 +112,29 @@ def write_gvar_payload(
     save_font(OUT_DIR / name, font)
 
 
+def write_empty_simple_outline_gvar_fixture(name: str, payload: bytes) -> None:
+    """Build a valid non-zero-length empty simple glyph with active gvar data.
+
+    The compact source font stores the space glyph as an omitted ``glyf``
+    record.  A twelve-byte simple-glyph record (header plus zero instruction
+    length) is the valid OpenType encoding for an empty outline and keeps the
+    public loader on the variation path.
+    """
+
+    font = TTFont(BASE_FONT, recalcTimestamp=False)
+    glyph_index = 17
+    glyph_name = font.getGlyphOrder()[glyph_index]
+    if font["loca"].locations[glyph_index] != font["loca"].locations[glyph_index + 1]:
+        raise ValueError("space glyph must be empty in the compact source font")
+
+    empty_simple_header = b"\0" * 12
+    font["glyf"][glyph_name].data = empty_simple_header
+    font.recalcBBoxes = False
+    font["gvar"] = raw_table("gvar", payload)
+    del font["HVAR"]
+    save_font(OUT_DIR / name, font)
+
+
 def write_table_payload(base_path: Path, tag: str, name: str, payload: bytes) -> None:
     font = TTFont(base_path, recalcTimestamp=False)
     font[tag] = raw_table(tag, payload)
@@ -858,6 +881,14 @@ def write_gvar_fixtures() -> None:
         "gvar-empty-outline-default.ttf",
         single_tuple_gvar_payload(glyph_index=17, point_count=4),
         remove_hvar=True,
+    )
+    write_empty_simple_outline_gvar_fixture(
+        "gvar-empty-simple-outline.ttf",
+        single_tuple_gvar_payload(glyph_index=17, point_count=4),
+    )
+    write_empty_simple_outline_gvar_fixture(
+        "gvar-empty-simple-outline-partial.ttf",
+        empty_outline_partial_gvar_payload(),
     )
     write_gvar_payload(
         "gvar-axis-count-mismatch.ttf",

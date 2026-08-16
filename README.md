@@ -102,22 +102,22 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The latest full parity snapshot was recorded on **2026-08-15** (UTC):
+The latest full parity snapshot was recorded on **2026-08-16** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 16,252 |
-| Passed cases | 16,252 |
+| Runnable exact-comparison cases | 17,091 |
+| Passed cases | 17,091 |
 | Failed cases | 0 |
 | Explicitly pending cases | 4 |
-| Covered manifest cases | 4,293 |
+| Covered manifest cases | 4,303 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,440 |
-| Concrete expanded cases | 16,256 |
+| Logical declared cases | 4,453 |
+| Concrete expanded cases | 17,095 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`16,252 / 16,252` means every runnable case in that execution matched; the 4
+`17,091 / 17,091` means every runnable case in that execution matched; the 4
 explicitly pending concrete cases are safety-extension or undefined-input exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
@@ -125,9 +125,9 @@ equivalent to complete behavior for every input, state, or platform.
 
 The latest worktree verification is the full parity snapshot recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-16,252 / 16,252 runnable comparisons with 0 failures and 4 explicitly pending
+17,091 / 17,091 runnable comparisons with 0 failures and 4 explicitly pending
 concrete cases. Its source-bound parity-tree digest is
-`4ee1095a3719a0f7651a1398a80b152c7efc7fc753ad2c02d7ab88b76252a78b`.
+`0c50f1e2529ec97bb0dc96773c69d1cd8e8d85540882d67e26792b34a5281da2`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -140,25 +140,25 @@ their exact worktree than the committed release snapshot.
 ### 3.3 Last measured combined coverage
 
 The latest all-lane coverage snapshot was recorded on
-**2026-08-15** for the worktree based at commit
-`7c64f804c590d4d7cd048d1edd8f7be6c869a9df`
+**2026-08-16** for the worktree based at commit
+`e8c51cb6dba42fd524d94940673fe6b380411d46`
 by managed Coverage MCP 0.8.0 (registered command with the local sccache
 wrapper disabled):
 
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 63,240 / 65,417 | 96.67% |
-| Branches | 11,510 / 13,370 | 86.09% |
-| Functions | 3,668 / 3,956 | 92.72% |
-| Regions | 87,546 / 91,349 | 95.84% |
+| Lines | 63,739 / 65,887 | 96.74% |
+| Branches | 11,579 / 13,412 | 86.33% |
+| Functions | 3,689 / 3,976 | 92.78% |
+| Regions | 87,945 / 91,700 | 95.91% |
 
-The managed snapshot records the three split backends passing all 16,252
+The managed snapshot records the three split backends passing all 17,091
 runnable comparisons. Coverage MCP reports that LLVM JSON segments are
 normalized to segment-start lines while aggregate region totals are preserved.
-Strict-30 Batch 13 adds 22 covered regions against the preceding retained
-snapshot; the corresponding line, branch, function, and denominator changes
-are preserved in the immutable MCP comparison.
+The final 30-case valid-input probe was pruned after an exact zero-region delta;
+the retained MCP comparison is 87,945 / 91,700 regions, with the denominator
+unchanged by the campaign.
 
 The maintained Apple full-Unicode format-13 font and malformed format-13
 matrix remain exercised by their existing character-index and parser routes.
@@ -313,7 +313,7 @@ The latest committed scorecard has **8 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 10,002 / 13,996 pinned-C runtime contract rows exact; 3,994 pending |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 10,601 / 14,835 pinned-C runtime contract rows exact; 4,234 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |

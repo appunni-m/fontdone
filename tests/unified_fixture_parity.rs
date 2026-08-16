@@ -17425,7 +17425,11 @@ fn malformed_colr_paint_labels(case: &InputCase) -> Result<Vec<String>, String> 
 }
 
 fn malformed_colr_paint_glyphs(case: &InputCase, label_count: usize) -> Result<Vec<FT_UInt>, String> {
-    let glyphs = if case.case_id == "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false" {
+    let glyphs = if matches!(
+        case_id_base(&case.case_id),
+        "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false"
+            | "ftcolor.FT_Get_Paint.batch103_nested_child_payload_failures"
+    ) {
         vec![36, 37, 38, 39, 40, 41, 42, 43, 50]
     } else if case.case_id
         == "ftcolor.FT_Get_Paint.recursive_source_depth_limit_returns_false"
@@ -24647,11 +24651,10 @@ fn rust_ftmm_set_var_blend_glyph_output(case: &InputCase) -> Result<RunOutput, S
         Ok(slot) => slot,
         Err(err) => return Ok(error(err)),
     };
-    let output = match FT_Render_Glyph(slot, render_mode_param(params)?) {
+    match FT_Render_Glyph(slot, render_mode_param(params)?) {
         Ok(slot) => Ok(ok(slot_json(&slot))),
         Err(err) => Ok(error(err)),
-    };
-    output
+    }
 }
 
 fn rust_ftmm_set_mm_blend_glyph_output(case: &InputCase) -> Result<RunOutput, String> {
@@ -43817,7 +43820,10 @@ fn with_public_family_exact_error(mut case: InputCase) -> InputCase {
             || case.case_id
                 == "ftcolor.FT_COLR_PAINTFORMAT_UNSUPPORTED.invalid_format_returns_false"
             || case.case_id == "ftcolor.FT_COLR_PAINT_FORMAT_MAX.read_paint_rejects_max_and_above"
-            || case.case_id == "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false"
+            || case_id_base(&case.case_id)
+                == "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false"
+            || case_id_base(&case.case_id)
+                == "ftcolor.FT_Get_Paint.batch103_nested_child_payload_failures"
             || case.case_id == "ftcolor.FT_Get_Paint.malformed_payload_reads_return_false"
             || case.case_id
                 == "ftcolor.FT_Get_Paint.malformed_skew_centered_final_coordinate_read_returns_false"
@@ -97457,6 +97463,36 @@ fn custom_memory_probe_param(value: &Value) -> Result<Option<u16>, String> {
         "c110_rust_gap_batch_variant_096" => 1596,
         "c110_rust_gap_batch_variant_098" => 1598,
         "c110_rust_gap_batch_variant_099" => 1599,
+        "c110_rust_gap_batch_variant_025" => 1525,
+        "c110_rust_gap_batch_variant_027" => 1527,
+        "c110_rust_gap_batch_variant_029" => 1529,
+        "c110_rust_gap_batch_variant_031" => 1531,
+        "c110_rust_gap_batch_variant_040" => 1540,
+        "c110_rust_gap_batch_variant_042" => 1542,
+        "c110_rust_gap_batch_variant_043" => 1543,
+        "c110_rust_gap_batch_variant_045" => 1545,
+        "c110_rust_gap_batch_variant_046" => 1546,
+        "c110_rust_gap_batch_variant_047" => 1547,
+        "c110_rust_gap_batch_variant_051" => 1551,
+        "c110_rust_gap_batch_variant_060" => 1560,
+        "c110_rust_gap_batch_variant_063" => 1563,
+        "c110_rust_gap_batch_variant_065" => 1565,
+        "c110_rust_gap_batch_variant_066" => 1566,
+        "c110_rust_gap_batch_variant_067" => 1567,
+        "c110_rust_gap_batch_variant_068" => 1568,
+        "c110_rust_gap_batch_variant_071" => 1571,
+        "c110_rust_gap_batch_variant_072" => 1572,
+        "c110_rust_gap_batch_variant_075" => 1575,
+        "c110_rust_gap_batch_variant_077" => 1577,
+        "c110_rust_gap_batch_variant_080" => 1580,
+        "c110_rust_gap_batch_variant_082" => 1582,
+        "c110_rust_gap_batch_variant_083" => 1583,
+        "c110_rust_gap_batch_variant_084" => 1584,
+        "c110_rust_gap_batch_variant_085" => 1585,
+        "c110_rust_gap_batch_variant_086" => 1586,
+        "c110_rust_gap_batch_variant_087" => 1587,
+        "c110_rust_gap_batch_variant_091" => 1591,
+        "c110_rust_gap_batch_variant_092" => 1592,
         "c111_rust_gap_batch_variant_001" => 1601,
         "c111_rust_gap_batch_variant_002" => 1602,
         "c111_rust_gap_batch_variant_003" => 1603,
@@ -97510,6 +97546,36 @@ fn custom_memory_probe_param(value: &Value) -> Result<Option<u16>, String> {
         "c111_rust_gap_batch_variant_096" => 1696,
         "c111_rust_gap_batch_variant_097" => 1697,
         "c111_rust_gap_batch_variant_099" => 1699,
+        "c111_rust_gap_batch_variant_022" => 1622,
+        "c111_rust_gap_batch_variant_023" => 1623,
+        "c111_rust_gap_batch_variant_026" => 1626,
+        "c111_rust_gap_batch_variant_029" => 1629,
+        "c111_rust_gap_batch_variant_030" => 1630,
+        "c111_rust_gap_batch_variant_038" => 1638,
+        "c111_rust_gap_batch_variant_040" => 1640,
+        "c111_rust_gap_batch_variant_042" => 1642,
+        "c111_rust_gap_batch_variant_043" => 1643,
+        "c111_rust_gap_batch_variant_045" => 1645,
+        "c111_rust_gap_batch_variant_047" => 1647,
+        "c111_rust_gap_batch_variant_048" => 1648,
+        "c111_rust_gap_batch_variant_049" => 1649,
+        "c111_rust_gap_batch_variant_050" => 1650,
+        "c111_rust_gap_batch_variant_051" => 1651,
+        "c111_rust_gap_batch_variant_052" => 1652,
+        "c111_rust_gap_batch_variant_053" => 1653,
+        "c111_rust_gap_batch_variant_058" => 1658,
+        "c111_rust_gap_batch_variant_059" => 1659,
+        "c111_rust_gap_batch_variant_060" => 1660,
+        "c111_rust_gap_batch_variant_062" => 1662,
+        "c111_rust_gap_batch_variant_063" => 1663,
+        "c111_rust_gap_batch_variant_064" => 1664,
+        "c111_rust_gap_batch_variant_065" => 1665,
+        "c111_rust_gap_batch_variant_066" => 1666,
+        "c111_rust_gap_batch_variant_067" => 1667,
+        "c111_rust_gap_batch_variant_068" => 1668,
+        "c111_rust_gap_batch_variant_069" => 1669,
+        "c111_rust_gap_batch_variant_070" => 1670,
+        "c111_rust_gap_batch_variant_071" => 1671,
         "c112_rust_gap_batch_variant_001" => 1701,
         "c112_rust_gap_batch_variant_002" => 1702,
         "c112_rust_gap_batch_variant_003" => 1703,

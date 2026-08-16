@@ -233,6 +233,48 @@ def write_valid_opentype_layout() -> None:
     font = valid_opentype_layout_font()
     save_opentype_font("valid-all-layout.otf", font)
 
+    # OpenType Layout version 1.1 adds the optional FeatureVariationsOffset
+    # field to GPOS and GSUB.  Keep the existing compact feature payloads and
+    # shift their three header offsets when inserting the valid zero offset.
+    version11 = valid_opentype_layout_font()
+    for tag in ("GPOS", "GSUB"):
+        data = version11.getTableData(tag)
+        offsets = [
+            int.from_bytes(data[field : field + 2], "big") + 4
+            for field in (4, 6, 8)
+        ]
+        version11_data = (
+            b"\x00\x01\x00\x01"
+            + b"".join(offset.to_bytes(2, "big") for offset in offsets)
+            + b"\x00\x00\x00\x00"
+            + data[10:]
+        )
+        version11[tag] = raw_table(tag, version11_data)
+    save_opentype_font("valid-version11-layout.otf", version11)
+
+    # The optional FeatureVariationsOffset is a 32-bit offset, and the
+    # pinned C validator checks that a non-zero value stays inside the table
+    # before intentionally omitting FeatureVariations payload validation.
+    # Point it at the existing compact payload so this is a valid public
+    # version-1.1 layout input rather than a truncated-table probe.
+    version11_nonzero = valid_opentype_layout_font()
+    for tag in ("GPOS", "GSUB"):
+        data = version11_nonzero.getTableData(tag)
+        offsets = [
+            int.from_bytes(data[field : field + 2], "big") + 4
+            for field in (4, 6, 8)
+        ]
+        version11_data = (
+            b"\x00\x01\x00\x01"
+            + b"".join(offset.to_bytes(2, "big") for offset in offsets)
+            + (14).to_bytes(4, "big")
+            + data[10:]
+        )
+        version11_nonzero[tag] = raw_table(tag, version11_data)
+    save_opentype_font(
+        "valid-version11-feature-variations-layout.otf", version11_nonzero
+    )
+
     # Keep a present, zero-length GDEF directory entry.  The C ABI wrapper
     # still has to marshal this raw table through its public validation route;
     # the empty payload reaches the thin wrapper's null-output guard without
@@ -300,6 +342,33 @@ def write_malformed_opentype_layouts() -> None:
         font = valid_opentype_layout_font()
         font[tag] = raw_table(tag, b"\0")
         save_opentype_font(name, font)
+
+    # Keep malformed layout headers loadable as SFNT faces so public
+    # FT_OpenType_Validate reaches the table validator's version and offset
+    # error paths.  The pinned C validator rejects each input as an invalid
+    # table, while the Rust structural gate must make the same decision.
+    unknown_gdef = valid_opentype_layout_font()
+    unknown_gdef["GDEF"] = raw_table("GDEF", b"\x00\x01\x00\x01")
+    save_opentype_font("malformed-gdef-unknown-version.otf", unknown_gdef)
+
+    unknown_layout = valid_opentype_layout_font()
+    for tag in ("GPOS", "GSUB"):
+        unknown_layout[tag] = raw_table(tag, b"\x00\x01\x00\x02")
+    save_opentype_font("malformed-layout-unknown-version.otf", unknown_layout)
+
+    required_offset = valid_opentype_layout_font()
+    counted_record = valid_opentype_layout_font()
+    for tag in ("GPOS", "GSUB"):
+        required_offset[tag] = raw_table(
+            tag,
+            b"\x00\x01\x00\x00" + b"\x00\xff" * 3,
+        )
+        counted_record[tag] = raw_table(
+            tag,
+            b"\x00\x01\x00\x00" + b"\x00\x0b" * 3 + b"\x00\x00",
+        )
+    save_opentype_font("malformed-layout-required-offset.otf", required_offset)
+    save_opentype_font("malformed-layout-truncated-record.otf", counted_record)
 
     # MATH is validated after the public BASE/GDEF/GPOS/GSUB/JSTF tables.
     # Keeping the generated GDEF/GPOS/GSUB tables valid and failing MATH proves

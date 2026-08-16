@@ -1092,11 +1092,7 @@ fn scale_glyph_impl_with_scale(
     // lazily inside the autohint block below to avoid wasted clones on
     // no-hinting and bytecode-only paths.
     let no_hinting_scaled = if !use_autohint && !allow_bytecode && outline_raw.is_composite {
-        Some(data.load_glyph_scaled_no_hinting(
-            glyph_index,
-            scale.x_scale,
-            y_adj,
-        )?)
+        Some(data.load_glyph_scaled_no_hinting(glyph_index, scale.x_scale, y_adj)?)
     } else {
         None
     };
@@ -1328,8 +1324,7 @@ fn scale_glyph_impl_with_scale(
                 slot_advance_width = advance_width;
             }
         }
-    } else if allow_bytecode
-        && (!outline_raw.is_composite || !outline_raw.instructions.is_empty())
+    } else if allow_bytecode && (!outline_raw.is_composite || !outline_raw.instructions.is_empty())
     {
         if let Some(bytecode_context) = bytecode_context {
             // Bytecode VM: run on glyphs with per-glyph instructions.
@@ -1408,10 +1403,7 @@ fn scale_glyph_impl_with_scale(
                 Err(e) => return Err(e),
             }
         }
-    } else if allow_bytecode
-        && outline_raw.is_composite
-        && outline_raw.instructions.is_empty()
-    {
+    } else if allow_bytecode && outline_raw.is_composite && outline_raw.instructions.is_empty() {
         // C does not call `TT_Process_Composite_Glyph` when the parent has no
         // instruction block (`ttgload.c:1906-1913`). Its parent phantom points
         // therefore remain at the scaled, pre-grid values; a `USE_MY_METRICS`

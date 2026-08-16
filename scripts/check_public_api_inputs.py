@@ -6719,6 +6719,12 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
     if (
         row.operation == "ftcolor.get_paint_malformed"
         and row.case_id
+        == "ftcolor.FT_Get_Paint.batch103_nested_child_payload_failures"
+    ):
+        return "FT_Get_Paint nested child-payload rejection validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "ftcolor.get_paint_malformed"
+        and row.case_id
         == "ftcolor.FT_Get_Paint.malformed_payload_reads_return_false"
     ):
         return "FT_Get_Paint malformed payload-boundary rejection validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI"

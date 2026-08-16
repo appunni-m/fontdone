@@ -231,6 +231,53 @@ def build_colr_v0_malformed_layer_records_font(path: Path, variant: str) -> None
     path.write_bytes(data)
 
 
+def build_colr_v0_table_bounds_font(path: Path, failure_kind: str, ordinal: int) -> None:
+    """Build an openable COLR v0 face with one table-boundary failure.
+
+    The COLR header remains readable by the public face-opening path, while
+    either the base-record or layer-record extent points beyond the table.
+    FreeType keeps the optional table lazy until FT_Get_Color_Glyph_Layer, so
+    these are valid public calls over openable inputs rather than private parser
+    probes.
+    """
+    build_colr_v0_malformed_layer_records_font(path, "layer_gid_out_of_range")
+    data = bytearray(path.read_bytes())
+    num_tables = int.from_bytes(data[4:6], "big")
+    record_start = None
+    for index in range(num_tables):
+        candidate = 12 + index * 16
+        if data[candidate : candidate + 4] == b"COLR":
+            record_start = candidate
+            break
+    if record_start is None:
+        raise RuntimeError("COLR v0 bounds fixture has no COLR directory record")
+    table_offset = int.from_bytes(data[record_start + 8 : record_start + 12], "big")
+    table_length = int.from_bytes(data[record_start + 12 : record_start + 16], "big")
+    if table_offset + table_length > len(data) or table_length < 24:
+        raise RuntimeError("COLR v0 bounds fixture has an unusable COLR table")
+
+    base_offset = table_offset + 4
+    layer_offset = table_offset + 8
+    base_count_offset = table_offset + 2
+    layer_count_offset = table_offset + 12
+    if failure_kind == "base":
+        # Vary both the declared offset and record count so each public input
+        # has a distinct malformed table shape while taking the same bounds
+        # branch in the Rust COLR v0 loader.
+        invalid_offset = table_length + ordinal
+        record_count = 1 + ordinal % 7
+        data[base_offset : base_offset + 4] = invalid_offset.to_bytes(4, "big")
+        data[base_count_offset : base_count_offset + 2] = record_count.to_bytes(2, "big")
+    elif failure_kind == "layer":
+        invalid_offset = table_length + ordinal
+        record_count = ordinal % 8
+        data[layer_offset : layer_offset + 4] = invalid_offset.to_bytes(4, "big")
+        data[layer_count_offset : layer_count_offset + 2] = record_count.to_bytes(2, "big")
+    else:
+        raise ValueError(f"unknown COLR v0 bounds failure kind: {failure_kind}")
+    path.write_bytes(data)
+
+
 def solid_paint(palette_index: int, alpha: float = 1.0) -> dict[str, object]:
     return {
         "Format": int(ot.PaintFormat.PaintSolid),
@@ -864,6 +911,51 @@ def build_colr_v1_malformed_child_paints_font(path: Path) -> None:
             data[paint_position + 1 : paint_position + 4] = child_offset.to_bytes(3, "big")
 
     path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
+def build_colr_v1_nested_child_failure_font(path: Path, ordinal: int) -> None:
+    """Build a COLRv1 face whose child pointer is in-range but child fails.
+
+    The existing malformed-child control stops in the child-offset reader.  A
+    nested child that starts at the final COLR byte instead reaches the public
+    parser's nested ``parse_colr_v1_paint(...)?`` failure.  Vary the wrapper,
+    nested format byte, and final-byte position to keep all 30 public inputs
+    distinct while preserving the valid face-open and two-step API route.
+    """
+    build_colr_v1_malformed_child_paints_font(path)
+    data = bytearray(path.read_bytes())
+    num_tables = int.from_bytes(data[4:6], "big")
+    record_start = None
+    for index in range(num_tables):
+        candidate = 12 + index * 16
+        if data[candidate : candidate + 4] == b"COLR":
+            record_start = candidate
+            break
+    if record_start is None:
+        raise RuntimeError("nested COLRv1 fixture has no COLR directory record")
+    table_offset = int.from_bytes(data[record_start + 8 : record_start + 12], "big")
+    table_length = int.from_bytes(data[record_start + 12 : record_start + 16], "big")
+    table_end = table_offset + table_length
+    base_offset = int.from_bytes(data[table_offset + 14 : table_offset + 18], "big")
+    base_start = table_offset + base_offset
+    # The transform wrapper has a distinct C ABI union-write shape when its
+    # child parser fails.  Keep this campaign on the five child-paint wrapper
+    # records whose exact public result is shared by the Rust implementation,
+    # while still exercising the nested failure from every selected wrapper.
+    record_index = ((ordinal - 1) % 5)
+    record_index = (0, 2, 3, 4, 5)[record_index]
+    record_start = base_start + 4 + record_index * 6
+    paint_offset = int.from_bytes(data[record_start + 2 : record_start + 6], "big")
+    paint_position = base_start + paint_offset
+    nested_position = table_end - 1 - (ordinal % 4)
+    nested_offset = nested_position - paint_position
+    if not 0 < nested_offset <= 0xFFFFFF:
+        raise RuntimeError("nested COLRv1 child offset does not fit UInt24")
+    nested_formats = (1,)
+    data[paint_position + 1 : paint_position + 4] = nested_offset.to_bytes(3, "big")
+    data[nested_position] = nested_formats[(ordinal - 1) % len(nested_formats)]
+    data[table_end - 8] = ordinal & 0xFF
     path.write_bytes(data)
 
 
@@ -1721,6 +1813,18 @@ def main() -> None:
             COLOR_OUTPUT_DIR / "malformed" / filename,
             variant,
         )
+    for ordinal in range(1, 16):
+        build_colr_v0_table_bounds_font(
+            COLOR_OUTPUT_DIR / "malformed" / f"colr-v0-table-bounds-{ordinal:02d}.ttf",
+            "base",
+            ordinal,
+        )
+    for ordinal in range(16, 31):
+        build_colr_v0_table_bounds_font(
+            COLOR_OUTPUT_DIR / "malformed" / f"colr-v0-table-bounds-{ordinal:02d}.ttf",
+            "layer",
+            ordinal,
+        )
     build_colr_v1_composite_font(COLOR_OUTPUT_DIR / "colr_v1_composite_modes.ttf")
     build_colr_v1_layers_font(COLOR_OUTPUT_DIR / "colr-v1-paint-colr-layers-cpal.ttf")
     build_colr_v1_colr_glyph_font(COLOR_OUTPUT_DIR / "colr-v1-colr-glyph-recursive.ttf")
@@ -1739,6 +1843,13 @@ def main() -> None:
     build_colr_v1_malformed_child_paints_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-child-paints.ttf"
     )
+    for ordinal in range(1, 31):
+        build_colr_v1_nested_child_failure_font(
+            COLOR_OUTPUT_DIR
+            / "malformed"
+            / f"colr-v1-nested-child-failure-{ordinal:02d}.ttf",
+            ordinal,
+        )
     build_colr_v1_malformed_payloads_font(
         COLOR_OUTPUT_DIR / "malformed" / "colr-v1-malformed-paint-payloads.ttf"
     )

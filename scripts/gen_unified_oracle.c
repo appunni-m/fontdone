@@ -23208,10 +23208,40 @@ static int emit_color_paint_malformed_case(int argc, char** argv) {
         return opened;
     }
     const char* labels[8];
+    char nested_label_storage[8][64];
     FT_UInt glyphs[8];
     size_t malformed_count;
     FT_UInt control_glyph;
-    if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false")) {
+    if (strstr(case_id, "ftcolor.FT_Get_Paint.batch103_nested_child_payload_failures@") != NULL) {
+        static const char* nested_label_suffixes[] = {
+            "glyph",
+            "transform",
+            "translate",
+            "scale",
+            "rotate",
+            "skew",
+            "composite_source",
+            "composite_backdrop",
+        };
+        const char* marker = strstr(case_id, "@batch103-nested-child-");
+        int ordinal = marker ? atoi(marker + strlen("@batch103-nested-child-")) : 0;
+        if (ordinal < 1 || ordinal > 30) {
+            fprintf(stderr, "invalid Batch103 nested-child case id: %s\n", case_id);
+            close_oracle_face(&face);
+            return 2;
+        }
+        for (size_t index = 0; index < 8; index++) {
+            snprintf(nested_label_storage[index],
+                     sizeof(nested_label_storage[index]),
+                     "nested_child_payload_%02d_%s",
+                     ordinal,
+                     nested_label_suffixes[index]);
+            labels[index] = nested_label_storage[index];
+            glyphs[index] = (FT_UInt)(36 + index);
+        }
+        malformed_count = 8;
+        control_glyph = 50;
+    } else if (streq(case_id, "ftcolor.FT_Get_Paint.malformed_child_offsets_return_false")) {
         static const char* child_labels[] = {
             "paint_glyph_child_offset_zero",
             "paint_transform_child_offset_out_of_range",

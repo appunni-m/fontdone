@@ -8,6 +8,7 @@ import gzip
 import io
 import json
 from pathlib import Path
+import struct
 import zlib
 
 
@@ -29,6 +30,42 @@ STREAM_PAYLOADS = {
     "large_stream": (b"fontdone gzip stream large fixture block\n" * 1200) + b"tail\n",
 }
 
+# Legal gzip header flag combinations used by the public FT_Stream_OpenGzip
+# parity batch. The payloads deliberately include FNAME, FCOMMENT, FEXTRA,
+# FHCRC, and FTEXT combinations while keeping every member well-formed.
+BATCH98_OPTIONAL_HEADER_FLAGS = (
+    0x08,
+    0x10,
+    0x18,
+    0x04,
+    0x0C,
+    0x14,
+    0x1C,
+    0x0A,
+    0x12,
+    0x1A,
+    0x06,
+    0x0E,
+    0x16,
+    0x1E,
+    0x09,
+    0x11,
+    0x19,
+    0x05,
+    0x0D,
+    0x15,
+    0x1D,
+    0x0B,
+    0x13,
+    0x1B,
+    0x07,
+    0x0F,
+    0x17,
+    0x1F,
+    0x02,
+    0x03,
+)
+
 
 def write_if_changed(path: Path, data: bytes) -> None:
     if path.exists() and path.read_bytes() == data:
@@ -43,6 +80,37 @@ def deterministic_gzip(data: bytes) -> bytes:
     with gzip.GzipFile(fileobj=output, mode="wb", compresslevel=9, mtime=0) as stream:
         stream.write(data)
     return output.getvalue()
+
+
+def deterministic_gzip_with_optional_header(
+    data: bytes,
+    flags: int,
+    *,
+    filename: str,
+    comment: str,
+    extra_payload: bytes,
+) -> bytes:
+    """Return a deterministic, valid gzip member with optional header fields."""
+    header = bytearray(b"\x1f\x8b\x08")
+    header.append(flags)
+    header.extend(b"\x00\x00\x00\x00\x00\x03")
+    if flags & 0x04:
+        extra = b"FD" + struct.pack("<H", len(extra_payload)) + extra_payload
+        header.extend(struct.pack("<H", len(extra)))
+        header.extend(extra)
+    if flags & 0x08:
+        header.extend(filename.encode("ascii"))
+        header.append(0)
+    if flags & 0x10:
+        header.extend(comment.encode("ascii"))
+        header.append(0)
+    if flags & 0x02:
+        header.extend(struct.pack("<H", zlib.crc32(header) & 0xFFFF))
+
+    compressor = zlib.compressobj(level=9, wbits=-15)
+    body = compressor.compress(data) + compressor.flush()
+    trailer = struct.pack("<II", zlib.crc32(data) & 0xFFFFFFFF, len(data) & 0xFFFFFFFF)
+    return bytes(header) + body + trailer
 
 
 def literal_unix_compress(data: bytes) -> bytes:
@@ -251,6 +319,40 @@ def build_gzip() -> None:
     stream_manifest_path = GZIP_OUT / "small-and-large-streams.json"
     encoded = json.dumps(stream_manifest, indent=2, sort_keys=True).encode("utf-8") + b"\n"
     write_if_changed(stream_manifest_path, encoded)
+
+    for index, flags in enumerate(BATCH98_OPTIONAL_HEADER_FLAGS, start=1):
+        stem = f"batch98-optional-header-{index:02d}"
+        payload = (
+            f"fontdone batch98 optional gzip payload {index:02d}\n".encode("ascii")
+            + bytes((index,)) * (index + 3)
+        )
+        raw_path = GZIP_OUT / f"{stem}.raw"
+        gzip_path = GZIP_OUT / f"{stem}.gz"
+        write_if_changed(raw_path, payload)
+        write_if_changed(
+            gzip_path,
+            deterministic_gzip_with_optional_header(
+                payload,
+                flags,
+                filename=f"batch98-{index:02d}.txt",
+                comment=f"fontdone batch98 member {index:02d}",
+                extra_payload=bytes((index, 0x42, 0x98)),
+            ),
+        )
+        manifest = {
+            "version": 1,
+            "source": "scripts/build_compressed_fixtures.py",
+            "payloads": [
+                {
+                    "id": f"batch98_optional_header_{index:02d}",
+                    "raw": f"compressed/gzip/{stem}.raw",
+                    "gzip": f"compressed/gzip/{stem}.gz",
+                }
+            ],
+        }
+        manifest_path = GZIP_OUT / f"{stem}.json"
+        encoded = json.dumps(manifest, indent=2, sort_keys=True).encode("utf-8") + b"\n"
+        write_if_changed(manifest_path, encoded)
 
 
 def build_bzip2() -> None:

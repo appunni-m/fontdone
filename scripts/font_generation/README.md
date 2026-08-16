@@ -58,8 +58,8 @@ licenses are enforced by `make supply-chain`.
 | `build_pcf_fixtures.py` | Synthetic | Project-authored PCF directory, properties, accelerators, metrics, bitmap, and encoding tables. |
 | `build_pfr_fixtures.py` | Synthetic | Project-authored PFR v4 logical/physical font records, fixed and proportional character advances, all descriptor-width flags, optional logical fields, narrow/wide kerning pairs, and maintained malformed header/record controls; no third-party font material. |
 | `build_svg_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; adds project-authored plain-XML OpenType SVG documents, including a later-record range-gap lookup control, deterministic vertical metrics, and malformed optional-table controls for list offsets, records, document ranges, gzip rejection, and short tables. |
-| `build_sfnt_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; the seven valid OpenType fixtures contain only project-authored BASE/GDEF/GPOS/GSUB/JSTF/MATH data. The malformed and missing-table variants replace or remove selected tables deterministically; `partial-malformed-layout.otf` retains valid GDEF/GPOS/GSUB and fails on the later MATH validation step. No third-party font is used. |
-| `build_ftmm_future_variable_fixtures.py` | Synthetic derivative | Repository-generated compact variable, `avar`, packed `gvar`, HVAR store/map and active mixed-width delta fixtures, and MVAR guard/record fixtures, including malformed optional-table face-open controls, runtime-short gvar records, tuple-header/glyph-data-offset/point-run bounds, embedded-peak bounds, private all-point and partial-point IUP runs, and empty-outline variation loads. |
+| `build_sfnt_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; the valid OpenType fixtures contain only project-authored BASE/GDEF/GPOS/GSUB/JSTF/MATH data, including GPOS/GSUB version-1.1 layout variants with zero and in-table non-zero FeatureVariations offsets. The malformed and missing-table variants replace or remove selected tables deterministically, including loadable unknown-version, required-offset, and truncated-record headers; `partial-malformed-layout.otf` retains valid GDEF/GPOS/GSUB and fails on the later MATH validation step. No third-party font is used. |
+| `build_ftmm_future_variable_fixtures.py` | Synthetic derivative | Repository-generated compact variable, `avar`, packed `gvar`, HVAR store/map and active mixed-width delta fixtures, and MVAR guard/record fixtures, including malformed optional-table face-open controls, runtime-short gvar records, tuple-header/glyph-data-offset/point-run bounds, embedded-peak bounds, private all-point and partial-point IUP runs, and empty-outline variation loads including a valid non-zero-length empty simple-glyph record. |
 | `build_fvar_fixtures.py` | Synthetic derivative | Repository-generated `compact-variable.ttf`. |
 | `build_mvar_fixtures.py` | Synthetic derivative | Repository-generated `compact-variable.ttf`. |
 | `build_name_fixtures.py` | Synthetic derivative | Repository-generated static and variable base fixtures, including the OS/2 version-sentinel WWS-selection control. |
@@ -120,6 +120,13 @@ root remains discoverable through `FT_Get_Color_Glyph_Paint`, while
 `FT_Get_Paint` exercises the pinned layer-bounds rejection; glyph 50 remains
 the valid solid control.
 
+The `malformed/colr-v1-nested-child-failure-01.ttf` through
+`malformed/colr-v1-nested-child-failure-30.ttf` controls preserve an in-range
+child pointer but place a distinct nested paint format at the final bytes of
+the COLR table.  They keep the SFNT openable and exercise the nested
+`FT_Get_Paint` payload rejection separately from zero or out-of-range child
+offsets.
+
 The three `malformed/colr-v0-invalid-layer-*.ttf` and
 `malformed/colr-v0-truncated-layer-array.ttf` controls are synthetic
 DejaVu-derived COLR v0 faces with one layer record each.  They retain an
@@ -127,6 +134,13 @@ openable SFNT while separately exercising an out-of-range layer glyph, an
 out-of-range CPAL index, and a base record whose layer count exceeds the
 layer array.  `FT_Get_Color_Glyph_Layer` must reject each malformed record
 lazily with the pinned output and iterator mutation behavior.
+
+The `malformed/colr-v0-table-bounds-01.ttf` through
+`malformed/colr-v0-table-bounds-30.ttf` controls are 30 distinct, openable
+COLR v0 derivatives.  The first 15 place the base-record extent beyond the
+table and the remaining 15 place the layer-record extent beyond it, with
+different declared offsets and counts.  They exercise the public lazy table
+bounds rejection through `FT_Get_Color_Glyph_Layer`.
 
 The seven `malformed/colr-v1-clip*.ttf` controls are deterministic derivatives
 of `colr-v1-clipbox-format1-format2.ttf`, with the LayerV1List control derived

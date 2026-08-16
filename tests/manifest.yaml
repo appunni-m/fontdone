@@ -2045,8 +2045,6 @@ subjects:
         description: Null face is a no-op with no returned error because the C API returns void.
       - id: load_ignore_transform_behavior
         description: FT_LOAD_IGNORE_TRANSFORM suppresses the stored transform during glyph loading like C.
-      - id: batch89_affine_glyph_outputs
-        description: Thirty valid affine transforms exercise transformed rendered glyph output over five maintained DejaVuSans cmap glyphs, including rotation, shear, scale, reflection, translation, and singular collapse.
     # needs-input: operation=FT_Set_Transform followed by FT_Load_Glyph and FT_Render_Glyph; fixture_asset=input/fonts/DejaVuSans.ttf; params matrix NULL/identity/scale/rotate/shear, delta NULL/{x,y}, size=20pt, glyph_index for 'A', load_flags default and FT_LOAD_IGNORE_TRANSFORM; expected output shape=slot outline cbox/bbox, advance vector, bitmap placement, bitmap dimensions, and bytes after render; comparison=exact C oracle scalar and byte equality, with null-face call verified as no-op/no-crash.
 
   - id: freetype.FT_Vector_Transform
@@ -4086,7 +4084,7 @@ subjects:
       - id: invalid_inputs_rejected
         description: Null face, null output pointers, null iterator, non-SFNT faces, and base_glyph values at or above face->num_glyphs return 0 before writing outputs.
       - id: malformed_layer_record_false_behavior
-        description: Malformed COLR v0 records with out-of-range layer glyph indexes or CPAL color indexes return 0 with exact C cursor and output mutation behavior.
+        description: Malformed COLR v0 records with out-of-range layer glyph indexes or CPAL color indexes, truncated layer data, and 30 distinct openable base/layer record-boundary cases return 0 with exact C cursor and output mutation behavior.
     # needs-input: operation=FT_Get_Color_Glyph_Layer with optional FT_Palette_Data_Get and FT_Palette_Select for CPAL validation; fixture_asset=COLR v0 font with multiple layers, CPAL table, 0xFFFF foreground layer, no-layer glyph, non-SFNT control font, and malformed synthetic COLR layer records; params base_glyph, repeated calls on one FT_LayerIterator initialized with p=NULL, prefilled output sentinels, palette indexes; expected output shape=per-call FT_Bool, aglyph_index, acolor_index, FT_LayerIterator num_layers/layer/p identity class, and CPAL palette bounds data; comparison=exact C oracle equality for return values and fields, ordered layer sequence, terminal false behavior, and false-path output/cursor mutation classification.
 
   - id: ftcolor.FT_Get_Color_Glyph_Paint
@@ -4141,6 +4139,8 @@ subjects:
         description: Opaque paints with insert_root_transform set return a TRANSFORM paint that wraps the original opaque paint and reports the active size scale and FT_Set_Transform matrix/delta converted to FT_Affine23 16.16 fields like ttcolr.c.
       - id: malformed_child_offsets_return_false
         description: PaintGlyph, PaintTransform, PaintTranslate, PaintScale, PaintRotate, PaintSkew, and PaintComposite roots with zero or out-of-range child offsets return 0 from FT_Get_Paint after recording the root format, while a valid solid control remains resolvable.
+      - id: batch103_nested_child_payload_failures
+        description: Thirty distinct openable COLRv1 faces keep a child pointer in range while the nested paint payload fails at the table boundary, reaching the nested public FT_Get_Paint rejection path with exact C parity.
       - id: recursive_source_depth_limit_returns_false
         description: An openable COLRv1 graph whose PaintComposite source and PaintColrLayers nodes cycle reaches the bounded recursive paint parser depth guard through both root and layer paths, while a valid solid control remains resolvable.
       - id: recursive_backdrop_depth_limit_returns_false
@@ -9630,6 +9630,12 @@ subjects:
         description: If the face has no OPENTYPE_VALIDATE service, C returns Unimplemented_Feature.
       - id: selected_tables_success
         description: Valid selected tables produce C-owned buffers whose bytes match the original validated table data and must be released with FT_OpenType_Free.
+      - id: batch99_version11_layout_matrix
+        description: Thirty valid GPOS/GSUB version-1.1 validation matrices exercise the optional FeatureVariationsOffset branch while preserving exact C table bytes and ownership behavior.
+      - id: batch100_nonzero_feature_variations_matrix
+        description: Thirty valid GPOS/GSUB version-1.1 validation matrices exercise an in-table non-zero FeatureVariationsOffset while preserving exact C table bytes and ownership behavior.
+      - id: batch101_malformed_layout_matrix
+        description: Thirty public OpenType validation matrices exercise loadable malformed GDEF/GPOS/GSUB version, offset, and counted-record headers with exact C error and output-pointer parity.
       - id: malformed_table_error
         description: Malformed selected tables propagate the validation service error and preserve output-pointer state exactly as C does.
     # needs-input: operation=FT_OpenType_Validate; fixture_asset=OpenType fonts with valid layout tables, no-layout fonts, and malformed BASE/GDEF/GPOS/GSUB/JSTF/MATH table binaries; params={validation_flags, null_face, null_output_index, face_without_service}; expected output shape={FT_Error, BASE/GDEF/GPOS/GSUB/JSTF pointer classes, table byte length/hash, allocator ownership ids, MATH validation status without output pointer}; comparison=exact C oracle status, output byte payloads, null classes, and ownership/free requirements.

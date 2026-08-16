@@ -252,6 +252,7 @@ pub fn load_glyph_with_scaled_component_offsets(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn load_glyph_with_scaled_component_offsets_and_variations(
     glyf: &[u8],
     loca: &[u8],
@@ -334,6 +335,7 @@ pub(crate) fn load_glyph_scaled_no_hinting_with_active_variation(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 fn load_glyph_scaled_no_hinting_inner(
     glyf: &[u8],
     loca: &[u8],
@@ -358,6 +360,7 @@ fn load_glyph_scaled_no_hinting_inner(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn load_glyph_scaled_no_hinting_with_variations(
     glyf: &[u8],
     loca: &[u8],
@@ -640,7 +643,8 @@ fn apply_simple_variation(
         glyph_index,
         &outline,
         variation.normalized_coords,
-    )? else {
+    )?
+    else {
         return Ok(outline);
     };
     let mut varied = outline;
@@ -673,7 +677,8 @@ fn apply_composite_variation(
         &component_points,
         &contour_ends,
         variation.normalized_coords,
-    )? else {
+    )?
+    else {
         return Ok(());
     };
     // FreeType's composite variation path applies the synthetic component

@@ -1,0 +1,11 @@
+{
+  "payloads": [
+    {
+      "gzip": "compressed/gzip/batch98-optional-header-20.gz",
+      "id": "batch98_optional_header_20",
+      "raw": "compressed/gzip/batch98-optional-header-20.raw"
+    }
+  ],
+  "source": "scripts/build_compressed_fixtures.py",
+  "version": 1
+}
