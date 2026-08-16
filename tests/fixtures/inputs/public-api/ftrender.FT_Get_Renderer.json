@@ -121,6 +121,142 @@
       }
     },
     {
+      "case_id": "ftrender.FT_Get_Renderer.bitmap_svg_order_repeat_matrix",
+      "subject": "ftrender.FT_Get_Renderer",
+      "case": "bitmap_svg_and_unknown_formats",
+      "covers_manifest_cases": ["bitmap_svg_and_unknown_formats"],
+      "operation": "ftrender.get_renderer",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "b5-renderer-001",
+            "assets": {},
+            "params": {
+              "library": "initialized",
+              "formats": ["FT_GLYPH_FORMAT_BITMAP"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19763"]
+          },
+          {
+            "id": "b5-renderer-002",
+            "assets": {},
+            "params": {
+              "library": "initialized",
+              "formats": ["FT_GLYPH_FORMAT_SVG"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19768"]
+          },
+          {
+            "id": "b5-renderer-003",
+            "assets": {},
+            "params": {
+              "library": "initialized",
+              "formats": ["FT_GLYPH_FORMAT_BITMAP", "FT_GLYPH_FORMAT_SVG"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19763"]
+          },
+          {
+            "id": "b5-renderer-004",
+            "assets": {},
+            "params": {
+              "library": "initialized",
+              "formats": ["FT_GLYPH_FORMAT_SVG", "FT_GLYPH_FORMAT_BITMAP"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19768"]
+          },
+          {
+            "id": "b5-renderer-005",
+            "assets": {},
+            "params": {
+              "library": "initialized",
+              "formats": ["FT_GLYPH_FORMAT_BITMAP", "FT_GLYPH_FORMAT_BITMAP"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19764"]
+          },
+          {
+            "id": "b5-renderer-006",
+            "assets": {},
+            "params": {
+              "library": "initialized",
+              "formats": ["FT_GLYPH_FORMAT_SVG", "FT_GLYPH_FORMAT_SVG"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19769"]
+          },
+          {
+            "id": "b5-renderer-007",
+            "assets": {},
+            "params": {
+              "library": "initialized",
+              "formats": ["FT_GLYPH_FORMAT_OUTLINE", "FT_GLYPH_FORMAT_BITMAP"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19773"]
+          },
+          {
+            "id": "b5-renderer-008",
+            "assets": {},
+            "params": {
+              "library": "initialized",
+              "formats": ["FT_GLYPH_FORMAT_OUTLINE", "FT_GLYPH_FORMAT_SVG"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19773"]
+          },
+          {
+            "id": "b5-renderer-009",
+            "assets": {},
+            "params": {
+              "library": "initialized",
+              "formats": [
+                "FT_MAKE_TAG('?', '?', '?', '?')",
+                "FT_GLYPH_FORMAT_BITMAP"
+              ]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19773"]
+          },
+          {
+            "id": "b5-renderer-010",
+            "assets": {},
+            "params": {
+              "library": "initialized",
+              "formats": [
+                "FT_MAKE_TAG('?', '?', '?', '?')",
+                "FT_GLYPH_FORMAT_SVG"
+              ]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19774"]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftrender",
+        "area:renderer-management"
+      ],
+      "expectation": {
+        "status": "build_dependent",
+        "output_shape": {
+          "format_results": [
+            {
+              "format": "FT_Glyph_Format",
+              "renderer_present": "bool",
+              "renderer_class": "optional class metadata"
+            }
+          ]
+        },
+        "compare": {
+          "mode": "identity_class",
+          "paths": [
+            "format_results.format",
+            "format_results.renderer_present",
+            "format_results.renderer_class"
+          ]
+        }
+      }
+    },
+    {
       "case_id": "ftrender.FT_Get_Renderer.null_library_returns_null",
       "subject": "ftrender.FT_Get_Renderer",
       "case": "null_library_returns_null",

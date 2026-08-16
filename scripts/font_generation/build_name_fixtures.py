@@ -207,6 +207,42 @@ def write_format1_langtag() -> None:
     )
 
 
+def write_format1_ten_langtags() -> None:
+    tags = [
+        "unused",
+        "en",
+        "fr-FR",
+        "de-Latn-DE",
+        "es-419",
+        "pt-BR",
+        "ru-Cyrl",
+        "ar-Arab-EG",
+        "ja-Jpan-JP",
+        "zh-Hans-CN",
+        "sr-Cyrl-RS",
+    ]
+    records = [
+        NameRecordSpec(3, 1, 0x0409, 1, utf16be("LangTagBatch")),
+        NameRecordSpec(3, 1, 0x0409, 2, utf16be("Regular")),
+        NameRecordSpec(3, 1, 0x0409, 6, utf16be("LangTagBatch-Regular")),
+    ]
+    records.extend(
+        NameRecordSpec(3, 1, 0x8000 + index, 1, utf16be(f"Localized-{index}"))
+        for index in range(1, len(tags))
+    )
+    write_name_payload(
+        BASE_STATIC,
+        ROOT
+        / "tests"
+        / "fixtures"
+        / "input"
+        / "fonts"
+        / "sfnt"
+        / "name-format1-ten-langtags.ttf",
+        build_name_table([*records], [LangTagSpec(utf16be(tag)) for tag in tags]),
+    )
+
+
 def write_format1_langtag_malformed_controls() -> None:
     # Format-1 name table whose record array is complete but whose language-tag
     # count field is absent. This reaches the parser's explicit count guard.
@@ -1041,6 +1077,7 @@ def main() -> None:
     write_postscript_branch_matrix()
     write_mac_non_ascii_family()
     write_format1_langtag()
+    write_format1_ten_langtags()
     write_format1_langtag_malformed_controls()
     write_format1_invalid_langtag_references()
     write_format1_prestorage_strings()

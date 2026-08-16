@@ -40,7 +40,7 @@ mod parity_fixture {
 use std::cell::{Cell, RefCell};
 use std::cmp::Reverse;
 use std::collections::{BTreeMap, BTreeSet};
-use std::ffi::{CString, OsStr, c_void};
+use std::ffi::{CStr, CString, OsStr, c_void};
 use std::fs;
 use std::io::{BufRead, Write};
 use std::mem::{align_of, offset_of, size_of};
@@ -24647,10 +24647,11 @@ fn rust_ftmm_set_var_blend_glyph_output(case: &InputCase) -> Result<RunOutput, S
         Ok(slot) => slot,
         Err(err) => return Ok(error(err)),
     };
-    match FT_Render_Glyph(slot, render_mode_param(params)?) {
+    let output = match FT_Render_Glyph(slot, render_mode_param(params)?) {
         Ok(slot) => Ok(ok(slot_json(&slot))),
         Err(err) => Ok(error(err)),
-    }
+    };
+    output
 }
 
 fn rust_ftmm_set_mm_blend_glyph_output(case: &InputCase) -> Result<RunOutput, String> {
@@ -25499,7 +25500,9 @@ fn rust_ftmm_set_var_design_glyph_output(case: &InputCase) -> Result<RunOutput, 
         Err(err) => return Ok(error(err)),
     };
     match FT_Render_Glyph(slot, render_mode_param(params)?) {
-        Ok(slot) => Ok(ok(slot_json(&slot))),
+        Ok(slot) => {
+            Ok(ok(slot_json(&slot)))
+        }
         Err(err) => Ok(error(err)),
     }
 }
@@ -25777,9 +25780,10 @@ fn is_ftmm_set_mm_design_glyph_output_case(case: &InputCase) -> bool {
 
 fn is_ftmm_set_mm_blend_glyph_output_case(case: &InputCase) -> bool {
     matches!(
-        case.case_id.as_str(),
+        case_id_base(&case.case_id),
         "ftmm.FT_Set_MM_Blend_Coordinates.output_changes_for_active_blend"
             | "ftmm.FT_Set_MM_Blend_Coordinates.success_type1_mm_glyph_output_after_blend"
+            | "ftmm.FT_Set_MM_Blend_Coordinates.batch69_no_hinting_type1_mm_glyph_outputs"
     )
 }
 
@@ -27526,6 +27530,116 @@ fn rust_sfnt_lang_tag(case: &InputCase) -> Result<RunOutput, String> {
     }
 }
 
+fn c_sfnt_lang_tag_json(tag: &c_abi::FT_SfntLangTag) -> Value {
+    let bytes = c_abi::abi_byte_slice(tag.string.cast_const(), tag.string_len);
+    let nullness = if tag.string.is_null() {
+        "null"
+    } else {
+        "non_null"
+    };
+    json!({
+        "return": FT_Err_Ok,
+        "string_nullness": nullness,
+        "string_len": tag.string_len,
+        "string_bytes": hex_bytes(&bytes),
+        "record": {
+            "string_nullness": nullness,
+            "string_len": tag.string_len,
+            "string_bytes": hex_bytes(&bytes)
+        }
+    })
+}
+
+fn c_sfnt_lang_tag_single(
+    face: c_abi::FT_Face,
+    token: &str,
+    output_kind: &str,
+) -> Result<(FT_Error, Option<Value>), String> {
+    let lang_id = parse_sfnt_lang_tag_numeric(token)?;
+    if output_kind == "null" {
+        let error = c_abi::FT_Get_Sfnt_LangTag(face, lang_id, ptr::null_mut());
+        return Ok((error, None));
+    }
+    let mut tag = c_abi::FT_SfntLangTag::default();
+    let error = c_abi::FT_Get_Sfnt_LangTag(face, lang_id, &mut tag);
+    let output = (error == FT_Err_Ok).then(|| c_sfnt_lang_tag_json(&tag));
+    Ok((error, output))
+}
+
+fn c_sfnt_lang_tag_variants(
+    face: c_abi::FT_Face,
+    params: &Value,
+) -> Result<RunOutput, String> {
+    let variants = params
+        .get("variants")
+        .and_then(Value::as_array)
+        .ok_or_else(|| "missing variants".to_string())?;
+    let mut status_sequence = Vec::with_capacity(variants.len());
+    let mut error_sequence = Vec::with_capacity(variants.len());
+    let mut first_error = FT_Err_Ok;
+    for variant in variants {
+        let face_arg = if variant
+            .get("face")
+            .and_then(Value::as_str)
+            .is_some_and(|face| face == "null")
+        {
+            ptr::null_mut()
+        } else {
+            face
+        };
+        let output = variant
+            .get("output")
+            .and_then(Value::as_str)
+            .unwrap_or("valid_pointer");
+        let token = sfnt_lang_tag_token(
+            variant
+                .get("langID")
+                .ok_or_else(|| "variant missing langID".to_string())?,
+        )?;
+        let (error, _) = c_sfnt_lang_tag_single(
+            face_arg,
+            &token,
+            if output == "null" { "null" } else { "valid" },
+        )?;
+        status_sequence.push(if error == FT_Err_Ok { "ok" } else { "error" });
+        error_sequence.push(error);
+        if first_error == FT_Err_Ok && error != FT_Err_Ok {
+            first_error = error;
+        }
+    }
+    let output = json!({
+        "status_sequence": status_sequence,
+        "error_sequence": error_sequence
+    });
+    if first_error == FT_Err_Ok {
+        Ok(ok(output))
+    } else {
+        Ok(error_with_output(first_error, output))
+    }
+}
+
+fn c_sfnt_lang_tag(case: &InputCase) -> Result<RunOutput, String> {
+    let (library, face) = c_open_face(case)?;
+    let output = if case.inputs.params.get("variants").is_some() {
+        c_sfnt_lang_tag_variants(face, &case.inputs.params)
+    } else {
+        let token = sfnt_lang_tag_token_arg(&case.inputs.params)?;
+        let (error_code, value) = c_sfnt_lang_tag_single(
+            face,
+            &token,
+            sfnt_lang_tag_output_kind(&case.inputs.params),
+        )?;
+        if error_code == FT_Err_Ok {
+            Ok(ok(value.unwrap_or_else(|| json!({"return": FT_Err_Ok}))))
+        } else {
+            Ok(error(error_code))
+        }
+    };
+    c_done_face(face);
+    c_done_library(library);
+    output
+}
+
 fn rust_sfnt_name_match_output(face: &FT_Face, params: &Value) -> Result<Value, String> {
     let fields = sfnt_name_match_fields(params)?;
     let count = FT_Get_Sfnt_Name_Count(Some(face));
@@ -29031,8 +29145,10 @@ fn c_cid_ros_output(case: &InputCase) -> Result<RunOutput, String> {
 
 fn wasm_cid_ros_output(case: &InputCase) -> Result<RunOutput, String> {
     if lifecycle_handle_param_is_null(&case.inputs.params, "face") {
-        let mut output = wasm_abi::FontdoneWasmCidRos::default();
-        output.supplement = 9999;
+        let mut output = wasm_abi::FontdoneWasmCidRos {
+            supplement: 9999,
+            ..wasm_abi::FontdoneWasmCidRos::default()
+        };
         let error =
             wasm_abi::fontdone_wasm_get_cid_registry_ordering_supplement(0, &mut output);
         return Ok(cid_ros_run_output(
@@ -33087,6 +33203,69 @@ where
     Ok(json!({ "lookups": rows }))
 }
 
+fn module_lookup_public_output<F>(params: &Value, mut class_name_for: F) -> Result<Value, String>
+where
+    F: FnMut(Option<&str>) -> Option<&'static str>,
+{
+    let rows = module_lookup_names(params)?
+        .into_iter()
+        .map(|module| {
+            let module_name = if module == "null" {
+                None
+            } else {
+                Some(module.as_str())
+            };
+            let class_name = class_name_for(module_name);
+            json!({
+                "module": module,
+                "nullness": class_name.is_none(),
+                "class_name": class_name,
+            })
+        })
+        .collect::<Vec<_>>();
+    Ok(json!({ "lookups": rows }))
+}
+
+fn c_module_name_from_ptr(module_name: *const c_abi::FT_String) -> Option<&'static str> {
+    if module_name.is_null() {
+        return None;
+    }
+    // SAFETY: FreeType module classes own NUL-terminated static names for the
+    // lifetime of the initialized library.
+    let bytes = unsafe { CStr::from_ptr(module_name.cast()).to_bytes() };
+    match bytes {
+        b"autofitter" => Some("autofitter"),
+        b"bdf" => Some("bdf"),
+        b"bsdf" => Some("bsdf"),
+        b"cff" => Some("cff"),
+        b"pcf" => Some("pcf"),
+        b"psnames" => Some("psnames"),
+        b"ot-svg" => Some("ot-svg"),
+        b"raster1" => Some("raster1"),
+        b"sfnt" => Some("sfnt"),
+        b"smooth" => Some("smooth"),
+        b"truetype" => Some("truetype"),
+        b"type1" => Some("type1"),
+        b"type42" => Some("type42"),
+        b"winfonts" => Some("winfonts"),
+        _ => None,
+    }
+}
+
+fn c_public_module_class_name(
+    library: c_abi::FT_Library,
+    module_name: Option<&str>,
+) -> Option<&'static str> {
+    let module_name_storage = module_name.and_then(|name| CString::new(name).ok());
+    let module_name_ptr = module_name_storage
+        .as_ref()
+        .map_or(ptr::null(), |name| name.as_ptr());
+    let module = c_abi::FT_Get_Module(library, module_name_ptr);
+    let module = unsafe { module.as_ref()? };
+    let class = unsafe { module.clazz.as_ref()? };
+    c_module_name_from_ptr(class.module_name)
+}
+
 fn module_interface_service_names(params: &Value) -> Result<Vec<String>, String> {
     array_param(params, "service_names")?
         .iter()
@@ -33180,8 +33359,8 @@ fn c_get_module(case: &InputCase) -> Result<RunOutput, String> {
             return Ok(error(err));
         }
     }
-    let output = module_lookup_output(&case.inputs.params, |name| {
-        name.is_some_and(|name| c_abi::abi_support_library_has_module(library, name))
+    let output = module_lookup_public_output(&case.inputs.params, |name| {
+        c_public_module_class_name(library, name)
     })?;
     if !library.is_null() {
         c_done_library(library);
@@ -33702,9 +33881,19 @@ fn c_get_renderer(case: &InputCase) -> Result<RunOutput, String> {
         }
     }
     let output = renderer_class_rows(&case.inputs.params, |format| {
-        c_abi::abi_support_library_renderer_class(library, format)
+        let renderer = c_abi::FT_Get_Renderer(library, format);
+        let renderer = unsafe { renderer.as_ref()? };
+        let class = unsafe { renderer.clazz.as_ref()? };
+        Some((
+            c_module_name_from_ptr(class.root.module_name)?,
+            class.glyph_format,
+            class.render_glyph.is_some(),
+            !class.raster_class.is_null(),
+        ))
     })?;
-    c_done_library(library);
+    if !library.is_null() {
+        c_done_library(library);
+    }
     Ok(ok(output))
 }
 
@@ -46223,6 +46412,14 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
     }
     if case_id_base(&case.case_id)
         == "ftmm.FT_Set_Var_Design_Coordinates.output_changes_for_design_coordinates"
+        || case_id_base(&case.case_id)
+            == "ftmm.FT_Set_Var_Design_Coordinates.batch76_avar_hvar_scalar"
+            || case_id_base(&case.case_id)
+                == "ftmm.FT_Set_Var_Design_Coordinates.batch77_fvar_no_gvar_composite"
+            || case_id_base(&case.case_id)
+                == "ftmm.FT_Set_Var_Design_Coordinates.batch78_active_gvar_routing"
+            || case_id_base(&case.case_id)
+                == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing"
     {
         let set_coords = ftmm_optional_coords_from_params(params)?;
         let mut args = vec!["--ftmm-set-var-design-glyph-output".to_string()];
@@ -46872,7 +47069,8 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                 args.push(open_face_name_option_rows_arg(params)?);
                 return Ok(args);
             }
-            let mut args = if memory_face_uses_variant_route(params) {
+            let variant_route = memory_face_uses_any_variant_route(case);
+            let mut args = if variant_route {
                 if case.subject == "freetype.FT_Open_Face" {
                     vec!["--open-face-variants".to_string()]
                 } else {
@@ -46884,8 +47082,15 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             if push_font_source(case, &mut args).is_err() {
                 return oracle_fallback_args(case);
             }
-            if memory_face_uses_variant_route(params) {
+            if variant_route {
                 args.push(memory_face_rows_arg(params)?);
+                if case.subject == "freetype.FT_Open_Face"
+                    && memory_face_rows(params)?
+                        .iter()
+                        .any(|row| row.open_flags & FT_OPEN_PATHNAME != 0)
+                {
+                    args.push("pathname".to_string());
+                }
             } else {
                 push_face_size(params, &mut args)?;
             }
@@ -50242,7 +50447,19 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             case.case_id.clone(),
         ]),
         "ftoutln.outline_check" => Ok(vec!["--outline-check".to_string(), case.case_id.clone()]),
-        "ftoutln.outline_copy" => Ok(vec!["--outline-copy".to_string(), case.case_id.clone()]),
+        "ftoutln.outline_copy" => {
+            if case_id_base(&case.case_id)
+                .starts_with("ftoutln.FT_Outline_Copy.self_copy_noop")
+                && case.inputs.assets.contains_key("outline")
+            {
+                return Ok(vec![
+                    "--outline-copy-model".to_string(),
+                    case.case_id.clone(),
+                    outline_copy_model_arg(case)?,
+                ]);
+            }
+            Ok(vec!["--outline-copy".to_string(), case.case_id.clone()])
+        }
         "ftoutln.outline_done" => Ok(vec!["--outline-done".to_string(), case.case_id.clone()]),
         "ftoutln.outline_lifecycle"
             if case.case_id == "ftimage.FT_OUTLINE_OWNER.destruction_ownership_behavior" =>
@@ -51221,7 +51438,15 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftmm.set_var_design_coordinates"
             if case_id_base(&case.case_id)
-                == "ftmm.FT_Set_Var_Design_Coordinates.output_changes_for_design_coordinates" =>
+                == "ftmm.FT_Set_Var_Design_Coordinates.output_changes_for_design_coordinates"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch76_avar_hvar_scalar"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch77_fvar_no_gvar_composite"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch78_active_gvar_routing"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing" =>
         {
             rust_ftmm_set_var_design_glyph_output(case)
         }
@@ -52373,7 +52598,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             if open_face_name_options_runtime_supported(case) {
                 return c_open_face_name_options(case);
             }
-            if memory_face_uses_variant_route(&case.inputs.params) {
+            if memory_face_uses_any_variant_route(case) {
                 return c_new_memory_face_variants(case);
             }
             if lifecycle_handle_param(&case.inputs.params, "file_base") == Some("null") {
@@ -52697,7 +52922,7 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_done_library(library);
             output.map(ok)
         }
-        "ftsnames.get_sfnt_lang_tag" => run_rust_ffi(case),
+        "ftsnames.get_sfnt_lang_tag" => c_sfnt_lang_tag(case),
         "sfnt.get_os2_unicode_ranges" => {
             let (library, face) = c_open_face(case)?;
             let output = c_sfnt_os2_unicode_ranges_output(face, &case.inputs.params);
@@ -52850,7 +53075,15 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftmm.set_var_design_coordinates"
             if case_id_base(&case.case_id)
-                == "ftmm.FT_Set_Var_Design_Coordinates.output_changes_for_design_coordinates" =>
+                == "ftmm.FT_Set_Var_Design_Coordinates.output_changes_for_design_coordinates"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch76_avar_hvar_scalar"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch77_fvar_no_gvar_composite"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch78_active_gvar_routing"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing" =>
         {
             c_ftmm_set_var_design_glyph_output(case)
         }
@@ -54369,7 +54602,15 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         }
         "ftmm.set_var_design_coordinates"
             if case_id_base(&case.case_id)
-                == "ftmm.FT_Set_Var_Design_Coordinates.output_changes_for_design_coordinates" =>
+                == "ftmm.FT_Set_Var_Design_Coordinates.output_changes_for_design_coordinates"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch76_avar_hvar_scalar"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch77_fvar_no_gvar_composite"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch78_active_gvar_routing"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing" =>
         {
             wasm_ftmm_set_var_design_glyph_output(case)
         }
@@ -63876,6 +64117,7 @@ fn wasm_glyph_record(handle: usize, case: &InputCase) -> Result<RunOutput, Strin
 
 fn rust_sbit_cache_lookup(face: &FT_Face, case: &InputCase) -> Result<RunOutput, String> {
     let (width, height) = cache_pixel_size_param(&case.inputs.params)?;
+    let repeat_lookup = bool_param(&case.inputs.params, "repeat_lookup", false)?;
     let image_type = FTC_ImageTypeRec {
         face_id: ptr::null_mut(),
         width,
@@ -63892,7 +64134,7 @@ fn rust_sbit_cache_lookup(face: &FT_Face, case: &InputCase) -> Result<RunOutput,
         Some(&image_type),
         cache_sbit_glyph_index_param(&case.inputs.params)?,
         sbit_output.then_some(&mut lookup),
-        anode_output.then_some(&mut node),
+        (!repeat_lookup && anode_output).then_some(&mut node),
     );
     let (sbit, sbit_null, node_locked, node_ref_count) = lookup.map_or_else(
         || (None, true, false, 0),
@@ -63905,7 +64147,7 @@ fn rust_sbit_cache_lookup(face: &FT_Face, case: &InputCase) -> Result<RunOutput,
             )
         },
     );
-    Ok(cache_sbit_lookup_output(
+    let first_output = cache_sbit_lookup_output(
         case,
         error,
         sbit,
@@ -63913,7 +64155,20 @@ fn rust_sbit_cache_lookup(face: &FT_Face, case: &InputCase) -> Result<RunOutput,
         !node,
         node_locked,
         node_ref_count,
-    ))
+    );
+    if repeat_lookup {
+        let mut repeat_lookup = None;
+        let mut repeat_node = true;
+        let _repeat_error = FTC_SBitCache_Lookup(
+            &mut cache,
+            Some(&image_type),
+            cache_sbit_glyph_index_param(&case.inputs.params)?,
+            sbit_output.then_some(&mut repeat_lookup),
+            anode_output.then_some(&mut repeat_node),
+        );
+        let _ = (repeat_lookup, repeat_node);
+    }
+    Ok(first_output)
 }
 
 fn rust_sbit_cache_lookup_scaler(case: &InputCase) -> Result<RunOutput, String> {
@@ -64187,6 +64442,7 @@ fn rust_image_type_lookup_probe(case: &InputCase) -> Result<RunOutput, String> {
 
 fn c_sbit_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
+    let repeat_lookup = bool_param(&case.inputs.params, "repeat_lookup", false)?;
     let mut cache =
         c_abi::AbiSBitCacheHarness::new(bytes.as_ref(), face_index_param(&case.inputs.params)?)
             .map_err(|error| format!("C ABI SBit cache setup returned {error}"))?;
@@ -64200,9 +64456,9 @@ fn c_sbit_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
         },
         cache_sbit_glyph_index_param(&case.inputs.params)?,
         cache_sbit_output_present(&case.inputs.params),
-        cache_anode_output_present(&case.inputs.params),
+        !repeat_lookup && cache_anode_output_present(&case.inputs.params),
     );
-    Ok(cache_sbit_lookup_output(
+    let first_output = cache_sbit_lookup_output(
         case,
         snapshot.error,
         snapshot.sbit.map(|sbit| (sbit, snapshot.buffer)),
@@ -64210,7 +64466,21 @@ fn c_sbit_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
         snapshot.anode_null,
         snapshot.node_locked,
         u32::try_from(snapshot.node_ref_count).unwrap_or(0),
-    ))
+    );
+    if repeat_lookup {
+        let _repeat = cache.lookup(
+            c_abi::FTC_ImageTypeRec {
+                face_id: ptr::null_mut(),
+                width,
+                height,
+                flags: cache_load_flags_param(&case.inputs.params)?,
+            },
+            cache_sbit_glyph_index_param(&case.inputs.params)?,
+            cache_sbit_output_present(&case.inputs.params),
+            cache_anode_output_present(&case.inputs.params),
+        );
+    }
+    Ok(first_output)
 }
 
 fn cache_sbit_lookup_output(
@@ -64654,6 +64924,7 @@ fn c_image_type_lookup_probe(case: &InputCase) -> Result<RunOutput, String> {
 fn wasm_sbit_cache_lookup(handle: usize, case: &InputCase) -> Result<RunOutput, String> {
     let mut cache = wasm_abi::AbiSBitCacheHarness::new(handle)
         .ok_or_else(|| "missing Wasm SBit cache face".to_string())?;
+    let repeat_lookup = bool_param(&case.inputs.params, "repeat_lookup", false)?;
     let (width, height) = cache_pixel_size_param(&case.inputs.params)?;
     let snapshot = cache.lookup(
         FTC_ImageTypeRec {
@@ -64664,9 +64935,9 @@ fn wasm_sbit_cache_lookup(handle: usize, case: &InputCase) -> Result<RunOutput, 
         },
         cache_sbit_glyph_index_param(&case.inputs.params)?,
         cache_sbit_output_present(&case.inputs.params),
-        cache_anode_output_present(&case.inputs.params),
+        !repeat_lookup && cache_anode_output_present(&case.inputs.params),
     );
-    Ok(cache_sbit_lookup_output(
+    let first_output = cache_sbit_lookup_output(
         case,
         snapshot.error,
         snapshot.sbit.map(|sbit| (sbit, snapshot.buffer)),
@@ -64674,7 +64945,21 @@ fn wasm_sbit_cache_lookup(handle: usize, case: &InputCase) -> Result<RunOutput, 
         snapshot.anode_null,
         snapshot.node_locked,
         snapshot.node_ref_count,
-    ))
+    );
+    if repeat_lookup {
+        let _repeat = cache.lookup(
+            FTC_ImageTypeRec {
+                face_id: ptr::null_mut(),
+                width,
+                height,
+                flags: cache_load_flags_param(&case.inputs.params)?,
+            },
+            cache_sbit_glyph_index_param(&case.inputs.params)?,
+            cache_sbit_output_present(&case.inputs.params),
+            cache_anode_output_present(&case.inputs.params),
+        );
+    }
+    Ok(first_output)
 }
 
 fn wasm_sbit_cache_lookup_scaler(case: &InputCase) -> Result<RunOutput, String> {
@@ -74951,7 +75236,7 @@ fn wasm_open_face_handle_contract(
 }
 
 fn wasm_new_memory_face(case: &InputCase) -> Result<RunOutput, String> {
-    if memory_face_uses_variant_route(&case.inputs.params) {
+    if memory_face_uses_any_variant_route(case) {
         return wasm_new_memory_face_variants(case);
     }
     if lifecycle_handle_param(&case.inputs.params, "file_base") == Some("null") {
@@ -75656,7 +75941,7 @@ fn rust_new_memory_face(case: &InputCase) -> Result<RunOutput, String> {
     if open_face_name_options_runtime_supported(case) {
         return rust_open_face_name_options(case);
     }
-    if memory_face_uses_variant_route(&case.inputs.params) {
+    if memory_face_uses_any_variant_route(case) {
         return rust_new_memory_face_variants(case);
     }
     if lifecycle_handle_param(&case.inputs.params, "file_base") == Some("null") {
@@ -81299,6 +81584,13 @@ fn rust_new_memory_face_variants(case: &InputCase) -> Result<RunOutput, String> 
             if row.aface_is_null {
                 return Ok((FT_Err_Invalid_Argument, true));
             }
+            if open_face_pathname_case(case, row) {
+                let pathname = font_pathname(case)?;
+                return match FT_New_Face(&library, pathname.as_bytes(), row.face_index, 20.0) {
+                    Ok(_face) => Ok((FT_Err_Ok, false)),
+                    Err(err) => Ok((err, true)),
+                };
+            }
             if open_face_args_dispatch_case(case) {
                 let source_flags =
                     row.open_flags & (FT_OPEN_MEMORY | FT_OPEN_STREAM | FT_OPEN_PATHNAME);
@@ -81694,11 +81986,25 @@ fn c_new_memory_face_variants(case: &InputCase) -> Result<RunOutput, String> {
             } else {
                 &mut face
             };
+            let pathname = if open_face_pathname_case(case, row) {
+                Some(
+                    CString::new(font_pathname(case)?)
+                        .map_err(|err| format!("FT_OPEN_PATHNAME pathname contains NUL: {err}"))?,
+                )
+            } else {
+                None
+            };
             let open_args = c_abi::FT_Open_Args {
                 flags: row.open_flags as c_abi::FT_UInt,
-                memory_base: bytes.as_ptr(),
-                memory_size: file_size,
-                pathname: std::ptr::null_mut(),
+                memory_base: if pathname.is_some() {
+                    std::ptr::null()
+                } else {
+                    bytes.as_ptr()
+                },
+                memory_size: if pathname.is_some() { 0 } else { file_size },
+                pathname: pathname
+                    .as_ref()
+                    .map_or(std::ptr::null_mut(), |pathname| pathname.as_ptr().cast_mut()),
                 stream: std::ptr::null_mut(),
                 driver: std::ptr::null_mut(),
                 num_params: 0,
@@ -81774,6 +82080,17 @@ fn wasm_new_memory_face_variants(case: &InputCase) -> Result<RunOutput, String> 
             if row.aface_is_null {
                 return Ok((FT_Err_Invalid_Argument, true));
             }
+            if open_face_pathname_case(case, row) {
+                let status = wasm_abi::fontdone_wasm_open_face(
+                    bytes.as_ptr(),
+                    bytes.len(),
+                    row.face_index,
+                    20.0,
+                );
+                let face_is_null = status.handle == 0;
+                wasm_done_face(status.handle);
+                return Ok((status.error, face_is_null));
+            }
             if open_face_args_dispatch_case(case) {
                 let source_flags =
                     row.open_flags & (FT_OPEN_MEMORY | FT_OPEN_STREAM | FT_OPEN_PATHNAME);
@@ -81828,6 +82145,12 @@ fn memory_face_outputs(
 
 fn open_face_args_dispatch_case(case: &InputCase) -> bool {
     case.subject == "freetype.FT_Open_Face" || case.operation == "freetype.open_face_args"
+}
+
+fn open_face_pathname_case(case: &InputCase, row: MemoryFaceRow) -> bool {
+    case.subject == "freetype.FT_Open_Face"
+        && case.case == "success_open_pathname"
+        && row.open_flags & FT_OPEN_PATHNAME != 0
 }
 
 fn memory_face_file_size(data_len: usize, row: MemoryFaceRow) -> Result<i64, String> {
@@ -86132,6 +86455,57 @@ fn copy_contours_only_mismatch_outline_model() -> MutableOutlineModel {
     }
 }
 
+fn mutable_outline_model_from_asset_key(
+    case: &InputCase,
+    asset_key: &str,
+) -> Result<MutableOutlineModel, String> {
+    let outline = outline_from_asset_key(case, asset_key)?;
+    let points = outline
+        .points
+        .iter()
+        .map(|point| (i64::from(point.x), i64::from(point.y)))
+        .collect::<Vec<_>>();
+    let tags = if outline.tags.len() == outline.points.len() {
+        outline.tags
+    } else {
+        outline
+            .points
+            .iter()
+            .map(|point| u8::from(point.on_curve))
+            .collect()
+    };
+    let contours = outline
+        .contours
+        .into_iter()
+        .map(|contour| u16::try_from(contour).map_err(|err| err.to_string()))
+        .collect::<Result<Vec<_>, _>>()?;
+    let flags = i32::try_from(outline.flags).map_err(|err| err.to_string())?;
+    Ok(MutableOutlineModel {
+        points,
+        tags,
+        contours,
+        flags,
+    })
+}
+
+fn outline_copy_model_arg(case: &InputCase) -> Result<String, String> {
+    let model = mutable_outline_model_from_asset_key(case, "outline")?;
+    let points = model
+        .points
+        .iter()
+        .zip(model.tags.iter())
+        .map(|(&(x, y), tag)| format!("{x}:{y}:{tag}"))
+        .collect::<Vec<_>>()
+        .join(",");
+    let contours = model
+        .contours
+        .iter()
+        .map(u16::to_string)
+        .collect::<Vec<_>>()
+        .join(",");
+    Ok(format!("{}|{}|{}", model.flags, points, contours))
+}
+
 fn embolden_outline_model() -> MutableOutlineModel {
     MutableOutlineModel {
         points: vec![(0, 0), (0, 96), (64, 128), (128, 96), (128, 0)],
@@ -86176,7 +86550,11 @@ where
         })));
     }
     if case_id_base(&case.case_id).starts_with("ftoutln.FT_Outline_Copy.self_copy_noop") {
-        let source = copy_source_outline_model();
+        let source = if case.inputs.assets.contains_key("outline") {
+            mutable_outline_model_from_asset_key(case, "outline")?
+        } else {
+            copy_source_outline_model()
+        };
         let mut target = source.clone();
         let before = mutable_outline_json(&target);
         let error = copy(Some(&source), Some(&mut target));
@@ -86215,6 +86593,19 @@ fn rust_outline_copy_runtime_output(case: &InputCase) -> Result<RunOutput, Strin
 
 fn c_outline_copy_runtime_output(case: &InputCase) -> Result<RunOutput, String> {
     outline_copy_runtime_output(case, |source, target| {
+        if case_id_base(&case.case_id)
+            .starts_with("ftoutln.FT_Outline_Copy.self_copy_noop")
+        {
+            let mut storage = source.cloned().map(CMutableOutlineStorage::new);
+            let pointer = storage
+                .as_mut()
+                .map_or(ptr::null_mut(), CMutableOutlineStorage::as_mut_ptr);
+            let error = c_abi::FT_Outline_Copy(pointer.cast_const(), pointer);
+            if let (Some(target), Some(storage)) = (target, storage) {
+                storage.copy_back(target);
+            }
+            return i64::from(error);
+        }
         let mut source_storage = source.cloned().map(CMutableOutlineStorage::new);
         let mut target_storage = target.as_deref().cloned().map(CMutableOutlineStorage::new);
         let source_ptr = source_storage
@@ -95566,8 +95957,7 @@ fn validate_schema_output(case: &InputCase, output: &Value, label: &str) -> Resu
 }
 
 fn comparison_schema(case: &InputCase) -> &str {
-    if case.operation == "new_memory_face"
-        && memory_face_uses_variant_route(&case.inputs.params)
+    if case.operation == "new_memory_face" && memory_face_uses_any_variant_route(case)
     {
         return "api_object";
     }
@@ -97318,6 +97708,36 @@ fn custom_memory_probe_param(value: &Value) -> Result<Option<u16>, String> {
         "c113_rust_gap_batch_variant_098" => 1898,
         "c113_rust_gap_batch_variant_099" => 1899,
         "c113_rust_gap_batch_variant_100" => 1900,
+        "c114_valid_public_batch_variant_001" => 1901,
+        "c114_valid_public_batch_variant_002" => 1902,
+        "c114_valid_public_batch_variant_003" => 1903,
+        "c114_valid_public_batch_variant_004" => 1904,
+        "c114_valid_public_batch_variant_005" => 1905,
+        "c114_valid_public_batch_variant_006" => 1906,
+        "c114_valid_public_batch_variant_007" => 1907,
+        "c114_valid_public_batch_variant_008" => 1908,
+        "c114_valid_public_batch_variant_009" => 1909,
+        "c114_valid_public_batch_variant_010" => 1910,
+        "c114_valid_public_batch_variant_011" => 1911,
+        "c114_valid_public_batch_variant_012" => 1912,
+        "c114_valid_public_batch_variant_013" => 1913,
+        "c114_valid_public_batch_variant_014" => 1914,
+        "c114_valid_public_batch_variant_015" => 1915,
+        "c114_valid_public_batch_variant_016" => 1916,
+        "c114_valid_public_batch_variant_017" => 1917,
+        "c114_valid_public_batch_variant_018" => 1918,
+        "c114_valid_public_batch_variant_019" => 1919,
+        "c114_valid_public_batch_variant_020" => 1920,
+        "c114_valid_public_batch_variant_021" => 1921,
+        "c114_valid_public_batch_variant_022" => 1922,
+        "c114_valid_public_batch_variant_023" => 1923,
+        "c114_valid_public_batch_variant_024" => 1924,
+        "c114_valid_public_batch_variant_025" => 1925,
+        "c114_valid_public_batch_variant_026" => 1926,
+        "c114_valid_public_batch_variant_027" => 1927,
+        "c114_valid_public_batch_variant_028" => 1928,
+        "c114_valid_public_batch_variant_029" => 1929,
+        "c114_valid_public_batch_variant_030" => 1930,
         other => return Err(format!("unknown custom memory probe {other}")),
     };
     Ok(Some(code))
@@ -97583,6 +98003,19 @@ fn memory_face_uses_variant_route(params: &Value) -> bool {
         || lifecycle_handle_param_is_null(params, "args")
 }
 
+fn open_face_pathname_variant_route(case: &InputCase) -> bool {
+    case.subject == "freetype.FT_Open_Face"
+        && case.case == "success_open_pathname"
+        && memory_face_rows(&case.inputs.params).is_ok_and(|rows| {
+            rows.iter()
+                .any(|row| row.open_flags & FT_OPEN_PATHNAME != 0)
+        })
+}
+
+fn memory_face_uses_any_variant_route(case: &InputCase) -> bool {
+    memory_face_uses_variant_route(&case.inputs.params) || open_face_pathname_variant_route(case)
+}
+
 fn memory_face_rows_arg(params: &Value) -> Result<String, String> {
     Ok(memory_face_rows(params)?
         .into_iter()
@@ -97629,9 +98062,13 @@ fn memory_face_row(value: &Value, defaults: &Value) -> Result<MemoryFaceRow, Str
         .get("file_size")
         .map(|value| i64_value(value, "file_size"))
         .transpose()?;
-    let open_flags = object
-        .get("flags")
-        .map_or(Ok(i64::from(FT_OPEN_MEMORY)), open_face_flags_param)?;
+    let open_flags_value = object.get("flags").or_else(|| {
+        object
+            .get("open_args")
+            .and_then(Value::as_object)
+            .and_then(|open_args| open_args.get("flags"))
+    });
+    let open_flags = open_flags_value.map_or(Ok(i64::from(FT_OPEN_MEMORY)), open_face_flags_param)?;
     Ok(MemoryFaceRow {
         face_index,
         file_size,
@@ -97641,7 +98078,7 @@ fn memory_face_row(value: &Value, defaults: &Value) -> Result<MemoryFaceRow, Str
         aface_is_null: lifecycle_handle_param_is_null(value, "aface"),
         open_args_is_null: lifecycle_handle_param_is_null(value, "args"),
         has_open_args: object.get("open_args").is_some() || object.get("args").is_some(),
-        has_open_flags: object.get("flags").is_some(),
+        has_open_flags: open_flags_value.is_some(),
         has_stream: object.get("stream").is_some(),
         has_source_override: object.get("source").is_some(),
         has_open_driver: object.get("open_driver").is_some(),

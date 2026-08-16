@@ -72,21 +72,330 @@
       "schema": "api_result",
       "expect_error": false,
       "inputs": {
-        "assets": {
-          "font": {
-            "kind": "file",
-            "role": "font",
-            "path": "input/fonts/LiberationSerif-Regular.ttf"
-          }
-        },
-        "params": {
-          "open_args": {
-            "flags": [
-              "FT_OPEN_PATHNAME"
-            ]
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "b4-path-001",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": 0,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20263"]
           },
-          "face_index": 0
-        }
+          {
+            "id": "b4-path-002",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": 0,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20264"]
+          },
+          {
+            "id": "b4-path-003",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/NotoSans-Regular.ttf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": 0,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20265"]
+          },
+          {
+            "id": "b4-path-004",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/sfnt/basic-ttf.ttf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": 0,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20266"]
+          },
+          {
+            "id": "b4-path-005",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/variable/compact-variable.ttf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": 0,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20267"]
+          },
+          {
+            "id": "b4-path-006",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/cff/pure-cff-cubic.otf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": 0,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20268"]
+          },
+          {
+            "id": "b4-path-007",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/autohint/script-coverage.ttf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": 0,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20269"]
+          },
+          {
+            "id": "b4-path-008",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/glyf/render-coverage.ttf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": 0,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20263"]
+          },
+          {
+            "id": "b4-path-009",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/control/multiface-cjk-indic.ttc"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": 0,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20264"]
+          },
+          {
+            "id": "b4-path-010",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/variable/multi-axis-named-instances.ttf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": 0,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20265"]
+          },
+          {
+            "id": "b5-path-neg-001",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/native/dejavu-coverage.ttf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": -1,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20263"]
+          },
+          {
+            "id": "b5-path-neg-002",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/autohint/basic-latin.ttf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": -1,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20264"]
+          },
+          {
+            "id": "b5-path-neg-003",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/autohint/latin-greek-cyrillic.ttf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": -1,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20265"]
+          },
+          {
+            "id": "b5-path-neg-004",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/opentype/valid-all-layout.otf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": -1,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20266"]
+          },
+          {
+            "id": "b5-path-neg-005",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/opentype/valid-gdef.otf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": -1,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20267"]
+          },
+          {
+            "id": "b5-path-neg-006",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/opentype/valid-gsub.otf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": -1,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20268"]
+          },
+          {
+            "id": "b5-path-neg-007",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/opentype/valid-math.otf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": -1,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20269"]
+          },
+          {
+            "id": "b5-path-neg-008",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/color/colr_v1_composite_modes.ttf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": -1,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20263"]
+          },
+          {
+            "id": "b5-path-neg-009",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/aat/feat-opbd-trak-prop.ttf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": -1,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20264"]
+          },
+          {
+            "id": "b5-path-neg-010",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/variable/wght-wdth-opsz.ttf"
+              }
+            },
+            "params": {
+              "open_args": {"flags": ["FT_OPEN_PATHNAME"]},
+              "face_index": -1,
+              "aface": "valid"
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:20265"]
+          }
+        ]
       },
       "classifiers": [
         "kind:function",

@@ -269,6 +269,70 @@ def mono_bottom_edge_dropout_glyph():
     return pen.glyph()
 
 
+def negative_bearing_rectangle(x_min: int, y_min: int, x_max: int, y_max: int):
+    pen = TTGlyphPen(None)
+    pen.moveTo((x_min, y_min))
+    pen.lineTo((x_max, y_min))
+    pen.lineTo((x_max, y_max))
+    pen.lineTo((x_min, y_max))
+    pen.closePath()
+    return pen.glyph()
+
+
+def sbit_negative_bearing_controls() -> None:
+    """Build valid outlines whose rendered bearings are intentionally negative."""
+    glyphs = {
+        ".notdef": negative_bearing_rectangle(0, 0, 600, 700),
+        "left_negative": negative_bearing_rectangle(-384, 0, -128, 512),
+        "top_negative": negative_bearing_rectangle(0, -512, 256, -256),
+        "both_negative": negative_bearing_rectangle(-384, -512, -128, -256),
+    }
+    metrics = {
+        ".notdef": (600, 0),
+        "left_negative": (600, -384),
+        "top_negative": (600, 0),
+        "both_negative": (600, -384),
+    }
+
+    builder = FontBuilder(1000, isTTF=True)
+    builder.setupGlyphOrder(list(glyphs))
+    builder.setupCharacterMap(
+        {
+            0xE001: "left_negative",
+            0xE002: "top_negative",
+            0xE003: "both_negative",
+        }
+    )
+    builder.setupGlyf(glyphs)
+    builder.setupHorizontalMetrics(metrics)
+    builder.setupHorizontalHeader(ascent=800, descent=-800)
+    builder.setupNameTable(
+        {
+            "familyName": "SBit Negative Bearing Controls",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "SBit Negative Bearing Controls Regular",
+            "fullName": "SBit Negative Bearing Controls Regular",
+            "psName": "SBitNegativeBearingControls-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    builder.setupOS2(
+        sTypoAscender=800,
+        sTypoDescender=-800,
+        usWinAscent=800,
+        usWinDescent=800,
+    )
+    builder.setupPost()
+    builder.setupMaxp()
+
+    head = builder.font["head"]
+    head.created = 0
+    head.modified = 0
+    builder.font.recalcTimestamp = False
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    builder.save(OUT_DIR / "sbit-negative-bearing-controls.ttf")
+
+
 def build_render_coverage_font(name: str, notdef_glyph=None, ascender: int = 256) -> None:
     glyphs = {
         ".notdef": notdef_glyph or empty_glyph(),
@@ -396,6 +460,7 @@ def build_render_fpgm_no_cvt() -> None:
 
 
 def main() -> None:
+    sbit_negative_bearing_controls()
     build_render_coverage()
     build_render_prep_only()
     build_render_fpgm_no_cvt()

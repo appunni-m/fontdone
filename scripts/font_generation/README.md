@@ -42,14 +42,14 @@ licenses are enforced by `make supply-chain`.
 | `build_autohint_script_fixtures.py` | Synthetic | Project-authored outlines and tables; one internal copy remains within the generated synthetic family, including malformed `loca` boundary controls and append-only Hebrew long-blue contour variants. |
 | `build_cff_fixtures.py` | Synthetic and derived | Project-authored CFF1/CFF2, TrueType control, and malformed CFF1/CFF2 table and INDEX data, plus malformed CID CFF derivatives of the maintained OFL-1.1 `FDArrayTest257` face. |
 | `build_render_fixtures.py` | Synthetic | Project-authored outlines and TrueType programs. |
-| `build_type1_fixtures.py` | Synthetic | Project-authored Type 1 charstrings, dictionaries, AFM data, notices, and a naked CID-keyed Type 1 resource. |
+| `build_type1_fixtures.py` | Synthetic | Project-authored Type 1 charstrings, dictionaries, AFM data, notices, a naked CID-keyed Type 1 resource, and six valid no-op movement/curve controls for public parser parity. |
 | `build_type42_fixtures.py` | Synthetic | Project-authored embedded TrueType tables, outlines, names, and Type 42 wrapper. |
 | `generate_malformed_bdf_fixtures.py` | Synthetic | Project-authored BDF text, including valid atom/integer/cardinal property controls and intentionally malformed variants. |
 | `generate_winfnt_fixtures.py` | Synthetic | Project-authored binary WinFNT records and bitmap data, including short-header and declared-size validation controls. |
 | `build_cpal_palette_fixtures.py` | Derived | `tests/fixtures/input/fonts/DejaVuSans.ttf`; DejaVu/Bitstream terms remain applicable. |
 | `build_cmap_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; only cmap/table mutations, including maintained malformed format-13 and format-14 parser matrices beside valid format-6 controls. |
 | `build_gasp_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
-| `build_hinter_edge_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`, including a 102-level composite chain, a 77-glyph opcode stack-underflow matrix, an isolated TrueType VM operand/branch matrix, and a prep-time empty-contour SHZ control. |
+| `build_hinter_edge_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`, including a 102-level composite chain, a 77-glyph opcode stack-underflow matrix, an isolated TrueType VM operand/branch matrix, 30 valid public Batch61 VM branch witnesses, and a prep-time empty-contour SHZ control. |
 | `build_metric_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
 | `build_post_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
 | `build_sbit_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; bitmap outputs add project-authored EBLC/EBDT records, including the maintained `embedded-strikes.ttf` face-record input, valid and malformed SFNT-BDF derivatives, a CBLC/CBDT strike-metrics normalization matrix, and 100-strike `FT_Select_Size` matrices with hhea, `OS/2`, and `vmtx` metric variants. |

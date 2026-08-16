@@ -18508,6 +18508,166 @@ static void print_u16_array(const unsigned short* values, int count) {
     printf("]");
 }
 
+static int parse_outline_copy_model(
+    const char* encoded,
+    FT_Outline* outline,
+    FT_Vector** points_out,
+    unsigned char** tags_out,
+    unsigned short** contours_out
+) {
+    char* copy = (char*)malloc(strlen(encoded) + 1);
+    FT_Vector* points = NULL;
+    unsigned char* tags = NULL;
+    unsigned short* contours = NULL;
+    if (!copy) {
+        return 0;
+    }
+    memcpy(copy, encoded, strlen(encoded) + 1);
+    char* points_field = strchr(copy, '|');
+    if (!points_field) {
+        free(copy);
+        return 0;
+    }
+    *points_field = '\0';
+    points_field++;
+    char* contours_field = strchr(points_field, '|');
+    if (!contours_field) {
+        free(copy);
+        return 0;
+    }
+    *contours_field = '\0';
+    contours_field++;
+
+    unsigned int point_count = 0;
+    if (*points_field) {
+        point_count = 1;
+        for (const char* cursor = points_field; *cursor; cursor++) {
+            if (*cursor == ',') {
+                point_count++;
+            }
+        }
+    }
+    unsigned int contour_count = 0;
+    if (*contours_field) {
+        contour_count = 1;
+        for (const char* cursor = contours_field; *cursor; cursor++) {
+            if (*cursor == ',') {
+                contour_count++;
+            }
+        }
+    }
+    points = (FT_Vector*)calloc(point_count ? point_count : 1, sizeof(FT_Vector));
+    tags = (unsigned char*)calloc(point_count ? point_count : 1, sizeof(unsigned char));
+    contours = (unsigned short*)calloc(
+        contour_count ? contour_count : 1,
+        sizeof(unsigned short));
+    if (!points || !tags || !contours) {
+        free(copy);
+        free(points);
+        free(tags);
+        free(contours);
+        return 0;
+    }
+
+    char* cursor = points_field;
+    for (unsigned int index = 0; index < point_count; index++) {
+        char* next = strchr(cursor, ',');
+        if (next) {
+            *next = '\0';
+        }
+        char* x_field = strchr(cursor, ':');
+        if (!x_field) {
+            free(copy);
+            free(points);
+            free(tags);
+            free(contours);
+            return 0;
+        }
+        *x_field = '\0';
+        x_field++;
+        char* y_field = strchr(x_field, ':');
+        if (!y_field) {
+            free(copy);
+            free(points);
+            free(tags);
+            free(contours);
+            return 0;
+        }
+        *y_field = '\0';
+        y_field++;
+        points[index].x = (FT_Pos)strtol(cursor, NULL, 10);
+        points[index].y = (FT_Pos)strtol(x_field, NULL, 10);
+        tags[index] = (unsigned char)strtoul(y_field, NULL, 10);
+        cursor = next ? next + 1 : NULL;
+        if (index + 1 < point_count && !cursor) {
+            free(copy);
+            free(points);
+            free(tags);
+            free(contours);
+            return 0;
+        }
+    }
+
+    cursor = contours_field;
+    for (unsigned int index = 0; index < contour_count; index++) {
+        char* next = strchr(cursor, ',');
+        if (next) {
+            *next = '\0';
+        }
+        contours[index] = (unsigned short)strtoul(cursor, NULL, 10);
+        cursor = next ? next + 1 : NULL;
+        if (index + 1 < contour_count && !cursor) {
+            free(copy);
+            free(points);
+            free(tags);
+            free(contours);
+            return 0;
+        }
+    }
+
+    outline->n_points = (short)point_count;
+    outline->n_contours = (short)contour_count;
+    outline->points = points;
+    outline->tags = tags;
+    outline->contours = contours;
+    outline->flags = (int)strtol(copy, NULL, 10);
+    *points_out = points;
+    *tags_out = tags;
+    *contours_out = contours;
+    free(copy);
+    return 1;
+}
+
+static int emit_outline_copy_model(int argc, char** argv) {
+    if (argc != 4) {
+        return 1;
+    }
+    FT_Outline outline;
+    FT_Vector* points = NULL;
+    unsigned char* tags = NULL;
+    unsigned short* contours = NULL;
+    if (!parse_outline_copy_model(
+            argv[3],
+            &outline,
+            &points,
+            &tags,
+            &contours)) {
+        fprintf(stderr, "invalid outline copy model\n");
+        return 2;
+    }
+    FT_Error error = FT_Outline_Copy(&outline, &outline);
+    print_ok_output_prefix();
+    printf("{\"return\":%d,\"before\":", error);
+    print_outline_snapshot(&outline);
+    printf(",\"after\":");
+    print_outline_snapshot(&outline);
+    printf("}}\n");
+    free(points);
+    free(tags);
+    free(contours);
+    return 0;
+}
+
 static int emit_outline_copy(int argc, char** argv) {
     if (argc != 3) return 1;
     const char* case_id = argv[2];
@@ -39648,6 +39808,7 @@ static int emit_new_face_variants(int argc, char** argv) {
 
 static int emit_open_face_variants(int argc, char** argv) {
     int mixed_error_status = argc == 6 && streq(argv[5], "mixed");
+    int pathname_source = argc == 6 && streq(argv[5], "pathname");
     const char* source_kind = argv[2];
     const char* source_value = argv[3];
     char* rows_arg = (char*)malloc(strlen(argv[4]) + 1);
@@ -39736,8 +39897,13 @@ static int emit_open_face_variants(int argc, char** argv) {
         FT_Open_Args args;
         memset(&args, 0, sizeof(args));
         args.flags = rows[i].open_flags;
-        args.memory_base = rows[i].file_base_is_null ? NULL : data;
+        int use_pathname = pathname_source &&
+            (rows[i].open_flags & FT_OPEN_PATHNAME) != 0;
+        args.memory_base = use_pathname
+            ? NULL
+            : (rows[i].file_base_is_null ? NULL : data);
         args.memory_size = file_size;
+        args.pathname = use_pathname ? (char*)source_value : NULL;
         FT_Library library_arg = rows[i].library_is_null ? NULL : library;
         FT_Open_Args* args_arg = rows[i].open_args_is_null ? NULL : &args;
         FT_Face* aface_arg = rows[i].aface_is_null ? NULL : &face;
@@ -40884,6 +41050,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 3 && streq(argv[1], "--outline-copy")) {
         return emit_outline_copy(argc, argv);
+    }
+    if (argc == 4 && streq(argv[1], "--outline-copy-model")) {
+        return emit_outline_copy_model(argc, argv);
     }
     if (argc == 3 && streq(argv[1], "--outline-done")) {
         return emit_outline_done(argc, argv);

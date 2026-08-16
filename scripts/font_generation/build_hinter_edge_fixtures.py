@@ -649,6 +649,43 @@ def write_run_program_branch_matrix() -> None:
         ("instctrl_invalid_selector", "b1 00 04 8e"),
         ("instctrl_invalid_value", "b1 01 02 8e"),
         ("unknown_invalid_opcode", "94"),
+        # Batch61 keeps these glyph programs successful while selecting the
+        # valid side of the remaining public VM branches.  The SHZ witnesses
+        # target the twilight zone, ROLL witnesses leave fewer than three
+        # operands on the stack, and SCANTYPE witnesses use nonnegative
+        # values.  The final MIAP/MSIRP/MIRP programs intentionally address
+        # points beyond the four-point twilight zone under non-pedantic
+        # execution; pinned FreeType ignores those writes without an error.
+        ("batch61_shz_twilight_default", "b0 00 15 b0 00 36"),
+        ("batch61_shz_twilight_zone_one", "b0 00 15 b0 01 36"),
+        ("batch61_shz_twilight_rp0", "b0 00 12 b0 00 15 b0 00 36"),
+        ("batch61_shz_twilight_rp1", "b0 01 12 b0 00 15 b0 00 36"),
+        ("batch61_shz_twilight_rp2", "b0 02 12 b0 00 15 b0 00 36"),
+        ("batch61_shz_twilight_rp0_zone_one", "b0 00 12 b0 00 15 b0 01 36"),
+        ("batch61_shz_twilight_rp1_zone_one", "b0 01 12 b0 00 15 b0 01 36"),
+        ("batch61_shz_twilight_rp2_zone_one", "b0 02 12 b0 00 15 b0 01 36"),
+        ("batch61_roll_empty", "8a"),
+        ("batch61_roll_one_zero", "b0 00 8a"),
+        ("batch61_roll_one_one", "b0 01 8a"),
+        ("batch61_roll_one_word", "b1 00 01 8a"),
+        ("batch61_roll_one_negative", "b1 ff ff 8a"),
+        ("batch61_roll_two_small", "b0 02 b0 03 8a"),
+        ("batch61_roll_two_pop", "b0 7f b0 01 8a 21"),
+        ("batch61_roll_two_word_pop", "b1 00 02 b0 7f 8a 21"),
+        ("batch61_scantype_zero", "b0 00 8d"),
+        ("batch61_scantype_one", "b0 01 8d"),
+        ("batch61_scantype_two", "b0 02 8d"),
+        ("batch61_scantype_three", "b0 03 8d"),
+        ("batch61_scantype_byte_max", "b0 7f 8d"),
+        ("batch61_scantype_word_zero", "b1 00 00 8d"),
+        ("batch61_scantype_word_one", "b1 00 01 8d"),
+        ("batch61_scantype_word_max", "b1 7f ff 8d"),
+        ("batch61_miap_twilight_point_99", "b0 00 13 b1 00 63 b0 00 3e"),
+        ("batch61_miap_twilight_point_100", "b0 00 13 b1 00 64 b0 00 3e"),
+        ("batch61_miap_twilight_point_101", "b0 00 13 b1 00 65 b0 00 3e"),
+        ("batch61_msirp_twilight_point_99", "b0 00 14 b1 00 63 b0 01 3a"),
+        ("batch61_msirp_twilight_point_100", "b0 00 14 b1 00 64 b0 02 3a"),
+        ("batch61_mirp_twilight_point_101", "b0 00 14 b1 00 65 b0 03 e0"),
     )
 
     glyph_order = font.getGlyphOrder()

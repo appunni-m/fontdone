@@ -56,6 +56,135 @@
       }
     },
     {
+      "case_id": "ftmodapi.FT_Get_Module.lookup_default_module_matrix",
+      "subject": "ftmodapi.FT_Get_Module",
+      "case": "lookup_existing_and_missing_module",
+      "covers_manifest_cases": ["lookup_existing_and_missing_module"],
+      "operation": "ftmodapi.get_module",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "b5-module-001",
+            "assets": {},
+            "params": {
+              "library": "new_from_FT_Init_FreeType",
+              "module_names": ["bsdf"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19496"]
+          },
+          {
+            "id": "b5-module-002",
+            "assets": {},
+            "params": {
+              "library": "new_from_FT_Init_FreeType",
+              "module_names": ["truetype"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19515"]
+          },
+          {
+            "id": "b5-module-003",
+            "assets": {},
+            "params": {
+              "library": "new_from_FT_Init_FreeType",
+              "module_names": ["type1"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19515"]
+          },
+          {
+            "id": "b5-module-004",
+            "assets": {},
+            "params": {
+              "library": "new_from_FT_Init_FreeType",
+              "module_names": ["cff"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19515"]
+          },
+          {
+            "id": "b5-module-005",
+            "assets": {},
+            "params": {
+              "library": "new_from_FT_Init_FreeType",
+              "module_names": ["type42"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19515"]
+          },
+          {
+            "id": "b5-module-006",
+            "assets": {},
+            "params": {
+              "library": "new_from_FT_Init_FreeType",
+              "module_names": ["bdf"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19515"]
+          },
+          {
+            "id": "b5-module-007",
+            "assets": {},
+            "params": {
+              "library": "new_from_FT_Init_FreeType",
+              "module_names": ["pcf"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19515"]
+          },
+          {
+            "id": "b5-module-008",
+            "assets": {},
+            "params": {
+              "library": "new_from_FT_Init_FreeType",
+              "module_names": ["winfonts"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19515"]
+          },
+          {
+            "id": "b5-module-009",
+            "assets": {},
+            "params": {
+              "library": "new_from_FT_Init_FreeType",
+              "module_names": ["autofitter"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19515"]
+          },
+          {
+            "id": "b5-module-010",
+            "assets": {},
+            "params": {
+              "library": "new_from_FT_Init_FreeType",
+              "module_names": ["psnames"]
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:19515"]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftmodapi",
+        "area:module"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "lookups": {
+            "module_name": "string",
+            "module_handle": "FT_Module",
+            "class_name": "string|null",
+            "nullness": "bool"
+          }
+        },
+        "compare": {
+          "mode": "nullness",
+          "paths": [
+            "lookups.module_name",
+            "lookups.nullness",
+            "lookups.class_name"
+          ]
+        }
+      }
+    },
+    {
       "case_id": "ftmodapi.FT_Get_Module.null_inputs_return_null",
       "subject": "ftmodapi.FT_Get_Module",
       "case": "null_inputs_return_null",

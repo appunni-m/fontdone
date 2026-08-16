@@ -207,7 +207,367 @@
             "coverage": [
              "batch4:sbit-cache:1"
            ]
-          }
+          },
+          {
+            "id": "batch1-sbit-repeat-001",
+            "assets": {"font": {"kind": "file", "role": "scalable_control_font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:dejavu", "width": 8, "height": 8, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "nonnull", "repeat_lookup": true, "glyph_index": 1},
+            "coverage": ["batch1:sbit:repeat:001"]
+          },
+          {
+            "id": "batch1-sbit-repeat-002",
+            "assets": {"font": {"kind": "file", "role": "scalable_control_font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:dejavu", "width": 12, "height": 12, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "nonnull", "repeat_lookup": true, "glyph_index": 3},
+            "coverage": ["batch1:sbit:repeat:002"]
+          },
+          {
+            "id": "batch1-sbit-repeat-003",
+            "assets": {"font": {"kind": "file", "role": "scalable_control_font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:dejavu", "width": 16, "height": 16, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "nonnull", "repeat_lookup": true, "glyph_index": 36},
+            "coverage": ["batch1:sbit:repeat:003"]
+          },
+          {
+            "id": "batch1-sbit-repeat-004",
+            "assets": {"font": {"kind": "file", "role": "scalable_control_font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:dejavu", "width": 16, "height": 16, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "nonnull", "repeat_lookup": true, "glyph_index": 43},
+            "coverage": ["batch1:sbit:repeat:004"]
+          },
+          {
+            "id": "batch1-sbit-repeat-005",
+            "assets": {"font": {"kind": "file", "role": "scalable_control_font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:dejavu", "width": 20, "height": 20, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "nonnull", "repeat_lookup": true, "glyph_index": 50},
+            "coverage": ["batch1:sbit:repeat:005"]
+          },
+          {
+            "id": "batch1-sbit-repeat-006",
+            "assets": {"font": {"kind": "file", "role": "scalable_control_font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:dejavu", "width": 24, "height": 24, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "nonnull", "repeat_lookup": true, "glyph_index": 68},
+            "coverage": ["batch1:sbit:repeat:006"]
+          },
+          {
+            "id": "batch1-sbit-repeat-007",
+            "assets": {"font": {"kind": "file", "role": "scalable_control_font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:dejavu", "width": 24, "height": 32, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "nonnull", "repeat_lookup": true, "glyph_index": 74},
+            "coverage": ["batch1:sbit:repeat:007"]
+          },
+          {
+            "id": "batch1-sbit-repeat-008",
+            "assets": {"font": {"kind": "file", "role": "scalable_control_font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:dejavu", "width": 32, "height": 24, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "nonnull", "repeat_lookup": true, "glyph_index": 82},
+            "coverage": ["batch1:sbit:repeat:008"]
+          },
+          {
+            "id": "batch1-sbit-repeat-009",
+            "assets": {"font": {"kind": "file", "role": "scalable_control_font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:dejavu", "width": 32, "height": 32, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "nonnull", "repeat_lookup": true, "glyph_index": 90},
+            "coverage": ["batch1:sbit:repeat:009"]
+          },
+          {
+            "id": "batch1-sbit-repeat-010",
+            "assets": {"font": {"kind": "file", "role": "scalable_control_font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:dejavu", "width": 48, "height": 48, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "nonnull", "repeat_lookup": true, "glyph_index": 130},
+            "coverage": ["batch1:sbit:repeat:010"]
+          },
+          {
+            "id": "batch1-sbit-empty-001",
+            "assets": {"font": {"kind": "file", "role": "empty_outline_font", "path": "input/fonts/autohint/latin-empty-standard.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:latin-empty", "width": 8, "height": 8, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch1:sbit:empty:001"]
+          },
+          {
+            "id": "batch1-sbit-empty-002",
+            "assets": {"font": {"kind": "file", "role": "empty_outline_font", "path": "input/fonts/autohint/latin-empty-standard.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:latin-empty", "width": 9, "height": 12, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch1:sbit:empty:002"]
+          },
+          {
+            "id": "batch1-sbit-empty-003",
+            "assets": {"font": {"kind": "file", "role": "empty_outline_font", "path": "input/fonts/autohint/latin-empty-standard.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:latin-empty", "width": 12, "height": 12, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch1:sbit:empty:003"]
+          },
+          {
+            "id": "batch1-sbit-empty-004",
+            "assets": {"font": {"kind": "file", "role": "empty_outline_font", "path": "input/fonts/autohint/latin-empty-standard.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:latin-empty", "width": 16, "height": 16, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch1:sbit:empty:004"]
+          },
+          {
+            "id": "batch1-sbit-empty-005",
+            "assets": {"font": {"kind": "file", "role": "empty_outline_font", "path": "input/fonts/autohint/latin-empty-standard.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:latin-empty", "width": 24, "height": 24, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch1:sbit:empty:005"]
+          },
+          {
+            "id": "batch1-sbit-empty-006",
+            "assets": {"font": {"kind": "file", "role": "empty_outline_font", "path": "input/fonts/autohint/latin-empty-standard.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:latin-empty", "width": 8, "height": 8, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch1:sbit:empty:006"]
+          },
+          {
+            "id": "batch1-sbit-empty-007",
+            "assets": {"font": {"kind": "file", "role": "empty_outline_font", "path": "input/fonts/autohint/latin-empty-standard.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:latin-empty", "width": 12, "height": 12, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch1:sbit:empty:007"]
+          },
+          {
+            "id": "batch1-sbit-empty-008",
+            "assets": {"font": {"kind": "file", "role": "empty_outline_font", "path": "input/fonts/autohint/latin-empty-standard.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:latin-empty", "width": 16, "height": 16, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch1:sbit:empty:008"]
+          },
+          {
+            "id": "batch1-sbit-empty-009",
+            "assets": {"font": {"kind": "file", "role": "empty_outline_font", "path": "input/fonts/autohint/latin-empty-standard.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:latin-empty", "width": 24, "height": 24, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch1:sbit:empty:009"]
+          },
+          {
+            "id": "batch1-sbit-empty-010",
+            "assets": {"font": {"kind": "file", "role": "empty_outline_font", "path": "input/fonts/autohint/latin-empty-standard.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:latin-empty", "width": 32, "height": 32, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch1:sbit:empty:010"]
+          },
+          {
+            "id": "batch2-sbit-left-001",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 8, "height": 8, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch2:sbit:left:001"]
+          },
+          {
+            "id": "batch2-sbit-left-002",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 9, "height": 9, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch2:sbit:left:002"]
+          },
+          {
+            "id": "batch2-sbit-left-003",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 10, "height": 10, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch2:sbit:left:003"]
+          },
+          {
+            "id": "batch2-sbit-left-004",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 12, "height": 12, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch2:sbit:left:004"]
+          },
+          {
+            "id": "batch2-sbit-left-005",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 14, "height": 14, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch2:sbit:left:005"]
+          },
+          {
+            "id": "batch2-sbit-left-006",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 16, "height": 16, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch2:sbit:left:006"]
+          },
+          {
+            "id": "batch2-sbit-left-007",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 18, "height": 18, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch2:sbit:left:007"]
+          },
+          {
+            "id": "batch2-sbit-left-008",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 20, "height": 20, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch2:sbit:left:008"]
+          },
+          {
+            "id": "batch2-sbit-left-009",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 24, "height": 24, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch2:sbit:left:009"]
+          },
+          {
+            "id": "batch2-sbit-left-010",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 32, "height": 32, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 1},
+            "coverage": ["batch2:sbit:left:010"]
+          },
+          {
+            "id": "batch2-sbit-top-001",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 8, "height": 8, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch2:sbit:top:001"]
+          },
+          {
+            "id": "batch2-sbit-top-002",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 9, "height": 9, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch2:sbit:top:002"]
+          },
+          {
+            "id": "batch2-sbit-top-003",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 10, "height": 10, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch2:sbit:top:003"]
+          },
+          {
+            "id": "batch2-sbit-top-004",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 12, "height": 12, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch2:sbit:top:004"]
+          },
+          {
+            "id": "batch2-sbit-top-005",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 14, "height": 14, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch2:sbit:top:005"]
+          },
+          {
+            "id": "batch2-sbit-top-006",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 16, "height": 16, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch2:sbit:top:006"]
+          },
+          {
+            "id": "batch2-sbit-top-007",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 18, "height": 18, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch2:sbit:top:007"]
+          },
+          {
+            "id": "batch2-sbit-top-008",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 20, "height": 20, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch2:sbit:top:008"]
+          },
+          {
+            "id": "batch2-sbit-top-009",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 24, "height": 24, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch2:sbit:top:009"]
+          },
+          {
+            "id": "batch2-sbit-top-010",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 32, "height": 32, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 2},
+            "coverage": ["batch2:sbit:top:010"]
+          },
+          {
+            "id": "batch2-sbit-both-001",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 8, "height": 8, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 3},
+            "coverage": ["batch2:sbit:both:001"]
+          },
+          {
+            "id": "batch2-sbit-both-002",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 9, "height": 9, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 3},
+            "coverage": ["batch2:sbit:both:002"]
+          },
+          {
+            "id": "batch2-sbit-both-003",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 10, "height": 10, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 3},
+            "coverage": ["batch2:sbit:both:003"]
+          },
+          {
+            "id": "batch2-sbit-both-004",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 12, "height": 12, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 3},
+            "coverage": ["batch2:sbit:both:004"]
+          },
+          {
+            "id": "batch2-sbit-both-005",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 14, "height": 14, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 3},
+            "coverage": ["batch2:sbit:both:005"]
+          },
+          {
+            "id": "batch2-sbit-both-006",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 16, "height": 16, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 3},
+            "coverage": ["batch2:sbit:both:006"]
+          },
+          {
+            "id": "batch2-sbit-both-007",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 18, "height": 18, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 3},
+            "coverage": ["batch2:sbit:both:007"]
+          },
+          {
+            "id": "batch2-sbit-both-008",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 20, "height": 20, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 3},
+            "coverage": ["batch2:sbit:both:008"]
+          },
+          {
+            "id": "batch2-sbit-both-009",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 24, "height": 24, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 3},
+            "coverage": ["batch2:sbit:both:009"]
+          },
+          {
+            "id": "batch2-sbit-both-010",
+            "assets": {"font": {"kind": "file", "role": "negative_bearing_control_font", "path": "input/fonts/glyf/sbit-negative-bearing-controls.ttf"}},
+            "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:negative-bearing-controls", "width": 32, "height": 32, "flags": ["FT_LOAD_NO_HINTING"]}, "anode_output": "null", "glyph_index": 3},
+            "coverage": ["batch2:sbit:both:010"]
+          },
+          {"id":"b6-sbit-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_empty_ebdt.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-empty-001","width":8,"height":8,"flags":["FT_LOAD_DEFAULT"]},"anode_output":"null","glyph_index":1},"coverage":["batch6:sbit:empty:001"]},
+          {"id":"b6-sbit-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_empty_ebdt.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-empty-002","width":12,"height":12,"flags":["FT_LOAD_DEFAULT"]},"anode_output":"nonnull","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:empty:002"]},
+          {"id":"b6-sbit-003","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_empty_ebdt.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-empty-003","width":16,"height":16,"flags":["FT_LOAD_DEFAULT","FT_LOAD_RENDER"]},"anode_output":"null","glyph_index":1},"coverage":["batch6:sbit:empty:003"]},
+          {"id":"b6-sbit-004","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_empty_ebdt.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-empty-004","width":20,"height":20,"flags":["FT_LOAD_DEFAULT"]},"anode_output":"null","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:empty:004"]},
+          {"id":"b6-sbit-005","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_empty_ebdt.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-empty-005","width":32,"height":32,"flags":["FT_LOAD_DEFAULT"]},"anode_output":"nonnull","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:empty:005"]},
+          {"id":"b6-sbit-006","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray2_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray2-006","width":20,"height":20,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"null","glyph_index":1},"coverage":["batch6:sbit:gray2:006"]},
+          {"id":"b6-sbit-007","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray2_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray2-007","width":20,"height":20,"flags":["FT_LOAD_SBITS_ONLY","FT_LOAD_RENDER"]},"anode_output":"nonnull","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:gray2:007"]},
+          {"id":"b6-sbit-008","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray2_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray2-008","width":19,"height":20,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"null","glyph_index":1},"coverage":["batch6:sbit:gray2:008"]},
+          {"id":"b6-sbit-009","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray2_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray2-009","width":21,"height":20,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"null","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:gray2:009"]},
+          {"id":"b6-sbit-010","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray2_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray2-010","width":40,"height":40,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"nonnull","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:gray2:010"]},
+          {"id":"b6-sbit-011","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray4_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray4-011","width":20,"height":20,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"null","glyph_index":1},"coverage":["batch6:sbit:gray4:011"]},
+          {"id":"b6-sbit-012","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray4_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray4-012","width":20,"height":20,"flags":["FT_LOAD_SBITS_ONLY","FT_LOAD_RENDER"]},"anode_output":"nonnull","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:gray4:012"]},
+          {"id":"b6-sbit-013","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray4_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray4-013","width":19,"height":20,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"null","glyph_index":1},"coverage":["batch6:sbit:gray4:013"]},
+          {"id":"b6-sbit-014","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray4_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray4-014","width":21,"height":20,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"null","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:gray4:014"]},
+          {"id":"b6-sbit-015","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray4_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray4-015","width":40,"height":40,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"nonnull","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:gray4:015"]},
+          {"id":"b6-sbit-016","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_mono_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-mono-016","width":20,"height":20,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"null","glyph_index":1},"coverage":["batch6:sbit:mono:016"]},
+          {"id":"b6-sbit-017","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_mono_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-mono-017","width":20,"height":20,"flags":["FT_LOAD_SBITS_ONLY","FT_LOAD_RENDER"]},"anode_output":"nonnull","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:mono:017"]},
+          {"id":"b6-sbit-018","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_mono_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-mono-018","width":19,"height":20,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"null","glyph_index":1},"coverage":["batch6:sbit:mono:018"]},
+          {"id":"b6-sbit-019","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_mono_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-mono-019","width":21,"height":20,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"null","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:mono:019"]},
+          {"id":"b6-sbit-020","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_mono_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-mono-020","width":40,"height":40,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"nonnull","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:mono:020"]},
+          {"id":"b6-sbit-021","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_bgra_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-bgra-021","width":20,"height":20,"flags":["FT_LOAD_COLOR","FT_LOAD_SBITS_ONLY"]},"anode_output":"null","glyph_index":1},"coverage":["batch6:sbit:bgra:021"]},
+          {"id":"b6-sbit-022","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_bgra_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-bgra-022","width":20,"height":20,"flags":["FT_LOAD_COLOR","FT_LOAD_SBITS_ONLY","FT_LOAD_RENDER"]},"anode_output":"nonnull","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:bgra:022"]},
+          {"id":"b6-sbit-023","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_bgra_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-bgra-023","width":19,"height":20,"flags":["FT_LOAD_COLOR","FT_LOAD_SBITS_ONLY"]},"anode_output":"null","glyph_index":1},"coverage":["batch6:sbit:bgra:023"]},
+          {"id":"b6-sbit-024","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_bgra_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-bgra-024","width":21,"height":20,"flags":["FT_LOAD_COLOR","FT_LOAD_SBITS_ONLY"]},"anode_output":"null","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:bgra:024"]},
+          {"id":"b6-sbit-025","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_bgra_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-bgra-025","width":40,"height":40,"flags":["FT_LOAD_COLOR","FT_LOAD_SBITS_ONLY"]},"anode_output":"nonnull","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:bgra:025"]},
+          {"id":"b6-sbit-026","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray-026","width":20,"height":20,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"null","glyph_index":1},"coverage":["batch6:sbit:gray:026"]},
+          {"id":"b6-sbit-027","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray-027","width":20,"height":20,"flags":["FT_LOAD_SBITS_ONLY","FT_LOAD_RENDER"]},"anode_output":"nonnull","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:gray:027"]},
+          {"id":"b6-sbit-028","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray-028","width":19,"height":20,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"null","glyph_index":1},"coverage":["batch6:sbit:gray:028"]},
+          {"id":"b6-sbit-029","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray-029","width":21,"height":20,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"null","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:gray:029"]},
+          {"id":"b6-sbit-030","assets":{"font":{"kind":"ref","role":"font","id":"input/fixtures/assets/fonts/sbit_gray_format1.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:sbit-gray-030","width":40,"height":40,"flags":["FT_LOAD_SBITS_ONLY"]},"anode_output":"nonnull","repeat_lookup":true,"glyph_index":1},"coverage":["batch6:sbit:gray:030"]},
+          {"id":"strict30-sbit-svg-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/svg/otsvg-glyph.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-svg-001","width":8,"height":8,"flags":["FT_LOAD_COLOR"]},"anode_output":"null","glyph_index":1},"coverage":["strict30:sbit:svg-missing-hooks:001"]},
+          {"id":"strict30-sbit-svg-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/svg/otsvg-glyph.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-svg-002","width":9,"height":12,"flags":["FT_LOAD_COLOR"]},"anode_output":"null","glyph_index":1},"coverage":["strict30:sbit:svg-missing-hooks:002"]},
+          {"id":"strict30-sbit-svg-003","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/svg/otsvg-glyph.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-svg-003","width":12,"height":12,"flags":["FT_LOAD_COLOR"]},"anode_output":"null","glyph_index":1},"coverage":["strict30:sbit:svg-missing-hooks:003"]},
+          {"id":"strict30-sbit-svg-004","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/svg/otsvg-glyph.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-svg-004","width":16,"height":16,"flags":["FT_LOAD_COLOR"]},"anode_output":"null","glyph_index":1},"coverage":["strict30:sbit:svg-missing-hooks:004"]},
+          {"id":"strict30-sbit-svg-005","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/svg/otsvg-glyph.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-svg-005","width":20,"height":20,"flags":["FT_LOAD_COLOR"]},"anode_output":"null","glyph_index":1},"coverage":["strict30:sbit:svg-missing-hooks:005"]},
+          {"id":"strict30-sbit-svg-006","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/svg/otsvg-glyph.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-svg-006","width":24,"height":24,"flags":["FT_LOAD_COLOR"]},"anode_output":"null","glyph_index":1},"coverage":["strict30:sbit:svg-missing-hooks:006"]},
+          {"id":"strict30-sbit-svg-007","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/svg/otsvg-glyph.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-svg-007","width":24,"height":32,"flags":["FT_LOAD_COLOR"]},"anode_output":"null","glyph_index":1},"coverage":["strict30:sbit:svg-missing-hooks:007"]},
+          {"id":"strict30-sbit-svg-008","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/svg/otsvg-glyph.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-svg-008","width":32,"height":24,"flags":["FT_LOAD_COLOR"]},"anode_output":"null","glyph_index":1},"coverage":["strict30:sbit:svg-missing-hooks:008"]},
+          {"id":"strict30-sbit-svg-009","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/svg/otsvg-glyph.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-svg-009","width":32,"height":32,"flags":["FT_LOAD_COLOR"]},"anode_output":"null","glyph_index":1},"coverage":["strict30:sbit:svg-missing-hooks:009"]},
+          {"id":"strict30-sbit-svg-010","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/svg/otsvg-glyph.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-svg-010","width":48,"height":48,"flags":["FT_LOAD_COLOR"]},"anode_output":"null","glyph_index":1},"coverage":["strict30:sbit:svg-missing-hooks:010"]},
+          {"id":"strict30-sbit-dejavu-composite-001","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-dejavu-composite-001","width":8,"height":8,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:dejavu-composite:001"]},
+          {"id":"strict30-sbit-dejavu-composite-002","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-dejavu-composite-002","width":9,"height":12,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:dejavu-composite:002"]},
+          {"id":"strict30-sbit-dejavu-composite-003","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-dejavu-composite-003","width":12,"height":12,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:dejavu-composite:003"]},
+          {"id":"strict30-sbit-dejavu-composite-004","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-dejavu-composite-004","width":16,"height":16,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:dejavu-composite:004"]},
+          {"id":"strict30-sbit-dejavu-composite-005","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-dejavu-composite-005","width":20,"height":20,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:dejavu-composite:005"]},
+          {"id":"strict30-sbit-dejavu-composite-006","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-dejavu-composite-006","width":24,"height":24,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:dejavu-composite:006"]},
+          {"id":"strict30-sbit-dejavu-composite-007","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-dejavu-composite-007","width":24,"height":32,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:dejavu-composite:007"]},
+          {"id":"strict30-sbit-dejavu-composite-008","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-dejavu-composite-008","width":32,"height":24,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:dejavu-composite:008"]},
+          {"id":"strict30-sbit-dejavu-composite-009","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-dejavu-composite-009","width":32,"height":32,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:dejavu-composite:009"]},
+          {"id":"strict30-sbit-dejavu-composite-010","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-dejavu-composite-010","width":48,"height":48,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:dejavu-composite:010"]},
+          {"id":"strict30-sbit-liberation-composite-001","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/LiberationSerif-Regular.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-liberation-composite-001","width":8,"height":8,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:liberation-composite:001"]},
+          {"id":"strict30-sbit-liberation-composite-002","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/LiberationSerif-Regular.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-liberation-composite-002","width":9,"height":12,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:liberation-composite:002"]},
+          {"id":"strict30-sbit-liberation-composite-003","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/LiberationSerif-Regular.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-liberation-composite-003","width":12,"height":12,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:liberation-composite:003"]},
+          {"id":"strict30-sbit-liberation-composite-004","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/LiberationSerif-Regular.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-liberation-composite-004","width":16,"height":16,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:liberation-composite:004"]},
+          {"id":"strict30-sbit-liberation-composite-005","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/LiberationSerif-Regular.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-liberation-composite-005","width":20,"height":20,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:liberation-composite:005"]},
+          {"id":"strict30-sbit-liberation-composite-006","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/LiberationSerif-Regular.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-liberation-composite-006","width":24,"height":24,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:liberation-composite:006"]},
+          {"id":"strict30-sbit-liberation-composite-007","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/LiberationSerif-Regular.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-liberation-composite-007","width":24,"height":32,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:liberation-composite:007"]},
+          {"id":"strict30-sbit-liberation-composite-008","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/LiberationSerif-Regular.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-liberation-composite-008","width":32,"height":24,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:liberation-composite:008"]},
+          {"id":"strict30-sbit-liberation-composite-009","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/LiberationSerif-Regular.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-liberation-composite-009","width":32,"height":32,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:liberation-composite:009"]},
+          {"id":"strict30-sbit-liberation-composite-010","assets":{"font":{"kind":"file","role":"scalable_control_font","path":"input/fonts/LiberationSerif-Regular.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:strict30-sbit-liberation-composite-010","width":48,"height":48,"flags":["FT_LOAD_NO_RECURSE"]},"anode_output":"null","glyph_index":130},"coverage":["strict30:sbit:liberation-composite:010"]}
        ]
       },
       "classifiers": [

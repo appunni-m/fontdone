@@ -10,7 +10,7 @@ use crate::error::FontError;
 use crate::fixed::{ft_div_fix, ft_mul_div, ft_mul_fix};
 use crate::outline::{OUTLINE_HIGH_PRECISION, Outline, OutlinePoint};
 use crate::tables::FontData;
-use crate::tt::glyf::{GlyphOutline, load_glyph_with_scaled_component_offsets};
+use crate::tt::glyf::GlyphOutline;
 use crate::tt::hinter::NativeHintMode;
 
 /// Fixed-point scale factors derived from point size and units-per-em.
@@ -167,6 +167,9 @@ pub struct ScaledGlyph {
     /// Hinted horizontal phantom points before bbox-origin translation.
     pub phantom_pp1_x: i32,
     pub phantom_pp2_x: i32,
+    /// Hinted vertical phantom points before bbox-origin translation.
+    pub phantom_pp3_y: i32,
+    pub phantom_pp4_y: i32,
     pub vertical_bearing_x_advance_width: i32,
     pub lsb: i32, // 26.6
     /// Raw scaled CBox before pixel floor/ceil conversion.
@@ -867,23 +870,27 @@ fn scale_glyph_impl_with_scale(
         if data.has_cff_outlines() {
             data.load_glyph_outline(glyph_index)?
         } else {
-            std::rc::Rc::new(load_glyph_with_scaled_component_offsets(
-                &data.glyf_data,
-                &data.loca_data,
-                data.head.index_to_loc_format,
+            data.load_glyph_outline_with_scaled_component_offsets(
                 glyph_index,
-                &data.hmtx,
                 scale.x_scale,
                 scale.y_scale,
-            )?)
+            )?
         }
     } else if !allow_bytecode {
         data.load_glyph_outline_no_hinting(glyph_index)?
     } else {
         data.load_glyph_outline(glyph_index)?
     };
+    // `gvar` represents a composite with one synthetic point per component;
+    // its four phantom points follow that component list, not the flattened
+    // child-outline point buffer.
+    let variation_point_count = if outline_raw.is_composite {
+        outline_raw.components.len()
+    } else {
+        outline_raw.points.len()
+    };
     let hori_advance_fu =
-        data.hmtx_hori_advance_with_gvar_delta(glyph_index, outline_raw.points.len())?;
+        data.hmtx_hori_advance_with_gvar_delta(glyph_index, variation_point_count)?;
     let advance_width = scale.scale_x(hori_advance_fu);
     let mut slot_advance_width = advance_width;
 
@@ -963,6 +970,8 @@ fn scale_glyph_impl_with_scale(
                 slot_advance_width,
                 phantom_pp1_x: 0,
                 phantom_pp2_x: slot_advance_width,
+                phantom_pp3_y: 0,
+                phantom_pp4_y: 0,
                 vertical_bearing_x_advance_width: slot_advance_width,
                 lsb,
                 cbox_x_min: 0,
@@ -1006,7 +1015,11 @@ fn scale_glyph_impl_with_scale(
         hinted_pp1x_fu
     };
     let autohint_composite_pp1x_fu = if use_autohint && outline_raw.is_composite {
-        Some(effective_composite_pp1x_fu(data, glyph_index, &outline_raw)? )
+        Some(effective_composite_pp1x_fu(
+            data,
+            glyph_index,
+            &outline_raw,
+        )?)
     } else {
         None
     };
@@ -1047,7 +1060,8 @@ fn scale_glyph_impl_with_scale(
         data,
         glyph_index,
         outline_raw.bbox_ymax,
-        outline_raw.points.len(),
+        variation_point_count,
+        &outline_raw.components,
     )?;
     // In an active variable instance FreeType keeps a second, 26.6 copy of
     // each phantom point.  It scales that unrounded copy and rounds only at
@@ -1078,12 +1092,8 @@ fn scale_glyph_impl_with_scale(
     // lazily inside the autohint block below to avoid wasted clones on
     // no-hinting and bytecode-only paths.
     let no_hinting_scaled = if !use_autohint && !allow_bytecode && outline_raw.is_composite {
-        Some(crate::tt::glyf::load_glyph_scaled_no_hinting(
-            &data.glyf_data,
-            &data.loca_data,
-            data.head.index_to_loc_format,
+        Some(data.load_glyph_scaled_no_hinting(
             glyph_index,
-            &data.hmtx,
             scale.x_scale,
             y_adj,
         )?)
@@ -1165,10 +1175,7 @@ fn scale_glyph_impl_with_scale(
         // C `TT_Load_Glyph` translates every loaded TrueType outline by
         // `-loader.pp1.x` after scaling, even when the font has no fpgm/cvt
         // tables and no glyph bytecode runs (`src/truetype/ttgload.c:2578-2583`).
-        no_hinting_composite_phantoms.map_or_else(
-            || scale.scale_x(pp1x_fu),
-            |(pp1, _)| pp1,
-        )
+        no_hinting_composite_phantoms.map_or_else(|| scale.scale_x(pp1x_fu), |(pp1, _)| pp1)
     } else {
         0
     };
@@ -1188,6 +1195,7 @@ fn scale_glyph_impl_with_scale(
                 &outline_raw,
                 style.is_italic,
                 &scale,
+                target_mono,
                 legacy_hinter_phantoms,
                 native_hint_mode,
                 bytecode_context,
@@ -1320,7 +1328,9 @@ fn scale_glyph_impl_with_scale(
                 slot_advance_width = advance_width;
             }
         }
-    } else if allow_bytecode {
+    } else if allow_bytecode
+        && (!outline_raw.is_composite || !outline_raw.instructions.is_empty())
+    {
         if let Some(bytecode_context) = bytecode_context {
             // Bytecode VM: run on glyphs with per-glyph instructions.
             // Falls through to unhinted on error (graceful degradation).
@@ -1352,7 +1362,8 @@ fn scale_glyph_impl_with_scale(
                 metrics_legacy_phantoms: legacy_hinter_phantoms,
                 pedantic_hinting: bytecode_context.pedantic_hinting,
                 native_hint_mode,
-                phantom_x_override: composite_use_my_metrics_phantoms,
+                phantom_x_override: composite_use_my_metrics_phantoms
+                    .map(|(pp1, pp2, _, _)| (pp1, pp2)),
                 interpreter_version: data.interpreter_version,
             };
             let hint_result = crate::tt::hinter::hint_glyph(
@@ -1389,22 +1400,6 @@ fn scale_glyph_impl_with_scale(
                     } else {
                         slot_advance_width = outcome.advance_width;
                     }
-                    if outline_raw.is_composite && outline_raw.instructions.is_empty() {
-                        // C keeps the selected component phantoms when
-                        // `USE_MY_METRICS` is set; otherwise it restores the
-                        // parent phantoms before final `-loader.pp1.x`
-                        // translation (`ttgload.c:1838-1869, 2578-2583`).
-                        let final_pp1_x = composite_use_my_metrics_phantoms
-                            .map_or_else(|| scale.scale_x(top_level_pp1x_fu), |(pp1, _)| pp1);
-                        let outline_delta = outcome.pp1_x - final_pp1_x;
-                        if outline_delta != 0 {
-                            for point in &mut scaled {
-                                point.x += outline_delta;
-                            }
-                        }
-                        phantom_pp1_x = final_pp1_x;
-                        phantom_pp2_x = final_pp1_x.wrapping_add(outcome.advance_width);
-                    }
                     final_hint_context = Some(outcome.context);
                 }
                 // `hint_glyph` owns the pinned `TT_Hint_Glyph` error policy:
@@ -1412,6 +1407,41 @@ fn scale_glyph_impl_with_scale(
                 // returns `Err` only for FT_LOAD_PEDANTIC (`ttgload.c:828-837`).
                 Err(e) => return Err(e),
             }
+        }
+    } else if allow_bytecode
+        && outline_raw.is_composite
+        && outline_raw.instructions.is_empty()
+    {
+        // C does not call `TT_Process_Composite_Glyph` when the parent has no
+        // instruction block (`ttgload.c:1906-1913`). Its parent phantom points
+        // therefore remain at the scaled, pre-grid values; a `USE_MY_METRICS`
+        // child replaces all four of them while sibling loads restore that
+        // selected state.
+        if let Some((pp1, pp2, pp3, pp4)) = composite_use_my_metrics_phantoms {
+            phantom_pp1_x = pp1;
+            phantom_pp2_x = pp2;
+            phantom_pp3_y = pp3;
+            phantom_pp4_y = pp4;
+            slot_advance_width = pp2.wrapping_sub(pp1);
+        } else {
+            phantom_pp1_x = scale.scale_x(top_level_pp1x_fu);
+            phantom_pp2_x = scale.scale_x(top_level_pp1x_fu + hori_advance_fu);
+            slot_advance_width = phantom_pp2_x.wrapping_sub(phantom_pp1_x);
+        }
+        // `TT_Load_Glyph` translates the recursively assembled outline by the
+        // effective loader pp1 after component processing, even when the
+        // parent has no instruction block (`ttgload.c:2578-2583`).
+        for point in &mut scaled {
+            point.x -= phantom_pp1_x;
+        }
+        if let Some(context) = bytecode_context {
+            // The final driver load publishes the prepared scan-control state
+            // on the outline independently of whether parent instructions
+            // ran (`ttgload.c:2588-2619`).
+            tt_outline_flags = crate::tt::hinter::outline_flags_from_scan_control(
+                context.gs.scan_control,
+                context.gs.scan_type,
+            );
         }
     }
 
@@ -1493,6 +1523,8 @@ fn scale_glyph_impl_with_scale(
             x_min,
             y_max,
             style.vertical_layout,
+            vertical_phantoms.pp3_y,
+            vertical_phantoms.pp4_y,
         ))
     } else {
         None
@@ -1551,6 +1583,8 @@ fn scale_glyph_impl_with_scale(
             slot_advance_width,
             phantom_pp1_x,
             phantom_pp2_x,
+            phantom_pp3_y,
+            phantom_pp4_y,
             vertical_bearing_x_advance_width,
             lsb,
             cbox_x_min: x_min,
@@ -1603,6 +1637,8 @@ fn autohint_vertical_metrics(
     hinted_x_min: i32,
     hinted_y_max: i32,
     vertical_layout: bool,
+    vertical_pp3_y: i32,
+    vertical_pp4_y: i32,
 ) -> AutohintVerticalMetrics {
     let mut raw_x_min = raw_outline.points[0].x;
     let mut raw_y_min = raw_outline.points[0].y;
@@ -1613,8 +1649,19 @@ fn autohint_vertical_metrics(
         raw_y_max = raw_y_max.max(point.y);
     }
 
-    let (top_fu, advance_fu) =
-        vertical_top_and_advance_font_units(data, glyph_index, raw_y_max - raw_y_min);
+    // The initial TrueType driver load seeds vertical metrics from the active
+    // phantom points.  A composite with USE_MY_METRICS inherits pp3/pp4 from
+    // its selected child, so reading the parent's static vmtx top bearing
+    // loses the child-vs-parent bbox delta before afloader.c computes its
+    // vertical hint vector.
+    let (top_fu, advance_fu) = if data.vmtx.is_some() {
+        (
+            vertical_pp3_y.wrapping_sub(raw_y_max),
+            vertical_pp3_y.wrapping_sub(vertical_pp4_y),
+        )
+    } else {
+        vertical_top_and_advance_font_units(data, glyph_index, raw_y_max - raw_y_min)
+    };
 
     let vvector_x = ft_mul_fix(
         -(hori_advance_fu / 2),
@@ -1686,17 +1733,15 @@ fn empty_autohint_vertical_metrics(
     let (top_fu, advance_fu) = vertical_top_and_advance_font_units(data, glyph_index, 0);
     let x_scale = ScaleMetrics::from_font_data(data).x_scale;
 
-    let (bearing_x, bearing_y) = if data.has_cff_outlines()
-        && data.vmtx.is_none()
-        && !vertical_layout
-    {
-        (0, 0)
-    } else {
-        (
-            ft_pix_floor(ft_mul_fix(-(hori_advance_fu / 2), x_scale)),
-            ft_pix_floor(ft_mul_fix(top_fu, y_scale)),
-        )
-    };
+    let (bearing_x, bearing_y) =
+        if data.has_cff_outlines() && data.vmtx.is_none() && !vertical_layout {
+            (0, 0)
+        } else {
+            (
+                ft_pix_floor(ft_mul_fix(-(hori_advance_fu / 2), x_scale)),
+                ft_pix_floor(ft_mul_fix(top_fu, y_scale)),
+            )
+        };
 
     AutohintVerticalMetrics {
         bearing_x,
@@ -1748,7 +1793,32 @@ fn vertical_phantom_font_units(
     glyph_index: u16,
     y_max: i32,
     outline_point_count: usize,
+    components: &[crate::tt::glyf::CompositeComponent],
 ) -> Result<VerticalPhantomFontUnits, crate::error::FontError> {
+    // A composite component marked USE_MY_METRICS replaces the parent's
+    // phantom state after the component is loaded.  The selected child's
+    // vertical phantom points include that child's own gvar deltas, so use
+    // the last marked component just as TT_Load_Composite_Glyph does.
+    if let Some(component) = components
+        .iter()
+        .rev()
+        .find(|component| component.use_my_metrics)
+        .cloned()
+    {
+        let child = data.load_glyph_outline_no_hinting(component.glyph_index)?;
+        let child_point_count = if child.is_composite {
+            child.components.len()
+        } else {
+            child.points.len()
+        };
+        return vertical_phantom_font_units(
+            data,
+            component.glyph_index,
+            child.bbox_ymax,
+            child_point_count,
+            &child.components,
+        );
+    }
     let (pp3_y, pp4_y) = if let Some(vmtx) = &data.vmtx {
         let vertical = vmtx.get(glyph_index);
         let pp3_y = y_max + vertical.tsb as i32;
@@ -1836,6 +1906,7 @@ fn scale_composite_components(
     outline_raw: &GlyphOutline,
     is_italic: bool,
     scale: &ScaleMetrics,
+    target_mono: bool,
     legacy_hinter_phantoms: bool,
     native_hint_mode: NativeHintMode,
     bytecode_context: Option<&crate::tt::hinter::exec::ExecContext>,
@@ -1860,7 +1931,7 @@ fn scale_composite_components(
                 vertical_layout: false,
             },
             true,
-            false,
+            target_mono,
             native_hint_mode,
             false,
             false,
@@ -1872,7 +1943,12 @@ fn scale_composite_components(
         if comp.use_my_metrics {
             use_my_metrics_advance = Some(sub.slot_advance_width);
             use_my_metrics_vertical_advance = Some(sub.vertical_bearing_x_advance_width);
-            use_my_metrics_phantoms = Some((sub.phantom_pp1_x, sub.phantom_pp2_x));
+            use_my_metrics_phantoms = Some((
+                sub.phantom_pp1_x,
+                sub.phantom_pp2_x,
+                sub.phantom_pp3_y,
+                sub.phantom_pp4_y,
+            ));
         }
         let off_x = ft_pix_floor(sub.outline_cbox_x_min);
         let off_y = ft_pix_floor(sub.outline_cbox_y_min);
@@ -1950,7 +2026,7 @@ struct CompositeScaleResult {
     tags: Vec<u8>,
     use_my_metrics_advance: Option<i32>,
     use_my_metrics_vertical_advance: Option<i32>,
-    use_my_metrics_phantoms: Option<(i32, i32)>,
+    use_my_metrics_phantoms: Option<(i32, i32, i32, i32)>,
 }
 
 #[derive(Debug, Clone, Copy)]

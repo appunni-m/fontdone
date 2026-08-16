@@ -671,9 +671,8 @@ fn parse_pcf_properties(data: &[u8], table: PcfTable) -> Result<Vec<BdfPropertyE
         let raw_value =
             pcf_i32(bytes, base + 5, msb).ok_or_else(|| pcf_stream_operation("property value"))?;
         let value = if is_string {
-            let value_offset =
-                usize::try_from(raw_value)
-                    .map_err(|_| pcf_stream_operation("property atom offset"))?;
+            let value_offset = usize::try_from(raw_value)
+                .map_err(|_| pcf_stream_operation("property atom offset"))?;
             BdfPropertyValue::Atom(
                 pcf_c_string(strings, value_offset)
                     .ok_or_else(|| pcf_stream_operation("property atom string"))?
@@ -1276,9 +1275,9 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
         )
     } else {
         (
-                pcf_u32(metrics, 4, metrics_msb)
-                    .and_then(|value| usize::try_from(value).ok())
-                    .ok_or_else(|| pcf_unknown_file_format("metric count"))?,
+            pcf_u32(metrics, 4, metrics_msb)
+                .and_then(|value| usize::try_from(value).ok())
+                .ok_or_else(|| pcf_unknown_file_format("metric count"))?,
             8,
         )
     };
@@ -2079,10 +2078,7 @@ fn parse_type1_encoding(cleartext: &[u8]) -> Result<Option<Type1EncodingInfo>, F
     }))
 }
 
-fn parse_type1_charstrings(
-    data: &[u8],
-    len_iv: i32,
-) -> Result<Vec<Type1CharString>, FontError> {
+fn parse_type1_charstrings(data: &[u8], len_iv: i32) -> Result<Vec<Type1CharString>, FontError> {
     let Some(private) = type1_eexec_private_bytes(data) else {
         return Err(FontError::InvalidFont(
             "Type 1 eexec private dictionary is missing".into(),
@@ -2194,11 +2190,7 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
             1 | 3 | 10 | 11 | 15 | 19 | 20 => stack.clear(),
             4 => {
                 let dy = type1_pop_one(&mut stack)?;
-                type1_finish_contour(
-                    &mut outline,
-                    &mut open_contour,
-                    &mut pending_move,
-                )?;
+                type1_finish_contour(&mut outline, &mut open_contour, &mut pending_move)?;
                 y = y.saturating_add(dy);
                 pending_move = Some((x, y));
                 open_contour = true;
@@ -2261,11 +2253,7 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
                 stack.clear();
             }
             9 => {
-                type1_finish_contour(
-                    &mut outline,
-                    &mut open_contour,
-                    &mut pending_move,
-                )?;
+                type1_finish_contour(&mut outline, &mut open_contour, &mut pending_move)?;
                 stack.clear();
             }
             12 => {
@@ -2367,11 +2355,7 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
                 stack.clear();
             }
             14 => {
-                type1_finish_contour(
-                    &mut outline,
-                    &mut open_contour,
-                    &mut pending_move,
-                )?;
+                type1_finish_contour(&mut outline, &mut open_contour, &mut pending_move)?;
                 return Ok(Type1GlyphProgram {
                     advance_width,
                     outline,
@@ -2385,11 +2369,7 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
                 }
                 let dx = stack[stack.len() - 2];
                 let dy = stack[stack.len() - 1];
-                type1_finish_contour(
-                    &mut outline,
-                    &mut open_contour,
-                    &mut pending_move,
-                )?;
+                type1_finish_contour(&mut outline, &mut open_contour, &mut pending_move)?;
                 x = x.saturating_add(dx);
                 y = y.saturating_add(dy);
                 pending_move = Some((x, y));
@@ -2398,11 +2378,7 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
             }
             22 => {
                 let dx = type1_pop_one(&mut stack)?;
-                type1_finish_contour(
-                    &mut outline,
-                    &mut open_contour,
-                    &mut pending_move,
-                )?;
+                type1_finish_contour(&mut outline, &mut open_contour, &mut pending_move)?;
                 x = x.saturating_add(dx);
                 pending_move = Some((x, y));
                 open_contour = true;
@@ -2488,11 +2464,7 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
             }
         }
     }
-    type1_finish_contour(
-        &mut outline,
-        &mut open_contour,
-        &mut pending_move,
-    )?;
+    type1_finish_contour(&mut outline, &mut open_contour, &mut pending_move)?;
     Ok(Type1GlyphProgram {
         advance_width,
         outline,
@@ -2545,10 +2517,7 @@ fn type1_finish_contour(
     Ok(())
 }
 
-fn type1_start_contour(
-    outline: &mut Type1GlyphOutline,
-    pending_move: &mut Option<(i32, i32)>,
-) {
+fn type1_start_contour(outline: &mut Type1GlyphOutline, pending_move: &mut Option<(i32, i32)>) {
     if let Some((x, y)) = pending_move.take() {
         type1_push_point(outline, x, y);
     }
@@ -2628,10 +2597,10 @@ fn type1_next_byte(bytes: &[u8], offset: &mut usize) -> Result<u8, FontError> {
 fn type1_scale_font_unit(value: i32, scale: i32, mm_variation_active: bool) -> i32 {
     if mm_variation_active {
         // The maintained Adobe MM path interpolates its active design before
-        // the Type 1 slot scaler.  Its resulting 16.16 coordinate is
-        // truncated by the pinned C pipeline before rasterization; retaining
-        // that order preserves the existing MM glyph contract.
-        ((i64::from(value) * i64::from(scale)) >> 16) as i32
+        // the Type 1 slot scaler.  `T1_Load_Glyph` still uses the rounded
+        // `FT_MulFix` operation for the resulting coordinate when hinting is
+        // disabled.
+        ft_mul_fix(value, scale)
     } else {
         // Ordinary Type 1 coordinates use FreeType's rounded `FT_MulFix` in
         // both the Adobe-hinted and unhinted slot paths.
@@ -2969,14 +2938,10 @@ fn type1_real_to_fixed(value: f64) -> Option<i32> {
 }
 
 fn type1_weight_to_fixed(value: f64) -> Option<i32> {
-    if !value.is_finite() {
-        return None;
-    }
-    let fixed = (value * 65_536.0).round();
-    if (fixed - value * 65_536.0).abs() > f64::EPSILON {
-        return None;
-    }
-    i32::try_from(fixed as i64).ok()
+    // C parity: freetype/src/psaux/psconv.c:PS_Conv_ToFixed rounds every
+    // parsed decimal to 16.16; valid Type 1 MM maps are not restricted to
+    // values that happen to be exactly representable in fixed point.
+    type1_real_to_fixed(value)
 }
 
 fn type1_fixed_value(text: &str, key: &str) -> Option<i32> {
@@ -6087,6 +6052,16 @@ impl Font {
         ft_mul_fix(advance * 1024, self.size_metrics.x_scale)
     }
 
+    pub(crate) fn glyph_index_hori_advance_font_units(&self, glyph_index: u16) -> i32 {
+        self.data.load_glyph_outline(glyph_index).map_or_else(
+            |_| self.data.hmtx.get(glyph_index).advance_width as i32,
+            |outline| {
+                self.data
+                    .hmtx_hori_advance_with_gvar_delta_or_hmtx(glyph_index, outline.points.len())
+            },
+        )
+    }
+
     /// Return `FT_GlyphSlotRec::metrics` for a Unicode codepoint loaded with
     /// FreeType's default TrueType load path.
     ///
@@ -6320,11 +6295,7 @@ impl Font {
         native_hint_mode: NativeHintMode,
     ) -> Result<GlyphSlotLoad, FontError> {
         if self.is_type1_face() {
-            return self.glyph_slot_load_type1_autohinted(
-                glyph,
-                vertical_layout,
-                native_hint_mode,
-            );
+            return self.glyph_slot_load_type1_autohinted(glyph, vertical_layout, native_hint_mode);
         }
         if self.is_empty_cid_type1_face() {
             // `t1cid` has no CharString stream in the maintained compact
@@ -6640,7 +6611,11 @@ impl Font {
             // outline. Keep this on the same compact CFF path as a normal
             // load rather than using the TrueType no-hinting scaler.
             let scaled = scaler::scale_glyph_for_metrics(&self.data, glyph, self.is_italic)?;
-            return Ok(self.slot_load_from_scaled(glyph, scaled, grid_fit_for_layout(vertical_layout)));
+            return Ok(self.slot_load_from_scaled(
+                glyph,
+                scaled,
+                grid_fit_for_layout(vertical_layout),
+            ));
         }
         let scaled = self.scale_glyph_no_autohint_for_metrics_with_mode_and_pedantic(
             glyph,
@@ -7575,18 +7550,18 @@ impl Font {
         let advance_width = hint_result
             .advance_width
             .unwrap_or_else(|| ft_pix_round(ft_mul_fix(program.advance_width, scale.x_scale)));
-        let vertical_bearing_x = ft_pix_floor(
-            ft_pix_floor(x_min) - ft_mul_fix(raw_outline.xmin, scale.x_scale),
-        );
-        let vertical_bearing_y = ft_pix_floor(
-            ft_pix_ceil(y_max) - ft_mul_fix(raw_outline.ymax, y_scale),
-        );
+        let vertical_bearing_x =
+            ft_pix_floor(ft_pix_floor(x_min) - ft_mul_fix(raw_outline.xmin, scale.x_scale));
+        let vertical_bearing_y =
+            ft_pix_floor(ft_pix_ceil(y_max) - ft_mul_fix(raw_outline.ymax, y_scale));
         let scaled = scaler::ScaledGlyph {
             outline: render_outline,
             advance_width,
             slot_advance_width: advance_width,
             phantom_pp1_x: 0,
             phantom_pp2_x: advance_width,
+            phantom_pp3_y: 0,
+            phantom_pp4_y: 0,
             vertical_bearing_x_advance_width: advance_width,
             lsb: ft_mul_fix(raw_outline.xmin, scale.x_scale),
             cbox_x_min: x_min,

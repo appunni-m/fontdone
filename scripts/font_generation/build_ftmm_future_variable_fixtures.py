@@ -3,10 +3,12 @@
 
 from __future__ import annotations
 
+from array import array
 from pathlib import Path
 
-from fontTools.ttLib import TTFont
+from fontTools.ttLib import TTFont, newTable
 from fontTools.ttLib.tables.DefaultTable import DefaultTable
+from fontTools.ttLib.tables.ttProgram import Program
 from fontTools.varLib import instancer
 
 
@@ -45,6 +47,41 @@ def write_compact_alias(name: str) -> None:
 def write_mvar_alias(name: str) -> None:
     font = TTFont(MVAR_FONT, recalcTimestamp=False)
     save_font(OUT_DIR / name, font)
+
+
+def write_native_variable_alias(name: str, *, remove_gvar: bool) -> None:
+    """Build a valid active-variable face that selects the native TT route.
+
+    The source MVAR/HVAR/VVAR face already has valid fvar/gvar composite data.
+    Supplying harmless, nonempty setup tables makes ``FT_LOAD_NO_AUTOHINT``
+    take the bytecode path while keeping glyph variation behavior observable.
+    The no-gvar twin isolates the corresponding fvar-only composite branch.
+    """
+
+    font = TTFont(MVAR_FONT, recalcTimestamp=False)
+
+    fpgm = newTable("fpgm")
+    fpgm.program = Program()
+    fpgm.program.fromBytecode(bytes([0x00]))
+    font["fpgm"] = fpgm
+
+    cvt = newTable("cvt ")
+    cvt.values = array("h", [0])
+    font["cvt "] = cvt
+
+    prep = newTable("prep")
+    prep.program = Program()
+    prep.program.fromBytecode(bytes([0x00]))
+    font["prep"] = prep
+
+    if remove_gvar:
+        del font["gvar"]
+    save_font(OUT_DIR / name, font)
+
+
+def write_native_variable_aliases() -> None:
+    write_native_variable_alias("variable-native-gvar-composites.ttf", remove_gvar=False)
+    write_native_variable_alias("variable-native-no-gvar-composites.ttf", remove_gvar=True)
 
 
 def raw_table(tag: str, data: bytes) -> DefaultTable:
@@ -1263,6 +1300,7 @@ def main() -> None:
     write_compact_alias("named-instance-missing-psid.ttf")
     write_compact_alias("gvar-hvar-wght.ttf")
     write_mvar_alias("mvar-hvar-vvar.ttf")
+    write_native_variable_aliases()
     write_avar_fixtures()
     write_gvar_fixtures()
     write_hvar_fixtures()

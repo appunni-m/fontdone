@@ -3211,7 +3211,20 @@ fn ftc_sbit_cache_fill(
     let slot = if slot.format == FT_GLYPH_FORMAT_BITMAP {
         slot
     } else {
-        FT_Render_Glyph(slot, FT_RENDER_MODE_NORMAL)?
+        match FT_Render_Glyph(slot, FT_RENDER_MODE_NORMAL) {
+            Ok(slot) => slot,
+            Err(error) if error == FT_Err_Out_Of_Memory => return Err(error),
+            Err(_error) => {
+                // `ftcsbits.c:133-137,193-204` converts a successful glyph
+                // load that cannot render into the same unavailable-SBit
+                // sentinel used for glyph-load failures. Only OOM escapes
+                // the cache lookup as an error.
+                cache
+                    .entries
+                    .insert(key, Box::new(ftc_missing_sbit_entry()));
+                return Ok(());
+            }
+        }
     };
     cache
         .entries
@@ -6435,12 +6448,7 @@ pub fn FT_Stroker_CubicTo(
             && *control2 == (FT_Vector { x: 480, y: 640 })
             && *to == (FT_Vector { x: 640, y: 0 })
         {
-            entry.state.pending_cubic = Some([
-                entry.state.center,
-                *control1,
-                *control2,
-                *to,
-            ]);
+            entry.state.pending_cubic = Some([entry.state.center, *control1, *control2, *to]);
             entry.state.set_cubic_success_outline();
             entry.state.first_point = false;
             entry.state.center = *to;
@@ -8054,9 +8062,8 @@ pub fn FT_Stream_OpenGzip(
             ]))
             .unwrap_or(0)
         });
-    let inline_small_stream = trailer_size != 0
-        && trailer_size < 40 * 1024
-        && decoded.len() == trailer_size;
+    let inline_small_stream =
+        trailer_size != 0 && trailer_size < 40 * 1024 && decoded.len() == trailer_size;
 
     let stream_key = stream as *const FT_StreamRec as usize;
     gzip_stream_registry()
@@ -15202,6 +15209,23 @@ pub fn FT_Get_Advance(
         return Err(FT_Err_Unimplemented_Feature);
     }
     let flags = load_flags_to_core(load_flags)?;
+    if flags.contains(api::LoadFlags::NO_SCALE)
+        && !flags.contains(api::LoadFlags::VERTICAL_LAYOUT)
+        && face.inner.borrow().font().is_sfnt()
+    {
+        // C `tt_get_advances`/`tt_face_get_metrics` returns the raw
+        // hmtx/HVAR font-unit advance for the NO_SCALE fast path
+        // (`truetype/ttdriver.c:274-289`, `sfnt/ttmtx.c:228-322`).  Loading
+        // the glyph instead derives a phantom advance and can differ for
+        // variable TrueType composites even though both values are valid
+        // glyph-slot metrics.
+        return Ok(FT_Fixed::from(
+            face.inner
+                .borrow()
+                .font()
+                .glyph_index_hori_advance_font_units(glyph_index),
+        ));
+    }
     if use_fast_horizontal_advance(flags) {
         // C `tt_get_advances` returns raw hmtx advances; `ft_face_scale_advances_`
         // scales them directly to 16.16 with `FT_MulFix(1024 * advance, x_scale)`.

@@ -8,7 +8,8 @@
     "fast_only_range_success_or_error",
     "zero_count_behavior",
     "error_null_face_or_output",
-    "error_invalid_range_or_flags"
+    "error_invalid_range_or_flags",
+    "batch86_variable_bulk_advances"
   ],
   "cases": [
     {
@@ -672,6 +673,72 @@
         "source_refs": [
           "freetype/src/base/ftadvanc.c"
         ]
+      }
+    },
+    {
+      "case_id": "ftadvanc.FT_Get_Advances.batch86_variable_bulk_advances",
+      "subject": "ftadvanc.FT_Get_Advances",
+      "case": "batch86_variable_bulk_advances",
+      "operation": "ftadvanc.get_advances",
+      "schema": "advance_range",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"batch86-variable-bulk-advances-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":17,"start":0,"count":4,"load_flags":["FT_LOAD_DEFAULT"]},"coverage":["batch86:variable-bulk:start-0-count-4:size-17:default"]},
+          {"id":"batch86-variable-bulk-advances-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"start":0,"count":4,"load_flags":["FT_LOAD_NO_SCALE"]},"coverage":["batch86:variable-bulk:start-0-count-4:no-scale"]},
+          {"id":"batch86-variable-bulk-advances-003","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":17,"start":0,"count":4,"load_flags":["FT_LOAD_VERTICAL_LAYOUT"]},"coverage":["batch86:variable-bulk:start-0-count-4:size-17:vertical"]},
+          {"id":"batch86-variable-bulk-advances-004","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":43,"start":0,"count":4,"load_flags":["FT_LOAD_DEFAULT"]},"coverage":["batch86:variable-bulk:start-0-count-4:size-43:default"]},
+          {"id":"batch86-variable-bulk-advances-005","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"start":0,"count":4,"load_flags":["FT_LOAD_NO_SCALE"]},"coverage":["batch86:variable-bulk:start-0-count-4:no-scale:repeat"]},
+          {"id":"batch86-variable-bulk-advances-006","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":43,"start":0,"count":4,"load_flags":["FT_LOAD_VERTICAL_LAYOUT"]},"coverage":["batch86:variable-bulk:start-0-count-4:size-43:vertical"]},
+          {"id":"batch86-variable-bulk-advances-007","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":17,"start":4,"count":4,"load_flags":["FT_LOAD_DEFAULT"]},"coverage":["batch86:variable-bulk:start-4-count-4:size-17:default"]},
+          {"id":"batch86-variable-bulk-advances-008","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"start":4,"count":4,"load_flags":["FT_LOAD_NO_SCALE"]},"coverage":["batch86:variable-bulk:start-4-count-4:no-scale"]},
+          {"id":"batch86-variable-bulk-advances-009","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":17,"start":4,"count":4,"load_flags":["FT_LOAD_VERTICAL_LAYOUT"]},"coverage":["batch86:variable-bulk:start-4-count-4:size-17:vertical"]},
+          {"id":"batch86-variable-bulk-advances-010","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":43,"start":4,"count":4,"load_flags":["FT_LOAD_DEFAULT"]},"coverage":["batch86:variable-bulk:start-4-count-4:size-43:default"]},
+          {"id":"batch86-variable-bulk-advances-011","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"start":4,"count":4,"load_flags":["FT_LOAD_NO_SCALE"]},"coverage":["batch86:variable-bulk:start-4-count-4:no-scale:repeat"]},
+          {"id":"batch86-variable-bulk-advances-012","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":43,"start":4,"count":4,"load_flags":["FT_LOAD_VERTICAL_LAYOUT"]},"coverage":["batch86:variable-bulk:start-4-count-4:size-43:vertical"]},
+          {"id":"batch86-variable-bulk-advances-013","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":17,"start":8,"count":4,"load_flags":["FT_LOAD_DEFAULT"]},"coverage":["batch86:variable-bulk:start-8-count-4:size-17:default"]},
+          {"id":"batch86-variable-bulk-advances-014","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"start":8,"count":4,"load_flags":["FT_LOAD_NO_SCALE"]},"coverage":["batch86:variable-bulk:start-8-count-4:no-scale"]},
+          {"id":"batch86-variable-bulk-advances-015","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":17,"start":8,"count":4,"load_flags":["FT_LOAD_VERTICAL_LAYOUT"]},"coverage":["batch86:variable-bulk:start-8-count-4:size-17:vertical"]},
+          {"id":"batch86-variable-bulk-advances-016","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":43,"start":8,"count":4,"load_flags":["FT_LOAD_DEFAULT"]},"coverage":["batch86:variable-bulk:start-8-count-4:size-43:default"]},
+          {"id":"batch86-variable-bulk-advances-017","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"start":8,"count":4,"load_flags":["FT_LOAD_NO_SCALE"]},"coverage":["batch86:variable-bulk:start-8-count-4:no-scale:repeat"]},
+          {"id":"batch86-variable-bulk-advances-018","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":43,"start":8,"count":4,"load_flags":["FT_LOAD_VERTICAL_LAYOUT"]},"coverage":["batch86:variable-bulk:start-8-count-4:size-43:vertical"]},
+          {"id":"batch86-variable-bulk-advances-019","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":17,"start":12,"count":4,"load_flags":["FT_LOAD_DEFAULT"]},"coverage":["batch86:variable-bulk:start-12-count-4:size-17:default"]},
+          {"id":"batch86-variable-bulk-advances-020","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"start":12,"count":4,"load_flags":["FT_LOAD_NO_SCALE"]},"coverage":["batch86:variable-bulk:start-12-count-4:no-scale"]},
+          {"id":"batch86-variable-bulk-advances-021","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":17,"start":12,"count":4,"load_flags":["FT_LOAD_VERTICAL_LAYOUT"]},"coverage":["batch86:variable-bulk:start-12-count-4:size-17:vertical"]},
+          {"id":"batch86-variable-bulk-advances-022","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":43,"start":12,"count":4,"load_flags":["FT_LOAD_DEFAULT"]},"coverage":["batch86:variable-bulk:start-12-count-4:size-43:default"]},
+          {"id":"batch86-variable-bulk-advances-023","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"start":12,"count":4,"load_flags":["FT_LOAD_NO_SCALE"]},"coverage":["batch86:variable-bulk:start-12-count-4:no-scale:repeat"]},
+          {"id":"batch86-variable-bulk-advances-024","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":43,"start":12,"count":4,"load_flags":["FT_LOAD_VERTICAL_LAYOUT"]},"coverage":["batch86:variable-bulk:start-12-count-4:size-43:vertical"]},
+          {"id":"batch86-variable-bulk-advances-025","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":17,"start":16,"count":4,"load_flags":["FT_LOAD_DEFAULT"]},"coverage":["batch86:variable-bulk:start-16-count-4:size-17:default"]},
+          {"id":"batch86-variable-bulk-advances-026","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"start":16,"count":4,"load_flags":["FT_LOAD_NO_SCALE"]},"coverage":["batch86:variable-bulk:start-16-count-4:no-scale"]},
+          {"id":"batch86-variable-bulk-advances-027","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":17,"start":16,"count":4,"load_flags":["FT_LOAD_VERTICAL_LAYOUT"]},"coverage":["batch86:variable-bulk:start-16-count-4:size-17:vertical"]},
+          {"id":"batch86-variable-bulk-advances-028","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":43,"start":16,"count":4,"load_flags":["FT_LOAD_DEFAULT"]},"coverage":["batch86:variable-bulk:start-16-count-4:size-43:default"]},
+          {"id":"batch86-variable-bulk-advances-029","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"start":16,"count":4,"load_flags":["FT_LOAD_NO_SCALE"]},"coverage":["batch86:variable-bulk:start-16-count-4:no-scale:repeat"]},
+          {"id":"batch86-variable-bulk-advances-030","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/mvar-hvar-vvar.ttf","asset_kind":"font"}},"params":{"face_index":65536,"pixel_size":43,"start":16,"count":4,"load_flags":["FT_LOAD_VERTICAL_LAYOUT"]},"coverage":["batch86:variable-bulk:start-16-count-4:size-43:vertical"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftadvanc",
+        "area:bulk-advances",
+        "coverage:real-parity",
+        "font_variability:input/fonts"
+      ],
+      "metadata": {
+        "coverage_intent": "Thirty valid FT_Get_Advances ranges over the first named instance, five four-glyph windows, two scaled sizes, and horizontal, unscaled, and vertical modes."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error",
+          "advances": "array FT_Fixed 16.16"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "rows[*].status",
+            "rows[*].advances"
+          ]
+        }
       }
     }
   ]

@@ -62,11 +62,30 @@ impl GvarTable {
             .iter()
             .map(|point| (point.x.wrapping_shl(16), point.y.wrapping_shl(16)))
             .collect::<Vec<_>>();
+        self.glyph_deltas_fixed_for_points(
+            glyph_index,
+            &original_points,
+            &outline.end_pts_of_contours,
+            normalized_coords,
+        )
+    }
+
+    /// Return deltas for an arbitrary TrueType point list plus four phantom
+    /// points.  Composite glyph records use one synthetic point per
+    /// component rather than the flattened child-outline points, so callers
+    /// must provide that component list and its one-point contours.
+    pub(crate) fn glyph_deltas_fixed_for_points(
+        &self,
+        glyph_index: u16,
+        original_points: &[(i32, i32)],
+        contour_ends: &[u16],
+        normalized_coords: &[i16],
+    ) -> Result<Option<Vec<(i32, i32)>>, FontError> {
         self.glyph_deltas_fixed_inner(
             glyph_index,
             original_points.len() + 4,
             normalized_coords,
-            Some((&original_points, &outline.end_pts_of_contours)),
+            Some((original_points, contour_ends)),
         )
     }
 

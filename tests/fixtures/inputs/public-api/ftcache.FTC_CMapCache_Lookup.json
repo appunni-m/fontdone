@@ -148,6 +148,176 @@
             "coverage": [
               "ftcache.cmap_cache_lookup:explicit-cp57344"
             ]
+          },
+          {
+            "id": "batch1-cmap-restore-001",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "cmap_format_language_matrix",
+                "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"
+              }
+            },
+            "params": {
+              "scenario": "success_lookup_hit_and_repeat_hit",
+              "cmap_indexes": [1],
+              "repeat_lookup": true,
+              "char_code": 32
+            },
+            "coverage": ["batch1:cmap:restore:001"]
+          },
+          {
+            "id": "batch1-cmap-restore-002",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "cmap_format_language_matrix",
+                "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"
+              }
+            },
+            "params": {
+              "scenario": "success_lookup_hit_and_repeat_hit",
+              "cmap_indexes": [1],
+              "repeat_lookup": true,
+              "char_code": 33
+            },
+            "coverage": ["batch1:cmap:restore:002"]
+          },
+          {
+            "id": "batch1-cmap-restore-003",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "cmap_format_language_matrix",
+                "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"
+              }
+            },
+            "params": {
+              "scenario": "success_lookup_hit_and_repeat_hit",
+              "cmap_indexes": [1],
+              "repeat_lookup": true,
+              "char_code": 34
+            },
+            "coverage": ["batch1:cmap:restore:003"]
+          },
+          {
+            "id": "batch1-cmap-restore-004",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "cmap_format_language_matrix",
+                "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"
+              }
+            },
+            "params": {
+              "scenario": "success_lookup_hit_and_repeat_hit",
+              "cmap_indexes": [2],
+              "repeat_lookup": true,
+              "char_code": 128512
+            },
+            "coverage": ["batch1:cmap:restore:004"]
+          },
+          {
+            "id": "batch1-cmap-restore-005",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "cmap_format_language_matrix",
+                "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"
+              }
+            },
+            "params": {
+              "scenario": "success_lookup_hit_and_repeat_hit",
+              "cmap_indexes": [2],
+              "repeat_lookup": true,
+              "char_code": 131072
+            },
+            "coverage": ["batch1:cmap:restore:005"]
+          },
+          {
+            "id": "batch1-cmap-restore-006",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "cmap_format_language_matrix",
+                "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"
+              }
+            },
+            "params": {
+              "scenario": "success_lookup_hit_and_repeat_hit",
+              "cmap_indexes": [2],
+              "repeat_lookup": true,
+              "char_code": 1114111
+            },
+            "coverage": ["batch1:cmap:restore:006"]
+          },
+          {
+            "id": "batch1-cmap-restore-007",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "cmap_format_language_matrix",
+                "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"
+              }
+            },
+            "params": {
+              "scenario": "success_lookup_hit_and_repeat_hit",
+              "cmap_indexes": [3],
+              "repeat_lookup": true,
+              "char_code": 65
+            },
+            "coverage": ["batch1:cmap:restore:007"]
+          },
+          {
+            "id": "batch1-cmap-restore-008",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "cmap_format_language_matrix",
+                "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"
+              }
+            },
+            "params": {
+              "scenario": "success_lookup_hit_and_repeat_hit",
+              "cmap_indexes": [3],
+              "repeat_lookup": true,
+              "char_code": 66
+            },
+            "coverage": ["batch1:cmap:restore:008"]
+          },
+          {
+            "id": "batch1-cmap-restore-009",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "cmap_format_language_matrix",
+                "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"
+              }
+            },
+            "params": {
+              "scenario": "success_lookup_hit_and_repeat_hit",
+              "cmap_indexes": [1, 3],
+              "repeat_lookup": true,
+              "char_code": 32
+            },
+            "coverage": ["batch1:cmap:restore:009"]
+          },
+          {
+            "id": "batch1-cmap-restore-010",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "cmap_format_language_matrix",
+                "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"
+              }
+            },
+            "params": {
+              "scenario": "success_lookup_hit_and_repeat_hit",
+              "cmap_indexes": [2, 1],
+              "repeat_lookup": true,
+              "char_code": 131072
+            },
+            "coverage": ["batch1:cmap:restore:010"]
           }
         ]
       },

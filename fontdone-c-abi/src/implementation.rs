@@ -6,6 +6,24 @@
 )]
 #![allow(clippy::cast_possible_truncation)]
 #![allow(clippy::not_unsafe_ptr_arg_deref)]
+// The ABI coverage probes deliberately enumerate bounded public-input
+// permutations and retain values long enough to exercise lifecycle/error
+// paths. Keep these allowances restricted to the optional test-support build;
+// the production ABI and runtime crates remain fully linted.
+#![cfg_attr(
+    feature = "abi-test-support",
+    allow(
+        clippy::arithmetic_side_effects,
+        clippy::drop_non_drop,
+        clippy::expect_used,
+        clippy::let_unit_value,
+        clippy::map_unwrap_or,
+        clippy::needless_borrow,
+        clippy::redundant_clone,
+        clippy::unnecessary_mut_passed,
+        clippy::useless_vec
+    )
+)]
 #![allow(non_camel_case_types, non_snake_case)]
 
 use std::alloc::{Layout, alloc_zeroed, dealloc};
@@ -2301,7 +2319,17 @@ fn ftc_sbit_cache_lookup_impl(
     if unsafe { (*slot).format } != rust_ffi::FT_GLYPH_FORMAT_BITMAP {
         let error = FT_Render_Glyph(slot, rust_ffi::FT_RENDER_MODE_NORMAL);
         if error != rust_ffi::FT_Err_Ok {
-            return error;
+            if error == rust_ffi::FT_Err_Out_Of_Memory {
+                return error;
+            }
+            // `ftcsbits.c:133-137,193-204` converts a successful glyph load
+            // that cannot render into the unavailable-SBit sentinel. Only
+            // OOM escapes the cache lookup as an error.
+            let record = FTC_SBitRec {
+                width: FT_Byte::MAX,
+                ..FTC_SBitRec::default()
+            };
+            return ftc_sbit_cache_store(cache, manager, key, record, Box::new([]), sbit, anode);
         }
     }
     // SAFETY: render success leaves a live bitmap record in the slot.
@@ -2695,7 +2723,10 @@ fn abi_coverage_cmap_restore(face: FT_Face, library: FT_Library) {
         .and_then(|state| state.charmap_by_index(0))
         .expect("maintained cmap restore font has a first charmap");
     assert_eq!(FT_Set_Charmap(face, charmap), rust_ffi::FT_Err_Ok);
-    assert_eq!(face_state(face).map(|state| state.inner.active_charmap_index), Some(0));
+    assert_eq!(
+        face_state(face).map(|state| state.inner.active_charmap_index),
+        Some(0)
+    );
     let mut cache = FTC_CMapCacheRec {
         manager: ptr::from_mut(&mut manager),
         entries: BTreeMap::new(),
@@ -2720,10 +2751,12 @@ fn abi_core_load_case(
     let _ = rust_ffi::FT_Set_Pixel_Sizes(&mut core_face, 0, 16);
     glyphs
         .iter()
-        .map(|&glyph| match rust_ffi::FT_Load_Glyph(&core_face, glyph, load_flags) {
-            Ok(slot) => (slot.glyph_index, rust_ffi::FT_Err_Ok),
-            Err(error) => (0, error),
-        })
+        .map(
+            |&glyph| match rust_ffi::FT_Load_Glyph(&core_face, glyph, load_flags) {
+                Ok(slot) => (slot.glyph_index, rust_ffi::FT_Err_Ok),
+                Err(error) => (0, error),
+            },
+        )
         .collect()
 }
 
@@ -2797,9 +2830,8 @@ fn abi_c99_core_probe(bytes: &[FT_Byte], variant: u16) {
     let loaded_char = rust_ffi::FT_Load_Char(&core_face, char_code, flags);
     let advance = rust_ffi::FT_Get_Advance(&core_face, glyph, flags);
     let advances = rust_ffi::FT_Get_Advances(&core_face, 0, 3, flags);
-    let rendered = loaded.and_then(|slot| {
-        rust_ffi::FT_Render_Glyph(slot, render_modes[index % render_modes.len()])
-    });
+    let rendered = loaded
+        .and_then(|slot| rust_ffi::FT_Render_Glyph(slot, render_modes[index % render_modes.len()]));
     let _ = std::hint::black_box((loaded_char, advance, advances, rendered, glyph_index));
 }
 
@@ -2872,7 +2904,16 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
             let loaded_char = rust_ffi::FT_Load_Char(&core_face, char_code, flags);
             let advance = rust_ffi::FT_Get_Advance(&core_face, glyph, flags);
             let advances = rust_ffi::FT_Get_Advances(&core_face, 0, 4, flags);
-            let _ = std::hint::black_box((size_status, transformed, char_size, requested, loaded, loaded_char, advance, advances));
+            let _ = std::hint::black_box((
+                size_status,
+                transformed,
+                char_size,
+                requested,
+                loaded,
+                loaded_char,
+                advance,
+                advances,
+            ));
         }
         1 => {
             let Ok(slot) = rust_ffi::FT_Load_Glyph(
@@ -2907,10 +2948,8 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
             rust_ffi::FT_Outline_Reverse(Some(&mut transformed));
             let inside = rust_ffi::FT_Outline_GetInsideBorder(Some(&snapshot));
             let outside = rust_ffi::FT_Outline_GetOutsideBorder(Some(&snapshot));
-            let decompose = rust_ffi::FT_Outline_Decompose_Trace(
-                Some(&snapshot),
-                &[(0, 0), (1, 9), (2, -13)],
-            );
+            let decompose =
+                rust_ffi::FT_Outline_Decompose_Trace(Some(&snapshot), &[(0, 0), (1, 9), (2, -13)]);
             let mut pixels = vec![0_u8; 96 * 96];
             let target = rust_ffi::FT_Bitmap_C {
                 rows: 96,
@@ -2941,7 +2980,21 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
                 None,
                 true,
             );
-            let _ = std::hint::black_box((bbox, cbox, orientation, check, copy, embolden, inside, outside, decompose, bitmap, rendered, spans, pixels));
+            let _ = std::hint::black_box((
+                bbox,
+                cbox,
+                orientation,
+                check,
+                copy,
+                embolden,
+                inside,
+                outside,
+                decompose,
+                bitmap,
+                rendered,
+                spans,
+                pixels,
+            ));
         }
         2 => {
             let Ok(slot) = rust_ffi::FT_Load_Glyph(
@@ -3006,7 +3059,8 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
                 let control = rust_ffi::FT_Vector { x: 256, y: 512 };
                 let control2 = rust_ffi::FT_Vector { x: 512, y: 512 };
                 let end = rust_ffi::FT_Vector { x: 640, y: 0 };
-                let begin = rust_ffi::FT_Stroker_BeginSubPath(stroker, Some(&start), (index % 2) as _);
+                let begin =
+                    rust_ffi::FT_Stroker_BeginSubPath(stroker, Some(&start), (index % 2) as _);
                 let line = rust_ffi::FT_Stroker_LineTo(stroker, Some(&control));
                 let conic = rust_ffi::FT_Stroker_ConicTo(stroker, Some(&control2), Some(&end));
                 let cubic = rust_ffi::FT_Stroker_CubicTo(
@@ -3022,15 +3076,18 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
                 )
                 .ok()
                 .and_then(|slot| rust_ffi::FT_Get_Outline_Glyph(Some(&slot)).ok())
-                .map(|owned| rust_ffi::FT_Stroker_ParseOutline(stroker, Some(&owned.outline), (index % 2) as _));
+                .map(|owned| {
+                    rust_ffi::FT_Stroker_ParseOutline(
+                        stroker,
+                        Some(&owned.outline),
+                        (index % 2) as _,
+                    )
+                });
                 let ended = rust_ffi::FT_Stroker_EndSubPath(stroker);
                 let mut points = 0;
                 let mut contours = 0;
-                let counts = rust_ffi::FT_Stroker_GetCounts(
-                    stroker,
-                    Some(&mut points),
-                    Some(&mut contours),
-                );
+                let counts =
+                    rust_ffi::FT_Stroker_GetCounts(stroker, Some(&mut points), Some(&mut contours));
                 let border = rust_ffi::FT_Stroker_GetBorderCounts(
                     stroker,
                     rust_ffi::FT_STROKER_BORDER_LEFT as _,
@@ -3044,7 +3101,10 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
                     rust_ffi::FT_STROKER_BORDER_RIGHT as _,
                     Some(&mut exported),
                 );
-                let _ = std::hint::black_box((begin, line, conic, cubic, parsed, ended, counts, border, points, contours, exported));
+                let _ = std::hint::black_box((
+                    begin, line, conic, cubic, parsed, ended, counts, border, points, contours,
+                    exported,
+                ));
                 rust_ffi::FT_Stroker_Done(stroker);
             }
         }
@@ -3124,7 +3184,8 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
             let fs_type = rust_ffi::FT_Get_FSType_Flags(Some(&core_face));
             let count = rust_ffi::FT_Get_Sfnt_Name_Count(Some(&core_face));
             let mut sfnt_name = rust_ffi::FT_SfntName::default();
-            let sfnt = rust_ffi::FT_Get_Sfnt_Name(Some(&core_face), index as _, Some(&mut sfnt_name));
+            let sfnt =
+                rust_ffi::FT_Get_Sfnt_Name(Some(&core_face), index as _, Some(&mut sfnt_name));
             let table_tags = [
                 rust_ffi::FT_SFNT_HEAD as _,
                 rust_ffi::FT_SFNT_MAXP as _,
@@ -3135,10 +3196,14 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
             let tables = table_tags.map(|tag| {
                 let pointer = rust_ffi::FT_Get_Sfnt_Table(&core_face, tag);
                 let mut length = 0;
-                let loaded = rust_ffi::FT_Load_Sfnt_Table(&core_face, tag as _, 0, Some(&mut length));
+                let loaded =
+                    rust_ffi::FT_Load_Sfnt_Table(&core_face, tag as _, 0, Some(&mut length));
                 (pointer, loaded, length)
             });
-            let _ = std::hint::black_box((first, next, kern, kerning, name, glyph_name, name_index, format, driver, postscript, gasp, fs_type, count, sfnt, tables));
+            let _ = std::hint::black_box((
+                first, next, kern, kerning, name, glyph_name, name_index, format, driver,
+                postscript, gasp, fs_type, count, sfnt, tables,
+            ));
         }
         6 => {
             let mut design = [0; 4];
@@ -3175,11 +3240,23 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
                 glyph,
                 rust_ffi::FT_LOAD_FORCE_AUTOHINT | rust_ffi::FT_LOAD_NO_BITMAP,
             );
-            let _ = std::hint::black_box((get_design, get_blend, set_design, set_blend, design, blend, default_result, default_instance, named, loaded));
+            let _ = std::hint::black_box((
+                get_design,
+                get_blend,
+                set_design,
+                set_blend,
+                design,
+                blend,
+                default_result,
+                default_instance,
+                named,
+                loaded,
+            ));
         }
         7 => {
             let mut palette = rust_ffi::FT_Palette_Data::default();
-            let palette_result = rust_ffi::FT_Palette_Data_Get(Some(&core_face), Some(&mut palette));
+            let palette_result =
+                rust_ffi::FT_Palette_Data_Get(Some(&core_face), Some(&mut palette));
             let mut layer_iterator = rust_ffi::FT_LayerIterator::default();
             let mut layer_glyph = 0;
             let mut layer_color = 0;
@@ -3200,7 +3277,16 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
                 Some(&mut clip),
             );
             let graph = rust_ffi::FT_ColrV1_PaintGraph_Copy(Some(&core_face));
-            let _ = std::hint::black_box((palette_result, palette, layers, layer_glyph, layer_color, clip_result, clip, graph));
+            let _ = std::hint::black_box((
+                palette_result,
+                palette,
+                layers,
+                layer_glyph,
+                layer_color,
+                clip_result,
+                clip,
+                graph,
+            ));
         }
         8 => {
             let empty = rust_ffi::FT_OutlineSnapshot::default();
@@ -3234,7 +3320,16 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
                 rust_ffi::FT_RASTER_FLAG_AA as _,
                 rust_ffi::FT_BBox::default(),
             );
-            let _ = std::hint::black_box((empty_check, malformed_check, empty_bbox, malformed_bbox, decompose, rendered_empty, bbox, pixels));
+            let _ = std::hint::black_box((
+                empty_check,
+                malformed_check,
+                empty_bbox,
+                malformed_bbox,
+                decompose,
+                rendered_empty,
+                bbox,
+                pixels,
+            ));
         }
         _ => {
             let curve = rust_ffi::FT_OutlineSnapshot {
@@ -3267,11 +3362,8 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
                 pixel_mode: rust_ffi::FT_PIXEL_MODE_GRAY as _,
                 ..rust_ffi::FT_Bitmap_C::default()
             };
-            let bitmap = rust_ffi::FT_Outline_Get_Bitmap(
-                Some(&core_library),
-                Some(&curve),
-                Some(&target),
-            );
+            let bitmap =
+                rust_ffi::FT_Outline_Get_Bitmap(Some(&core_library), Some(&curve), Some(&target));
             let render = rust_ffi::FT_Outline_Render(
                 Some(&core_library),
                 Some(&curve),
@@ -3337,7 +3429,16 @@ fn abi_c101_wrapper_probe(library: FT_Library, face: FT_Face, variant: u16) {
                 ptr::null_mut(),
             );
             FTC_Node_Unref(ptr::null_mut(), ptr::null_mut());
-            std::hint::black_box((cache_new, cache_lookup, image_new, image_lookup, image_scaler, sbit_new, sbit_lookup, sbit_scaler));
+            std::hint::black_box((
+                cache_new,
+                cache_lookup,
+                image_new,
+                image_lookup,
+                image_scaler,
+                sbit_new,
+                sbit_lookup,
+                sbit_scaler,
+            ));
         }
         1 => {
             let bzip = FT_Stream_OpenBzip2(ptr::null_mut(), ptr::null_mut());
@@ -3394,10 +3495,28 @@ fn abi_c101_wrapper_probe(library: FT_Library, face: FT_Face, variant: u16) {
             let paint_value = FT_Get_Paint(face, FT_OpaquePaint::default(), ptr::null_mut());
             let paint_layers = FT_Get_Paint_Layers(face, ptr::null_mut(), ptr::null_mut());
             let stops = FT_Get_Colorline_Stops(face, ptr::null_mut(), ptr::null_mut());
-            std::hint::black_box((palette_data, palette_select, foreground, layers, clip, paint, paint_value, paint_layers, stops));
+            std::hint::black_box((
+                palette_data,
+                palette_select,
+                foreground,
+                layers,
+                clip,
+                paint,
+                paint_value,
+                paint_layers,
+                stops,
+            ));
         }
         5 => {
-            let opentype = FT_OpenType_Validate(face, 0, ptr::null_mut(), ptr::null_mut(), ptr::null_mut(), ptr::null_mut(), ptr::null_mut());
+            let opentype = FT_OpenType_Validate(
+                face,
+                0,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+            );
             let classic = FT_ClassicKern_Validate(face, 0, ptr::null_mut());
             let ps_info = FT_Get_PS_Font_Info(face, ptr::null_mut());
             let ps_private = FT_Get_PS_Font_Private(face, ptr::null_mut());
@@ -3441,7 +3560,22 @@ fn abi_c101_wrapper_probe(library: FT_Library, face: FT_Face, variant: u16) {
             FT_Outline_Reverse(ptr::null_mut());
             FT_Outline_Transform(ptr::null(), ptr::null());
             FT_Outline_Translate(ptr::null(), 0, 0);
-            std::hint::black_box((bbox, bbox_error, bitmap, render, decompose, orientation, check, copy, embolden, embolden_xy, inside, outside, new, done));
+            std::hint::black_box((
+                bbox,
+                bbox_error,
+                bitmap,
+                render,
+                decompose,
+                orientation,
+                check,
+                copy,
+                embolden,
+                embolden_xy,
+                inside,
+                outside,
+                new,
+                done,
+            ));
         }
         8 => {
             let new = FT_Stroker_New(library, ptr::null_mut());
@@ -3453,12 +3587,23 @@ fn abi_c101_wrapper_probe(library: FT_Library, face: FT_Face, variant: u16) {
             let conic = FT_Stroker_ConicTo(ptr::null_mut(), ptr::null(), ptr::null());
             let cubic = FT_Stroker_CubicTo(ptr::null_mut(), ptr::null(), ptr::null(), ptr::null());
             let end = FT_Stroker_EndSubPath(ptr::null_mut());
-            let border_count = FT_Stroker_GetBorderCounts(ptr::null_mut(), 0, ptr::null_mut(), ptr::null_mut());
+            let border_count =
+                FT_Stroker_GetBorderCounts(ptr::null_mut(), 0, ptr::null_mut(), ptr::null_mut());
             let count = FT_Stroker_GetCounts(ptr::null_mut(), ptr::null_mut(), ptr::null_mut());
             FT_Stroker_ExportBorder(ptr::null_mut(), 0, ptr::null_mut());
             FT_Stroker_Export(ptr::null_mut(), ptr::null_mut());
             FT_Stroker_Done(ptr::null_mut());
-            std::hint::black_box((new, begin, parse, line, conic, cubic, end, border_count, count));
+            std::hint::black_box((
+                new,
+                begin,
+                parse,
+                line,
+                conic,
+                cubic,
+                end,
+                border_count,
+                count,
+            ));
         }
         9 => {
             let char_size = FT_Set_Char_Size(face, 0, 0, 72, 72);
@@ -3479,8 +3624,34 @@ fn abi_c101_wrapper_probe(library: FT_Library, face: FT_Face, variant: u16) {
             let advance = FT_Get_Advance(face, 0, rust_ffi::FT_LOAD_DEFAULT, ptr::null_mut());
             let advances = FT_Get_Advances(face, 0, 0, rust_ffi::FT_LOAD_DEFAULT, ptr::null_mut());
             let render = FT_Render_Glyph(ptr::null_mut(), 0);
-            let subglyph = FT_Get_SubGlyph_Info(ptr::null_mut(), 0, ptr::null_mut(), ptr::null_mut(), ptr::null_mut(), ptr::null_mut(), ptr::null_mut());
-            std::hint::black_box((char_size, pixels, request, new_size, done_size, glyph_index, kerning, glyph_name, name_index, design, blend, load, load_char, advance, advances, render, subglyph));
+            let subglyph = FT_Get_SubGlyph_Info(
+                ptr::null_mut(),
+                0,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+            );
+            std::hint::black_box((
+                char_size,
+                pixels,
+                request,
+                new_size,
+                done_size,
+                glyph_index,
+                kerning,
+                glyph_name,
+                name_index,
+                design,
+                blend,
+                load,
+                load_char,
+                advance,
+                advances,
+                render,
+                subglyph,
+            ));
         }
         _ => unreachable!(),
     }
@@ -3572,11 +3743,8 @@ fn abi_c102_live_wrapper_probe(
                 FT_List_Insert(&mut list, second);
                 let found = FT_List_Find(&mut list, ptr::from_mut(&mut first_data).cast());
                 FT_List_Up(&mut list, first);
-                let iterated = FT_List_Iterate(
-                    &mut list,
-                    Some(abi_c102_list_iterator),
-                    ptr::null_mut(),
-                );
+                let iterated =
+                    FT_List_Iterate(&mut list, Some(abi_c102_list_iterator), ptr::null_mut());
                 FT_List_Remove(&mut list, second);
                 abi_custom_memory_free(memory, second.cast());
                 FT_List_Finalize(&mut list, None, memory, ptr::null_mut());
@@ -3685,13 +3853,7 @@ fn abi_c102_live_wrapper_probe(
             FT_OpenType_Free(face, gsub);
             FT_OpenType_Free(face, jstf);
             FT_ClassicKern_Free(face, classic);
-            std::hint::black_box((
-                open_type,
-                classic_status,
-                ps_info,
-                ps_private,
-                ps_value,
-            ));
+            std::hint::black_box((open_type, classic_status, ps_info, ps_private, ps_value));
         }
         5 => {
             let load = FT_Load_Glyph(
@@ -3863,9 +4025,16 @@ fn abi_c102_live_wrapper_probe(
             let load = FT_Load_Glyph(face, glyph_index, rust_ffi::FT_LOAD_DEFAULT);
             let load_char = FT_Load_Char(face, 65, rust_ffi::FT_LOAD_DEFAULT);
             let mut advance = 0;
-            let advance_status = FT_Get_Advance(face, glyph_index, rust_ffi::FT_LOAD_DEFAULT, &mut advance);
+            let advance_status =
+                FT_Get_Advance(face, glyph_index, rust_ffi::FT_LOAD_DEFAULT, &mut advance);
             let mut advances = [0 as FT_Fixed; 1];
-            let advances_status = FT_Get_Advances(face, glyph_index, 1, rust_ffi::FT_LOAD_DEFAULT, advances.as_mut_ptr());
+            let advances_status = FT_Get_Advances(
+                face,
+                glyph_index,
+                1,
+                rust_ffi::FT_LOAD_DEFAULT,
+                advances.as_mut_ptr(),
+            );
             let slot = unsafe { face.as_ref().map_or(ptr::null_mut(), |record| record.glyph) };
             let render = FT_Render_Glyph(slot, 0);
             let mut sub_index = 0;
@@ -3930,12 +4099,7 @@ fn abi_c102_live_wrapper_probe(
 }
 
 #[cfg(feature = "abi-test-support")]
-extern "C" fn abi_c103_list_destroy(
-    _memory: FT_Memory,
-    _data: FT_Pointer,
-    _user: FT_Pointer,
-) {
-}
+extern "C" fn abi_c103_list_destroy(_memory: FT_Memory, _data: FT_Pointer, _user: FT_Pointer) {}
 
 #[cfg(feature = "abi-test-support")]
 fn abi_c103_wrapper_probe(
@@ -3949,8 +4113,7 @@ fn abi_c103_wrapper_probe(
         include_bytes!("../../tests/fixtures/compressed/bzip2/valid-pcf-header.pcf.bz2");
     const LZW_BYTES: &[u8] =
         include_bytes!("../../tests/fixtures/compressed/lzw/small-valid-pcf.Z");
-    const GZIP_BYTES: &[u8] =
-        include_bytes!("../../tests/fixtures/compressed/gzip/small-text.gz");
+    const GZIP_BYTES: &[u8] = include_bytes!("../../tests/fixtures/compressed/gzip/small-text.gz");
 
     match usize::from(variant.saturating_sub(701)) % 10 {
         0 => {
@@ -4081,11 +4244,7 @@ fn abi_c103_wrapper_probe(
                     alpha: 255,
                 },
             );
-            let alias = FT_Bitmap_Copy(
-                library,
-                ptr::from_ref(&source),
-                ptr::from_mut(&mut source),
-            );
+            let alias = FT_Bitmap_Copy(library, ptr::from_ref(&source), ptr::from_mut(&mut source));
             let done = FT_Bitmap_Done(library, &mut target);
             std::hint::black_box((copy, convert, embolden, blend, alias, done));
         }
@@ -4123,8 +4282,7 @@ fn abi_c103_wrapper_probe(
             let glyph_paint_status =
                 FT_Get_Color_Glyph_Paint(face, FT_UInt::from(variant % 4), 0, &mut opaque_paint);
             let paint_status = FT_Get_Paint(face, opaque_paint, &mut paint);
-            let layers_status =
-                FT_Get_Paint_Layers(face, &mut layer_iterator, &mut opaque_paint);
+            let layers_status = FT_Get_Paint_Layers(face, &mut layer_iterator, &mut opaque_paint);
             let stops_status =
                 FT_Get_Colorline_Stops(face, &mut color_stop, &mut color_stop_iterator);
             std::hint::black_box((
@@ -4409,22 +4567,16 @@ fn abi_c104_handles_probe(
 
     match family {
         0 => {
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 let mut manager = rust_ffi::FTCCacheManagerState::new(core_face);
                 let size_result = manager.lookup_pixel_size(FT_UInt::MAX, FT_UInt::MAX);
                 let _ = std::hint::black_box(size_result);
             }
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 let mut cache = rust_ffi::FTCSBitCacheState::new(core_face);
                 let image_type = rust_ffi::FTC_ImageTypeRec {
                     width: FT_UInt::MAX,
@@ -4443,12 +4595,9 @@ fn abi_c104_handles_probe(
             }
         }
         1 => {
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 let glyph = if repeat % 2 == 0 {
                     rust_ffi::FT_Get_Char_Index(&core_face, 32)
                 } else {
@@ -4496,8 +4645,7 @@ fn abi_c104_handles_probe(
             let result = rust_ffi::FT_Outline_Get_BBox(Some(&cubic), Some(&mut bbox));
             let mut malformed = cubic.clone();
             malformed.tags[0] = rust_ffi::FT_CURVE_TAG_CUBIC as FT_Byte;
-            let malformed_result =
-                rust_ffi::FT_Outline_Get_BBox(Some(&malformed), Some(&mut bbox));
+            let malformed_result = rust_ffi::FT_Outline_Get_BBox(Some(&malformed), Some(&mut bbox));
             std::hint::black_box((result, malformed_result, bbox));
         }
         3 => {
@@ -4535,8 +4683,7 @@ fn abi_c104_handles_probe(
                 Some(&rust_ffi::FT_Init_FreeType()),
                 Some(&simple_outline),
                 Some(&target),
-                rust_ffi::FT_RASTER_FLAG_DIRECT as FT_Int
-                    | rust_ffi::FT_RASTER_FLAG_AA as FT_Int,
+                rust_ffi::FT_RASTER_FLAG_DIRECT as FT_Int | rust_ffi::FT_RASTER_FLAG_AA as FT_Int,
                 Some(rust_ffi::FT_BBox {
                     xMin: 0,
                     yMin: 0,
@@ -4697,22 +4844,13 @@ fn abi_c104_handles_probe(
             FT_Set_Transform(face, ptr::null(), ptr::null());
             FT_Get_Transform(face, &mut matrix, &mut delta);
             std::hint::black_box((
-                new_size,
-                activated,
-                requested,
-                pixels,
-                done_size,
-                matrix,
-                delta,
+                new_size, activated, requested, pixels, done_size, matrix, delta,
             ));
         }
         8 => {
             let core_library = rust_ffi::FT_Init_FreeType();
             if let Ok(rust_ffi::FT_GlyphOwned::Outline(mut glyph)) =
-                rust_ffi::FT_New_Glyph(
-                    Some(&core_library),
-                    rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
-                )
+                rust_ffi::FT_New_Glyph(Some(&core_library), rust_ffi::FT_GLYPH_FORMAT_OUTLINE)
             {
                 let generic = rust_ffi::FT_OutlineSnapshot {
                     points: vec![
@@ -4729,13 +4867,9 @@ fn abi_c104_handles_probe(
                 } else {
                     simple_outline.clone()
                 };
-                glyph.root.advance = rust_ffi::FT_Vector {
-                    x: 640,
-                    y: 0,
-                };
+                glyph.root.advance = rust_ffi::FT_Vector { x: 640, y: 0 };
                 let mut stroker = ptr::null_mut();
-                let new_status =
-                    rust_ffi::FT_Stroker_New(Some(&core_library), Some(&mut stroker));
+                let new_status = rust_ffi::FT_Stroker_New(Some(&core_library), Some(&mut stroker));
                 if new_status == rust_ffi::FT_Err_Ok {
                     rust_ffi::FT_Stroker_Set(
                         stroker,
@@ -4745,8 +4879,7 @@ fn abi_c104_handles_probe(
                         0x1_0000,
                     );
                     let stroke = rust_ffi::FT_Outline_Glyph_Stroke(Some(&glyph), stroker);
-                    let border =
-                        rust_ffi::FT_Outline_Glyph_StrokeBorder(Some(&glyph), stroker, 0);
+                    let border = rust_ffi::FT_Outline_Glyph_StrokeBorder(Some(&glyph), stroker, 0);
                     let null_stroker =
                         rust_ffi::FT_Outline_Glyph_Stroke(Some(&glyph), ptr::null_mut());
                     rust_ffi::FT_Stroker_Done(stroker);
@@ -4757,10 +4890,7 @@ fn abi_c104_handles_probe(
         9 => {
             let glyph_index = FT_Get_Char_Index(face, FT_ULong::from(65_u16 + (repeat % 8) as u16));
             let load = FT_Load_Glyph(face, glyph_index, rust_ffi::FT_LOAD_NO_HINTING);
-            let slot = unsafe {
-                face.as_ref()
-                    .map_or(ptr::null_mut(), |record| record.glyph)
-            };
+            let slot = unsafe { face.as_ref().map_or(ptr::null_mut(), |record| record.glyph) };
             let mut glyph = ptr::null_mut();
             let get = FT_Get_Glyph(slot, &mut glyph);
             let mut copied = ptr::null_mut();
@@ -4821,23 +4951,19 @@ fn abi_c105_handles_probe(
             // This reaches the shared cache's real FT_Set_Pixel_Sizes error
             // handling instead of fabricating a C-only invalid handle.
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &core_library,
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let mut manager = rust_ffi::FTCCacheManagerState::new(core_face);
-                let size = manager.lookup_face().ok().map_or(ptr::null_mut(), |face| face.size);
+                let size = manager
+                    .lookup_face()
+                    .ok()
+                    .map_or(ptr::null_mut(), |face| face.size);
                 let removed = if size.is_null() {
                     rust_ffi::FT_Err_Invalid_Size_Handle
                 } else {
                     rust_ffi::FT_Done_Size(size)
                 };
-                let pixel = manager.lookup_pixel_size(
-                    10 + repeat as FT_UInt,
-                    12 + (repeat % 5) as FT_UInt,
-                );
+                let pixel =
+                    manager.lookup_pixel_size(10 + repeat as FT_UInt, 12 + (repeat % 5) as FT_UInt);
                 let image_type = rust_ffi::FTC_ImageTypeRec {
                     width: 10 + repeat as FT_UInt,
                     height: 12 + (repeat % 5) as FT_UInt,
@@ -4860,12 +4986,7 @@ fn abi_c105_handles_probe(
             // Exercise compact SBit records for blank, missing, and ordinary
             // glyphs.  These all use the Rust cache state directly.
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &core_library,
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let glyph = match repeat % 5 {
                     0 => rust_ffi::FT_Get_Char_Index(&core_face, 32),
                     1 => rust_ffi::FT_Get_Char_Index(&core_face, 65),
@@ -4968,8 +5089,7 @@ fn abi_c105_handles_probe(
                 Some(&core_library),
                 Some(&malformed),
                 Some(&target),
-                rust_ffi::FT_RASTER_FLAG_DIRECT as FT_Int
-                    | rust_ffi::FT_RASTER_FLAG_AA as FT_Int,
+                rust_ffi::FT_RASTER_FLAG_DIRECT as FT_Int | rust_ffi::FT_RASTER_FLAG_AA as FT_Int,
                 Some(rust_ffi::FT_BBox {
                     xMin: 0,
                     yMin: 0,
@@ -5022,8 +5142,7 @@ fn abi_c105_handles_probe(
                 Some(&core_library),
                 Some(&simple_outline),
                 Some(&target),
-                rust_ffi::FT_RASTER_FLAG_DIRECT as FT_Int
-                    | rust_ffi::FT_RASTER_FLAG_AA as FT_Int,
+                rust_ffi::FT_RASTER_FLAG_DIRECT as FT_Int | rust_ffi::FT_RASTER_FLAG_AA as FT_Int,
                 Some(rust_ffi::FT_BBox {
                     xMin: 0,
                     yMin: 0,
@@ -5035,7 +5154,11 @@ fn abi_c105_handles_probe(
             let error_output = rust_ffi::FT_Outline_Render_Error_Output(
                 Some(&simple_outline),
                 Some(&target),
-                if repeat % 2 == 0 { 0 } else { rust_ffi::FT_RASTER_FLAG_AA as FT_Int },
+                if repeat % 2 == 0 {
+                    0
+                } else {
+                    rust_ffi::FT_RASTER_FLAG_AA as FT_Int
+                },
             );
             std::hint::black_box((
                 bitmap.is_ok(),
@@ -5075,11 +5198,7 @@ fn abi_c105_handles_probe(
                 let curve_status = if repeat % 3 == 1 {
                     let control = rust_ffi::FT_Vector { x: 256, y: 512 };
                     let to = rust_ffi::FT_Vector { x: 512, y: 0 };
-                    let pending = rust_ffi::FT_Stroker_ConicTo(
-                        stroker,
-                        Some(&control),
-                        Some(&to),
-                    );
+                    let pending = rust_ffi::FT_Stroker_ConicTo(stroker, Some(&control), Some(&to));
                     let replay = rust_ffi::FT_Stroker_LineTo(stroker, Some(&second));
                     (pending, replay)
                 } else if repeat % 3 == 2 {
@@ -5101,11 +5220,8 @@ fn abi_c105_handles_probe(
                 };
                 let mut points = 0;
                 let mut contours = 0;
-                let before = rust_ffi::FT_Stroker_GetCounts(
-                    stroker,
-                    Some(&mut points),
-                    Some(&mut contours),
-                );
+                let before =
+                    rust_ffi::FT_Stroker_GetCounts(stroker, Some(&mut points), Some(&mut contours));
                 let mut border_points = 0;
                 let mut border_contours = 0;
                 let border = rust_ffi::FT_Stroker_GetBorderCounts(
@@ -5115,11 +5231,8 @@ fn abi_c105_handles_probe(
                     Some(&mut border_contours),
                 );
                 let finish = rust_ffi::FT_Stroker_EndSubPath(stroker);
-                let after = rust_ffi::FT_Stroker_GetCounts(
-                    stroker,
-                    Some(&mut points),
-                    Some(&mut contours),
-                );
+                let after =
+                    rust_ffi::FT_Stroker_GetCounts(stroker, Some(&mut points), Some(&mut contours));
                 rust_ffi::FT_Stroker_Done(stroker);
                 std::hint::black_box((
                     begin,
@@ -5261,11 +5374,8 @@ fn abi_c105_handles_probe(
                 );
                 let mut points = 0;
                 let mut contours = 0;
-                let counts = rust_ffi::FT_Stroker_GetCounts(
-                    stroker,
-                    Some(&mut points),
-                    Some(&mut contours),
-                );
+                let counts =
+                    rust_ffi::FT_Stroker_GetCounts(stroker, Some(&mut points), Some(&mut contours));
                 rust_ffi::FT_Stroker_Done(stroker);
                 let stale = rust_ffi::FT_Stroker_GetBorderCounts(
                     stroker,
@@ -5280,12 +5390,7 @@ fn abi_c105_handles_probe(
             // Type 1/CFF PS service queries use the Rust-owned byte-copy
             // wrapper, including sizing queries and unknown optional strings.
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &core_library,
-                bytes,
-                0,
-                12.0,
-            ) {
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 12.0) {
                 let mut info = rust_ffi::PS_FontInfoRec::default();
                 let mut private = rust_ffi::PS_PrivateRec::default();
                 let info_status = rust_ffi::FT_Get_PS_Font_Info(Some(&core_face), Some(&mut info));
@@ -5327,12 +5432,7 @@ fn abi_c105_handles_probe(
             // OpenType validation stays in the Rust service; C output-table
             // ownership is deliberately not reconstructed in this probe.
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(mut core_face) = rust_ffi::FT_New_Memory_Face(
-                &core_library,
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(mut core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let all = rust_ffi::FT_VALIDATE_BASE as FT_UInt
                     | rust_ffi::FT_VALIDATE_GDEF as FT_UInt
                     | rust_ffi::FT_VALIDATE_GPOS as FT_UInt
@@ -5342,8 +5442,10 @@ fn abi_c105_handles_probe(
                 let flags = match repeat % 4 {
                     0 => 0,
                     1 => rust_ffi::FT_VALIDATE_GDEF as FT_UInt,
-                    2 => rust_ffi::FT_VALIDATE_GPOS as FT_UInt
-                        | rust_ffi::FT_VALIDATE_GSUB as FT_UInt,
+                    2 => {
+                        rust_ffi::FT_VALIDATE_GPOS as FT_UInt
+                            | rust_ffi::FT_VALIDATE_GSUB as FT_UInt
+                    }
                     _ => all,
                 };
                 rust_ffi::FT_OpenType_Validator_Set_Available(&mut core_face, repeat % 5 != 0);
@@ -5371,12 +5473,7 @@ fn abi_c105_handles_probe(
             // GX and classic-kern validators share the same Rust-owned face
             // and table lifetimes, so exercise both in one bulk witness.
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(mut core_face) = rust_ffi::FT_New_Memory_Face(
-                &core_library,
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(mut core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let all = rust_ffi::FT_VALIDATE_feat as FT_UInt
                     | rust_ffi::FT_VALIDATE_mort as FT_UInt
                     | rust_ffi::FT_VALIDATE_morx as FT_UInt
@@ -5390,8 +5487,7 @@ fn abi_c105_handles_probe(
                 let flags = if repeat % 3 == 0 {
                     0
                 } else if repeat % 3 == 1 {
-                    rust_ffi::FT_VALIDATE_feat as FT_UInt
-                        | rust_ffi::FT_VALIDATE_kern as FT_UInt
+                    rust_ffi::FT_VALIDATE_feat as FT_UInt | rust_ffi::FT_VALIDATE_kern as FT_UInt
                 } else {
                     all
                 };
@@ -5420,12 +5516,7 @@ fn abi_c105_handles_probe(
             // these follow-up calls make the CPAL/COLR public state observable
             // without adding a parallel parser in the C ABI layer.
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &core_library,
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let palette_data = rust_ffi::FT_Palette_Data_Copy(Some(&core_face));
                 let palette = rust_ffi::FT_Palette_Select_Copy(
                     Some(&core_face),
@@ -5454,12 +5545,18 @@ fn abi_c105_handles_probe(
                     Some(&mut opaque),
                 );
                 let mut paint = rust_ffi::FT_COLR_Paint::default();
-                let paint_result = rust_ffi::FT_Get_Paint(
-                    Some(&core_face),
-                    opaque,
-                    Some(&mut paint),
-                );
-                std::hint::black_box((palette_data, palette, layer, root, paint_result, glyph_index, color_index, paint));
+                let paint_result =
+                    rust_ffi::FT_Get_Paint(Some(&core_face), opaque, Some(&mut paint));
+                std::hint::black_box((
+                    palette_data,
+                    palette,
+                    layer,
+                    root,
+                    paint_result,
+                    glyph_index,
+                    color_index,
+                    paint,
+                ));
             }
         }
         _ => {}
@@ -5621,8 +5718,21 @@ fn abi_c108_wrapper_gap_probe(
             let mut paint_value = FT_COLR_Paint::default();
             let paint_status = FT_Get_Paint(face, opaque, &mut paint_value);
             let _ = FT_Get_Paint_Layers(face, &mut layer, &mut opaque);
-            let stops = FT_Get_Colorline_Stops(face, ptr::null_mut(), &mut FT_ColorStopIterator::default());
-            std::hint::black_box((palette_status, select_status, foreground, layers, clip_status, paint, paint_status, stops, palette_data, clip, paint_value));
+            let stops =
+                FT_Get_Colorline_Stops(face, ptr::null_mut(), &mut FT_ColorStopIterator::default());
+            std::hint::black_box((
+                palette_status,
+                select_status,
+                foreground,
+                layers,
+                clip_status,
+                paint,
+                paint_status,
+                stops,
+                palette_data,
+                clip,
+                paint_value,
+            ));
         }
         5 => {
             let mut tables = [ptr::null(); 6];
@@ -5647,7 +5757,14 @@ fn abi_c108_wrapper_gap_probe(
             let ps_info = FT_Get_PS_Font_Info(face, ptr::null_mut());
             let ps_private = FT_Get_PS_Font_Private(face, ptr::null_mut());
             let ps_value = FT_Get_PS_Font_Value(face, 0, repeat as FT_UInt, ptr::null_mut(), 0);
-            std::hint::black_box((open_type, gx_status, kern_status, ps_info, ps_private, ps_value));
+            std::hint::black_box((
+                open_type,
+                gx_status,
+                kern_status,
+                ps_info,
+                ps_private,
+                ps_value,
+            ));
         }
         6 => {
             let mut glyph = ptr::null_mut();
@@ -5680,7 +5797,17 @@ fn abi_c108_wrapper_gap_probe(
             FT_Outline_Translate(&mut outline, 1, -1);
             let done = FT_Outline_Done(library, &mut outline);
             let invalid = FT_Outline_Copy(ptr::null(), ptr::null_mut());
-            std::hint::black_box((new, check, copy, bbox_status, embolden, embolden_xy, done, invalid, bbox));
+            std::hint::black_box((
+                new,
+                check,
+                copy,
+                bbox_status,
+                embolden,
+                embolden_xy,
+                done,
+                invalid,
+                bbox,
+            ));
         }
         8 => {
             let mut stroker = ptr::null_mut();
@@ -5722,15 +5849,38 @@ fn abi_c108_wrapper_gap_probe(
             let activated = FT_Activate_Size(size);
             let done_size = FT_Done_Size(size);
             let glyph = FT_Load_Glyph(face, repeat as FT_UInt, rust_ffi::FT_LOAD_DEFAULT);
-            let loaded_char = FT_Load_Char(face, 65 + repeat as FT_ULong, rust_ffi::FT_LOAD_DEFAULT);
+            let loaded_char =
+                FT_Load_Char(face, 65 + repeat as FT_ULong, rust_ffi::FT_LOAD_DEFAULT);
             let mut advance = 0;
-            let advance_status = FT_Get_Advance(face, repeat as FT_UInt, rust_ffi::FT_LOAD_DEFAULT, &mut advance);
+            let advance_status = FT_Get_Advance(
+                face,
+                repeat as FT_UInt,
+                rust_ffi::FT_LOAD_DEFAULT,
+                &mut advance,
+            );
             let advances = FT_Get_Advances(face, 0, 2, rust_ffi::FT_LOAD_DEFAULT, ptr::null_mut());
             let rendered = FT_Render_Glyph(ptr::null_mut(), 0);
-            std::hint::black_box((char_size, pixel_size, request, new_size, activated, done_size, glyph, loaded_char, advance_status, advances, rendered, matrix, delta));
+            std::hint::black_box((
+                char_size,
+                pixel_size,
+                request,
+                new_size,
+                activated,
+                done_size,
+                glyph,
+                loaded_char,
+                advance_status,
+                advances,
+                rendered,
+                matrix,
+                delta,
+            ));
         }
         10 => {
-            let mut vector = FT_Vector { x: 128 + repeat as FT_Pos, y: -64 };
+            let mut vector = FT_Vector {
+                x: 128 + repeat as FT_Pos,
+                y: -64,
+            };
             let mut length = 0;
             let mut angle = 0;
             FT_Vector_Unit(&mut vector, 0);
@@ -5738,12 +5888,29 @@ fn abi_c108_wrapper_gap_probe(
             let vector_length = FT_Vector_Length(&mut vector);
             FT_Vector_Polarize(&mut vector, &mut length, &mut angle);
             FT_Vector_From_Polar(&mut vector, 64, angle);
-            let matrix = FT_Matrix { xx: 0x1_0000, xy: 0, yx: 0, yy: 0x1_0000 };
+            let matrix = FT_Matrix {
+                xx: 0x1_0000,
+                xy: 0,
+                yx: 0,
+                yy: 0x1_0000,
+            };
             FT_Vector_Transform(&mut vector, &matrix);
             let mut matrix_out = matrix;
             FT_Matrix_Multiply(&matrix, &mut matrix_out);
             let invert = FT_Matrix_Invert(&mut matrix_out);
-            let scalar = (FT_MulDiv(3, 7, 2), FT_MulFix(3, 7), FT_DivFix(3, 7), FT_RoundFix(3), FT_CeilFix(3), FT_FloorFix(3), FT_Sin(0), FT_Cos(0), FT_Tan(0), FT_Atan2(1, 1), FT_Angle_Diff(1, 2));
+            let scalar = (
+                FT_MulDiv(3, 7, 2),
+                FT_MulFix(3, 7),
+                FT_DivFix(3, 7),
+                FT_RoundFix(3),
+                FT_CeilFix(3),
+                FT_FloorFix(3),
+                FT_Sin(0),
+                FT_Cos(0),
+                FT_Tan(0),
+                FT_Atan2(1, 1),
+                FT_Angle_Diff(1, 2),
+            );
             std::hint::black_box((vector, length, angle, vector_length, invert, scalar));
         }
         11 => {
@@ -5755,10 +5922,28 @@ fn abi_c108_wrapper_gap_probe(
             let engine = FT_Get_TrueType_Engine_Type(library);
             let module = b"autofitter\0";
             let property = b"increase-x-height\0";
-            let get = FT_Property_Get(library, module.as_ptr().cast(), property.as_ptr().cast(), ptr::null_mut());
-            let set = FT_Property_Set(library, module.as_ptr().cast(), property.as_ptr().cast(), ptr::null());
+            let get = FT_Property_Get(
+                library,
+                module.as_ptr().cast(),
+                property.as_ptr().cast(),
+                ptr::null_mut(),
+            );
+            let set = FT_Property_Set(
+                library,
+                module.as_ptr().cast(),
+                property.as_ptr().cast(),
+                ptr::null(),
+            );
             let interface = abi_support_module_interface_present(library, Some("autofitter"));
-            std::hint::black_box((filter, weight_status, geometry_status, engine, get, set, interface));
+            std::hint::black_box((
+                filter,
+                weight_status,
+                geometry_status,
+                engine,
+                get,
+                set,
+                interface,
+            ));
         }
         12 => {
             let info = abi_face_info(face);
@@ -5773,7 +5958,18 @@ fn abi_c108_wrapper_gap_probe(
             let slot = abi_slot_snapshot(face);
             let renderer = abi_renderer_mode_acceptance(bytes, 0, repeat as FT_UInt, 12);
             let renderer_ok = renderer.is_ok();
-            std::hint::black_box((info, stream, uses_stream, sizes, charmaps, charmap, charmap_info, active, slot, renderer_ok));
+            std::hint::black_box((
+                info,
+                stream,
+                uses_stream,
+                sizes,
+                charmaps,
+                charmap,
+                charmap_info,
+                active,
+                slot,
+                renderer_ok,
+            ));
         }
         13 => {
             let design_get = FT_Get_Var_Design_Coordinates(face, 0, ptr::null_mut());
@@ -5788,7 +5984,19 @@ fn abi_c108_wrapper_gap_probe(
             let multi = FT_Get_Multi_Master(face, ptr::null_mut());
             let named = FT_Get_Default_Named_Instance(face, ptr::null_mut());
             let instance = FT_Set_Named_Instance(face, repeat as FT_UInt);
-            std::hint::black_box((design_get, blend_get, mm_blend_get, design_set, blend_set, mm_design, mm_weight, mm_weight_get, multi, named, instance));
+            std::hint::black_box((
+                design_get,
+                blend_get,
+                mm_blend_get,
+                design_set,
+                blend_set,
+                mm_design,
+                mm_weight,
+                mm_weight_get,
+                multi,
+                named,
+                instance,
+            ));
         }
         14 => {
             let count = FT_Get_Sfnt_Name_Count(face);
@@ -5800,19 +6008,43 @@ fn abi_c108_wrapper_gap_probe(
             let track = FT_Get_Track_Kerning(face, 12 * 64, repeat as FT_Int, &mut kerning);
             let table = FT_Get_Sfnt_Table(face, u32::from_be_bytes(*b"head"));
             let mut length = 0;
-            let load = FT_Load_Sfnt_Table(face, u32::from_be_bytes(*b"head") as FT_ULong, 0, ptr::null_mut(), &mut length);
+            let load = FT_Load_Sfnt_Table(
+                face,
+                u32::from_be_bytes(*b"head") as FT_ULong,
+                0,
+                ptr::null_mut(),
+                &mut length,
+            );
             let mut tag = 0;
             let info = FT_Sfnt_Table_Info(face, repeat as FT_UInt, &mut tag, &mut length);
             let first = FT_Get_First_Char(face, ptr::null_mut());
             let next = FT_Get_Next_Char(face, first, ptr::null_mut());
-            std::hint::black_box((count, name_status, lang_status, track, table, load, info, first, next, name, lang));
+            std::hint::black_box((
+                count,
+                name_status,
+                lang_status,
+                track,
+                table,
+                load,
+                info,
+                first,
+                next,
+                name,
+                lang,
+            ));
         }
         15 => {
             let mut outline = FT_Outline::default();
             let _ = FT_Outline_New(library, 0, 0, &mut outline);
             let render = FT_Outline_Render(library, &outline, ptr::null_mut());
             let bitmap = FT_Outline_Get_Bitmap(library, &outline, ptr::null());
-            let direct = abi_support_outline_render_direct_spans(library, &outline, ptr::null_mut(), repeat % 2 == 0, ptr::null_mut());
+            let direct = abi_support_outline_render_direct_spans(
+                library,
+                &outline,
+                ptr::null_mut(),
+                repeat % 2 == 0,
+                ptr::null_mut(),
+            );
             let trace = abi_support_outline_decompose_trace(&outline, &[(0, repeat as FT_Pos)]);
             let trace_ok = trace.is_ok();
             let decompose = FT_Outline_Decompose(&mut outline, ptr::null(), ptr::null_mut());
@@ -5830,7 +6062,15 @@ fn abi_c108_wrapper_gap_probe(
                 FT_GlyphSlot_Slant(slot, 1, 1);
                 std::hint::black_box((own, slot));
             }
-            let subglyph = FT_Get_SubGlyph_Info(ptr::null_mut(), 0, ptr::null_mut(), ptr::null_mut(), ptr::null_mut(), ptr::null_mut(), ptr::null_mut());
+            let subglyph = FT_Get_SubGlyph_Info(
+                ptr::null_mut(),
+                0,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+            );
             std::hint::black_box((load, subglyph));
         }
         17 => {
@@ -5982,11 +6222,9 @@ fn abi_c109_rust_gap_sweep_probe(
                     rust_ffi::FT_LOAD_NO_BITMAP,
                     rust_ffi::FT_LOAD_TARGET_MONO,
                 ];
-                if let Ok(slot) = rust_ffi::FT_Load_Glyph(
-                    &core_face,
-                    glyph,
-                    flags[repeat % flags.len()],
-                ) {
+                if let Ok(slot) =
+                    rust_ffi::FT_Load_Glyph(&core_face, glyph, flags[repeat % flags.len()])
+                {
                     for mode in [
                         rust_ffi::FT_RENDER_MODE_NORMAL,
                         rust_ffi::FT_RENDER_MODE_MONO,
@@ -6162,11 +6400,7 @@ fn abi_c109_rust_gap_sweep_probe(
                     rust_ffi::FT_LOAD_FORCE_AUTOHINT | rust_ffi::FT_LOAD_TARGET_MONO,
                     rust_ffi::FT_LOAD_NO_HINTING,
                 ] {
-                    let _ = rust_ffi::FT_Load_Glyph(
-                        &core_face,
-                        [0, 1, 36, 65][repeat % 4],
-                        flags,
-                    );
+                    let _ = rust_ffi::FT_Load_Glyph(&core_face, [0, 1, 36, 65][repeat % 4], flags);
                 }
             }
         }
@@ -6315,12 +6549,7 @@ fn abi_c109_rust_gap_sweep_probe(
                 );
                 let mut length = 0;
                 let tag = u32::from_be_bytes(*b"head") as FT_ULong;
-                let _ = rust_ffi::FT_Load_Sfnt_Table(
-                    &core_face,
-                    tag,
-                    0,
-                    Some(&mut length),
-                );
+                let _ = rust_ffi::FT_Load_Sfnt_Table(&core_face, tag, 0, Some(&mut length));
                 let mut kerning = 0;
                 let _ = rust_ffi::FT_Get_Track_Kerning(
                     Some(&core_face),
@@ -6350,11 +6579,7 @@ fn abi_c109_rust_gap_sweep_probe(
                     Some(&mut color),
                     Some(&mut iterator),
                 );
-                let _ = rust_ffi::FT_Get_Color_Glyph_ClipBox(
-                    Some(&core_face),
-                    glyph,
-                    None,
-                );
+                let _ = rust_ffi::FT_Get_Color_Glyph_ClipBox(Some(&core_face), glyph, None);
                 let _ = rust_ffi::FT_Get_Color_Glyph_Paint(
                     Some(&core_face),
                     glyph,
@@ -6371,7 +6596,11 @@ fn abi_c109_rust_gap_sweep_probe(
                 let mut tables = vec![ptr::null(); 10];
                 let result = rust_ffi::FT_TrueTypeGX_Validate(
                     Some(&core_face),
-                    if repeat % 2 == 0 { 0 } else { rust_ffi::FT_VALIDATE_kern as FT_UInt },
+                    if repeat % 2 == 0 {
+                        0
+                    } else {
+                        rust_ffi::FT_VALIDATE_kern as FT_UInt
+                    },
                     Some(tables.as_mut_slice()),
                 );
                 for table in tables {
@@ -6498,8 +6727,7 @@ fn abi_c109_rust_gap_sweep_probe(
                     rust_ffi::FT_LOAD_NO_SVG,
                     rust_ffi::FT_LOAD_SVG_ONLY,
                     rust_ffi::FT_LOAD_SBITS_ONLY,
-                    rust_ffi::FT_LOAD_RENDER
-                        | ((rust_ffi::FT_RENDER_MODE_SDF as FT_Int32) << 16),
+                    rust_ffi::FT_LOAD_RENDER | ((rust_ffi::FT_RENDER_MODE_SDF as FT_Int32) << 16),
                     rust_ffi::FT_LOAD_RENDER | (15 << 16),
                 ];
                 let _ = rust_ffi::FT_Load_Glyph(
@@ -6672,11 +6900,8 @@ fn abi_c110_rust_gap_batch_probe(
             let end = rust_ffi::FT_Stroker_EndSubPath(stroker);
             let mut points = 0;
             let mut contours = 0;
-            let count = rust_ffi::FT_Stroker_GetCounts(
-                stroker,
-                Some(&mut points),
-                Some(&mut contours),
-            );
+            let count =
+                rust_ffi::FT_Stroker_GetCounts(stroker, Some(&mut points), Some(&mut contours));
             let left = rust_ffi::FT_Stroker_GetBorderCounts(
                 stroker,
                 rust_ffi::FT_STROKER_BORDER_LEFT as FT_Int,
@@ -6770,18 +6995,12 @@ fn abi_c110_rust_gap_batch_probe(
             );
             let outlines = [triangle, conic, cubic, malformed];
             let outline = &outlines[repeat % outlines.len()];
-            let parsed = rust_ffi::FT_Stroker_ParseOutline(
-                stroker,
-                Some(outline),
-                (repeat & 1) as FT_Bool,
-            );
+            let parsed =
+                rust_ffi::FT_Stroker_ParseOutline(stroker, Some(outline), (repeat & 1) as FT_Bool);
             let mut points = 0;
             let mut contours = 0;
-            let counts = rust_ffi::FT_Stroker_GetCounts(
-                stroker,
-                Some(&mut points),
-                Some(&mut contours),
-            );
+            let counts =
+                rust_ffi::FT_Stroker_GetCounts(stroker, Some(&mut points), Some(&mut contours));
             let mut output = rust_ffi::FT_OutlineSnapshot::default();
             rust_ffi::FT_Stroker_Export(stroker, Some(&mut output));
             std::hint::black_box((parsed, counts, output));
@@ -6829,11 +7048,8 @@ fn abi_c110_rust_gap_batch_probe(
                 },
                 rust_ffi::FT_BBox::default(),
             );
-            let bitmap = rust_ffi::FT_Outline_Get_Bitmap(
-                Some(&library),
-                Some(&triangle),
-                Some(&target),
-            );
+            let bitmap =
+                rust_ffi::FT_Outline_Get_Bitmap(Some(&library), Some(&triangle), Some(&target));
             let direct = rust_ffi::FT_Outline_Render(
                 Some(&library),
                 Some(&triangle),
@@ -6879,11 +7095,7 @@ fn abi_c110_rust_gap_batch_probe(
             );
             let copied = rust_ffi::FT_Outline_Glyph_Copy(&detached);
             let mut bbox = rust_ffi::FT_BBox::default();
-            rust_ffi::FT_Outline_Glyph_CBox(
-                Some(&detached),
-                repeat as FT_UInt,
-                Some(&mut bbox),
-            );
+            rust_ffi::FT_Outline_Glyph_CBox(Some(&detached), repeat as FT_UInt, Some(&mut bbox));
             std::hint::black_box((invalid.is_ok(), allocation, transformed, copied, bbox));
         }
         7 => {
@@ -6900,8 +7112,8 @@ fn abi_c110_rust_gap_batch_probe(
             rust_ffi::FT_Bitmap_Set_Owned_Buffer(
                 Some(&mut source),
                 vec![
-                    0x10, 0x40, 0x80, 0xff, 0xff, 0x80, 0x40, 0x10,
-                    0x20, 0x60, 0xa0, 0xe0, 0xe0, 0xa0, 0x60, 0x20,
+                    0x10, 0x40, 0x80, 0xff, 0xff, 0x80, 0x40, 0x10, 0x20, 0x60, 0xa0, 0xe0, 0xe0,
+                    0xa0, 0x60, 0x20,
                 ],
             );
             let mut copied = rust_ffi::FT_Bitmap_C::default();
@@ -6952,13 +7164,19 @@ fn abi_c110_rust_gap_batch_probe(
             };
             let mut lookup = None;
             let mut node = false;
-            let status = manager.lookup_sbit(Some(&image), repeat as FT_UInt, Some(&mut lookup), Some(&mut node));
+            let status = manager.lookup_sbit(
+                Some(&image),
+                repeat as FT_UInt,
+                Some(&mut lookup),
+                Some(&mut node),
+            );
             drop(lookup);
             let unref = manager.unref_sbit_node(&image, repeat as FT_UInt);
             manager.reset();
             manager.done();
             let mut after_done = None;
-            let after = manager.lookup_sbit(Some(&image), 0, Some(&mut after_done), Some(&mut node));
+            let after =
+                manager.lookup_sbit(Some(&image), 0, Some(&mut after_done), Some(&mut node));
             std::hint::black_box((status, unref, after, node));
         }
         9 => {
@@ -6974,19 +7192,13 @@ fn abi_c110_rust_gap_batch_probe(
             let source_bytes = &sources[repeat];
             let source = rust_ffi::FT_StreamRec::default();
             let mut gzip = rust_ffi::FT_StreamRec::default();
-            let gzip_status = rust_ffi::FT_Stream_OpenGzip(
-                Some(&mut gzip),
-                Some(&source),
-                Some(source_bytes),
-            );
+            let gzip_status =
+                rust_ffi::FT_Stream_OpenGzip(Some(&mut gzip), Some(&source), Some(source_bytes));
             let read = rust_ffi::FT_Gzip_Stream_Read(Some(&gzip), 0, 16);
             rust_ffi::FT_Gzip_Stream_Close(Some(&mut gzip));
             let mut lzw = rust_ffi::FT_StreamRec::default();
-            let lzw_status = rust_ffi::FT_Stream_OpenLZW(
-                Some(&mut lzw),
-                Some(&source),
-                Some(source_bytes),
-            );
+            let lzw_status =
+                rust_ffi::FT_Stream_OpenLZW(Some(&mut lzw), Some(&source), Some(source_bytes));
             rust_ffi::FT_LZW_Stream_Close(Some(&mut lzw));
             std::hint::black_box((gzip_status, read, lzw_status));
         }
@@ -7006,13 +7218,8 @@ fn abi_c110_rust_gap_batch_probe(
                 Some(&mut value),
                 value_len,
             );
-            let missing = rust_ffi::FT_Get_PS_Font_Value(
-                Some(&face),
-                rust_ffi::PS_DICT_MAX + 1,
-                0,
-                None,
-                0,
-            );
+            let missing =
+                rust_ffi::FT_Get_PS_Font_Value(Some(&face), rust_ffi::PS_DICT_MAX + 1, 0, None, 0);
             let format = rust_ffi::FT_Get_Font_Format(Some(&face));
             std::hint::black_box((info_status, private_status, value_status, missing, format));
         }
@@ -7046,11 +7253,8 @@ fn abi_c110_rust_gap_batch_probe(
             // CPAL/COLR faces, including malformed table fixtures, drive the
             // parser's optional metadata and nested paint rejection paths.
             let palette = rust_ffi::FT_Palette_Data_Copy(Some(&face));
-            let selected = rust_ffi::FT_Palette_Select_Copy(
-                Some(&face),
-                repeat as FT_UShort,
-                repeat % 2 == 0,
-            );
+            let selected =
+                rust_ffi::FT_Palette_Select_Copy(Some(&face), repeat as FT_UShort, repeat % 2 == 0);
             let entries = rust_ffi::FT_Palette_Active_Entries_Copy(Some(&face));
             let foreground = rust_ffi::FT_Palette_Foreground_Copy(Some(&face));
             let mut layer_glyph = 0;
@@ -7063,11 +7267,7 @@ fn abi_c110_rust_gap_batch_probe(
                 Some(&mut color_index),
                 Some(&mut iterator),
             );
-            let clip = rust_ffi::FT_Get_Color_Glyph_ClipBox(
-                Some(&face),
-                layer_glyph,
-                None,
-            );
+            let clip = rust_ffi::FT_Get_Color_Glyph_ClipBox(Some(&face), layer_glyph, None);
             let paint = rust_ffi::FT_Get_Color_Glyph_Paint(
                 Some(&face),
                 layer_glyph,
@@ -7106,7 +7306,16 @@ fn abi_c110_rust_gap_batch_probe(
                 rust_ffi::FT_ENCODING_UNICODE as FT_Encoding,
             );
             let set_charmap = rust_ffi::FT_Set_Charmap(Some(&mut face), ptr::null_mut());
-            std::hint::black_box((pixel, char_size, requested, new_size, done_size, selected, charmap, set_charmap));
+            std::hint::black_box((
+                pixel,
+                char_size,
+                requested,
+                new_size,
+                done_size,
+                selected,
+                charmap,
+                set_charmap,
+            ));
         }
         14 => {
             // Load and render policy combinations reach bitmap, SVG, color,
@@ -7121,12 +7330,14 @@ fn abi_c110_rust_gap_batch_probe(
             ];
             let loaded = rust_ffi::FT_Load_Glyph(&face, glyph_index, flags[repeat]);
             if let Ok(slot) = loaded {
-                let normal = rust_ffi::FT_Render_Glyph(slot.clone(), rust_ffi::FT_RENDER_MODE_NORMAL);
+                let normal =
+                    rust_ffi::FT_Render_Glyph(slot.clone(), rust_ffi::FT_RENDER_MODE_NORMAL);
                 let mono = rust_ffi::FT_Render_Glyph(slot.clone(), rust_ffi::FT_RENDER_MODE_MONO);
                 let invalid = rust_ffi::FT_Render_Glyph(slot, rust_ffi::FT_RENDER_MODE_MAX);
                 std::hint::black_box((normal.is_ok(), mono.is_ok(), invalid.is_ok()));
             }
-            let _ = rust_ffi::FT_Load_Char(&face, [0, 65, 0x20ac, 0xffff, 0][repeat], flags[repeat]);
+            let _ =
+                rust_ffi::FT_Load_Char(&face, [0, 65, 0x20ac, 0xffff, 0][repeat], flags[repeat]);
         }
         15 => {
             // Variable design/blend queries deliberately vary coordinate count
@@ -7142,26 +7353,64 @@ fn abi_c110_rust_gap_batch_probe(
                 None,
             );
             let mut axis_flags = 0;
-            let axis = rust_ffi::FT_Get_Var_Axis_Flags(Some(&master), repeat as FT_UInt, Some(&mut axis_flags));
+            let axis = rust_ffi::FT_Get_Var_Axis_Flags(
+                Some(&master),
+                repeat as FT_UInt,
+                Some(&mut axis_flags),
+            );
             let mut coords = [0_i64, 16_384, -16_384, 32_768];
             let count = repeat as FT_UInt;
-            let set_design = rust_ffi::FT_Set_Var_Design_Coordinates(Some(&mut face), count, Some(&coords[..repeat]));
-            let set_blend = rust_ffi::FT_Set_Var_Blend_Coordinates(Some(&mut face), count, Some(&coords[..repeat]));
-            let get_design = rust_ffi::FT_Get_Var_Design_Coordinates(Some(&face), count, Some(&mut coords[..repeat]));
-            let get_blend = rust_ffi::FT_Get_Var_Blend_Coordinates(Some(&face), count, Some(&mut coords[..repeat]));
+            let set_design = rust_ffi::FT_Set_Var_Design_Coordinates(
+                Some(&mut face),
+                count,
+                Some(&coords[..repeat]),
+            );
+            let set_blend = rust_ffi::FT_Set_Var_Blend_Coordinates(
+                Some(&mut face),
+                count,
+                Some(&coords[..repeat]),
+            );
+            let get_design = rust_ffi::FT_Get_Var_Design_Coordinates(
+                Some(&face),
+                count,
+                Some(&mut coords[..repeat]),
+            );
+            let get_blend = rust_ffi::FT_Get_Var_Blend_Coordinates(
+                Some(&face),
+                count,
+                Some(&mut coords[..repeat]),
+            );
             let instance = rust_ffi::FT_Set_Named_Instance(Some(&mut face), repeat as FT_UInt);
-            let default_instance = rust_ffi::FT_Get_Default_Named_Instance(Some(&face), Some(&mut axis_flags));
-            std::hint::black_box((mm, axis, set_design, set_blend, get_design, get_blend, instance, default_instance, axes, styles));
+            let default_instance =
+                rust_ffi::FT_Get_Default_Named_Instance(Some(&face), Some(&mut axis_flags));
+            std::hint::black_box((
+                mm,
+                axis,
+                set_design,
+                set_blend,
+                get_design,
+                get_blend,
+                instance,
+                default_instance,
+                axes,
+                styles,
+            ));
         }
         16 => {
             // SFNT names, table info, first/next character, and kerning use
             // both valid and deliberately out-of-range selectors.
             let count = rust_ffi::FT_Get_Sfnt_Name_Count(Some(&face));
             let mut name = rust_ffi::FT_SfntName::default();
-            let name_status = rust_ffi::FT_Get_Sfnt_Name(Some(&face), repeat as FT_UInt, Some(&mut name));
+            let name_status =
+                rust_ffi::FT_Get_Sfnt_Name(Some(&face), repeat as FT_UInt, Some(&mut name));
             let mut tag = 0;
             let mut length = 0;
-            let info = rust_ffi::FT_Sfnt_Table_Info(&face, repeat as FT_UInt, Some(&mut tag), Some(&mut length));
+            let info = rust_ffi::FT_Sfnt_Table_Info(
+                &face,
+                repeat as FT_UInt,
+                Some(&mut tag),
+                Some(&mut length),
+            );
             let _ = rust_ffi::FT_Get_Sfnt_Table(&face, u32::from_be_bytes(*b"head"));
             let table = rust_ffi::FT_Load_Sfnt_Table(
                 &face,
@@ -7173,8 +7422,18 @@ fn abi_c110_rust_gap_batch_probe(
             let first = rust_ffi::FT_Get_First_Char(Some(&face), Some(&mut glyph));
             let next = rust_ffi::FT_Get_Next_Char(Some(&face), first, Some(&mut glyph));
             let mut kerning = rust_ffi::FT_Vector::default();
-            let kern = rust_ffi::FT_Get_Kerning(Some(&face), 0, repeat as FT_UInt, 0, Some(&mut kerning));
-            std::hint::black_box((count, name_status, info, table.is_ok(), first, next, kern, kerning));
+            let kern =
+                rust_ffi::FT_Get_Kerning(Some(&face), 0, repeat as FT_UInt, 0, Some(&mut kerning));
+            std::hint::black_box((
+                count,
+                name_status,
+                info,
+                table.is_ok(),
+                first,
+                next,
+                kern,
+                kerning,
+            ));
         }
         17 => {
             // Autohint target modes and transforms are applied to real font
@@ -7194,9 +7453,8 @@ fn abi_c110_rust_gap_batch_probe(
                 rust_ffi::FT_LOAD_NO_AUTOHINT,
                 rust_ffi::FT_LOAD_NO_HINTING,
             ];
-            let loads = [0, 3, 36, 65, 1].map(|glyph_index| {
-                rust_ffi::FT_Load_Glyph(&face, glyph_index, flags[repeat])
-            });
+            let loads = [0, 3, 36, 65, 1]
+                .map(|glyph_index| rust_ffi::FT_Load_Glyph(&face, glyph_index, flags[repeat]));
             let mut got = rust_ffi::FT_Matrix::default();
             let mut got_delta = rust_ffi::FT_Vector::default();
             rust_ffi::FT_Get_Transform(Some(&face), Some(&mut got), Some(&mut got_delta));
@@ -7214,26 +7472,58 @@ fn abi_c110_rust_gap_batch_probe(
             ];
             let loaded = rust_ffi::FT_Load_Glyph(&face, [0, 1, 2, 36, 65][repeat], flags[repeat]);
             let mut property = rust_ffi::BDF_PropertyRec::default();
-            let bdf = rust_ffi::FT_Get_BDF_Property(Some(&face), Some("FONT_ASCENT"), Some(&mut property));
+            let bdf = rust_ffi::FT_Get_BDF_Property(
+                Some(&face),
+                Some("FONT_ASCENT"),
+                Some(&mut property),
+            );
             let mut encoding = ptr::null();
             let mut registry = ptr::null();
-            let charset = rust_ffi::FT_Get_BDF_Charset_ID(Some(&face), Some(&mut encoding), Some(&mut registry));
+            let charset = rust_ffi::FT_Get_BDF_Charset_ID(
+                Some(&face),
+                Some(&mut encoding),
+                Some(&mut registry),
+            );
             let mut header = rust_ffi::FT_WinFNT_HeaderRec::default();
             let winfnt = rust_ffi::FT_Get_WinFNT_Header(Some(&face), Some(&mut header));
             let mut cid = 0;
-            let cid_status = rust_ffi::FT_Get_CID_From_Glyph_Index(Some(&face), repeat as FT_UInt, Some(&mut cid));
-            std::hint::black_box((loaded.is_ok(), bdf, charset, winfnt, cid_status, property, header, cid));
+            let cid_status = rust_ffi::FT_Get_CID_From_Glyph_Index(
+                Some(&face),
+                repeat as FT_UInt,
+                Some(&mut cid),
+            );
+            std::hint::black_box((
+                loaded.is_ok(),
+                bdf,
+                charset,
+                winfnt,
+                cid_status,
+                property,
+                header,
+                cid,
+            ));
         }
         19 => {
             // Fixed-vector and matrix boundary calls cover the low-level math
             // wrappers used by transforms, stroker angles, and scaler code.
-            let mut vector = rust_ffi::FT_Vector { x: 64 + repeat as FT_Pos, y: -32 };
+            let mut vector = rust_ffi::FT_Vector {
+                x: 64 + repeat as FT_Pos,
+                y: -32,
+            };
             rust_ffi::FT_Vector_Unit(Some(&mut vector), repeat as FT_Angle * 0x1000);
-            rust_ffi::FT_Vector_From_Polar(Some(&mut vector), 64 + repeat as FT_Fixed, repeat as FT_Angle * 0x1000);
+            rust_ffi::FT_Vector_From_Polar(
+                Some(&mut vector),
+                64 + repeat as FT_Fixed,
+                repeat as FT_Angle * 0x1000,
+            );
             let length = rust_ffi::FT_Vector_Length(Some(&vector));
             let mut polar_length = 0;
             let mut polar_angle = 0;
-            rust_ffi::FT_Vector_Polarize(Some(&vector), Some(&mut polar_length), Some(&mut polar_angle));
+            rust_ffi::FT_Vector_Polarize(
+                Some(&vector),
+                Some(&mut polar_length),
+                Some(&mut polar_angle),
+            );
             rust_ffi::FT_Vector_Rotate(Some(&mut vector), -polar_angle);
             let mut matrix = rust_ffi::FT_Matrix {
                 xx: 0x1_0000,
@@ -7255,7 +7545,6 @@ fn abi_c110_rust_gap_batch_probe(
     }
 }
 
-
 #[cfg(feature = "abi-test-support")]
 fn abi_c111_rust_gap_batch_probe(
     bytes: &[FT_Byte],
@@ -7271,9 +7560,7 @@ fn abi_c111_rust_gap_batch_probe(
     let family = index % 20;
     let repeat = index / 20;
     let core_library = rust_ffi::FT_Init_FreeType();
-    let Ok(mut core_face) =
-        rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-    else {
+    let Ok(mut core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) else {
         return;
     };
     let outline = rust_ffi::FT_OutlineSnapshot {
@@ -7356,12 +7643,8 @@ fn abi_c111_rust_gap_batch_probe(
                 let end = rust_ffi::FT_Vector { x: 512, y: 0 };
                 let line = rust_ffi::FT_Stroker_LineTo(stroker, Some(&end));
                 let conic = rust_ffi::FT_Stroker_ConicTo(stroker, Some(&control), Some(&end));
-                let cubic = rust_ffi::FT_Stroker_CubicTo(
-                    stroker,
-                    Some(&start),
-                    Some(&control),
-                    Some(&end),
-                );
+                let cubic =
+                    rust_ffi::FT_Stroker_CubicTo(stroker, Some(&start), Some(&control), Some(&end));
                 let ended = rust_ffi::FT_Stroker_EndSubPath(stroker);
                 let parsed =
                     rust_ffi::FT_Stroker_ParseOutline(stroker, Some(&malformed), repeat as _);
@@ -7474,7 +7757,12 @@ fn abi_c111_rust_gap_batch_probe(
                     height: 12,
                     flags: rust_ffi::FT_LOAD_RENDER,
                 };
-                let first = harness.lookup(image, if repeat % 2 == 0 { 36 } else { FT_UInt::MAX }, true, true);
+                let first = harness.lookup(
+                    image,
+                    if repeat % 2 == 0 { 36 } else { FT_UInt::MAX },
+                    true,
+                    true,
+                );
                 let second = harness.lookup(image, 36, true, true);
                 let ownership = harness.ownership_snapshot();
                 let _ = std::hint::black_box((first, second, ownership));
@@ -7509,14 +7797,16 @@ fn abi_c111_rust_gap_batch_probe(
                 Some(&mut value[..]),
                 value_len,
             );
-            let missing = rust_ffi::FT_Get_PS_Font_Value(
-                Some(&core_face),
-                repeat as FT_Int,
-                0,
-                None,
-                0,
-            );
-            let _ = std::hint::black_box((info_status, private_status, value_status, missing, info, private));
+            let missing =
+                rust_ffi::FT_Get_PS_Font_Value(Some(&core_face), repeat as FT_Int, 0, None, 0);
+            let _ = std::hint::black_box((
+                info_status,
+                private_status,
+                value_status,
+                missing,
+                info,
+                private,
+            ));
         }
         9 => {
             // Color and palette iterators use both valid and absent optional
@@ -7544,7 +7834,15 @@ fn abi_c111_rust_gap_batch_probe(
                 rust_ffi::FT_COLOR_INCLUDE_ROOT_TRANSFORM as FT_UInt,
                 None,
             );
-            let _ = std::hint::black_box((palette, selected, layer, clip, paint, glyph_index, color_index));
+            let _ = std::hint::black_box((
+                palette,
+                selected,
+                layer,
+                clip,
+                paint,
+                glyph_index,
+                color_index,
+            ));
         }
         10 => {
             // Variable coordinates intentionally overrun ordinary faces and
@@ -7605,15 +7903,22 @@ fn abi_c111_rust_gap_batch_probe(
             let mut tables = vec![ptr::null(); 10];
             let gx = rust_ffi::FT_TrueTypeGX_Validate(
                 Some(&core_face),
-                if repeat % 2 == 0 { 0 } else { rust_ffi::FT_VALIDATE_kern as FT_UInt },
+                if repeat % 2 == 0 {
+                    0
+                } else {
+                    rust_ffi::FT_VALIDATE_kern as FT_UInt
+                },
                 Some(tables.as_mut_slice()),
             );
             for table in tables {
                 rust_ffi::FT_TrueTypeGX_Free(Some(&core_face), table);
             }
             let mut kern = ptr::null();
-            let classic =
-                rust_ffi::FT_ClassicKern_Validate(Some(&core_face), repeat as FT_UInt, Some(&mut kern));
+            let classic = rust_ffi::FT_ClassicKern_Validate(
+                Some(&core_face),
+                repeat as FT_UInt,
+                Some(&mut kern),
+            );
             rust_ffi::FT_ClassicKern_Free(Some(&core_face), kern);
             let _ = std::hint::black_box((gx, classic));
         }
@@ -7632,13 +7937,31 @@ fn abi_c111_rust_gap_batch_probe(
         15 => {
             // Custom-memory probes 41--43 cover requester/cache false arms
             // that cannot be selected by ordinary font inputs.
-            abi_custom_memory_coverage_probe(bytes, library, face_handle, memory, 41 + repeat as u16);
-            abi_custom_memory_coverage_probe(bytes, library, face_handle, memory, 42 + repeat as u16);
+            abi_custom_memory_coverage_probe(
+                bytes,
+                library,
+                face_handle,
+                memory,
+                41 + repeat as u16,
+            );
+            abi_custom_memory_coverage_probe(
+                bytes,
+                library,
+                face_handle,
+                memory,
+                42 + repeat as u16,
+            );
         }
         16 => {
             // The branch-gap and wrapper routers remain Rust-owned and are
             // called with the current valid face so their error paths execute.
-            abi_c107_uncovered_branch_probe(bytes, library, face_handle, memory, 1101 + repeat as u16);
+            abi_c107_uncovered_branch_probe(
+                bytes,
+                library,
+                face_handle,
+                memory,
+                1101 + repeat as u16,
+            );
             abi_c108_wrapper_gap_probe(bytes, library, face_handle, memory, 1201 + repeat as u16);
         }
         17 => {
@@ -7755,9 +8078,7 @@ fn abi_c113_rust_gap_batch_probe(
     let family = index / 5;
     let repeat = index % 5;
     let core_library = rust_ffi::FT_Init_FreeType();
-    let Ok(mut core_face) =
-        rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-    else {
+    let Ok(mut core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) else {
         return;
     };
     let triangle = rust_ffi::FT_OutlineSnapshot {
@@ -7939,10 +8260,8 @@ fn abi_c113_rust_gap_batch_probe(
         5 => {
             let outlines = [triangle, conic, cubic, malformed];
             let outline = &outlines[repeat % outlines.len()];
-            let trace = rust_ffi::FT_Outline_Decompose_Trace(
-                Some(outline),
-                &[(0, 0), (1, 1), (2, 2)],
-            );
+            let trace =
+                rust_ffi::FT_Outline_Decompose_Trace(Some(outline), &[(0, 0), (1, 1), (2, 2)]);
             let mut bbox = rust_ffi::FT_BBox::default();
             let bbox_result = rust_ffi::FT_Outline_Get_BBox(Some(outline), Some(&mut bbox));
             std::hint::black_box((trace.is_ok(), bbox_result, bbox));
@@ -7974,11 +8293,7 @@ fn abi_c113_rust_gap_batch_probe(
                 );
                 let segment = match repeat {
                     0 => rust_ffi::FT_Stroker_LineTo(stroker, Some(&end)),
-                    1 | 2 => rust_ffi::FT_Stroker_ConicTo(
-                        stroker,
-                        Some(&control),
-                        Some(&end),
-                    ),
+                    1 | 2 => rust_ffi::FT_Stroker_ConicTo(stroker, Some(&control), Some(&end)),
                     _ => rust_ffi::FT_Stroker_CubicTo(
                         stroker,
                         Some(&control),
@@ -7998,7 +8313,9 @@ fn abi_c113_rust_gap_batch_probe(
                     rust_ffi::FT_Stroker_GetCounts(stroker, Some(&mut points), Some(&mut contours));
                 let mut output = rust_ffi::FT_OutlineSnapshot::default();
                 rust_ffi::FT_Stroker_Export(stroker, Some(&mut output));
-                std::hint::black_box((begin, segment, parsed, ended, counts, points, contours, output));
+                std::hint::black_box((
+                    begin, segment, parsed, ended, counts, points, contours, output,
+                ));
                 rust_ffi::FT_Stroker_Done(stroker);
             }
         }
@@ -8010,16 +8327,10 @@ fn abi_c113_rust_gap_batch_probe(
             ) && let Ok(mut glyph) = rust_ffi::FT_Get_Outline_Glyph(Some(&slot))
             {
                 let mut bbox = rust_ffi::FT_BBox::default();
-                rust_ffi::FT_Outline_Glyph_CBox(
-                    Some(&glyph),
-                    repeat as FT_UInt,
-                    Some(&mut bbox),
-                );
+                rust_ffi::FT_Outline_Glyph_CBox(Some(&glyph), repeat as FT_UInt, Some(&mut bbox));
                 let copied = rust_ffi::FT_Outline_Glyph_Copy(&glyph);
-                let normal = rust_ffi::FT_Outline_Glyph_To_Bitmap(
-                    &glyph,
-                    rust_ffi::FT_RENDER_MODE_NORMAL,
-                );
+                let normal =
+                    rust_ffi::FT_Outline_Glyph_To_Bitmap(&glyph, rust_ffi::FT_RENDER_MODE_NORMAL);
                 let origin = rust_ffi::FT_Outline_Glyph_To_Bitmap_With_Origin(
                     &glyph,
                     rust_ffi::FT_RENDER_MODE_MONO,
@@ -8064,8 +8375,10 @@ fn abi_c113_rust_gap_batch_probe(
                 if repeat == 4 {
                     [1_u8, 2, 3, 255].repeat(16)
                 } else {
-                    vec![0x10, 0x40, 0x80, 0xff, 0xff, 0x80, 0x40, 0x10,
-                         0x20, 0x60, 0xa0, 0xe0, 0xe0, 0xa0, 0x60, 0x20]
+                    vec![
+                        0x10, 0x40, 0x80, 0xff, 0xff, 0x80, 0x40, 0x10, 0x20, 0x60, 0xa0, 0xe0,
+                        0xe0, 0xa0, 0x60, 0x20,
+                    ]
                 },
             );
             let mut copied = rust_ffi::FT_Bitmap_C::default();
@@ -8148,8 +8461,7 @@ fn abi_c113_rust_gap_batch_probe(
         }
         11 => {
             let mut master = rust_ffi::FT_Multi_Master::default();
-            let master_result =
-                rust_ffi::FT_Get_Multi_Master(Some(&core_face), Some(&mut master));
+            let master_result = rust_ffi::FT_Get_Multi_Master(Some(&core_face), Some(&mut master));
             let mut weights = [0_i64, 16_384, 32_768, 49_152];
             let weight_result = rust_ffi::FT_Set_MM_WeightVector(
                 Some(&mut core_face),
@@ -8194,28 +8506,16 @@ fn abi_c113_rust_gap_batch_probe(
         12 => {
             let coords = [0_i64, 16_384, -16_384, 32_768];
             let count = repeat as FT_UInt;
-            let set_design = rust_ffi::FT_Set_Var_Design_Coordinates(
-                Some(&mut core_face),
-                count,
-                Some(&coords),
-            );
-            let set_blend = rust_ffi::FT_Set_Var_Blend_Coordinates(
-                Some(&mut core_face),
-                count,
-                Some(&coords),
-            );
+            let set_design =
+                rust_ffi::FT_Set_Var_Design_Coordinates(Some(&mut core_face), count, Some(&coords));
+            let set_blend =
+                rust_ffi::FT_Set_Var_Blend_Coordinates(Some(&mut core_face), count, Some(&coords));
             let mut design = [0_i64; 4];
             let mut blend = [0_i64; 4];
-            let get_design = rust_ffi::FT_Get_Var_Design_Coordinates(
-                Some(&core_face),
-                count,
-                Some(&mut design),
-            );
-            let get_blend = rust_ffi::FT_Get_Var_Blend_Coordinates(
-                Some(&core_face),
-                count,
-                Some(&mut blend),
-            );
+            let get_design =
+                rust_ffi::FT_Get_Var_Design_Coordinates(Some(&core_face), count, Some(&mut design));
+            let get_blend =
+                rust_ffi::FT_Get_Var_Blend_Coordinates(Some(&core_face), count, Some(&mut blend));
             let named = rust_ffi::FT_Set_Named_Instance(Some(&mut core_face), repeat as FT_UInt);
             let mut instance = 0;
             let default_instance =
@@ -8249,27 +8549,17 @@ fn abi_c113_rust_gap_batch_probe(
                 if repeat == 4 { 0 } else { 2 },
                 flags[repeat],
             );
-            let rendered = loaded
-                .as_ref()
-                .ok()
-                .map(|slot| {
-                    rust_ffi::FT_Render_Glyph(slot.clone(), rust_ffi::FT_RENDER_MODE_NORMAL)
-                        .is_ok()
-                });
-            std::hint::black_box((
-                loaded.is_ok(),
-                advance.is_ok(),
-                advances.is_ok(),
-                rendered,
-            ));
+            let rendered = loaded.as_ref().ok().map(|slot| {
+                rust_ffi::FT_Render_Glyph(slot.clone(), rust_ffi::FT_RENDER_MODE_NORMAL).is_ok()
+            });
+            std::hint::black_box((loaded.is_ok(), advance.is_ok(), advances.is_ok(), rendered));
         }
         14 => {
             let mut info = rust_ffi::PS_FontInfoRec::default();
             let mut private = rust_ffi::PS_PrivateRec::default();
             let mut value = [0_u8; 16];
             let value_len = value.len() as FT_Long;
-            let info_result =
-                rust_ffi::FT_Get_PS_Font_Info(Some(&core_face), Some(&mut info));
+            let info_result = rust_ffi::FT_Get_PS_Font_Info(Some(&core_face), Some(&mut info));
             let private_result =
                 rust_ffi::FT_Get_PS_Font_Private(Some(&core_face), Some(&mut private));
             let value_result = rust_ffi::FT_Get_PS_Font_Value(
@@ -8333,11 +8623,7 @@ fn abi_c113_rust_gap_batch_probe(
                 Some(&mut paint),
             );
             let mut paint_value = rust_ffi::FT_COLR_Paint::default();
-            let resolved = rust_ffi::FT_Get_Paint(
-                Some(&core_face),
-                paint,
-                Some(&mut paint_value),
-            );
+            let resolved = rust_ffi::FT_Get_Paint(Some(&core_face), paint, Some(&mut paint_value));
             std::hint::black_box((
                 palette,
                 selected,
@@ -8369,8 +8655,11 @@ fn abi_c113_rust_gap_batch_probe(
                 rust_ffi::FT_TrueTypeGX_Free(Some(&core_face), table);
             }
             let mut kern = ptr::null();
-            let classic =
-                rust_ffi::FT_ClassicKern_Validate(Some(&core_face), repeat as FT_UInt, Some(&mut kern));
+            let classic = rust_ffi::FT_ClassicKern_Validate(
+                Some(&core_face),
+                repeat as FT_UInt,
+                Some(&mut kern),
+            );
             rust_ffi::FT_ClassicKern_Free(Some(&core_face), kern);
             std::hint::black_box((gx, classic));
         }
@@ -8390,9 +8679,7 @@ fn abi_c113_rust_gap_batch_probe(
                 Some(&mut lookup),
                 Some(&mut locked),
             );
-            let second = manager
-                .lookup_pixel_size(repeat as FT_UInt, 12)
-                .is_ok();
+            let second = manager.lookup_pixel_size(repeat as FT_UInt, 12).is_ok();
             manager.done();
             let mut after = None;
             let mut after_locked = false;
@@ -8418,16 +8705,10 @@ fn abi_c113_rust_gap_batch_probe(
                 ..rust_ffi::FT_StreamRec::default()
             };
             let mut target = rust_ffi::FT_StreamRec::default();
-            let gzip = rust_ffi::FT_Stream_OpenGzip(
-                Some(&mut target),
-                Some(&source),
-                Some(&source_bytes),
-            );
-            let lzw = rust_ffi::FT_Stream_OpenLZW(
-                Some(&mut target),
-                Some(&source),
-                Some(&source_bytes),
-            );
+            let gzip =
+                rust_ffi::FT_Stream_OpenGzip(Some(&mut target), Some(&source), Some(&source_bytes));
+            let lzw =
+                rust_ffi::FT_Stream_OpenLZW(Some(&mut target), Some(&source), Some(&source_bytes));
             let bzip = rust_ffi::FT_Stream_OpenBzip2(
                 Some(&mut target),
                 Some(&mut source),
@@ -8465,11 +8746,9 @@ fn abi_c113_rust_gap_batch_probe(
                 horiResolution: 72,
                 vertResolution: 72,
             };
-            let requested =
-                rust_ffi::FT_Request_Size(Some(&mut core_face), Some(&request));
+            let requested = rust_ffi::FT_Request_Size(Some(&mut core_face), Some(&request));
             request.type_ = rust_ffi::FT_SIZE_REQUEST_TYPE_BBOX as _;
-            let bbox_requested =
-                rust_ffi::FT_Request_Size(Some(&mut core_face), Some(&request));
+            let bbox_requested = rust_ffi::FT_Request_Size(Some(&mut core_face), Some(&request));
             let matrix = rust_ffi::FT_Matrix {
                 xx: 0x1_0000,
                 xy: if repeat % 2 == 0 { 0x0400 } else { -0x0400 },
@@ -8480,11 +8759,7 @@ fn abi_c113_rust_gap_batch_probe(
             rust_ffi::FT_Set_Transform(Some(&mut core_face), Some(&matrix), Some(&delta));
             let mut got = rust_ffi::FT_Matrix::default();
             let mut got_delta = rust_ffi::FT_Vector::default();
-            rust_ffi::FT_Get_Transform(
-                Some(&core_face),
-                Some(&mut got),
-                Some(&mut got_delta),
-            );
+            rust_ffi::FT_Get_Transform(Some(&core_face), Some(&mut got), Some(&mut got_delta));
             let mut size = ptr::null_mut();
             let new_size = rust_ffi::FT_New_Size(Some(&core_face), Some(&mut size));
             let done_size = rust_ffi::FT_Done_Size(size);
@@ -8498,6 +8773,221 @@ fn abi_c113_rust_gap_batch_probe(
                 new_size,
                 done_size,
             ));
+        }
+        _ => {}
+    }
+}
+
+#[cfg(feature = "abi-test-support")]
+fn abi_c114_valid_public_batch_probe(
+    bytes: &[FT_Byte],
+    _library: FT_Library,
+    _face: FT_Face,
+    _memory: FT_Memory,
+    probe: u16,
+) {
+    // c114 keeps the witness inputs on valid public routes: real maintained
+    // font bytes, live Rust-owned faces, and public load/render/bitmap/size
+    // operations.  The three rows in each family vary the public mode or
+    // asset while the lifecycle fixture remains the parity entry point.
+    let index = usize::from(probe.saturating_sub(1901));
+    let family = index / 3;
+    let repeat = index % 3;
+    let core_library = rust_ffi::FT_Init_FreeType();
+    let Ok(mut core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) else {
+        return;
+    };
+
+    match family {
+        0 => {
+            // Empty .notdef glyphs use the normal, mono, and LCD load/render
+            // paths through the public FT_Load_Glyph contract.
+            let flags = [
+                rust_ffi::FT_LOAD_RENDER,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_MONO,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD,
+            ];
+            let loaded = rust_ffi::FT_Load_Glyph(&core_face, 0, flags[repeat]);
+            std::hint::black_box(loaded.is_ok());
+        }
+        1 => {
+            // The remaining valid render selectors exercise LCD-V and SDF
+            // empty-glyph behavior without manufacturing an outline record.
+            let flags = [
+                rust_ffi::FT_LOAD_RENDER | ((rust_ffi::FT_RENDER_MODE_SDF as FT_Int32) << 16),
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD_V,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LIGHT,
+            ];
+            let loaded = rust_ffi::FT_Load_Glyph(&core_face, 0, flags[repeat]);
+            std::hint::black_box(loaded.is_ok());
+        }
+        2 => {
+            // A loaded composite is handed back to the public renderer with
+            // normal/mono/LCD selectors; the renderer reports the same public
+            // Cannot_Render_Glyph result as the pinned contract.
+            let loaded = rust_ffi::FT_Load_Glyph(&core_face, 0, rust_ffi::FT_LOAD_DEFAULT);
+            let rendered = loaded.ok().map(|slot| {
+                rust_ffi::FT_Render_Glyph(
+                    slot,
+                    [
+                        rust_ffi::FT_RENDER_MODE_NORMAL,
+                        rust_ffi::FT_RENDER_MODE_MONO,
+                        rust_ffi::FT_RENDER_MODE_LCD,
+                    ][repeat],
+                )
+            });
+            std::hint::black_box(rendered);
+        }
+        3 => {
+            // Non-empty glyphs keep the same direct FT_Render_Glyph route but
+            // vary the glyph and valid LCD/SDF mode combination.
+            let loaded = rust_ffi::FT_Load_Glyph(
+                &core_face,
+                [1, 2, 3][repeat],
+                rust_ffi::FT_LOAD_NO_HINTING,
+            );
+            let rendered = loaded.ok().map(|slot| {
+                rust_ffi::FT_Render_Glyph(
+                    slot,
+                    [
+                        rust_ffi::FT_RENDER_MODE_LCD_V,
+                        rust_ffi::FT_RENDER_MODE_SDF,
+                        rust_ffi::FT_RENDER_MODE_NORMAL,
+                    ][repeat],
+                )
+            });
+            std::hint::black_box(rendered);
+        }
+        4 => {
+            // Valid embedded strikes cover SBit-only, rendered SBit, and
+            // bitmap-metrics-only loading on maintained bitmap fonts.
+            let flags = [
+                rust_ffi::FT_LOAD_SBITS_ONLY,
+                rust_ffi::FT_LOAD_SBITS_ONLY | rust_ffi::FT_LOAD_RENDER,
+                rust_ffi::FT_LOAD_SBITS_ONLY | rust_ffi::FT_LOAD_BITMAP_METRICS_ONLY,
+            ];
+            let loaded = rust_ffi::FT_Load_Glyph(&core_face, 1, flags[repeat]);
+            std::hint::black_box(loaded.is_ok());
+        }
+        5 => {
+            // Gray2, Gray4, and BGRA are valid public bitmap records.  Their
+            // packed rows exercise conversion without malformed dimensions or
+            // null storage.
+            let (pixel_mode, num_grays, pitch, source_bytes) = match repeat {
+                0 => (
+                    rust_ffi::FT_PIXEL_MODE_GRAY2 as FT_Byte,
+                    4,
+                    2,
+                    vec![0x1b, 0xe4, 0x40, 0x7f],
+                ),
+                1 => (
+                    rust_ffi::FT_PIXEL_MODE_GRAY4 as FT_Byte,
+                    16,
+                    4,
+                    vec![0x0f, 0x12, 0x34, 0x56, 0xf0, 0xed, 0xcb, 0xa9],
+                ),
+                _ => (
+                    rust_ffi::FT_PIXEL_MODE_BGRA as FT_Byte,
+                    256,
+                    32,
+                    vec![1, 2, 3, 255].repeat(16),
+                ),
+            };
+            let mut source = rust_ffi::FT_Bitmap_C {
+                rows: 2,
+                width: 8,
+                pitch,
+                num_grays,
+                pixel_mode,
+                ..rust_ffi::FT_Bitmap_C::default()
+            };
+            rust_ffi::FT_Bitmap_Set_Owned_Buffer(Some(&mut source), source_bytes);
+            let mut converted = rust_ffi::FT_Bitmap_C::default();
+            let result = rust_ffi::FT_Bitmap_Convert(
+                Some(&core_library),
+                Some(&source),
+                Some(&mut converted),
+                4,
+            );
+            rust_ffi::FT_Bitmap_Done(Some(&core_library), Some(&mut source));
+            rust_ffi::FT_Bitmap_Done(Some(&core_library), Some(&mut converted));
+            std::hint::black_box(result);
+        }
+        6 => {
+            // Valid advance requests vary scaling and layout flags on a real
+            // variable-font face while staying inside its glyph range.
+            let flags = [
+                rust_ffi::FT_LOAD_DEFAULT,
+                rust_ffi::FT_LOAD_NO_SCALE,
+                rust_ffi::FT_LOAD_VERTICAL_LAYOUT,
+            ];
+            let glyph = [0, 1, 2][repeat];
+            let advance = rust_ffi::FT_Get_Advance(&core_face, glyph, flags[repeat]);
+            let advances = rust_ffi::FT_Get_Advances(&core_face, 0, 3, flags[repeat]);
+            std::hint::black_box((advance.is_ok(), advances.is_ok()));
+        }
+        7 => {
+            // Color/bitmap-capable faces are loaded through public color and
+            // render policies, including the valid NO_BITMAP fallback.
+            let flags = [
+                rust_ffi::FT_LOAD_COLOR,
+                rust_ffi::FT_LOAD_NO_BITMAP,
+                rust_ffi::FT_LOAD_COLOR | rust_ffi::FT_LOAD_RENDER,
+            ];
+            let loaded = rust_ffi::FT_Load_Glyph(&core_face, [0, 1, 2][repeat], flags[repeat]);
+            std::hint::black_box(loaded.is_ok());
+        }
+        8 => {
+            // Service queries stay on valid faces while selecting the
+            // PostScript, SFNT, and multiple-master families from the assets.
+            let format = rust_ffi::FT_Get_Font_Format(Some(&core_face));
+            let postscript = rust_ffi::FT_Get_Postscript_Name(&core_face);
+            let x11 = rust_ffi::FT_Get_X11_Font_Format(Some(&core_face));
+            let mut master = rust_ffi::FT_MM_Var::default();
+            let mut axes = vec![rust_ffi::FT_Var_Axis::default(); 8];
+            let mut styles = vec![rust_ffi::FT_Var_Named_Style::default(); 8];
+            let mm = rust_ffi::FT_Get_MM_Var(
+                Some(&core_face),
+                Some(&mut master),
+                Some(&mut axes),
+                Some(&mut styles),
+                None,
+            );
+            std::hint::black_box((format, postscript, x11, mm, master, axes, styles));
+        }
+        9 => {
+            // Public size requests vary nominal, real-dimension, and bbox
+            // selectors before a valid transformed glyph load.
+            let request = rust_ffi::FT_Size_RequestRec {
+                type_: [
+                    rust_ffi::FT_SIZE_REQUEST_TYPE_NOMINAL,
+                    rust_ffi::FT_SIZE_REQUEST_TYPE_REAL_DIM,
+                    rust_ffi::FT_SIZE_REQUEST_TYPE_BBOX,
+                ][repeat] as FT_Int,
+                width: (8 + repeat as FT_F26Dot6) * 64,
+                height: (12 + repeat as FT_F26Dot6) * 64,
+                horiResolution: 72,
+                vertResolution: 72,
+            };
+            let requested = rust_ffi::FT_Request_Size(Some(&mut core_face), Some(&request));
+            let set = rust_ffi::FT_Set_Pixel_Sizes(
+                &mut core_face,
+                8 + repeat as FT_UInt,
+                12 + repeat as FT_UInt,
+            );
+            let matrix = rust_ffi::FT_Matrix {
+                xx: 0x1_0000,
+                xy: if repeat == 1 { 0x0400 } else { 0 },
+                yx: 0,
+                yy: 0x1_0000,
+            };
+            rust_ffi::FT_Set_Transform(
+                Some(&mut core_face),
+                Some(&matrix),
+                Some(&rust_ffi::FT_Vector { x: 3, y: -2 }),
+            );
+            let loaded = rust_ffi::FT_Load_Glyph(&core_face, 0, rust_ffi::FT_LOAD_DEFAULT);
+            std::hint::black_box((requested, set, loaded.is_ok()));
         }
         _ => {}
     }
@@ -8629,12 +9119,7 @@ fn abi_custom_memory_coverage_probe(
                 manager: ptr::from_mut(&mut manager),
                 entries: BTreeMap::new(),
             };
-            let _ = FTC_CMapCache_Lookup(
-                ptr::from_mut(&mut cache),
-                face_id,
-                0,
-                65,
-            );
+            let _ = FTC_CMapCache_Lookup(ptr::from_mut(&mut cache), face_id, 0, 65);
         }
         27 => abi_coverage_cmap_restore(face, library),
         28 => {
@@ -8804,12 +9289,8 @@ fn abi_custom_memory_coverage_probe(
                     x_res: 0,
                     y_res: 0,
                 };
-                let _ = harness.lookup_scaler(
-                    scaler,
-                    rust_ffi::FT_LOAD_DEFAULT as FT_ULong,
-                    36,
-                    true,
-                );
+                let _ =
+                    harness.lookup_scaler(scaler, rust_ffi::FT_LOAD_DEFAULT as FT_ULong, 36, true);
             }
         }
         // c92-42: exercise the false arm of every optional cache slot during
@@ -8849,12 +9330,7 @@ fn abi_custom_memory_coverage_probe(
                     17,
                 )]),
             };
-            let glyph = FTC_CMapCache_Lookup(
-                ptr::from_mut(&mut cache),
-                face_id,
-                -1,
-                65,
-            );
+            let glyph = FTC_CMapCache_Lookup(ptr::from_mut(&mut cache), face_id, -1, 65);
             std::hint::black_box(glyph);
         }
         // c92-45: a negative cmap lookup that misses the cache falls through
@@ -8867,12 +9343,7 @@ fn abi_custom_memory_coverage_probe(
                 manager: ptr::from_mut(&mut manager),
                 entries: BTreeMap::new(),
             };
-            let glyph = FTC_CMapCache_Lookup(
-                ptr::from_mut(&mut cache),
-                face_id,
-                -1,
-                65,
-            );
+            let glyph = FTC_CMapCache_Lookup(ptr::from_mut(&mut cache), face_id, -1, 65);
             std::hint::black_box(glyph);
             manager.faces.clear();
         }
@@ -8886,12 +9357,7 @@ fn abi_custom_memory_coverage_probe(
                 manager: ptr::from_mut(&mut manager),
                 entries: BTreeMap::new(),
             };
-            let glyph = FTC_CMapCache_Lookup(
-                ptr::from_mut(&mut cache),
-                face_id,
-                FT_Int::MAX,
-                65,
-            );
+            let glyph = FTC_CMapCache_Lookup(ptr::from_mut(&mut cache), face_id, FT_Int::MAX, 65);
             std::hint::black_box(glyph);
             manager.faces.clear();
         }
@@ -9013,12 +9479,8 @@ fn abi_custom_memory_coverage_probe(
                     x_res: 0,
                     y_res: 0,
                 };
-                let snapshot = harness.lookup_scaler(
-                    scaler,
-                    rust_ffi::FT_LOAD_DEFAULT as FT_ULong,
-                    36,
-                    false,
-                );
+                let snapshot =
+                    harness.lookup_scaler(scaler, rust_ffi::FT_LOAD_DEFAULT as FT_ULong, 36, false);
                 std::hint::black_box(snapshot);
             }
         }
@@ -9100,18 +9562,10 @@ fn abi_custom_memory_coverage_probe(
                     x_res: 0,
                     y_res: 0,
                 };
-                let first = harness.lookup_scaler(
-                    scaler,
-                    rust_ffi::FT_LOAD_DEFAULT as FT_ULong,
-                    36,
-                    true,
-                );
-                let second = harness.lookup_scaler(
-                    scaler,
-                    rust_ffi::FT_LOAD_DEFAULT as FT_ULong,
-                    36,
-                    true,
-                );
+                let first =
+                    harness.lookup_scaler(scaler, rust_ffi::FT_LOAD_DEFAULT as FT_ULong, 36, true);
+                let second =
+                    harness.lookup_scaler(scaler, rust_ffi::FT_LOAD_DEFAULT as FT_ULong, 36, true);
                 std::hint::black_box((first.error, second.error));
             }
         }
@@ -9128,12 +9582,8 @@ fn abi_custom_memory_coverage_probe(
                     x_res: 0,
                     y_res: 0,
                 };
-                let result = harness.lookup_scaler(
-                    scaler,
-                    rust_ffi::FT_LOAD_DEFAULT as FT_ULong,
-                    0,
-                    false,
-                );
+                let result =
+                    harness.lookup_scaler(scaler, rust_ffi::FT_LOAD_DEFAULT as FT_ULong, 0, false);
                 std::hint::black_box(result);
             }
         }
@@ -9176,12 +9626,7 @@ fn abi_custom_memory_coverage_probe(
                     head: node,
                     tail: node,
                 };
-                FT_List_Finalize(
-                    ptr::from_mut(&mut list),
-                    None,
-                    memory,
-                    ptr::null_mut(),
-                );
+                FT_List_Finalize(ptr::from_mut(&mut list), None, memory, ptr::null_mut());
             }
         }
         // c93-65: a valid gray bitmap conversion reaches the success copyback
@@ -9302,10 +9747,8 @@ fn abi_custom_memory_coverage_probe(
             let _ = std::hint::black_box(result);
         }
         72 => {
-            let result = rust_ffi::FT_New_Glyph_Allocation_Failure(
-                None,
-                rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
-            );
+            let result =
+                rust_ffi::FT_New_Glyph_Allocation_Failure(None, rust_ffi::FT_GLYPH_FORMAT_OUTLINE);
             let _ = std::hint::black_box(result);
         }
         73 => {
@@ -9340,11 +9783,8 @@ fn abi_custom_memory_coverage_probe(
         78 => {
             let core_library = rust_ffi::FT_Init_FreeType();
             if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
-                let slot = rust_ffi::FT_Outline_GlyphSlot_With_Advance(
-                    &core_face,
-                    0x8000_i64 * 64,
-                    0,
-                );
+                let slot =
+                    rust_ffi::FT_Outline_GlyphSlot_With_Advance(&core_face, 0x8000_i64 * 64, 0);
                 let result = rust_ffi::FT_Get_Outline_Glyph(Some(&slot));
                 let _ = std::hint::black_box(result);
             }
@@ -9441,11 +9881,8 @@ fn abi_custom_memory_coverage_probe(
         90 => {
             let core_library = rust_ffi::FT_Init_FreeType();
             if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-                && let Ok(slot) = rust_ffi::FT_Load_Glyph(
-                    &core_face,
-                    36,
-                    rust_ffi::FT_LOAD_NO_HINTING,
-                )
+                && let Ok(slot) =
+                    rust_ffi::FT_Load_Glyph(&core_face, 36, rust_ffi::FT_LOAD_NO_HINTING)
                 && let Ok(glyph) = rust_ffi::FT_Get_Outline_Glyph(Some(&slot))
             {
                 let result = rust_ffi::FT_Outline_Glyph_To_Bitmap(&glyph, 99);
@@ -9455,11 +9892,8 @@ fn abi_custom_memory_coverage_probe(
         91 | 92 | 98 => {
             let core_library = rust_ffi::FT_Init_FreeType();
             if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-                && let Ok(slot) = rust_ffi::FT_Load_Glyph(
-                    &core_face,
-                    36,
-                    rust_ffi::FT_LOAD_NO_HINTING,
-                )
+                && let Ok(slot) =
+                    rust_ffi::FT_Load_Glyph(&core_face, 36, rust_ffi::FT_LOAD_NO_HINTING)
                 && let Ok(mut glyph) = rust_ffi::FT_Get_Outline_Glyph(Some(&slot))
             {
                 let matrix = rust_ffi::FT_Matrix {
@@ -9488,17 +9922,14 @@ fn abi_custom_memory_coverage_probe(
             }
         }
         93 => {
-                    let result = rust_ffi::FT_Outline_Glyph_Stroke(None, ptr::null_mut());
+            let result = rust_ffi::FT_Outline_Glyph_Stroke(None, ptr::null_mut());
             let _ = std::hint::black_box(result);
         }
         94 => {
             let core_library = rust_ffi::FT_Init_FreeType();
             if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-                && let Ok(slot) = rust_ffi::FT_Load_Glyph(
-                    &core_face,
-                    36,
-                    rust_ffi::FT_LOAD_NO_HINTING,
-                )
+                && let Ok(slot) =
+                    rust_ffi::FT_Load_Glyph(&core_face, 36, rust_ffi::FT_LOAD_NO_HINTING)
                 && let Ok(glyph) = rust_ffi::FT_Get_Outline_Glyph(Some(&slot))
             {
                 let result = rust_ffi::FT_Outline_Glyph_Stroke(Some(&glyph), ptr::null_mut());
@@ -9512,11 +9943,8 @@ fn abi_custom_memory_coverage_probe(
         96 => {
             let core_library = rust_ffi::FT_Init_FreeType();
             if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-                && let Ok(slot) = rust_ffi::FT_Load_Glyph(
-                    &core_face,
-                    36,
-                    rust_ffi::FT_LOAD_NO_HINTING,
-                )
+                && let Ok(slot) =
+                    rust_ffi::FT_Load_Glyph(&core_face, 36, rust_ffi::FT_LOAD_NO_HINTING)
                 && let Ok(glyph) = rust_ffi::FT_Get_Outline_Glyph(Some(&slot))
             {
                 let result =
@@ -9542,24 +9970,18 @@ fn abi_custom_memory_coverage_probe(
         // Coverage MCP red regions. They call the existing safe FFI layer from
         // test support; no exported C ABI or WASM implementation is added.
         101 => {
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 let mut manager = rust_ffi::FTCCacheManagerState::new(core_face);
                 let result = manager.lookup_pixel_size(FT_UInt::MAX, FT_UInt::MAX);
                 let _ = std::hint::black_box(result);
             }
         }
         102 => {
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 let mut manager = rust_ffi::FTCCacheManagerState::new_with_requester_error(
                     core_face,
                     rust_ffi::FT_Err_Invalid_Face_Handle as FT_Error,
@@ -9567,43 +9989,29 @@ fn abi_custom_memory_coverage_probe(
                 let image_type = rust_ffi::FTC_ImageTypeRec::default();
                 let mut output = None;
                 let mut node = false;
-                let result = manager.lookup_sbit(
-                    Some(&image_type),
-                    0,
-                    Some(&mut output),
-                    Some(&mut node),
-                );
+                let result =
+                    manager.lookup_sbit(Some(&image_type), 0, Some(&mut output), Some(&mut node));
                 let _ = std::hint::black_box((result, node));
             }
         }
         103 => {
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 let mut manager = rust_ffi::FTCCacheManagerState::new(core_face);
                 manager.done();
                 let image_type = rust_ffi::FTC_ImageTypeRec::default();
                 let mut output = None;
                 let mut node = true;
-                let result = manager.lookup_sbit(
-                    Some(&image_type),
-                    0,
-                    Some(&mut output),
-                    Some(&mut node),
-                );
+                let result =
+                    manager.lookup_sbit(Some(&image_type), 0, Some(&mut output), Some(&mut node));
                 let _ = std::hint::black_box((result, node));
             }
         }
         104 => {
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 let mut cache = rust_ffi::FTCSBitCacheState::new(core_face);
                 let image_type = rust_ffi::FTC_ImageTypeRec::default();
                 let mut node = false;
@@ -9618,12 +10026,9 @@ fn abi_custom_memory_coverage_probe(
             }
         }
         105 => {
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 let mut cache = rust_ffi::FTCSBitCacheState::new(core_face);
                 let mut output = None;
                 let mut node = false;
@@ -9638,12 +10043,9 @@ fn abi_custom_memory_coverage_probe(
             }
         }
         106 => {
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 let mut cache = rust_ffi::FTCSBitCacheState::new(core_face);
                 let image_type = rust_ffi::FTC_ImageTypeRec {
                     width: 12,
@@ -9662,12 +10064,9 @@ fn abi_custom_memory_coverage_probe(
             }
         }
         107 => {
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 let mut cache = rust_ffi::FTCSBitCacheState::new(core_face);
                 let image_type = rust_ffi::FTC_ImageTypeRec {
                     width: FT_UInt::MAX,
@@ -9686,12 +10085,9 @@ fn abi_custom_memory_coverage_probe(
             }
         }
         108 => {
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 let mut cache = rust_ffi::FTCSBitCacheState::new(core_face);
                 let image_type = rust_ffi::FTC_ImageTypeRec {
                     width: 12,
@@ -9972,11 +10368,8 @@ fn abi_custom_memory_coverage_probe(
                 let _ = rust_ffi::FT_Stroker_EndSubPath(stroker);
                 let mut points = 0;
                 let mut contours = 0;
-                let _ = rust_ffi::FT_Stroker_GetCounts(
-                    stroker,
-                    Some(&mut points),
-                    Some(&mut contours),
-                );
+                let _ =
+                    rust_ffi::FT_Stroker_GetCounts(stroker, Some(&mut points), Some(&mut contours));
                 let mut outline = rust_ffi::FT_OutlineSnapshot::default();
                 rust_ffi::FT_Stroker_Export(stroker, Some(&mut outline));
                 rust_ffi::FT_Stroker_Done(stroker);
@@ -10201,11 +10594,8 @@ fn abi_custom_memory_coverage_probe(
             if let Ok(mut core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let mut tables: [rust_ffi::FT_Bytes; 0] = [];
                 rust_ffi::FT_GX_Validator_Set_Available(&mut core_face, true);
-                let result = rust_ffi::FT_TrueTypeGX_Validate(
-                    Some(&core_face),
-                    0,
-                    Some(&mut tables),
-                );
+                let result =
+                    rust_ffi::FT_TrueTypeGX_Validate(Some(&core_face), 0, Some(&mut tables));
                 let _ = std::hint::black_box(result);
             }
         }
@@ -10233,12 +10623,9 @@ fn abi_custom_memory_coverage_probe(
         // pruned after the managed coverage comparison; the exported C ABI
         // and WASM surfaces remain thin adapters.
         152 => {
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 let mut manager = rust_ffi::FTCCacheManagerState::new(core_face);
                 manager.done();
                 let image_type = rust_ffi::FTC_ImageTypeRec::default();
@@ -10332,12 +10719,8 @@ fn abi_custom_memory_coverage_probe(
         170 => {
             let point = rust_ffi::FT_Vector { x: 1, y: 2 };
             let dangling = NonNull::<c_void>::dangling().as_ptr();
-            let result = rust_ffi::FT_Stroker_CubicTo(
-                dangling,
-                Some(&point),
-                Some(&point),
-                Some(&point),
-            );
+            let result =
+                rust_ffi::FT_Stroker_CubicTo(dangling, Some(&point), Some(&point), Some(&point));
             let _ = std::hint::black_box(result);
         }
         171 => {
@@ -10465,12 +10848,9 @@ fn abi_custom_memory_coverage_probe(
             let _ = std::hint::black_box(result);
         }
         198 => {
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 let mut paint = rust_ffi::FT_OpaquePaint {
                     p: NonNull::<u8>::dangling().as_ptr().cast(),
                     insert_root_transform: 0,
@@ -10489,14 +10869,12 @@ fn abi_custom_memory_coverage_probe(
         199 => {
             let mut stop = rust_ffi::FT_ColorStop::default();
             let mut iterator = rust_ffi::FT_ColorStopIterator::default();
-            let first = rust_ffi::FT_Get_Colorline_Stops(None, Some(&mut stop), Some(&mut iterator));
+            let first =
+                rust_ffi::FT_Get_Colorline_Stops(None, Some(&mut stop), Some(&mut iterator));
             let mut results = vec![first];
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 results.push(rust_ffi::FT_Get_Colorline_Stops(
                     Some(&core_face),
                     None,
@@ -10511,12 +10889,9 @@ fn abi_custom_memory_coverage_probe(
             let _ = std::hint::black_box(results);
         }
         200 => {
-            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(
-                &rust_ffi::FT_Init_FreeType(),
-                bytes,
-                0,
-                20.0,
-            ) {
+            if let Ok(core_face) =
+                rust_ffi::FT_New_Memory_Face(&rust_ffi::FT_Init_FreeType(), bytes, 0, 20.0)
+            {
                 let mut stop = rust_ffi::FT_ColorStop::default();
                 let mut iterator = rust_ffi::FT_ColorStopIterator::default();
                 let result = rust_ffi::FT_Get_Colorline_Stops(
@@ -10532,25 +10907,15 @@ fn abi_custom_memory_coverage_probe(
         // and WASM entry points stay adapters over this Rust-owned behavior.
         201 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(mut core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-            {
+            if let Ok(mut core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let zero = rust_ffi::FT_Set_Pixel_Sizes(&mut core_face, 0, 0);
-                let huge = rust_ffi::FT_Set_Char_Size(
-                    &mut core_face,
-                    i64::MAX,
-                    i64::MAX,
-                    72,
-                    72,
-                );
+                let huge = rust_ffi::FT_Set_Char_Size(&mut core_face, i64::MAX, i64::MAX, 72, 72);
                 let _ = std::hint::black_box((zero, huge));
             }
         }
         202 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(mut core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-            {
+            if let Ok(mut core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let mut request = rust_ffi::FT_Size_RequestRec {
                     type_: rust_ffi::FT_SIZE_REQUEST_TYPE_NOMINAL as _,
                     width: -1,
@@ -10558,23 +10923,15 @@ fn abi_custom_memory_coverage_probe(
                     horiResolution: 72,
                     vertResolution: 72,
                 };
-                let negative = rust_ffi::FT_Request_Size(
-                    Some(&mut core_face),
-                    Some(&request),
-                );
+                let negative = rust_ffi::FT_Request_Size(Some(&mut core_face), Some(&request));
                 request.type_ = 99;
-                let unknown = rust_ffi::FT_Request_Size(
-                    Some(&mut core_face),
-                    Some(&request),
-                );
+                let unknown = rust_ffi::FT_Request_Size(Some(&mut core_face), Some(&request));
                 let _ = std::hint::black_box((negative, unknown));
             }
         }
         203 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(mut core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-            {
+            if let Ok(mut core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let requests = [
                     rust_ffi::FT_SIZE_REQUEST_TYPE_NOMINAL,
                     rust_ffi::FT_SIZE_REQUEST_TYPE_REAL_DIM,
@@ -10597,14 +10954,9 @@ fn abi_custom_memory_coverage_probe(
         }
         204 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-            {
-                let invalid = rust_ffi::FT_Load_Glyph(
-                    &core_face,
-                    FT_UInt::MAX,
-                    rust_ffi::FT_LOAD_DEFAULT,
-                );
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
+                let invalid =
+                    rust_ffi::FT_Load_Glyph(&core_face, FT_UInt::MAX, rust_ffi::FT_LOAD_DEFAULT);
                 let alternate = rust_ffi::FT_Load_Glyph(
                     &core_face,
                     0,
@@ -10612,40 +10964,19 @@ fn abi_custom_memory_coverage_probe(
                         | rust_ffi::FT_LOAD_NO_HINTING
                         | rust_ffi::FT_LOAD_NO_BITMAP,
                 );
-                let missing = rust_ffi::FT_Load_Char(
-                    &core_face,
-                    0x10FF_FFFF,
-                    rust_ffi::FT_LOAD_DEFAULT,
-                );
+                let missing =
+                    rust_ffi::FT_Load_Char(&core_face, 0x10FF_FFFF, rust_ffi::FT_LOAD_DEFAULT);
                 let _ = std::hint::black_box((invalid, alternate, missing));
             }
         }
         205 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-            {
-                let fast = rust_ffi::FT_Get_Advance(
-                    &core_face,
-                    0,
-                    0x2000_0000,
-                );
-                let unscaled = rust_ffi::FT_Get_Advance(
-                    &core_face,
-                    0,
-                    rust_ffi::FT_LOAD_NO_SCALE,
-                );
-                let bad = rust_ffi::FT_Get_Advance(
-                    &core_face,
-                    FT_UInt::MAX,
-                    rust_ffi::FT_LOAD_DEFAULT,
-                );
-                let empty = rust_ffi::FT_Get_Advances(
-                    &core_face,
-                    0,
-                    0,
-                    rust_ffi::FT_LOAD_DEFAULT,
-                );
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
+                let fast = rust_ffi::FT_Get_Advance(&core_face, 0, 0x2000_0000);
+                let unscaled = rust_ffi::FT_Get_Advance(&core_face, 0, rust_ffi::FT_LOAD_NO_SCALE);
+                let bad =
+                    rust_ffi::FT_Get_Advance(&core_face, FT_UInt::MAX, rust_ffi::FT_LOAD_DEFAULT);
+                let empty = rust_ffi::FT_Get_Advances(&core_face, 0, 0, rust_ffi::FT_LOAD_DEFAULT);
                 let range = rust_ffi::FT_Get_Advances(
                     &core_face,
                     FT_UInt::MAX,
@@ -10657,21 +10988,11 @@ fn abi_custom_memory_coverage_probe(
         }
         206 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-            {
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let mut glyph = 0;
                 let first = rust_ffi::FT_Get_First_Char(Some(&core_face), Some(&mut glyph));
-                let next = rust_ffi::FT_Get_Next_Char(
-                    Some(&core_face),
-                    first,
-                    Some(&mut glyph),
-                );
-                let variant = rust_ffi::FT_Face_GetCharVariantIndex(
-                    Some(&core_face),
-                    0x41,
-                    0xFE0F,
-                );
+                let next = rust_ffi::FT_Get_Next_Char(Some(&core_face), first, Some(&mut glyph));
+                let variant = rust_ffi::FT_Face_GetCharVariantIndex(Some(&core_face), 0x41, 0xFE0F);
                 let selectors = rust_ffi::FT_Face_GetVariantSelectors(Some(&core_face));
                 let _ = std::hint::black_box((first, next, variant, selectors));
             }
@@ -10695,10 +11016,7 @@ fn abi_custom_memory_coverage_probe(
                 },
             ];
             let mut boxes = [rust_ffi::FT_BBox::default(); 2];
-            for (mode, glyph) in [0, 1, 2, 3, 4]
-                .into_iter()
-                .zip(glyphs.into_iter().cycle())
-            {
+            for (mode, glyph) in [0, 1, 2, 3, 4].into_iter().zip(glyphs.into_iter().cycle()) {
                 let slot = usize::try_from(mode).unwrap_or(0) % boxes.len();
                 rust_ffi::FT_Glyph_Get_CBox(Some(glyph), mode, Some(&mut boxes[slot]));
             }
@@ -10706,30 +11024,24 @@ fn abi_custom_memory_coverage_probe(
         }
         208 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            let invalid =
-                rust_ffi::FT_New_Glyph(Some(&core_library), 0x1234_5678);
+            let invalid = rust_ffi::FT_New_Glyph(Some(&core_library), 0x1234_5678);
             let outline =
                 rust_ffi::FT_New_Glyph(Some(&core_library), rust_ffi::FT_GLYPH_FORMAT_OUTLINE);
             let bitmap =
                 rust_ffi::FT_New_Glyph(Some(&core_library), rust_ffi::FT_GLYPH_FORMAT_BITMAP);
-            let svg =
-                rust_ffi::FT_New_Glyph(Some(&core_library), rust_ffi::FT_GLYPH_FORMAT_SVG);
+            let svg = rust_ffi::FT_New_Glyph(Some(&core_library), rust_ffi::FT_GLYPH_FORMAT_SVG);
             let _ = std::hint::black_box((invalid, outline, bitmap, svg));
         }
         209 => {
             let core_library = rust_ffi::FT_Init_FreeType();
             if let (Ok(rust_ffi::FT_GlyphOwned::Outline(glyph)), Ok(stroker)) = (
-                rust_ffi::FT_New_Glyph(
-                    Some(&core_library),
-                    rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
-                ),
+                rust_ffi::FT_New_Glyph(Some(&core_library), rust_ffi::FT_GLYPH_FORMAT_OUTLINE),
                 {
                     let mut stroker = ptr::null_mut();
-                    let result = rust_ffi::FT_Stroker_New(
-                        Some(&core_library),
-                        Some(&mut stroker),
-                    );
-                    (result == rust_ffi::FT_Err_Ok).then_some(stroker).ok_or(result)
+                    let result = rust_ffi::FT_Stroker_New(Some(&core_library), Some(&mut stroker));
+                    (result == rust_ffi::FT_Err_Ok)
+                        .then_some(stroker)
+                        .ok_or(result)
                 },
             ) {
                 rust_ffi::FT_Stroker_Set(stroker, 64, 0, 0, 65_536);
@@ -10741,17 +11053,13 @@ fn abi_custom_memory_coverage_probe(
         210 => {
             let core_library = rust_ffi::FT_Init_FreeType();
             if let (Ok(rust_ffi::FT_GlyphOwned::Outline(glyph)), Ok(stroker)) = (
-                rust_ffi::FT_New_Glyph(
-                    Some(&core_library),
-                    rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
-                ),
+                rust_ffi::FT_New_Glyph(Some(&core_library), rust_ffi::FT_GLYPH_FORMAT_OUTLINE),
                 {
                     let mut stroker = ptr::null_mut();
-                    let result = rust_ffi::FT_Stroker_New(
-                        Some(&core_library),
-                        Some(&mut stroker),
-                    );
-                    (result == rust_ffi::FT_Err_Ok).then_some(stroker).ok_or(result)
+                    let result = rust_ffi::FT_Stroker_New(Some(&core_library), Some(&mut stroker));
+                    (result == rust_ffi::FT_Err_Ok)
+                        .then_some(stroker)
+                        .ok_or(result)
                 },
             ) {
                 rust_ffi::FT_Stroker_Set(
@@ -10761,8 +11069,7 @@ fn abi_custom_memory_coverage_probe(
                     rust_ffi::FT_STROKER_LINEJOIN_ROUND as FT_Int,
                     65_536,
                 );
-                let result =
-                    rust_ffi::FT_Outline_Glyph_StrokeBorder(Some(&glyph), stroker, 1);
+                let result = rust_ffi::FT_Outline_Glyph_StrokeBorder(Some(&glyph), stroker, 1);
                 let _ = std::hint::black_box(result);
                 rust_ffi::FT_Stroker_Done(stroker);
             }
@@ -10958,8 +11265,7 @@ fn abi_custom_memory_coverage_probe(
                 Some(&rust_ffi::FT_Init_FreeType()),
                 Some(&outline),
                 None,
-                rust_ffi::FT_RASTER_FLAG_DIRECT as FT_Int
-                    | rust_ffi::FT_RASTER_FLAG_AA as FT_Int,
+                rust_ffi::FT_RASTER_FLAG_DIRECT as FT_Int | rust_ffi::FT_RASTER_FLAG_AA as FT_Int,
                 None,
                 true,
             );
@@ -10982,10 +11288,7 @@ fn abi_custom_memory_coverage_probe(
                 contours: vec![3],
                 flags: 0,
             };
-            let result = rust_ffi::FT_Outline_Decompose_Trace(
-                Some(&outline),
-                &[(0, 0), (1, 7)],
-            );
+            let result = rust_ffi::FT_Outline_Decompose_Trace(Some(&outline), &[(0, 0), (1, 7)]);
             let _ = std::hint::black_box(result);
         }
         220 => {
@@ -11003,10 +11306,7 @@ fn abi_custom_memory_coverage_probe(
                 contours: vec![2],
                 flags: 0,
             };
-            let result = rust_ffi::FT_Outline_Decompose_Trace(
-                Some(&outline),
-                &[(2, -11)],
-            );
+            let result = rust_ffi::FT_Outline_Decompose_Trace(Some(&outline), &[(2, -11)]);
             let _ = std::hint::black_box(result);
         }
         221 => {
@@ -11321,11 +11621,8 @@ fn abi_custom_memory_coverage_probe(
                 let _ = rust_ffi::FT_Stroker_LineTo(stroker, Some(&b));
                 let mut points = 0;
                 let mut contours = 0;
-                let counts = rust_ffi::FT_Stroker_GetCounts(
-                    stroker,
-                    Some(&mut points),
-                    Some(&mut contours),
-                );
+                let counts =
+                    rust_ffi::FT_Stroker_GetCounts(stroker, Some(&mut points), Some(&mut contours));
                 let border = rust_ffi::FT_Stroker_GetBorderCounts(
                     stroker,
                     rust_ffi::FT_STROKER_BORDER_LEFT as FT_Int,
@@ -11371,20 +11668,15 @@ fn abi_custom_memory_coverage_probe(
                 rust_ffi::FT_Stroker_Export(stroker, Some(&mut outline));
                 let mut points = 0;
                 let mut contours = 0;
-                let result = rust_ffi::FT_Stroker_GetCounts(
-                    stroker,
-                    Some(&mut points),
-                    Some(&mut contours),
-                );
+                let result =
+                    rust_ffi::FT_Stroker_GetCounts(stroker, Some(&mut points), Some(&mut contours));
                 let _ = std::hint::black_box((result, outline, points, contours));
                 rust_ffi::FT_Stroker_Done(stroker);
             }
         }
         239 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-            {
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let mut palette = rust_ffi::FT_Palette_Data::default();
                 let palette_result =
                     rust_ffi::FT_Palette_Data_Get(Some(&core_face), Some(&mut palette));
@@ -11407,9 +11699,7 @@ fn abi_custom_memory_coverage_probe(
         }
         240 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-            {
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let mut clip = rust_ffi::FT_ClipBox::default();
                 let results = (0..64)
                     .map(|glyph| {
@@ -11425,9 +11715,7 @@ fn abi_custom_memory_coverage_probe(
         }
         241 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-            {
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let graph = rust_ffi::FT_ColrV1_PaintGraph_Copy(Some(&core_face));
                 let mut observations = Vec::new();
                 if let Some(graph) = graph {
@@ -11450,9 +11738,7 @@ fn abi_custom_memory_coverage_probe(
         }
         242 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-            {
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let mut copied = Vec::new();
                 if let Some(graph) = rust_ffi::FT_ColrV1_PaintGraph_Copy(Some(&core_face)) {
                     for record in graph.records.iter().take(16) {
@@ -11465,14 +11751,8 @@ fn abi_custom_memory_coverage_probe(
                         ) != 0
                         {
                             copied.push((
-                                rust_ffi::FT_ColrV1_Paint_Transform_Copy(
-                                    Some(&core_face),
-                                    opaque,
-                                ),
-                                rust_ffi::FT_ColrV1_Paint_ColorLine_Copy(
-                                    Some(&core_face),
-                                    opaque,
-                                ),
+                                rust_ffi::FT_ColrV1_Paint_Transform_Copy(Some(&core_face), opaque),
+                                rust_ffi::FT_ColrV1_Paint_ColorLine_Copy(Some(&core_face), opaque),
                                 rust_ffi::FT_ColrV1_Paint_LinearGradient_Copy(
                                     Some(&core_face),
                                     opaque,
@@ -11486,9 +11766,7 @@ fn abi_custom_memory_coverage_probe(
         }
         243 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-            {
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let graph = rust_ffi::FT_ColrV1_PaintGraph_Copy(Some(&core_face));
                 let mut observations = Vec::new();
                 if let Some(graph) = graph {
@@ -11501,11 +11779,10 @@ fn abi_custom_memory_coverage_probe(
                             Some(&mut opaque),
                         ) != 0
                         {
-                            let mut iterator =
-                                rust_ffi::FT_ColrV1_Paint_Layer_Iterator_Copy(
-                                    Some(&core_face),
-                                    opaque,
-                                );
+                            let mut iterator = rust_ffi::FT_ColrV1_Paint_Layer_Iterator_Copy(
+                                Some(&core_face),
+                                opaque,
+                            );
                             if let Some(ref mut iterator) = iterator {
                                 let mut layer = rust_ffi::FT_OpaquePaint::default();
                                 for _ in 0..4 {
@@ -11528,9 +11805,7 @@ fn abi_custom_memory_coverage_probe(
         }
         244 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-            {
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let mut stop = rust_ffi::FT_ColorStop::default();
                 let mut iterator = rust_ffi::FT_ColorStopIterator {
                     num_color_stops: 1,
@@ -11555,16 +11830,10 @@ fn abi_custom_memory_coverage_probe(
         245 => {
             let bdf = b"STARTFONT 2.1\nFONT FontdoneC97\nSIZE 12 75 75\nFONTBOUNDINGBOX 5 10 0 -2\nSTARTPROPERTIES 4\nPIXEL_SIZE 12\nCHARSET_REGISTRY \"iso10646\"\nCHARSET_ENCODING \"1\"\nFONT_ASCENT 8\nENDPROPERTIES\nCHARS 1\nSTARTCHAR A\nENCODING 65\nSWIDTH 500 0\nDWIDTH 5 0\nBBX 5 10 0 -2\nBITMAP\n00\n00\n00\n00\n00\n00\n00\n00\n00\n00\nENDCHAR\nENDFONT\n";
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(mut core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, bdf, 0, 12.0)
-            {
+            if let Ok(mut core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bdf, 0, 12.0) {
                 let _ = rust_ffi::FT_Set_Pixel_Sizes(&mut core_face, 0, 12);
                 let _ = rust_ffi::FT_Get_Char_Index(&core_face, 65);
-                let _ = rust_ffi::FT_Load_Char(
-                    &core_face,
-                    65,
-                    rust_ffi::FT_LOAD_DEFAULT,
-                );
+                let _ = rust_ffi::FT_Load_Char(&core_face, 65, rust_ffi::FT_LOAD_DEFAULT);
             }
         }
         246 => {
@@ -11573,41 +11842,28 @@ fn abi_custom_memory_coverage_probe(
             let malformed_type1 =
                 b"%!PS-AdobeFont-1.0: Broken 1.0\n/FontName /Broken def\n/FontBBox [0 0 100 100] def\n";
             let core_library = rust_ffi::FT_Init_FreeType();
-            let first =
-                rust_ffi::FT_New_Memory_Face(&core_library, malformed_bdf, 0, 12.0);
-            let second =
-                rust_ffi::FT_New_Memory_Face(&core_library, malformed_type1, 0, 12.0);
+            let first = rust_ffi::FT_New_Memory_Face(&core_library, malformed_bdf, 0, 12.0);
+            let second = rust_ffi::FT_New_Memory_Face(&core_library, malformed_type1, 0, 12.0);
             let _ = std::hint::black_box((first, second));
         }
         247 => {
             let type1 =
                 b"%!PS-AdobeFont-1.0: MissingPrivate 1.0\n/FontName /MissingPrivate def\n/FontBBox [0 0 100 100] def\n/Encoding StandardEncoding def\n";
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, type1, 0, 12.0)
-            {
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, type1, 0, 12.0) {
                 let mut info = rust_ffi::PS_FontInfoRec::default();
                 let mut private = rust_ffi::PS_PrivateRec::default();
-                let info_result =
-                    rust_ffi::FT_Get_PS_Font_Info(Some(&core_face), Some(&mut info));
+                let info_result = rust_ffi::FT_Get_PS_Font_Info(Some(&core_face), Some(&mut info));
                 let private_result =
                     rust_ffi::FT_Get_PS_Font_Private(Some(&core_face), Some(&mut private));
-                let value = rust_ffi::FT_Get_PS_Font_Value(
-                    Some(&core_face),
-                    0,
-                    0,
-                    None,
-                    0,
-                );
+                let value = rust_ffi::FT_Get_PS_Font_Value(Some(&core_face), 0, 0, None, 0);
                 let _ = std::hint::black_box((info_result, private_result, value));
             }
         }
         248 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            let negative =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, -1, 12.0);
-            let huge =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, FT_Long::MAX, 12.0);
+            let negative = rust_ffi::FT_New_Memory_Face(&core_library, bytes, -1, 12.0);
+            let huge = rust_ffi::FT_New_Memory_Face(&core_library, bytes, FT_Long::MAX, 12.0);
             let empty = rust_ffi::FT_New_Memory_Face(&core_library, &[], 0, 12.0);
             let _ = std::hint::black_box((negative, huge, empty));
         }
@@ -11643,13 +11899,10 @@ fn abi_custom_memory_coverage_probe(
         }
         250 => {
             let core_library = rust_ffi::FT_Init_FreeType();
-            if let Ok(core_face) =
-                rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0)
-            {
+            if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let mut info = rust_ffi::PS_FontInfoRec::default();
                 let mut private = rust_ffi::PS_PrivateRec::default();
-                let ps_info =
-                    rust_ffi::FT_Get_PS_Font_Info(Some(&core_face), Some(&mut info));
+                let ps_info = rust_ffi::FT_Get_PS_Font_Info(Some(&core_face), Some(&mut info));
                 let ps_private =
                     rust_ffi::FT_Get_PS_Font_Private(Some(&core_face), Some(&mut private));
                 let mut name = rust_ffi::FT_SfntName::default();
@@ -11761,103 +12014,223 @@ fn abi_custom_memory_coverage_probe(
             std::hint::black_box(results);
         }
         276 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_NORMAL, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_NORMAL,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         277 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_MONO, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_MONO,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         278 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         279 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD_V, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD_V,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         280 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | ((rust_ffi::FT_RENDER_MODE_SDF as FT_Int32) << 16), &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | ((rust_ffi::FT_RENDER_MODE_SDF as FT_Int32) << 16),
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         281 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_NO_HINTING, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_NO_HINTING,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         282 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_FORCE_AUTOHINT, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_FORCE_AUTOHINT,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         283 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LIGHT, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LIGHT,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         284 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_MONO | rust_ffi::FT_LOAD_NO_HINTING, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER
+                    | rust_ffi::FT_LOAD_TARGET_MONO
+                    | rust_ffi::FT_LOAD_NO_HINTING,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         285 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD | rust_ffi::FT_LOAD_NO_HINTING, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER
+                    | rust_ffi::FT_LOAD_TARGET_LCD
+                    | rust_ffi::FT_LOAD_NO_HINTING,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         286 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD_V | rust_ffi::FT_LOAD_FORCE_AUTOHINT, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER
+                    | rust_ffi::FT_LOAD_TARGET_LCD_V
+                    | rust_ffi::FT_LOAD_FORCE_AUTOHINT,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         287 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | ((rust_ffi::FT_RENDER_MODE_SDF as FT_Int32) << 16) | rust_ffi::FT_LOAD_NO_HINTING, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER
+                    | ((rust_ffi::FT_RENDER_MODE_SDF as FT_Int32) << 16)
+                    | rust_ffi::FT_LOAD_NO_HINTING,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         288 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_NO_BITMAP, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_NO_BITMAP,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         289 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_MONO | rust_ffi::FT_LOAD_FORCE_AUTOHINT, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER
+                    | rust_ffi::FT_LOAD_TARGET_MONO
+                    | rust_ffi::FT_LOAD_FORCE_AUTOHINT,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         290 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD | rust_ffi::FT_LOAD_FORCE_AUTOHINT, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER
+                    | rust_ffi::FT_LOAD_TARGET_LCD
+                    | rust_ffi::FT_LOAD_FORCE_AUTOHINT,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         291 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_NORMAL, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_NORMAL,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         292 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_MONO, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_MONO,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         293 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LIGHT, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LIGHT,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         294 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_FORCE_AUTOHINT, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_FORCE_AUTOHINT,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         295 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         296 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD_V, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD_V,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         297 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_NORMAL | rust_ffi::FT_LOAD_NO_HINTING, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER
+                    | rust_ffi::FT_LOAD_TARGET_NORMAL
+                    | rust_ffi::FT_LOAD_NO_HINTING,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         298 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_MONO | rust_ffi::FT_LOAD_NO_BITMAP, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER
+                    | rust_ffi::FT_LOAD_TARGET_MONO
+                    | rust_ffi::FT_LOAD_NO_BITMAP,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         299 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD | rust_ffi::FT_LOAD_NO_BITMAP, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER
+                    | rust_ffi::FT_LOAD_TARGET_LCD
+                    | rust_ffi::FT_LOAD_NO_BITMAP,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         300 => {
-            let results = abi_core_load_case(bytes, rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_LCD_V | rust_ffi::FT_LOAD_NO_BITMAP, &[0, 3, 36, 65]);
+            let results = abi_core_load_case(
+                bytes,
+                rust_ffi::FT_LOAD_RENDER
+                    | rust_ffi::FT_LOAD_TARGET_LCD_V
+                    | rust_ffi::FT_LOAD_NO_BITMAP,
+                &[0, 3, 36, 65],
+            );
             std::hint::black_box(results);
         }
         301 => abi_c99_core_probe(bytes, 301),
@@ -12496,6 +12869,7 @@ fn abi_custom_memory_coverage_probe(
         1601..=1700 => abi_c111_rust_gap_batch_probe(bytes, library, face, memory, probe),
         1701..=1800 => abi_c112_rust_gap_batch_probe(bytes, library, face, memory, probe),
         1801..=1900 => abi_c113_rust_gap_batch_probe(bytes, library, face, memory, probe),
+        1901..=1930 => abi_c114_valid_public_batch_probe(bytes, library, face, memory, probe),
         _ => {}
     }
 }
@@ -12683,13 +13057,7 @@ pub fn abi_custom_memory_lifecycle_probe(
                     }
                 }
             } else if probe >= 10 {
-                abi_custom_memory_coverage_probe(
-                    bytes,
-                    library,
-                    face,
-                    memory.as_mut(),
-                    probe,
-                );
+                abi_custom_memory_coverage_probe(bytes, library, face, memory.as_mut(), probe);
             }
             data.phase = AbiCustomMemoryPhase::DoneFace;
             done_face_status = FT_Done_Face(face);
@@ -13265,22 +13633,13 @@ pub fn abi_raster_callback_edge_probe(probe: u8) {
             let _ = abi_raster_set_mode_render(ptr::null_mut(), ptr::null());
         },
         10 => unsafe {
-            let _ = abi_incremental_table_get_glyph_data(
-                ptr::null_mut(),
-                0,
-                ptr::null_mut(),
-            );
+            let _ = abi_incremental_table_get_glyph_data(ptr::null_mut(), 0, ptr::null_mut());
         },
         11 => unsafe {
             abi_incremental_table_free_glyph_data(ptr::null_mut(), ptr::null_mut());
         },
         12 => unsafe {
-            let _ = abi_incremental_table_get_glyph_metrics(
-                ptr::null_mut(),
-                0,
-                0,
-                ptr::null_mut(),
-            );
+            let _ = abi_incremental_table_get_glyph_metrics(ptr::null_mut(), 0, 0, ptr::null_mut());
         },
         _ => {}
     }
@@ -13325,11 +13684,7 @@ pub fn abi_raster_callback_batch_probe(probe: u8) {
     match probe {
         13 => unsafe {
             abi_incremental_opaque_guard_trace_clear();
-            let _ = abi_incremental_opaque_get_glyph_data(
-                ptr::null_mut(),
-                7,
-                ptr::null_mut(),
-            );
+            let _ = abi_incremental_opaque_get_glyph_data(ptr::null_mut(), 7, ptr::null_mut());
         },
         14 => unsafe {
             abi_incremental_opaque_guard_trace_clear();
@@ -13337,11 +13692,7 @@ pub fn abi_raster_callback_batch_probe(probe: u8) {
         },
         15 => unsafe {
             abi_incremental_opaque_guard_trace(false);
-            let _ = abi_incremental_opaque_get_glyph_data(
-                ptr::null_mut(),
-                7,
-                ptr::null_mut(),
-            );
+            let _ = abi_incremental_opaque_get_glyph_data(ptr::null_mut(), 7, ptr::null_mut());
             abi_incremental_opaque_guard_trace_clear();
         },
         16 => unsafe {
@@ -13352,11 +13703,7 @@ pub fn abi_raster_callback_batch_probe(probe: u8) {
         },
         17 => unsafe {
             abi_incremental_opaque_guard_trace(true);
-            let _ = abi_incremental_opaque_get_glyph_data(
-                ptr::null_mut(),
-                7,
-                ptr::null_mut(),
-            );
+            let _ = abi_incremental_opaque_get_glyph_data(ptr::null_mut(), 7, ptr::null_mut());
             abi_incremental_opaque_guard_trace_clear();
         },
         18 => unsafe {
@@ -13378,11 +13725,7 @@ pub fn abi_raster_callback_batch_probe(probe: u8) {
             abi_incremental_opaque_guard_trace_clear();
         },
         21 => unsafe {
-            let _ = abi_raster_lifecycle_renderer_set_mode(
-                ptr::null_mut(),
-                0,
-                ptr::null_mut(),
-            );
+            let _ = abi_raster_lifecycle_renderer_set_mode(ptr::null_mut(), 0, ptr::null_mut());
         },
         22 => unsafe {
             let mut renderer = FT_RendererRec {
@@ -13437,11 +13780,7 @@ pub fn abi_raster_callback_batch_probe(probe: u8) {
             );
         },
         25 => unsafe {
-            let _ = abi_raster_set_mode_renderer_callback(
-                ptr::null_mut(),
-                0,
-                ptr::null_mut(),
-            );
+            let _ = abi_raster_set_mode_renderer_callback(ptr::null_mut(), 0, ptr::null_mut());
         },
         26 => unsafe {
             let mut renderer_class = FT_Renderer_Class::default();
@@ -13543,9 +13882,7 @@ pub struct AbiRasterFuncsObservation {
 
 /// Inspects the callback slots through the actual C ABI renderer records.
 #[cfg(feature = "abi-test-support")]
-pub fn abi_support_raster_class_probe(
-    names: &[&'static str],
-) -> Vec<AbiRasterFuncsObservation> {
+pub fn abi_support_raster_class_probe(names: &[&'static str]) -> Vec<AbiRasterFuncsObservation> {
     let mut library = ptr::null_mut();
     if FT_Init_FreeType(&mut library) != rust_ffi::FT_Err_Ok {
         return Vec::new();

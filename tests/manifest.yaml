@@ -2045,6 +2045,8 @@ subjects:
         description: Null face is a no-op with no returned error because the C API returns void.
       - id: load_ignore_transform_behavior
         description: FT_LOAD_IGNORE_TRANSFORM suppresses the stored transform during glyph loading like C.
+      - id: batch89_affine_glyph_outputs
+        description: Thirty valid affine transforms exercise transformed rendered glyph output over five maintained DejaVuSans cmap glyphs, including rotation, shear, scale, reflection, translation, and singular collapse.
     # needs-input: operation=FT_Set_Transform followed by FT_Load_Glyph and FT_Render_Glyph; fixture_asset=input/fonts/DejaVuSans.ttf; params matrix NULL/identity/scale/rotate/shear, delta NULL/{x,y}, size=20pt, glyph_index for 'A', load_flags default and FT_LOAD_IGNORE_TRANSFORM; expected output shape=slot outline cbox/bbox, advance vector, bitmap placement, bitmap dimensions, and bytes after render; comparison=exact C oracle scalar and byte equality, with null-face call verified as no-op/no-crash.
 
   - id: freetype.FT_Vector_Transform
@@ -2658,6 +2660,8 @@ subjects:
         description: Null face and null padvances pointers return the pinned C error classification and match C output preservation behavior.
       - id: error_invalid_range_or_flags
         description: Out-of-range start/count combinations and unsupported flag combinations return the same C error code and write behavior.
+      - id: batch86_variable_bulk_advances
+        description: Valid named-instance variable-font ranges exercise scaled, no-scale, and vertical FT_Get_Advances behavior over five glyph windows and two sizes.
     # needs-input: operation=FT_Get_Advances; fixture_asset=input/fonts/DejaVuSans.ttf plus a fixture with real vertical metrics; params ranges including start=0/count=3, A..V-containing range, count=0, out-of-range start/count, load_flags FT_LOAD_DEFAULT, FT_LOAD_NO_HINTING, FT_LOAD_NO_SCALE, FT_LOAD_VERTICAL_LAYOUT, and FAST_ONLY combinations; expected output shape=FT_Error and caller-owned FT_Fixed array with before/after sentinels; comparison=exact C oracle error, ordered values, untouched sentinel boundaries, and partial-write/preservation behavior.
 
   - id: ftbbox.FT_Outline_Get_BBox
@@ -8593,6 +8597,8 @@ subjects:
         description: TrueType GX/OpenType variation faces and non-variable faces return C-compatible Invalid_Argument for the Adobe-only design setter.
       - id: output_changes_for_mm_design
         description: Non-default Adobe MM design coordinates change glyph metrics and outlines according to C interpolation.
+      - id: batch75_one_axis_mm_design_coordinates
+        description: Thirty valid one-axis Adobe MM design coordinates cover both non-linear design-map interpolation intervals, knots, endpoint unmapping, and one-axis weight synthesis.
     # needs-input: operation=FT_Set_MM_Design_Coordinates followed by FT_Get_Var_Design_Coordinates and glyph load/render; fixture_asset=deterministic Adobe Multiple Master font plus non-MM variable TrueType control font; params={FT_Long design_coords, num_coords, coords_null, glyph_index, size}; output shape={FT_Error, design coordinate array, face_flags variation bit, glyph metrics, cbox/bbox, render bytes}; comparison=exact C oracle success/error code, coordinate/default/reset behavior, variation flag, and glyph output.
 
   - id: ftmm.FT_Set_MM_WeightVector
@@ -8669,6 +8675,14 @@ subjects:
         description: Nonzero num_coords with a null coords pointer returns Invalid_Argument before service dispatch.
       - id: output_changes_for_design_coordinates
         description: Non-default design coordinates affect glyph deltas, cbox/bbox, and rendered output exactly as C.
+      - id: batch76_avar_hvar_scalar
+        description: Thirty valid two-axis design-coordinate and glyph selections cover AVAR scalar classes, all HVAR variation-data blocks, signed-byte and word deltas, and cross-axis region decisions.
+      - id: batch77_fvar_no_gvar_composite
+        description: Thirty valid three-axis design-coordinate composite glyph outputs cover fvar-only variation faces, USE_MY_METRICS, and five load/render modes.
+      - id: batch78_active_gvar_routing
+        description: Thirty valid two-axis active-gvar design-coordinate glyph outputs cover ordinary and USE_MY_METRICS composites, a no-record glyph, an all-points record, and five load/render modes.
+      - id: batch79_native_variable_routing
+        description: Thirty valid two-axis active-variable composite outputs use native TrueType loading on gvar-present and fvar-only twins with USE_MY_METRICS glyphs at three ppem sizes.
     # needs-input: operation=FT_Set_Var_Design_Coordinates followed by coordinate getters and glyph load/render; fixture_asset=variable fonts with wght/wdth/opsz axes, avar mapping, gvar glyph deltas, and HVAR/VVAR/MVAR metric deltas; params={design_coords FT_Fixed array, num_coords, coords_null, glyph_index, size, load_flags}; output shape={FT_Error, design coords, blend coords, face_flags variation bit, face/size metrics, glyph metrics, cbox/bbox, bitmap bytes}; comparison=exact C oracle error code, coordinate normalization, variation flag, metrics, geometry, and render bytes.
 
   - id: ftmm.FT_MM_Axis

@@ -449,7 +449,7 @@ fn public_tag_to_internal_touch_tag(tag: u8) -> u8 {
     internal
 }
 
-fn outline_flags_from_scan_control(scan_control: bool, scan_type: u8) -> u32 {
+pub(crate) fn outline_flags_from_scan_control(scan_control: bool, scan_type: u8) -> u32 {
     if !scan_control {
         return OUTLINE_IGNORE_DROPOUTS;
     }

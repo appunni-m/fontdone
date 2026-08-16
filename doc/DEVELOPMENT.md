@@ -328,12 +328,13 @@ checkout normally runs `make c-abi-contract`.
 Coverage and parity answer different questions. Executing a line or branch
 does not prove that its result matches C.
 
-The latest pushed-commit all-lane Coverage MCP run is
-`47bb1b34-53a2-41a4-9198-a04a14515423` (snapshot
-`d8291137-95a9-4e6e-841c-bcca41f7f8f1`). It completed in 13.605 seconds with
-exit code 0 after reusing the instrumented build. The overall report is
-51,814 / 54,801 lines, 10,368 / 12,592 branches, 3,516 / 3,847 functions, and
-71,437 / 75,909 regions. The one-time cache-state migration run
+The latest retained strict-30 all-lane Coverage MCP run is
+`f1097acb-5a03-4c9c-bcb0-86955faf6187` (snapshot
+`fe1caa05-5468-4008-802e-4b5f98e4ec2d`). It completed in 72.157 seconds with
+exit code 0 on source commit `7c64f804c590d4d7cd048d1edd8f7be6c869a9df`.
+The overall report is 63,240 / 65,417 lines, 11,510 / 13,370 branches,
+3,668 / 3,956 functions, and 87,546 / 91,349 regions. The one-time
+cache-state migration run
 `fe269459-78fa-40cd-a389-1adb9ab32772` took 71.954 seconds, including 51.33
 seconds of instrumented test-profile compilation; the preceding cold run
 `8c71cb2b-4195-4c87-8d95-2c6f7f799efd` took 71.430 seconds, including 50.54
@@ -417,15 +418,56 @@ the Rust FFI surface, which is the same source used by the runtime wrapper.
 Both were harness defects, not Rust-vs-C behavior differences, and each was
 fixed before the subsequent non-coverage parity check.
 
-For each new 100-row loop, Coverage MCP is the source of the next target:
+For each new coverage batch, Coverage MCP is the source of the next target:
 query the current snapshot's uncovered or partial lines, read bounded source
 context, and advance the file/line cursor after every retained batch. A
 structural closing-brace mapping is skipped only when its executable body is
 already covered and the following meaningful arm is the actual gap. Per-line
 attempt counts are retained in the working notes; a line tried three times is
 not selected again unless a code-path change creates a new, evidence-backed
-route. Full batches are measured before pruning, then pruned to the smallest
-set that reproduces every covered-line/branch/region delta.
+route. The strict region campaign uses exactly 30 different valid public input
+variants per batch, adds them only to the parity matrix, and measures the full
+batch before any pruning. A batch is retained only when its parity run is clean
+and Coverage MCP can attribute its covered-line, branch, or region delta to the
+new inputs.
+
+The current strict-30 Batch 9 uses probe family c114 in the maintained
+ftsystem.FT_Memory parity matrix. Its 30 variants stay on valid public
+load/render, bitmap-conversion, advance, service-query, and size-transform
+routes across maintained fonts. The full MCP parity run passed 16,222 / 16,222
+runnable comparisons with four explicit pending cases. Coverage MCP snapshot
+a90e4463-96db-4845-884f-0339f2fbd4a5 is retained against the previous retained
+snapshot 3d0858f9-d728-4cf0-8659-667a9d0ec29f: it adds 177 covered lines,
+3 covered branches, 3 covered functions, and 192 covered regions (with the
+corresponding source-denominator increases recorded by MCP).
+
+Strict-30 Batch 13 adds 30 valid public `FTC_SBitCache_Lookup` variants to
+the existing `returns_cache_owned_sbit` parity case: ten OT-SVG missing-hook
+loads and ten composite-slot loads each from DejaVu Sans and Liberation Serif.
+The registered full parity run `fc35c0fc-b908-495e-b8d7-e43eb9a76602` passed
+16,252 / 16,252 runnable comparisons with four explicitly pending cases.
+The corrected cache route converts non-OOM post-load render failures into the
+pinned unavailable-SBit sentinel. Coverage MCP run
+`f1097acb-5a03-4c9c-bcb0-86955faf6187`, snapshot
+`fe1caa05-5468-4008-802e-4b5f98e4ec2d`, adds 14 covered lines, 3 covered
+branches, and 22 covered regions against `a90e4463-96db-4845-884f-0339f2fbd4a5`;
+the source-denominator increases are recorded by MCP.
+
+The strict-30 Batch61 continuation adds 30 valid public `FT_Load_Glyph`
+inputs to the generated TrueType VM branch matrix. The cases cover twilight
+zone SHZ execution, non-pedantic out-of-range point writes, and additional
+valid stack/control values. Focused parity passed all 30 cases; the registered
+full parity run `2193cdff-862e-4794-8294-6483885d759d` passed, and Coverage MCP
+snapshot `265f7a5c-44d4-4a89-bb72-fc4409a01560` improves retained baseline
+`99baef01-9ad1-4506-810f-8cb37e419cfe` by 1 line, 3 branches, and 2 regions.
+
+The strict-30 Batch63 continuation adds 30 valid public `FT_Load_Glyph`
+inputs for six project-authored Type 1 no-op movement and curve programs,
+crossed with five public load modes. Focused parity passed all 30 cases; the
+registered full parity run `5d74d7cd-b59e-4f00-b2ce-e9e238f2f9ec` passed, and
+Coverage MCP snapshot `60f34183-9180-4c51-b671-585e9bfb2200` improves the
+retained baseline `99baef01-9ad1-4506-810f-8cb37e419cfe` by 1 line, 8
+branches, and 7 regions.
 
 ```bash
 make test-coverage
@@ -502,14 +544,14 @@ invalidate the instrumented workspace.
 
 | Metric | Covered / total | Coverage |
 |---|---:|---:|
-| Lines | 51,814 / 54,801 | 94.55% |
-| Branches | 10,368 / 12,592 | 82.34% |
-| Functions | 3,516 / 3,847 | 91.40% |
-| Regions | 71,437 / 75,909 | 94.11% |
+| Lines | 63,240 / 65,417 | 96.67% |
+| Branches | 11,510 / 13,370 | 86.09% |
+| Functions | 3,668 / 3,956 | 92.72% |
+| Regions | 87,546 / 91,349 | 95.84% |
 
-That latest run passed all 7,841 runnable parity comparisons with 0 failures;
-3 cases remained explicitly pending. Its immutable coverage snapshot is
-`d8291137-95a9-4e6e-841c-bcca41f7f8f1`. Coverage MCP accepts the current LLVM
+That latest run passed all 16,252 runnable parity comparisons with 0 failures;
+4 cases remained explicitly pending. Its immutable coverage snapshot is
+`fe1caa05-5468-4008-802e-4b5f98e4ec2d`. Coverage MCP accepts the current LLVM
 JSON directly, so `COVERAGE_NORMALIZE_SEGMENTS=0` skips the compatibility-only
 rewrite; set it to `1` only for an older LLVM JSON producer. The percentages
 apply only to the named source commit, suite, and toolchain. They are not a
@@ -549,7 +591,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 855 tracked paths and no symlinks.
+The canonical input tree currently contains 915 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -907,7 +949,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,664 | executable parity tests and public contracts |
-| R04 | 855 | licensed canonical fixture inputs |
+| R04 | 917 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 61 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -915,7 +957,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,741** | **all retained paths** |
+| **Total** | **2,803** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

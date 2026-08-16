@@ -151,14 +151,36 @@ impl FontData {
                 .insert(glyph_index, Rc::clone(&outline));
             return Ok(outline);
         }
-        let outline = crate::tt::glyf::load_glyph(
-            &self.glyf_data,
-            &self.loca_data,
-            self.head.index_to_loc_format,
-            glyph_index,
-            &self.hmtx,
-        )?;
-        let outline = Rc::new(self.apply_gvar_deltas(glyph_index, &outline)?);
+        let outline = if self.has_active_variation() {
+            if let Some(gvar) = &self.gvar {
+                crate::tt::glyf::load_glyph_with_variations(
+                    &self.glyf_data,
+                    &self.loca_data,
+                    self.head.index_to_loc_format,
+                    glyph_index,
+                    &self.hmtx,
+                    gvar,
+                    &self.normalized_variation_coords,
+                )?
+            } else {
+                crate::tt::glyf::load_glyph(
+                    &self.glyf_data,
+                    &self.loca_data,
+                    self.head.index_to_loc_format,
+                    glyph_index,
+                    &self.hmtx,
+                )?
+            }
+        } else {
+            crate::tt::glyf::load_glyph(
+                &self.glyf_data,
+                &self.loca_data,
+                self.head.index_to_loc_format,
+                glyph_index,
+                &self.hmtx,
+            )?
+        };
+        let outline = Rc::new(outline);
         self.glyph_cache
             .borrow_mut()
             .insert(glyph_index, Rc::clone(&outline));
@@ -186,14 +208,127 @@ impl FontData {
         if let Some(cff2) = &self.cff2 {
             return Ok(Rc::new(cff2.load_glyph(glyph_index)?));
         }
-        let outline = crate::tt::glyf::load_glyph_no_hinting(
+        let outline = if self.has_active_variation() {
+            if let Some(gvar) = &self.gvar {
+                crate::tt::glyf::load_glyph_no_hinting_with_variations(
+                    &self.glyf_data,
+                    &self.loca_data,
+                    self.head.index_to_loc_format,
+                    glyph_index,
+                    &self.hmtx,
+                    gvar,
+                    &self.normalized_variation_coords,
+                )?
+            } else {
+                crate::tt::glyf::load_glyph_no_hinting(
+                    &self.glyf_data,
+                    &self.loca_data,
+                    self.head.index_to_loc_format,
+                    glyph_index,
+                    &self.hmtx,
+                )?
+            }
+        } else {
+            crate::tt::glyf::load_glyph_no_hinting(
+                &self.glyf_data,
+                &self.loca_data,
+                self.head.index_to_loc_format,
+                glyph_index,
+                &self.hmtx,
+            )?
+        };
+        Ok(Rc::new(outline))
+    }
+
+    /// Load a composite with component offsets rounded in the scaled path,
+    /// retaining the same per-glyph variation ordering as the unscaled
+    /// loaders.
+    pub(crate) fn load_glyph_outline_with_scaled_component_offsets(
+        &self,
+        glyph_index: u16,
+        x_scale: i32,
+        y_scale: i32,
+    ) -> Result<Rc<crate::tt::glyf::GlyphOutline>, crate::error::FontError> {
+        let outline = if self.has_active_variation() {
+            if let Some(gvar) = &self.gvar {
+                crate::tt::glyf::load_glyph_with_scaled_component_offsets_and_variations(
+                    &self.glyf_data,
+                    &self.loca_data,
+                    self.head.index_to_loc_format,
+                    glyph_index,
+                    &self.hmtx,
+                    x_scale,
+                    y_scale,
+                    gvar,
+                    &self.normalized_variation_coords,
+                )?
+            } else {
+                crate::tt::glyf::load_glyph_with_scaled_component_offsets(
+                    &self.glyf_data,
+                    &self.loca_data,
+                    self.head.index_to_loc_format,
+                    glyph_index,
+                    &self.hmtx,
+                    x_scale,
+                    y_scale,
+                )?
+            }
+        } else {
+            crate::tt::glyf::load_glyph_with_scaled_component_offsets(
+                &self.glyf_data,
+                &self.loca_data,
+                self.head.index_to_loc_format,
+                glyph_index,
+                &self.hmtx,
+                x_scale,
+                y_scale,
+            )?
+        };
+        Ok(Rc::new(outline))
+    }
+
+    /// Load a composite with independently scaled component offsets for the
+    /// no-hinting path, including recursive `gvar` application.
+    pub(crate) fn load_glyph_scaled_no_hinting(
+        &self,
+        glyph_index: u16,
+        x_scale: i32,
+        y_scale: i32,
+    ) -> Result<crate::tt::glyf::GlyphOutline, crate::error::FontError> {
+        if self.has_active_variation() {
+            if let Some(gvar) = &self.gvar {
+                return crate::tt::glyf::load_glyph_scaled_no_hinting_with_variations(
+                    &self.glyf_data,
+                    &self.loca_data,
+                    self.head.index_to_loc_format,
+                    glyph_index,
+                    &self.hmtx,
+                    x_scale,
+                    y_scale,
+                    gvar,
+                    &self.normalized_variation_coords,
+                );
+            } else {
+                return crate::tt::glyf::load_glyph_scaled_no_hinting_with_active_variation(
+                    &self.glyf_data,
+                    &self.loca_data,
+                    self.head.index_to_loc_format,
+                    glyph_index,
+                    &self.hmtx,
+                    x_scale,
+                    y_scale,
+                );
+            }
+        }
+        crate::tt::glyf::load_glyph_scaled_no_hinting(
             &self.glyf_data,
             &self.loca_data,
             self.head.index_to_loc_format,
             glyph_index,
             &self.hmtx,
-        )?;
-        Ok(Rc::new(self.apply_gvar_deltas(glyph_index, &outline)?))
+            x_scale,
+            y_scale,
+        )
     }
 
     fn apply_gvar_deltas(
@@ -240,7 +375,7 @@ impl FontData {
         if self.has_active_variation() {
             if let Some(hvar) = &self.hvar {
                 return Ok(
-                    advance + hvar.advance_delta(glyph_index, &self.normalized_variation_coords),
+                    advance + hvar.advance_delta(glyph_index, &self.normalized_variation_coords)
                 );
             }
         }

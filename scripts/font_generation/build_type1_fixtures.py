@@ -216,7 +216,9 @@ def build_unicode_charmap_fixture(path: Path) -> None:
             "u1F600": square(500),
             "uni0041.alt": square(500),
             "uni00G1": square(500),
+            "uni123": square(500),
             "uZZZZ": square(500),
+            "1": square(500),
         },
     )
 
@@ -455,6 +457,34 @@ def build_adobe_mm_two_axis(path: Path) -> None:
                 b"/BlendDesignPositions [[400 100] [900 100] [400 200] [900 200]] def\n"
                 b"/BlendDesignMap [[[400 0] [900 1]] [[100 0] [200 1]]] def\n"
                 b"/WeightVector [0.25 0.25 0.25 0.25] def",
+            )
+        ],
+    )
+
+
+def build_adobe_mm_one_axis(path: Path) -> None:
+    """Build a compact valid Adobe Type 1 Multiple Master one-axis face.
+
+    Keep a non-linear design map so public design-coordinate setters exercise
+    both interpolation intervals and the one-axis weight-vector unmapping
+    route.  The descriptor uses the same valid Type 1 glyph program as the
+    two-axis control, with all design coordinates in the inclusive 100..900
+    range accepted by the pinned C loader.
+    """
+
+    build_simple_type1(
+        path,
+        "AdobeMMOneAxis",
+        "Adobe MM One Axis",
+        "Generated for fontdone Type 1 Multiple Master one-axis parity",
+        cleartext_replacements=[
+            (
+                b"/FontBBox {0 0 500 700} def",
+                b"/FontBBox {0 0 500 700} def\n"
+                b"/BlendAxisTypes [/Weight] def\n"
+                b"/BlendDesignPositions [[100] [900]] def\n"
+                b"/BlendDesignMap [[[100 0] [400 0.4] [900 1]]] def\n"
+                b"/WeightVector [0.5 0.5] def",
             )
         ],
     )
@@ -950,6 +980,21 @@ def build_parser_edge_programs() -> None:
         )
 
 
+def build_parser_noop_operands(path: Path, operator: str) -> None:
+    """Build one valid Type 1 glyph whose movement operator consumes no operands."""
+
+    build_simple_type1(
+        path,
+        f"Type1ParserNoop{operator.title()}",
+        f"Type 1 Parser No-op {operator}",
+        "Generated for fontdone Type 1 no-op operand parity",
+        charstrings={
+            ".notdef": charstring([500, 0, "hsbw", "endchar"]),
+            "A": charstring([500, 0, "hsbw", 0, 0, "rmoveto", operator, "endchar"]),
+        },
+    )
+
+
 def build_encoding_fixture(path: Path, font_name: str, family_name: str, encoding: bytes) -> None:
     """Build a Type 1 fixture with a specific clear-text Encoding object."""
 
@@ -1224,7 +1269,13 @@ def main() -> None:
     build_font_value_populated(INPUT_OUT_DIR / "font-value-populated.pfb")
     build_parser_opcode_coverage(INPUT_OUT_DIR / "parser-opcodes.pfb")
     build_parser_edge_programs()
+    for operator in ("rlineto", "hlineto", "vlineto", "rrcurveto", "vhcurveto", "hvcurveto"):
+        build_parser_noop_operands(
+            INPUT_OUT_DIR / f"parser-noop-{operator}.pfb",
+            operator,
+        )
     build_adobe_mm_two_axis(MM_OUT_DIR / "adobe-mm-two-axis.pfb")
+    build_adobe_mm_one_axis(MM_OUT_DIR / "adobe-mm-one-axis.pfb")
     build_adobe_mm_two_axis(LEGACY_MM_OUT_DIR / "adobe-multiple-master.pfb")
     build_mm_blend_fontinfo_private(OUT_DIR / "mm-blend-fontinfo-private.pfb")
     build_mm_underline_blend_fixture(

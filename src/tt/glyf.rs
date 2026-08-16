@@ -150,6 +150,36 @@ pub fn load_glyph(
     )
 }
 
+/// Load a glyph while applying the active `gvar` records at each recursion
+/// level.  Simple glyph records describe contour points; composite records
+/// describe synthetic component points, so variation must be applied while
+/// the component list is still available instead of after flattening.
+pub(crate) fn load_glyph_with_variations(
+    glyf: &[u8],
+    loca: &[u8],
+    index_to_loc_format: i16,
+    glyph_index: u16,
+    hmtx: &crate::tt::hmtx::HmtxTable,
+    gvar: &crate::tt::gvar::GvarTable,
+    normalized_coords: &[i16],
+) -> Result<GlyphOutline, FontError> {
+    load_glyph_inner(
+        glyf,
+        loca,
+        index_to_loc_format,
+        glyph_index,
+        hmtx,
+        GlyphLoadOptions {
+            load_composite_instructions: true,
+            variation: Some(VariationContext {
+                gvar,
+                normalized_coords,
+            }),
+            ..GlyphLoadOptions::default()
+        },
+    )
+}
+
 /// Load an unhinted glyph without reading trailing composite instructions.
 ///
 /// FreeType records the composite instruction position while decoding the
@@ -171,6 +201,31 @@ pub fn load_glyph_no_hinting(
         glyph_index,
         hmtx,
         GlyphLoadOptions::default(),
+    )
+}
+
+pub(crate) fn load_glyph_no_hinting_with_variations(
+    glyf: &[u8],
+    loca: &[u8],
+    index_to_loc_format: i16,
+    glyph_index: u16,
+    hmtx: &crate::tt::hmtx::HmtxTable,
+    gvar: &crate::tt::gvar::GvarTable,
+    normalized_coords: &[i16],
+) -> Result<GlyphOutline, FontError> {
+    load_glyph_inner(
+        glyf,
+        loca,
+        index_to_loc_format,
+        glyph_index,
+        hmtx,
+        GlyphLoadOptions {
+            variation: Some(VariationContext {
+                gvar,
+                normalized_coords,
+            }),
+            ..GlyphLoadOptions::default()
+        },
     )
 }
 
@@ -197,6 +252,35 @@ pub fn load_glyph_with_scaled_component_offsets(
     )
 }
 
+pub(crate) fn load_glyph_with_scaled_component_offsets_and_variations(
+    glyf: &[u8],
+    loca: &[u8],
+    index_to_loc_format: i16,
+    glyph_index: u16,
+    hmtx: &crate::tt::hmtx::HmtxTable,
+    x_scale: i32,
+    y_scale: i32,
+    gvar: &crate::tt::gvar::GvarTable,
+    normalized_coords: &[i16],
+) -> Result<GlyphOutline, FontError> {
+    load_glyph_inner(
+        glyf,
+        loca,
+        index_to_loc_format,
+        glyph_index,
+        hmtx,
+        GlyphLoadOptions {
+            component_offset_scale: Some((x_scale, y_scale)),
+            load_composite_instructions: true,
+            variation: Some(VariationContext {
+                gvar,
+                normalized_coords,
+            }),
+            ..GlyphLoadOptions::default()
+        },
+    )
+}
+
 /// Load a glyph outline scaled to 26.6 for the TrueType no-hinting path.
 ///
 /// FreeType scales simple subglyphs and component offsets independently while
@@ -212,6 +296,54 @@ pub fn load_glyph_scaled_no_hinting(
     x_scale: i32,
     y_scale: i32,
 ) -> Result<GlyphOutline, FontError> {
+    load_glyph_scaled_no_hinting_inner(
+        glyf,
+        loca,
+        index_to_loc_format,
+        glyph_index,
+        hmtx,
+        x_scale,
+        y_scale,
+        false,
+    )
+}
+
+/// Load a no-hinting outline for an active variation instance without a
+/// `gvar` table. FreeType keeps an unrounded 26.6 copy of simple points for
+/// every non-default TrueType variation instance, so even a font whose
+/// variation is expressed only through `fvar` must use the final rounded
+/// `FT_MulFix` conversion rather than scaling integer font-unit points first.
+pub(crate) fn load_glyph_scaled_no_hinting_with_active_variation(
+    glyf: &[u8],
+    loca: &[u8],
+    index_to_loc_format: i16,
+    glyph_index: u16,
+    hmtx: &crate::tt::hmtx::HmtxTable,
+    x_scale: i32,
+    y_scale: i32,
+) -> Result<GlyphOutline, FontError> {
+    load_glyph_scaled_no_hinting_inner(
+        glyf,
+        loca,
+        index_to_loc_format,
+        glyph_index,
+        hmtx,
+        x_scale,
+        y_scale,
+        true,
+    )
+}
+
+fn load_glyph_scaled_no_hinting_inner(
+    glyf: &[u8],
+    loca: &[u8],
+    index_to_loc_format: i16,
+    glyph_index: u16,
+    hmtx: &crate::tt::hmtx::HmtxTable,
+    x_scale: i32,
+    y_scale: i32,
+    unrounded_variation: bool,
+) -> Result<GlyphOutline, FontError> {
     load_glyph_inner(
         glyf,
         loca,
@@ -220,32 +352,72 @@ pub fn load_glyph_scaled_no_hinting(
         hmtx,
         GlyphLoadOptions {
             point_scale: Some((x_scale, y_scale)),
+            unrounded_variation,
             ..GlyphLoadOptions::default()
         },
     )
 }
 
-#[derive(Clone, Copy, Default)]
-struct GlyphLoadOptions {
-    depth: u8,
-    component_offset_scale: Option<(i32, i32)>,
-    point_scale: Option<(i32, i32)>,
-    load_composite_instructions: bool,
-}
-
-fn load_glyph_inner(
+pub(crate) fn load_glyph_scaled_no_hinting_with_variations(
     glyf: &[u8],
     loca: &[u8],
     index_to_loc_format: i16,
     glyph_index: u16,
     hmtx: &crate::tt::hmtx::HmtxTable,
-    options: GlyphLoadOptions,
+    x_scale: i32,
+    y_scale: i32,
+    gvar: &crate::tt::gvar::GvarTable,
+    normalized_coords: &[i16],
+) -> Result<GlyphOutline, FontError> {
+    load_glyph_inner(
+        glyf,
+        loca,
+        index_to_loc_format,
+        glyph_index,
+        hmtx,
+        GlyphLoadOptions {
+            point_scale: Some((x_scale, y_scale)),
+            unrounded_variation: true,
+            variation: Some(VariationContext {
+                gvar,
+                normalized_coords,
+            }),
+            ..GlyphLoadOptions::default()
+        },
+    )
+}
+
+#[derive(Clone, Copy)]
+struct VariationContext<'a> {
+    gvar: &'a crate::tt::gvar::GvarTable,
+    normalized_coords: &'a [i16],
+}
+
+#[derive(Clone, Copy, Default)]
+struct GlyphLoadOptions<'a> {
+    depth: u8,
+    component_offset_scale: Option<(i32, i32)>,
+    point_scale: Option<(i32, i32)>,
+    load_composite_instructions: bool,
+    unrounded_variation: bool,
+    variation: Option<VariationContext<'a>>,
+}
+
+fn load_glyph_inner<'a>(
+    glyf: &[u8],
+    loca: &[u8],
+    index_to_loc_format: i16,
+    glyph_index: u16,
+    hmtx: &crate::tt::hmtx::HmtxTable,
+    options: GlyphLoadOptions<'a>,
 ) -> Result<GlyphOutline, FontError> {
     let GlyphLoadOptions {
         depth,
         component_offset_scale,
         point_scale,
         load_composite_instructions,
+        unrounded_variation,
+        variation,
     } = options;
     if depth > 100 {
         return Err(FontError::InvalidOutline(
@@ -284,12 +456,6 @@ fn load_glyph_inner(
 
     if num_contours >= 0 {
         let mut outline = parse_simple_glyph(bytes, u16_from_i16(num_contours))?;
-        if let Some((x_scale, y_scale)) = point_scale {
-            for point in &mut outline.points {
-                point.x = crate::fixed::ft_mul_fix(point.x, x_scale);
-                point.y = crate::fixed::ft_mul_fix(point.y, y_scale);
-            }
-        }
         outline.xmin = xmin;
         outline.ymin = ymin;
         outline.xmax = xmax;
@@ -298,6 +464,25 @@ fn load_glyph_inner(
         outline.bbox_ymax = ymax;
         outline.is_composite = false;
         outline.sub_lsb = hmtx.get(glyph_index).lsb as i32;
+        if let Some(variation) = variation {
+            outline = apply_simple_variation(glyph_index, outline, variation)?;
+        }
+        if let Some((x_scale, y_scale)) = point_scale {
+            for point in &mut outline.points {
+                if unrounded_variation {
+                    // `TT_Process_Simple_Glyph` retains the design-unit
+                    // coordinate in 26.6 before `FT_MulFix` rounds it. This
+                    // branch also covers active `fvar` instances with no
+                    // `gvar` tuple/table, where there is no sidecar to carry
+                    // that precision through a composite load.
+                    point.x = scale_unrounded_fdot6(point.x << 6, x_scale);
+                    point.y = scale_unrounded_fdot6(point.y << 6, y_scale);
+                } else {
+                    point.x = crate::fixed::ft_mul_fix(point.x, x_scale);
+                    point.y = crate::fixed::ft_mul_fix(point.y, y_scale);
+                }
+            }
+        }
         Ok(outline)
     } else {
         // ── Composite glyph: decode components, recurse, flatten ──
@@ -329,7 +514,10 @@ fn load_glyph_inner(
         // and last_sub_lsb from the final recursive sub-glyph, then
         // compute pp1.x = xmin - sub_lsb in scaler.rs — exactly
         // matching C's accidental-but-intentional behavior.
-        let composite = parse_composite_components(bytes, 10, load_composite_instructions)?;
+        let mut composite = parse_composite_components(bytes, 10, load_composite_instructions)?;
+        if let Some(variation) = variation {
+            apply_composite_variation(glyph_index, &mut composite.components, variation)?;
+        }
         let outline_flags = outline_flags_from_components(&composite.components);
         let mut points: Vec<OutlinePoint> = Vec::new();
         let mut end_pts: Vec<u16> = Vec::new();
@@ -348,14 +536,29 @@ fn load_glyph_inner(
                     component_offset_scale,
                     point_scale,
                     load_composite_instructions,
+                    unrounded_variation,
+                    variation,
                 },
             )?;
             last_sub_xmin = sub.xmin;
             last_sub_lsb = sub.sub_lsb;
             let base = points.len();
             let mut transformed = Vec::with_capacity(sub.points.len());
-            for pt in &sub.points {
-                transformed.push(transform_point(*pt, comp, 0, 0));
+            for (index, pt) in sub.points.iter().enumerate() {
+                let point = point_scale
+                    .and_then(|(x_scale, y_scale)| {
+                        sub.unrounded_points
+                            .as_ref()
+                            .and_then(|points| points.get(index))
+                            .map(|unrounded| OutlinePoint {
+                                x: scale_unrounded_fdot6(unrounded.x, x_scale),
+                                y: scale_unrounded_fdot6(unrounded.y, y_scale),
+                                on_curve: pt.on_curve,
+                                tag: pt.tag,
+                            })
+                    })
+                    .unwrap_or(*pt);
+                transformed.push(transform_point(point, comp, 0, 0));
             }
             let (dx, dy) = if comp.args_are_xy {
                 if let Some((x_scale, y_scale)) = point_scale {
@@ -421,6 +624,73 @@ fn load_glyph_inner(
             has_cubic_tags: false,
         })
     }
+}
+
+#[inline]
+fn scale_unrounded_fdot6(value: i32, scale: i32) -> i32 {
+    ft_mul_fix(value, scale).wrapping_add(32) >> 6
+}
+
+fn apply_simple_variation(
+    glyph_index: u16,
+    outline: GlyphOutline,
+    variation: VariationContext<'_>,
+) -> Result<GlyphOutline, FontError> {
+    let Some(deltas) = variation.gvar.glyph_deltas_fixed_for_outline(
+        glyph_index,
+        &outline,
+        variation.normalized_coords,
+    )? else {
+        return Ok(outline);
+    };
+    let mut varied = outline;
+    crate::tt::gvar::apply_fixed_deltas_to_outline(&mut varied, &deltas);
+    Ok(varied)
+}
+
+fn apply_composite_variation(
+    glyph_index: u16,
+    components: &mut [CompositeComponent],
+    variation: VariationContext<'_>,
+) -> Result<(), FontError> {
+    if components.is_empty() {
+        return Ok(());
+    }
+    let component_points = components
+        .iter()
+        .map(|component| {
+            (
+                component.arg1.wrapping_shl(16),
+                component.arg2.wrapping_shl(16),
+            )
+        })
+        .collect::<Vec<_>>();
+    let contour_ends = (0..components.len())
+        .map(|index| u16::try_from(index).unwrap_or(u16::MAX))
+        .collect::<Vec<_>>();
+    let Some(deltas) = variation.gvar.glyph_deltas_fixed_for_points(
+        glyph_index,
+        &component_points,
+        &contour_ends,
+        variation.normalized_coords,
+    )? else {
+        return Ok(());
+    };
+    // FreeType's composite variation path applies the synthetic component
+    // point deltas only to XY arguments.  Anchor arguments are point indices,
+    // not coordinates, and remain untouched; child glyphs receive their own
+    // gvar records during recursive loading.
+    for (component, (dx, dy)) in components.iter_mut().zip(deltas) {
+        if component.args_are_xy {
+            component.arg1 = component
+                .arg1
+                .wrapping_add(crate::tt::gvar::fixed_to_int(dx));
+            component.arg2 = component
+                .arg2
+                .wrapping_add(crate::tt::gvar::fixed_to_int(dy));
+        }
+    }
+    Ok(())
 }
 
 /// Apply a composite component's transform + translation to a point.

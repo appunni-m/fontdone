@@ -54,6 +54,156 @@
             "coverage": [
               "fontdone-wasm/src/implementation.rs:4312"
             ]
+          },
+          {
+            "id": "b4-self-copy-001",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/basic/mixed-tags-two-contours.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "source_and_target_same_pointer": true,
+              "snapshot_before_after": true
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:22161"]
+          },
+          {
+            "id": "b4-self-copy-002",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/basic/triangle.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "source_and_target_same_pointer": true,
+              "snapshot_before_after": true
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:22161"]
+          },
+          {
+            "id": "b4-self-copy-003",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/basic/two-contours-valid.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "source_and_target_same_pointer": true,
+              "snapshot_before_after": true
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:22161"]
+          },
+          {
+            "id": "b4-self-copy-004",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/basic/single-point-contour.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "source_and_target_same_pointer": true,
+              "snapshot_before_after": true
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:22161"]
+          },
+          {
+            "id": "b4-self-copy-005",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/basic/empty.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "source_and_target_same_pointer": true,
+              "snapshot_before_after": true
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:22161"]
+          },
+          {
+            "id": "b4-self-copy-006",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/multi-contour-negative-coordinates.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "source_and_target_same_pointer": true,
+              "snapshot_before_after": true
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:22161"]
+          },
+          {
+            "id": "b4-self-copy-007",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/translate/mixed-positive-negative-points.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "source_and_target_same_pointer": true,
+              "snapshot_before_after": true
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:22161"]
+          },
+          {
+            "id": "b4-self-copy-008",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/reverse/two-contours-mixed-tags.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "source_and_target_same_pointer": true,
+              "snapshot_before_after": true
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:22161"]
+          },
+          {
+            "id": "b4-self-copy-009",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/orientation/positive-area-square.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "source_and_target_same_pointer": true,
+              "snapshot_before_after": true
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:22161"]
+          },
+          {
+            "id": "b4-self-copy-010",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/orientation/negative-area-square.json",
+                "asset_kind": "outline_model"
+              }
+            },
+            "params": {
+              "source_and_target_same_pointer": true,
+              "snapshot_before_after": true
+            },
+            "coverage": ["fontdone-c-abi/src/implementation.rs:22161"]
           }
         ]
       },
