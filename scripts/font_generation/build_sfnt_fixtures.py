@@ -156,6 +156,21 @@ def write_vertical_present() -> None:
     save_font("vhea-vmtx-present.ttf", font)
 
 
+def write_extreme_horizontal_advance() -> None:
+    font = base_font()
+    # A valid TrueType face may use the minimum legal units-per-em and the
+    # full unsigned hmtx advance range.  This fixture keeps a simple outline
+    # while making the public FT_Get_Glyph 26.6-to-16.16 advance guard
+    # reachable through an ordinary large pixel-size request.
+    font["head"].unitsPerEm = 16
+    font["hhea"].advanceWidthMax = 0xFFFF
+    font["hmtx"].metrics = {
+        glyph_name: (0xFFFF, lsb)
+        for glyph_name, (_, lsb) in font["hmtx"].metrics.items()
+    }
+    save_generated_font("extreme-hadvance.ttf", font)
+
+
 def write_no_os2() -> None:
     font = base_font()
     del font["OS/2"]
@@ -396,6 +411,7 @@ def main() -> None:
     write_pclt_short()
     write_pclt_version_zero()
     write_vertical_present()
+    write_extreme_horizontal_advance()
     write_no_os2()
     write_missing_hmtx()
     write_missing_outline_tables()

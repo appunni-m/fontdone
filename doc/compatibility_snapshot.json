@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "snapshot_kind": "committed_measured_evidence",
-  "snapshot_date": "2026-08-16",
+  "snapshot_date": "2026-08-23",
   "freetype_version": "2.14.3",
   "package_version": "2.14.3-alpha.1",
   "public_function_adoption": {
@@ -27,15 +27,15 @@
     "fontdone_pub_enums": 19
   },
   "runtime_parity": {
-    "runnable": 17091,
-    "passed": 17091,
+    "runnable": 17121,
+    "passed": 17121,
     "failed": 0,
     "pending": 4,
     "covered_manifest": 4303,
     "validated_input_subjects": 1543,
     "validated_input_files": 1537,
     "logical_input_cases": 4453,
-    "concrete_input_cases": 17095,
+    "concrete_input_cases": 17125,
     "function_route_evidence": 218,
     "function_total": 218
   },
@@ -43,8 +43,8 @@
     "categories_complete": 8,
     "categories_total": 12,
     "is_complete": false,
-    "runtime_contract_rows_complete": 10601,
-    "runtime_contract_rows_total": 14835,
+    "runtime_contract_rows_complete": 10631,
+    "runtime_contract_rows_total": 14865,
     "runtime_contract_rows_pending": 4234,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
@@ -53,24 +53,24 @@
   },
   "coverage": {
     "measured": true,
-    "snapshot_date": "2026-08-16",
+    "snapshot_date": "2026-08-23",
     "source_commit": "e8c51cb6dba42fd524d94940673fe6b380411d46",
     "command": "make test-coverage-all",
     "suite": "unified-parity-workspace",
-    "run_id": "23abd095-9adf-4480-8cd0-960e357ec644",
-    "snapshot_id": "abb05b18-60de-403b-99f4-c26c8f4e4272",
-    "duration_ms": 80024,
+    "run_id": "701bcb94-d6b6-45b4-be65-d6b9f765b7cc",
+    "snapshot_id": "7741753a-5454-4322-98b6-40e66678003c",
+    "duration_ms": 36758,
     "exit_code": 0,
-    "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; managed Coverage MCP 0.8.0 run 23abd095-9adf-4480-8cd0-960e357ec644 executed the registered wrapper-disabled command RUSTC_WRAPPER= make test-coverage-all; the aggregate report is target/coverage/unified-runtime-all-lanes.json; the 17,095 concrete input cases expand to 17,091 runnable comparisons plus 4 explicitly pending cases; test-harness source excluded",
+    "scope": "Default-profile Rust core, native C ABI, and host-compiled WASM facade, each reported once; all workspace packages remain in the report while only the unified_fixture_parity integration target executes; managed Coverage MCP 0.10.0 run 701bcb94-d6b6-45b4-be65-d6b9f765b7cc executed the registered wrapper-disabled command RUSTC_WRAPPER= make test-coverage-all; the aggregate report is target/coverage/unified-runtime-all-lanes.json; the 17,125 concrete input cases expand to 17,121 runnable comparisons plus 4 explicitly pending cases; test-harness source excluded",
     "lines": {
-      "covered": 63739,
+      "covered": 63740,
       "total": 65887,
-      "percent": 96.73987281254268
+      "percent": 96.74139056262996
     },
     "branches": {
-      "covered": 11579,
+      "covered": 11580,
       "total": 13412,
-      "percent": 86.33313450641217
+      "percent": 86.34059051595587
     },
     "functions": {
       "covered": 3689,
@@ -78,17 +78,17 @@
       "percent": 92.78169014084507
     },
     "regions": {
-      "covered": 87945,
+      "covered": 87946,
       "total": 91700,
-      "percent": 95.9051254089422
+      "percent": 95.9062159214831
     },
     "runtime_parity": {
-      "runnable": 17091,
-      "passed": 17091,
+      "runnable": 17121,
+      "passed": 17121,
       "failed": 0,
       "pending": 4
     },
-    "warning": "Coverage MCP 0.8.0 ingested snapshot fe1caa05-5468-4008-802e-4b5f98e4ec2d. LLVM JSON segments are normalized to segment start lines; aggregate region coverage is preserved from summaries. The local sccache wrapper was disabled because the managed sandbox rejected its operation.",
+    "warning": "Coverage MCP 0.10.0 ingested snapshot 7741753a-5454-4322-98b6-40e66678003c. LLVM JSON segments are normalized to segment start lines; aggregate region coverage is preserved from summaries. The local sccache wrapper was disabled because the managed sandbox rejected its operation.",
     "claim_scope": "The percentages apply only to the named source commit, suite, and toolchain; coverage is not a FreeType-parity percentage."
   },
   "performance": {
@@ -1358,9 +1358,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "40478c653dc762433101e82aea985397f1f5795699a8dcd2774eb17b38a0c2ec",
-    "parity_tree_sha256": "0c50f1e2529ec97bb0dc96773c69d1cd8e8d85540882d67e26792b34a5281da2",
-    "log_sha256": "9c9595bb3b51197ffd9e8ec4c17f3614e8d4537ab120aeb4a07847c2fb15e813",
+    "sha256": "09c8f7323761d4fcfa5902a4e5fef6c4510e6a71b44065fbcf1e362b2232926a",
+    "parity_tree_sha256": "0a5e98eccdb468cfb3a135700b17e46db020d851bf5561476d9dcc7fe78bea2b",
+    "log_sha256": "f899f86e077086c146f9f451f287dfebfc4d7431bdeee6a62a9837cff9efdc58",
     "command": "make test-parity"
   }
 }

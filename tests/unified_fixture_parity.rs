@@ -64374,11 +64374,26 @@ fn rust_image_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
                 return Ok(Err(size_err));
             }
             match FT_Load_Glyph(&face, glyph_index, image_type.flags as i32) {
-                Ok(slot) => Ok(Ok(glyph_record_json(
-                    slot.format,
-                    i64::from(slot.advance.x),
-                    i64::from(slot.advance.y),
-                ))),
+                Ok(slot) => {
+                    // FTC_ImageCache_Lookup materializes an owned glyph after
+                    // loading the slot.  Keep the core parity route honest
+                    // about the public FT_Get_Glyph advance bound instead of
+                    // reporting a successful slot load when C rejects the
+                    // detached glyph conversion.
+                    let glyph_result = match slot.format {
+                        FT_GLYPH_FORMAT_BITMAP => FT_Get_Bitmap_Glyph(Some(&slot)).map(|_| ()),
+                        FT_GLYPH_FORMAT_SVG => FT_Get_Svg_Glyph(Some(&slot)).map(|_| ()),
+                        _ => FT_Get_Outline_Glyph(Some(&slot)).map(|_| ()),
+                    };
+                    match glyph_result {
+                        Ok(()) => Ok(Ok(glyph_record_json(
+                            slot.format,
+                            i64::from(slot.advance.x),
+                            i64::from(slot.advance.y),
+                        ))),
+                        Err(err) => Ok(Err(err)),
+                    }
+                }
                 Err(err) => Ok(Err(err)),
             }
         },
@@ -65116,6 +65131,16 @@ fn wasm_image_cache_lookup_scaler(case: &InputCase) -> Result<RunOutput, String>
             if err != FT_Err_Ok {
                 return Ok(Err(err));
             }
+            let mut glyph = 0usize;
+            let glyph_error = wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut glyph);
+            if glyph != 0 {
+                wasm_abi::fontdone_wasm_done_glyph_handle(
+                    ptr::with_exposed_provenance_mut::<wasm_abi::FontdoneWasmGlyph>(glyph),
+                );
+            }
+            if glyph_error != FT_Err_Ok {
+                return Ok(Err(glyph_error));
+            }
             let slot = wasm_abi::abi_slot_snapshot(handle)
                 .ok_or_else(|| "missing wasm glyph slot snapshot".to_string())?;
             Ok(Ok(glyph_record_json(
@@ -65149,6 +65174,16 @@ fn wasm_image_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
                 wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, image_type.flags as i32);
             if err != FT_Err_Ok {
                 return Ok(Err(err));
+            }
+            let mut glyph = 0usize;
+            let glyph_error = wasm_abi::fontdone_wasm_get_glyph_from_face(handle, &mut glyph);
+            if glyph != 0 {
+                wasm_abi::fontdone_wasm_done_glyph_handle(
+                    ptr::with_exposed_provenance_mut::<wasm_abi::FontdoneWasmGlyph>(glyph),
+                );
+            }
+            if glyph_error != FT_Err_Ok {
+                return Ok(Err(glyph_error));
             }
             let slot = wasm_abi::abi_slot_snapshot(handle)
                 .ok_or_else(|| "missing wasm glyph slot snapshot".to_string())?;
