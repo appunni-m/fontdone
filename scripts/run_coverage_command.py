@@ -2,12 +2,13 @@
 """Run the approved all-lane coverage command with public case arguments.
 
 Coverage MCP appends each value in its ``arguments`` array to this command.
-The public interface is intentionally argument-based:
+The optional wrapper interface is:
 
     --migration-coverage-case-ids case-a,case-b
 
-The parity harness keeps the selector in its internal environment variable so
-all Rust, C-ABI, and WASM lane processes inherit the same exact allowlist.
+The normal managed interface uses the existing Make command with
+``MIGRATION_COVERAGE_CASE_IDS=case-a,case-b``. This wrapper remains available
+for callers that specifically need the flag spelling.
 """
 
 from __future__ import annotations

@@ -55,16 +55,21 @@ CARGO_AUDIT_VERSION ?= 0.22.2
 PREFIX ?= /usr/local
 DESTDIR ?=
 PARITY_ARGS ?= -- --nocapture
+# Public Coverage MCP interface: pass one exact comma-separated allowlist as a
+# GNU Make command-line variable. An unset value preserves the full run.
+MIGRATION_COVERAGE_CASE_IDS ?=
 # These internal selector variables are intentionally exported so focused
-# parity diagnostics and the approved coverage wrapper can pass one exact
-# allowlist through every coverage lane. The public Coverage MCP interface is
-# `scripts/run_coverage_command.py --migration-coverage-case-ids <id,...>`.
-# An unset value preserves the full run.
+# parity diagnostics and the public Make argument pass the same allowlist
+# through every coverage lane.
 ifneq ($(strip $(FONTDONE_UNIFIED_CASE_FILTER)),)
 export FONTDONE_UNIFIED_CASE_FILTER
 endif
 ifneq ($(strip $(FONTDONE_UNIFIED_CASE_IDS)),)
 export FONTDONE_UNIFIED_CASE_IDS
+endif
+ifneq ($(strip $(MIGRATION_COVERAGE_CASE_IDS)),)
+export MIGRATION_COVERAGE_CASE_IDS
+export FONTDONE_UNIFIED_CASE_IDS := $(MIGRATION_COVERAGE_CASE_IDS)
 endif
 ifneq ($(strip $(FONTDONE_UNIFIED_OPERATION_FILTER)),)
 export FONTDONE_UNIFIED_OPERATION_FILTER
@@ -163,8 +168,7 @@ help:
 	@printf "  make c-abi-contract-all-platforms  Validate five bundles and report current C-contract debt\n"
 	@printf "  make c-abi-contract-complete  Require all 12 C contract categories from assembled evidence\n"
 	@printf "  make test-coverage        Write core Rust coverage JSON\n"
-	@printf "  make test-coverage-all    Write all-lane branch coverage JSON\n"
-	@printf "  python3 scripts/run_coverage_command.py --migration-coverage-case-ids <id,...>  Run selected all-lane coverage cases\n"
+	@printf "  make test-coverage-all    Write all-lane branch coverage JSON (MIGRATION_COVERAGE_CASE_IDS=<id,...> for a focused run)\n"
 	@printf "  make coverage-clean       Remove cached LLVM coverage build artifacts\n"
 	@printf "  make bench-quick          Run the benchmark smoke gate\n"
 	@printf "  make bench-regression     Require the reviewed performance thresholds\n"
@@ -506,8 +510,8 @@ test-ffi:
 # different cache keys, so filtered runs and full-suite runs use separate cache
 # files under tests/fixtures/outputs/unified_oracle_cache/.
 #
-# Direct diagnostic env vars (all optional; Coverage MCP uses the argument
-# wrapper above):
+# Direct diagnostic env vars (all optional; Coverage MCP uses the Make
+# command-line variable above):
 #   FONTDONE_UNIFIED_OPERATION_FILTER  – substring match on operation name
 #   FONTDONE_UNIFIED_CASE_FILTER       – substring match on case_id/subject/case
 #   FONTDONE_UNIFIED_CASE_IDS          – exact comma-separated case_id allowlist

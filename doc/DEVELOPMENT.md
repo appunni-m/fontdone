@@ -548,22 +548,32 @@ host-compiled WASM facade once, executes the adaptive shard count for each
 backend, and merges the raw profiles into
 `target/coverage/unified-runtime-all-lanes.json`.
 
-For fast Coverage MCP incremental runs, use the approved coverage wrapper with
-one argument pair: `--migration-coverage-case-ids` followed by a
-comma-separated exact allowlist of public parity `case_id` values. For example,
-the Coverage MCP `arguments` array is:
+For fast Coverage MCP incremental runs, pass a comma-separated exact allowlist
+of public parity `case_id` values as a GNU Make command-line variable. For
+example:
 
-```bash
-["--migration-coverage-case-ids", "ftbitmap.FT_Bitmap_Copy.success_deep_copy_all_public_fields,ftbitmap.FT_Bitmap_Copy.success_source_equals_target_noop"]
+```sh
+make test-coverage-all \
+  MIGRATION_COVERAGE_CASE_IDS='ftbitmap.FT_Bitmap_Copy.success_deep_copy_all_public_fields,ftbitmap.FT_Bitmap_Copy.success_source_equals_target_noop'
 ```
 
-Coverage MCP appends those arguments to `scripts/run_coverage_command.py`,
-which validates the IDs and invokes the existing `make test-coverage-all`
-matrix. The selector is inherited by every Rust, C-ABI, and WASM coverage lane;
-omitting the flag retains the complete matrix and denominator. The parity
-harness rejects an explicit selector that matches no runnable or pending
-fixture case. Incremental runs still require `execution.mode=incremental` and
-an explicit base snapshot.
+For the registered Coverage MCP command, pass the same Make assignment as one
+argument:
+
+```json
+"arguments": [
+  "MIGRATION_COVERAGE_CASE_IDS=case-a,case-b"
+]
+```
+
+GNU Make will reject `--migration-coverage-case-ids case-a,case-b` because it
+interprets that token as its own option. The registered command remains the
+existing `RUSTC_WRAPPER= make test-coverage-all`; a wrapper is only needed if
+the public interface must use that flag spelling. The selector is inherited
+by every Rust, C-ABI, and WASM coverage lane; omitting it retains the complete
+matrix and denominator. The parity harness rejects an explicit selector that
+matches no runnable or pending fixture case. Incremental runs still require
+`execution.mode=incremental` and an explicit base snapshot.
 Optional feature profiles remain a separate `make optional-feature-contract`
 gate so the default report does not attribute multiple runtime contracts to the
 same LLVM source path.
