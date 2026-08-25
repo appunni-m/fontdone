@@ -547,6 +547,26 @@ complete parity matrix. It builds and instruments the core, native C ABI, and
 host-compiled WASM facade once, executes the adaptive shard count for each
 backend, and merges the raw profiles into
 `target/coverage/unified-runtime-all-lanes.json`.
+
+For fast Coverage MCP incremental runs, the same approved `make
+test-coverage-all` command accepts the runtime selector variables as make
+arguments. Use `FONTDONE_UNIFIED_CASE_IDS` for an exact comma-separated
+allowlist of public parity `case_id` values; use `FONTDONE_UNIFIED_CASE_LIMIT`
+to cap the selected cases, or use the existing substring selectors
+`FONTDONE_UNIFIED_CASE_FILTER` and `FONTDONE_UNIFIED_OPERATION_FILTER` for a
+family probe. For example:
+
+```bash
+make test-coverage-all \
+  FONTDONE_UNIFIED_CASE_IDS='ftbitmap.FT_Bitmap_Copy.success_deep_copy_all_public_fields,ftbitmap.FT_Bitmap_Copy.success_source_equals_target_noop'
+```
+
+Coverage MCP should pass the same assignment as an argument to the registered
+coverage command, with `execution.mode=incremental` and an explicit base
+snapshot. The selector is exported to every Rust, C-ABI, and WASM coverage
+lane; leaving it unset retains the complete matrix and denominator. The
+parity harness rejects an explicit selector that matches no runnable or
+pending fixture case.
 Optional feature profiles remain a separate `make optional-feature-contract`
 gate so the default report does not attribute multiple runtime contracts to the
 same LLVM source path.

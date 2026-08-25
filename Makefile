@@ -55,6 +55,22 @@ CARGO_AUDIT_VERSION ?= 0.22.2
 PREFIX ?= /usr/local
 DESTDIR ?=
 PARITY_ARGS ?= -- --nocapture
+# These selector variables are intentionally exported so the approved
+# `test-coverage-all` command can receive a small case set as make arguments.
+# The exact allowlist is comma-separated and takes precedence alongside the
+# existing substring/operation filters; an unset value preserves the full run.
+ifneq ($(strip $(FONTDONE_UNIFIED_CASE_FILTER)),)
+export FONTDONE_UNIFIED_CASE_FILTER
+endif
+ifneq ($(strip $(FONTDONE_UNIFIED_CASE_IDS)),)
+export FONTDONE_UNIFIED_CASE_IDS
+endif
+ifneq ($(strip $(FONTDONE_UNIFIED_OPERATION_FILTER)),)
+export FONTDONE_UNIFIED_OPERATION_FILTER
+endif
+ifneq ($(strip $(FONTDONE_UNIFIED_CASE_LIMIT)),)
+export FONTDONE_UNIFIED_CASE_LIMIT
+endif
 COVERAGE_OUTPUT ?= target/coverage/unified-summary.json
 ALL_LANES_COVERAGE_OUTPUT ?= target/coverage/unified-runtime-all-lanes.json
 CONDITION_COVERAGE_OUTPUT ?= target/coverage/unified-condition-summary.json
@@ -491,6 +507,7 @@ test-ffi:
 # Env vars (all optional):
 #   FONTDONE_UNIFIED_OPERATION_FILTER  – substring match on operation name
 #   FONTDONE_UNIFIED_CASE_FILTER       – substring match on case_id/subject/case
+#   FONTDONE_UNIFIED_CASE_IDS          – exact comma-separated case_id allowlist
 #   FONTDONE_UNIFIED_CASE_LIMIT        – max number of selected concrete cases
 #   FONTDONE_UNIFIED_WORKERS           – bounded backend comparison worker count
 #   COVERAGE_TEST_OPT_LEVEL             – optimization level for coverage builds
@@ -602,6 +619,19 @@ test-filter-guard: unified-oracle api-abi-check
 	if ! grep -Fq "explicit runtime filter matched no fixture cases" "$$output"; then \
 		cat "$$output"; \
 		echo "unmatched fixture filter failed for an unexpected reason" >&2; \
+		exit 1; \
+	fi; \
+	if ! FONTDONE_UNIFIED_CASE_IDS="ftbitmap.FT_Bitmap_Copy.success_deep_copy_all_public_fields,ftbitmap.FT_Bitmap_Copy.success_source_equals_target_noop" \
+		FONTDONE_UNIFIED_ORACLE_REFRESH=1 \
+		$(CARGO) test --test unified_fixture_parity --locked unified_fixture_parity -- --nocapture \
+		>"$$output" 2>&1; then \
+		cat "$$output"; \
+		echo "exact case-ID fixture filter failed" >&2; \
+		exit 1; \
+	fi; \
+	if ! grep -Fq "runtime_parity: passed=2" "$$output"; then \
+		cat "$$output"; \
+		echo "exact case-ID fixture filter selected an unexpected case count" >&2; \
 		exit 1; \
 	fi
 

@@ -1100,14 +1100,15 @@ struct RuntimeSelection {
 
 fn assert_explicit_runtime_filter_matched(selection: &RuntimeSelection) {
     let case_filter = case_filter();
+    let case_ids = case_id_filter();
     let operation_filter = operation_filter();
-    if case_filter.is_none() && operation_filter.is_none() {
+    if case_filter.is_none() && case_ids.is_none() && operation_filter.is_none() {
         return;
     }
 
     assert!(
         !selection.executable.is_empty() || selection.model_only != 0,
-        "explicit runtime filter matched no fixture cases: case_filter={case_filter:?} operation_filter={operation_filter:?}"
+        "explicit runtime filter matched no fixture cases: case_filter={case_filter:?} case_ids={case_ids:?} operation_filter={operation_filter:?}"
     );
 }
 
@@ -1225,6 +1226,7 @@ fn classify_runtime_case(case: &InputCase, operation: &str) -> RuntimeReadiness 
 
 fn select_runtime_cases(cases: &[InputCase]) -> RuntimeSelection {
     let filter = case_filter();
+    let case_ids = case_id_filter();
     let operation_filter = operation_filter();
     let limit = case_limit();
     let mut executable = Vec::new();
@@ -1238,6 +1240,9 @@ fn select_runtime_cases(cases: &[InputCase]) -> RuntimeSelection {
             continue;
         }
         if !operation_matches_filter(case, operation_filter.as_deref()) {
+            continue;
+        }
+        if !case_id_matches_filter(case, case_ids.as_ref()) {
             continue;
         }
         if !case_matches_filter(case, filter.as_deref()) {
@@ -43116,6 +43121,25 @@ fn case_filter() -> Option<String> {
         .filter(|value| !value.is_empty())
 }
 
+fn case_id_filter() -> Option<BTreeSet<String>> {
+    let value = std::env::var("FONTDONE_UNIFIED_CASE_IDS")
+        .ok()
+        .filter(|value| !value.trim().is_empty())?;
+    let mut case_ids = BTreeSet::new();
+    for raw_case_id in value.split(',') {
+        let case_id = raw_case_id.trim();
+        assert!(
+            !case_id.is_empty(),
+            "FONTDONE_UNIFIED_CASE_IDS must contain only non-empty comma-separated case IDs"
+        );
+        assert!(
+            case_ids.insert(case_id.to_owned()),
+            "FONTDONE_UNIFIED_CASE_IDS contains duplicate case ID {case_id:?}"
+        );
+    }
+    Some(case_ids)
+}
+
 fn operation_filter() -> Option<String> {
     std::env::var("FONTDONE_UNIFIED_OPERATION_FILTER")
         .ok()
@@ -43178,6 +43202,10 @@ fn case_matches_filter(case: &InputCase, filter: Option<&str>) -> bool {
     filter.is_none_or(|needle| {
         case.case_id.contains(needle) || case.subject.contains(needle) || case.case.contains(needle)
     })
+}
+
+fn case_id_matches_filter(case: &InputCase, case_ids: Option<&BTreeSet<String>>) -> bool {
+    case_ids.is_none_or(|case_ids| case_ids.contains(&case.case_id))
 }
 
 fn operation_matches_filter(case: &InputCase, filter: Option<&str>) -> bool {
