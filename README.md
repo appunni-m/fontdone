@@ -102,22 +102,22 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The latest full parity snapshot was recorded on **2026-08-23** (UTC):
+The latest full parity snapshot was recorded on **2026-08-25** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 17,601 |
-| Passed cases | 17,601 |
+| Runnable exact-comparison cases | 18,802 |
+| Passed cases | 18,802 |
 | Failed cases | 0 |
 | Explicitly pending cases | 4 |
-| Covered manifest cases | 4,316 |
+| Covered manifest cases | 4,355 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,466 |
-| Concrete expanded cases | 17,605 |
+| Logical declared cases | 4,507 |
+| Concrete expanded cases | 18,806 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`17,121 / 17,121` means every runnable case in that execution matched; the 4
+`18,802 / 18,802` means every runnable case in that execution matched; the 4
 explicitly pending concrete cases are safety-extension or undefined-input exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
@@ -125,9 +125,9 @@ equivalent to complete behavior for every input, state, or platform.
 
 The latest worktree verification is the full parity snapshot recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-17,121 / 17,121 runnable comparisons with 0 failures and 4 explicitly pending
+18,802 / 18,802 runnable comparisons with 0 failures and 4 explicitly pending
 concrete cases. Its source-bound parity-tree digest is
-`0a5e98eccdb468cfb3a135700b17e46db020d851bf5561476d9dcc7fe78bea2b`.
+`b64f317019ba1af657a42d77f87538b3b42adde9df2f0869f70a7e9bc28617e8`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -313,11 +313,11 @@ The latest committed scorecard has **8 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 10,901 / 15,135 pinned-C runtime contract rows exact; 4,234 pending |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 12,252 / 16,546 pinned-C runtime contract rows exact; 4,294 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 2,139 / 3,001 expected-error routes compare exact error and output results; 12,259 / 16,253 routes have no generic fallback evidence |
+| Errors | 2,263 / 3,125 expected-error routes compare exact error and output results; 14,509 / 18,803 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 

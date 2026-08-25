@@ -6,6 +6,12 @@ The optional wrapper interface is:
 
     --migration-coverage-case-ids case-a,case-b
 
+The selector may be repeated with comma-separated chunks when a caller has a
+per-argument size limit:
+
+    --migration-coverage-case-ids case-a,case-b \
+    --migration-coverage-case-ids case-c,case-d
+
 The normal managed interface uses the existing Make command with
 ``MIGRATION_COVERAGE_CASE_IDS=case-a,case-b``. This wrapper remains available
 for callers that specifically need the flag spelling.
@@ -39,15 +45,18 @@ def main() -> int:
     parser.add_argument(
         "--migration-coverage-case-ids",
         type=parse_case_ids,
+        action="append",
         metavar="CASE_ID,...",
-        help="run only these exact public parity case IDs",
+        help="run only these exact public parity case IDs (repeatable)",
     )
     args = parser.parse_args()
 
     environment = os.environ.copy()
     environment.pop(CASE_SELECTOR_ENV, None)
     if args.migration_coverage_case_ids is not None:
-        environment[CASE_SELECTOR_ENV] = args.migration_coverage_case_ids
+        environment[CASE_SELECTOR_ENV] = parse_case_ids(
+            ",".join(args.migration_coverage_case_ids)
+        )
 
     os.execvpe("make", ["make", "test-coverage-all"], environment)
     return 0

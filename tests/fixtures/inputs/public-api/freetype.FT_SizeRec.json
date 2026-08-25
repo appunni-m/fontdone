@@ -144,6 +144,166 @@
             "coverage": [
               "freetype.size_record_state:type1-mm"
             ]
+          },
+          {
+            "id": "cc03-size-pixel-007",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "generic_probe": "set_and_read_client_pointer_identity",
+              "pixel_size": {"pixels": 7}
+            },
+            "coverage": ["coverage:size:pixel:7"]
+          },
+          {
+            "id": "cc03-size-pixel-011",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "generic_probe": "set_and_read_client_pointer_identity",
+              "pixel_size": {"pixels": 11}
+            },
+            "coverage": ["coverage:size:pixel:11"]
+          },
+          {
+            "id": "cc03-size-pixel-017",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "generic_probe": "set_and_read_client_pointer_identity",
+              "pixel_size": {"pixels": 17}
+            },
+            "coverage": ["coverage:size:pixel:17"]
+          },
+          {
+            "id": "cc03-size-pixel-029",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "generic_probe": "set_and_read_client_pointer_identity",
+              "pixel_size": {"pixels": 29}
+            },
+            "coverage": ["coverage:size:pixel:29"]
+          },
+          {
+            "id": "cc03-size-pixel-047",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "generic_probe": "set_and_read_client_pointer_identity",
+              "pixel_size": {"pixels": 47}
+            },
+            "coverage": ["coverage:size:pixel:47"]
+          },
+          {
+            "id": "cc03-size-char-0448-dpi072",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "generic_probe": "set_and_read_client_pointer_identity",
+              "pixel_size": {"char_size_26_6": 448, "dpi": 72}
+            },
+            "coverage": ["coverage:size:char:448:dpi72"]
+          },
+          {
+            "id": "cc03-size-char-0704-dpi096",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "generic_probe": "set_and_read_client_pointer_identity",
+              "pixel_size": {"char_size_26_6": 704, "dpi": 96}
+            },
+            "coverage": ["coverage:size:char:704:dpi96"]
+          },
+          {
+            "id": "cc03-size-char-1088-dpi072",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "generic_probe": "set_and_read_client_pointer_identity",
+              "pixel_size": {"char_size_26_6": 1088, "dpi": 72}
+            },
+            "coverage": ["coverage:size:char:1088:dpi72"]
+          },
+          {
+            "id": "cc03-size-char-1856-dpi144",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "generic_probe": "set_and_read_client_pointer_identity",
+              "pixel_size": {"char_size_26_6": 1856, "dpi": 144}
+            },
+            "coverage": ["coverage:size:char:1856:dpi144"]
+          },
+          {
+            "id": "cc03-size-char-3008-dpi072",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "generic_probe": "set_and_read_client_pointer_identity",
+              "pixel_size": {"char_size_26_6": 3008, "dpi": 72}
+            },
+            "coverage": ["coverage:size:char:3008:dpi72"]
           }
         ]
       },

@@ -512,7 +512,6 @@ pub fn cjk_compute_edges(hints: &mut GlyphHints, dim: Dimension, top_to_bottom: 
             axis.edges[e_idx].serif = usize::MAX;
         }
     }
-
 }
 
 /// Link CJK segments into stems and serifs.
@@ -657,7 +656,6 @@ pub fn cjk_link_segments(hints: &mut GlyphHints, dim: Dimension) {
             }
         }
     }
-
 }
 
 /// Assign CJK edges to active blue zones for the current dimension.

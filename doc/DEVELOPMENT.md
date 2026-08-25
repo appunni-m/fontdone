@@ -557,23 +557,26 @@ make test-coverage-all \
   MIGRATION_COVERAGE_CASE_IDS='ftbitmap.FT_Bitmap_Copy.success_deep_copy_all_public_fields,ftbitmap.FT_Bitmap_Copy.success_source_equals_target_noop'
 ```
 
-For the registered Coverage MCP command, pass the same Make assignment as one
-argument:
+For the registered Coverage MCP wrapper command, pass the flag and its
+comma-separated value as arguments. The flag is repeatable, which keeps each
+argument below Coverage MCP's size limit for a larger 30-case batch:
 
 ```json
 "arguments": [
-  "MIGRATION_COVERAGE_CASE_IDS=case-a,case-b"
+  "--migration-coverage-case-ids",
+  "case-a,case-b"
 ]
 ```
 
-GNU Make will reject `--migration-coverage-case-ids case-a,case-b` because it
-interprets that token as its own option. The registered command remains the
-existing `RUSTC_WRAPPER= make test-coverage-all`; a wrapper is only needed if
-the public interface must use that flag spelling. The selector is inherited
-by every Rust, C-ABI, and WASM coverage lane; omitting it retains the complete
-matrix and denominator. The parity harness rejects an explicit selector that
-matches no runnable or pending fixture case. Incremental runs still require
-`execution.mode=incremental` and an explicit base snapshot.
+For a larger batch, repeat the flag/value pair with another comma-separated
+chunk. The registered wrapper is
+`RUSTC_WRAPPER= python3 scripts/run_coverage_command.py`; it combines the
+chunks, validates duplicate IDs, and invokes the existing `make
+test-coverage-all` matrix. The selector is inherited by every Rust, C-ABI, and
+WASM coverage lane; omitting it retains the complete matrix and denominator.
+The parity harness rejects an explicit selector that matches no runnable or
+pending fixture case. Incremental runs still require `execution.mode=incremental`
+and an explicit base snapshot.
 Optional feature profiles remain a separate `make optional-feature-contract`
 gate so the default report does not attribute multiple runtime contracts to the
 same LLVM source path.
@@ -685,7 +688,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 997 tracked paths and no symlinks.
+The canonical input tree currently contains 1,038 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -1558,15 +1561,15 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 86 | package, build, release, and facade contracts |
 | R03 | 1,754 | executable parity tests and public contracts |
-| R04 | 997 | licensed canonical fixture inputs |
+| R04 | 1,039 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
-| R06 | 61 | maintained tooling, examples, and benchmarks |
+| R06 | 62 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
 | R08 | 1 | active self-cleaning roadmap |
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **2,973** | **all retained paths** |
+| **Total** | **3,016** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

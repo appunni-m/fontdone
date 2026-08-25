@@ -785,8 +785,7 @@ impl Face {
                     native_hint_mode,
                 )?
             }
-        } else if flags.contains(LoadFlags::TARGET_LIGHT)
-            && !flags.contains(LoadFlags::NO_AUTOHINT)
+        } else if flags.contains(LoadFlags::TARGET_LIGHT) && !flags.contains(LoadFlags::NO_AUTOHINT)
         {
             font.glyph_slot_load_target_light(glyph_index, vertical_layout)?
         } else if flags.contains(LoadFlags::NO_AUTOHINT) {

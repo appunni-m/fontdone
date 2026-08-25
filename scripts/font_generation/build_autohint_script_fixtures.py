@@ -1192,6 +1192,139 @@ def build_batch127_cjk_edge_link_predicates() -> None:
     font.save(OUT_DIR / "batch127-cjk-edge-link-predicates.ttf")
 
 
+def build_coverage_cjk_edge_order_links() -> None:
+    """Build valid CJK contours for edge-order and link-reduction probes."""
+
+    units_per_em = 1024
+    order_names = [f"order_{index:02d}" for index in range(1, 6)]
+    link_names = [f"link_{letter}" for letter in "abcde"]
+    stem_bands = ((96, 320), (400, 624), (704, 928))
+    order_y_values = (
+        (640, 320, 0),
+        (0, 640, 320),
+        (320, 0, 640),
+        (640, 0, 320),
+        (320, 640, 0),
+    )
+    order_glyphs = {
+        name: rectangles_glyph(
+            [
+                (left, bottom, right, bottom + 64)
+                for (left, right), bottom in zip(stem_bands, y_values)
+            ]
+        )
+        for name, y_values in zip(order_names, order_y_values)
+    }
+
+    link_rectangles = [
+        [
+            (40, 20, 100, 620),
+            (180, 20, 240, 620),
+            (40, 260, 260, 380),
+        ],
+        [
+            (40, 20, 100, 620),
+            (180, 20, 240, 620),
+            (40, 220, 260, 300),
+            (40, 340, 260, 420),
+        ],
+        [
+            (40, 20, 100, 620),
+            (180, 20, 240, 620),
+            (320, 20, 380, 620),
+            (40, 260, 260, 380),
+            (180, 180, 400, 300),
+        ],
+        [
+            (40, 20, 120, 620),
+            (200, 20, 280, 620),
+            (80, 240, 240, 400),
+        ],
+        [
+            (40, 20, 100, 620),
+            (180, 20, 240, 620),
+            (320, 20, 380, 620),
+            (40, 260, 260, 380),
+            (180, 180, 400, 300),
+        ],
+    ]
+    mirrored_link_rectangles = [
+        (units_per_em - right, bottom, units_per_em - left, top)
+        for left, bottom, right, top in reversed(link_rectangles[2])
+    ]
+    link_rectangles[-1] = mirrored_link_rectangles
+
+    glyph_order = [
+        ".notdef",
+        "space",
+        "hani_standard",
+        *order_names,
+        *link_names,
+    ]
+    glyphs = {
+        ".notdef": rectangle_glyph(80, -160, 944, 840),
+        "space": empty_glyph(),
+        "hani_standard": rectangle_glyph(96, 32, 928, 672),
+        **{
+            name: glyph
+            for name, glyph in order_glyphs.items()
+        },
+        **{
+            name: rectangles_glyph(rectangles)
+            for name, rectangles in zip(link_names, link_rectangles)
+        },
+    }
+    metrics = {
+        ".notdef": (1024, 80),
+        "space": (320, 0),
+        "hani_standard": (1024, 128),
+        **{name: (1024, 48) for name in order_names + link_names},
+    }
+    cmap = {
+        0x20: "space",
+        0x7530: "hani_standard",
+        **{
+            0x4E10 + index: name
+            for index, name in enumerate(order_names)
+        },
+        **{
+            0x4E20 + index: name
+            for index, name in enumerate(link_names)
+        },
+    }
+
+    font = FontBuilder(units_per_em, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=840, descent=-240)
+    font.setupNameTable(
+        {
+            "familyName": "Coverage CJK Edge Order Links",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Coverage CJK Edge Order Links Regular",
+            "fullName": "Coverage CJK Edge Order Links Regular",
+            "psName": "CoverageCJKEdgeOrderLinks-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=840,
+        sTypoDescender=-240,
+        usWinAscent=840,
+        usWinDescent=240,
+    )
+    font.setupPost()
+
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "coverage-cjk-edge-order-links.ttf")
+
+
 def build_batch145_cjk_edge_interpolation_witnesses() -> None:
     """Build valid CJK contours for linked-edge interpolation witnesses."""
 
@@ -4602,6 +4735,7 @@ def main() -> None:
     build_batch123_hebrew_long_blue_remaining()
     build_batch126_normal_scale_branches()
     build_batch127_cjk_edge_link_predicates()
+    build_coverage_cjk_edge_order_links()
     build_batch145_cjk_edge_interpolation_witnesses()
     build_batch152_latin_adjustment_branches()
     build_batch153_latin_blue_empty_branches()

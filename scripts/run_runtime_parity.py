@@ -161,6 +161,18 @@ def route_counts() -> tuple[int, int]:
     return totals["rust"]
 
 
+def selected_case_ids() -> set[str] | None:
+    value = os.environ.get("FONTDONE_UNIFIED_CASE_IDS", "").strip()
+    if not value:
+        return None
+    case_ids = {case_id.strip() for case_id in value.split(",")}
+    if not case_ids or "" in case_ids:
+        raise ValueError("FONTDONE_UNIFIED_CASE_IDS contains an empty case ID")
+    if len(case_ids) != len(value.split(",")):
+        raise ValueError("FONTDONE_UNIFIED_CASE_IDS contains duplicate case IDs")
+    return case_ids
+
+
 def build_report(log_text: str, exit_code: int) -> dict[str, object]:
     runtime_cases = last_match(RUNTIME_CASES, log_text, "runtime_cases summary")
     runtime = last_match(RUNTIME_PARITY, log_text, "runtime_parity summary")
@@ -170,9 +182,16 @@ def build_report(log_text: str, exit_code: int) -> dict[str, object]:
     logical, concrete, additional, implicit = map(int, explicit.groups())
     if runnable != total:
         raise ValueError(f"runnable {runnable} does not equal runtime total {total}")
-    if concrete != runnable + pending:
+    case_ids = selected_case_ids()
+    if case_ids is None:
+        if concrete != runnable + pending:
+            raise ValueError(
+                f"concrete input cases {concrete} do not equal runnable + pending "
+                f"({runnable + pending})"
+            )
+    elif len(case_ids) != runnable + pending:
         raise ValueError(
-            f"concrete input cases {concrete} do not equal runnable + pending "
+            f"selected case IDs {len(case_ids)} do not equal runnable + pending "
             f"({runnable + pending})"
         )
     if additional != concrete - logical or implicit != 0:
@@ -230,8 +249,17 @@ def build_report(log_text: str, exit_code: int) -> dict[str, object]:
             "function_route_evidence": route_covered,
             "function_total": route_total,
         },
+        "selection": {
+            "kind": "case_ids" if case_ids is not None else "full",
+            "case_count": len(case_ids) if case_ids is not None else concrete,
+        },
         "test_exit_code": exit_code,
-        "complete": exit_code == 0 and failed == 0 and passed == runnable,
+        "complete": (
+            case_ids is None
+            and exit_code == 0
+            and failed == 0
+            and passed == runnable
+        ),
     }
     return report
 

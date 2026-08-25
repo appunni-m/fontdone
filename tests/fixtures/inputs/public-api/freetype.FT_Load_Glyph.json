@@ -17557,6 +17557,561 @@
           "src/scaler.rs:1783-1813"
         ]
       }
+    },
+    {
+      "case_id": "freetype.FT_Load_Glyph.matrix_load",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "matrix_load",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "cc01-cjk-order-640-320-000-p13-normal",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 13
+              },
+              "glyph_index": 3,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_NORMAL"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-order:640-320-000:normal:13"
+            ]
+          },
+          {
+            "id": "cc01-cjk-order-640-320-000-p27-mono",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 27
+              },
+              "glyph_index": 3,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_MONO"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-order:640-320-000:mono:27"
+            ]
+          },
+          {
+            "id": "cc01-cjk-order-000-640-320-p13-normal",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 13
+              },
+              "glyph_index": 4,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_NORMAL"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-order:000-640-320:normal:13"
+            ]
+          },
+          {
+            "id": "cc01-cjk-order-000-640-320-p27-mono",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 27
+              },
+              "glyph_index": 4,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_MONO"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-order:000-640-320:mono:27"
+            ]
+          },
+          {
+            "id": "cc01-cjk-order-320-000-640-p13-normal",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 13
+              },
+              "glyph_index": 5,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_NORMAL"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-order:320-000-640:normal:13"
+            ]
+          },
+          {
+            "id": "cc01-cjk-order-320-000-640-p27-mono",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 27
+              },
+              "glyph_index": 5,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_MONO"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-order:320-000-640:mono:27"
+            ]
+          },
+          {
+            "id": "cc01-cjk-order-640-000-320-p13-normal",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 13
+              },
+              "glyph_index": 6,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_NORMAL"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-order:640-000-320:normal:13"
+            ]
+          },
+          {
+            "id": "cc01-cjk-order-640-000-320-p27-mono",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 27
+              },
+              "glyph_index": 6,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_MONO"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-order:640-000-320:mono:27"
+            ]
+          },
+          {
+            "id": "cc01-cjk-order-320-640-000-p13-normal",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 13
+              },
+              "glyph_index": 7,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_NORMAL"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-order:320-640-000:normal:13"
+            ]
+          },
+          {
+            "id": "cc01-cjk-order-320-640-000-p27-mono",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 27
+              },
+              "glyph_index": 7,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_MONO"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-order:320-640-000:mono:27"
+            ]
+          },
+          {
+            "id": "cc02-cjk-link-long-short-a-p11-normal",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 11
+              },
+              "glyph_index": 8,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_NORMAL"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-link:long-short-a:normal:11"
+            ]
+          },
+          {
+            "id": "cc02-cjk-link-long-short-a-p23-mono",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 23
+              },
+              "glyph_index": 8,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_MONO"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-link:long-short-a:mono:23"
+            ]
+          },
+          {
+            "id": "cc02-cjk-link-two-bars-p11-normal",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 11
+              },
+              "glyph_index": 9,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_NORMAL"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-link:two-bars:normal:11"
+            ]
+          },
+          {
+            "id": "cc02-cjk-link-two-bars-p23-mono",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 23
+              },
+              "glyph_index": 9,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_MONO"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-link:two-bars:mono:23"
+            ]
+          },
+          {
+            "id": "cc02-cjk-link-three-stem-p11-normal",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 11
+              },
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_NORMAL"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-link:three-stem:normal:11"
+            ]
+          },
+          {
+            "id": "cc02-cjk-link-three-stem-p23-mono",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 23
+              },
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_MONO"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-link:three-stem:mono:23"
+            ]
+          },
+          {
+            "id": "cc02-cjk-link-offset-bridge-p11-normal",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 11
+              },
+              "glyph_index": 11,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_NORMAL"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-link:offset-bridge:normal:11"
+            ]
+          },
+          {
+            "id": "cc02-cjk-link-offset-bridge-p23-mono",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 23
+              },
+              "glyph_index": 11,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_MONO"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-link:offset-bridge:mono:23"
+            ]
+          },
+          {
+            "id": "cc02-cjk-link-mirrored-backlink-p11-normal",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 11
+              },
+              "glyph_index": 12,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_NORMAL"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-link:mirrored-backlink:normal:11"
+            ]
+          },
+          {
+            "id": "cc02-cjk-link-mirrored-backlink-p23-mono",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/coverage-cjk-edge-order-links.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 23
+              },
+              "glyph_index": 12,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT",
+                "FT_LOAD_NO_BITMAP",
+                "FT_LOAD_TARGET_MONO"
+              ]
+            },
+            "coverage": [
+              "coverage:cjk-link:mirrored-backlink:mono:23"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-load",
+        "coverage:real-parity",
+        "font_variability:input/fonts"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "rows": "per-font glyph load status and slot snapshot"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "rows[].status",
+            "rows[].slot"
+          ]
+        },
+        "sources_checked": [
+          "freetype/src/autofit/afcjk.c:883-1116"
+        ]
+      }
     }
   ]
 }
