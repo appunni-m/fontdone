@@ -3917,6 +3917,12 @@ static int bitmap_embolden_alloc(
     /* The full-pitch boundary row deliberately starts at an 8-pixel MONO
        width so clamped 8-pixel emboldening reaches an exact two-byte pitch. */
     unsigned int width = streq(label, "mono-full-pitch") ? 8 : 5;
+    if (strncmp(label, "batch170-", 9) == 0) {
+      const char* width_marker = strstr(label, "-w");
+      if (width_marker) {
+        width = (unsigned int)strtoul(width_marker + 2, NULL, 10);
+      }
+    }
     unsigned int rows = 3;
     int pitch = bitmap_embolden_pitch(pixel_mode, width);
     size_t len = (size_t)pitch * rows;
@@ -4255,6 +4261,15 @@ static int emit_bitmap_embolden(const char* scenario) {
     } else if (streq(scenario, "ownership_reallocates_bitmap_buffer")) {
         EMIT_ROW("realloc-positive-pitch", library, FT_PIXEL_MODE_GRAY, 0, 64, 96, 0, 0);
         EMIT_ROW("realloc-negative-pitch", library, FT_PIXEL_MODE_GRAY, 1, 64, 96, 0, 0);
+    } else if (streq(scenario, "batch170_gray_x_only_forced_reallocate")) {
+        for (unsigned int width = 1; width <= 15; width++) {
+            char positive_label[32];
+            char negative_label[32];
+            snprintf(positive_label, sizeof(positive_label), "batch170-pos-w%02u", width);
+            snprintf(negative_label, sizeof(negative_label), "batch170-neg-w%02u", width);
+            EMIT_ROW(positive_label, library, FT_PIXEL_MODE_GRAY, 0, 192, 0, 0, 0);
+            EMIT_ROW(negative_label, library, FT_PIXEL_MODE_GRAY, 1, 192, 0, 0, 0);
+        }
     } else {
         fprintf(stderr, "unsupported bitmap embolden scenario: %s\n", scenario);
         FT_Done_FreeType(library);
@@ -15838,9 +15853,21 @@ static int emit_outline_render(int argc, char** argv) {
             batch31_outline = (int)value;
         }
     }
+    int batch132_single_pass = 0;
+    const char* batch132_marker = strstr(input_case_id, "@batch132-single-pass-");
+    if (batch132_marker) {
+        const char* number = batch132_marker + strlen("@batch132-single-pass-");
+        char* end = NULL;
+        long value = strtol(number, &end, 10);
+        if (end != number && *end == '\0' && value >= 1 && value <= 30) {
+            batch132_single_pass = (int)value;
+        }
+    }
     int batch2_mono = 0;
     int batch2_mono_error = 0;
     int batch4_mono_zero = 0;
+    int batch165_direct_zero_width = strstr(input_case_id, "@batch165-direct-zero-width-") != NULL;
+    int batch178_direct_zero_height = strstr(input_case_id, "@b178-direct-zero-height-") != NULL;
     const char* batch_marker = strstr(input_case_id, "@batch2-mono-");
     if (batch_marker) {
         const char* number = batch_marker + strlen("@batch2-mono-");
@@ -15951,6 +15978,41 @@ static int emit_outline_render(int argc, char** argv) {
         };
         case_id = batch31_shapes[batch31_outline - 1];
     }
+    if (batch132_single_pass) {
+        static const char* batch132_shapes[30] = {
+            "batch132@simple-filled-square",
+            "batch132@even-odd-overlap",
+            "batch132@even-odd-double-wind",
+            "batch132@even-odd-quad-wind",
+            "batch132@clipped-crossing-lines",
+            "batch132@right-edge-clip-outside-target",
+            "batch132@cubic-closed-loop",
+            "batch132@cubic-default-tag3",
+            "batch132@line-above-clip",
+            "batch132@line-below-clip",
+            "batch132@line-partial-above-clip",
+            "batch132@line-partial-below-clip",
+            "batch132@conic-below-clip",
+            "batch132@conic-partial-above-clip",
+            "batch132@conic-partial-below-clip",
+            "batch132@conic-above-control-inside",
+            "batch132@conic-above-to-inside",
+            "batch132@conic-below-control-inside",
+            "batch132@conic-below-to-inside",
+            "batch132@cubic-above-clip",
+            "batch132@cubic-below-clip",
+            "batch132@cubic-partial-above-clip",
+            "batch132@cubic-partial-below-clip",
+            "batch132@cubic-above-c2-inside",
+            "batch132@cubic-above-c1-inside",
+            "batch132@cubic-above-start-inside",
+            "batch132@cubic-below-c2-inside",
+            "batch132@cubic-below-c1-inside",
+            "batch132@cubic-below-start-inside",
+            "batch132@cubic-close-to-start",
+        };
+        case_id = batch132_shapes[batch132_single_pass - 1];
+    }
     if (streq(mode, "error") && c32_direct) {
         int status = FT_Err_Invalid_Argument;
         if (c32_direct <= 25) {
@@ -16023,9 +16085,9 @@ static int emit_outline_render(int argc, char** argv) {
     unsigned int bitmap_width = 32;
     unsigned int bitmap_rows = 32;
 
-    if (strstr(case_id, "@zero-width-target")) {
+    if (batch165_direct_zero_width || strstr(case_id, "@zero-width-target")) {
         bitmap_width = 0;
-    } else if (strstr(case_id, "@zero-height-target")) {
+    } else if (batch178_direct_zero_height || strstr(case_id, "@zero-height-target")) {
         bitmap_rows = 0;
     } else if (strstr(case_id, "@empty-outline")) {
         n_contours = 0;
@@ -16579,6 +16641,10 @@ static int emit_outline_render(int argc, char** argv) {
         bitmap_width = 32;
         bitmap_rows = 32;
     }
+    if (batch132_single_pass) {
+        bitmap_width = 64;
+        bitmap_rows = 64;
+    }
 
     FT_Outline outline;
     outline.n_contours = n_contours;
@@ -16592,6 +16658,9 @@ static int emit_outline_render(int argc, char** argv) {
         strstr(case_id, "@even-odd-quad-wind") ||
         streq(case_id, "ftimage.FT_OUTLINE_EVEN_ODD_FILL.smooth_raster_fill_rule_changes_spans")) {
         outline.flags = FT_OUTLINE_EVEN_ODD_FILL;
+    }
+    if (batch132_single_pass) {
+        outline.flags |= FT_OUTLINE_SINGLE_PASS;
     }
 
     if (batch2_mono == 24) {
@@ -16653,6 +16722,9 @@ static int emit_outline_render(int argc, char** argv) {
     } else if (c30_render == 27 || c30_render == 29) {
         bitmap.pitch = -32;
     }
+    if (batch132_single_pass) {
+        bitmap.pitch = 8;
+    }
     bitmap.buffer = buffer;
     bitmap.num_grays = 256;
     bitmap.pixel_mode = FT_PIXEL_MODE_GRAY;
@@ -16676,6 +16748,10 @@ static int emit_outline_render(int argc, char** argv) {
         bitmap.num_grays = 2;
         bitmap.pixel_mode = FT_PIXEL_MODE_MONO;
     }
+    if (batch132_single_pass) {
+        bitmap.num_grays = 2;
+        bitmap.pixel_mode = FT_PIXEL_MODE_MONO;
+    }
 
     FT_Raster_Params params;
     memset(&params, 0, sizeof(params));
@@ -16691,6 +16767,9 @@ static int emit_outline_render(int argc, char** argv) {
         params.flags = 0;
     }
     if (strstr(case_id, "@cbox-just-beyond-render-limit")) {
+        params.flags = 0;
+    }
+    if (batch132_single_pass) {
         params.flags = 0;
     }
     params.source = (void*)0x1;
@@ -16754,10 +16833,19 @@ static int emit_outline_render(int argc, char** argv) {
         streq(case_id, "ftoutln.FT_Outline_Render.direct_render_without_gray_spans") ||
         streq(case_id, "ftoutln.FT_Outline_Render.direct_render_without_target") ||
         streq(case_id, "ftimage.FT_RASTER_FLAG_CLIP.direct_clip_box_limits_spans") ||
-        streq(case_id, "ftimage.FT_RASTER_FLAG_CLIP.direct_without_clip_presets_cbox")) {
+        streq(case_id, "ftimage.FT_RASTER_FLAG_CLIP.direct_without_clip_presets_cbox") ||
+        batch165_direct_zero_width ||
+        batch178_direct_zero_height) {
         memset(buffer, 0xA5, sizeof(buffer));
         reset_recorded_outline_spans();
         params.flags = FT_RASTER_FLAG_AA | FT_RASTER_FLAG_DIRECT;
+        if (batch165_direct_zero_width || batch178_direct_zero_height) {
+            params.flags |= FT_RASTER_FLAG_CLIP;
+            params.clip_box.xMin = 64;
+            params.clip_box.yMin = 64;
+            params.clip_box.xMax = 65;
+            params.clip_box.yMax = 65;
+        }
         if (streq(case_id, "ftimage.FT_RASTER_FLAG_CLIP.direct_clip_box_limits_spans")) {
             params.flags |= FT_RASTER_FLAG_CLIP;
             params.clip_box.xMin = 1;
@@ -18833,6 +18921,21 @@ static int emit_outline_embolden_common(int argc, char** argv, int xy) {
                 printf("}}\n");
             }
             return 0;
+        }
+    }
+    if (!xy) {
+        const char* batch167_marker = strstr(case_id, "@batch167-empty-negative-overflow-");
+        if (batch167_marker) {
+            const char* number = batch167_marker + strlen("@batch167-empty-negative-overflow-");
+            char* end = NULL;
+            long value = strtol(number, &end, 10);
+            if (end != number && *end == '\0' && value >= 1 && value <= 30) {
+                FT_Outline outline = {0};
+                FT_Pos strength = -(FT_Pos)2147483648 - (FT_Pos)value;
+                FT_Error error = FT_Outline_Embolden(&outline, strength);
+                printf("{\"return\":%d,\"points_after\":[]}}\n", error);
+                return 0;
+            }
         }
     }
     if (strstr(case_id, ".symmetric_strength_matches_xy")) {
@@ -22016,6 +22119,44 @@ static int emit_ps_font_value_matrix(int argc, char** argv) {
     close_oracle_face(&cff);
     close_oracle_face(&custom);
     close_oracle_face(&type1);
+    return 0;
+}
+
+static int ps_font_value_key_from_name(const char* name, PS_Dict_Keys* key) {
+    if (streq(name, "PS_DICT_VERSION")) {
+        *key = PS_DICT_VERSION;
+    } else if (streq(name, "PS_DICT_NOTICE")) {
+        *key = PS_DICT_NOTICE;
+    } else if (streq(name, "PS_DICT_FULL_NAME")) {
+        *key = PS_DICT_FULL_NAME;
+    } else if (streq(name, "PS_DICT_FAMILY_NAME")) {
+        *key = PS_DICT_FAMILY_NAME;
+    } else if (streq(name, "PS_DICT_WEIGHT")) {
+        *key = PS_DICT_WEIGHT;
+    } else if (streq(name, "PS_DICT_ENCODING_ENTRY")) {
+        *key = PS_DICT_ENCODING_ENTRY;
+    } else {
+        return -1;
+    }
+    return 0;
+}
+
+static int emit_ps_font_value_row(int argc, char** argv) {
+    (void)argc;
+    OracleFace face;
+    PS_Dict_Keys key;
+    if (ps_font_value_key_from_name(argv[6], &key) != 0) return 2;
+    FT_Long face_index = atol(argv[4]);
+    int opened = open_oracle_face(argv[2], argv[3], face_index, &face);
+    if (opened != 0) return opened;
+    printf("{");
+    print_status(0);
+    printf(",\"output\":{\"rows\":[");
+    print_ps_font_value_matrix_row(
+        argv[5], argv[6], face.face, key, (FT_UInt)atol(argv[7]),
+        streq(argv[8], "null") ? 1 : 0, (FT_Long)atol(argv[9]), 0);
+    printf("]}}\n");
+    close_oracle_face(&face);
     return 0;
 }
 
@@ -37963,6 +38104,13 @@ static void print_open_face_name_output(FT_Error err, FT_Face face) {
     printf("}");
 }
 
+static void print_open_face_status_output(FT_Error err, FT_Face face) {
+    printf("{\"return\":%d,\"status\":%d,\"opened\":%s}",
+           err,
+           err,
+           face ? "true" : "false");
+}
+
 typedef struct OpenFaceStreamState_ {
     int close_calls;
     unsigned int magic;
@@ -38631,7 +38779,14 @@ static int emit_open_face_name_options(int argc, char** argv) {
         int ignore_family = 0;
         int ignore_subfamily = 0;
         int ignore_sbix = 0;
-        if (sscanf(cursor, "%d:%d:%d", &ignore_family, &ignore_subfamily, &ignore_sbix) != 3) {
+        int status_only = 0;
+        int parsed = sscanf(cursor,
+                            "%d:%d:%d:%d",
+                            &ignore_family,
+                            &ignore_subfamily,
+                            &ignore_sbix,
+                            &status_only);
+        if (parsed != 3 && parsed != 4) {
             FT_Done_FreeType(library);
             free(data);
             free(rows_arg);
@@ -38669,7 +38824,11 @@ static int emit_open_face_name_options(int argc, char** argv) {
         if (!first) {
             printf(",");
         }
-        print_open_face_name_output(err, face);
+        if (status_only) {
+            print_open_face_status_output(err, face);
+        } else {
+            print_open_face_name_output(err, face);
+        }
         first = 0;
         if (!err && face) {
             FT_Done_Face(face);
@@ -41245,6 +41404,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc >= 6 && streq(argv[1], "--ps-font-value-encoding-rowset")) {
         return emit_ps_font_value_encoding_rowset(argc, argv);
+    }
+    if (argc == 10 && streq(argv[1], "--ps-font-value-row")) {
+        return emit_ps_font_value_row(argc, argv);
     }
     if (argc == 11 && streq(argv[1], "--ps-font-value-matrix")) {
         return emit_ps_font_value_matrix(argc, argv);

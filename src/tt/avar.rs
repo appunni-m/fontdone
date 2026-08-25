@@ -27,6 +27,14 @@ impl AvarTable {
             *coordinate = (mapped >> 2).clamp(i32::from(i16::MIN), i32::from(i16::MAX)) as i16;
         }
     }
+
+    /// Apply the same maps while retaining FreeType's normalized 16.16
+    /// precision for gvar tuple scalar calculations.
+    pub fn map_normalized_fixed(&self, normalized: &mut [i32]) {
+        for (coordinate, pairs) in normalized.iter_mut().zip(&self.axis_maps) {
+            *coordinate = map_coordinate(*coordinate, pairs).clamp(-0x1_0000, 0x1_0000);
+        }
+    }
 }
 
 /// Parse an OpenType version 1 `avar` table.

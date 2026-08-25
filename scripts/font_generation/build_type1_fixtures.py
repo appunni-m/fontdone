@@ -597,6 +597,28 @@ def build_font_value_populated(path: Path) -> None:
     )
 
 
+def build_font_value_missing_optional_strings(path: Path) -> None:
+    """Build a valid Type 1 face whose optional FontInfo strings are absent."""
+
+    build_simple_type1(
+        path,
+        "FontValueMissingOptionalStrings",
+        "Font Value Missing Optional Strings",
+        "Generated for fontdone Type 1 missing optional FontInfo strings parity",
+        cleartext_replacements=[
+            (b"/FontInfo 12 dict dup begin", b"/FontInfo 7 dict dup begin"),
+            (b"/version (001.000) def\n", b""),
+            (
+                b"/Notice (Generated for fontdone Type 1 missing optional FontInfo strings parity) def\n",
+                b"",
+            ),
+            (b"/FullName (Font Value Missing Optional Strings) def\n", b""),
+            (b"/FamilyName (Font Value Missing Optional Strings) def\n", b""),
+            (b"/Weight (Regular) def\n", b""),
+        ],
+    )
+
+
 def build_parser_opcode_coverage(path: Path) -> None:
     """Build a Type 1 glyph whose valid program reaches every supported path."""
 
@@ -802,6 +824,35 @@ def build_parser_edge_programs() -> None:
                 10,
                 10,
                 "setcurrentpoint",
+                "endchar",
+            ],
+        ),
+        (
+            "parser-setcurrentpoint-after-line.pfb",
+            "Type1ParserSetCurrentPointAfterLine",
+            [
+                500,
+                0,
+                "hsbw",
+                50,
+                0,
+                "rmoveto",
+                0,
+                300,
+                "rlineto",
+                50,
+                300,
+                "setcurrentpoint",
+                300,
+                0,
+                "rlineto",
+                0,
+                -300,
+                "rlineto",
+                -300,
+                0,
+                "rlineto",
+                "closepath",
                 "endchar",
             ],
         ),
@@ -1267,6 +1318,9 @@ def main() -> None:
         INPUT_AUX_OUT_DIR / "track-kern-base.afm", decimal_track_values=True
     )
     build_font_value_populated(INPUT_OUT_DIR / "font-value-populated.pfb")
+    build_font_value_missing_optional_strings(
+        INPUT_OUT_DIR / "font-value-missing-optional-strings.pfb"
+    )
     build_parser_opcode_coverage(INPUT_OUT_DIR / "parser-opcodes.pfb")
     build_parser_edge_programs()
     for operator in ("rlineto", "hlineto", "vlineto", "rrcurveto", "vhcurveto", "hvcurveto"):

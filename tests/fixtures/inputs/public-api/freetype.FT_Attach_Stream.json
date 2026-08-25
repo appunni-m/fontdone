@@ -3,6 +3,7 @@
   "subject": "freetype.FT_Attach_Stream",
   "manifest_cases": [
     "success_attach_auxiliary_stream",
+    "batch175_valid_afm_kerning_at_or_above_25ppem",
     "error_null_face",
     "error_null_open_args",
     "error_invalid_open_args_or_unsupported_driver"
@@ -64,6 +65,309 @@
         "fixture_requirements": [
           "Type1 PFB plus matching AFM/PFM bytes fixture"
         ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_Attach_Stream.batch175_valid_afm_kerning_at_or_above_25ppem",
+      "subject": "freetype.FT_Attach_Stream",
+      "case": "batch175_valid_afm_kerning_at_or_above_25ppem",
+      "covers_manifest_cases": ["batch175_valid_afm_kerning_at_or_above_25ppem"],
+      "operation": "freetype.attach_stream",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "b175-afm-default-ppem025",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem026",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 26, "pixel_height": 26, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem027",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 27, "pixel_height": 27, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem028",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 28, "pixel_height": 28, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem029",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 29, "pixel_height": 29, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem030",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 30, "pixel_height": 30, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem031",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 31, "pixel_height": 31, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem032",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 32, "pixel_height": 32, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem033",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 33, "pixel_height": 33, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem034",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 34, "pixel_height": 34, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem035",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 35, "pixel_height": 35, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem036",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 36, "pixel_height": 36, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem037",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 37, "pixel_height": 37, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem038",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 38, "pixel_height": 38, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem039",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 39, "pixel_height": 39, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem040",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 40, "pixel_height": 40, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem041",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 41, "pixel_height": 41, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem042",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 42, "pixel_height": 42, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem043",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 43, "pixel_height": 43, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem044",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 44, "pixel_height": 44, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem045",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 45, "pixel_height": 45, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem046",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 46, "pixel_height": 46, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem047",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 47, "pixel_height": 47, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem048",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 48, "pixel_height": 48, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem049",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 49, "pixel_height": 49, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem050",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 50, "pixel_height": 50, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem051",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 51, "pixel_height": 51, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem052",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 52, "pixel_height": 52, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem053",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 53, "pixel_height": 53, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          },
+          {
+            "id": "b175-afm-default-ppem054",
+            "assets": {
+              "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+            },
+            "params": {"face_index": 0, "pixel_width": 54, "pixel_height": 54, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
+            "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:attachment",
+        "area:kerning"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "post_attach_probe": "face_state_delta"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "post_attach_probe"
+          ]
+        }
       }
     },
     {

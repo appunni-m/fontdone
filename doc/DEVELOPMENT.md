@@ -173,6 +173,73 @@ conic control-box sides, cubic x/y extrema, and small/large cubic peak scaling
 through the Rust, C-ABI, WASM, and pinned-oracle routes. It is an input-driven
 coverage case rather than a unit-test-only probe.
 
+The maintained `FT_Load_Glyph` auto-hint matrix also includes six normal-scale
+Batch126 Latin/Han topology probes across five ppem values. They exercise
+reversed top/bottom tilde measurement, multi-contour accent ordering, narrow
+and near-bound stem fitting, and descending CJK linked bars through the same
+Rust, C-ABI, WASM, and pinned-oracle parity routes.
+
+The same maintained `FT_Load_Glyph` matrix includes six valid Batch127 CJK
+edge-link predicate probes across five normal-scale hint targets. Their
+serif-winding, spacing, long/short-link, duplicate-backlink, and skipped-edge
+topologies exercise reachable CJK edge selection and interpolation through
+the Rust, C-ABI, WASM, and pinned-oracle parity routes.
+
+The maintained `FT_Load_Glyph` matrix now includes six valid Batch152 Latin
+adjustment-database probes across five legal force-auto-hint targets. Each
+probe has a unique cmap glyph index for capital-top/bottom and small-top/bottom
+ignore flags, so the public parity route reaches the corresponding blue-zone
+arms without a unit-only input. Focused parity passed 30/30; Coverage MCP
+snapshot `35a4fd77-749c-4073-82f3-710ee5d13e32` retains +2 regions and +3
+branches over the strict baseline, with all coverage denominators unchanged.
+
+The maintained `FT_Load_Glyph` matrix also includes six valid Batch153 Latin
+blue-empty probes across five legal force-auto-hint targets. The face maps every
+standard Latin blue-string character to a valid multi-contour outline whose
+contours each contain one point, so the public parity route reaches the
+no-extremum arms of the face-global Latin metrics scan without a unit-only input.
+Focused parity passed 30/30; Coverage MCP snapshot
+`d658cb15-3204-4f19-80bc-5c4200773858` retains +5 regions, +6 branches, and +2
+lines over the strict baseline, with all coverage denominators unchanged.
+
+The maintained `FT_Parameter` matrix now includes thirty valid non-SFNT PCF,
+BDF, and Windows FNT bitmap faces with the public
+`FT_PARAM_TAG_IGNORE_SBIX` parameter. The parity probe records the successful
+open status through the Rust, C-ABI, WASM, and pinned-oracle routes, exercising
+the no-SBIX short-circuit in the public parameter dispatch. Focused and managed
+parity passed 30/30; Coverage MCP snapshot
+`3c35e2a0-8a6e-4642-b0c1-f04282d3c453` retains +1 region and +2 branches over
+the strict baseline, with all coverage denominators unchanged.
+
+The maintained `FT_Outline_Render` matrix now includes thirty distinct valid
+synthetic public outlines rendered with `FT_RASTER_FLAG_AA`, `DIRECT`, and
+`CLIP` into a zero-width Gray target with an out-of-box clip. The exact span
+parity route reaches the smooth rasterizer zero-width guard in `src/grays.rs`
+through Rust, C-ABI, WASM, and the pinned oracle. Focused and managed parity
+passed 30/30; Coverage MCP snapshot
+`267b6b9f-ca22-40ed-81a6-5c04d3d4bdbe` retains +1 region and +3 branches over
+the strict baseline, with all coverage denominators unchanged.
+
+The maintained `FT_GlyphSlot_AdjustWeight` matrix now includes thirty valid
+20 ppem DejaVuSans horizontal-LCD cases with zero vertical strength and unique
+16.16 horizontal deltas that round to one LCD pixel while reusing the existing
+row pitch. The public load-and-adjust route reaches the bitmap padding-reuse
+loop with exact Rust, C-ABI, WASM, and pinned-oracle parity. Focused and managed
+parity passed 30/30; Coverage MCP snapshot
+`d0e8301b-e1f5-4ca7-97f5-33617b6effd7` retains +9 regions, +4 branches, and +5
+lines over the strict baseline, with all coverage denominators unchanged.
+
+The maintained `FT_Outline_Embolden` matrix now includes thirty valid empty
+public outlines with distinct 64-bit `FT_Pos` strengths below `i32::MIN`.
+Through the existing public gap-matrix route, these inputs exercise both
+negative conversion-fallback arms without malformed geometry. Focused and
+managed parity passed 30/30; Coverage MCP snapshot
+`69514e52-8777-458c-bb2e-0b1cfdc33d8b` retains +11 regions, +6 branches, and +5
+lines over the strict baseline, with all coverage denominators unchanged.
+
+
+
+
 The maintained `FT_Outline_Decompose` closure input covers both C conic-first
 start rules, consecutive conic midpoint emission, conic closure, and a cubic
 pair that closes directly to the computed start through the Rust, C-ABI, WASM,
@@ -591,7 +658,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 994 tracked paths and no symlinks.
+The canonical input tree currently contains 997 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -739,9 +806,514 @@ keeps CFF Adobe scaling on the native CFF route. Focused parity now passes all
 100 c84 variants across Rust FFI, C ABI, and WASM; the full non-coverage parity
 gate is the next required check before coverage attribution and pruning.
 
+Batch168 then added exactly 30 valid public `FT_Get_PS_Font_Value` parity
+variants using a synthetic Type 1 face whose optional `version`, `Notice`, and
+`FullName` FontInfo strings are absent. The focused and managed parity runs
+passed all 30 variants across Rust, the C ABI, WASM, and the pinned oracle.
+Coverage MCP run `99585ddd-366c-461c-8ac3-270c25a9a097` produced snapshot
+`9295ab13-1859-4c4c-8a7d-9fe08cc04343`; against the strict baseline it adds
+12 regions, 7 branches, and 6 lines with no function change. The retained
+totals are 88,082 / 91,780 regions, 11,656 / 13,426 branches, 63,841 /
+65,960 lines, and 3,692 / 3,980 functions. `FamilyName` and `Weight` remain
+absent in the asset but are not counted as reachable missing-string witnesses
+because the public Type 1 loader derives fallback values for them.
+
+Batch170 then added exactly 30 valid public `FT_Bitmap_Embolden` rows using
+gray bitmaps of widths 1 through 15, each with positive and negative pitch.
+The focused and managed parity runs passed all 30 rows across Rust, the C ABI,
+WASM, and the pinned oracle. Coverage MCP run
+`7adf75e6-4a3e-4bcc-9f66-c27982cd2cc2` produced snapshot
+`e7550fa2-3ced-497e-a9ae-f660835446a8`; strict comparison adds one covered
+branch at `src/ffi/handles.rs:656` while retaining the 88,082 / 91,780 region,
+11,657 / 13,426 branch, 63,841 / 65,960 line, and 3,692 / 3,980 function
+totals.
+
+Batch171 then added exactly 30 valid public `FT_Get_PS_Font_Value` rows across
+the maintained StandardEncoding, ISOLatin1Encoding, and ExpertEncoding Type 1
+faces, using ten valid entry indices per encoding with null output pointers for
+sizing queries. The focused and managed parity runs passed all 30 rows across
+Rust, the C ABI, WASM, and the pinned oracle. Coverage MCP run
+`d9602e73-ad6e-4438-9c46-203f306fc980` produced snapshot
+`ecdc34c2-a529-4ca0-9db4-2c8515094625`; strict comparison adds one covered
+branch at `src/ffi/handles.rs:7370` with no region, line, or function change,
+retaining the 88,082 / 91,780 region, 11,658 / 13,426 branch, 63,841 /
+65,960 line, and 3,692 / 3,980 function totals.
+
+Batch173 then added exactly 30 valid public `FT_Get_Track_Kerning` rows using
+the maintained Type 1 face and attached AFM track at degree 1, with positive
+16.16 point sizes from 0.25 through 7.5 points below the track's 8-point
+minimum. The focused and managed parity runs passed all 30 rows across Rust,
+the C ABI, WASM, and the pinned oracle. Coverage MCP run
+`b1361e2f-ff6d-4dd9-b241-a46018fc3c8e` produced snapshot
+`3a3f22b5-497d-418c-9796-8a4b3234cdee`; strict comparison adds the covered
+region, line, and branch at `src/ffi/handles.rs:13891-13892` with no function
+change, retaining the 88,083 / 91,780 region, 11,659 / 13,426 branch, 63,842
+/ 65,960 line, and 3,692 / 3,980 function totals.
+
+Batch174 then added exactly 30 valid public `FT_Get_Track_Kerning` rows using
+the maintained Type 1 face and attached AFM track at degree 1, with positive
+16.16 point sizes from 72.25 through 79.5 points above the track's 72-point
+maximum. The focused and managed parity runs passed all 30 rows across Rust,
+the C ABI, WASM, and the pinned oracle. Coverage MCP run
+`5354cfaf-2a27-4d06-bb9c-1ea61b40fae3` produced snapshot
+`d9324627-484e-406f-ba9a-4a4271247017`; strict comparison adds the covered
+region, line, and branch at `src/ffi/handles.rs:13893-13894` with no function
+change, retaining the 88,084 / 91,780 region, 11,660 / 13,426 branch, 63,843
+/ 65,960 line, and 3,692 / 3,980 function totals.
+
+Batch175 then added exactly 30 valid public `FT_Attach_Stream` rows using the
+maintained Type 1 face and AFM pair, with equal positive pixel dimensions from
+25 through 54 ppem. Each row attached the AFM and queried `FT_Get_Kerning` in
+the default, unfitted, and unscaled modes, exercising the at-or-above-25-ppem
+branches in `scale_kerning_vector`. The focused and managed parity runs passed
+all 30 rows across Rust, the C ABI, WASM, and the pinned oracle. Coverage MCP
+run `c3c28df0-71a5-4429-8ed4-cce76a2253a5` produced snapshot
+`003af6ed-97c4-449c-9d44-fd9bf1d28a09`; strict comparison with the retained
+Batch174 snapshot adds two covered regions and two branches at
+`src/ffi/handles.rs:13850-13855`, with no line or function change, retaining
+the 88,086 / 91,780 region, 11,662 / 13,426 branch, 63,843 / 65,960 line, and
+3,692 / 3,980 function totals.
+
+Batch178 then added exactly 30 valid public `FT_Outline_Render` rows using the
+maintained synthetic outline catalog, with AA, DIRECT, and CLIP enabled against
+zero-height gray targets and an out-of-box clip box. The focused and managed
+parity runs passed all 30 rows across Rust, the C ABI, WASM, and the pinned
+oracle. Coverage MCP run `5f94bd8c-cec5-4311-a4b8-b13d04b4a6c8` produced
+snapshot `26775395-d0a7-4c34-89b5-2a86dc64135a`; strict comparison with the
+retained Batch175 snapshot adds one covered branch at `src/grays.rs:402`, with
+no region, line, or function change, retaining the 88,086 / 91,780 region,
+11,663 / 13,426 branch, 63,843 / 65,960 line, and 3,692 / 3,980 function
+totals. The offline oracle generator recognizes the Batch178 variant marker so
+these zero-height rows use the direct span-output path without changing runtime
+code.
+
+Batch180 then added exactly 30 valid public `FT_Get_PFR_Metrics` rows using
+negative face-index probe mode across the maintained PFR font and DejaVu Sans
+control font. The rows cover all 15 non-empty subsets of the four optional
+output pointers for each font; probe faces retain no active size, so the
+identity-scale and PFR/`Unknown_File_Format` contracts are compared exactly.
+The focused parity lane and managed Coverage MCP parity run
+`7fe05808-36d7-4db5-ba25-1fee8dbb0f54` passed all 30 rows across Rust, the C
+ABI, WASM, and the pinned oracle. Coverage MCP run
+`68751d77-6601-4d9e-814c-a3c992de07ac` produced snapshot
+`d3879ffd-22bb-4f65-b8d7-fbc532465247`; strict comparison with the retained
+Batch178 snapshot adds 13 covered regions, 11 covered branches, and 2 covered
+lines with no function change. The probe-face runtime correction adds 8 total
+regions, 6 total branches, and 1 total line, retaining the 88,099 / 91,788
+region, 11,674 / 13,432 branch, 63,845 / 65,961 line, and 3,692 / 3,980
+function totals.
+
+Batch182 then added exactly 30 valid public `FT_Render_Glyph` rows using a
+maintained EBLC/EBDT format-1 gray strike. Glyphs 1 through 30 each carry
+positive row counts, zero width, zero pitch, and distinct five-byte
+small-metrics records, so SDF rendering reaches the public empty-bitmap
+short-circuit without using malformed font data. The focused parity lane and
+managed Coverage MCP parity run `ba7b6c0d-dd9f-42d9-b1d6-adf0d1799ac0`
+passed all 30 rows across Rust, the C ABI, WASM, and the pinned oracle.
+Coverage MCP run `20c1cb7f-b960-4e15-ba23-3808fde6ba97` produced snapshot
+`22a0cf2e-9ec0-42d4-8204-460465d71e2d`; strict comparison with the retained
+Batch180 snapshot adds one covered branch at `src/render.rs:617`, with no
+region, line, or function change. The retained totals are 88,099 / 91,788
+regions, 11,675 / 13,432 branches, 63,845 / 65,961 lines, and 3,692 / 3,980
+functions.
+
+Batch190 then added exactly 30 valid public `FT_Load_Glyph` rows using a
+maintained three-glyph Hebrew face. Glyph 2 maps all Hebrew top-blue characters
+to a contour with a short extremum, two consecutive off-curve controls, and a
+late on-curve extension point; six ppem sizes and five legal force-auto-hint
+targets exercise the public long-blue replacement extension branch. The
+focused parity lane and managed Coverage MCP parity run
+`62aff22f-c193-4653-9eb9-1929f0a77c15` passed all 30 rows across Rust, the C
+ABI, WASM, and the pinned oracle. Coverage MCP run
+`dc9ca01c-7e1d-4669-b5f0-167cc1c2d327` produced snapshot
+`4acf5499-2dd4-451e-930a-aba05900bf77`; strict comparison with the retained
+Batch182 snapshot adds one covered region, one branch, and one line at
+`src/autohint/latin.rs:1567`, with no function change. The retained totals are
+88,100 / 91,788 regions, 11,676 / 13,432 branches, 63,846 / 65,961 lines, and
+3,692 / 3,980 functions.
+
+Batch191 then added exactly 30 valid public `FT_Load_Glyph` rows using a
+maintained three-glyph Hebrew face. Glyph 2 maps all Hebrew top-blue characters
+to a valid 120-unit off-curve apex with adjacent on-curve points; six ppem
+sizes and five legal force-auto-hint targets exercise the public blue-segment
+on-curve fallback branch. The focused parity lane and managed Coverage MCP
+parity run `f324ddd8-e7aa-488a-8255-6ebd372d9892` passed all 30 rows across
+Rust, the C ABI, WASM, and the pinned oracle. Coverage MCP run
+`4c08b048-13b3-4eea-bda1-98f6185e7f5d` produced snapshot
+`6a8a90fd-c49c-46d9-834b-fb457ed1a6a7`; strict comparison with the retained
+Batch190 snapshot adds one covered region, one branch, and one line at
+`src/autohint/latin.rs:1401`, with no function change. The retained totals are
+88,101 / 91,788 regions, 11,677 / 13,432 branches, 63,847 / 65,961 lines, and
+3,692 / 3,980 functions.
+
+Batch193 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+maintained Khmer sub-top overlap face. Glyph 7 is loaded at six ppem sizes
+above the primary-zone threshold, with five legal force-auto-hint targets; the
+normal-target anisotropic replacements preserve valid distinct inputs where
+the existing LIGHT/LCD metric path diverges. The focused parity lane and
+managed Coverage MCP parity run `14294208-2fbc-4dc1-8a2f-852c1d56c7ba` passed
+all 30 rows across Rust, the C ABI, WASM, and the pinned oracle. Coverage MCP
+run `e116ba3b-a76a-463d-9b7a-230b2293473a` produced snapshot
+`569361c6-181f-494e-a87d-35eed9cf2208`; strict comparison with the retained
+Batch191 snapshot adds one covered region and three branches at
+`src/autohint/latin.rs:1920-1921`, `1925`, and `1930`, with no line or function
+change. The retained totals are 88,102 / 91,788 regions, 11,680 / 13,432
+branches, 63,847 / 65,961 lines, and 3,692 / 3,980 functions.
+
+Batch194 then added exactly 30 valid public `FT_Load_Glyph` rows using a
+maintained Khmer sibling face whose glyph 7 has a lowered sub-top rectangle.
+Six ppem sizes and five legal force-auto-hint targets exercise the remaining
+primary-zone comparison branch while keeping every input valid and distinct.
+The focused parity lane and managed Coverage MCP parity run
+`ae504772-00ba-40ac-9e00-b49904398aa3` passed all 30 rows across Rust, the C
+ABI, WASM, and the pinned oracle. Coverage MCP run
+`76d610ad-9b8f-4f4a-8faf-d4e825ed5f37` produced snapshot
+`dd70b253-7b15-4eb9-ac72-6dd719e433a2`; strict comparison with the retained
+Batch193 snapshot adds one covered branch at `src/autohint/latin.rs:1922`, with
+no region, line, or function change. The retained totals are 88,102 / 91,788
+regions, 11,681 / 13,432 branches, 63,847 / 65,961 lines, and 3,692 / 3,980
+functions.
+
+Batch196 then added exactly 30 valid public `FT_Load_Glyph` rows using a
+maintained three-glyph Hebrew face. Glyph 2 maps Hebrew top-blue characters to
+a valid short near-top contour span with one lower on-curve point; six ppem
+sizes and five legal force-auto-hint targets exercise the public Latin
+segment-merge path without malformed input. The focused parity lane and
+managed Coverage MCP parity run `d4bb95df-6ce7-4310-a622-5886c1b40230` passed
+all 30 rows across Rust, the C ABI, WASM, and the pinned oracle. Coverage MCP
+run `eaf54921-1a2b-41ba-a948-d8ccc72507ee` produced snapshot
+`fc2e2033-25a0-43a7-9562-043962f5446f`; strict comparison with the retained
+Batch194 snapshot adds one covered region, one branch, and one line at
+`src/autohint/latin.rs:3442`, with no function change. The retained totals are
+88,103 / 91,788 regions, 11,682 / 13,432 branches, 63,848 / 65,961 lines, and
+3,692 / 3,980 functions.
+
+Batch197 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+horizontal mirror of the Batch196 Hebrew witness. The mirrored glyph preserves
+the valid near-top span while reaching the opposite public segment-merge arm at
+six ppem sizes and five legal force-auto-hint targets. The focused parity lane
+and managed Coverage MCP parity run `b0fd2e1a-4f44-40ae-9c78-e570e6b6ee4e`
+passed all 30 rows across Rust, the C ABI, WASM, and the pinned oracle.
+Coverage MCP run `bb0ba5f3-30cf-4a28-a690-ebff563219db` produced snapshot
+`665961cc-c8e2-4979-9454-68b01194f7d8`; strict comparison with the retained
+Batch196 snapshot adds one covered region, one branch, and one line at
+`src/autohint/latin.rs:3445`, with no function change. The retained totals are
+88,104 / 91,788 regions, 11,683 / 13,432 branches, 63,849 / 65,961 lines, and
+3,692 / 3,980 functions.
+
+Batch199 then added exactly 30 valid public `FT_Load_Glyph` rows using a
+maintained sibling of the script-coverage face. Glyph 80 retains the public
+Latin cmap mapping but adds an on-curve point before the quadratic control
+minimum; six ppem sizes and five legal force-auto-hint targets exercise the
+false arm of the Latin segment-merge flat-threshold comparison. The focused
+parity lane and managed Coverage MCP parity run
+`7ae83961-bd3e-4e6a-9d89-e2b56966a60a` passed all 30 rows across Rust, the C
+ABI, WASM, and the pinned oracle. Coverage MCP run
+`6d91bdec-2d2c-43d2-866a-3206fa8693c2` passed; explicit import produced
+snapshot `7afbc60d-55bc-4847-a953-676fe4bd81c6`. Strict comparison with the
+retained Batch197 snapshot adds one covered branch at
+`src/autohint/latin.rs:3473`, with no region, line, or function change. The
+retained totals are 88,104 / 91,788 regions, 11,684 / 13,432 branches,
+63,849 / 65,961 lines, and 3,692 / 3,980 functions.
+
+Batch200 then added exactly 30 valid public `FT_Load_Glyph` rows using a
+maintained sibling of the script-coverage face. Glyph 64 retains the U+00F1
+public cmap mapping and base rectangle while its quadratic tilde contour puts
+the middle on-curve point at the contour minimum; six ppem sizes and five
+legal force-auto-hint targets exercise the false arm of `pt.y != min_y`. The
+focused parity lane and managed Coverage MCP parity run
+`85656edb-0f62-4003-8a0a-50d9d507cedc` passed all 30 rows across Rust, the C
+ABI, WASM, and the pinned oracle. Coverage MCP run
+`80aa9b3e-900d-4237-8d97-35fdef7e3e8f` passed; explicit import produced
+snapshot `a1d488ad-b953-4f43-9675-297d1580f034`. Strict comparison with the
+retained Batch199 snapshot adds one covered branch at
+`src/autohint/latin.rs:2390`, with no region, line, or function change. The
+retained totals are 88,104 / 91,788 regions, 11,685 / 13,432 branches,
+63,849 / 65,961 lines, and 3,692 / 3,980 functions.
+
+Batch201 then added exactly 30 valid public `FT_Load_Glyph` rows using a
+maintained sibling of the script-coverage face. Glyph 64 retains the U+00F1
+public cmap mapping and base rectangle while its tilde contour uses an
+on-curve predecessor before the middle on-curve point; six ppem sizes and
+five legal force-auto-hint targets exercise the false arm of the neighboring
+control-flag comparison. The focused parity lane and managed Coverage MCP
+parity run `14358ad0-375f-44cf-8883-9d056f13d912` passed all 30 rows across
+Rust, the C ABI, WASM, and the pinned oracle. Coverage MCP run
+`e02cab39-4d3f-4dbd-82a6-1815d8fec28a` passed; explicit import produced
+snapshot `f557e252-a7f2-4722-9182-7e8ad1ad25b3`. Strict comparison with the
+retained Batch200 snapshot adds one covered branch at
+`src/autohint/latin.rs:2392`, with no region, line, or function change. The
+retained totals are 88,104 / 91,788 regions, 11,686 / 13,432 branches,
+63,849 / 65,961 lines, and 3,692 / 3,980 functions.
+
+Batch202 then added exactly 30 valid public `FT_Load_Glyph` rows using a
+maintained sibling of the script-coverage face. Glyph 69 retains the
+bottom-tilde base contour while its quadratic accent puts the middle on-curve
+point at the contour maximum; six ppem sizes and five legal force-auto-hint
+targets exercise the false arm of `pt.y != max_y`. The focused parity lane and
+managed Coverage MCP parity run `97300709-6b41-4a0a-9b51-b9a2ac88594f` passed
+all 30 rows across Rust, the C ABI, WASM, and the pinned oracle. Coverage MCP
+run `f5d503dc-36e0-4540-81d2-8ec6f6edeba1` passed; explicit import produced
+snapshot `7a21e885-fa85-48c7-aa6d-6bfc1c2a29d9`. Strict comparison with the
+retained Batch201 snapshot adds one covered branch at
+`src/autohint/latin.rs:2463`, with no region, line, or function change. The
+retained totals are 88,104 / 91,788 regions, 11,687 / 13,432 branches,
+63,849 / 65,961 lines, and 3,692 / 3,980 functions.
+
+Batch203 then added exactly 30 valid public `FT_Load_Glyph` rows using a
+maintained sibling of the `latin-small-ignore.ttf` face. Glyph 7 retains the
+U+0122 public cmap mapping while three ordered contours share the same lowest
+minimum and use decreasing maxima; six ppem sizes and five legal force-auto-
+hint targets exercise the lowest-contour tie-break. The focused parity lane
+and managed Coverage MCP parity run `33b85663-9455-4d77-bce1-094b050bcfd6`
+passed all 30 rows across Rust, the C ABI, WASM, and the pinned oracle.
+Coverage MCP run `9374cc50-9609-4ca2-8e31-320a985a0920` passed; explicit
+import produced snapshot `31a24498-4790-46a4-92d3-c92917836c07`. Strict
+comparison with the retained Batch202 snapshot adds covered branches at
+`src/autohint/latin.rs:2326` and `:2774`, with no region, line, or function
+change. The retained totals are 88,104 / 91,788 regions, 11,689 / 13,432
+branches, 63,849 / 65,961 lines, and 3,692 / 3,980 functions.
+
+Batch204 then added exactly 30 valid public `FT_Load_Glyph` rows using a
+maintained sibling of the script-coverage face. Glyph 75 retains the U+1EAD
+public cmap mapping and uses a top accent whose right endpoint is outside the
+base while its left endpoint overlaps the base; six ppem sizes and five legal
+force-auto-hint targets exercise the public horizontal-overlap arm. The
+focused parity lane and managed Coverage MCP parity run
+`559648d7-1861-4b90-a3d3-2ae4ffccf61a` passed all 30 rows across Rust, the C
+ABI, WASM, and the pinned oracle. Coverage MCP run
+`78fb1b38-8231-4398-a208-b085a3ac2fcf` passed; explicit import produced
+snapshot `8b258f90-2e3b-46da-9586-f7ee8bb89c6a`. Strict comparison with the
+retained Batch203 snapshot adds one covered branch at
+`src/autohint/latin.rs:2368`, with no region, line, or function change. The
+retained totals are 88,104 / 91,788 regions, 11,690 / 13,432 branches,
+63,849 / 65,961 lines, and 3,692 / 3,980 functions.
+
+Batch205 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+maintained `gvar-scalar-regions.ttf` variable face. Named instance face index
+393216 selects instance 6 (`wdth=100`, `wght=800`) and glyph 10; six ppem sizes
+and five legal force-auto-hint targets exercise the normalized-coordinate
+upper-end arm at `src/tt/gvar.rs:602`. The focused parity lane and managed
+Coverage MCP parity run `a521c518-06c1-4630-b88e-f4c62cccd4e6` passed all 30
+rows across Rust, the C ABI, WASM, and the pinned oracle. Coverage MCP run
+`792f03e5-b887-4752-a0d9-690e6d5387ef` passed; explicit import produced
+snapshot `7d4b9480-9d07-44cd-a574-58a994d59811`. Strict comparison with the
+retained Batch204 snapshot adds one covered branch at
+`src/tt/gvar.rs:602`, with no region, line, or function change. The retained
+totals are 88,104 / 91,788 regions, 11,691 / 13,432 branches, 63,849 /
+65,961 lines, and 3,692 / 3,980 functions.
+
+Batch206 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+project-authored `pure-cff-below-baseline-no-vmtx.otf` CFF1 face. Glyph 1 is a
+valid rectangle below the baseline, and the face intentionally omits `vmtx`
+and `vhea`; six ppem sizes and five legal force-auto-hint targets all request
+vertical layout. The focused parity lane passed all 30 rows across Rust, the
+C ABI, WASM, and the pinned oracle. After fixing the load-flag precedence and
+the CFF vertical metric grid-fit route, managed Coverage MCP parity run
+`741a8e2b-193c-417c-860e-910b885a3b9f` passed the full parity suite. Coverage
+MCP run `8cebca09-edf5-4bc5-bf85-e1891701d840` passed; explicit import
+produced snapshot `9fc16ff7-441f-4693-a98c-8c4252bdd5e8`. Strict comparison
+with the retained Batch205 snapshot adds 44 covered regions, six branches,
+two functions, and 50 lines. The retained totals are 88,148 / 91,839
+regions, 11,697 / 13,438 branches, 63,899 / 66,015 lines, and 3,694 /
+3,982 functions.
+
+Batch207 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+project-authored `pure-cff-baseline-touch-no-vmtx.otf` CFF1 face. Glyph 1 is a
+valid rectangle below and up to the baseline, and the face omits `vmtx` and
+`vhea`; twelve normal ppem sizes plus six each for mono, LCD, and LCD-V all
+request vertical layout. The focused parity lane passed all 30 rows across
+Rust, the C ABI, WASM, and the pinned oracle. Managed Coverage MCP parity run
+`9c99e87e-8ff2-4752-9743-27f68ac36702` passed the full parity suite. Coverage
+MCP run `7f08ef71-03cf-4faf-9f8e-12188d40c350` passed; explicit import
+produced snapshot `a3929070-1a2f-42b9-b7e9-6d325c2a377e`. Strict comparison
+with the retained Batch206 snapshot adds one covered region and one branch at
+`src/scaler.rs:1724`, with no denominator change. The retained totals are
+88,149 / 91,839 regions, 11,698 / 13,438 branches, 63,899 / 66,015 lines,
+and 3,694 / 3,982 functions.
+
+Batch208 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+maintained `pure-cff-cubic-vmtx.otf` CFF1 face. Glyph 1 uses native CFF
+loading with `FT_LOAD_NO_AUTOHINT`, `FT_LOAD_NO_BITMAP`, and vertical layout;
+six ppem sizes and five legal target modes exercise the present-`vmtx`
+vertical-bearing arm at `src/font.rs:7199`. The focused parity lane passed
+all 30 rows across Rust, the C ABI, WASM, and the pinned oracle. Managed
+Coverage MCP parity run `5a819b6a-b846-44ad-b449-3dbe5f43fc08` passed the full
+parity suite. Coverage MCP run `9c971427-00ed-4bb5-b10e-e9767fe15132`
+passed; explicit import produced snapshot
+`19211e66-5e1c-4655-aa16-094d5b8981e8`. Strict comparison with the retained
+Batch207 snapshot adds one covered branch at `src/font.rs:7199`, with no
+region, line, or function change. The retained totals are 88,149 / 91,839
+regions, 11,699 / 13,438 branches, 63,899 / 66,015 lines, and 3,694 /
+3,982 functions.
+
+Batch209 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+project-authored `parser-setcurrentpoint-after-line.pfb` Type 1 face. Its
+valid glyph sets a contour-start move, consumes it with `rlineto`, then uses
+`setcurrentpoint`, reaching the false `pending_move` arm at
+`src/font.rs:2337`; six ppem sizes and five legal public load modes cover the
+matrix. The focused parity lane passed all 30 rows across Rust, the C ABI,
+WASM, and the pinned oracle. Managed Coverage MCP parity run
+`f6f53204-3a0e-482d-92cf-4ea54378bb59` passed with 18,502/18,502 runnable
+cases and four documented pending scenarios. Coverage MCP run
+`7a28b59e-db5f-458c-9a0a-1a4c4635a6e8` passed and auto-ingested snapshot
+`cb5197a7-b72e-40ed-b03a-ba754cd9faf4`. Strict comparison with the retained
+Batch208 snapshot adds one covered region and one branch, at
+`src/font.rs:2337`, with no denominator change. The retained totals are
+88,150 / 91,839 regions, 11,700 / 13,438 branches, 63,899 / 66,015 lines,
+and 3,694 / 3,982 functions.
+
+Batch210 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+project-authored `batch210-latin-tilde-next-oncurve.ttf` sibling of the
+script-coverage face. Glyph 64 preserves the U+00F1 cmap and uses a valid
+two-contour top tilde whose middle point has an on-curve successor, reaching
+the false neighbor-control arm at `src/autohint/latin.rs:2393`; six ppem sizes
+and five legal force-autohint target modes cover the matrix. The focused parity
+lane passed all 30 rows across Rust, the C ABI, WASM, and the pinned oracle.
+Managed Coverage MCP parity run `e21a499a-0daa-4ae2-9dbc-0ac3fa35203f`
+passed. Coverage MCP run `564bca58-0e43-4c62-9936-e47415184bf0` passed and
+auto-ingested snapshot `1406bb68-4b28-472d-9379-7a5603561127`. Strict
+comparison with the retained Batch209 snapshot adds one covered branch at
+`src/autohint/latin.rs:2393`, with no region, line, function, or denominator
+change. The retained totals are 88,150 / 91,839 regions, 11,701 / 13,438
+branches, 63,899 / 66,015 lines, and 3,694 / 3,982 functions.
+
+Batch211 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+project-authored `batch211-latin-tilde-crossed-neighbors.ttf` sibling of the
+script-coverage face. Glyph 64 preserves the U+00F1 cmap and uses crossed
+neighbor heights around the middle top-tilde point, reaching the asymmetric
+measurement path at `src/autohint/latin.rs:2403`; six ppem sizes and five
+legal force-autohint target modes cover the matrix. The focused parity lane
+passed all 30 rows across Rust, the C ABI, WASM, and the pinned oracle.
+Managed Coverage MCP parity run `81dae3a2-ace1-411f-9588-e50266f4b29c`
+passed. Coverage MCP run `7fe0f508-d3d7-4ed2-9033-cc0796ce1fcd` passed and
+auto-ingested snapshot `3d70cb63-4171-4b32-9b13-f782928127ef`. Strict
+comparison with the retained Batch210 snapshot adds two covered branches at
+`src/autohint/latin.rs:2403` and its ordered comparison, with no region,
+line, function, or denominator change. The retained totals are 88,150 /
+91,839 regions, 11,703 / 13,438 branches, 63,899 / 66,015 lines, and 3,694 /
+3,982 functions.
+
+Batch212 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+project-authored `batch212-latin-thin-crossed-tilde.ttf` sibling of the
+script-coverage face. Glyph 64 preserves the U+00F1 cmap and uses a thin
+crossed top tilde whose scaled zero measurement reaches the second
+`measurement != 0` conjunct at `src/autohint/latin.rs:2410`; six ppem sizes
+and five legal force-autohint target modes cover the matrix. The focused
+parity lane passed all 30 rows across Rust, the C ABI, WASM, and the pinned
+oracle. Managed Coverage MCP parity run
+`5ab825f3-9bc2-4473-8819-f8643f0789d9` passed. Coverage MCP run
+`f7ac75cd-cde9-46ce-a3ed-9fba8396b711` passed and auto-ingested snapshot
+`542060e4-2871-4d1d-aacb-cbd42493a0e7`. Strict comparison with the retained
+Batch211 snapshot adds one covered branch at `src/autohint/latin.rs:2410`,
+with no region, line, function, or denominator change. The retained totals
+are 88,150 / 91,839 regions, 11,704 / 13,438 branches, 63,899 / 66,015
+lines, and 3,694 / 3,982 functions.
+
+Batch213 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+project-authored `batch213-latin-bottom-tilde-prev-oncurve.ttf` sibling of
+the script-coverage face. Glyph 69 preserves the U+1E1B cmap and uses an
+on-curve predecessor before the bottom-tilde middle point, reaching the
+previous-control false arm at `src/autohint/latin.rs:2464`; six ppem sizes and
+five legal force-autohint target modes cover the matrix. The focused parity
+lane passed all 30 rows across Rust, the C ABI, WASM, and the pinned oracle.
+Managed Coverage MCP parity run `e4587cdc-421d-460b-9fd3-632ec8bc63b2`
+passed. Coverage MCP run `341b73d9-864c-47af-9364-04713ddacf20` passed and
+auto-ingested snapshot `4ab0d18d-6667-445c-b460-00dc30f7fad8`. Strict
+comparison with the retained Batch212 snapshot adds one covered branch at
+`src/autohint/latin.rs:2464`, with no region, line, function, or denominator
+change. The retained totals are 88,150 / 91,839 regions, 11,705 / 13,438
+branches, 63,899 / 66,015 lines, and 3,694 / 3,982 functions.
+
+Batch214 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+project-authored `batch214-latin-bottom-tilde-next-oncurve.ttf` sibling of
+the script-coverage face. Glyph 69 preserves the U+1E1B cmap and uses an
+on-curve successor after the bottom-tilde middle point, reaching the false
+next-control predicate in the Latin auto-hinter. The rows cover six ppem
+sizes and the five legal force-autohint target modes.
+
+Focused parity passed all 30 rows. Managed Coverage MCP parity run
+`888d1a51-e8b9-426b-a155-f766ace0f6c8` passed. Coverage MCP run
+`99dfb518-d06f-4824-af92-6f10d48efb8e` passed and auto-ingested snapshot
+`e4cd85d8-004c-4794-8df0-59cd1da6a1ff`. Strict comparison with the retained
+Batch213 snapshot adds one covered branch at
+`src/autohint/latin.rs:2465`, with no region, line, function, or denominator
+change. The retained totals are 88,150 / 91,839 regions, 11,706 / 13,438
+branches, 63,899 / 66,015 lines, and 3,694 / 3,982 functions.
+
+Batch215 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+project-authored `batch215-latin-bottom-tilde-crossed-neighbors.ttf` sibling
+of the script-coverage face. Glyph 69 preserves the U+1E1B cmap and uses
+crossed bottom-tilde neighbors so the ordered-neighbor comparisons reach the
+false arms at `src/autohint/latin.rs:2475` and `2477`. The rows cover six
+ppem sizes and the five legal force-autohint target modes.
+
+Focused parity passed all 30 rows. Managed Coverage MCP parity run
+`3c3affd7-ef33-4c46-90f6-c9b3e7ab755c` passed. Coverage MCP run
+`f7ffb6a1-86fa-497d-a8f0-ff70fd82f222` passed and auto-ingested snapshot
+`fd201abb-5fef-444f-82f3-85dfde37504e`. Strict comparison with the retained
+Batch214 snapshot adds two covered branches at
+`src/autohint/latin.rs:2475` and `2477`, with no region, line, function, or
+denominator change. The retained totals are 88,150 / 91,839 regions, 11,708
+/ 13,438 branches, 63,899 / 66,015 lines, and 3,694 / 3,982 functions.
+
+Batch216 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+project-authored `batch216-latin-thin-bottom-crossed-tilde.ttf` sibling of
+the script-coverage face. Glyph 69 preserves the U+1E1B cmap and uses a thin
+crossed bottom-tilde contour whose zero sentinel measurement reaches the
+threshold short-circuit at `src/autohint/latin.rs:2482`. The rows cover six
+ppem sizes and the five legal force-autohint target modes.
+
+Focused parity passed all 30 rows. Managed Coverage MCP parity run
+`6aeb96b1-9891-4d3d-bea3-3447c1a32635` passed. Coverage MCP run
+`0556c1a3-e202-489f-8532-1345c5bf57c1` passed and auto-ingested snapshot
+`1d8e579d-886e-4713-82c5-1f5962af0699`. Strict comparison with the retained
+Batch215 snapshot adds one covered branch at
+`src/autohint/latin.rs:2482`, with no region, line, function, or denominator
+change. The retained totals are 88,150 / 91,839 regions, 11,709 / 13,438
+branches, 63,899 / 66,015 lines, and 3,694 / 3,982 functions.
+
+Batch217 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+project-authored `batch217-latin-overlap-sentinel.ttf` sibling of the
+maintained latin-small-ignore face. It preserves the base face and adds
+glyphs 9 and 10 mapped to U+0069 and U+01D5; one- and two-point helper
+contours drive the overlap-helper sentinel at
+`src/autohint/latin.rs:2364`. The rows cover 15 ppem/target combinations for
+each glyph using the legal NORMAL, MONO, LCD, and LCD_V force-autohint modes.
+
+Focused parity passed all 30 rows. Managed Coverage MCP parity run
+`12638eff-72a4-46c2-b12b-3d2b4a675cf7` passed. Coverage MCP run
+`ed2e32b5-7632-4c15-8b47-20ecc01757f8` passed and auto-ingested snapshot
+`513741f6-400d-4e6d-9866-0ffd440f3773`. Strict comparison with the retained
+Batch216 snapshot adds covered branches at
+`src/autohint/latin.rs:2364` and `3810`, with no region, line, function, or
+denominator change. The retained totals are 88,150 / 91,839 regions, 11,711
+/ 13,438 branches, 63,899 / 66,015 lines, and 3,694 / 3,982 functions.
+
+Batch218 then added exactly 30 valid public `FT_Load_Glyph` rows using the
+project-authored `batch218-latin-bottom-distance-order.ttf` sibling of the
+script-coverage face. Glyph 73 preserves the U+0122 cmap and uses three
+overlapping bottom contours with ordered negative distances to reach the false
+right-hand comparison at `src/autohint/latin.rs:2747`. The rows cover ten
+ppem sizes and the legal NORMAL, MONO, and LCD force-autohint target modes.
+
+Focused parity passed all 30 rows. Managed Coverage MCP parity run
+`cf3da35a-7fd5-48d4-a407-835cd6998e0e` passed. Coverage MCP run
+`7a495eb9-49fb-42ed-ae64-a2e3e7eea2b5` passed and auto-ingested snapshot
+`bd7b7951-ffda-4fee-9f08-8a8ab504aa17`. Strict comparison with the retained
+Batch217 snapshot adds one covered branch at
+`src/autohint/latin.rs:2747`, with no region, line, function, or denominator
+change. The retained totals are 88,150 / 91,839 regions, 11,712 / 13,438
+branches, 63,899 / 66,015 lines, and 3,694 / 3,982 functions.
+
 Confirmed runtime divergences fixed during the coverage loop are documented
 next to their implementations and must remain separate from coverage-only
 adoption claims:
+
+- `FT_LOAD_FORCE_AUTOHINT` takes precedence over `FT_LOAD_TARGET_LIGHT`, while
+  `FT_LOAD_NO_AUTOHINT` still suppresses the target-light route. The CFF
+  driver's synthesized vertical metrics are then grid-fitted for
+  `FT_LOAD_VERTICAL_LAYOUT`, matching `ftobjs.c` and `cffgload.c`.
 
 - `FTC_CMapCache_Lookup` normalizes negative cmap indexes into the cache key,
   so a negative lookup can reuse an index-zero entry without consulting the
@@ -751,6 +1323,10 @@ adoption claims:
   rendered bitmap whose public buffer is elided.
 - `FT_Outline_Render` accepts a no-AA request for the public MONO target and
   routes it through the black rasterizer, as `ftraster.c` does.
+- `FT_Get_PFR_Metrics` reports zero PFR resolutions and identity scales for a
+  negative face-index probe, matching the uninitialized driver-private
+  metrics state exposed by the pinned C service before a normal face is
+  opened.
 - `FT_Get_Color_Glyph_ClipBox` preserves FreeType's SFNT-frame zero padding for
   a format-2 ClipBox whose final `VarIndexBase` reaches past the maintained
   table slice; Rust reads the padded zero and returns the scaled box instead
@@ -790,6 +1366,12 @@ the `FT_Load_Char` input for unassigned load-flag bits keeps the numeric bit
 `0x02000000` and compares the complete slot result with C; the Rust boundary
 must ignore that bit just as the pinned loader does, rather than turning it
 into a blanket unsupported-feature error.
+
+The FT_Outline_Render.bitmap_render_matches_c parity case also carries a
+30-input monochrome FT_OUTLINE_SINGLE_PASS family. These inputs use only valid
+inline outlines and preallocated public bitmap targets, so the single-pass
+raster path is covered through the normal C, Rust, C-ABI, and WASM parity
+routes.
 
 The standalone external C-ABI audit cannot inspect FreeType's private `TT_Face`
 layout. Its invalid COLRv1 layer-iterator probe therefore seeds the iterator

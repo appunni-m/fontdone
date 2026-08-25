@@ -598,6 +598,1121 @@ def hebrew_long_blue_inner_break_glyph():
     )
 
 
+def build_batch123_hebrew_long_blue_remaining() -> None:
+    """Build valid Hebrew probes for the remaining long-blue scan branches."""
+    top_blue_chars = (0x05D1, 0x05D3, 0x05D4, 0x05D7, 0x05DA, 0x05DB, 0x05DD, 0x05E1)
+    contours = {
+        "hebrew-long-blue-offcurve-next-rtl.ttf": [
+            (110, 0, True),
+            (100, 500, True),
+            (120, 500, True),
+            (-300, 480, False),
+            (-300, 0, True),
+        ],
+        "hebrew-long-blue-offcurve-next-ltr.ttf": [
+            (-110, 0, True),
+            (-100, 500, True),
+            (-120, 500, True),
+            (300, 480, False),
+            (300, 0, True),
+        ],
+        "hebrew-long-blue-short-same-rtl.ttf": [
+            (110, 0, True),
+            (100, 500, True),
+            (120, 500, True),
+            (100, 480, True),
+            (80, 479, True),
+            (-300, 478, True),
+            (-300, 0, True),
+        ],
+        "hebrew-long-blue-short-same-ltr.ttf": [
+            (-110, 0, True),
+            (-100, 500, True),
+            (-120, 500, True),
+            (-100, 480, True),
+            (-80, 479, True),
+            (300, 478, True),
+            (300, 0, True),
+        ],
+        "hebrew-long-blue-wrap-stop-rtl.ttf": [
+            (110, 0, True),
+            (100, 500, True),
+            (120, 500, True),
+            (100, 480, True),
+            (-300, 480, True),
+        ],
+        "hebrew-long-blue-wrap-stop-ltr.ttf": [
+            (-110, 0, True),
+            (-100, 500, True),
+            (-120, 500, True),
+            (-100, 480, True),
+            (300, 480, True),
+        ],
+    }
+    for filename, contour in contours.items():
+        glyph_order = [".notdef", "space", "hebrew_probe"]
+        glyphs = {
+            ".notdef": rectangle_glyph(80, -120, 520, 720),
+            "space": empty_glyph(),
+            "hebrew_probe": mixed_contour_glyph([contour]),
+        }
+        metrics = {
+            ".notdef": (700, 80),
+            "space": (300, 0),
+            "hebrew_probe": (700, 100),
+        }
+        cmap = {0x20: "space", **{codepoint: "hebrew_probe" for codepoint in top_blue_chars}}
+
+        font = FontBuilder(UNITS_PER_EM, isTTF=True)
+        font.setupGlyphOrder(glyph_order)
+        font.setupCharacterMap(cmap)
+        font.setupGlyf(glyphs)
+        font.setupHorizontalMetrics(metrics)
+        font.setupHorizontalHeader(ascent=820, descent=-220)
+        font.setupNameTable(
+            {
+                "familyName": "Autohint Hebrew Batch123",
+                "styleName": "Regular",
+                "uniqueFontIdentifier": f"Autohint Hebrew Batch123 {filename}",
+                "fullName": f"Autohint Hebrew Batch123 {filename}",
+                "psName": "AutohintHebrewBatch123-Regular",
+                "version": "Version 1.0",
+            }
+        )
+        font.setupOS2(
+            sTypoAscender=820,
+            sTypoDescender=-220,
+            usWinAscent=820,
+            usWinDescent=220,
+        )
+        font.setupPost()
+        head = font.font["head"]
+        head.created = 0
+        head.modified = 0
+        font.font.recalcTimestamp = False
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+        font.save(OUT_DIR / filename)
+
+
+def build_batch190_hebrew_late_oncurve() -> None:
+    """Build a valid Hebrew top-blue witness with a late on-curve point."""
+    top_blue_chars = (0x05D1, 0x05D3, 0x05D4, 0x05D7, 0x05DA, 0x05DB, 0x05DD, 0x05E1)
+    contour = [
+        (110, 0, True),
+        (100, 500, True),
+        (120, 500, False),
+        (-90, 490, False),
+        (-180, 480, True),
+        (-180, 0, True),
+    ]
+    glyph_order = [".notdef", "space", "hebrew_late_oncurve"]
+    glyphs = {
+        ".notdef": rectangle_glyph(80, -120, 520, 720),
+        "space": empty_glyph(),
+        "hebrew_late_oncurve": mixed_contour_glyph([contour]),
+    }
+    metrics = {
+        ".notdef": (700, 80),
+        "space": (300, 0),
+        "hebrew_late_oncurve": (700, 100),
+    }
+    cmap = {0x20: "space", **{codepoint: "hebrew_late_oncurve" for codepoint in top_blue_chars}}
+
+    font = FontBuilder(UNITS_PER_EM, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=820, descent=-220)
+    font.setupNameTable(
+        {
+            "familyName": "Autohint Hebrew Late Oncurve",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Autohint Hebrew Late Oncurve Regular",
+            "fullName": "Autohint Hebrew Late Oncurve Regular",
+            "psName": "AutohintHebrewLateOncurve-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=820,
+        sTypoDescender=-220,
+        usWinAscent=820,
+        usWinDescent=220,
+    )
+    font.setupPost()
+
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "batch190-hebrew-late-oncurve.ttf")
+
+
+def build_batch191_hebrew_offcurve_apex() -> None:
+    """Build a valid Hebrew top-blue witness with an off-curve apex."""
+    top_blue_chars = (0x05D1, 0x05D3, 0x05D4, 0x05D7, 0x05DA, 0x05DB, 0x05DD, 0x05E1)
+    contour = [
+        (-60, 518, True),
+        (0, 520, False),
+        (60, 518, True),
+        (100, 0, True),
+        (-100, 0, True),
+    ]
+    glyph_order = [".notdef", "space", "hebrew_offcurve_apex"]
+    glyphs = {
+        ".notdef": rectangle_glyph(80, -120, 520, 720),
+        "space": empty_glyph(),
+        "hebrew_offcurve_apex": mixed_contour_glyph([contour]),
+    }
+    metrics = {
+        ".notdef": (700, 80),
+        "space": (300, 0),
+        "hebrew_offcurve_apex": (700, 100),
+    }
+    cmap = {0x20: "space", **{codepoint: "hebrew_offcurve_apex" for codepoint in top_blue_chars}}
+
+    font = FontBuilder(UNITS_PER_EM, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=820, descent=-220)
+    font.setupNameTable(
+        {
+            "familyName": "Autohint Hebrew Offcurve Apex",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Autohint Hebrew Offcurve Apex Regular",
+            "fullName": "Autohint Hebrew Offcurve Apex Regular",
+            "psName": "AutohintHebrewOffcurveApex-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=820,
+        sTypoDescender=-220,
+        usWinAscent=820,
+        usWinDescent=220,
+    )
+    font.setupPost()
+
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "batch191-hebrew-offcurve-apex.ttf")
+
+
+def build_batch196_hebrew_near_top_span() -> None:
+    """Build a Hebrew top-blue contour whose short walk spans nearly all points."""
+    top_blue_chars = (0x05D1, 0x05D3, 0x05D4, 0x05D7, 0x05DA, 0x05DB, 0x05DD, 0x05E1)
+    contour = [
+        (0, 0, True),
+        (-20, 500, True),
+        (0, 520, True),
+        (20, 500, True),
+        (10, 518, True),
+    ]
+    glyph_order = [".notdef", "space", "hebrew_near_top_span"]
+    glyphs = {
+        ".notdef": rectangle_glyph(80, -120, 520, 720),
+        "space": empty_glyph(),
+        "hebrew_near_top_span": mixed_contour_glyph([contour]),
+    }
+    metrics = {
+        ".notdef": (700, 80),
+        "space": (300, 0),
+        "hebrew_near_top_span": (700, 100),
+    }
+    cmap = {0x20: "space", **{codepoint: "hebrew_near_top_span" for codepoint in top_blue_chars}}
+
+    font = FontBuilder(UNITS_PER_EM, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=820, descent=-220)
+    font.setupNameTable(
+        {
+            "familyName": "Autohint Hebrew Near Top Span",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Autohint Hebrew Near Top Span Regular",
+            "fullName": "Autohint Hebrew Near Top Span Regular",
+            "psName": "AutohintHebrewNearTopSpan-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=820,
+        sTypoDescender=-220,
+        usWinAscent=820,
+        usWinDescent=220,
+    )
+    font.setupPost()
+
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "batch196-hebrew-near-top-span.ttf")
+
+
+def build_batch197_hebrew_near_top_span_mirror() -> None:
+    """Build the horizontal mirror of the Batch196 merge witness."""
+    top_blue_chars = (0x05D1, 0x05D3, 0x05D4, 0x05D7, 0x05DA, 0x05DB, 0x05DD, 0x05E1)
+    contour = [
+        (0, 0, True),
+        (20, 500, True),
+        (0, 520, True),
+        (-20, 500, True),
+        (-10, 518, True),
+    ]
+    glyph_order = [".notdef", "space", "hebrew_near_top_span_mirror"]
+    glyphs = {
+        ".notdef": rectangle_glyph(80, -120, 520, 720),
+        "space": empty_glyph(),
+        "hebrew_near_top_span_mirror": mixed_contour_glyph([contour]),
+    }
+    metrics = {
+        ".notdef": (700, 80),
+        "space": (300, 0),
+        "hebrew_near_top_span_mirror": (700, 100),
+    }
+    cmap = {
+        0x20: "space",
+        **{codepoint: "hebrew_near_top_span_mirror" for codepoint in top_blue_chars},
+    }
+
+    font = FontBuilder(UNITS_PER_EM, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=820, descent=-220)
+    font.setupNameTable(
+        {
+            "familyName": "Autohint Hebrew Near Top Span Mirror",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Autohint Hebrew Near Top Span Mirror Regular",
+            "fullName": "Autohint Hebrew Near Top Span Mirror Regular",
+            "psName": "AutohintHebrewNearTopSpanMirror-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=820,
+        sTypoDescender=-220,
+        usWinAscent=820,
+        usWinDescent=220,
+    )
+    font.setupPost()
+
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "batch197-hebrew-near-top-span-mirror.ttf")
+
+
+def build_batch126_normal_scale_branches() -> None:
+    """Build normal-scale Latin and Han probes for remaining hint branches."""
+    glyph_order = [
+        ".notdef",
+        "space",
+        "latin_standard",
+        "hani_standard",
+        "latin_top_measure",
+        "latin_bottom_measure",
+        "latin_below_top",
+        "latin_mono_narrow",
+        "latin_bound_near",
+        "cjk_descending_link",
+    ]
+    glyphs = {
+        ".notdef": rectangle_glyph(80, -120, 520, 720),
+        "space": empty_glyph(),
+        "latin_standard": rectangle_glyph(100, 0, 500, 500),
+        "hani_standard": rectangle_glyph(100, 0, 620, 560),
+        # The internal on-curve point at (240, 620) is flanked by same-height
+        # off-curve controls, while the surrounding on-curve points are lower.
+        "latin_top_measure": mixed_contour_glyph(
+            [
+                (100, 0, 500, 500),
+                [
+                    (140, 500, True),
+                    (190, 620, False),
+                    (240, 620, True),
+                    (310, 620, False),
+                    (370, 500, True),
+                    (430, 480, True),
+                ],
+            ]
+        ),
+        "latin_bottom_measure": mixed_contour_glyph(
+            [
+                [
+                    (140, 0, True),
+                    (190, -120, False),
+                    (240, -120, True),
+                    (310, -120, False),
+                    (370, 0, True),
+                    (430, 20, True),
+                ],
+                (100, 0, 500, 500),
+            ]
+        ),
+        "latin_below_top": mixed_contour_glyph(
+            [
+                (100, 0, 500, 500),
+                [
+                    (150, 520, True),
+                    (205, 570, False),
+                    (260, 570, True),
+                    (330, 570, False),
+                    (390, 520, True),
+                    (450, 505, True),
+                ],
+                (215, 650, 385, 710),
+                (300, 535, 360, 565),
+            ]
+        ),
+        # Three stems cross the narrow/medium/wide fitted-width regimes at
+        # the five normal ppems without using extreme coordinates.
+        "latin_mono_narrow": rectangles_glyph(
+            [
+                (80, 0, 120, 600),
+                (200, 0, 264, 600),
+                (340, 0, 460, 600),
+            ]
+        ),
+        # Close reciprocal pairs make later edges land near the preceding
+        # rounded edge while retaining six distinct valid contours.
+        "latin_bound_near": rectangles_glyph(
+            [
+                (80, 0, 140, 600),
+                (143, 0, 203, 600),
+                (260, 0, 320, 600),
+                (323, 0, 383, 600),
+                (440, 0, 500, 600),
+                (503, 0, 563, 600),
+            ]
+        ),
+        # Emit horizontal bars from top to bottom; their repeated vertical
+        # edges provide CJK descending linked segments.
+        "cjk_descending_link": rectangles_glyph(
+            [
+                (80, 500, 620, 580),
+                (80, 380, 620, 460),
+                (80, 260, 620, 340),
+                (80, 140, 620, 220),
+            ]
+        ),
+    }
+    metrics = {
+        ".notdef": (700, 80),
+        "space": (300, 0),
+        "latin_standard": (700, 100),
+        "hani_standard": (1000, 100),
+        "latin_top_measure": (700, 100),
+        "latin_bottom_measure": (700, 100),
+        "latin_below_top": (700, 100),
+        "latin_mono_narrow": (700, 80),
+        "latin_bound_near": (700, 80),
+        "cjk_descending_link": (1000, 80),
+    }
+    cmap = {
+        0x20: "space",
+        0x006F: "latin_standard",
+        0x7530: "hani_standard",
+        0x00F1: "latin_top_measure",
+        0x1E1B: "latin_bottom_measure",
+        0x1EAD: "latin_below_top",
+        0x01D5: "latin_mono_narrow",
+        0x01D7: "latin_bound_near",
+        0x4ED6: "cjk_descending_link",
+    }
+
+    font = FontBuilder(UNITS_PER_EM, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=820, descent=-220)
+    font.setupNameTable(
+        {
+            "familyName": "Autohint Normal Scale Branches",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Autohint Normal Scale Branches Regular",
+            "fullName": "Autohint Normal Scale Branches Regular",
+            "psName": "AutohintNormalScaleBranches-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=820,
+        sTypoDescender=-220,
+        usWinAscent=820,
+        usWinDescent=220,
+    )
+    font.setupPost()
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "batch126-normal-scale-branches.ttf")
+
+
+def build_batch127_cjk_edge_link_predicates() -> None:
+    """Build valid CJK contours for edge-link predicate parity witnesses."""
+
+    units_per_em = 1024
+
+    def i_contour(base: int, reverse: bool = False) -> list[tuple[int, int, bool]]:
+        # One I-shaped contour has three horizontal bands: an 80-unit bottom
+        # serif, a 560-unit stem, and a 76-unit top serif.  Keep the ordinary
+        # winding aligned with rectangles_glyph; selected probes reverse one
+        # contour to exercise CJK direction and link cleanup independently.
+        points = [
+            (base, 0, True),
+            (base + 160, 0, True),
+            (base + 160, 80, True),
+            (base + 120, 80, True),
+            (base + 120, 640, True),
+            (base + 160, 640, True),
+            (base + 160, 716, True),
+            (base, 716, True),
+            (base, 640, True),
+            (base + 40, 640, True),
+            (base + 40, 80, True),
+            (base, 80, True),
+        ]
+        if not reverse:
+            points.reverse()
+        return points
+
+    def i_glyph(bases: tuple[int, int, int], reverse_index: int | None = None):
+        return mixed_contour_glyph(
+            [
+                i_contour(base, index == reverse_index)
+                for index, base in enumerate(bases)
+            ]
+        )
+
+    glyph_order = [
+        ".notdef",
+        "space",
+        "hani_standard",
+        "serif_break_first",
+        "serif_break_middle",
+        "serif_break_third",
+        "serif_spacing_skew",
+        "long_short_competition",
+        "duplicate_backlink_interp",
+    ]
+    glyphs = {
+        ".notdef": rectangle_glyph(80, -160, 944, 840),
+        "space": empty_glyph(),
+        "hani_standard": rectangle_glyph(160, 20, 864, 700),
+        "serif_break_first": i_glyph((0, 320, 640), reverse_index=0),
+        "serif_break_middle": i_glyph((0, 320, 640), reverse_index=1),
+        "serif_break_third": i_glyph((0, 320, 640), reverse_index=2),
+        "serif_spacing_skew": i_glyph((0, 320, 656)),
+        "long_short_competition": rectangles_glyph(
+            [
+                (40, 20, 100, 620),
+                (40, 260, 260, 380),
+                (180, 20, 240, 620),
+            ]
+        ),
+        "duplicate_backlink_interp": rectangles_glyph(
+            [
+                (40, 20, 100, 620),
+                (40, 220, 300, 420),
+                (180, 20, 240, 620),
+                (180, 260, 260, 380),
+            ]
+        ),
+    }
+    metrics = {
+        ".notdef": (1024, 80),
+        "space": (320, 0),
+        "hani_standard": (1024, 100),
+        "serif_break_first": (1024, 64),
+        "serif_break_middle": (1024, 64),
+        "serif_break_third": (1024, 64),
+        "serif_spacing_skew": (1024, 64),
+        "long_short_competition": (1024, 64),
+        "duplicate_backlink_interp": (1024, 64),
+    }
+    cmap = {
+        0x20: "space",
+        0x7530: "hani_standard",
+        0x51B5: "serif_break_first",
+        0x51B6: "serif_break_middle",
+        0x51B7: "serif_break_third",
+        0x51B8: "serif_spacing_skew",
+        0x51B9: "long_short_competition",
+        0x51BA: "duplicate_backlink_interp",
+    }
+
+    font = FontBuilder(units_per_em, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=840, descent=-240)
+    font.setupNameTable(
+        {
+            "familyName": "Autohint CJK Edge Link Predicates",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Autohint CJK Edge Link Predicates Regular",
+            "fullName": "Autohint CJK Edge Link Predicates Regular",
+            "psName": "AutohintCJKEdgeLinkPredicates-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=840,
+        sTypoDescender=-240,
+        usWinAscent=840,
+        usWinDescent=240,
+    )
+    font.setupPost()
+
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "batch127-cjk-edge-link-predicates.ttf")
+
+
+def build_batch145_cjk_edge_interpolation_witnesses() -> None:
+    """Build valid CJK contours for linked-edge interpolation witnesses."""
+
+    units_per_em = 1024
+
+    def contour(points: list[tuple[int, int]]) -> list[tuple[int, int, bool]]:
+        return [(x, y, True) for x, y in points]
+
+    backlink_contours = [
+        [(80, 32), (80, 672), (176, 672), (176, 352), (288, 352), (288, 32)],
+        [(96, 32), (96, 672), (200, 672), (200, 288), (336, 288), (336, 32)],
+        [(64, 32), (64, 672), (152, 672), (152, 416), (272, 416), (272, 32)],
+        [(112, 32), (112, 672), (224, 672), (224, 320), (368, 320), (368, 32)],
+        [(48, 32), (48, 672), (160, 672), (160, 384), (304, 384), (304, 32)],
+    ]
+    equal_rectangles = [
+        [(320, 352, 608, 672), (64, 32, 320, 304), (320, 32, 416, 304)],
+        [(384, 336, 704, 656), (96, 48, 384, 288), (384, 48, 496, 288)],
+        [(288, 320, 560, 640), (48, 16, 288, 272), (288, 16, 392, 272)],
+        [(416, 368, 752, 704), (128, 40, 416, 320), (416, 40, 520, 320)],
+        [(352, 344, 640, 680), (80, 24, 352, 296), (352, 24, 464, 296)],
+    ]
+    blue_contours = [
+        [(64, 32), (320, 32), (320, 608), (960, 608), (960, 672), (64, 672)],
+        [(80, 48), (384, 48), (384, 592), (944, 592), (944, 672), (80, 672)],
+        [(48, 16), (288, 16), (288, 600), (928, 600), (928, 672), (48, 672)],
+        [(96, 40), (416, 40), (416, 584), (912, 584), (912, 672), (96, 672)],
+        [(72, 24), (352, 24), (352, 616), (952, 616), (952, 672), (72, 672)],
+    ]
+
+    glyph_order = [
+        ".notdef",
+        "space",
+        "hani_standard",
+        "backlink_a",
+        "backlink_b",
+        "backlink_c",
+        "backlink_d",
+        "backlink_e",
+        "equal_a",
+        "equal_b",
+        "equal_c",
+        "equal_d",
+        "equal_e",
+        "blue_a",
+        "blue_b",
+        "blue_c",
+        "blue_d",
+        "blue_e",
+    ]
+    glyphs = {
+        ".notdef": rectangle_glyph(80, -160, 944, 840),
+        "space": empty_glyph(),
+        "hani_standard": rectangle_glyph(128, 0, 896, 672),
+        **{
+            f"backlink_{letter}": mixed_contour_glyph([contour(points)])
+            for letter, points in zip("abcde", backlink_contours)
+        },
+        **{
+            f"equal_{letter}": rectangles_glyph(rectangles)
+            for letter, rectangles in zip("abcde", equal_rectangles)
+        },
+        **{
+            f"blue_{letter}": mixed_contour_glyph([contour(points)])
+            for letter, points in zip("abcde", blue_contours)
+        },
+    }
+    metrics = {
+        ".notdef": (1024, 80),
+        "space": (320, 0),
+        "hani_standard": (1024, 128),
+        **{name: (1024, 48) for name in glyph_order[3:]},
+    }
+    cmap = {
+        0x20: "space",
+        0x7530: "hani_standard",
+        0x519B: "hani_standard",
+        **{
+            0x51C0 + index: f"backlink_{letter}"
+            for index, letter in enumerate("abcde")
+        },
+        **{
+            0x51C5 + index: f"equal_{letter}"
+            for index, letter in enumerate("abcde")
+        },
+        **{
+            0x51CA + index: f"blue_{letter}"
+            for index, letter in enumerate("abcde")
+        },
+    }
+
+    font = FontBuilder(units_per_em, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=840, descent=-240)
+    font.setupNameTable(
+        {
+            "familyName": "Autohint CJK Edge Interpolation Witnesses",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Autohint CJK Edge Interpolation Witnesses Regular",
+            "fullName": "Autohint CJK Edge Interpolation Witnesses Regular",
+            "psName": "AutohintCJKEdgeInterpolationWitnesses-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=840,
+        sTypoDescender=-240,
+        usWinAscent=840,
+        usWinDescent=240,
+    )
+    font.setupPost()
+
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "batch145-cjk-edge-interpolation-witnesses.ttf")
+
+
+def build_batch152_latin_adjustment_branches() -> None:
+    """Build valid Latin glyphs with unique adjustment-database codepoints."""
+
+    glyph_order = [
+        ".notdef",
+        "space",
+        "capital_base",
+        "small_base",
+        "small_descender",
+        "capital_bottom",
+        "capital_top",
+        "small_top",
+        "small_bottom",
+        "small_both",
+        "capital_both",
+    ]
+    glyphs = {
+        ".notdef": rectangle_glyph(80, -160, 560, 760),
+        "space": empty_glyph(),
+        # These base glyphs populate the standard Latin blue strings used by
+        # af_latin_metrics_init_blues. The adjustment probes stay on unique
+        # glyph indices so reverse_cmap_lookup cannot select an earlier
+        # database codepoint that shares the same glyph.
+        "capital_base": rectangle_glyph(100, 0, 500, 700),
+        "small_base": ring_glyph(90, 0, 510, 520, 200, 120, 400, 400),
+        "small_descender": ring_glyph(90, -180, 510, 520, 200, -80, 400, 320),
+        "capital_bottom": ring_glyph(80, 0, 560, 700, 220, 160, 420, 540),
+        "capital_top": rectangle_glyph(120, 0, 480, 700),
+        "small_top": ring_glyph(90, 0, 510, 560, 200, 120, 400, 440),
+        "small_bottom": ring_glyph(90, -140, 510, 520, 200, -20, 400, 360),
+        "small_both": ring_glyph(90, -120, 510, 580, 200, 20, 400, 440),
+        "capital_both": ring_glyph(80, 0, 560, 700, 220, 160, 420, 540),
+    }
+    metrics = {
+        ".notdef": (700, 80),
+        "space": (320, 0),
+        "capital_base": (700, 100),
+        "small_base": (620, 90),
+        "small_descender": (620, 90),
+        "capital_bottom": (700, 80),
+        "capital_top": (700, 80),
+        "small_top": (620, 90),
+        "small_bottom": (620, 90),
+        "small_both": (620, 90),
+        "capital_both": (700, 80),
+    }
+    cmap = {
+        0x20: "space",
+        0x48: "capital_base",
+        0x45: "capital_base",
+        0x5A: "capital_base",
+        0x4C: "capital_base",
+        0x4F: "capital_base",
+        0x43: "capital_base",
+        0x55: "capital_base",
+        0x53: "capital_base",
+        0x54: "capital_base",
+        0x51: "capital_bottom",
+        0x66: "small_base",
+        0x6B: "small_base",
+        0x64: "small_base",
+        0x62: "small_base",
+        0x68: "small_base",
+        0x75: "small_base",
+        0x76: "small_base",
+        0x78: "small_base",
+        0x7A: "small_base",
+        0x6F: "small_base",
+        0x65: "small_base",
+        0x73: "small_base",
+        0x63: "small_base",
+        0x6E: "small_base",
+        0x72: "small_base",
+        0x70: "small_descender",
+        0x71: "small_descender",
+        0x67: "small_descender",
+        0x6A: "small_descender",
+        0x79: "small_descender",
+        0x0187: "capital_top",  # Ƈ: AF_IGNORE_CAPITAL_TOP
+        0x0188: "small_top",  # ƈ: AF_IGNORE_SMALL_TOP
+        0x0105: "small_bottom",  # ą: AF_IGNORE_SMALL_BOTTOM
+        0x00F8: "small_both",  # ø: AF_IGNORE_SMALL_TOP|BOTTOM
+        0xA7C0: "capital_both",  # Ꟁ: AF_IGNORE_CAPITAL_TOP|BOTTOM
+    }
+
+    font = FontBuilder(UNITS_PER_EM, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=820, descent=-220)
+    font.setupNameTable(
+        {
+            "familyName": "Autohint Latin Adjustment Branches",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Autohint Latin Adjustment Branches Regular",
+            "fullName": "Autohint Latin Adjustment Branches Regular",
+            "psName": "AutohintLatinAdjustmentBranches-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=820,
+        sTypoDescender=-220,
+        usWinAscent=820,
+        usWinDescent=220,
+    )
+    font.setupPost()
+
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "batch152-latin-adjustment-branches.ttf")
+
+
+def build_batch153_latin_blue_empty_branches() -> None:
+    """Build valid Latin faces whose blue-string outlines have no extrema."""
+
+    glyph_order = [
+        ".notdef",
+        "space",
+        "blue_single_a",
+        "blue_single_b",
+        "blue_single_c",
+        "blue_single_d",
+        "blue_single_e",
+        "blue_single_f",
+        "target_capital",
+        "target_small",
+        "target_descender",
+        "target_tall",
+        "target_multi",
+        "target_flat",
+    ]
+    glyphs = {
+        ".notdef": rectangle_glyph(80, -160, 560, 760),
+        "space": empty_glyph(),
+        # Each contour contains one point.  The raw glyph is valid and has
+        # more than two points, but every contour is skipped by the pinned
+        # Latin blue-string extremum scan.
+        "blue_single_a": one_point_contour_glyph(
+            [(100, 100), (240, 220), (380, 340)]
+        ),
+        "blue_single_b": one_point_contour_glyph(
+            [(120, 140), (260, 260), (400, 380)]
+        ),
+        "blue_single_c": one_point_contour_glyph(
+            [(140, 180), (280, 300), (420, 420)]
+        ),
+        "blue_single_d": one_point_contour_glyph(
+            [(160, -120), (300, 40), (440, 200)]
+        ),
+        "blue_single_e": one_point_contour_glyph(
+            [(180, -160), (320, 20), (460, 180)]
+        ),
+        "blue_single_f": one_point_contour_glyph(
+            [(200, -200), (340, -40), (480, 120)]
+        ),
+        "target_capital": rectangle_glyph(100, 0, 500, 700),
+        "target_small": ring_glyph(90, 0, 510, 520, 200, 120, 400, 400),
+        "target_descender": ring_glyph(
+            90, -180, 510, 520, 200, -80, 400, 320
+        ),
+        "target_tall": rectangle_glyph(120, -40, 480, 760),
+        "target_multi": rectangles_glyph(
+            [(100, 0, 180, 700), (420, 0, 500, 700), (180, 300, 420, 380)]
+        ),
+        "target_flat": rectangle_glyph(70, -80, 530, 680),
+    }
+    metrics = {
+        ".notdef": (700, 80),
+        "space": (320, 0),
+        "blue_single_a": (620, 100),
+        "blue_single_b": (620, 120),
+        "blue_single_c": (620, 140),
+        "blue_single_d": (620, 160),
+        "blue_single_e": (620, 180),
+        "blue_single_f": (620, 200),
+        "target_capital": (700, 100),
+        "target_small": (620, 90),
+        "target_descender": (620, 90),
+        "target_tall": (700, 120),
+        "target_multi": (700, 100),
+        "target_flat": (700, 70),
+    }
+    cmap = {
+        0x20: "space",
+        # The capital-top blue string resolves entirely to valid
+        # single-point-contour outlines, while the capital-bottom and
+        # lowercase strings retain ordinary support glyphs so the witness
+        # isolates the no-extremum path without changing unrelated zones.
+        0x48: "blue_single_a",
+        0x45: "blue_single_b",
+        0x5A: "blue_single_c",
+        0x4F: "blue_single_d",
+        0x43: "blue_single_e",
+        0x51: "blue_single_f",
+        0x53: "blue_single_a",
+        0x54: "blue_single_b",
+        0x4C: "target_capital",
+        0x55: "target_capital",
+        0x66: "target_small",
+        0x69: "target_small",
+        0x6A: "target_small",
+        0x6B: "target_small",
+        0x64: "target_small",
+        0x62: "target_small",
+        0x68: "target_small",
+        0x75: "target_small",
+        0x76: "target_small",
+        0x78: "target_small",
+        0x7A: "target_small",
+        0x6F: "target_small",
+        0x65: "target_small",
+        0x73: "target_small",
+        0x63: "target_small",
+        0x6E: "target_small",
+        0x72: "target_small",
+        0x70: "target_descender",
+        0x71: "target_descender",
+        0x67: "target_descender",
+        0x79: "target_descender",
+        0x100: "target_capital",
+        0x101: "target_small",
+        0x102: "target_descender",
+        0x103: "target_tall",
+        0x104: "target_multi",
+        0x105: "target_flat",
+    }
+
+    font = FontBuilder(UNITS_PER_EM, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=820, descent=-220)
+    font.setupNameTable(
+        {
+            "familyName": "Autohint Latin Blue Empty Branches",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Autohint Latin Blue Empty Branches Regular",
+            "fullName": "Autohint Latin Blue Empty Branches Regular",
+            "psName": "AutohintLatinBlueEmptyBranches-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=820,
+        sTypoDescender=-220,
+        usWinAscent=820,
+        usWinDescent=220,
+    )
+    font.setupPost()
+
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "batch153-latin-blue-empty-branches.ttf")
+
+
+def build_batch159_latin_fallback_adjustment_branches() -> None:
+    """Build valid Latin glyphs for public fallback and adjustment paths."""
+
+    glyph_order = [
+        ".notdef",
+        "space",
+        "fallback_base",
+        "empty_target",
+        "offcurve_extremum",
+        "tilde_top2_two_contours",
+        "bottom_tilde",
+        "up2_three_contours",
+    ]
+    glyphs = {
+        ".notdef": rectangle_glyph(80, -160, 560, 760),
+        "space": empty_glyph(),
+        # Do not map any of latn's standard-width candidates ('o', 'O', or
+        # '0').  The public face initialization must therefore take the
+        # constant-width fallback in metrics_init_widths.
+        "fallback_base": rectangle_glyph(100, 0, 500, 600),
+        "empty_target": empty_glyph(),
+        # An off-curve top extremum preceded by an on-curve point exercises
+        # the public blue-string walk's best_on_last fallback.
+        "offcurve_extremum": mixed_contour_glyph(
+            [
+                [
+                    (100, 0, True),
+                    (100, 560, True),
+                    (250, 650, False),
+                    (400, 560, True),
+                    (400, 0, True),
+                ]
+            ]
+        ),
+        # U+1E4C carries AF_ADJUST_UP2|AF_ADJUST_TILDE_TOP2.  Two contours
+        # intentionally take find_second_highest_contour's valid public
+        # fallback to contour zero.
+        "tilde_top2_two_contours": mixed_contour_glyph(
+            [
+                (100, 0, 500, 500),
+                [
+                    (150, 560, True),
+                    (250, 640, False),
+                    (350, 560, True),
+                ],
+            ]
+        ),
+        # U+1E1B carries AF_ADJUST_DOWN|AF_ADJUST_TILDE_BOTTOM and gives the
+        # bottom-tilde route a real overlapping accent contour.
+        "bottom_tilde": mixed_contour_glyph(
+            [
+                (100, 120, 500, 620),
+                [
+                    (150, 40, True),
+                    (250, -40, False),
+                    (350, 40, True),
+                ],
+            ]
+        ),
+        # U+01D7 carries AF_ADJUST_UP2.  Three contours make the second-highest
+        # adjustment and its separation scan reachable through FT_Load_Glyph.
+        "up2_three_contours": mixed_contour_glyph(
+            [
+                (100, 0, 500, 500),
+                (150, 540, 350, 620),
+                (190, 680, 310, 740),
+            ]
+        ),
+    }
+    metrics = {
+        ".notdef": (700, 80),
+        "space": (320, 0),
+        "fallback_base": (700, 100),
+        "empty_target": (620, 80),
+        "offcurve_extremum": (700, 100),
+        "tilde_top2_two_contours": (700, 100),
+        "bottom_tilde": (700, 100),
+        "up2_three_contours": (700, 100),
+    }
+    cmap = {
+        0x20: "space",
+        # Latin blue-string witnesses deliberately omit 0x006F, 0x004F, and
+        # 0x0030 so no standard-width candidate is present.
+        0x0041: "fallback_base",
+        0x0043: "fallback_base",
+        0x0045: "fallback_base",
+        0x0048: "offcurve_extremum",
+        0x004C: "fallback_base",
+        0x0055: "fallback_base",
+        0x005A: "fallback_base",
+        0x0063: "fallback_base",
+        0x0065: "fallback_base",
+        0x0068: "fallback_base",
+        0x006E: "fallback_base",
+        0x0072: "fallback_base",
+        0x0073: "fallback_base",
+        0x0075: "fallback_base",
+        0x1E4C: "tilde_top2_two_contours",
+        0x1E1B: "bottom_tilde",
+        0x01D7: "up2_three_contours",
+    }
+
+    font = FontBuilder(UNITS_PER_EM, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=820, descent=-220)
+    font.setupNameTable(
+        {
+            "familyName": "Autohint Latin Fallback Adjustments",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Autohint Latin Fallback Adjustments Regular",
+            "fullName": "Autohint Latin Fallback Adjustments Regular",
+            "psName": "AutohintLatinFallbackAdjustments-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=820,
+        sTypoDescender=-220,
+        usWinAscent=820,
+        usWinDescent=220,
+    )
+    font.setupPost()
+
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "batch159-latin-fallback-adjustments.ttf")
+
+
 def latin_vertical_cusp_glyph():
     return mixed_contour_glyph(
         [
@@ -1060,6 +2175,390 @@ def build_script_coverage() -> None:
     font.save(OUT_DIR / "script-coverage.ttf")
 
 
+def build_batch199_latin_vertical_cusp_merge() -> None:
+    """Build a sibling face for the public Latin segment-merge witness."""
+    source = OUT_DIR / "script-coverage.ttf"
+    destination = OUT_DIR / "batch199-latin-vertical-cusp-merge.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_vertical_cusp") != 80:
+        raise ValueError("script coverage glyph order no longer keeps Latin cusp at glyph 80")
+    font["glyf"].glyphs["latin_vertical_cusp"] = mixed_contour_glyph(
+        [
+            [
+                (100, 400, True),
+                (100, 500, True),
+                (100, 350, True),
+                (100, 0, False),
+                (100, 490, True),
+                (300, 490, True),
+                (300, 400, True),
+            ],
+        ]
+    )
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
+def build_batch200_latin_tilde_min_y() -> None:
+    """Build a sibling face for the public top-tilde minimum witness."""
+    source = OUT_DIR / "script-coverage.ttf"
+    destination = OUT_DIR / "batch200-latin-tilde-min-y.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_tilde_top") != 64:
+        raise ValueError("script coverage glyph order no longer keeps top tilde at glyph 64")
+    font["glyf"].glyphs["latin_tilde_top"] = mixed_contour_glyph(
+        [
+            (100, 0, 500, 500),
+            [
+                (140, 620, True),
+                (190, 540, False),
+                (240, 540, True),
+                (310, 540, False),
+                (370, 620, True),
+                (430, 560, True),
+            ],
+        ]
+    )
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
+def build_batch201_latin_tilde_prev_oncurve() -> None:
+    """Build a sibling face for the public top-tilde control-flag witness."""
+    source = OUT_DIR / "script-coverage.ttf"
+    destination = OUT_DIR / "batch201-latin-tilde-prev-oncurve.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_tilde_top") != 64:
+        raise ValueError("script coverage glyph order no longer keeps top tilde at glyph 64")
+    font["glyf"].glyphs["latin_tilde_top"] = mixed_contour_glyph(
+        [
+            (100, 0, 500, 500),
+            [
+                (140, 620, True),
+                (190, 580, True),
+                (240, 580, True),
+                (310, 580, False),
+                (370, 620, True),
+                (430, 540, True),
+            ],
+        ]
+    )
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
+def build_batch210_latin_tilde_next_oncurve() -> None:
+    """Build a sibling face for the public top-tilde next-control witness."""
+    source = OUT_DIR / "script-coverage.ttf"
+    destination = OUT_DIR / "batch210-latin-tilde-next-oncurve.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_tilde_top") != 64:
+        raise ValueError("script coverage glyph order no longer keeps top tilde at glyph 64")
+    font["glyf"].glyphs["latin_tilde_top"] = mixed_contour_glyph(
+        [
+            (100, 0, 500, 500),
+            [
+                (140, 620, True),
+                (190, 580, False),
+                (240, 580, True),
+                (310, 580, True),
+                (370, 620, True),
+                (430, 540, True),
+            ],
+        ]
+    )
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
+def build_batch211_latin_tilde_crossed_neighbors() -> None:
+    """Build a sibling face for the public asymmetric top-tilde witness."""
+    source = OUT_DIR / "script-coverage.ttf"
+    destination = OUT_DIR / "batch211-latin-tilde-crossed-neighbors.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_tilde_top") != 64:
+        raise ValueError("script coverage glyph order no longer keeps top tilde at glyph 64")
+    font["glyf"].glyphs["latin_tilde_top"] = mixed_contour_glyph(
+        [
+            (100, 0, 500, 500),
+            [
+                (140, 540, True),
+                (190, 580, False),
+                (240, 580, True),
+                (310, 580, False),
+                (370, 620, True),
+                (430, 560, True),
+            ],
+        ]
+    )
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
+def build_batch212_latin_thin_crossed_tilde() -> None:
+    """Build a sibling face for the public thin crossed-tilde witness."""
+    source = OUT_DIR / "script-coverage.ttf"
+    destination = OUT_DIR / "batch212-latin-thin-crossed-tilde.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_tilde_top") != 64:
+        raise ValueError("script coverage glyph order no longer keeps top tilde at glyph 64")
+    font["glyf"].glyphs["latin_tilde_top"] = mixed_contour_glyph(
+        [
+            (100, 0, 500, 500),
+            [
+                (140, 540, True),
+                (190, 545, False),
+                (240, 545, True),
+                (310, 545, False),
+                (370, 550, True),
+                (430, 543, True),
+            ],
+        ]
+    )
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
+def build_batch213_latin_bottom_tilde_prev_oncurve() -> None:
+    """Build a sibling face for the public bottom-tilde predecessor witness."""
+    source = OUT_DIR / "script-coverage.ttf"
+    destination = OUT_DIR / "batch213-latin-bottom-tilde-prev-oncurve.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_tilde_bottom") != 69:
+        raise ValueError("script coverage glyph order no longer keeps bottom tilde at glyph 69")
+    font["glyf"].glyphs["latin_tilde_bottom"] = mixed_contour_glyph(
+        [
+            [
+                (140, 0, True),
+                (190, 40, True),
+                (240, 40, True),
+                (310, 40, False),
+                (370, 80, True),
+                (430, 0, True),
+            ],
+            (100, 120, 500, 620),
+        ]
+    )
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
+def build_batch214_latin_bottom_tilde_next_oncurve() -> None:
+    """Build a sibling face for the public bottom-tilde successor witness."""
+    source = OUT_DIR / "script-coverage.ttf"
+    destination = OUT_DIR / "batch214-latin-bottom-tilde-next-oncurve.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_tilde_bottom") != 69:
+        raise ValueError("script coverage glyph order no longer keeps bottom tilde at glyph 69")
+    font["glyf"].glyphs["latin_tilde_bottom"] = mixed_contour_glyph(
+        [
+            [
+                (140, 0, True),
+                (190, 40, False),
+                (240, 40, True),
+                (310, 40, True),
+                (370, 80, True),
+                (430, 0, True),
+            ],
+            (100, 120, 500, 620),
+        ]
+    )
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
+def build_batch215_latin_bottom_tilde_crossed_neighbors() -> None:
+    """Build a sibling face for the public bottom-tilde crossed-neighbor witness."""
+    source = OUT_DIR / "script-coverage.ttf"
+    destination = OUT_DIR / "batch215-latin-bottom-tilde-crossed-neighbors.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_tilde_bottom") != 69:
+        raise ValueError("script coverage glyph order no longer keeps bottom tilde at glyph 69")
+    font["glyf"].glyphs["latin_tilde_bottom"] = mixed_contour_glyph(
+        [
+            [
+                (140, 0, True),
+                (190, 40, False),
+                (240, 40, True),
+                (310, 40, False),
+                (370, 80, True),
+                (430, 20, True),
+            ],
+            (100, 120, 500, 620),
+        ]
+    )
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
+def build_batch216_latin_thin_bottom_crossed_tilde() -> None:
+    """Build a sibling face for the public thin bottom-tilde threshold witness."""
+    source = OUT_DIR / "script-coverage.ttf"
+    destination = OUT_DIR / "batch216-latin-thin-bottom-crossed-tilde.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_tilde_bottom") != 69:
+        raise ValueError("script coverage glyph order no longer keeps bottom tilde at glyph 69")
+    font["glyf"].glyphs["latin_tilde_bottom"] = mixed_contour_glyph(
+        [
+            [
+                (140, 0, True),
+                (190, 5, False),
+                (240, 5, True),
+                (310, 5, False),
+                (370, 10, True),
+                (430, 3, True),
+            ],
+            (100, 120, 500, 620),
+        ]
+    )
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
+def build_batch202_latin_bottom_tilde_max_y() -> None:
+    """Build a sibling face for the public bottom-tilde maximum witness."""
+    source = OUT_DIR / "script-coverage.ttf"
+    destination = OUT_DIR / "batch202-latin-bottom-tilde-max-y.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_tilde_bottom") != 69:
+        raise ValueError("script coverage glyph order no longer keeps bottom tilde at glyph 69")
+    font["glyf"].glyphs["latin_tilde_bottom"] = mixed_contour_glyph(
+        [
+            [
+                (140, 0, True),
+                (190, 80, False),
+                (240, 80, True),
+                (310, 80, False),
+                (370, 0, True),
+                (430, 40, True),
+            ],
+            (100, 120, 500, 620),
+        ]
+    )
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
+def build_batch203_latin_small_ignore_lowest_tie() -> None:
+    """Build a sibling face for the public lowest-contour tie-break witness."""
+    source = OUT_DIR / "latin-small-ignore.ttf"
+    destination = OUT_DIR / "batch203-latin-small-ignore-lowest-tie.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_g_cedilla") != 7:
+        raise ValueError("Latin small-ignore glyph order no longer keeps cedilla at glyph 7")
+    font["glyf"].glyphs["latin_g_cedilla"] = mixed_contour_glyph(
+        [
+            (90, 0, 520, 560),
+            (160, -100, 260, -20),
+            (340, -100, 440, -60),
+        ]
+    )
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
+def build_batch217_latin_overlap_sentinel() -> None:
+    """Build valid glyphs for the public overlap-helper sentinel branch."""
+    source = OUT_DIR / "latin-small-ignore.ttf"
+    destination = OUT_DIR / "batch217-latin-overlap-sentinel.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_k_cedilla_dimensionless") != 8:
+        raise ValueError("Latin small-ignore glyph order no longer keeps the base face at glyph 8")
+    if len(glyph_order) != 9:
+        raise ValueError("Latin small-ignore base face unexpectedly changed glyph count")
+
+    glyph_i = "latin_i_overlap_sentinel"
+    glyph_u = "latin_u_diaeresis_overlap_sentinel"
+    font.setGlyphOrder(glyph_order + [glyph_i, glyph_u])
+    font["glyf"].glyphs[glyph_i] = mixed_contour_glyph(
+        [
+            [(120, 200, True), (480, 200, True)],
+            (220, 560, 380, 640),
+        ]
+    )
+    font["glyf"].glyphs[glyph_u] = mixed_contour_glyph(
+        [
+            [(120, 560, True), (200, 560, True)],
+            (180, 600, 360, 680),
+            (100, 500, 500, 720),
+        ]
+    )
+    font["hmtx"].metrics[glyph_i] = (620, 90)
+    font["hmtx"].metrics[glyph_u] = (620, 90)
+    for cmap_table in font["cmap"].tables:
+        if cmap_table.isUnicode():
+            cmap_table.cmap[0x0069] = glyph_i
+            cmap_table.cmap[0x01D5] = glyph_u
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
+def build_batch218_latin_bottom_distance_order() -> None:
+    """Build a sibling face for the public ordered bottom-distance witness."""
+    source = OUT_DIR / "script-coverage.ttf"
+    destination = OUT_DIR / "batch218-latin-bottom-distance-order.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_bottom_tall_accent") != 73:
+        raise ValueError("script coverage glyph order no longer keeps bottom accent at glyph 73")
+    font["glyf"].glyphs["latin_bottom_tall_accent"] = mixed_contour_glyph(
+        [
+            (100, -60, 500, 500),
+            (140, -20, 460, 420),
+            (200, -80, 400, 0),
+        ]
+    )
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
+def build_batch204_latin_top_bottom_accent_overlap() -> None:
+    """Build a sibling face for the public horizontal-overlap witness."""
+    source = OUT_DIR / "script-coverage.ttf"
+    destination = OUT_DIR / "batch204-latin-top-bottom-accent-overlap.ttf"
+    font = TTFont(source, recalcTimestamp=False)
+    glyph_order = font.getGlyphOrder()
+    if glyph_order.index("latin_top_bottom_accent") != 75:
+        raise ValueError("script coverage glyph order no longer keeps top-bottom accent at glyph 75")
+    font["glyf"].glyphs["latin_top_bottom_accent"] = mixed_contour_glyph(
+        [
+            (190, -90, 410, -30),
+            (100, 0, 500, 500),
+            (300, 550, 700, 610),
+        ]
+    )
+    font.recalcTimestamp = False
+    font.save(destination)
+    font.close()
+
+
 def build_latin_x_height_rejection() -> None:
     """Build a Latin face whose x-height rescale reaches C's rejection path."""
     glyph_order = [
@@ -1189,6 +2688,73 @@ def build_khmer_sub_top_overlap() -> None:
     font.font.recalcTimestamp = False
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     font.save(OUT_DIR / "khmer-sub-top-overlap.ttf")
+
+
+def build_batch194_khmer_sub_top_lowered() -> None:
+    """Build a valid Khmer face with a lowered, non-overlapping sub-top."""
+    glyph_order = [
+        ".notdef",
+        "space",
+        "standard",
+        "top_flat",
+        "top_round",
+        "sub_top",
+        "bottom",
+        "probe",
+    ]
+    glyphs = {
+        ".notdef": rectangle_glyph(60, 0, 500, 500),
+        "space": empty_glyph(),
+        "standard": rectangle_glyph(80, 0, 500, 500),
+        "top_flat": rectangle_glyph(80, 0, 500, 490),
+        "top_round": ring_glyph(80, 0, 500, 520, 160, 80, 420, 440),
+        "sub_top": rectangle_glyph(100, 0, 480, 250),
+        "bottom": rectangle_glyph(90, 0, 490, 450),
+        "probe": rectangle_glyph(70, 0, 530, 530),
+    }
+    metrics = {name: (600, 70) for name in glyph_order}
+    metrics["space"] = (300, 0)
+
+    cmap = {0x20: "space", 0x17E0: "standard", 0x1782: "probe"}
+    for codepoint in (0x1781, 0x1791, 0x1793):
+        cmap[codepoint] = "top_flat"
+    for codepoint in (0x17A7, 0x17A9, 0x17B6):
+        cmap[codepoint] = "top_round"
+    cmap[0x1780] = "sub_top"
+    for codepoint in (0x1783, 0x1785, 0x178B, 0x1794, 0x1798, 0x1799, 0x17B2):
+        cmap.setdefault(codepoint, "bottom")
+    for codepoint in (0x178F, 0x179A, 0x17A2, 0x1784, 0x179B):
+        cmap.setdefault(codepoint, "bottom")
+
+    font = FontBuilder(UNITS_PER_EM, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=600, descent=-100)
+    font.setupNameTable(
+        {
+            "familyName": "Autohint Khmer Sub Top Lowered",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Autohint Khmer Sub Top Lowered Regular",
+            "fullName": "Autohint Khmer Sub Top Lowered Regular",
+            "psName": "AutohintKhmerSubTopLowered-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=600,
+        sTypoDescender=-100,
+        usWinAscent=600,
+        usWinDescent=100,
+    )
+    font.setupPost()
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "batch194-khmer-sub-top-lowered.ttf")
 
 
 def build_arabic_standard_fallback() -> None:
@@ -1454,6 +3020,8 @@ def build_cjk_empty_standard() -> None:
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     font.save(OUT_DIR / "cjk-empty-standard.ttf")
+
+
 
 
 def build_latin_small_ignore() -> None:
@@ -2981,17 +4549,33 @@ def build_latin_low_upem() -> None:
 
 def main() -> None:
     build_script_coverage()
+    build_latin_small_ignore()
+    build_batch199_latin_vertical_cusp_merge()
+    build_batch200_latin_tilde_min_y()
+    build_batch201_latin_tilde_prev_oncurve()
+    build_batch210_latin_tilde_next_oncurve()
+    build_batch211_latin_tilde_crossed_neighbors()
+    build_batch212_latin_thin_crossed_tilde()
+    build_batch213_latin_bottom_tilde_prev_oncurve()
+    build_batch214_latin_bottom_tilde_next_oncurve()
+    build_batch215_latin_bottom_tilde_crossed_neighbors()
+    build_batch216_latin_thin_bottom_crossed_tilde()
+    build_batch202_latin_bottom_tilde_max_y()
+    build_batch203_latin_small_ignore_lowest_tie()
+    build_batch217_latin_overlap_sentinel()
+    build_batch218_latin_bottom_distance_order()
+    build_batch204_latin_top_bottom_accent_overlap()
     shutil.copyfile(
         OUT_DIR / "script-coverage.ttf",
         OUT_DIR / "mixed-script-map.ttf",
     )
     build_latin_x_height_rejection()
     build_khmer_sub_top_overlap()
+    build_batch194_khmer_sub_top_lowered()
     build_arabic_standard_fallback()
     build_arabic_neutral_first()
     build_arabic_neutral_round_skip()
     build_cjk_empty_standard()
-    build_latin_small_ignore()
     build_latin_remaining_topology()
     build_latin_width_clusters()
     build_latin_many_widths()
@@ -3015,6 +4599,17 @@ def main() -> None:
     build_latin_blue_delta()
     build_latin_blue_overlap()
     build_latin_low_upem()
+    build_batch123_hebrew_long_blue_remaining()
+    build_batch126_normal_scale_branches()
+    build_batch127_cjk_edge_link_predicates()
+    build_batch145_cjk_edge_interpolation_witnesses()
+    build_batch152_latin_adjustment_branches()
+    build_batch153_latin_blue_empty_branches()
+    build_batch159_latin_fallback_adjustment_branches()
+    build_batch190_hebrew_late_oncurve()
+    build_batch191_hebrew_offcurve_apex()
+    build_batch196_hebrew_near_top_span()
+    build_batch197_hebrew_near_top_span_mirror()
 
 
 if __name__ == "__main__":

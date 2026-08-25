@@ -5,6 +5,7 @@
     "supported_render_modes",
     "invalid_render_mode",
     "matrix_render",
+    "batch182_valid_sbit_zero_width_positive_rows_sdf",
     "error_null_or_unowned_slot",
     "error_unloaded_or_unsupported_slot_format"
   ],
@@ -3490,6 +3491,837 @@
             "rows[*].metrics"
           ]
         }
+      }
+    },
+    {
+      "case_id": "freetype.FT_Render_Glyph.batch182_valid_sbit_zero_width_positive_rows_sdf",
+      "subject": "freetype.FT_Render_Glyph",
+      "case": "batch182_valid_sbit_zero_width_positive_rows_sdf",
+      "covers_manifest_cases": [
+        "batch182_valid_sbit_zero_width_positive_rows_sdf"
+      ],
+      "operation": "render_glyph",
+      "schema": "glyph_slot",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "batch182-sbit-sdf-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-001"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-002",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-002"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-003",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 3,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-003"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-004",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 4,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-004"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-005",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 5,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-005"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-006",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 6,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-006"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-007",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 7,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-007"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-008",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 8,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-008"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-009",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 9,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-009"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-010",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 10,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-010"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-011",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 11,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-011"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-012",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 12,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-012"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-013",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 13,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-013"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-014",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 14,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-014"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-015",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 15,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-015"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-016",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 16,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-016"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-017",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 17,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-017"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-018",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 18,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-018"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-019",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 19,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-019"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-020",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 20,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-020"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-021",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 21,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-021"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-022",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 22,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-022"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-023",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 23,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-023"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-024",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 24,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-024"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-025",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 25,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-025"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-026",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 26,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-026"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-027",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 27,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-027"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-028",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 28,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-028"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-029",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 29,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-029"
+            ]
+          },
+          {
+            "id": "batch182-sbit-sdf-030",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 30,
+              "load_flags": [
+                "FT_LOAD_SBITS_ONLY"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "src/render.rs:617-618:batch182-sbit-sdf-030"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-render",
+        "coverage:real-parity",
+        "coverage:batch182",
+        "input:valid_public_sbit",
+        "font_variability:input/fixtures/assets/fonts"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "slot_bitmap": [
+            "format",
+            "bitmap.width",
+            "bitmap.rows",
+            "bitmap.pitch",
+            "bitmap.pixel_mode",
+            "bitmap_left",
+            "bitmap_top",
+            "buffer_bytes"
+          ]
+        },
+        "compare": {
+          "mode": "bytes",
+          "paths": [
+            "outputs[*].status",
+            "outputs[*].slot_bitmap"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/sdf/ftsdfrend.c:511-513",
+          "src/render.rs:617-618"
+        ]
       }
     }
   ]

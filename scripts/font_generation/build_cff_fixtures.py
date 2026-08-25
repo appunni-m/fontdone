@@ -860,12 +860,261 @@ def write_pure_cff_cubic() -> None:
     build_cubic_cff(out, include_append_only_glyphs=False)
 
 
+def write_pure_cff_below_baseline_no_vmtx() -> None:
+    """Build a valid CFF face whose glyph bbox lies entirely below baseline."""
+    out = OUT_DIR / "pure-cff-below-baseline-no-vmtx.otf"
+    names = {
+        "familyName": "Pure CFF Below Baseline",
+        "styleName": "Regular",
+        "uniqueFontIdentifier": "Pure CFF Below Baseline Regular",
+        "fullName": "Pure CFF Below Baseline Regular",
+        "psName": "PureCFFBelowBaseline-Regular",
+    }
+    glyph_order = [".notdef", "p"]
+    builder = FontBuilder(UNITS_PER_EM, isTTF=False)
+    builder.setupGlyphOrder(glyph_order)
+    builder.setupCharacterMap({0x0070: "p"})
+    builder.setupHorizontalMetrics({".notdef": (600, 0), "p": (600, 0)})
+    builder.setupHorizontalHeader(ascent=800, descent=-400)
+    builder.setupNameTable(names)
+    builder.setupOS2(
+        sTypoAscender=800,
+        sTypoDescender=-400,
+        usWinAscent=800,
+        usWinDescent=400,
+    )
+    builder.setupPost()
+    pen = T2CharStringPen(600, None)
+    pen.moveTo((80, -360))
+    pen.lineTo((520, -360))
+    pen.lineTo((520, -120))
+    pen.lineTo((80, -120))
+    pen.closePath()
+    builder.setupCFF(
+        names["psName"],
+        {
+            "FullName": names["fullName"],
+            "FamilyName": names["familyName"],
+            "Weight": names["styleName"],
+        },
+        {".notdef": t2_charstring(), "p": pen.getCharString()},
+        {},
+    )
+    builder.setupMaxp()
+    builder.font["head"].created = FIXED_HEAD_TIME
+    builder.font["head"].modified = FIXED_HEAD_TIME
+    builder.font.recalcTimestamp = False
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    builder.save(out)
+
+
+def write_pure_cff_baseline_touch_no_vmtx() -> None:
+    """Build a valid CFF face whose glyph top edge touches the baseline."""
+    out = OUT_DIR / "pure-cff-baseline-touch-no-vmtx.otf"
+    names = {
+        "familyName": "Pure CFF Baseline Touch",
+        "styleName": "Regular",
+        "uniqueFontIdentifier": "Pure CFF Baseline Touch Regular",
+        "fullName": "Pure CFF Baseline Touch Regular",
+        "psName": "PureCFFBaselineTouch-Regular",
+    }
+    glyph_order = [".notdef", "p"]
+    builder = FontBuilder(UNITS_PER_EM, isTTF=False)
+    builder.setupGlyphOrder(glyph_order)
+    builder.setupCharacterMap({0x0070: "p"})
+    builder.setupHorizontalMetrics({".notdef": (600, 0), "p": (600, 0)})
+    builder.setupHorizontalHeader(ascent=800, descent=-400)
+    builder.setupNameTable(names)
+    builder.setupOS2(
+        sTypoAscender=800,
+        sTypoDescender=-400,
+        usWinAscent=800,
+        usWinDescent=400,
+    )
+    builder.setupPost()
+    pen = T2CharStringPen(600, None)
+    pen.moveTo((80, -360))
+    pen.lineTo((520, -360))
+    pen.lineTo((520, 0))
+    pen.lineTo((80, 0))
+    pen.closePath()
+    builder.setupCFF(
+        names["psName"],
+        {
+            "FullName": names["fullName"],
+            "FamilyName": names["familyName"],
+            "Weight": names["styleName"],
+        },
+        {".notdef": t2_charstring(), "p": pen.getCharString()},
+        {},
+    )
+    builder.setupMaxp()
+    builder.font["head"].created = FIXED_HEAD_TIME
+    builder.font["head"].modified = FIXED_HEAD_TIME
+    builder.font.recalcTimestamp = False
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    builder.save(out)
+
+
 def write_pure_cff_cubic_last_delta() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / "pure-cff-cubic-last-delta.otf"
     if out.exists() or out.is_symlink():
         out.unlink()
     build_cubic_cff(out)
+
+
+def write_pure_cff_bbox_extrema() -> None:
+    """Build valid cubic contours that exercise public exact-bbox extrema."""
+    out = OUT_DIR / "pure-cff-bbox-extrema.otf"
+    glyph_names = [
+        ".notdef",
+        "bbox_y_max",
+        "bbox_y_min",
+        "bbox_x_max",
+        "bbox_x_min",
+        "bbox_xy_max",
+        "bbox_xy_min",
+    ]
+    contours = {
+        "bbox_y_max": ((100, 100), (200, 700), (400, 700), (500, 100)),
+        "bbox_y_min": ((100, 500), (200, -100), (400, -100), (500, 500)),
+        "bbox_x_max": ((100, 100), (700, 200), (700, 400), (100, 500)),
+        "bbox_x_min": ((500, 100), (-100, 200), (-100, 400), (500, 500)),
+        "bbox_xy_max": ((100, 100), (700, 700), (700, 500), (300, 300)),
+        "bbox_xy_min": ((700, 700), (100, 100), (100, 300), (500, 500)),
+    }
+
+    def cubic_charstring(points: tuple[tuple[int, int], ...]) -> T2CharString:
+        pen = T2CharStringPen(900, None)
+        pen.moveTo(points[0])
+        pen.curveTo(*points[1:])
+        pen.closePath()
+        return pen.getCharString()
+
+    names = {
+        "familyName": "Pure CFF BBox Extrema",
+        "styleName": "Regular",
+        "uniqueFontIdentifier": "Pure CFF BBox Extrema Regular",
+        "fullName": "Pure CFF BBox Extrema Regular",
+        "psName": "PureCFFBBoxExtrema-Regular",
+    }
+    builder = FontBuilder(UNITS_PER_EM, isTTF=False)
+    builder.setupGlyphOrder(glyph_names)
+    builder.setupCharacterMap(
+        {0x0100 + index: name for index, name in enumerate(glyph_names[1:])}
+    )
+    builder.setupHorizontalMetrics(
+        {name: (900, 100 if name != ".notdef" else 0) for name in glyph_names}
+    )
+    builder.setupHorizontalHeader(ascent=800, descent=-200)
+    builder.setupNameTable(names)
+    builder.setupOS2(
+        sTypoAscender=800,
+        sTypoDescender=-200,
+        usWinAscent=800,
+        usWinDescent=200,
+    )
+    builder.setupPost()
+    builder.setupCFF(
+        names["psName"],
+        {
+            "FullName": names["fullName"],
+            "FamilyName": names["familyName"],
+            "Weight": names["styleName"],
+        },
+        {
+            ".notdef": t2_charstring(),
+            **{name: cubic_charstring(points) for name, points in contours.items()},
+        },
+        {},
+    )
+    builder.setupMaxp()
+    builder.font["head"].created = FIXED_HEAD_TIME
+    builder.font["head"].modified = FIXED_HEAD_TIME
+    builder.font.recalcTimestamp = False
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    builder.save(out)
+
+
+def write_pure_cff_cubic_peak_shifts() -> None:
+    """Build valid large-coordinate cubics for bbox peak shift regimes."""
+    out = OUT_DIR / "pure-cff-cubic-peak-shifts.otf"
+    glyph_names = [
+        ".notdef",
+        "peak_y_max",
+        "peak_y_min",
+        "peak_x_max",
+        "peak_x_min",
+        "peak_xy_max",
+        "peak_xy_min",
+    ]
+    contours = {
+        "peak_y_max": ((0, 0), (5000, 20000), (15000, 20000), (20000, 0)),
+        "peak_y_min": ((0, 0), (5000, -20000), (15000, -20000), (20000, 0)),
+        "peak_x_max": ((0, 0), (20000, 5000), (20000, 15000), (0, 20000)),
+        "peak_x_min": ((0, 0), (-20000, 5000), (-20000, 15000), (0, 20000)),
+        "peak_xy_max": ((0, 0), (20000, 16000), (12000, 20000), (0, 0)),
+        "peak_xy_min": ((0, 0), (-20000, -16000), (-12000, -20000), (0, 0)),
+    }
+
+    def cubic_charstring(points: tuple[tuple[int, int], ...]) -> T2CharString:
+        pen = T2CharStringPen(16, None)
+        pen.moveTo(points[0])
+        pen.curveTo(*points[1:])
+        pen.closePath()
+        return pen.getCharString()
+
+    names = {
+        "familyName": "Pure CFF Cubic Peak Shifts",
+        "styleName": "Regular",
+        "uniqueFontIdentifier": "Pure CFF Cubic Peak Shifts Regular",
+        "fullName": "Pure CFF Cubic Peak Shifts Regular",
+        "psName": "PureCFFCubicPeakShifts-Regular",
+    }
+    units_per_em = 16
+    builder = FontBuilder(units_per_em, isTTF=False)
+    builder.setupGlyphOrder(glyph_names)
+    builder.setupCharacterMap(
+        {0x0100 + index: name for index, name in enumerate(glyph_names[1:])}
+    )
+    builder.setupHorizontalMetrics(
+        {name: (16, 0) for name in glyph_names}
+    )
+    builder.setupHorizontalHeader(ascent=13, descent=-3)
+    builder.setupNameTable(names)
+    builder.setupOS2(
+        sTypoAscender=13,
+        sTypoDescender=-3,
+        usWinAscent=13,
+        usWinDescent=3,
+    )
+    builder.setupPost()
+    builder.setupCFF(
+        names["psName"],
+        {
+            "FullName": names["fullName"],
+            "FamilyName": names["familyName"],
+            "Weight": names["styleName"],
+        },
+        {
+            ".notdef": t2_charstring(),
+            **{name: cubic_charstring(points) for name, points in contours.items()},
+        },
+        {},
+    )
+    builder.setupMaxp()
+    builder.font["head"].created = FIXED_HEAD_TIME
+    builder.font["head"].modified = FIXED_HEAD_TIME
+    builder.font.recalcTimestamp = False
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    builder.save(out)
+
+
 
 
 def write_cid_cff_format2() -> None:
@@ -1790,7 +2039,11 @@ def main() -> None:
     build_cff(INPUT_OUT_DIR / "fontinfo-populated.otf")
     build_cff2(CFF2_OUT_DIR / "fontinfo-invalid-argument.otf")
     write_pure_cff_cubic()
+    write_pure_cff_below_baseline_no_vmtx()
+    write_pure_cff_baseline_touch_no_vmtx()
     write_pure_cff_cubic_last_delta()
+    write_pure_cff_bbox_extrema()
+    write_pure_cff_cubic_peak_shifts()
     write_cid_cff_format2()
     write_cid_cff_charset_variants()
     write_cid_cff_single_glyph()

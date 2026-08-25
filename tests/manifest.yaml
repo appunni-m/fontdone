@@ -1270,6 +1270,8 @@ subjects:
       # needs-input: operation FT_Attach_Stream; fixture pair Type 1 PFA/PFB plus matching AFM bytes; params FT_Open_Args with FT_OPEN_MEMORY and the AFM memory buffer; expected output shape FT_Error plus before/after FT_Get_Kerning or track-kerning values; comparison rule exact C error code and exact 26.6 kerning vector parity.
       - id: success_attach_auxiliary_stream
         description: Attaching a supported auxiliary metrics stream to a live face returns the same FreeType error code and mutates later face queries like the C oracle.
+      - id: batch175_valid_afm_kerning_at_or_above_25ppem
+        description: Thirty valid Type 1 AFM attachment queries at 25 through 54 ppem exercise the public kerning scaler's at-or-above-25-ppem branches through exact C/Rust parity.
       - id: error_null_face
         description: Null face handle returns the pinned C FreeType error classification.
       - id: error_null_open_args
@@ -1653,6 +1655,10 @@ subjects:
         description: Supported SFNT fixtures and Type 1 faces without track kerning return the same no-data error/value behavior as C.
       - id: error_null_face_or_output
         description: Null face and null akerning pointers return the pinned C error and write behavior.
+      - id: batch173_valid_below_minimum_clamp
+        description: Thirty valid Type 1 AFM track-kerning queries use positive point sizes below the degree-1 minimum and exercise the public lower-bound clamp through exact C/Rust parity.
+      - id: batch174_valid_above_maximum_clamp
+        description: Thirty valid Type 1 AFM track-kerning queries use positive point sizes above the degree-1 maximum and exercise the public upper-bound clamp through exact C/Rust parity.
 
   - id: freetype.FT_Get_Transform
     kind: function
@@ -1745,6 +1751,80 @@ subjects:
       - id: matrix_load
         description: Loads glyph-index-selected glyphs from the broad matrix fixture corpus.
         # needs-input: concrete fixture input must be added before this case can declare font_variability coverage.
+      - id: batch122_valid_idef_vm_branches
+        description: Thirty valid public glyph loads exercise legal IDEF definitions, predicate outcomes, MIN comparison, negative SCANTYPE handling, and SCANCTRL thresholds across five sizes.
+      - id: batch123_valid_hebrew_long_blue_remaining_branches
+        description: Thirty valid Hebrew glyph loads use six mirrored and contour-topology variants across five ppem sizes to exercise remaining long-blue scan branches in the public auto-hinter.
+      - id: batch124_valid_cff_bbox_extrema
+        description: Thirty valid CFF glyph loads use six cubic-extrema contours across five ppem sizes to exercise the public exact-bbox cubic path.
+      - id: batch125_valid_cff_cubic_peak_shift_regimes
+        description: Thirty valid CFF glyph loads use six large-coordinate cubic contours across five ppem sizes to exercise public cubic-peak scaling shift regimes.
+      - id: batch126_valid_autohint_normal_scale_branches
+        description: Thirty valid Latin and Han glyph loads use six normal-scale contour topologies across five ppem sizes to exercise remaining auto-hinter measurement, stem, and CJK link branches.
+      - id: batch127_valid_cjk_edge_link_predicates
+        description: Thirty valid Han glyph loads use six edge-link contour topologies across five normal-scale hint targets to exercise reachable CJK serif, link, symmetry, and interpolation predicates.
+      - id: batch144_valid_nested_use_my_metrics_composites
+        description: Thirty valid Ubuntu Sans variable-font composite glyph loads select nested USE_MY_METRICS components across six glyphs and five ppem sizes to exercise the public nested vertical-phantom route.
+      - id: batch145_valid_cjk_edge_interpolation_witnesses
+        description: Thirty valid Han glyph loads use five linked-edge, five equal-position, and five forward-blue contour witnesses across legal force-autohint targets to exercise reachable CJK edge interpolation predicates.
+      - id: batch152_valid_latin_adjustment_branches
+        description: Thirty valid Latin glyph loads use six unique adjustment-database flag combinations across five legal force-autohint targets to exercise reachable capital and small blue-zone ignore branches.
+      - id: batch153_valid_latin_blue_empty_branches
+        description: Thirty valid Latin glyph loads use six target outline topologies across five legal force-autohint targets while the face-global blue strings resolve to valid single-point contours, exercising the no-extremum branches of the Latin metrics scan.
+      - id: batch159_valid_latin_fallback_adjustment_branches
+        description: Thirty valid Latin glyph loads use six public fallback, off-curve, tilde, and vertical-adjustment topologies across five legal force-autohint targets to exercise reachable Latin metrics and adjustment branches.
+      - id: batch190_valid_hebrew_late_oncurve
+        description: Thirty valid Hebrew glyph loads use one late-on-curve long-blue topology across six ppem sizes and five legal force-autohint targets to exercise the public long-blue replacement extension branch.
+      - id: batch191_valid_hebrew_offcurve_apex
+        description: Thirty valid Hebrew glyph loads use one off-curve apex topology across six ppem sizes and five legal force-autohint targets to exercise the public blue-segment on-curve fallback branch.
+      - id: batch193_valid_khmer_sub_top_nonoverlap
+        description: Thirty valid Khmer glyph loads use the maintained sub-top overlap face at six larger ppem sizes and five legal force-autohint targets to exercise the public non-overlapping sub-top blue-zone branch.
+      - id: batch194_valid_khmer_sub_top_lowered
+        description: Thirty valid Khmer glyph loads use a maintained sibling face with a lowered sub-top zone across six ppem sizes and five legal force-autohint targets to exercise the remaining primary-zone comparison branch.
+      - id: batch196_valid_hebrew_near_top_span
+        description: Thirty valid Hebrew glyph loads use a short top-blue extremum whose near-top walk spans all but one contour point across six ppem sizes and five legal force-autohint targets to exercise the public long-blue contour-span guard.
+      - id: batch197_valid_hebrew_near_top_span_mirror
+        description: Thirty valid Hebrew glyph loads use the horizontal mirror of the near-top span witness across six ppem sizes and five legal force-autohint targets to exercise the opposite public segment-merge extension branch.
+      - id: batch199_valid_latin_vertical_cusp_merge
+        description: Thirty valid Latin glyph loads use a sibling vertical-cusp contour across six ppem sizes and five legal force-autohint targets to exercise the public segment-merge flat-threshold false arm.
+      - id: batch200_valid_latin_tilde_min_y
+        description: Thirty valid Latin glyph loads use a sibling top-tilde contour across six ppem sizes and five legal force-autohint targets to exercise the public minimum-y equality branch.
+      - id: batch201_valid_latin_tilde_prev_oncurve
+        description: Thirty valid Latin glyph loads use a sibling top-tilde contour with an on-curve predecessor across six ppem sizes and five legal force-autohint targets to exercise the public neighboring-control flag branch.
+      - id: batch202_valid_latin_bottom_tilde_max_y
+        description: Thirty valid Latin glyph loads use a sibling bottom-tilde contour across six ppem sizes and five legal force-autohint targets to exercise the public maximum-y equality branch.
+      - id: batch203_valid_latin_small_ignore_lowest_tie
+        description: Thirty valid Latin glyph loads use a sibling small-ignore face across six ppem sizes and five legal force-autohint targets to exercise the public lowest-contour equal-minimum tie-break.
+      - id: batch204_valid_latin_top_bottom_accent_overlap
+        description: Thirty valid Latin glyph loads use a sibling top-and-bottom accent contour across six ppem sizes and five legal force-autohint targets to exercise the public horizontal-overlap arm.
+      - id: batch205_valid_gvar_upper_end
+        description: Thirty valid variable-font glyph loads use named instance 6 of the maintained scalar-region gvar face across six ppem sizes and five legal force-autohint targets to exercise the normalized-coordinate upper-end arm.
+      - id: batch206_valid_cff_below_baseline_no_vmtx
+        description: Thirty valid CFF glyph loads use a below-baseline face without vmtx across six ppem sizes and five legal force-autohint targets with vertical layout to exercise synthesized vertical metrics.
+      - id: batch207_valid_cff_baseline_touch_no_vmtx
+        description: Thirty valid CFF glyph loads use a baseline-touching face without vmtx across twelve normal and six-each mono, LCD, and LCD-v targets with vertical layout to exercise the synthesized vertical-metrics baseline arm.
+      - id: batch208_valid_cff_vmtx_native_vertical_layout
+        description: Thirty valid native CFF glyph loads use the maintained pure-cff-cubic-vmtx face across six ppem sizes and five legal target modes with vertical layout and no auto-hinting to exercise present-vmtx vertical bearings.
+      - id: batch209_valid_type1_setcurrentpoint_after_line
+        description: Thirty valid Type 1 glyph loads use a post-contour setcurrentpoint CharString across six ppem sizes and five legal public load modes to exercise the false pending-move parser arm.
+      - id: batch210_valid_latin_tilde_next_oncurve
+        description: Thirty valid Latin glyph loads use a sibling top-tilde contour across six ppem sizes and five legal force-autohint target modes to exercise the false next-control neighbor predicate.
+      - id: batch211_valid_latin_tilde_crossed_neighbors
+        description: Thirty valid Latin glyph loads use a sibling crossed-neighbor top-tilde contour across six ppem sizes and five legal force-autohint target modes to exercise the asymmetric measurement arm.
+      - id: batch212_valid_latin_thin_crossed_tilde
+        description: Thirty valid Latin glyph loads use a sibling thin crossed top-tilde contour across six ppem sizes and five legal force-autohint target modes to exercise the zero-measurement threshold guard.
+      - id: batch213_valid_latin_bottom_tilde_prev_oncurve
+        description: Thirty valid Latin glyph loads use a sibling bottom-tilde contour with an on-curve predecessor across six ppem sizes and five legal force-autohint target modes to exercise the previous-control false arm.
+      - id: batch214_valid_latin_bottom_tilde_next_oncurve
+        description: Thirty valid Latin glyph loads use a sibling bottom-tilde contour with an on-curve successor across six ppem sizes and five legal force-autohint target modes to exercise the next-control false arm.
+      - id: batch215_valid_latin_bottom_tilde_crossed_neighbors
+        description: Thirty valid Latin glyph loads use a sibling crossed-neighbor bottom-tilde contour across six ppem sizes and five legal force-autohint target modes to exercise the ordered-neighbor false arms.
+      - id: batch216_valid_latin_thin_bottom_crossed_tilde
+        description: Thirty valid Latin glyph loads use a sibling thin crossed bottom-tilde contour across six ppem sizes and five legal force-autohint target modes to exercise the zero-measurement threshold guard.
+      - id: batch217_valid_latin_overlap_sentinel
+        description: Thirty valid Latin glyph loads use a sibling overlap-sentinel face with two legal glyphs across fifteen ppem and force-autohint target combinations to exercise the dimensionless-contour sentinel branch.
+      - id: batch218_valid_latin_bottom_distance_order
+        description: Thirty valid Latin glyph loads use a sibling three-contour bottom-distance face across ten ppem sizes and three legal force-autohint target modes to exercise the ordered-distance false arm.
       # needs-input: operation FT_Load_Glyph; fixture asset input/fonts/DejaVuSans.ttf plus fonts with composite glyphs, vertical metrics, embedded bitmaps, and malformed/out-of-range controls; params glyph indices 0, 36, composite glyph, out-of-range glyph, sizes 10/20, and load_flags default/no_hinting/force_autohint/no_scale/no_recurse/render/target modes/vertical/linear_design/sbits_only; expected output shape FT_Error plus full FT_GlyphSlotRec public fields, outline/subglyph/bitmap data, and slot mutation; comparison rule exact C error, metrics, advance, linear advances, lsb/rsb deltas, format, outline points/tags, bitmap fields/bytes, and subglyph fields when applicable.
       - id: render_and_target_modes
         description: FT_LOAD_RENDER and FT_LOAD_TARGET_* combinations produce the same bitmap pixel mode, dimensions, bearings, pitch, and bytes as C.
@@ -1901,6 +1981,8 @@ subjects:
       - id: matrix_render
         description: Renders glyphs from the broad matrix fixture corpus for tracked fonts and sizes.
         # needs-input: concrete fixture input must be added before this case can declare font_variability coverage.
+      - id: batch182_valid_sbit_zero_width_positive_rows_sdf
+        description: Thirty valid embedded gray SBit glyphs with positive row counts and zero bitmap pitch pass through FT_Render_Glyph SDF's empty-bitmap short circuit with exact pinned-C parity.
       - id: error_null_or_unowned_slot
         description: Null glyph slot, slot without face, or foreign slot handle returns the pinned C invalid-argument classification.
       - id: error_unloaded_or_unsupported_slot_format
@@ -2425,6 +2507,8 @@ subjects:
       # needs-input: operation FT_Open_Face with FT_OPEN_PARAMS and FT_Face_Properties where implemented; fixture assets 'sbix' font for FT_PARAM_TAG_IGNORE_SBIX and a face/property case such as LCD filter weights, random seed, or TrueType interpreter version if exposed by the pinned build; params FT_Parameter arrays with known tags, unknown tags, NULL data where accepted, non-NULL data, and num_params zero/nonzero; expected output shape FT_Error plus observable face flags/properties; comparison rule exact tag numeric handling, exact data pointer interpretation/lifetime, exact C error-code parity, and exact ignore/accept/reject behavior for known and unknown parameter tags.
       - id: tag_data_parameters_match_c_behavior
         description: APIs that consume FT_Parameter arrays preserve C tag dispatch, data pointer interpretation, and error behavior.
+      - id: batch164_valid_ignore_sbix_non_sfnt_bitmap_faces
+        description: Thirty valid PCF, BDF, and Windows FNT bitmap faces accept the public FT_PARAM_TAG_IGNORE_SBIX no-effect parameter without an SFNT sbix table, exercising the reachable non-SBIX short-circuit through exact C/Rust/C-ABI/WASM parity.
   - id: freetype.FT_SizeRec
     kind: record
     symbol: FT_SizeRec
@@ -2836,6 +2920,8 @@ subjects:
         description: Null library/bitmap, unsupported pixel modes, negative strengths, and strength overflows return exact C errors.
       - id: ownership_reallocates_bitmap_buffer
         description: Successful embolden reallocates buffer and updates rows, width, pitch, and buffer ownership exactly like C.
+      - id: batch170_gray_x_only_forced_reallocate
+        description: Thirty valid gray bitmaps with widths 1 through 15 and both pitch signs force the y-zero reallocation path when a three-pixel x-strength makes the new pitch larger than the original pitch.
     # needs-input: operation=FT_Bitmap_Embolden; fixture_asset=synthetic MONO/GRAY2/GRAY4/GRAY bitmaps plus rendered glyph bitmaps; params xStrength/yStrength values 0, 32, 64, 96, 192, 512, 704, MONO over-limit, exact-byte/full-pitch boundaries, positive/negative pitch, null library/bitmap, unsupported mode; output shape=FT_Error plus mutated FT_Bitmap fields and buffer bytes with allocation/free events; comparison=exact C oracle error, dimensions, pitch, pixel mode, bytes, and preservation behavior.
 
   - id: ftbitmap.FT_Bitmap_Init
@@ -8683,7 +8769,10 @@ subjects:
         description: Thirty valid two-axis active-gvar design-coordinate glyph outputs cover ordinary and USE_MY_METRICS composites, a no-record glyph, an all-points record, and five load/render modes.
       - id: batch79_native_variable_routing
         description: Thirty valid two-axis active-variable composite outputs use native TrueType loading on gvar-present and fvar-only twins with USE_MY_METRICS glyphs at three ppem sizes.
-    # needs-input: operation=FT_Set_Var_Design_Coordinates followed by coordinate getters and glyph load/render; fixture_asset=variable fonts with wght/wdth/opsz axes, avar mapping, gvar glyph deltas, and HVAR/VVAR/MVAR metric deltas; params={design_coords FT_Fixed array, num_coords, coords_null, glyph_index, size, load_flags}; output shape={FT_Error, design coords, blend coords, face_flags variation bit, face/size metrics, glyph metrics, cbox/bbox, bitmap bytes}; comparison=exact C oracle error code, coordinate normalization, variation flag, metrics, geometry, and render bytes.
+      - id: batch120_native_mixed_composite_args
+        description: Thirty valid two-axis native-variable composite outputs use a mixed XY and point-attached component pair, including a word-sized point attachment and five public load/render routes.
+      - id: batch135_native_gvar_composite_xy
+        description: Thirty valid two-axis native-variable composite outputs exercise gvar XY component variation deltas across six public glyph composites, five design-coordinate scalars, and five ppem sizes.
 
   - id: ftmm.FT_MM_Axis
     kind: record
@@ -9797,6 +9886,8 @@ subjects:
         description: Null outlines return Invalid_Outline, and non-empty outlines whose orientation is NONE return Invalid_Argument.
       - id: mcp_gap_matrix
         description: A focused validation case exercises out-of-range point conversion and strength conversion fallback on an empty outline.
+      - id: batch167_valid_empty_negative_strength_fallback
+        description: Thirty valid empty outlines use distinct public FT_Pos strengths below i32::MIN to exercise the negative strength conversion fallback through exact parity.
     # needs-input: operation=FT_Outline_Embolden and FT_Outline_EmboldenXY; fixture_asset=TrueType and CFF outline glyphs plus synthetic zero-area outline; params={glyph_index, size, load_flags, strength}; expected output shape={FT_Error, mutated_points, cbox, orientation_before}; comparison=exact C oracle error code and 26.6 point/cbox values.
 
   - id: ftoutln.FT_Outline_EmboldenXY
@@ -9878,7 +9969,11 @@ subjects:
     description: Public advanced outline renderer using FT_Raster_Params and the current outline renderer.
     cases:
       - id: bitmap_render_matches_c
-        description: Non-direct rendering into a target bitmap matches C for pixel mode, pitch, dimensions, and bytes.
+        description: Non-direct rendering into a target bitmap matches C for pixel mode, pitch, dimensions, and bytes, including thirty valid monochrome FT_OUTLINE_SINGLE_PASS inputs.
+      - id: batch165_valid_direct_zero_width_clip
+        description: Thirty distinct valid synthetic public outlines use AA plus DIRECT and CLIP with a zero-width Gray target and an out-of-box clip, matching exact C/Rust/C-ABI/WASM span observations.
+      - id: batch178_valid_direct_zero_height_clip
+        description: Thirty distinct valid synthetic public outlines use AA plus DIRECT and CLIP with a zero-height Gray target and an out-of-box clip, exercising the public smooth rasterizer height guard through exact C/Rust/C-ABI/WASM span observations.
       - id: direct_render_clip_and_spans
         description: DIRECT rendering overwrites params.source with the outline and presets clip_box from cbox unless FT_RASTER_FLAG_CLIP is set, then emits C-equivalent spans.
       - id: direct_render_without_gray_spans
@@ -10110,6 +10205,8 @@ subjects:
         description: For a PFR face with a metrics service, C fills requested output pointers from the PFR service and returns success.
       - id: non_pfr_outputs_valid_values_and_unknown_format
         description: For non-PFR faces, C fills non-null outputs from face units_per_EM and size metrics scales, then returns Unknown_File_Format.
+      - id: batch180_valid_probe_face_identity_scale
+        description: Thirty valid FT_Get_PFR_Metrics probe-face calls use negative public face indices across a maintained PFR font and valid non-PFR SFNT, with all 15 non-empty output pointer subsets; probe faces retain no active size so identity scales and exact PFR/Unknown_File_Format outputs are compared.
       - id: optional_outputs_and_null_face
         description: Any output pointer can be NULL, while a NULL face returns Invalid_Face_Handle without writing outputs.
     # needs-input: operation=FT_Get_PFR_Metrics before and after FT_Set_Char_Size; fixture_asset=PFR font fixture plus tests/fixtures/input/fonts/DejaVuSans.ttf control; params={face_pointer_class, output_pointer_mask, size}; expected output shape={FT_Error, outline_resolution, metrics_resolution, x_scale, y_scale, sentinels}; comparison=exact C oracle error, optional-write behavior, and 16.16 scale values.
@@ -10871,6 +10968,10 @@ subjects:
         description: An outline with negative cbox coordinates drives FreeType's orientation scaling through the signed absolute-value path before glyph-slot weight adjustment mutates points and metrics.
       - id: bitmap_weight_owns_emboldens_and_updates_top
         description: For bitmap glyphs, C rounds strengths to full pixels, owns the bitmap if needed, emboldens bitmap bytes, updates metrics/advances, and increases bitmap_top by ystr pixels.
+      - id: batch163_valid_empty_mono_horizontal_pixel_shift
+        description: Thirty valid rendered empty-outline MONO rows produce a seven-pixel horizontal adjustment and exercise the zero-padding boundary with exact C/Rust bitmap parity.
+      - id: batch166_valid_lcd_padding_reuse
+        description: Thirty valid rendered DejaVuSans LCD rows use zero vertical strength and a one-pixel horizontal LCD adjustment that reuses existing row padding through exact C/Rust bitmap parity.
       - id: null_or_unsupported_format_noop
         description: Glyph formats other than OUTLINE or BITMAP return without mutation or error reporting.
       - id: null_slot_noop
@@ -12378,6 +12479,10 @@ subjects:
         description: Unsupported keys, out-of-range array indexes, absent strings, and unavailable dictionary entries return 0 rather than a FreeType error code.
       - id: non_type1_or_missing_service_returns_zero
         description: Null face, non-PostScript faces, and PostScript services without ps_get_font_value return 0 from the public wrapper.
+      - id: batch168_valid_missing_optional_strings
+        description: Thirty valid Type 1 faces with optional FontInfo strings absent exercise the public missing-string return path through exact C/Rust parity.
+      - id: batch171_valid_builtin_encoding_entries
+        description: Thirty valid Type 1 encoding-entry sizing queries across StandardEncoding, ISOLatin1Encoding, and ExpertEncoding exercise the built-in-encoding fallback through exact C/Rust parity.
     # maintained-input: operation=FT_Get_PS_Font_Value over representative PS_Dict_Keys; fixture_asset=maintained Type1 font with populated Private/FontInfo dictionaries and custom Encoding array, plus CFF/TrueType controls; params={font, key, idx, value_len, value_pointer_mode}; expected output shape={FT_Long required_len_or_zero, copied typed value bytes, untouched-buffer sentinel}; comparison=exact C oracle length and copied byte payload.
 
   - id: t1tables.FT_Has_PS_Glyph_Names

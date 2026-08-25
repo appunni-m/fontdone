@@ -867,6 +867,7 @@ fn winfnt_font_data(data: &[u8], size_pt: f32, header: &WinFntHeader) -> Arc<Fon
         gvar_error: None,
         design_variation_coords: Vec::new(),
         normalized_variation_coords: Vec::new(),
+        normalized_variation_coords_16_16: Vec::new(),
         blend_variation_coords_16_16: Vec::new(),
         variation_coordinates_set: false,
         variation_coordinates_explicitly_set: false,
@@ -1467,6 +1468,7 @@ fn bdf_font_data(data: &[u8], size_pt: f32, metadata: &BdfMetadata) -> Arc<FontD
         gvar_error: None,
         design_variation_coords: Vec::new(),
         normalized_variation_coords: Vec::new(),
+        normalized_variation_coords_16_16: Vec::new(),
         blend_variation_coords_16_16: Vec::new(),
         variation_coordinates_set: false,
         variation_coordinates_explicitly_set: false,
@@ -2750,6 +2752,7 @@ fn non_sfnt_outline_font_data(
         gvar_error: None,
         design_variation_coords: Vec::new(),
         normalized_variation_coords: Vec::new(),
+        normalized_variation_coords_16_16: Vec::new(),
         blend_variation_coords_16_16: Vec::new(),
         variation_coordinates_set: false,
         variation_coordinates_explicitly_set: false,
@@ -4222,13 +4225,18 @@ impl Font {
         } else {
             normalized_variation_coords_for_named_instance(&fvar, &avar, named_instance)
         };
-        let blend_variation_coords_16_16 = blend_coords_16_16.map_or_else(
+        let normalized_variation_coords_16_16 = blend_coords_16_16.map_or_else(
             || {
-                normalized_variation_coords
-                    .iter()
-                    .map(|coord| i32::from(*coord) << 2)
-                    .collect()
+                normalized_variation_coords_16_16_for_design_coords(
+                    &fvar,
+                    &avar,
+                    &design_variation_coords,
+                )
             },
+            |coords| blend_variation_coords_for_blend_coords_16_16(&fvar, coords),
+        );
+        let blend_variation_coords_16_16 = blend_coords_16_16.map_or_else(
+            || normalized_variation_coords_16_16.clone(),
             |coords| blend_variation_coords_for_blend_coords_16_16(&fvar, coords),
         );
         let hvar = dir.find(data, tag(b"HVAR")).and_then(|d| {
@@ -4303,6 +4311,7 @@ impl Font {
             gvar_error,
             design_variation_coords,
             normalized_variation_coords,
+            normalized_variation_coords_16_16,
             blend_variation_coords_16_16,
             variation_coordinates_set,
             variation_coordinates_explicitly_set: design_coords.is_some(),
@@ -4781,6 +4790,10 @@ impl Font {
 
     pub(crate) fn normalized_variation_coords(&self) -> &[i16] {
         &self.data.normalized_variation_coords
+    }
+
+    pub(crate) fn normalized_variation_coords_16_16(&self) -> &[i32] {
+        &self.data.normalized_variation_coords_16_16
     }
 
     /// Return the number of faces in the original font resource.
@@ -6316,9 +6329,36 @@ impl Font {
         Ok(self.slot_load_from_scaled(glyph, scaled, grid_fit_for_layout(vertical_layout)))
     }
 
+    pub(crate) fn glyph_slot_load_force_autohint_light_with_layout(
+        &self,
+        glyph: u16,
+        vertical_layout: bool,
+    ) -> Result<GlyphSlotLoad, FontError> {
+        if self.is_type1_face() {
+            return self.glyph_slot_load_type1_autohinted(
+                glyph,
+                vertical_layout,
+                NativeHintMode::Normal,
+            );
+        }
+        if self.is_empty_cid_type1_face() {
+            return Ok(empty_outline_glyph_slot());
+        }
+        let metrics_cache = self.autohint_metrics_for_glyph_checked(glyph)?;
+        let scaled = scaler::scale_glyph_for_metrics_with_autohint_light_and_layout(
+            &self.data,
+            glyph,
+            metrics_cache.as_deref(),
+            self.is_italic,
+            vertical_layout,
+        )?;
+        Ok(self.slot_load_from_scaled(glyph, scaled, grid_fit_for_layout(vertical_layout)))
+    }
+
     pub(crate) fn glyph_slot_load_target_light(
         &self,
         glyph: u16,
+        vertical_layout: bool,
     ) -> Result<GlyphSlotLoad, FontError> {
         if self.is_type1_face() {
             return self.glyph_slot_load_type1_scaled(glyph, false, MetricsGridFit::Horizontal);
@@ -6330,9 +6370,15 @@ impl Font {
             // CFF light-target loads stay in the Adobe CFF driver. Unlike
             // TrueType, the pinned CFF driver does not hand this mode to the
             // generic auto-hinter; `cf2_getScaleAndHintFlag` receives the
-            // same hinted Adobe outline path as the normal target.
+            // same hinted Adobe outline path as the normal target. The base
+            // loader still applies vertical grid-fit metrics after the CFF
+            // driver synthesizes them for `FT_LOAD_VERTICAL_LAYOUT`.
             let scaled = scaler::scale_glyph_for_metrics(&self.data, glyph, self.is_italic)?;
-            return Ok(self.slot_load_from_scaled(glyph, scaled, MetricsGridFit::Horizontal));
+            return Ok(self.slot_load_from_scaled(
+                glyph,
+                scaled,
+                grid_fit_for_layout(vertical_layout),
+            ));
         }
         let metrics_cache = self.autohint_metrics_for_glyph_checked(glyph)?;
         let scaled = scaler::scale_glyph_for_metrics_light(
@@ -7114,7 +7160,6 @@ impl Font {
             vert_bearing_y: 0,
             vert_advance: 0,
         };
-
         if let Some(vertical) = autohint_vertical {
             metrics.vert_bearing_x = vertical.bearing_x;
             metrics.vert_bearing_y = vertical.bearing_y;
@@ -8592,6 +8637,37 @@ fn normalized_variation_coords_for_design_coords(
         .collect::<Vec<_>>();
     if let Some(avar) = avar {
         avar.map_normalized(&mut normalized);
+    }
+    normalized
+}
+
+fn normalized_variation_coords_16_16_for_design_coords(
+    fvar: &Option<tt::fvar::FvarTable>,
+    avar: &Option<tt::avar::AvarTable>,
+    design_coords: &[i32],
+) -> Vec<i32> {
+    let Some(fvar) = fvar else {
+        return Vec::new();
+    };
+    let mut normalized = fvar
+        .axes
+        .iter()
+        .enumerate()
+        .map(|(index, axis)| {
+            let coord = design_coords
+                .get(index)
+                .copied()
+                .unwrap_or(axis.default_value);
+            tt::gvar::normalize_axis_coord_16_16(
+                coord,
+                axis.min_value,
+                axis.default_value,
+                axis.max_value,
+            )
+        })
+        .collect::<Vec<_>>();
+    if let Some(avar) = avar {
+        avar.map_normalized_fixed(&mut normalized);
     }
     normalized
 }

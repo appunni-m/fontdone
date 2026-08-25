@@ -547,6 +547,9 @@ def write_run_program_branch_matrix() -> None:
     one selected interpreter boundary; valid rows consume their results so a
     later instruction cannot hide the branch under test behind an earlier
     failure.  The glyph IDs start at 60 because the base matrix has 60 glyphs.
+    The final two rows are pedantic out-of-range WS/WCVTP witnesses with
+    empty, stack-neutral setup programs so glyph execution reaches the public
+    error path instead of failing during prep.
     """
     font = TTFont(BASE_FONT, recalcTimestamp=False)
     # Keep setup programs side-effect free.  This isolates glyph-range
@@ -686,6 +689,12 @@ def write_run_program_branch_matrix() -> None:
         ("batch61_msirp_twilight_point_99", "b0 00 14 b1 00 63 b0 01 3a"),
         ("batch61_msirp_twilight_point_100", "b0 00 14 b1 00 64 b0 02 3a"),
         ("batch61_mirp_twilight_point_101", "b0 00 14 b1 00 65 b0 03 e0"),
+        # Batch121 isolates the pedantic out-of-range storage/CVT writes. The
+        # two-byte PUSHB form supplies [index, value] to WS/WCVTP, and index 2
+        # is just beyond the two declared maxStorage/CVT entries. Keep these
+        # append-only so the existing Batch61 glyph IDs remain stable.
+        ("batch121_ws_oob_pedantic", "b1 02 01 42"),
+        ("batch121_wcvtp_oob_pedantic", "b1 02 20 44"),
     )
 
     glyph_order = font.getGlyphOrder()
@@ -697,6 +706,41 @@ def write_run_program_branch_matrix() -> None:
         font["hmtx"].metrics[glyph_name] = base_metrics
     font.setGlyphOrder(glyph_order)
     save_font("hinter-run-program-branch-matrix.ttf", font)
+
+
+def write_valid_idef_vm_branch_matrix() -> None:
+    """Build valid public glyph programs for IDEF and VM predicate branches.
+
+    The fpgm definitions are legal, stack-neutral instruction definitions for
+    RAW (0x28) and the custom opcode 0x7B.  Each appended glyph is a valid
+    non-empty simple outline, so FT_Load_Glyph reaches the selected branch
+    without relying on malformed font data or an invalid setup program.
+    """
+    font = TTFont(BASE_FONT, recalcTimestamp=False)
+    font["fpgm"].program = program_from_bytes(
+        bytes.fromhex("b0 28 89 b0 01 21 2d b0 7b 89 b0 01 21 2d")
+    )
+    font["prep"].program = program_from_bytes(bytes([0x00]))
+    base_glyph = deepcopy(font["glyf"]["base"])
+    base_metrics = font["hmtx"].metrics["base"]
+    programs = (
+        ("batch122_idef_raw", "28"),
+        ("batch122_idef_custom", "7b"),
+        ("batch122_even_false", "b0 40 57 21"),
+        ("batch122_not_false", "b0 01 5c 21"),
+        ("batch122_min_true", "b1 01 02 8c 21"),
+        ("batch122_negative_scan", "b8 ff ff 8d b8 08 08 85"),
+    )
+
+    glyph_order = font.getGlyphOrder()
+    for glyph_name, hex_code in programs:
+        glyph_order.append(glyph_name)
+        glyph = deepcopy(base_glyph)
+        glyph.program = program_from_bytes(bytes.fromhex(hex_code))
+        font["glyf"][glyph_name] = glyph
+        font["hmtx"].metrics[glyph_name] = base_metrics
+    font.setGlyphOrder(glyph_order)
+    save_font("hinter-valid-idef-vm-branch-matrix.ttf", font)
 
 
 def write_prep_shz_empty_contour() -> None:
@@ -745,6 +789,7 @@ def main() -> None:
     write_fpgm_unterminated_idef()
     write_opcode_stack_underflow_matrix()
     write_run_program_branch_matrix()
+    write_valid_idef_vm_branch_matrix()
     write_prep_shz_empty_contour()
 
 

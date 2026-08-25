@@ -7,7 +7,8 @@
     "wws_only_typographic_name_params_match_c",
     "ignored_open_params_match_c",
     "incremental_null_data_matches_c",
-    "tag_data_parameters_match_c_behavior"
+    "tag_data_parameters_match_c_behavior",
+    "batch164_valid_ignore_sbix_non_sfnt_bitmap_faces"
   ],
   "cases": [
     {
@@ -447,6 +448,231 @@
         },
         "fixture_requirements": [
           "sbix font for FT_PARAM_TAG_IGNORE_SBIX and property-capable fixture once FT_Face_Properties is wired into runner"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_Parameter.batch164_valid_ignore_sbix_non_sfnt_bitmap_faces",
+      "subject": "freetype.FT_Parameter",
+      "case": "batch164_valid_ignore_sbix_non_sfnt_bitmap_faces",
+      "operation": "freetype.open_face_with_params",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-001",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/bitmap-header.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:bitmap-header"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-002",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-signed-only.pcf", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:pcf:properties-signed-only"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-003",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-uncompressed-metrics.pcf", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:pcf:properties-uncompressed-metrics"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-004",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-msb.pcf", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:pcf:properties-msb"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-005",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/pcf/properties-iso8859.pcf", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:pcf:properties-iso8859"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-006",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/charset-registry-iso646.bdf", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:bdf:charset-registry-iso646"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-007",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/charset-registry-iso8859-other.bdf", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:bdf:charset-registry-iso8859-other"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-008",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/charset-registry-iso8859.bdf", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:bdf:charset-registry-iso8859"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-009",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/charset-registry.bdf", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:bdf:charset-registry"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-010",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/negative-encoding-property-controls.bdf", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:bdf:negative-encoding-property-controls"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-011",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/properties-atoms-integers-cardinals.bdf", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:bdf:properties-atoms-integers-cardinals"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-012",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/bdf/properties-duplicate-and-empty.bdf", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:bdf:properties-duplicate-and-empty"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-013",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp1250-238.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp1250-238"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-014",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp1251-204.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp1251-204"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-015",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp1252-0.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp1252-0"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-016",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp1253-161.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp1253-161"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-017",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp1254-162.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp1254-162"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-018",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp1255-177.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp1255-177"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-019",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp1256-178.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp1256-178"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-020",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp1257-186.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp1257-186"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-021",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp1258-163.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp1258-163"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-022",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp1361-130.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp1361-130"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-023",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp874-222.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp874-222"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-024",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp932-128.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp932-128"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-025",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp936-134.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp936-134"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-026",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp949-129.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp949-129"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-027",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/cp950-136.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:cp950-136"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-028",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/mac-77.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:mac-77"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-029",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/oem-255.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:oem-255"]
+          },
+          {
+            "id": "batch164-ignore-sbix-nonsfnt-030",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/winfnt/charset/symbol-2.fnt", "asset_kind": "font"}},
+            "params": {"face_index": 0, "runtime_route": "actual_sbix_parameter_dispatch"},
+            "coverage": ["batch164:ignore-sbix:winfnt:symbol-2"]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "coverage:real-parity"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "results": [
+            {
+              "return": "FT_Error",
+              "status": "FT_Error",
+              "opened": "bool",
+              "family_name": "string|null",
+              "style_name": "string|null"
+            }
+          ]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "results[*].return",
+            "results[*].status",
+            "results[*].opened",
+            "results[*].family_name",
+            "results[*].style_name"
+          ]
+        },
+        "fixture_requirements": [
+          "Thirty maintained valid PCF, BDF, and Windows FNT bitmap faces with no SFNT sbix table"
         ]
       }
     }

@@ -4,7 +4,9 @@
   "manifest_cases": [
     "type1_afm_track_kerning_success",
     "sfnt_or_no_track_data_error",
-    "error_null_face_or_output"
+    "error_null_face_or_output",
+    "batch173_valid_below_minimum_clamp",
+    "batch174_valid_above_maximum_clamp"
   ],
   "cases": [
     {
@@ -167,6 +169,578 @@
         },
         "error": "c_oracle"
       }
+    },
+    {
+      "case_id": "freetype.FT_Get_Track_Kerning.batch173_valid_below_minimum_clamp",
+      "subject": "freetype.FT_Get_Track_Kerning",
+      "case": "batch173_valid_below_minimum_clamp",
+      "covers_manifest_cases": ["batch173_valid_below_minimum_clamp"],
+      "operation": "freetype.get_track_kerning",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "b173-track-d1-q01",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [16384], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:16384"]
+          },
+          {
+            "id": "b173-track-d1-q02",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [32768], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:32768"]
+          },
+          {
+            "id": "b173-track-d1-q03",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [49152], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:49152"]
+          },
+          {
+            "id": "b173-track-d1-q04",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [65536], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:65536"]
+          },
+          {
+            "id": "b173-track-d1-q05",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [81920], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:81920"]
+          },
+          {
+            "id": "b173-track-d1-q06",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [98304], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:98304"]
+          },
+          {
+            "id": "b173-track-d1-q07",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [114688], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:114688"]
+          },
+          {
+            "id": "b173-track-d1-q08",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [131072], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:131072"]
+          },
+          {
+            "id": "b173-track-d1-q09",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [147456], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:147456"]
+          },
+          {
+            "id": "b173-track-d1-q10",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [163840], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:163840"]
+          },
+          {
+            "id": "b173-track-d1-q11",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [180224], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:180224"]
+          },
+          {
+            "id": "b173-track-d1-q12",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [196608], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:196608"]
+          },
+          {
+            "id": "b173-track-d1-q13",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [212992], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:212992"]
+          },
+          {
+            "id": "b173-track-d1-q14",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [229376], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:229376"]
+          },
+          {
+            "id": "b173-track-d1-q15",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [245760], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:245760"]
+          },
+          {
+            "id": "b173-track-d1-q16",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [262144], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:262144"]
+          },
+          {
+            "id": "b173-track-d1-q17",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [278528], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:278528"]
+          },
+          {
+            "id": "b173-track-d1-q18",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [294912], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:294912"]
+          },
+          {
+            "id": "b173-track-d1-q19",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [311296], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:311296"]
+          },
+          {
+            "id": "b173-track-d1-q20",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [327680], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:327680"]
+          },
+          {
+            "id": "b173-track-d1-q21",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [344064], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:344064"]
+          },
+          {
+            "id": "b173-track-d1-q22",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [360448], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:360448"]
+          },
+          {
+            "id": "b173-track-d1-q23",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [376832], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:376832"]
+          },
+          {
+            "id": "b173-track-d1-q24",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [393216], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:393216"]
+          },
+          {
+            "id": "b173-track-d1-q25",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [409600], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:409600"]
+          },
+          {
+            "id": "b173-track-d1-q26",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [425984], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:425984"]
+          },
+          {
+            "id": "b173-track-d1-q27",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [442368], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:442368"]
+          },
+          {
+            "id": "b173-track-d1-q28",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [458752], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:458752"]
+          },
+          {
+            "id": "b173-track-d1-q29",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [475136], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:475136"]
+          },
+          {
+            "id": "b173-track-d1-q30",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [491520], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13891-13892:below-minimum:491520"]
+          }
+        ]
+      },
+      "classifiers": ["kind:function", "header:freetype", "area:track-kerning", "behavior:below-minimum-clamp"],
+      "metadata": {"source_behavior": "The maintained Type 1 AFM has a degree-1 track with minimum point size 8.0; valid positive point sizes below that boundary return the track minimum kerning."},
+      "expectation": {"status": "ok", "output_shape": {"return": "FT_Error", "akerning": "FT_Fixed 16.16"}, "compare": {"mode": "exact", "paths": ["attach_status", "rows"]}, "fixture_requirements": ["Valid Type 1 face and attached AFM with degree-1 track kerning."]}
+    },
+    {
+      "case_id": "freetype.FT_Get_Track_Kerning.batch174_valid_above_maximum_clamp",
+      "subject": "freetype.FT_Get_Track_Kerning",
+      "case": "batch174_valid_above_maximum_clamp",
+      "covers_manifest_cases": ["batch174_valid_above_maximum_clamp"],
+      "operation": "freetype.get_track_kerning",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "b174-track-d1-q01",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4734976], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4734976"]
+          },
+          {
+            "id": "b174-track-d1-q02",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4751360], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4751360"]
+          },
+          {
+            "id": "b174-track-d1-q03",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4767744], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4767744"]
+          },
+          {
+            "id": "b174-track-d1-q04",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4784128], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4784128"]
+          },
+          {
+            "id": "b174-track-d1-q05",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4800512], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4800512"]
+          },
+          {
+            "id": "b174-track-d1-q06",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4816896], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4816896"]
+          },
+          {
+            "id": "b174-track-d1-q07",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4833280], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4833280"]
+          },
+          {
+            "id": "b174-track-d1-q08",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4849664], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4849664"]
+          },
+          {
+            "id": "b174-track-d1-q09",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4866048], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4866048"]
+          },
+          {
+            "id": "b174-track-d1-q10",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4882432], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4882432"]
+          },
+          {
+            "id": "b174-track-d1-q11",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4898816], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4898816"]
+          },
+          {
+            "id": "b174-track-d1-q12",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4915200], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4915200"]
+          },
+          {
+            "id": "b174-track-d1-q13",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4931584], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4931584"]
+          },
+          {
+            "id": "b174-track-d1-q14",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4947968], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4947968"]
+          },
+          {
+            "id": "b174-track-d1-q15",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4964352], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4964352"]
+          },
+          {
+            "id": "b174-track-d1-q16",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4980736], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4980736"]
+          },
+          {
+            "id": "b174-track-d1-q17",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [4997120], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:4997120"]
+          },
+          {
+            "id": "b174-track-d1-q18",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [5013504], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:5013504"]
+          },
+          {
+            "id": "b174-track-d1-q19",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [5029888], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:5029888"]
+          },
+          {
+            "id": "b174-track-d1-q20",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [5046272], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:5046272"]
+          },
+          {
+            "id": "b174-track-d1-q21",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [5062656], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:5062656"]
+          },
+          {
+            "id": "b174-track-d1-q22",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [5079040], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:5079040"]
+          },
+          {
+            "id": "b174-track-d1-q23",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [5095424], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:5095424"]
+          },
+          {
+            "id": "b174-track-d1-q24",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [5111808], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:5111808"]
+          },
+          {
+            "id": "b174-track-d1-q25",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [5128192], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:5128192"]
+          },
+          {
+            "id": "b174-track-d1-q26",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [5144576], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:5144576"]
+          },
+          {
+            "id": "b174-track-d1-q27",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [5160960], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:5160960"]
+          },
+          {
+            "id": "b174-track-d1-q28",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [5177344], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:5177344"]
+          },
+          {
+            "id": "b174-track-d1-q29",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [5193728], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:5193728"]
+          },
+          {
+            "id": "b174-track-d1-q30",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "path": "input/fonts/type1/track-kern-base.pfb"},
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics", "path": "input/aux/type1/track-kern-base.afm"}
+            },
+            "params": {"face_index": 0, "prelude": ["FT_Attach_File"], "point_size_16_16": [5210112], "degrees": [1]},
+            "coverage": ["src/ffi/handles.rs:13893-13894:above-maximum:5210112"]
+          }
+        ]
+      },
+      "classifiers": ["kind:function", "header:freetype", "area:track-kerning", "behavior:above-maximum-clamp"],
+      "metadata": {"source_behavior": "The maintained Type 1 AFM has a degree-1 track with maximum point size 72.0; valid positive point sizes above that boundary return the track maximum kerning."},
+      "expectation": {"status": "ok", "output_shape": {"return": "FT_Error", "akerning": "FT_Fixed 16.16"}, "compare": {"mode": "exact", "paths": ["attach_status", "rows"]}, "fixture_requirements": ["Valid Type 1 face and attached AFM with degree-1 track kerning."]}
     }
   ]
 }

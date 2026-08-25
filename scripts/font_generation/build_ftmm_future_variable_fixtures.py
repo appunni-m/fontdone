@@ -6,6 +6,7 @@ from __future__ import annotations
 from array import array
 from pathlib import Path
 
+from fontTools.fontBuilder import FontBuilder
 from fontTools.ttLib import TTFont, newTable
 from fontTools.ttLib.tables.DefaultTable import DefaultTable
 from fontTools.ttLib.tables.ttProgram import Program
@@ -49,16 +50,8 @@ def write_mvar_alias(name: str) -> None:
     save_font(OUT_DIR / name, font)
 
 
-def write_native_variable_alias(name: str, *, remove_gvar: bool) -> None:
-    """Build a valid active-variable face that selects the native TT route.
-
-    The source MVAR/HVAR/VVAR face already has valid fvar/gvar composite data.
-    Supplying harmless, nonempty setup tables makes ``FT_LOAD_NO_AUTOHINT``
-    take the bytecode path while keeping glyph variation behavior observable.
-    The no-gvar twin isolates the corresponding fvar-only composite branch.
-    """
-
-    font = TTFont(MVAR_FONT, recalcTimestamp=False)
+def add_native_setup_tables(font: TTFont) -> None:
+    """Add valid native TrueType setup tables to a variable source face."""
 
     fpgm = newTable("fpgm")
     fpgm.program = Program()
@@ -74,6 +67,19 @@ def write_native_variable_alias(name: str, *, remove_gvar: bool) -> None:
     prep.program.fromBytecode(bytes([0x00]))
     font["prep"] = prep
 
+
+def write_native_variable_alias(name: str, *, remove_gvar: bool) -> None:
+    """Build a valid active-variable face that selects the native TT route.
+
+    The source MVAR/HVAR/VVAR face already has valid fvar/gvar composite data.
+    Supplying harmless, nonempty setup tables makes ``FT_LOAD_NO_AUTOHINT``
+    take the bytecode path while keeping glyph variation behavior observable.
+    The no-gvar twin isolates the corresponding fvar-only composite branch.
+    """
+
+    font = TTFont(MVAR_FONT, recalcTimestamp=False)
+    add_native_setup_tables(font)
+
     if remove_gvar:
         del font["gvar"]
     save_font(OUT_DIR / name, font)
@@ -82,6 +88,123 @@ def write_native_variable_alias(name: str, *, remove_gvar: bool) -> None:
 def write_native_variable_aliases() -> None:
     write_native_variable_alias("variable-native-gvar-composites.ttf", remove_gvar=False)
     write_native_variable_alias("variable-native-no-gvar-composites.ttf", remove_gvar=True)
+
+
+def write_native_variable_composite_no_record() -> None:
+    """Keep gvar present while removing records from valid composites."""
+
+    font = TTFont(MVAR_FONT, recalcTimestamp=False)
+    add_native_setup_tables(font)
+    glyph_order = font.getGlyphOrder()
+    # Keep the existing compact fixture byte-for-byte stable.  Glyph 15 is an
+    # additional source composite whose record is also absent in that face;
+    # the public Batch128 rows intentionally use the other five composites.
+    selected_glyphs = {1, 2, 11, 13, 15, 16}
+    for glyph_index in selected_glyphs:
+        glyph = font["glyf"][glyph_order[glyph_index]]
+        if not getattr(glyph, "components", None):
+            raise ValueError(f"expected non-empty composite glyph {glyph_index}")
+
+    source = font.getTableData("gvar")
+    glyph_count = int.from_bytes(source[12:14], "big")
+    flags = int.from_bytes(source[14:16], "big")
+    if glyph_count != len(glyph_order):
+        raise ValueError("gvar glyph count does not match the source face")
+    offset_width = 4 if flags & 0x0001 else 2
+    offset_scale = 1 if offset_width == 4 else 2
+    offsets_start = 20
+    offsets_end = offsets_start + (glyph_count + 1) * offset_width
+    data_start = int.from_bytes(source[16:20], "big")
+    offsets = [
+        int.from_bytes(
+            source[offsets_start + index * offset_width : offsets_start + (index + 1) * offset_width],
+            "big",
+        )
+        for index in range(glyph_count + 1)
+    ]
+    if data_start < offsets_end or data_start > len(source):
+        raise ValueError("gvar data offset is outside the source table")
+
+    # Preserve the shared tuples and remove only the complete per-glyph
+    # records for the selected composites.  Equal successor offsets are the
+    # valid public representation of a glyph with no variation record.
+    glyph_data = bytearray()
+    new_offsets = [0]
+    for glyph_index in range(glyph_count):
+        start = data_start + offsets[glyph_index] * offset_scale
+        end = data_start + offsets[glyph_index + 1] * offset_scale
+        if glyph_index not in selected_glyphs:
+            glyph_data.extend(source[start:end])
+        new_offsets.append(len(glyph_data) // offset_scale)
+
+    rebuilt = bytearray(source[:offsets_start])
+    for offset in new_offsets:
+        rebuilt.extend(offset.to_bytes(offset_width, "big"))
+    rebuilt.extend(source[offsets_end:data_start])
+    rebuilt.extend(glyph_data)
+    font["gvar"] = raw_table("gvar", bytes(rebuilt))
+    save_font(OUT_DIR / "variable-native-gvar-composite-no-record.ttf", font)
+
+
+def _component_argument_offset(data: bytes, component_index: int) -> tuple[int, int]:
+    """Return one composite component's flags and argument offset."""
+
+    pos = 10
+    for index in range(component_index + 1):
+        if pos + 4 > len(data):
+            raise ValueError("composite component header is truncated")
+        flags = int.from_bytes(data[pos : pos + 2], "big")
+        pos += 4
+        argument_offset = pos
+        pos += 4 if flags & 0x0001 else 2
+        if flags & 0x0008:
+            pos += 2
+        elif flags & 0x0040:
+            pos += 4
+        elif flags & 0x0080:
+            pos += 8
+        if index == component_index:
+            return flags, argument_offset
+        if not flags & 0x0020:
+            raise ValueError("composite ended before the requested component")
+    raise AssertionError("component offset was not found")
+
+
+def write_native_variable_mixed_args() -> None:
+    """Build a valid native gvar face with mixed XY and point arguments.
+
+    Glyphs 1 and 2 retain their source gvar records and native setup tables.
+    Their first components use XY arguments, while their second components use
+    valid point attachments at parent/child point zero.  Glyph 2 deliberately
+    keeps the second attachment word-sized so both composite argument widths
+    remain public inputs.
+    """
+
+    font = TTFont(MVAR_FONT, recalcTimestamp=False)
+    add_native_setup_tables(font)
+    glyph_order = font.getGlyphOrder()
+
+    for glyph_index in (1, 2):
+        component = font["glyf"][glyph_order[glyph_index]].components[1]
+        del component.x
+        del component.y
+        component.firstPt = 0
+        component.secondPt = 0 if glyph_index == 1 else 256
+
+    font.recalcBBoxes = False
+    glyf_data = bytearray(font["glyf"].compile(font))
+    locations = font["loca"].locations
+
+    glyph_start = locations[2]
+    glyph_end = locations[3]
+    glyph_data = bytes(glyf_data[glyph_start:glyph_end])
+    flags, argument_offset = _component_argument_offset(glyph_data, 1)
+    if flags != 0x0005:
+        raise ValueError(f"expected word-sized point attachment, got {flags:#06x}")
+    glyf_data[glyph_start + argument_offset : glyph_start + argument_offset + 4] = b"\0\0\0\0"
+
+    font["glyf"] = raw_table("glyf", bytes(glyf_data))
+    save_font(OUT_DIR / "variable-native-gvar-composite-mixed-args.ttf", font)
 
 
 def raw_table(tag: str, data: bytes) -> DefaultTable:
@@ -1332,6 +1455,8 @@ def main() -> None:
     write_compact_alias("gvar-hvar-wght.ttf")
     write_mvar_alias("mvar-hvar-vvar.ttf")
     write_native_variable_aliases()
+    write_native_variable_composite_no_record()
+    write_native_variable_mixed_args()
     write_avar_fixtures()
     write_gvar_fixtures()
     write_hvar_fixtures()

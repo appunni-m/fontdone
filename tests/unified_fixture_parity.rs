@@ -1604,7 +1604,7 @@ fn ftglyph_type_runtime_supported(case: &InputCase) -> bool {
             && !has_probe_params(case);
     }
     matches!(
-        case.case_id.as_str(),
+        case_id_base(&case.case_id),
         "ftglyph.FT_OutlineGlyph.pointer_alias_matches_record"
             | "ftglyph.FT_BitmapGlyph.pointer_alias_matches_record"
             | "ftglyph.FT_Glyph.outline_caller_owned_lifetime"
@@ -1681,7 +1681,13 @@ fn outline_render_runtime_supported(case: &InputCase) -> bool {
             | "ftoutln.FT_Outline_Render.direct_render_without_gray_spans"
             | "ftoutln.FT_Outline_Render.renderer_fallback_and_errors"
     ) || (case.subject == "ftoutln.FT_Outline_Render"
-        && matches!(case.case.as_str(), "bitmap_render_matches_c" | "direct_validation_matrix"))
+        && matches!(
+            case.case.as_str(),
+            "bitmap_render_matches_c"
+                | "batch165_valid_direct_zero_width_clip"
+                | "batch178_valid_direct_zero_height_clip"
+                | "direct_validation_matrix"
+        ))
 }
 
 fn face_flags_runtime_supported(case: &InputCase) -> bool {
@@ -2817,7 +2823,7 @@ fn least_loaded_partition(loads: &[usize]) -> usize {
 
 fn partition_face_group_key(case: &InputCase) -> Option<String> {
     let font = runtime_font_asset(case)?;
-    let face_index = usize::try_from(face_index_param(&case.inputs.params).ok()?).ok()?;
+    let face_index = face_index_param(&case.inputs.params).ok()?;
     Some(format!(
         "sha256:{}:face:{face_index}",
         font_asset_digest(font).ok()?
@@ -4030,6 +4036,9 @@ impl BackendComparisonWorker {
                 rust_get_ps_font_info(case)
             }
             "t1tables.mm_blend_dictionary" => rust_mm_blend_dictionary(case),
+            "t1tables.get_ps_font_value" if ps_font_value_row_case(case) => {
+                rust_get_ps_font_value_matrix(case)
+            }
             "t1tables.get_ps_font_value" if ps_font_value_signature_matrix_case(case) => {
                 rust_get_ps_font_value_matrix(case)
             }
@@ -4618,6 +4627,9 @@ impl BackendComparisonWorker {
                 c_get_ps_font_info(case)
             }
             "t1tables.mm_blend_dictionary" => c_mm_blend_dictionary(case),
+            "t1tables.get_ps_font_value" if ps_font_value_row_case(case) => {
+                c_get_ps_font_value_matrix(case)
+            }
             "t1tables.get_ps_font_value" if ps_font_value_signature_matrix_case(case) => {
                 c_get_ps_font_value_matrix(case)
             }
@@ -5216,6 +5228,9 @@ impl BackendComparisonWorker {
                 wasm_get_ps_font_info(case)
             }
             "t1tables.mm_blend_dictionary" => wasm_mm_blend_dictionary(case),
+            "t1tables.get_ps_font_value" if ps_font_value_row_case(case) => {
+                wasm_get_ps_font_value_matrix(case)
+            }
             "t1tables.get_ps_font_value" if ps_font_value_signature_matrix_case(case) => {
                 wasm_get_ps_font_value_matrix(case)
             }
@@ -10566,9 +10581,20 @@ const TRACK_KERNING_ERROR_SENTINEL: FT_Fixed = 0x1234_5678;
 
 fn track_kerning_route_supported(case: &InputCase) -> bool {
     matches!(
-        case.case_id.as_str(),
+        case_id_base(&case.case_id),
         "freetype.FT_Get_Track_Kerning.type1_afm_track_kerning_success"
+            | "freetype.FT_Get_Track_Kerning.batch173_valid_below_minimum_clamp"
+            | "freetype.FT_Get_Track_Kerning.batch174_valid_above_maximum_clamp"
             | "freetype.FT_Get_Track_Kerning.sfnt_or_no_track_data_error"
+    )
+}
+
+fn track_kerning_attached_case(case: &InputCase) -> bool {
+    matches!(
+        case_id_base(&case.case_id),
+        "freetype.FT_Get_Track_Kerning.type1_afm_track_kerning_success"
+            | "freetype.FT_Get_Track_Kerning.batch173_valid_below_minimum_clamp"
+            | "freetype.FT_Get_Track_Kerning.batch174_valid_above_maximum_clamp"
     )
 }
 
@@ -12006,6 +12032,20 @@ fn wasm_ps_font_value_encoding_for_bytes(
 
 fn ps_font_value_signature_matrix_case(case: &InputCase) -> bool {
     case.case_id == "t1tables.FT_Get_PS_Font_Value.signature_and_behavior_matrix"
+}
+
+fn ps_font_value_batch168_case(case: &InputCase) -> bool {
+    case_id_base(&case.case_id)
+        == "t1tables.FT_Get_PS_Font_Value.batch168_valid_missing_optional_strings"
+}
+
+fn ps_font_value_batch171_case(case: &InputCase) -> bool {
+    case_id_base(&case.case_id)
+        == "t1tables.FT_Get_PS_Font_Value.batch171_valid_builtin_encoding_entries"
+}
+
+fn ps_font_value_row_case(case: &InputCase) -> bool {
+    ps_font_value_batch168_case(case) || ps_font_value_batch171_case(case)
 }
 
 fn direct_ps_font_info_case(case: &InputCase) -> bool {
@@ -20256,8 +20296,9 @@ fn rust_attach_stream(case: &InputCase) -> Result<RunOutput, String> {
 
 fn direct_attach_stream_case(case: &InputCase) -> bool {
     matches!(
-        case.case_id.as_str(),
+        case_id_base(&case.case_id),
         "freetype.FT_Attach_Stream.success_attach_auxiliary_stream"
+            | "freetype.FT_Attach_Stream.batch175_valid_afm_kerning_at_or_above_25ppem"
             | "fterrdef.FT_Err_Syntax_Error.malformed_afm_pair_count"
     )
 }
@@ -42951,8 +42992,7 @@ fn library_version_output_names(mask: u8) -> Vec<&'static str> {
 
 fn runtime_face_cache_key(case: &InputCase) -> Result<String, String> {
     let font = runtime_font_asset(case).ok_or_else(|| "missing font asset".to_string())?;
-    let face_index =
-        usize::try_from(face_index_param(&case.inputs.params)?).map_err(|err| err.to_string())?;
+    let face_index = face_index_param(&case.inputs.params)?;
     // The global preload phase already computes and caches each file asset's
     // content digest. Reusing that identity avoids hashing the same font once
     // per expanded case while keeping face-cache keys content-bound.
@@ -43056,7 +43096,9 @@ fn case_uses_cached_face(case: &InputCase) -> bool {
             | "freetype.glyph_slot_reuse"
             | "ftadvanc.get_advance"
             | "ftadvanc.get_advances"
-    )
+    ) || (case.operation == "ftpfr.get_pfr_metrics"
+        && direct_pfr_case(case)
+        && !pfr_null_face_case(&case.inputs.params))
 }
 
 fn wasm_backend_applies(_case: &InputCase) -> bool {
@@ -44020,7 +44062,19 @@ fn with_public_family_exact_error(mut case: InputCase) -> InputCase {
             || case.case_id
                 == "ftpfr.FT_Get_PFR_Metrics.non_pfr_outputs_valid_values_and_unknown_format"
             || case.case_id == "ftpfr.FT_Get_PFR_Metrics.optional_outputs_and_null_face"
+            || case_id_base(&case.case_id)
+                == "ftpfr.FT_Get_PFR_Metrics.batch180_valid_probe_face_identity_scale"
             || case.case_id == "freetype.FT_Load_Glyph.matrix_load"
+            || case.case_id == "freetype.FT_Load_Glyph.batch122_valid_idef_vm_branches"
+            || case.case_id
+                == "freetype.FT_Load_Glyph.batch123_valid_hebrew_long_blue_remaining_branches"
+            || case.case_id == "freetype.FT_Load_Glyph.batch124_valid_cff_bbox_extrema"
+            || case.case_id
+                == "freetype.FT_Load_Glyph.batch125_valid_cff_cubic_peak_shift_regimes"
+            || case.case_id
+                == "freetype.FT_Load_Glyph.batch126_valid_autohint_normal_scale_branches"
+            || case.case_id
+                == "freetype.FT_Load_Glyph.batch127_valid_cjk_edge_link_predicates"
             || case.case_id
                 == "freetype.FT_Load_Glyph.error_out_of_range_null_face_or_invalid_flags"
             || case.case_id == "freetype.FT_LOAD_FORCE_AUTOHINT.load_glyph_force_autohint_behavior"
@@ -46426,6 +46480,10 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                 == "ftmm.FT_Set_Var_Design_Coordinates.batch78_active_gvar_routing"
             || case_id_base(&case.case_id)
                 == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing"
+            || case_id_base(&case.case_id)
+                == "ftmm.FT_Set_Var_Design_Coordinates.batch120_native_mixed_composite_args"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch135_native_gvar_composite_xy"
     {
         let set_coords = ftmm_optional_coords_from_params(params)?;
         let mut args = vec!["--ftmm-set-var-design-glyph-output".to_string()];
@@ -47431,6 +47489,41 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(face_index_param(params)?.to_string());
             Ok(args)
         }
+        "t1tables.get_ps_font_value" if ps_font_value_row_case(case) => {
+            let scenario = ps_font_value_matrix_scenarios(case)?
+                .into_iter()
+                .next()
+                .ok_or_else(|| "missing batched FT_Get_PS_Font_Value scenario".to_string())?;
+            let asset_name = string_param(scenario, "asset")?;
+            let asset = case
+                .inputs
+                .assets
+                .get(asset_name)
+                .ok_or_else(|| format!("missing FT_Get_PS_Font_Value asset {asset_name}"))?;
+            let mut args = vec!["--ps-font-value-row".to_string()];
+            push_asset_source(asset, &mut args)?;
+            args.push(face_index_param(scenario)?.to_string());
+            args.push(string_param(scenario, "id")?.to_string());
+            args.push(string_param(scenario, "key")?.to_string());
+            args.push(ps_font_value_scenario_idx(scenario)?.to_string());
+            args.push(
+                scenario
+                    .get("value_pointer_mode")
+                    .and_then(Value::as_str)
+                    .unwrap_or("valid")
+                    .to_string(),
+            );
+            args.push(
+                i64_value(
+                    scenario
+                        .get("value_len")
+                        .ok_or_else(|| "missing batched value_len".to_string())?,
+                    "value_len",
+                )?
+                .to_string(),
+            );
+            Ok(args)
+        }
         "t1tables.get_ps_font_value" if ps_font_value_signature_matrix_case(case) => {
             let mut args = vec!["--ps-font-value-matrix".to_string()];
             push_named_font_source(case, "type1_font", &mut args)?;
@@ -48041,8 +48134,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         }
         "freetype.attach_stream"
             if matches!(
-                case.case_id.as_str(),
+                case_id_base(&case.case_id),
                 "freetype.FT_Attach_Stream.success_attach_auxiliary_stream"
+                    | "freetype.FT_Attach_Stream.batch175_valid_afm_kerning_at_or_above_25ppem"
                     | "fterrdef.FT_Err_Syntax_Error.malformed_afm_pair_count"
             ) =>
         {
@@ -48089,8 +48183,7 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(kerning_rows_arg(params)?);
             Ok(args)
         }
-        "freetype.get_track_kerning"
-            if case.case_id == "freetype.FT_Get_Track_Kerning.type1_afm_track_kerning_success" =>
+        "freetype.get_track_kerning" if track_kerning_attached_case(case) =>
         {
             let mut args = vec!["--get-track-kerning".to_string()];
             push_font_source(case, &mut args)?;
@@ -51452,7 +51545,12 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
                 || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch78_active_gvar_routing"
                 || case_id_base(&case.case_id)
-                    == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing" =>
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch120_native_mixed_composite_args"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch135_native_gvar_composite_xy"
+                =>
         {
             rust_ftmm_set_var_design_glyph_output(case)
         }
@@ -53089,7 +53187,12 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
                 || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch78_active_gvar_routing"
                 || case_id_base(&case.case_id)
-                    == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing" =>
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch120_native_mixed_composite_args"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch135_native_gvar_composite_xy"
+                =>
         {
             c_ftmm_set_var_design_glyph_output(case)
         }
@@ -54616,7 +54719,12 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
                 || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch78_active_gvar_routing"
                 || case_id_base(&case.case_id)
-                    == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing" =>
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch120_native_mixed_composite_args"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch135_native_gvar_composite_xy"
+                =>
         {
             wasm_ftmm_set_var_design_glyph_output(case)
         }
@@ -76019,11 +76127,12 @@ struct OpenFaceNameOptionsRow {
     ignore_typographic_family: bool,
     ignore_typographic_subfamily: bool,
     ignore_sbix: bool,
+    status_only: bool,
 }
 
 fn open_face_name_options_runtime_supported(case: &InputCase) -> bool {
     matches!(
-        case.case_id.as_str(),
+        case_id_base(&case.case_id),
         "ftparams.FT_PARAM_TAG_IGNORE_PREFERRED_FAMILY.open_face_ignores_typographic_family"
             | "ftparams.FT_PARAM_TAG_IGNORE_PREFERRED_FAMILY.absent_or_unknown_param_uses_default_family"
             | "ftparams.FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_FAMILY.open_face_uses_legacy_family_name"
@@ -76034,6 +76143,7 @@ fn open_face_name_options_runtime_supported(case: &InputCase) -> bool {
             | "ftparams.FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_SUBFAMILY.null_data_accepted"
             | "freetype.FT_Parameter.typographic_name_params_match_c"
             | "freetype.FT_Parameter.wws_only_typographic_name_params_match_c"
+            | "freetype.FT_Parameter.batch164_valid_ignore_sbix_non_sfnt_bitmap_faces"
     ) && has_runtime_font_source(case)
         && assets_are_runtime_resolved(case)
         && open_face_name_option_rows(&case.inputs.params).is_ok_and(|rows| !rows.is_empty())
@@ -76044,14 +76154,15 @@ fn open_face_name_option_rows_arg(params: &Value) -> Result<String, String> {
         .into_iter()
         .map(|row| {
             format!(
-                "{}:{}:{}",
+                "{}:{}:{}:{}",
                 if row.ignore_typographic_family { 1 } else { 0 },
                 if row.ignore_typographic_subfamily {
                     1
                 } else {
                     0
                 },
-                if row.ignore_sbix { 1 } else { 0 }
+                if row.ignore_sbix { 1 } else { 0 },
+                if row.status_only { 1 } else { 0 }
             )
         })
         .collect::<Vec<_>>()
@@ -76068,6 +76179,16 @@ fn open_face_name_option_rows(params: &Value) -> Result<Vec<OpenFaceNameOptionsR
     if let Some(open_args) = params.get("open_args") {
         return Ok(vec![open_face_name_option_row(open_args)?]);
     }
+    if params.get("runtime_route").and_then(Value::as_str)
+        == Some("actual_sbix_parameter_dispatch")
+    {
+        return Ok(vec![OpenFaceNameOptionsRow {
+            ignore_typographic_family: false,
+            ignore_typographic_subfamily: false,
+            ignore_sbix: true,
+            status_only: true,
+        }]);
+    }
     Ok(vec![open_face_name_option_row(params)?])
 }
 
@@ -76080,6 +76201,7 @@ fn open_face_name_option_row(value: &Value) -> Result<OpenFaceNameOptionsRow, St
         ignore_typographic_family: false,
         ignore_typographic_subfamily: false,
         ignore_sbix: false,
+        status_only: false,
     };
     let Some(params) = params else {
         return Ok(row);
@@ -76119,6 +76241,14 @@ fn open_face_name_output(
     })
 }
 
+fn open_face_status_output(status: FT_Error) -> Value {
+    json!({
+        "return": status,
+        "status": status,
+        "opened": status == FT_Err_Ok
+    })
+}
+
 fn open_face_name_run_output(results: Vec<Value>) -> RunOutput {
     let first_error = results
         .iter()
@@ -76151,12 +76281,20 @@ fn rust_open_face_name_options(case: &InputCase) -> Result<RunOutput, String> {
             },
         );
         match status {
-            Ok(face) => results.push(open_face_name_output(
-                FT_Err_Ok,
-                face.family_name.as_deref(),
-                face.style_name.as_deref(),
-            )),
-            Err(err) => results.push(open_face_name_output(err, None, None)),
+            Ok(face) => results.push(if row.status_only {
+                open_face_status_output(FT_Err_Ok)
+            } else {
+                open_face_name_output(
+                    FT_Err_Ok,
+                    face.family_name.as_deref(),
+                    face.style_name.as_deref(),
+                )
+            }),
+            Err(err) => results.push(if row.status_only {
+                open_face_status_output(err)
+            } else {
+                open_face_name_output(err, None, None)
+            }),
         }
     }
     Ok(open_face_name_run_output(results))
@@ -76205,16 +76343,24 @@ fn c_open_face_name_options(case: &InputCase) -> Result<RunOutput, String> {
                 c_abi::abi_face_info(face).ok_or_else(|| "missing c face info".to_string())?;
             let family = c_nullable_c_string_json(info.family_name);
             let style = c_nullable_c_string_json(info.style_name);
-            results.push(json!({
-                "return": err,
-                "status": err,
-                "opened": true,
-                "family_name": family,
-                "style_name": style
-            }));
+            results.push(if row.status_only {
+                open_face_status_output(err)
+            } else {
+                json!({
+                    "return": err,
+                    "status": err,
+                    "opened": true,
+                    "family_name": family,
+                    "style_name": style
+                })
+            });
             c_done_face(face);
         } else {
-            results.push(open_face_name_output(err, None, None));
+            results.push(if row.status_only {
+                open_face_status_output(err)
+            } else {
+                open_face_name_output(err, None, None)
+            });
         }
     }
     c_done_library(library);
@@ -76238,13 +76384,21 @@ fn wasm_open_face_name_options(case: &InputCase) -> Result<RunOutput, String> {
         if status.error == FT_Err_Ok {
             let (family, style) = wasm_abi::abi_face_names(status.handle)
                 .ok_or_else(|| "missing wasm face names".to_string())?;
-            results.push(open_face_name_output(
-                status.error,
-                family.as_deref(),
-                style.as_deref(),
-            ));
+            results.push(if row.status_only {
+                open_face_status_output(status.error)
+            } else {
+                open_face_name_output(
+                    status.error,
+                    family.as_deref(),
+                    style.as_deref(),
+                )
+            });
         } else {
-            results.push(open_face_name_output(status.error, None, None));
+            results.push(if row.status_only {
+                open_face_status_output(status.error)
+            } else {
+                open_face_name_output(status.error, None, None)
+            });
         }
         wasm_done_face(status.handle);
     }
@@ -80028,7 +80182,7 @@ fn wasm_open_face_ignored_params(case: &InputCase) -> Result<RunOutput, String> 
 
 fn sbix_params_runtime_supported(case: &InputCase) -> bool {
     matches!(
-        case.case_id.as_str(),
+        case_id_base(&case.case_id),
         "ftparams.FT_PARAM_TAG_IGNORE_SBIX.open_face_ignores_sbix"
             | "ftparams.FT_PARAM_TAG_IGNORE_SBIX.bitmap_only_requires_real_sbix_fixture"
             | "freetype.FT_Parameter.tag_data_parameters_match_c_behavior"
@@ -89767,11 +89921,12 @@ fn rust_outline_render_runtime_output(case: &InputCase) -> Result<RunOutput, Str
         return Ok(ok(json!({ "results": results })));
     }
     if let Some(flag_sets) = outline_render_outline_flag_matrix(&case.inputs.params)? {
+        let raster_flags = outline_render_flags_or_aa(&case.inputs.params)?;
         let mut results = Vec::with_capacity(flag_sets.len());
         for (flags_label, outline_flags) in flag_sets {
             let output = rust_outline_render_once(
                 case,
-                i32::try_from(FT_RASTER_FLAG_AA).map_err(|err| err.to_string())?,
+                raster_flags,
                 Some(outline_flags),
                 true,
             )?;
@@ -89780,9 +89935,10 @@ fn rust_outline_render_runtime_output(case: &InputCase) -> Result<RunOutput, Str
         return Ok(ok(json!({ "results": results })));
     }
     if let Some(outline_flags) = outline_render_outline_flags(&case.inputs.params)? {
+        let raster_flags = outline_render_flags_or_aa(&case.inputs.params)?;
         return rust_outline_render_once(
             case,
-            i32::try_from(FT_RASTER_FLAG_AA).map_err(|err| err.to_string())?,
+            raster_flags,
             Some(outline_flags),
             false,
         );
@@ -89976,11 +90132,12 @@ fn c_outline_render_runtime_output(case: &InputCase) -> Result<RunOutput, String
         return Ok(ok(json!({ "results": results })));
     }
     if let Some(flag_sets) = outline_render_outline_flag_matrix(&case.inputs.params)? {
+        let raster_flags = outline_render_flags_or_aa(&case.inputs.params)?;
         let mut results = Vec::with_capacity(flag_sets.len());
         for (flags_label, outline_flags) in flag_sets {
             let output = c_outline_render_once(
                 case,
-                i32::try_from(FT_RASTER_FLAG_AA).map_err(|err| err.to_string())?,
+                raster_flags,
                 Some(outline_flags),
                 true,
             )?;
@@ -89989,9 +90146,10 @@ fn c_outline_render_runtime_output(case: &InputCase) -> Result<RunOutput, String
         return Ok(ok(json!({ "results": results })));
     }
     if let Some(outline_flags) = outline_render_outline_flags(&case.inputs.params)? {
+        let raster_flags = outline_render_flags_or_aa(&case.inputs.params)?;
         return c_outline_render_once(
             case,
-            i32::try_from(FT_RASTER_FLAG_AA).map_err(|err| err.to_string())?,
+            raster_flags,
             Some(outline_flags),
             false,
         );
@@ -90211,11 +90369,12 @@ fn wasm_outline_render_runtime_output(case: &InputCase) -> Result<RunOutput, Str
         return Ok(ok(json!({ "results": results })));
     }
     if let Some(flag_sets) = outline_render_outline_flag_matrix(&case.inputs.params)? {
+        let raster_flags = outline_render_flags_or_aa(&case.inputs.params)?;
         let mut results = Vec::with_capacity(flag_sets.len());
         for (flags_label, outline_flags) in flag_sets {
             let output = wasm_outline_render_once(
                 case,
-                i32::try_from(FT_RASTER_FLAG_AA).map_err(|err| err.to_string())?,
+                raster_flags,
                 Some(outline_flags),
                 true,
             )?;
@@ -90224,9 +90383,10 @@ fn wasm_outline_render_runtime_output(case: &InputCase) -> Result<RunOutput, Str
         return Ok(ok(json!({ "results": results })));
     }
     if let Some(outline_flags) = outline_render_outline_flags(&case.inputs.params)? {
+        let raster_flags = outline_render_flags_or_aa(&case.inputs.params)?;
         return wasm_outline_render_once(
             case,
-            i32::try_from(FT_RASTER_FLAG_AA).map_err(|err| err.to_string())?,
+            raster_flags,
             Some(outline_flags),
             false,
         );
@@ -90712,6 +90872,18 @@ fn outline_render_flags(params: &Value) -> Result<i32, String> {
         .and_then(Value::as_array)
         .ok_or_else(|| "flags or raster_params.flags must be an array".to_string())?;
     outline_render_flag_symbols(flags)
+}
+
+fn outline_render_flags_or_aa(params: &Value) -> Result<i32, String> {
+    if params
+        .get("raster_params")
+        .and_then(|raster_params| raster_params.get("flags"))
+        .is_some()
+    {
+        outline_render_flags(params)
+    } else {
+        i32::try_from(FT_RASTER_FLAG_AA).map_err(|err| err.to_string())
+    }
 }
 
 fn outline_render_monochrome_aa_case(case: &InputCase) -> Result<bool, String> {
@@ -103397,6 +103569,250 @@ fn bitmap_embolden_rows(scenario: &str) -> Result<Vec<BitmapEmboldenRow>, String
                 64,
                 96,
             ));
+        }
+        "batch170_gray_x_only_forced_reallocate" => {
+            rows.extend([
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w01",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    1,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w01",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    1,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w02",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    2,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w02",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    2,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w03",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    3,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w03",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    3,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w04",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    4,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w04",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    4,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w05",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    5,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w05",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    5,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w06",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    6,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w06",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    6,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w07",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    7,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w07",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    7,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w08",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    8,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w08",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    8,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w09",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    9,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w09",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    9,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w10",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    10,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w10",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    10,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w11",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    11,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w11",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    11,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w12",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    12,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w12",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    12,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w13",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    13,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w13",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    13,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w14",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    14,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w14",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    14,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-pos-w15",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    false,
+                    192,
+                    0,
+                    15,
+                ),
+                BitmapEmboldenRow::with_width(
+                    "batch170-neg-w15",
+                    FT_PIXEL_MODE_GRAY as u8,
+                    true,
+                    192,
+                    0,
+                    15,
+                ),
+            ]);
         }
         other => return Err(format!("unsupported bitmap_embolden scenario {other}")),
     }

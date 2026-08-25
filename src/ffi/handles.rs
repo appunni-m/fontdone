@@ -14695,7 +14695,17 @@ pub fn FT_Get_PFR_Metrics(
         inner
             .font()
             .pfr()
-            .map(|pfr| (pfr.outline_resolution, pfr.metrics_resolution))
+            .map(|pfr| {
+                // FreeType's negative face-index probe does not initialize
+                // the driver-private PFR metrics record.  The public C
+                // service consequently reports zero resolutions until a
+                // normal face is opened.
+                if face.probe_only {
+                    (0, 0)
+                } else {
+                    (pfr.outline_resolution, pfr.metrics_resolution)
+                }
+            })
     };
     let (outline_resolution, metrics_resolution, error) =
         if let Some((outline_resolution, metrics_resolution)) = pfr_resolutions {
@@ -14706,8 +14716,8 @@ pub fn FT_Get_PFR_Metrics(
             )
         } else {
             (
-                FT_UInt::from(face.units_per_EM),
-                FT_UInt::from(face.units_per_EM),
+                FT_UInt::from(if face.probe_only { 0 } else { face.units_per_EM }),
+                FT_UInt::from(if face.probe_only { 0 } else { face.units_per_EM }),
                 FT_Err_Unknown_File_Format,
             )
         };

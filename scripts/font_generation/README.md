@@ -37,29 +37,34 @@ licenses are enforced by `make supply-chain`.
 
 ## 2. Reviewed generators
 
+The autohint fixture generator also produces the valid public Batch215
+bottom-tilde crossed-neighbor witness, Batch216 thin crossed-tilde threshold
+witness, and Batch218 ordered bottom-distance witness used by the parity
+campaign.
+
 | Generator | Classification | Input or provenance |
 |---|---|---|
-| `build_autohint_script_fixtures.py` | Synthetic | Project-authored outlines and tables; one internal copy remains within the generated synthetic family, including malformed `loca` boundary controls and append-only Hebrew long-blue contour variants. |
-| `build_cff_fixtures.py` | Synthetic and derived | Project-authored CFF1/CFF2, TrueType control, and malformed CFF1/CFF2 table and INDEX data, plus malformed CID CFF derivatives of the maintained OFL-1.1 `FDArrayTest257` face. |
+| `build_autohint_script_fixtures.py` | Synthetic | Project-authored outlines and tables; one internal copy remains within the generated synthetic family, including malformed `loca` boundary controls, six append-only valid Hebrew Batch123 long-blue contour variants, six normal-scale Batch126 Latin/Han branch probes, six valid Batch127 CJK edge-link predicate probes, fifteen valid Batch145 CJK edge-interpolation witnesses, six valid Batch152 Latin adjustment-database flag probes, six valid Batch153 Latin no-extremum blue-string probes, six valid Batch159 Latin fallback/adjustment probes, one valid Batch190 Hebrew late-on-curve long-blue witness, one valid Batch191 Hebrew off-curve apex witness, one valid Batch194 lowered Khmer sub-top witness, one valid Batch196 Hebrew near-top span witness, one valid Batch197 mirrored Hebrew near-top span witness, one valid Batch199 Latin vertical-cusp segment-merge witness, one valid Batch200 Latin top-tilde minimum witness, one valid Batch201 Latin top-tilde predecessor-control witness, one valid Batch202 Latin bottom-tilde maximum witness, one valid Batch203 Latin lowest-contour tie-break witness, one valid Batch204 Latin horizontal-overlap witness, one valid Batch210 Latin top-tilde successor-control witness, one valid Batch211 Latin crossed-neighbor measurement witness, one valid Batch212 Latin thin crossed-tilde witness, one valid Batch213 Latin bottom-tilde predecessor-control witness, and one valid Batch214 Latin bottom-tilde successor-control witness. |
+| `build_cff_fixtures.py` | Synthetic and derived | Project-authored CFF1/CFF2, TrueType control, valid cubic-bbox extrema probes, and malformed CFF1/CFF2 table and INDEX data, plus malformed CID CFF derivatives of the maintained OFL-1.1 `FDArrayTest257` face. |
 | `build_render_fixtures.py` | Synthetic | Project-authored outlines and TrueType programs. |
-| `build_type1_fixtures.py` | Synthetic | Project-authored Type 1 charstrings, dictionaries, AFM data, notices, a naked CID-keyed Type 1 resource, and six valid no-op movement/curve controls for public parser parity. |
+| `build_type1_fixtures.py` | Synthetic | Project-authored Type 1 charstrings, dictionaries, AFM data, notices, a naked CID-keyed Type 1 resource, six valid no-op movement/curve controls, and a valid post-contour `setcurrentpoint` control. |
 | `build_type42_fixtures.py` | Synthetic | Project-authored embedded TrueType tables, outlines, names, and Type 42 wrapper. |
 | `generate_malformed_bdf_fixtures.py` | Synthetic | Project-authored BDF text, including valid atom/integer/cardinal property controls and intentionally malformed variants. |
 | `generate_winfnt_fixtures.py` | Synthetic | Project-authored binary WinFNT records and bitmap data, including short-header and declared-size validation controls. |
 | `build_cpal_palette_fixtures.py` | Derived | `tests/fixtures/input/fonts/DejaVuSans.ttf`; DejaVu/Bitstream terms remain applicable. |
 | `build_cmap_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; only cmap/table mutations, including maintained malformed format-13 and format-14 parser matrices beside valid format-6 controls. |
 | `build_gasp_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
-| `build_hinter_edge_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`, including a 102-level composite chain, a 77-glyph opcode stack-underflow matrix, an isolated TrueType VM operand/branch matrix, 30 valid public Batch61 VM branch witnesses, and a prep-time empty-contour SHZ control. |
+| `build_hinter_edge_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`, including a 102-level composite chain, a 77-glyph opcode stack-underflow matrix, isolated TrueType VM operand/branch matrices, 30 valid public Batch61 VM branch witnesses, 30 valid public Batch121 pedantic WS/WCVTP error witnesses, 30 valid public Batch122 IDEF/predicate/scan-control branch witnesses, and a prep-time empty-contour SHZ control. |
 | `build_metric_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
 | `build_post_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`. |
-| `build_sbit_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; bitmap outputs add project-authored EBLC/EBDT records, including the maintained `embedded-strikes.ttf` face-record input, valid and malformed SFNT-BDF derivatives, a CBLC/CBDT strike-metrics normalization matrix, and 100-strike `FT_Select_Size` matrices with hhea, `OS/2`, and `vmtx` metric variants. |
+| `build_sbit_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; bitmap outputs add project-authored EBLC/EBDT records, including the maintained `embedded-strikes.ttf` face-record input, valid and malformed SFNT-BDF derivatives, a valid zero-width positive-row gray format-1 strike for Batch182, a CBLC/CBDT strike-metrics normalization matrix, and 100-strike `FT_Select_Size` matrices with hhea, `OS/2`, and `vmtx` metric variants. |
 | `build_sbix_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; adds project-authored 24 ppem `sbix` controls for PNG/JPEG/TIFF/RGBL/unknown graphic types, `dupe`/`flip` recursion, missing and malformed glyph ranges, and malformed optional-table face-open guards. The pinned oracle build has PNG decoding disabled, so the public error paths remain deterministic. |
 | `build_interpreter_version_fixtures.py` | Synthetic | Project-authored off-grid TrueType outlines and GETINFO-branching glyph programs (`MDAP`), plus a no-instruction control font. Loaded with `FT_LOAD_RENDER`, the hinted outlines and advances differ between interpreter versions 35 and 40 exactly as pinned FreeType reports. |
 | `build_pcf_fixtures.py` | Synthetic | Project-authored PCF directory, properties, accelerators, metrics, bitmap, and encoding tables. |
 | `build_pfr_fixtures.py` | Synthetic | Project-authored PFR v4 logical/physical font records, fixed and proportional character advances, all descriptor-width flags, optional logical fields, narrow/wide kerning pairs, and maintained malformed header/record controls; no third-party font material. |
 | `build_svg_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; adds project-authored plain-XML OpenType SVG documents, including a later-record range-gap lookup control, deterministic vertical metrics, and malformed optional-table controls for list offsets, records, document ranges, gzip rejection, and short tables. |
 | `build_sfnt_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; the valid OpenType fixtures contain only project-authored BASE/GDEF/GPOS/GSUB/JSTF/MATH data, including GPOS/GSUB version-1.1 layout variants with zero and in-table non-zero FeatureVariations offsets and the valid minimum-upem/full-range `extreme-hadvance.ttf` advance-boundary control. The malformed and missing-table variants replace or remove selected tables deterministically, including loadable unknown-version, required-offset, and truncated-record headers; `partial-malformed-layout.otf` retains valid GDEF/GPOS/GSUB and fails on the later MATH validation step. No third-party font is used. |
-| `build_ftmm_future_variable_fixtures.py` | Synthetic derivative | Repository-generated compact variable, `avar`, packed `gvar`, HVAR store/map and active mixed-width delta fixtures, and MVAR guard/record fixtures, including malformed optional-table face-open controls, runtime-short gvar records, tuple-header/glyph-data-offset/point-run bounds, embedded-peak bounds, private all-point and partial-point IUP runs, and empty-outline variation loads including a valid non-zero-length empty simple-glyph record. |
+| `build_ftmm_future_variable_fixtures.py` | Synthetic derivative | Repository-generated compact variable, `avar`, packed `gvar`, HVAR store/map and active mixed-width delta fixtures, and MVAR guard/record fixtures, including malformed optional-table face-open controls, runtime-short gvar records, tuple-header/glyph-data-offset/point-run bounds, embedded-peak bounds, private all-point and partial-point IUP runs, empty-outline variation loads including a valid non-zero-length empty simple-glyph record, native mixed XY/point-attached composite controls. |
 | `build_fvar_fixtures.py` | Synthetic derivative | Repository-generated `compact-variable.ttf`. |
 | `build_mvar_fixtures.py` | Synthetic derivative | Repository-generated `compact-variable.ttf`. |
 | `build_name_fixtures.py` | Synthetic derivative | Repository-generated static and variable base fixtures, including the OS/2 version-sentinel WWS-selection control. |
@@ -320,6 +325,36 @@ project-authored 48-glyph face. It appends five-operand `hvcurveto` and
 `vhcurveto` cases without changing the 46-glyph control face's SFNT-wide
 auto-hint metrics. The reviewed output is 2,720 bytes with SHA-256
 `ace3fc00642f8d4810810b6124cbe0dbfc44327a8788507d4529ff367f8ba006`.
+
+`tests/fixtures/input/fonts/cff/pure-cff-bbox-extrema.otf` is a
+project-authored seven-glyph face with six valid cubic contours whose control
+points exercise positive and negative X/Y extrema through public
+`FT_Load_Glyph` calls. It is regenerated with `build_cff_fixtures.py`; its
+reviewed output is 1,144 bytes with SHA-256
+`22e1c6c775d0f3d52bca345093bdbad05c1b82197d8881474b9045411a577bdc`.
+
+`tests/fixtures/input/fonts/cff/pure-cff-cubic-peak-shifts.otf` is a
+project-authored seven-glyph face with six valid large-coordinate cubic
+contours and a 16-unit UPEM, used by 30 public loads across five large ppem
+values to exercise cubic-peak scaling shifts. It is regenerated with
+`build_cff_fixtures.py`; its reviewed output is 1,248 bytes with SHA-256
+`39ab88a1e0dde160ecc1832a05d4efaac50e9049730f1d84551d08eba6e7426c`.
+
+`tests/fixtures/input/fonts/cff/pure-cff-below-baseline-no-vmtx.otf` is a
+project-authored two-glyph face whose valid glyph sits below the baseline and
+whose SFNT omits `vmtx` and `vhea`. It is regenerated with
+`build_cff_fixtures.py`; its reviewed output is 1,000 bytes with SHA-256
+`1c2f115dff082f453da2994f4054f6e68a25702bd82c1d57af6649403672bf61`.
+Thirty public `FT_Load_Glyph` variants use vertical layout to exercise the
+pinned CFF driver's synthesized vertical metrics and vertical grid fitting.
+
+`tests/fixtures/input/fonts/cff/pure-cff-baseline-touch-no-vmtx.otf` is a
+project-authored two-glyph face whose valid glyph's top edge touches the
+baseline and whose SFNT omits `vmtx` and `vhea`. It is regenerated with
+`build_cff_fixtures.py`; its reviewed output is 996 bytes with SHA-256
+`6197434871a86cd21a5a1c07d700f8377b1779ee7b42f6cf951c9749fd90649e`.
+Thirty public `FT_Load_Glyph` variants use vertical layout to exercise the
+pinned baseline arm of synthesized vertical metrics.
 
 `tests/fixtures/input/fonts/cid/ot-cff-cid-keyed-standard-ros.otf` is derived
 from the maintained CID-keyed CFF source with its ROS set to the standard CFF

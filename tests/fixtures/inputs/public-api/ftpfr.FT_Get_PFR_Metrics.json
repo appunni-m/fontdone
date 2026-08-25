@@ -4,6 +4,7 @@
   "manifest_cases": [
     "pfr_metrics_success",
     "non_pfr_outputs_valid_values_and_unknown_format",
+    "batch180_valid_probe_face_identity_scale",
     "optional_outputs_and_null_face"
   ],
   "cases": [
@@ -204,6 +205,767 @@
         "error": "Unknown_File_Format"
       }
     },
+{
+  "case_id": "ftpfr.FT_Get_PFR_Metrics.batch180_valid_probe_face_identity_scale",
+  "subject": "ftpfr.FT_Get_PFR_Metrics",
+  "case": "batch180_valid_probe_face_identity_scale",
+  "covers_manifest_cases": [
+    "batch180_valid_probe_face_identity_scale"
+  ],
+  "operation": "ftpfr.get_pfr_metrics",
+  "schema": "api_result",
+  "expect_error": false,
+  "inputs": {
+    "variants": [
+      {
+        "id": "b180-pfr-mask01",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask01-pfr"
+        ]
+      },
+      {
+        "id": "b180-pfr-mask02",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "ametrics_resolution"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask02-pfr"
+        ]
+      },
+      {
+        "id": "b180-pfr-mask03",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "ametrics_x_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask03-pfr"
+        ]
+      },
+      {
+        "id": "b180-pfr-mask04",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask04-pfr"
+        ]
+      },
+      {
+        "id": "b180-pfr-mask05",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution",
+            "ametrics_resolution"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask05-pfr"
+        ]
+      },
+      {
+        "id": "b180-pfr-mask06",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution",
+            "ametrics_x_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask06-pfr"
+        ]
+      },
+      {
+        "id": "b180-pfr-mask07",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "ametrics_resolution",
+            "ametrics_x_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask07-pfr"
+        ]
+      },
+      {
+        "id": "b180-pfr-mask08",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution",
+            "ametrics_resolution",
+            "ametrics_x_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask08-pfr"
+        ]
+      },
+      {
+        "id": "b180-pfr-mask09",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution",
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask09-pfr"
+        ]
+      },
+      {
+        "id": "b180-pfr-mask10",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "ametrics_resolution",
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask10-pfr"
+        ]
+      },
+      {
+        "id": "b180-pfr-mask11",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution",
+            "ametrics_resolution",
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask11-pfr"
+        ]
+      },
+      {
+        "id": "b180-pfr-mask12",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "ametrics_x_scale",
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask12-pfr"
+        ]
+      },
+      {
+        "id": "b180-pfr-mask13",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution",
+            "ametrics_x_scale",
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask13-pfr"
+        ]
+      },
+      {
+        "id": "b180-pfr-mask14",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "ametrics_resolution",
+            "ametrics_x_scale",
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask14-pfr"
+        ]
+      },
+      {
+        "id": "b180-pfr-mask15",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/pfr/basic-metrics-and-kerning.pfr",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution",
+            "ametrics_resolution",
+            "ametrics_x_scale",
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask15-pfr"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask01",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask01-sfnt"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask02",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "ametrics_resolution"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask02-sfnt"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask03",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "ametrics_x_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask03-sfnt"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask04",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask04-sfnt"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask05",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution",
+            "ametrics_resolution"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask05-sfnt"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask06",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution",
+            "ametrics_x_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask06-sfnt"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask07",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "ametrics_resolution",
+            "ametrics_x_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask07-sfnt"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask08",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution",
+            "ametrics_resolution",
+            "ametrics_x_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask08-sfnt"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask09",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution",
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask09-sfnt"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask10",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "ametrics_resolution",
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask10-sfnt"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask11",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution",
+            "ametrics_resolution",
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask11-sfnt"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask12",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "ametrics_x_scale",
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask12-sfnt"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask13",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution",
+            "ametrics_x_scale",
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask13-sfnt"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask14",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "ametrics_resolution",
+            "ametrics_x_scale",
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask14-sfnt"
+        ]
+      },
+      {
+        "id": "b180-sfnt-mask15",
+        "expect_error": true,
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": -1,
+          "preserve_initial_size": true,
+          "output_pointer_mask": [
+            "aoutline_resolution",
+            "ametrics_resolution",
+            "ametrics_x_scale",
+            "ametrics_y_scale"
+          ],
+          "sentinel": -777777
+        },
+        "coverage": [
+          "src/ffi/handles.rs:14725-14726:batch180-probe-face-mask15-sfnt"
+        ]
+      }
+    ]
+  },
+  "classifiers": [
+    "kind:function",
+    "header:ftpfr",
+    "surface:public-c-api",
+    "area:pfr-metrics",
+    "coverage:batch180"
+  ],
+  "metadata": {
+    "source_behavior": "Valid negative face_index probe faces have no active size; all 15 non-empty output-pointer subsets must receive identity 16.16 scales while the PFR and non-PFR return contracts remain exact."
+  },
+  "expectation": {
+    "status": "error",
+    "output_shape": {
+      "return": "FT_Error",
+      "pointer_mask": "bitmask of non-null output pointers",
+      "outline_resolution": "FT_UInt",
+      "metrics_resolution": "FT_UInt",
+      "metrics_x_scale": "FT_Fixed 16.16",
+      "metrics_y_scale": "FT_Fixed 16.16"
+    },
+    "compare": {
+      "mode": "exact_error",
+      "paths": [
+        "return",
+        "pointer_mask",
+        "outline_resolution",
+        "metrics_resolution",
+        "metrics_x_scale",
+        "metrics_y_scale"
+      ]
+    },
+    "error": "Unknown_File_Format for non-PFR control variants"
+  },
+  "source_refs": [
+    "freetype/src/base/ftpfr.c",
+    "src/ffi/handles.rs:14725-14726"
+  ]
+},
     {
       "case_id": "ftpfr.FT_Get_PFR_Metrics.optional_outputs_and_null_face",
       "subject": "ftpfr.FT_Get_PFR_Metrics",

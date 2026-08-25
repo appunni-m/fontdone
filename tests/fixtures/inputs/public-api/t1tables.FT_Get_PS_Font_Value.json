@@ -1,7 +1,7 @@
 {
   "version": 1,
   "subject": "t1tables.FT_Get_PS_Font_Value",
-  "manifest_cases": ["signature_matches_header", "type1_scalar_string_and_array_values", "sizing_query_and_short_buffer", "invalid_key_or_index_returns_zero", "non_type1_or_missing_service_returns_zero"],
+  "manifest_cases": ["signature_matches_header", "type1_scalar_string_and_array_values", "sizing_query_and_short_buffer", "invalid_key_or_index_returns_zero", "non_type1_or_missing_service_returns_zero", "batch168_valid_missing_optional_strings", "batch171_valid_builtin_encoding_entries"],
   "cases": [
     {
       "case_id": "t1tables.FT_Get_PS_Font_Value.signature_and_behavior_matrix",
@@ -77,6 +77,398 @@
         "output_shape": {"return_value": "FT_Long", "copied_value": "typed bytes or string bytes", "buffer_sentinel": "unchanged when not copied"},
         "compare": {"mode": "exact", "paths": ["return_value", "copied_value", "buffer_sentinel"]}
       }
+    },
+    {
+      "case_id": "t1tables.FT_Get_PS_Font_Value.batch168_valid_missing_optional_strings",
+      "subject": "t1tables.FT_Get_PS_Font_Value",
+      "case": "batch168_valid_missing_optional_strings",
+      "covers_manifest_cases": ["batch168_valid_missing_optional_strings"],
+      "operation": "t1tables.get_ps_font_value",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "batch168-missing-string-001",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-001", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_VERSION", "idx": 0, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:version:null:0"]
+          },
+          {
+            "id": "batch168-missing-string-002",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-002", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_VERSION", "idx": 0, "value_pointer_mode": "valid", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:version:valid:0"]
+          },
+          {
+            "id": "batch168-missing-string-003",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-003", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_VERSION", "idx": 0, "value_pointer_mode": "valid", "value_len": 1}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:version:valid:1"]
+          },
+          {
+            "id": "batch168-missing-string-004",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-004", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_VERSION", "idx": 0, "value_pointer_mode": "valid", "value_len": 16}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:version:valid:16"]
+          },
+          {
+            "id": "batch168-missing-string-005",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-005", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_VERSION", "idx": 0, "value_pointer_mode": "valid", "value_len": 255}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:version:valid:255"]
+          },
+          {
+            "id": "batch168-missing-string-006",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-006", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_VERSION", "idx": 0, "value_pointer_mode": "null", "value_len": 256}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:version:null:256"]
+          },
+          {
+            "id": "batch168-missing-string-007",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-007", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_NOTICE", "idx": 0, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:notice:null:0"]
+          },
+          {
+            "id": "batch168-missing-string-008",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-008", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_NOTICE", "idx": 0, "value_pointer_mode": "valid", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:notice:valid:0"]
+          },
+          {
+            "id": "batch168-missing-string-009",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-009", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_NOTICE", "idx": 0, "value_pointer_mode": "valid", "value_len": 1}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:notice:valid:1"]
+          },
+          {
+            "id": "batch168-missing-string-010",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-010", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_NOTICE", "idx": 0, "value_pointer_mode": "valid", "value_len": 16}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:notice:valid:16"]
+          },
+          {
+            "id": "batch168-missing-string-011",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-011", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_NOTICE", "idx": 0, "value_pointer_mode": "valid", "value_len": 255}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:notice:valid:255"]
+          },
+          {
+            "id": "batch168-missing-string-012",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-012", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_NOTICE", "idx": 0, "value_pointer_mode": "null", "value_len": 256}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:notice:null:256"]
+          },
+          {
+            "id": "batch168-missing-string-013",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-013", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_FULL_NAME", "idx": 0, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:full-name:null:0"]
+          },
+          {
+            "id": "batch168-missing-string-014",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-014", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_FULL_NAME", "idx": 0, "value_pointer_mode": "valid", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:full-name:valid:0"]
+          },
+          {
+            "id": "batch168-missing-string-015",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-015", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_FULL_NAME", "idx": 0, "value_pointer_mode": "valid", "value_len": 1}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:full-name:valid:1"]
+          },
+          {
+            "id": "batch168-missing-string-016",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-016", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_FULL_NAME", "idx": 0, "value_pointer_mode": "valid", "value_len": 16}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:full-name:valid:16"]
+          },
+          {
+            "id": "batch168-missing-string-017",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-017", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_FULL_NAME", "idx": 0, "value_pointer_mode": "valid", "value_len": 255}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:full-name:valid:255"]
+          },
+          {
+            "id": "batch168-missing-string-018",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-018", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_FULL_NAME", "idx": 0, "value_pointer_mode": "null", "value_len": 256}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:full-name:null:256"]
+          },
+          {
+            "id": "batch168-missing-string-019",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-019", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_VERSION", "idx": 0, "value_pointer_mode": "valid", "value_len": 2}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:version:valid:2"]
+          },
+          {
+            "id": "batch168-missing-string-020",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-020", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_VERSION", "idx": 0, "value_pointer_mode": "valid", "value_len": 31}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:version:valid:31"]
+          },
+          {
+            "id": "batch168-missing-string-021",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-021", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_VERSION", "idx": 0, "value_pointer_mode": "valid", "value_len": -1}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:version:valid:-1"]
+          },
+          {
+            "id": "batch168-missing-string-022",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-022", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_VERSION", "idx": 0, "value_pointer_mode": "null", "value_len": -1}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:version:null:-1"]
+          },
+          {
+            "id": "batch168-missing-string-023",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-023", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_NOTICE", "idx": 0, "value_pointer_mode": "valid", "value_len": 2}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:notice:valid:2"]
+          },
+          {
+            "id": "batch168-missing-string-024",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-024", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_NOTICE", "idx": 0, "value_pointer_mode": "valid", "value_len": 31}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:notice:valid:31"]
+          },
+          {
+            "id": "batch168-missing-string-025",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-025", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_NOTICE", "idx": 0, "value_pointer_mode": "valid", "value_len": -1}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:notice:valid:-1"]
+          },
+          {
+            "id": "batch168-missing-string-026",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-026", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_NOTICE", "idx": 0, "value_pointer_mode": "null", "value_len": -1}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:notice:null:-1"]
+          },
+          {
+            "id": "batch168-missing-string-027",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-027", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_FULL_NAME", "idx": 0, "value_pointer_mode": "valid", "value_len": 2}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:full-name:valid:2"]
+          },
+          {
+            "id": "batch168-missing-string-028",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-028", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_FULL_NAME", "idx": 0, "value_pointer_mode": "valid", "value_len": 31}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:full-name:valid:31"]
+          },
+          {
+            "id": "batch168-missing-string-029",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-029", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_FULL_NAME", "idx": 0, "value_pointer_mode": "valid", "value_len": -1}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:full-name:valid:-1"]
+          },
+          {
+            "id": "batch168-missing-string-030",
+            "assets": {"type1_missing_strings": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1/font-value-missing-optional-strings.pfb", "requirements": "Valid Type 1 face with optional FontInfo strings absent."}},
+            "params": {"scenarios": [{"id": "batch168-missing-string-030", "asset": "type1_missing_strings", "face_index": 0, "key": "PS_DICT_FULL_NAME", "idx": 0, "value_pointer_mode": "null", "value_len": -1}]},
+            "coverage": ["src/ffi/handles.rs:7082-7083:full-name:null:-1"]
+          }
+        ]
+      },
+      "classifiers": ["kind:function", "header:t1tables", "surface:public-c-api", "behavior:optional-fontinfo-strings"],
+      "metadata": {"source_behavior": "Valid Type 1 FontInfo dictionaries may omit optional version, Notice, FullName, FamilyName, and Weight strings; the public value service returns -1 without copying a value."},
+      "expectation": {"status": "ok", "output_shape": {"rows": [{"return": "FT_Long", "prequery": "FT_Long", "buffer_hex": "sentinel or empty"}]}, "compare": {"mode": "exact", "paths": ["rows"]}, "fixture_requirements": ["Valid Type 1 face with scalar FontInfo fields and all five optional string fields absent."]}
+    },
+    {
+      "case_id": "t1tables.FT_Get_PS_Font_Value.batch171_valid_builtin_encoding_entries",
+      "subject": "t1tables.FT_Get_PS_Font_Value",
+      "case": "batch171_valid_builtin_encoding_entries",
+      "covers_manifest_cases": ["batch171_valid_builtin_encoding_entries"],
+      "operation": "t1tables.get_ps_font_value",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "b171-standard-entry-000",
+            "assets": {"standard_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/standard.pfb", "requirements": "Valid Type 1 face using the built-in StandardEncoding."}},
+            "params": {"scenarios": [{"id": "b171-standard-entry-000", "asset": "standard_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 0, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-standard:0"]
+          },
+          {
+            "id": "b171-standard-entry-001",
+            "assets": {"standard_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/standard.pfb", "requirements": "Valid Type 1 face using the built-in StandardEncoding."}},
+            "params": {"scenarios": [{"id": "b171-standard-entry-001", "asset": "standard_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 1, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-standard:1"]
+          },
+          {
+            "id": "b171-standard-entry-002",
+            "assets": {"standard_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/standard.pfb", "requirements": "Valid Type 1 face using the built-in StandardEncoding."}},
+            "params": {"scenarios": [{"id": "b171-standard-entry-002", "asset": "standard_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 2, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-standard:2"]
+          },
+          {
+            "id": "b171-standard-entry-031",
+            "assets": {"standard_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/standard.pfb", "requirements": "Valid Type 1 face using the built-in StandardEncoding."}},
+            "params": {"scenarios": [{"id": "b171-standard-entry-031", "asset": "standard_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 31, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-standard:31"]
+          },
+          {
+            "id": "b171-standard-entry-032",
+            "assets": {"standard_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/standard.pfb", "requirements": "Valid Type 1 face using the built-in StandardEncoding."}},
+            "params": {"scenarios": [{"id": "b171-standard-entry-032", "asset": "standard_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 32, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-standard:32"]
+          },
+          {
+            "id": "b171-standard-entry-065",
+            "assets": {"standard_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/standard.pfb", "requirements": "Valid Type 1 face using the built-in StandardEncoding."}},
+            "params": {"scenarios": [{"id": "b171-standard-entry-065", "asset": "standard_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 65, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-standard:65"]
+          },
+          {
+            "id": "b171-standard-entry-127",
+            "assets": {"standard_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/standard.pfb", "requirements": "Valid Type 1 face using the built-in StandardEncoding."}},
+            "params": {"scenarios": [{"id": "b171-standard-entry-127", "asset": "standard_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 127, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-standard:127"]
+          },
+          {
+            "id": "b171-standard-entry-128",
+            "assets": {"standard_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/standard.pfb", "requirements": "Valid Type 1 face using the built-in StandardEncoding."}},
+            "params": {"scenarios": [{"id": "b171-standard-entry-128", "asset": "standard_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 128, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-standard:128"]
+          },
+          {
+            "id": "b171-standard-entry-254",
+            "assets": {"standard_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/standard.pfb", "requirements": "Valid Type 1 face using the built-in StandardEncoding."}},
+            "params": {"scenarios": [{"id": "b171-standard-entry-254", "asset": "standard_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 254, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-standard:254"]
+          },
+          {
+            "id": "b171-standard-entry-255",
+            "assets": {"standard_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/standard.pfb", "requirements": "Valid Type 1 face using the built-in StandardEncoding."}},
+            "params": {"scenarios": [{"id": "b171-standard-entry-255", "asset": "standard_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 255, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-standard:255"]
+          },
+          {
+            "id": "b171-isolatin1-entry-000",
+            "assets": {"isolatin1_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/isolatin1.pfb", "requirements": "Valid Type 1 face using the built-in ISOLatin1Encoding."}},
+            "params": {"scenarios": [{"id": "b171-isolatin1-entry-000", "asset": "isolatin1_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 0, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-isolatin1:0"]
+          },
+          {
+            "id": "b171-isolatin1-entry-001",
+            "assets": {"isolatin1_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/isolatin1.pfb", "requirements": "Valid Type 1 face using the built-in ISOLatin1Encoding."}},
+            "params": {"scenarios": [{"id": "b171-isolatin1-entry-001", "asset": "isolatin1_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 1, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-isolatin1:1"]
+          },
+          {
+            "id": "b171-isolatin1-entry-002",
+            "assets": {"isolatin1_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/isolatin1.pfb", "requirements": "Valid Type 1 face using the built-in ISOLatin1Encoding."}},
+            "params": {"scenarios": [{"id": "b171-isolatin1-entry-002", "asset": "isolatin1_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 2, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-isolatin1:2"]
+          },
+          {
+            "id": "b171-isolatin1-entry-031",
+            "assets": {"isolatin1_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/isolatin1.pfb", "requirements": "Valid Type 1 face using the built-in ISOLatin1Encoding."}},
+            "params": {"scenarios": [{"id": "b171-isolatin1-entry-031", "asset": "isolatin1_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 31, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-isolatin1:31"]
+          },
+          {
+            "id": "b171-isolatin1-entry-032",
+            "assets": {"isolatin1_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/isolatin1.pfb", "requirements": "Valid Type 1 face using the built-in ISOLatin1Encoding."}},
+            "params": {"scenarios": [{"id": "b171-isolatin1-entry-032", "asset": "isolatin1_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 32, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-isolatin1:32"]
+          },
+          {
+            "id": "b171-isolatin1-entry-065",
+            "assets": {"isolatin1_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/isolatin1.pfb", "requirements": "Valid Type 1 face using the built-in ISOLatin1Encoding."}},
+            "params": {"scenarios": [{"id": "b171-isolatin1-entry-065", "asset": "isolatin1_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 65, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-isolatin1:65"]
+          },
+          {
+            "id": "b171-isolatin1-entry-127",
+            "assets": {"isolatin1_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/isolatin1.pfb", "requirements": "Valid Type 1 face using the built-in ISOLatin1Encoding."}},
+            "params": {"scenarios": [{"id": "b171-isolatin1-entry-127", "asset": "isolatin1_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 127, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-isolatin1:127"]
+          },
+          {
+            "id": "b171-isolatin1-entry-128",
+            "assets": {"isolatin1_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/isolatin1.pfb", "requirements": "Valid Type 1 face using the built-in ISOLatin1Encoding."}},
+            "params": {"scenarios": [{"id": "b171-isolatin1-entry-128", "asset": "isolatin1_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 128, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-isolatin1:128"]
+          },
+          {
+            "id": "b171-isolatin1-entry-254",
+            "assets": {"isolatin1_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/isolatin1.pfb", "requirements": "Valid Type 1 face using the built-in ISOLatin1Encoding."}},
+            "params": {"scenarios": [{"id": "b171-isolatin1-entry-254", "asset": "isolatin1_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 254, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-isolatin1:254"]
+          },
+          {
+            "id": "b171-isolatin1-entry-255",
+            "assets": {"isolatin1_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/isolatin1.pfb", "requirements": "Valid Type 1 face using the built-in ISOLatin1Encoding."}},
+            "params": {"scenarios": [{"id": "b171-isolatin1-entry-255", "asset": "isolatin1_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 255, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-isolatin1:255"]
+          },
+          {
+            "id": "b171-expert-entry-000",
+            "assets": {"expert_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/expert.pfb", "requirements": "Valid Type 1 face using the built-in ExpertEncoding."}},
+            "params": {"scenarios": [{"id": "b171-expert-entry-000", "asset": "expert_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 0, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-expert:0"]
+          },
+          {
+            "id": "b171-expert-entry-001",
+            "assets": {"expert_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/expert.pfb", "requirements": "Valid Type 1 face using the built-in ExpertEncoding."}},
+            "params": {"scenarios": [{"id": "b171-expert-entry-001", "asset": "expert_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 1, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-expert:1"]
+          },
+          {
+            "id": "b171-expert-entry-002",
+            "assets": {"expert_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/expert.pfb", "requirements": "Valid Type 1 face using the built-in ExpertEncoding."}},
+            "params": {"scenarios": [{"id": "b171-expert-entry-002", "asset": "expert_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 2, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-expert:2"]
+          },
+          {
+            "id": "b171-expert-entry-031",
+            "assets": {"expert_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/expert.pfb", "requirements": "Valid Type 1 face using the built-in ExpertEncoding."}},
+            "params": {"scenarios": [{"id": "b171-expert-entry-031", "asset": "expert_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 31, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-expert:31"]
+          },
+          {
+            "id": "b171-expert-entry-032",
+            "assets": {"expert_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/expert.pfb", "requirements": "Valid Type 1 face using the built-in ExpertEncoding."}},
+            "params": {"scenarios": [{"id": "b171-expert-entry-032", "asset": "expert_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 32, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-expert:32"]
+          },
+          {
+            "id": "b171-expert-entry-065",
+            "assets": {"expert_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/expert.pfb", "requirements": "Valid Type 1 face using the built-in ExpertEncoding."}},
+            "params": {"scenarios": [{"id": "b171-expert-entry-065", "asset": "expert_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 65, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-expert:65"]
+          },
+          {
+            "id": "b171-expert-entry-127",
+            "assets": {"expert_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/expert.pfb", "requirements": "Valid Type 1 face using the built-in ExpertEncoding."}},
+            "params": {"scenarios": [{"id": "b171-expert-entry-127", "asset": "expert_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 127, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-expert:127"]
+          },
+          {
+            "id": "b171-expert-entry-128",
+            "assets": {"expert_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/expert.pfb", "requirements": "Valid Type 1 face using the built-in ExpertEncoding."}},
+            "params": {"scenarios": [{"id": "b171-expert-entry-128", "asset": "expert_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 128, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-expert:128"]
+          },
+          {
+            "id": "b171-expert-entry-254",
+            "assets": {"expert_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/expert.pfb", "requirements": "Valid Type 1 face using the built-in ExpertEncoding."}},
+            "params": {"scenarios": [{"id": "b171-expert-entry-254", "asset": "expert_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 254, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-expert:254"]
+          },
+          {
+            "id": "b171-expert-entry-255",
+            "assets": {"expert_encoding": {"kind": "ref", "role": "type1_font", "id": "input/fonts/type1-encoding/expert.pfb", "requirements": "Valid Type 1 face using the built-in ExpertEncoding."}},
+            "params": {"scenarios": [{"id": "b171-expert-entry-255", "asset": "expert_encoding", "face_index": 0, "key": "PS_DICT_ENCODING_ENTRY", "idx": 255, "value_pointer_mode": "null", "value_len": 0}]},
+            "coverage": ["src/ffi/handles.rs:7370:builtin-expert:255"]
+          }
+        ]
+      },
+      "classifiers": ["kind:function", "header:t1tables", "surface:public-c-api", "behavior:builtin-encoding-entry"],
+      "metadata": {"source_behavior": "Valid Type 1 faces using StandardEncoding, ISOLatin1Encoding, or ExpertEncoding take the public encoding-entry query through the built-in-encoding fallback, returning the exact pinned sentinel without requiring an array entry."},
+      "expectation": {"status": "ok", "output_shape": {"rows": [{"return": "FT_Long", "prequery": "FT_Long", "buffer_hex": "empty"}]}, "compare": {"mode": "exact", "paths": ["rows"]}, "fixture_requirements": ["Valid maintained Type 1 faces with built-in StandardEncoding, ISOLatin1Encoding, or ExpertEncoding."]}
     }
   ]
 }

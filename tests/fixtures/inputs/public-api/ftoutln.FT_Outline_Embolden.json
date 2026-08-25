@@ -1,7 +1,7 @@
 {
   "version": 1,
   "subject": "ftoutln.FT_Outline_Embolden",
-  "manifest_cases": ["symmetric_strength_matches_xy", "zero_strength_noop", "invalid_or_indeterminate_orientation_errors", "mcp_gap_matrix"],
+  "manifest_cases": ["symmetric_strength_matches_xy", "zero_strength_noop", "invalid_or_indeterminate_orientation_errors", "mcp_gap_matrix", "batch167_valid_empty_negative_strength_fallback"],
   "cases": [
     {
       "case_id": "ftoutln.FT_Outline_Embolden.symmetric_strength_matches_xy",
@@ -38,6 +38,378 @@
       "classifiers": ["kind:function", "header:ftoutln", "surface:public-c-api", "error:invalid-outline"],
       "metadata": {"abi": {"header": "freetype/ftoutln.h", "symbol": "FT_Outline_Embolden", "kind": "function", "c_signature": "FT_Error FT_Outline_Embolden(FT_Outline* outline, FT_Pos strength)"}, "source_behavior": "Null outline returns Invalid_Outline; a non-empty outline whose orientation is NONE returns Invalid_Argument."},
       "expectation": {"status": "error", "output_shape": {"results": [{"return": "FT_Error"}]}, "compare": {"mode": "exact_error", "paths": ["results[*].return"]}, "error": ["FT_Err_Invalid_Outline", "FT_Err_Invalid_Argument"], "source_refs": ["freetype/src/base/ftoutln.c:923-940"], "fixture_requirements": ["Non-empty outline for which FT_Outline_Get_Orientation returns FT_ORIENTATION_NONE."]}
+    },
+    {
+      "case_id": "ftoutln.FT_Outline_Embolden.batch167_valid_empty_negative_strength_fallback",
+      "subject": "ftoutln.FT_Outline_Embolden",
+      "case": "mcp_gap_matrix",
+      "covers_manifest_cases": ["batch167_valid_empty_negative_strength_fallback"],
+      "operation": "ftoutln.outline_embolden",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "batch167-empty-negative-overflow-001",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483649,
+              "ystrength": -2147483649
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:001:strength:-2147483649"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-002",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483650,
+              "ystrength": -2147483650
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:002:strength:-2147483650"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-003",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483651,
+              "ystrength": -2147483651
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:003:strength:-2147483651"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-004",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483652,
+              "ystrength": -2147483652
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:004:strength:-2147483652"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-005",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483653,
+              "ystrength": -2147483653
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:005:strength:-2147483653"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-006",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483654,
+              "ystrength": -2147483654
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:006:strength:-2147483654"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-007",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483655,
+              "ystrength": -2147483655
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:007:strength:-2147483655"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-008",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483656,
+              "ystrength": -2147483656
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:008:strength:-2147483656"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-009",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483657,
+              "ystrength": -2147483657
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:009:strength:-2147483657"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-010",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483658,
+              "ystrength": -2147483658
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:010:strength:-2147483658"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-011",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483659,
+              "ystrength": -2147483659
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:011:strength:-2147483659"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-012",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483660,
+              "ystrength": -2147483660
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:012:strength:-2147483660"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-013",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483661,
+              "ystrength": -2147483661
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:013:strength:-2147483661"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-014",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483662,
+              "ystrength": -2147483662
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:014:strength:-2147483662"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-015",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483663,
+              "ystrength": -2147483663
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:015:strength:-2147483663"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-016",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483664,
+              "ystrength": -2147483664
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:016:strength:-2147483664"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-017",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483665,
+              "ystrength": -2147483665
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:017:strength:-2147483665"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-018",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483666,
+              "ystrength": -2147483666
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:018:strength:-2147483666"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-019",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483667,
+              "ystrength": -2147483667
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:019:strength:-2147483667"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-020",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483668,
+              "ystrength": -2147483668
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:020:strength:-2147483668"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-021",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483669,
+              "ystrength": -2147483669
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:021:strength:-2147483669"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-022",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483670,
+              "ystrength": -2147483670
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:022:strength:-2147483670"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-023",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483671,
+              "ystrength": -2147483671
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:023:strength:-2147483671"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-024",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483672,
+              "ystrength": -2147483672
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:024:strength:-2147483672"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-025",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483673,
+              "ystrength": -2147483673
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:025:strength:-2147483673"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-026",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483674,
+              "ystrength": -2147483674
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:026:strength:-2147483674"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-027",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483675,
+              "ystrength": -2147483675
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:027:strength:-2147483675"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-028",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483676,
+              "ystrength": -2147483676
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:028:strength:-2147483676"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-029",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483677,
+              "ystrength": -2147483677
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:029:strength:-2147483677"
+            ]
+          },
+          {
+            "id": "batch167-empty-negative-overflow-030",
+            "params": {
+              "validation": "empty_overflow",
+              "xstrength": -2147483678,
+              "ystrength": -2147483678
+            },
+            "coverage": [
+              "batch167:empty-negative-overflow:030:strength:-2147483678"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftoutln",
+        "surface:public-c-api",
+        "behavior:conversion-and-overflow-validation",
+        "coverage:real-parity"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "points_after": [
+            "FT_Vector"
+          ]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "return",
+            "points_after"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftoutln.c:917-940"
+        ],
+        "fixture_requirements": [
+          "Each variant uses a valid empty public FT_Outline and a distinct FT_Pos strength below i32::MIN, exercising the public Rust FFI conversion fallback without malformed outline data."
+        ]
+      }
     },
     {
       "case_id": "ftoutln.FT_Outline_Embolden.mcp_gap_matrix",

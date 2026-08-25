@@ -207,6 +207,35 @@ def gray_format1_tables(
     return eblc, ebdt
 
 
+def gray_zero_width_positive_rows_format1_tables() -> tuple[bytes, bytes]:
+    """Build valid gray SBits with positive rows and a zero bitmap pitch."""
+    start_glyph = 1
+    end_glyph = 30
+    image_size = 5
+    images = b"".join(
+        bytes([glyph, 0, 0, glyph, glyph])
+        for glyph in range(start_glyph, end_glyph + 1)
+    )
+    offsets = tuple(index * image_size for index in range(end_glyph - start_glyph + 2))
+    index_array = struct.pack(">HHI", start_glyph, end_glyph, 8)
+    index_subtable = (
+        struct.pack(">HHI", 1, 1, 4)
+        + struct.pack(">31I", *offsets)
+    )
+    index_tables = index_array + index_subtable
+    strike = bitmap_size_table(
+        8 + 48,
+        len(index_tables),
+        start_glyph,
+        end_glyph,
+        bit_depth=8,
+        line_metrics=eblc_line_metrics(width_max=0, max_before_bl=30),
+    )
+    eblc = struct.pack(">II", 0x00020000, 1) + strike + index_tables
+    ebdt = struct.pack(">I", 0x00020000) + images
+    return eblc, ebdt
+
+
 def packed_format1_tables(bit_depth: int, image: bytes) -> tuple[bytes, bytes]:
     index_array = struct.pack(">HHI", 1, 1, 8)
     index_subtable = (
@@ -1114,6 +1143,11 @@ def build_gray_format1_bitmap() -> None:
     save_sbit_font("sbit_gray_format1_vmtx.ttf", eblc, ebdt, vertical_metrics=(1, 880))
 
 
+def build_gray_zero_width_positive_rows_bitmap() -> None:
+    eblc, ebdt = gray_zero_width_positive_rows_format1_tables()
+    save_sbit_font("sbit_gray_zero_width_positive_rows_format1.ttf", eblc, ebdt)
+
+
 def build_sfnt_bdf_strike() -> None:
     eblc, ebdt = gray_format1_tables()
     font = TTFont(BASE_FONT, recalcTimestamp=False)
@@ -1385,6 +1419,7 @@ def build_composite_missing_subglyphs() -> None:
 def main() -> None:
     build_missing_bitmap()
     build_gray_format1_bitmap()
+    build_gray_zero_width_positive_rows_bitmap()
     build_sfnt_bdf_strike()
     build_embedded_strikes()
     build_mono_format1_bitmap()

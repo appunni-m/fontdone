@@ -161,7 +161,7 @@ pub(crate) fn load_glyph_with_variations(
     glyph_index: u16,
     hmtx: &crate::tt::hmtx::HmtxTable,
     gvar: &crate::tt::gvar::GvarTable,
-    normalized_coords: &[i16],
+    normalized_coords: &[i32],
 ) -> Result<GlyphOutline, FontError> {
     load_glyph_inner(
         glyf,
@@ -211,7 +211,7 @@ pub(crate) fn load_glyph_no_hinting_with_variations(
     glyph_index: u16,
     hmtx: &crate::tt::hmtx::HmtxTable,
     gvar: &crate::tt::gvar::GvarTable,
-    normalized_coords: &[i16],
+    normalized_coords: &[i32],
 ) -> Result<GlyphOutline, FontError> {
     load_glyph_inner(
         glyf,
@@ -262,7 +262,7 @@ pub(crate) fn load_glyph_with_scaled_component_offsets_and_variations(
     x_scale: i32,
     y_scale: i32,
     gvar: &crate::tt::gvar::GvarTable,
-    normalized_coords: &[i16],
+    normalized_coords: &[i32],
 ) -> Result<GlyphOutline, FontError> {
     load_glyph_inner(
         glyf,
@@ -370,7 +370,7 @@ pub(crate) fn load_glyph_scaled_no_hinting_with_variations(
     x_scale: i32,
     y_scale: i32,
     gvar: &crate::tt::gvar::GvarTable,
-    normalized_coords: &[i16],
+    normalized_coords: &[i32],
 ) -> Result<GlyphOutline, FontError> {
     load_glyph_inner(
         glyf,
@@ -393,7 +393,7 @@ pub(crate) fn load_glyph_scaled_no_hinting_with_variations(
 #[derive(Clone, Copy)]
 struct VariationContext<'a> {
     gvar: &'a crate::tt::gvar::GvarTable,
-    normalized_coords: &'a [i16],
+    normalized_coords: &'a [i32],
 }
 
 #[derive(Clone, Copy, Default)]

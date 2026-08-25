@@ -46,6 +46,11 @@ pub struct FontData {
     pub gvar_error: Option<crate::error::FontError>,
     pub design_variation_coords: Vec<i32>,
     pub normalized_variation_coords: Vec<i16>,
+    /// Active normalized coordinates in FreeType's full 16.16 arithmetic
+    /// domain. The compact 2.14 copy above remains for OpenType variation
+    /// stores, while gvar needs the extra fractional bits used by
+    /// `ft_var_apply_tuple`.
+    pub normalized_variation_coords_16_16: Vec<i32>,
     pub blend_variation_coords_16_16: Vec<i32>,
     pub variation_coordinates_set: bool,
     /// True after the public design-coordinate setter has rebuilt this face,
@@ -115,7 +120,7 @@ impl FontData {
     /// normalized coordinates are zero, even if the public setter was called
     /// with an explicit default tuple.
     pub(crate) fn has_active_variation(&self) -> bool {
-        self.normalized_variation_coords
+        self.normalized_variation_coords_16_16
             .iter()
             .any(|coordinate| *coordinate != 0)
     }
@@ -160,7 +165,7 @@ impl FontData {
                     glyph_index,
                     &self.hmtx,
                     gvar,
-                    &self.normalized_variation_coords,
+                    &self.normalized_variation_coords_16_16,
                 )?
             } else {
                 crate::tt::glyf::load_glyph(
@@ -217,7 +222,7 @@ impl FontData {
                     glyph_index,
                     &self.hmtx,
                     gvar,
-                    &self.normalized_variation_coords,
+                    &self.normalized_variation_coords_16_16,
                 )?
             } else {
                 crate::tt::glyf::load_glyph_no_hinting(
@@ -260,7 +265,7 @@ impl FontData {
                     x_scale,
                     y_scale,
                     gvar,
-                    &self.normalized_variation_coords,
+                    &self.normalized_variation_coords_16_16,
                 )?
             } else {
                 crate::tt::glyf::load_glyph_with_scaled_component_offsets(
@@ -306,7 +311,7 @@ impl FontData {
                     x_scale,
                     y_scale,
                     gvar,
-                    &self.normalized_variation_coords,
+                    &self.normalized_variation_coords_16_16,
                 );
             } else {
                 return crate::tt::glyf::load_glyph_scaled_no_hinting_with_active_variation(
@@ -345,7 +350,7 @@ impl FontData {
         let Some(deltas) = gvar.glyph_deltas_fixed_for_outline(
             glyph_index,
             outline,
-            &self.normalized_variation_coords,
+            &self.normalized_variation_coords_16_16,
         )?
         else {
             return Ok(outline.clone());

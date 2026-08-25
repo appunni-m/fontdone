@@ -773,17 +773,22 @@ impl Face {
             font.glyph_slot_load_no_scale_with_layout(glyph_index, vertical_layout)?
         } else if flags.contains(LoadFlags::NO_HINTING) {
             font.glyph_slot_load_no_hinting(glyph_index)?
-        } else if flags.contains(LoadFlags::TARGET_LIGHT) && !flags.contains(LoadFlags::NO_AUTOHINT)
-        {
-            font.glyph_slot_load_target_light(glyph_index)?
         } else if flags.contains(LoadFlags::FORCE_AUTOHINT)
             && !flags.contains(LoadFlags::NO_AUTOHINT)
         {
-            font.glyph_slot_load_force_autohint_with_layout_and_mode(
-                glyph_index,
-                vertical_layout,
-                native_hint_mode,
-            )?
+            if flags.contains(LoadFlags::TARGET_LIGHT) {
+                font.glyph_slot_load_force_autohint_light_with_layout(glyph_index, vertical_layout)?
+            } else {
+                font.glyph_slot_load_force_autohint_with_layout_and_mode(
+                    glyph_index,
+                    vertical_layout,
+                    native_hint_mode,
+                )?
+            }
+        } else if flags.contains(LoadFlags::TARGET_LIGHT)
+            && !flags.contains(LoadFlags::NO_AUTOHINT)
+        {
+            font.glyph_slot_load_target_light(glyph_index, vertical_layout)?
         } else if flags.contains(LoadFlags::NO_AUTOHINT) {
             font.glyph_slot_load_no_autohint_with_layout_and_mode_and_pedantic(
                 glyph_index,

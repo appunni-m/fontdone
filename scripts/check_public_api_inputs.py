@@ -1401,6 +1401,12 @@ def exact_error_public_route(operation: str, case_id: str, expect_error: bool) -
         "ftpfr.FT_Get_PFR_Metrics.non_pfr_outputs_valid_values_and_unknown_format",
         "ftpfr.FT_Get_PFR_Metrics.optional_outputs_and_null_face",
         "freetype.FT_Load_Glyph.matrix_load",
+        "freetype.FT_Load_Glyph.batch122_valid_idef_vm_branches",
+        "freetype.FT_Load_Glyph.batch123_valid_hebrew_long_blue_remaining_branches",
+        "freetype.FT_Load_Glyph.batch124_valid_cff_bbox_extrema",
+        "freetype.FT_Load_Glyph.batch125_valid_cff_cubic_peak_shift_regimes",
+        "freetype.FT_Load_Glyph.batch126_valid_autohint_normal_scale_branches",
+        "freetype.FT_Load_Glyph.batch127_valid_cjk_edge_link_predicates",
         "freetype.FT_Load_Glyph.error_out_of_range_null_face_or_invalid_flags",
         "freetype.FT_LOAD_FORCE_AUTOHINT.load_glyph_force_autohint_behavior",
         "freetype.FT_LOAD_PEDANTIC.pedantic_error_behavior",
@@ -4170,6 +4176,12 @@ def ftparams_sbix_and_stem_darkening_real_parity_reason(row: ConcreteInput) -> s
 
 def ftparams_name_option_real_parity_reason(row: ConcreteInput) -> str | None:
     """Contained FT_Open_Args name-option rows with null data and maintained routes."""
+    if row.case_id == "freetype.FT_Parameter.batch164_valid_ignore_sbix_non_sfnt_bitmap_faces":
+        return (
+            "FT_PARAM_TAG_IGNORE_SBIX no-effect dispatch on thirty valid non-SFNT "
+            "bitmap faces compares successful face opening through pinned C oracle, "
+            "Rust FFI, C ABI, and WASM ABI"
+        )
     if row.case_id in {
         "ftparams.FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_FAMILY.open_face_uses_legacy_family_name",
         "ftparams.FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_FAMILY.null_data_accepted",
@@ -6483,6 +6495,64 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
         and row.case_id == "freetype.FT_Load_Glyph.matrix_load"
     ):
         return "FT_Load_Glyph matrix rows validate exact status and slot output through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "load_glyph"
+        and row.case_id == "freetype.FT_Load_Glyph.batch122_valid_idef_vm_branches"
+    ):
+        return "FT_Load_Glyph Batch122 IDEF and VM branch rows validate exact status and slot output through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "load_glyph"
+        and row.case_id
+        == "freetype.FT_Load_Glyph.batch123_valid_hebrew_long_blue_remaining_branches"
+    ):
+        return "FT_Load_Glyph Batch123 Hebrew long-blue rows validate exact status and slot output through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "load_glyph"
+        and row.case_id == "freetype.FT_Load_Glyph.batch124_valid_cff_bbox_extrema"
+    ):
+        return "FT_Load_Glyph Batch124 CFF cubic-bbox rows validate exact status and slot output through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "load_glyph"
+        and row.case_id
+        == "freetype.FT_Load_Glyph.batch125_valid_cff_cubic_peak_shift_regimes"
+    ):
+        return "FT_Load_Glyph Batch125 CFF cubic-peak shift rows validate exact status and slot output through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "load_glyph"
+        and row.case_id
+        == "freetype.FT_Load_Glyph.batch126_valid_autohint_normal_scale_branches"
+    ):
+        return "FT_Load_Glyph Batch126 normal-scale auto-hint rows validate exact status and slot output through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "load_glyph"
+        and row.case_id
+        == "freetype.FT_Load_Glyph.batch127_valid_cjk_edge_link_predicates"
+    ):
+        return "FT_Load_Glyph Batch127 CJK edge-link predicate rows validate exact status and slot output through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "load_glyph"
+        and row.case_id
+        == "freetype.FT_Load_Glyph.batch145_valid_cjk_edge_interpolation_witnesses"
+    ):
+        return "FT_Load_Glyph Batch145 CJK edge-interpolation witness rows validate exact status and slot output through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "load_glyph"
+        and row.case_id
+        == "freetype.FT_Load_Glyph.batch152_valid_latin_adjustment_branches"
+    ):
+        return "FT_Load_Glyph Batch152 Latin adjustment rows validate exact status and slot output through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "load_glyph"
+        and row.case_id
+        == "freetype.FT_Load_Glyph.batch153_valid_latin_blue_empty_branches"
+    ):
+        return "FT_Load_Glyph Batch153 Latin blue-empty rows validate exact status and slot output through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "load_glyph"
+        and row.case_id
+        == "freetype.FT_Load_Glyph.batch159_valid_latin_fallback_adjustment_branches"
+    ):
+        return "FT_Load_Glyph Batch159 Latin fallback-adjustment rows validate exact status and slot output through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
     if (
         row.operation == "load_glyph"
         and row.case_id

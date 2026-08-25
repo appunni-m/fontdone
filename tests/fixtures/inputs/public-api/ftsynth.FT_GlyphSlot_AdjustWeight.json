@@ -10,6 +10,8 @@
     "degenerate_outline_weight_keeps_points_and_updates_metrics",
     "negative_bounds_outline_weight_uses_unsigned_abs",
     "bitmap_weight_owns_emboldens_and_updates_top",
+    "batch163_valid_empty_mono_horizontal_pixel_shift",
+    "batch166_valid_lcd_padding_reuse",
     "null_or_unsupported_format_noop",
     "null_slot_noop"
   ],
@@ -1250,6 +1252,2410 @@
         },
         "fixture_requirements": [
           "Uses the compact 20 ppem SBIT gray format-1 strike where FT_Load_Glyph produces an ownable bitmap slot."
+        ]
+      }
+    },
+    {
+      "case_id": "ftsynth.FT_GlyphSlot_AdjustWeight.batch163_valid_empty_mono_horizontal_pixel_shift",
+      "subject": "ftsynth.FT_GlyphSlot_AdjustWeight",
+      "case": "batch163_valid_empty_mono_horizontal_pixel_shift",
+      "operation": "ftsynth.glyphslot_adjust_weight_after_load",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "batch163-empty-mono-shift0-08",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 57344,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:08:delta:57344"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-09",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 9
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 50973,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:09:delta:50973"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-10",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 10
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 45876,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:10:delta:45876"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-11",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 11
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 41705,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:11:delta:41705"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-12",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 38230,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:12:delta:38230"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-13",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 13
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 35289,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:13:delta:35289"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-14",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 14
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 32768,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:14:delta:32768"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-15",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 15
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 30584,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:15:delta:30584"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-16",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 16
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 28672,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:16:delta:28672"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-17",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 17
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 26986,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:17:delta:26986"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-18",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 18
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 25487,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:18:delta:25487"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-19",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 19
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 24145,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:19:delta:24145"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-20",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 22938,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:20:delta:22938"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-21",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 21
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 21846,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:21:delta:21846"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-22",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 22
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 20853,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:22:delta:20853"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-23",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 23
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 19946,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:23:delta:19946"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-24",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 24
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 19115,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:24:delta:19115"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-25",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 25
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 18351,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:25:delta:18351"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-26",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 26
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 17645,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:26:delta:17645"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-27",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 27
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 16991,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:27:delta:16991"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-28",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 28
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 16384,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:28:delta:16384"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-29",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 29
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 15820,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:29:delta:15820"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-30",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 30
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 15292,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:30:delta:15292"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-31",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 31
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 14799,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:31:delta:14799"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-32",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 14336,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:32:delta:14336"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-33",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 33
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 13902,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:33:delta:13902"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-34",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 34
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 13493,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:34:delta:13493"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-35",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 35
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 13108,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:35:delta:13108"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-36",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 36
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 12744,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:36:delta:12744"
+            ]
+          },
+          {
+            "id": "batch163-empty-mono-shift0-37",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 3 is an empty outline rendered into a MONO bitmap slot."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 37
+              },
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  3
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_MONO"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 12399,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch163:empty-mono:shift0:37:delta:12399"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftsynth",
+        "format:bitmap",
+        "operation:glyph-slot-mutation",
+        "coverage:real-parity"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "slot_format": "FT_GLYPH_FORMAT_BITMAP",
+          "bitmap_before": "FT_Bitmap descriptor and bytes",
+          "bitmap_after": "FT_Bitmap descriptor and bytes",
+          "bitmap_top_after": "FT_Int",
+          "metrics_after": "FT_Glyph_Metrics",
+          "advance_after": "FT_Vector"
+        },
+        "compare": {
+          "mode": "bytes",
+          "paths": [
+            "slot_format",
+            "bitmap_after.rows",
+            "bitmap_after.width",
+            "bitmap_after.pitch",
+            "bitmap_after.pixel_mode",
+            "bitmap_after.buffer_hex",
+            "bitmap_top_after",
+            "metrics_after",
+            "advance_after"
+          ]
+        },
+        "fixture_requirements": [
+          "Uses the maintained DejaVuSans empty glyph rendered in MONO mode before synthetic bitmap weight adjustment."
+        ]
+      }
+    },
+    {
+      "case_id": "ftsynth.FT_GlyphSlot_AdjustWeight.batch166_valid_lcd_padding_reuse",
+      "subject": "ftsynth.FT_GlyphSlot_AdjustWeight",
+      "case": "batch166_valid_lcd_padding_reuse",
+      "operation": "ftsynth.glyphslot_adjust_weight_after_load",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "batch166-lcd-pad-reuse-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 3277,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:001"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-002",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 3390,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:002"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-003",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 3503,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:003"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-004",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 3616,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:004"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-005",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 3729,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:005"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-006",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 3842,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:006"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-007",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 3955,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:007"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-008",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 4068,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:008"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-009",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 4181,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:009"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-010",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 4294,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:010"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-011",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 4407,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:011"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-012",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 4520,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:012"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-013",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 4633,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:013"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-014",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 4746,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:014"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-015",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 4859,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:015"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-016",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 4972,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:016"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-017",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 5085,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:017"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-018",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 5198,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:018"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-019",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 5311,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:019"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-020",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 5424,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:020"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-021",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 5537,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:021"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-022",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 5650,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:022"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-023",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 5763,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:023"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-024",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 5876,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:024"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-025",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 5989,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:025"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-026",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 6102,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:026"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-027",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 6215,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:027"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-028",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 6328,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:028"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-029",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 6441,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:029"
+            ]
+          },
+          {
+            "id": "batch166-lcd-pad-reuse-030",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/DejaVuSans.ttf",
+                "role": "font",
+                "requirements": "DejaVuSans glyph 36 renders as a valid 20 ppem horizontal LCD bitmap with reusable row padding."
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "size_ppem": 20,
+              "load": {
+                "operation": "FT_Load_Glyph",
+                "glyph_indices": [
+                  36
+                ],
+                "load_flags": [
+                  "FT_LOAD_RENDER",
+                  "FT_LOAD_TARGET_LCD"
+                ]
+              },
+              "adjustments": [
+                {
+                  "xdelta_16_16": 6553,
+                  "ydelta_16_16": 0
+                }
+              ],
+              "capture_before_after": true
+            },
+            "expect_error": false,
+            "coverage": [
+              "batch166:lcd:padding-reuse:030"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftsynth",
+        "format:bitmap",
+        "operation:glyph-slot-mutation",
+        "coverage:real-parity"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "slot_format": "FT_GLYPH_FORMAT_BITMAP",
+          "bitmap_before": "FT_Bitmap descriptor and bytes",
+          "bitmap_after": "FT_Bitmap descriptor and bytes",
+          "bitmap_top_after": "FT_Int",
+          "metrics_after": "FT_Glyph_Metrics",
+          "advance_after": "FT_Vector"
+        },
+        "compare": {
+          "mode": "bytes",
+          "paths": [
+            "slot_format",
+            "bitmap_after.rows",
+            "bitmap_after.width",
+            "bitmap_after.pitch",
+            "bitmap_after.pixel_mode",
+            "bitmap_after.buffer_hex",
+            "bitmap_top_after",
+            "metrics_after",
+            "advance_after"
+          ]
+        },
+        "fixture_requirements": [
+          "Uses the maintained DejaVuSans 20 ppem glyph 36 rendered in horizontal LCD mode with zero vertical strength and a one-pixel horizontal LCD adjustment that reuses existing row padding."
         ]
       }
     },

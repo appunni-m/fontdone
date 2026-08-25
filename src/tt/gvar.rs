@@ -13,7 +13,6 @@ const EMBEDDED_PEAK_TUPLE: u16 = 0x8000;
 const INTERMEDIATE_REGION: u16 = 0x4000;
 const PRIVATE_POINT_NUMBERS: u16 = 0x2000;
 const TUPLE_INDEX_MASK: u16 = 0x0FFF;
-const F2DOT14_ONE: i32 = 0x4000;
 const F16DOT16_ONE: i32 = 0x1_0000;
 
 type GvarIupOutline<'a> = (&'a [(i32, i32)], &'a [u16]);
@@ -40,6 +39,24 @@ impl GvarTable {
         point_count_with_phantoms: usize,
         normalized_coords: &[i16],
     ) -> Result<Option<Vec<(i32, i32)>>, FontError> {
+        let normalized_coords = normalized_coords
+            .iter()
+            .map(|coordinate| i32::from(*coordinate) << 2)
+            .collect::<Vec<_>>();
+        self.glyph_deltas_fixed_inner(
+            glyph_index,
+            point_count_with_phantoms,
+            &normalized_coords,
+            None,
+        )
+    }
+
+    pub(crate) fn glyph_deltas_fixed_for_coords(
+        &self,
+        glyph_index: u16,
+        point_count_with_phantoms: usize,
+        normalized_coords: &[i32],
+    ) -> Result<Option<Vec<(i32, i32)>>, FontError> {
         self.glyph_deltas_fixed_inner(
             glyph_index,
             point_count_with_phantoms,
@@ -55,7 +72,7 @@ impl GvarTable {
         &self,
         glyph_index: u16,
         outline: &crate::tt::glyf::GlyphOutline,
-        normalized_coords: &[i16],
+        normalized_coords: &[i32],
     ) -> Result<Option<Vec<(i32, i32)>>, FontError> {
         let original_points = outline
             .points
@@ -79,7 +96,7 @@ impl GvarTable {
         glyph_index: u16,
         original_points: &[(i32, i32)],
         contour_ends: &[u16],
-        normalized_coords: &[i16],
+        normalized_coords: &[i32],
     ) -> Result<Option<Vec<(i32, i32)>>, FontError> {
         self.glyph_deltas_fixed_inner(
             glyph_index,
@@ -93,7 +110,7 @@ impl GvarTable {
         &self,
         glyph_index: u16,
         point_count_with_phantoms: usize,
-        normalized_coords: &[i16],
+        normalized_coords: &[i32],
         iup_outline: Option<GvarIupOutline<'_>>,
     ) -> Result<Option<Vec<(i32, i32)>>, FontError> {
         let glyph_index = usize::from(glyph_index);
@@ -559,37 +576,59 @@ fn recompute_outline_bounds(outline: &mut crate::tt::glyf::GlyphOutline) {
     outline.ymax = ymax;
 }
 
-fn tuple_scalar(peak: &[i16], intermediate: Option<&(Vec<i16>, Vec<i16>)>, coords: &[i16]) -> i32 {
+fn tuple_scalar(peak: &[i16], intermediate: Option<&(Vec<i16>, Vec<i16>)>, coords: &[i32]) -> i32 {
     let mut scalar = F16DOT16_ONE;
-    for ((peak_coord, coord), axis_index) in
-        peak.iter().copied().zip(coords.iter().copied()).zip(0..)
-    {
-        if peak_coord == 0 {
+    for (axis_index, peak_coord) in peak.iter().copied().enumerate() {
+        let tuple_coord = f2dot14_to_fixed(peak_coord);
+        let normalized_coord = coords[axis_index];
+
+        // This mirrors `ft_var_apply_tuple` in FreeType's `ttgxvar.c`:
+        // zero tuple coordinates do not constrain an axis, while a zero
+        // normalized coordinate makes a non-zero tuple inactive.
+        if tuple_coord == 0 {
             continue;
         }
-        let (start, end) = intermediate.map_or_else(
-            || (peak_coord.min(0), peak_coord.max(0)),
-            |(start, end)| (start[axis_index], end[axis_index]),
-        );
-        // Zero peaks are skipped above, so the origin check is only reached
-        // for a non-zero peak coordinate.
-        if coord < start || coord > end || coord == 0 {
+        if normalized_coord == 0 {
             return 0;
         }
-        let factor = if coord == peak_coord {
-            F16DOT16_ONE
-        } else if coord < peak_coord {
-            div_to_fixed(i32::from(coord - start), i32::from(peak_coord - start))
+
+        if normalized_coord == tuple_coord {
+            continue;
+        }
+
+        if let Some((start, end)) = intermediate {
+            let start = f2dot14_to_fixed(start[axis_index]);
+            let end = f2dot14_to_fixed(end[axis_index]);
+            if normalized_coord <= start || normalized_coord >= end {
+                return 0;
+            }
+            scalar = if normalized_coord < tuple_coord {
+                crate::fixed::ft_mul_div(
+                    scalar,
+                    normalized_coord.wrapping_sub(start),
+                    tuple_coord.wrapping_sub(start),
+                )
+            } else {
+                crate::fixed::ft_mul_div(
+                    scalar,
+                    end.wrapping_sub(normalized_coord),
+                    end.wrapping_sub(tuple_coord),
+                )
+            };
+        } else if (tuple_coord > normalized_coord && normalized_coord > 0)
+            || (tuple_coord < normalized_coord && normalized_coord < 0)
+        {
+            scalar = crate::fixed::ft_mul_div(scalar, normalized_coord, tuple_coord);
         } else {
-            div_to_fixed(i32::from(end - coord), i32::from(end - peak_coord))
-        };
-        scalar = mul_fix_rounded(scalar, factor);
+            return 0;
+        }
     }
     scalar
 }
 
-fn div_to_fixed(num: i32, den: i32) -> i32 {
-    (((i64::from(num)) << 16) / i64::from(den)) as i32
+#[inline]
+fn f2dot14_to_fixed(value: i16) -> i32 {
+    i32::from(value).wrapping_shl(2)
 }
 
 pub(crate) fn fixed_to_int(value: i32) -> i32 {
@@ -598,10 +637,6 @@ pub(crate) fn fixed_to_int(value: i32) -> i32 {
 
 pub(crate) fn fixed_to_fdot6(value: i32) -> i32 {
     value.wrapping_add(0x200) >> 10
-}
-
-fn mul_fix_rounded(value: i32, scalar: i32) -> i32 {
-    (((i64::from(value) * i64::from(scalar)) + 0x8000) >> 16) as i32
 }
 
 fn read_point_numbers(data: &[u8], point_count: usize) -> Result<(Vec<usize>, usize), FontError> {
@@ -714,25 +749,31 @@ fn read_u32(data: &[u8], offset: usize) -> Result<u32, FontError> {
 
 /// Convert one design coordinate into OpenType normalized 2.14 space.
 pub fn normalize_axis_coord(design: i32, min: i32, default: i32, max: i32) -> i16 {
+    (normalize_axis_coord_16_16(design, min, default, max) >> 2) as i16
+}
+
+/// Convert one design coordinate into FreeType's normalized 16.16 space.
+///
+/// FreeType keeps the full fixed-point result from `FT_DivFix` while applying
+/// gvar tuples. The public/OpenType-facing 2.14 value is a useful compact
+/// projection, but it drops the fractional bits that affect non-peak tuple
+/// scalars.
+pub fn normalize_axis_coord_16_16(design: i32, min: i32, default: i32, max: i32) -> i32 {
     let value = if design == default {
         0
     } else if design < default {
         if design <= min {
-            -F2DOT14_ONE
+            -F16DOT16_ONE
         } else {
-            -normalize_axis_delta(default - design, default - min)
+            crate::fixed::ft_div_fix(design - default, default - min)
         }
     } else if design >= max {
         // FreeType clamps out-of-range design coordinates before dividing by
         // the axis extent, so degenerate default==max axes still normalize to
         // +1.0 for values above the default.  See ttgxvar.c:2152-2211.
-        F2DOT14_ONE
+        F16DOT16_ONE
     } else {
-        normalize_axis_delta(design - default, max - default)
+        crate::fixed::ft_div_fix(design - default, max - default)
     };
-    value.clamp(-F2DOT14_ONE, F2DOT14_ONE) as i16
-}
-
-fn normalize_axis_delta(delta: i32, extent: i32) -> i32 {
-    (((i64::from(delta)) * i64::from(F2DOT14_ONE)) / i64::from(extent)) as i32
+    value.clamp(-F16DOT16_ONE, F16DOT16_ONE)
 }

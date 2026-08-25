@@ -521,6 +521,39 @@ pub fn scale_glyph_for_metrics_light(
     )
 }
 
+/// Scale a forced auto-hint load through the light target, preserving the
+/// requested vertical-layout state for the auto-hinter's synthesized metrics.
+pub fn scale_glyph_for_metrics_with_autohint_light_and_layout(
+    data: &FontData,
+    glyph_index: u16,
+    latin_metrics: Option<&crate::autohint::AfLatinMetrics>,
+    is_italic: bool,
+    vertical_layout: bool,
+) -> Result<ScaledGlyph, FontError> {
+    scale_glyph_impl(
+        data,
+        glyph_index,
+        latin_metrics,
+        HintStyle {
+            is_italic,
+            no_horizontal_hinting: true,
+            stem_adjust: false,
+            horz_snap: false,
+            vert_snap: false,
+            vertical_layout,
+        },
+        true,
+        false,
+        NativeHintMode::Normal,
+        false,
+        false,
+        false,
+        true,
+        None,
+        true,
+    )
+}
+
 /// Scale a glyph through the native TrueType default load path.
 pub fn scale_glyph_native_default(
     data: &FontData,
@@ -1839,10 +1872,10 @@ fn vertical_phantom_font_units(
     // points remain part of the glyph's gvar delta stream.
     if let Some(gvar) = &data.gvar {
         if data.has_active_variation() {
-            if let Some(deltas) = gvar.glyph_deltas_fixed(
+            if let Some(deltas) = gvar.glyph_deltas_fixed_for_coords(
                 glyph_index,
                 outline_point_count + 4,
-                &data.normalized_variation_coords,
+                &data.normalized_variation_coords_16_16,
             )? {
                 let pp3_index = outline_point_count + 2;
                 let pp4_index = outline_point_count + 3;

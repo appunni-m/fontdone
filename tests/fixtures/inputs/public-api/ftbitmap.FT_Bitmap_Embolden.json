@@ -7,7 +7,8 @@
     "success_gray2_gray4_convert_to_gray",
     "error_mono_strength_limit",
     "error_invalid_arguments_or_modes",
-    "ownership_reallocates_bitmap_buffer"
+    "ownership_reallocates_bitmap_buffer",
+    "batch170_gray_x_only_forced_reallocate"
   ],
   "cases": [
     {
@@ -536,6 +537,62 @@
             "allocator.events"
           ]
         }
+      }
+    },
+    {
+      "case_id": "ftbitmap.FT_Bitmap_Embolden.batch170_gray_x_only_forced_reallocate",
+      "subject": "ftbitmap.FT_Bitmap_Embolden",
+      "case": "batch170_gray_x_only_forced_reallocate",
+      "operation": "ftbitmap.bitmap_embolden",
+      "schema": "bitmap_operation",
+      "expect_error": false,
+      "inputs": {
+        "params": {
+          "scenario": "batch170_gray_x_only_forced_reallocate"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftbitmap",
+        "area:bitmap",
+        "coverage:batch170",
+        "input:valid_public_bitmap"
+      ],
+      "metadata": {
+        "coverage_intent": "Thirty valid gray FT_Bitmap records vary width from 1 through 15 and pitch sign while xStrength rounds to three pixels and yStrength is zero, forcing the public reallocation path when new_pitch exceeds the existing pitch."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "bitmap_fields": [
+            "rows",
+            "width",
+            "pitch",
+            "pixel_mode",
+            "num_grays",
+            "buffer"
+          ],
+          "buffer_bytes": true,
+          "allocator_events": true,
+          "mutated_bitmap": true
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "error",
+            "bitmap.rows",
+            "bitmap.width",
+            "bitmap.pitch",
+            "bitmap.pixel_mode",
+            "bitmap.buffer_bytes",
+            "allocator.events"
+          ]
+        },
+        "source_refs": [
+          "src/ffi/handles.rs:633-704",
+          "freetype/src/base/ftbitmap.c:302-378"
+        ]
       }
     }
   ]
