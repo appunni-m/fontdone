@@ -1327,6 +1327,15 @@ and the pinned oracle. The input's `expansion_reason`, `oracle_verdict`, and
 source references are stored in
 `tests/fixtures/inputs/public-api/ftdriver.FT_Prop_GlyphToScriptMap.json`.
 
+Coverage MCP run `8eee096c-2878-41ec-a420-2ad51350740c` passed at pushed commit
+`b37c3cba6c08419148def61d40242a4ad0c02d7f` and ingested child snapshot
+`7a83dbf0-1c6d-4097-8cfa-75c1ab90ae87` against the explicit campaign baseline
+`ab608526-5fc6-4840-bc94-fd702aa0fce9`. The selected-subset additive review
+reported 427 newly covered lines. It did not cover the target WASM helper
+(`fontdone-wasm/src/implementation.rs:6250-6294`), because the zero-glyph
+variant intentionally skips map mutation; no selected-only percentage is used
+as a full-denominator claim.
+
 
 ## 5. Fixtures and generators
 
