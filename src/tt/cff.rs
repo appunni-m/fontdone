@@ -482,7 +482,11 @@ fn parse_cff_private_random_seed(data: &[u8], top: &TopDict) -> Result<u32, Font
     let mut initial_random_seed = 0_i64;
     while pos < private.len() {
         let byte = private[pos];
-        if byte <= 21 {
+        // FreeType's CFF parser treats reserved bytes below 27, legacy
+        // operator 31, and reserved byte 255 as operators; only the 27..30
+        // and 32..254 ranges are read as numbers here
+        // (`cffparse.c:1177-1182`).
+        if byte <= 26 || byte == 31 || byte == 255 {
             pos += 1;
             let op = if byte == 12 {
                 let escaped = *private.get(pos).ok_or_else(|| {
@@ -1184,7 +1188,7 @@ fn read_dict_number(data: &[u8], pos: usize) -> Result<(DictNumber, usize), Font
             ))
         }
         30 => read_real_number(data, pos + 1),
-        32..=246 => Ok((DictNumber::from_integer(i32::from(byte) - 139), pos + 1)),
+        27 | 32..=246 => Ok((DictNumber::from_integer(i32::from(byte) - 139), pos + 1)),
         247..=250 => {
             let next = i32::from(*data.get(pos + 1).ok_or_else(|| {
                 // FreeType's CFF DICT parser classifies a truncated
