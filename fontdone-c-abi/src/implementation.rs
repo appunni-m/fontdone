@@ -2480,6 +2480,7 @@ struct AbiSBitRequesterData {
     face_index: FT_Long,
     requester_calls: FT_UInt,
     finalizer_calls: FT_UInt,
+    requester_error: FT_Error,
 }
 
 #[cfg(feature = "abi-test-support")]
@@ -14886,6 +14887,9 @@ unsafe extern "C" fn abi_sbit_cache_requester(
         return rust_ffi::FT_Err_Invalid_Argument;
     };
     data.requester_calls = data.requester_calls.saturating_add(1);
+    if data.requester_error != rust_ffi::FT_Err_Ok {
+        return data.requester_error;
+    }
     let error = FT_New_Memory_Face(
         library,
         data.bytes.as_ptr(),
@@ -15009,6 +15013,20 @@ impl AbiSBitCacheHarness {
         Self::new_with_cache(bytes, face_index, false)
     }
 
+    /// Builds a manager whose public requester returns `requester_error`.
+    ///
+    /// The underlying font remains valid; only the caller-supplied requester
+    /// fails, matching the callback-error contract of pinned FreeType.
+    pub fn new_with_requester_error(
+        bytes: &[FT_Byte],
+        face_index: FT_Long,
+        requester_error: FT_Error,
+    ) -> Result<Self, FT_Error> {
+        let mut harness = Self::new_with_cache(bytes, face_index, true)?;
+        harness.requester.requester_error = requester_error;
+        Ok(harness)
+    }
+
     fn new_with_cache(
         bytes: &[FT_Byte],
         face_index: FT_Long,
@@ -15024,6 +15042,7 @@ impl AbiSBitCacheHarness {
             face_index,
             requester_calls: 0,
             finalizer_calls: 0,
+            requester_error: rust_ffi::FT_Err_Ok,
         });
         let req_data = ptr::from_mut(requester.as_mut()).cast::<c_void>();
         let mut manager = ptr::null_mut();

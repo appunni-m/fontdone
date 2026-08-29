@@ -3391,6 +3391,8 @@ subjects:
         description: Pointer alias to FTC_ManagerRec is present in the pinned C public interface.
       - id: owns_faces_sizes_and_cache_nodes
         description: The manager owns cached FT_Face objects, FT_Size objects, and cache nodes returned by cache lookups.
+      - id: ownership_requester_failure_propagates_through_lookups
+        description: A valid face with a requester returning FT_Err_Invalid_Argument proves pinned FreeType propagates callback failure through repeated face, size, and SBit lookups without caching the failed face.
       - id: reset_and_done_lifecycle
         description: Reset empties manager-owned cached content while keeping the manager usable; Done destroys the manager and its caches.
 

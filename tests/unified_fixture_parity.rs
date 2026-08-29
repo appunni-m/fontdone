@@ -50466,13 +50466,29 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(manager_new_limits_arg(params)?);
             Ok(args)
         }
-        "ftcache.manager_ownership" if !case.expect_error => {
+        "ftcache.manager_ownership"
+            if !case.expect_error
+                || case.case_id
+                    == "ftcache.FTC_Manager.ownership_requester_failure_propagates_through_lookups" =>
+        {
             let mut args = vec!["--manager-ownership".to_string()];
             push_font_source(case, &mut args)?;
             args.push(face_index_param(params)?.to_string());
             args.push(
                 if params
                     .get("edge_probes")
+                    .and_then(Value::as_bool)
+                    .unwrap_or(false)
+                {
+                    "1"
+                } else {
+                    "0"
+                }
+                .to_string(),
+            );
+            args.push(
+                if params
+                    .get("requester_failure")
                     .and_then(Value::as_bool)
                     .unwrap_or(false)
                 {
@@ -52196,7 +52212,13 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         "ftcache.cmap_cache_new" if !case.expect_error => rust_cmap_cache_new(case),
         "ftcache.image_cache_new" if !case.expect_error => rust_image_cache_new(case),
         "ftcache.manager_new" if !case.expect_error => rust_manager_new(case),
-        "ftcache.manager_ownership" if !case.expect_error => rust_manager_ownership(case),
+        "ftcache.manager_ownership"
+            if !case.expect_error
+                || case.case_id
+                    == "ftcache.FTC_Manager.ownership_requester_failure_propagates_through_lookups" =>
+        {
+            rust_manager_ownership(case)
+        }
         "ftglyph.custom_glyph_lifecycle" if !case.expect_error => rust_custom_glyph_lifecycle(),
         "ftincrem.opaque_handle_lifecycle" if !case.expect_error => {
             rust_incremental_opaque_handle(case)
@@ -53939,7 +53961,13 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftcache.cmap_cache_new" if !case.expect_error => c_cmap_cache_new(case),
         "ftcache.image_cache_new" if !case.expect_error => c_image_cache_new(case),
         "ftcache.manager_new" if !case.expect_error => c_manager_new(case),
-        "ftcache.manager_ownership" if !case.expect_error => c_manager_ownership(case),
+        "ftcache.manager_ownership"
+            if !case.expect_error
+                || case.case_id
+                    == "ftcache.FTC_Manager.ownership_requester_failure_propagates_through_lookups" =>
+        {
+            c_manager_ownership(case)
+        }
         "ftglyph.custom_glyph_lifecycle" if !case.expect_error => c_custom_glyph_lifecycle(),
         "ftincrem.opaque_handle_lifecycle" if !case.expect_error => {
             c_incremental_opaque_handle(case)
@@ -55440,7 +55468,13 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
         "ftcache.cmap_cache_new" if !case.expect_error => wasm_cmap_cache_new(case),
         "ftcache.image_cache_new" if !case.expect_error => wasm_image_cache_new(case),
         "ftcache.manager_new" if !case.expect_error => wasm_manager_new(case),
-        "ftcache.manager_ownership" if !case.expect_error => wasm_manager_ownership(case),
+        "ftcache.manager_ownership"
+            if !case.expect_error
+                || case.case_id
+                    == "ftcache.FTC_Manager.ownership_requester_failure_propagates_through_lookups" =>
+        {
+            wasm_manager_ownership(case)
+        }
         "ftglyph.custom_glyph_lifecycle" if !case.expect_error => wasm_custom_glyph_lifecycle(),
         "ftincrem.opaque_handle_lifecycle" if !case.expect_error => {
             wasm_incremental_opaque_handle(case)
@@ -65770,7 +65804,17 @@ fn wasm_manager_done(case: &InputCase) -> Result<RunOutput, String> {
 
 fn rust_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
     let face = rust_new_face_without_size(case)?;
-    let mut manager = FTCCacheManagerState::new(face);
+    let requester_failure = case
+        .inputs
+        .params
+        .get("requester_failure")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
+    let mut manager = if requester_failure {
+        FTCCacheManagerState::new_with_requester_error(face, FT_Err_Invalid_Argument)
+    } else {
+        FTCCacheManagerState::new(face)
+    };
     let (face_first_status, face_first_id) = match manager.lookup_face() {
         Ok(face) => (FT_Err_Ok, ptr::from_ref(face).addr()),
         Err(error) => (error, 0),
@@ -65918,9 +65962,23 @@ fn rust_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
 
 fn c_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
-    let mut manager =
-        c_abi::AbiSBitCacheHarness::new(bytes.as_ref(), face_index_param(&case.inputs.params)?)
-            .map_err(|error| format!("C ABI manager ownership setup returned {error}"))?;
+    let face_index = face_index_param(&case.inputs.params)?;
+    let requester_failure = case
+        .inputs
+        .params
+        .get("requester_failure")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
+    let mut manager = if requester_failure {
+        c_abi::AbiSBitCacheHarness::new_with_requester_error(
+            bytes.as_ref(),
+            face_index,
+            FT_Err_Invalid_Argument,
+        )
+    } else {
+        c_abi::AbiSBitCacheHarness::new(bytes.as_ref(), face_index)
+    }
+    .map_err(|error| format!("C ABI manager ownership setup returned {error}"))?;
     let snapshot = manager.ownership_snapshot();
     let edge = if case
         .inputs
@@ -65997,8 +66055,21 @@ fn c_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
 
 fn wasm_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
     let handle = wasm_new_face_without_size(case)?;
-    let mut manager = wasm_abi::AbiCacheManagerOwnershipHarness::new(handle)
-        .ok_or_else(|| "missing Wasm manager ownership harness".to_string())?;
+    let requester_failure = case
+        .inputs
+        .params
+        .get("requester_failure")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
+    let mut manager = if requester_failure {
+        wasm_abi::AbiCacheManagerOwnershipHarness::new_with_requester_error(
+            handle,
+            FT_Err_Invalid_Argument,
+        )
+    } else {
+        wasm_abi::AbiCacheManagerOwnershipHarness::new(handle)
+    }
+    .ok_or_else(|| "missing Wasm manager ownership harness".to_string())?;
     let snapshot = manager.ownership_snapshot();
     let edge = if case
         .inputs

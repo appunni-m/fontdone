@@ -4,6 +4,7 @@
   "manifest_cases": [
     "alias_defined",
     "owns_faces_sizes_and_cache_nodes",
+    "ownership_requester_failure_propagates_through_lookups",
     "reset_and_done_lifecycle"
   ],
   "cases": [
@@ -111,6 +112,87 @@
         },
         "fixture_requirements": [
           "Runner support for face generic finalizer/counter observation"
+        ]
+      }
+    },
+    {
+      "case_id": "ftcache.FTC_Manager.ownership_requester_failure_propagates_through_lookups",
+      "subject": "ftcache.FTC_Manager",
+      "case": "ownership_requester_failure_propagates_through_lookups",
+      "covers_manifest_cases": [
+        "ownership_requester_failure_propagates_through_lookups"
+      ],
+      "operation": "ftcache.manager_ownership",
+      "schema": "cache_lifecycle",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "runtime_route": "actual_ftc_manager_ownership",
+          "face_index": 0,
+          "manager_limits": {
+            "max_faces": 1,
+            "max_sizes": 1,
+            "max_bytes": 4096
+          },
+          "create": [
+            "FTC_Manager_New",
+            "FTC_SBitCache_New"
+          ],
+          "populate": [
+            "FTC_Manager_LookupFace",
+            "FTC_Manager_LookupSize",
+            "FTC_SBitCache_Lookup"
+          ],
+          "requester": "counting_memory_face_requester",
+          "requester_failure": true,
+          "edge_probes": false
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcache",
+        "area:cache-manager",
+        "error-path",
+        "callback-failure"
+      ],
+      "metadata": {
+        "coverage_intent": "A valid DejaVuSans.ttf is paired with a caller-supplied requester that returns FT_Err_Invalid_Argument. Pinned FreeType calls that requester from ftc_face_node_init, propagates the error through face, size, and SBit lookups, and does not cache the failed face; repeated lookups therefore reach all four defensive Err arms in the WASM ownership snapshot."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "owned_objects": [
+            "FT_Face",
+            "FT_Size",
+            "FTC_Node"
+          ],
+          "ownership_observation": "finalizer_counts_and_identity_classes"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "status",
+            "requester_calls",
+            "face_finalizers",
+            "size_identity",
+            "node_identity",
+            "cache_lifecycle"
+          ]
+        },
+        "source_refs": [
+          "fontdone-wasm/src/implementation.rs:2347-2365",
+          "fontdone-c-abi/src/implementation.rs:14997-15070",
+          "src/ffi/handles.rs:3017-3056",
+          "freetype/src/cache/ftcmanag.c:215-239",
+          "freetype/src/cache/ftcmanag.c:291-320",
+          "freetype/src/cache/ftcmru.c:283-295"
         ]
       }
     },

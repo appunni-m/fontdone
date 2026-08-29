@@ -13132,6 +13132,7 @@ typedef struct ManagerOwnershipRequestRec_ {
     FT_Long face_index;
     unsigned int requester_calls;
     unsigned int finalizer_calls;
+    FT_Error requester_error;
 } ManagerOwnershipRequestRec;
 
 static void manager_ownership_face_finalizer(void* object) {
@@ -13158,6 +13159,9 @@ static FT_Error manager_ownership_face_requester(FTC_FaceID face_id,
         return FT_Err_Invalid_Argument;
     }
     request->requester_calls++;
+    if (request->requester_error) {
+        return request->requester_error;
+    }
     error = FT_New_Memory_Face(library,
                                request->data,
                                request->data_len,
@@ -13222,6 +13226,7 @@ static int emit_manager_ownership(int argc, char** argv) {
     int references_released_before_reset;
     int reset_preserved_cache_handle;
     int edge_probes = argc > 5 && streq(argv[5], "1");
+    int requester_failure = argc > 6 && streq(argv[6], "1");
     FT_Error post_done_lookup_face_status = FT_Err_Ok;
     FT_Error post_done_lookup_size_status = FT_Err_Ok;
     FT_Error post_done_sbit_without_output_status = FT_Err_Ok;
@@ -13247,6 +13252,7 @@ static int emit_manager_ownership(int argc, char** argv) {
     request.data = data;
     request.data_len = data_len;
     request.face_index = face_index;
+    request.requester_error = requester_failure ? FT_Err_Invalid_Argument : FT_Err_Ok;
     status = FTC_Manager_New(library,
                              1,
                              1,
@@ -42546,7 +42552,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 7 && streq(argv[1], "--manager-new-route")) {
         return emit_manager_new_route(argc, argv);
     }
-    if (argc == 6 && streq(argv[1], "--manager-ownership")) {
+    if (argc == 7 && streq(argv[1], "--manager-ownership")) {
         return emit_manager_ownership(argc, argv);
     }
     if (argc == 5 && streq(argv[1], "--custom-memory-lifecycle")) {

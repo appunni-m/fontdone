@@ -1792,6 +1792,23 @@ Batch217 snapshot adds one covered branch at
 change. The retained totals are 88,150 / 91,839 regions, 11,712 / 13,438
 branches, 63,899 / 66,015 lines, and 3,694 / 3,982 functions.
 
+The next source-reviewed target is the stable public case
+`ftcache.FTC_Manager.ownership_requester_failure_propagates_through_lookups`.
+Its expansion reason is explicit: use a valid `DejaVuSans.ttf`, install the
+caller-supplied `counting_memory_face_requester`, make that requester return
+`FT_Err_Invalid_Argument`, and repeat face, size, and SBit lookups so the
+WASM ownership snapshot reaches each requester-error arm without caching a
+failed face. This is not a malformed-font or invented failure: the public
+`FTC_Manager_New` requester callback is an intentional FreeType error channel.
+The pinned source calls it from `ftc_face_node_init`
+(`freetype/src/cache/ftcmanag.c:215-239`), propagates its error through
+`FTC_Manager_LookupFace` (`ftcmanag.c:291-320`) and
+`FTC_Manager_LookupSize` (`ftcmanag.c:163-191`), and propagates miss
+initialization errors through `FTC_MruList_New` (`ftcmru.c:283-295`). The
+focused parity lane passed this one case across Rust, the C ABI, WASM, and the
+pinned oracle; the managed incremental coverage measurement is recorded only
+after the pushed commit below.
+
 Confirmed runtime divergences fixed during the coverage loop are documented
 next to their implementations and must remain separate from coverage-only
 adoption claims:

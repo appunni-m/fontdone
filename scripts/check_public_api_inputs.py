@@ -1193,6 +1193,7 @@ def exact_error_public_route(operation: str, case_id: str, expect_error: bool) -
         "fterrdef.FT_Err_Missing_Bbx_Field.bdf_bitmap_before_bbx",
         "fterrdef.FT_Err_Missing_Encoding_Field.bdf_glyph_without_encoding",
         "fterrdef.FT_Err_Missing_Font_Field.bdf_chars_before_font",
+        "ftcache.FTC_Manager.ownership_requester_failure_propagates_through_lookups",
         "fterrdef.FT_Err_Missing_Fontboundingbox_Field.bdf_chars_before_fontboundingbox",
         "fterrdef.FT_Err_Name_Table_Missing.sfnt_name_storage_out_of_bounds",
         "fterrdef.FT_Err_Hmtx_Table_Missing.sfnt_missing_hmtx_returns_error",
@@ -2186,8 +2187,29 @@ def ftcache_manager_new_pending_reason(row: ConcreteInput) -> str | None:
             "FTC_Manager ownership parity needs a maintained route proving "
             "manager-owned face, size, cache, and node lifetimes match pinned C"
         ),
+        "ftcache.FTC_Manager.ownership_requester_failure_propagates_through_lookups": (
+            "FTC_Manager requester-failure parity needs a maintained route proving "
+            "pinned C propagates a caller callback error through repeated face, "
+            "size, and SBit lookups without caching the failed face"
+        ),
     }
     return exact_cases.get(row.case_id)
+
+
+def ftcache_manager_ownership_real_parity_reason(row: ConcreteInput) -> str | None:
+    if (
+        row.operation == "ftcache.manager_ownership"
+        and row.case_id
+        == "ftcache.FTC_Manager.ownership_requester_failure_propagates_through_lookups"
+        and row.params.get("runtime_route") == "actual_ftc_manager_ownership"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FTC_Manager requester callback failure validates exact propagation "
+            "through repeated face, size, and SBit lookups without caching the "
+            "failed face through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+        )
+    return None
 
 
 def ftcache_image_lookup_pending_reason(row: ConcreteInput) -> str | None:
@@ -9084,6 +9106,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     focused_success_real_reason = focused_success_real_parity_reason(row)
     if focused_success_real_reason:
         return ("real-parity", focused_success_real_reason)
+    ftcache_manager_ownership_real = ftcache_manager_ownership_real_parity_reason(row)
+    if ftcache_manager_ownership_real:
+        return ("real-parity", ftcache_manager_ownership_real)
     done_mm_var_real_reason = done_mm_var_real_parity_reason(row)
     if done_mm_var_real_reason:
         return ("real-parity", done_mm_var_real_reason)
