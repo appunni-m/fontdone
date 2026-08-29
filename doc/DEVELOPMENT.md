@@ -1010,6 +1010,22 @@ boundary.
 The c91 focused selection will include the existing c88 size-zero ID plus
 these four new IDs; no duplicate size-zero fixture is retained.
 
+The c91 focused parity command retained five cases: the existing c88 size-zero
+witness plus the four new IDs above; C, Rust, and WASM matched 5/5. Coverage
+MCP run `d5fff2f2-0ba3-43b8-88e7-9852ef51cff4` completed at pushed commit
+`975158afc43215f297900a06b5724597fbf8b1d9` and ingested child snapshot
+`f0615e72-b819-4eca-882a-02e338c5033a`. The child metadata was stale, so the
+same generated LLVM report was imported with explicit provenance as
+authoritative snapshot `fb02b38a-bd4d-46aa-b2b6-c4cfecce7632`. Against the
+explicit c90 baseline `239f1431-f188-436b-8e78-11688e494e92`, the MCP
+additive union reported `+9` branches, `+2` functions, `+39` lines, and
+`+351` regions. The selected-subset result has no regression claim, and LLVM
+test attribution is unavailable. The union newly observes the size-zero
+return, the byte-31 operator witness, the recognized seed operand, the signed
+seed sanitization, and the harmless unterminated-real EOF route; selected-only
+source views may still show c90/c89 hits as `not_observed` and must not be read
+as parity failures.
+
 The c89 focused parity command retained all five cases: C, Rust, and WASM
 matched 5/5. Coverage MCP run `59bf6605-493b-4144-a5b1-675ef769852b`
 completed at commit `33feaf63fbab4213ce3fd6c91b6ec60f28a7378d` and ingested
