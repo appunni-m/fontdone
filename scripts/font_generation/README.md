@@ -356,6 +356,20 @@ baseline and whose SFNT omits `vmtx` and `vhea`. It is regenerated with
 Thirty public `FT_Load_Glyph` variants use vertical layout to exercise the
 pinned baseline arm of synthesized vertical metrics.
 
+The same generator emits three source-reviewed malformed CFF1 glyph-load
+controls for the public Type2 post-validation guards. `pure-cff-negative-global-
+subr-index.otf` supplies an integer `-108` `callgsubr` operand against the
+standard 107 bias; `pure-cff-global-subr-recursion.otf` supplies a self-calling
+global subroutine; and `pure-cff-top-level-return.otf` executes `return` from
+the top-level glyph charstring. The pinned FreeType 2.14.3 oracle rejects all
+three public loads with `Invalid_File_Format` rather than accepting the
+malformed charstrings. Their reviewed outputs are 1,348 bytes / SHA-256
+`a5cead88bfd487e9f01289361a20506229e96ef2ed00bcb43d6a370eb0eb79e6`, 1,084
+bytes / SHA-256
+`a22966e26dba776c3ebb1fc9a488b6a66ad3ef464a561c2fd3acb109d20ab7b2`, and
+1,008 bytes / SHA-256
+`2359894b2dad50abce8ce38a00189b3d48f9e549a3e38154e9827c79882961b5`.
+
 `tests/fixtures/input/fonts/cid/ot-cff-cid-keyed-standard-ros.otf` is derived
 from the maintained CID-keyed CFF source with its ROS set to the standard CFF
 string SIDs for `Roman` and `Semibold`. It is used by the CID registry and

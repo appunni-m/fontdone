@@ -1428,6 +1428,115 @@ def write_pure_cff_fixed_global_subr_index() -> None:
     build_cff_fixed_global_subr_index(out)
 
 
+def build_cff_global_subr_guard(
+    path: Path,
+    family_name: str,
+    ps_name: str,
+    glyph_name: str,
+    glyph_program: list[object],
+    global_subr_programs: list[list[object]],
+) -> None:
+    """Build a CFF1 face for a source-reviewed Type2 subroutine guard."""
+    names = {
+        "familyName": family_name,
+        "styleName": "Regular",
+        "uniqueFontIdentifier": f"{family_name} Regular",
+        "fullName": f"{family_name} Regular",
+        "psName": ps_name,
+    }
+    builder = FontBuilder(UNITS_PER_EM, isTTF=False)
+    builder.setupGlyphOrder([".notdef", glyph_name])
+    builder.setupCharacterMap({0x41: glyph_name})
+    builder.setupHorizontalMetrics({".notdef": (600, 0), glyph_name: (600, 0)})
+    builder.setupHorizontalHeader(ascent=800, descent=-200)
+    builder.setupNameTable(names)
+    builder.setupOS2(
+        sTypoAscender=800,
+        sTypoDescender=-200,
+        usWinAscent=800,
+        usWinDescent=200,
+    )
+    builder.setupPost()
+    builder.setupCFF(
+        names["psName"],
+        {
+            "FullName": names["fullName"],
+            "FamilyName": names["familyName"],
+            "Weight": names["styleName"],
+        },
+        {
+            ".notdef": t2_charstring(),
+            glyph_name: t2_program_charstring(glyph_program),
+        },
+        {},
+    )
+    cff = builder.font["CFF "].cff
+    for program in global_subr_programs:
+        cff.GlobalSubrs.append(
+            T2CharString(program=program, private=None, globalSubrs=cff.GlobalSubrs)
+        )
+    builder.setupMaxp()
+    recalc_font_bbox = TopDict.recalcFontBBox
+    try:
+        TopDict.recalcFontBBox = lambda self: None
+        builder.font.recalcBBoxes = False
+        builder.font["head"].created = FIXED_HEAD_TIME
+        builder.font["head"].modified = FIXED_HEAD_TIME
+        builder.font.recalcTimestamp = False
+        builder.font["CFF "].cff.topDictIndex[0].FontBBox = [0, 0, 0, 0]
+        builder.save(path)
+    finally:
+        TopDict.recalcFontBBox = recalc_font_bbox
+
+
+def write_pure_cff_negative_global_subr_index() -> None:
+    """Build an integer CFF1 callgsubr operand whose biased index is negative."""
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / "pure-cff-negative-global-subr-index.otf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    build_cff_global_subr_guard(
+        out,
+        "Pure CFF Negative Global Subr Index",
+        "PureCFFNegativeGlobalSubrIndex-Regular",
+        "negative_subr",
+        [0, 0, "rmoveto", -108, "callgsubr", "endchar"],
+        [["return"] for _ in range(108)],
+    )
+
+
+def write_pure_cff_global_subr_recursion() -> None:
+    """Build a self-recursive CFF1 global subroutine for the depth guard."""
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / "pure-cff-global-subr-recursion.otf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    build_cff_global_subr_guard(
+        out,
+        "Pure CFF Global Subr Recursion",
+        "PureCFFGlobalSubrRecursion-Regular",
+        "recursive_subr",
+        [0, 0, "rmoveto", -107, "callgsubr", "endchar"],
+        [[-107, "callgsubr"]],
+    )
+
+
+def write_pure_cff_top_level_return() -> None:
+    """Build a CFF1 glyph with an explicit top-level return operator."""
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / "pure-cff-top-level-return.otf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    build_cff_global_subr_guard(
+        out,
+        "Pure CFF Top Level Return",
+        "PureCFFTopLevelReturn-Regular",
+        "top_return",
+        [0, 0, "rmoveto", "return", "endchar"],
+        [],
+    )
+
+
 def write_pure_cff_below_baseline_no_vmtx() -> None:
     """Build a valid CFF face whose glyph bbox lies entirely below baseline."""
     out = OUT_DIR / "pure-cff-below-baseline-no-vmtx.otf"
@@ -2785,6 +2894,9 @@ def main() -> None:
     write_pure_cff_fixed_add()
     write_pure_cff_mul()
     write_pure_cff_fixed_global_subr_index()
+    write_pure_cff_negative_global_subr_index()
+    write_pure_cff_global_subr_recursion()
+    write_pure_cff_top_level_return()
     write_pure_cff_below_baseline_no_vmtx()
     write_pure_cff_baseline_touch_no_vmtx()
     write_pure_cff_cubic_last_delta()

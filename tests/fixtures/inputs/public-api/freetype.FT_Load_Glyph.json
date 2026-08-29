@@ -42,6 +42,7 @@
     "batch217_valid_latin_overlap_sentinel",
     "batch218_valid_latin_bottom_distance_order",
     "batch219_cff_eof_and_fixed_add",
+    "batch231_cff_post_validation_guards",
     "render_and_target_modes",
     "no_scale_no_hinting_and_vertical_flags",
     "error_out_of_range_null_face_or_invalid_flags",
@@ -14922,6 +14923,1010 @@
           "freetype/src/psaux/psintrp.c:3030-3035",
           "src/tt/cff.rs:1303-1304",
           "src/tt/cff.rs:1705-1710"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_Load_Glyph.batch231_cff_post_validation_guards",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "batch231_cff_post_validation_guards",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "b231-negative-gsubr-08-default-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-negative-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-negative-gsubr-08-default-001: Malformed CFF1 glyph 1 uses a negative biased global-subroutine index at 8px with 08 default; FreeType an integer -108 operand with the CFF1 bias 107 becomes an invalid negative lookup, freetype/src/psaux/psintrp.c:1019-1029 and freetype/src/psaux/psft.c:630-643, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1715.",
+            "coverage": [
+              "batch231:cff:negative-global-subr-index:08-default:src-tt-cff-1715"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-negative-gsubr-08-no-hinting-002",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-negative-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-negative-gsubr-08-no-hinting-002: Malformed CFF1 glyph 1 uses a negative biased global-subroutine index at 8px with 08 no hinting; FreeType an integer -108 operand with the CFF1 bias 107 becomes an invalid negative lookup, freetype/src/psaux/psintrp.c:1019-1029 and freetype/src/psaux/psft.c:630-643, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1715.",
+            "coverage": [
+              "batch231:cff:negative-global-subr-index:08-no-hinting:src-tt-cff-1715"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-negative-gsubr-08-force-autohint-003",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-negative-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-negative-gsubr-08-force-autohint-003: Malformed CFF1 glyph 1 uses a negative biased global-subroutine index at 8px with 08 force autohint; FreeType an integer -108 operand with the CFF1 bias 107 becomes an invalid negative lookup, freetype/src/psaux/psintrp.c:1019-1029 and freetype/src/psaux/psft.c:630-643, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1715.",
+            "coverage": [
+              "batch231:cff:negative-global-subr-index:08-force-autohint:src-tt-cff-1715"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-negative-gsubr-08-target-light-004",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-negative-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-negative-gsubr-08-target-light-004: Malformed CFF1 glyph 1 uses a negative biased global-subroutine index at 8px with 08 target light; FreeType an integer -108 operand with the CFF1 bias 107 becomes an invalid negative lookup, freetype/src/psaux/psintrp.c:1019-1029 and freetype/src/psaux/psft.c:630-643, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1715.",
+            "coverage": [
+              "batch231:cff:negative-global-subr-index:08-target-light:src-tt-cff-1715"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-negative-gsubr-08-target-mono-005",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-negative-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-negative-gsubr-08-target-mono-005: Malformed CFF1 glyph 1 uses a negative biased global-subroutine index at 8px with 08 target mono; FreeType an integer -108 operand with the CFF1 bias 107 becomes an invalid negative lookup, freetype/src/psaux/psintrp.c:1019-1029 and freetype/src/psaux/psft.c:630-643, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1715.",
+            "coverage": [
+              "batch231:cff:negative-global-subr-index:08-target-mono:src-tt-cff-1715"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-negative-gsubr-12-default-006",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-negative-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-negative-gsubr-12-default-006: Malformed CFF1 glyph 1 uses a negative biased global-subroutine index at 12px with 12 default; FreeType an integer -108 operand with the CFF1 bias 107 becomes an invalid negative lookup, freetype/src/psaux/psintrp.c:1019-1029 and freetype/src/psaux/psft.c:630-643, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1715.",
+            "coverage": [
+              "batch231:cff:negative-global-subr-index:12-default:src-tt-cff-1715"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-negative-gsubr-12-no-hinting-007",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-negative-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-negative-gsubr-12-no-hinting-007: Malformed CFF1 glyph 1 uses a negative biased global-subroutine index at 12px with 12 no hinting; FreeType an integer -108 operand with the CFF1 bias 107 becomes an invalid negative lookup, freetype/src/psaux/psintrp.c:1019-1029 and freetype/src/psaux/psft.c:630-643, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1715.",
+            "coverage": [
+              "batch231:cff:negative-global-subr-index:12-no-hinting:src-tt-cff-1715"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-negative-gsubr-12-force-autohint-008",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-negative-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-negative-gsubr-12-force-autohint-008: Malformed CFF1 glyph 1 uses a negative biased global-subroutine index at 12px with 12 force autohint; FreeType an integer -108 operand with the CFF1 bias 107 becomes an invalid negative lookup, freetype/src/psaux/psintrp.c:1019-1029 and freetype/src/psaux/psft.c:630-643, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1715.",
+            "coverage": [
+              "batch231:cff:negative-global-subr-index:12-force-autohint:src-tt-cff-1715"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-negative-gsubr-12-target-light-009",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-negative-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-negative-gsubr-12-target-light-009: Malformed CFF1 glyph 1 uses a negative biased global-subroutine index at 12px with 12 target light; FreeType an integer -108 operand with the CFF1 bias 107 becomes an invalid negative lookup, freetype/src/psaux/psintrp.c:1019-1029 and freetype/src/psaux/psft.c:630-643, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1715.",
+            "coverage": [
+              "batch231:cff:negative-global-subr-index:12-target-light:src-tt-cff-1715"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-negative-gsubr-12-target-mono-010",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-negative-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-negative-gsubr-12-target-mono-010: Malformed CFF1 glyph 1 uses a negative biased global-subroutine index at 12px with 12 target mono; FreeType an integer -108 operand with the CFF1 bias 107 becomes an invalid negative lookup, freetype/src/psaux/psintrp.c:1019-1029 and freetype/src/psaux/psft.c:630-643, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1715.",
+            "coverage": [
+              "batch231:cff:negative-global-subr-index:12-target-mono:src-tt-cff-1715"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-recursion-08-default-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-recursion.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-recursion-08-default-001: Malformed CFF1 glyph 1 uses a recursive global subroutine at 8px with 08 default; FreeType a global subroutine calls itself until FreeType's maximum nested-subroutine guard, freetype/src/psaux/psintrp.c:988-992, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1725.",
+            "coverage": [
+              "batch231:cff:global-subr-recursion:08-default:src-tt-cff-1725"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-recursion-08-no-hinting-002",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-recursion.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-recursion-08-no-hinting-002: Malformed CFF1 glyph 1 uses a recursive global subroutine at 8px with 08 no hinting; FreeType a global subroutine calls itself until FreeType's maximum nested-subroutine guard, freetype/src/psaux/psintrp.c:988-992, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1725.",
+            "coverage": [
+              "batch231:cff:global-subr-recursion:08-no-hinting:src-tt-cff-1725"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-recursion-08-force-autohint-003",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-recursion.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-recursion-08-force-autohint-003: Malformed CFF1 glyph 1 uses a recursive global subroutine at 8px with 08 force autohint; FreeType a global subroutine calls itself until FreeType's maximum nested-subroutine guard, freetype/src/psaux/psintrp.c:988-992, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1725.",
+            "coverage": [
+              "batch231:cff:global-subr-recursion:08-force-autohint:src-tt-cff-1725"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-recursion-08-target-light-004",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-recursion.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-recursion-08-target-light-004: Malformed CFF1 glyph 1 uses a recursive global subroutine at 8px with 08 target light; FreeType a global subroutine calls itself until FreeType's maximum nested-subroutine guard, freetype/src/psaux/psintrp.c:988-992, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1725.",
+            "coverage": [
+              "batch231:cff:global-subr-recursion:08-target-light:src-tt-cff-1725"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-recursion-08-target-mono-005",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-recursion.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-recursion-08-target-mono-005: Malformed CFF1 glyph 1 uses a recursive global subroutine at 8px with 08 target mono; FreeType a global subroutine calls itself until FreeType's maximum nested-subroutine guard, freetype/src/psaux/psintrp.c:988-992, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1725.",
+            "coverage": [
+              "batch231:cff:global-subr-recursion:08-target-mono:src-tt-cff-1725"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-recursion-12-default-006",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-recursion.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-recursion-12-default-006: Malformed CFF1 glyph 1 uses a recursive global subroutine at 12px with 12 default; FreeType a global subroutine calls itself until FreeType's maximum nested-subroutine guard, freetype/src/psaux/psintrp.c:988-992, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1725.",
+            "coverage": [
+              "batch231:cff:global-subr-recursion:12-default:src-tt-cff-1725"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-recursion-12-no-hinting-007",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-recursion.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-recursion-12-no-hinting-007: Malformed CFF1 glyph 1 uses a recursive global subroutine at 12px with 12 no hinting; FreeType a global subroutine calls itself until FreeType's maximum nested-subroutine guard, freetype/src/psaux/psintrp.c:988-992, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1725.",
+            "coverage": [
+              "batch231:cff:global-subr-recursion:12-no-hinting:src-tt-cff-1725"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-recursion-12-force-autohint-008",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-recursion.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-recursion-12-force-autohint-008: Malformed CFF1 glyph 1 uses a recursive global subroutine at 12px with 12 force autohint; FreeType a global subroutine calls itself until FreeType's maximum nested-subroutine guard, freetype/src/psaux/psintrp.c:988-992, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1725.",
+            "coverage": [
+              "batch231:cff:global-subr-recursion:12-force-autohint:src-tt-cff-1725"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-recursion-12-target-light-009",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-recursion.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-recursion-12-target-light-009: Malformed CFF1 glyph 1 uses a recursive global subroutine at 12px with 12 target light; FreeType a global subroutine calls itself until FreeType's maximum nested-subroutine guard, freetype/src/psaux/psintrp.c:988-992, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1725.",
+            "coverage": [
+              "batch231:cff:global-subr-recursion:12-target-light:src-tt-cff-1725"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-recursion-12-target-mono-010",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-recursion.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-recursion-12-target-mono-010: Malformed CFF1 glyph 1 uses a recursive global subroutine at 12px with 12 target mono; FreeType a global subroutine calls itself until FreeType's maximum nested-subroutine guard, freetype/src/psaux/psintrp.c:988-992, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1725.",
+            "coverage": [
+              "batch231:cff:global-subr-recursion:12-target-mono:src-tt-cff-1725"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-top-return-08-default-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-top-level-return.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-top-return-08-default-001: Malformed CFF1 glyph 1 uses a top-level return at 8px with 08 default; FreeType the glyph charstring executes return while no subroutine frame exists, freetype/src/psaux/psintrp.c:1052-1060, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1737.",
+            "coverage": [
+              "batch231:cff:top-level-return:08-default:src-tt-cff-1737"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-top-return-08-no-hinting-002",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-top-level-return.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-top-return-08-no-hinting-002: Malformed CFF1 glyph 1 uses a top-level return at 8px with 08 no hinting; FreeType the glyph charstring executes return while no subroutine frame exists, freetype/src/psaux/psintrp.c:1052-1060, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1737.",
+            "coverage": [
+              "batch231:cff:top-level-return:08-no-hinting:src-tt-cff-1737"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-top-return-08-force-autohint-003",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-top-level-return.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-top-return-08-force-autohint-003: Malformed CFF1 glyph 1 uses a top-level return at 8px with 08 force autohint; FreeType the glyph charstring executes return while no subroutine frame exists, freetype/src/psaux/psintrp.c:1052-1060, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1737.",
+            "coverage": [
+              "batch231:cff:top-level-return:08-force-autohint:src-tt-cff-1737"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-top-return-08-target-light-004",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-top-level-return.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-top-return-08-target-light-004: Malformed CFF1 glyph 1 uses a top-level return at 8px with 08 target light; FreeType the glyph charstring executes return while no subroutine frame exists, freetype/src/psaux/psintrp.c:1052-1060, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1737.",
+            "coverage": [
+              "batch231:cff:top-level-return:08-target-light:src-tt-cff-1737"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-top-return-08-target-mono-005",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-top-level-return.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-top-return-08-target-mono-005: Malformed CFF1 glyph 1 uses a top-level return at 8px with 08 target mono; FreeType the glyph charstring executes return while no subroutine frame exists, freetype/src/psaux/psintrp.c:1052-1060, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1737.",
+            "coverage": [
+              "batch231:cff:top-level-return:08-target-mono:src-tt-cff-1737"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-top-return-12-default-006",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-top-level-return.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-top-return-12-default-006: Malformed CFF1 glyph 1 uses a top-level return at 12px with 12 default; FreeType the glyph charstring executes return while no subroutine frame exists, freetype/src/psaux/psintrp.c:1052-1060, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1737.",
+            "coverage": [
+              "batch231:cff:top-level-return:12-default:src-tt-cff-1737"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-top-return-12-no-hinting-007",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-top-level-return.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-top-return-12-no-hinting-007: Malformed CFF1 glyph 1 uses a top-level return at 12px with 12 no hinting; FreeType the glyph charstring executes return while no subroutine frame exists, freetype/src/psaux/psintrp.c:1052-1060, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1737.",
+            "coverage": [
+              "batch231:cff:top-level-return:12-no-hinting:src-tt-cff-1737"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-top-return-12-force-autohint-008",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-top-level-return.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-top-return-12-force-autohint-008: Malformed CFF1 glyph 1 uses a top-level return at 12px with 12 force autohint; FreeType the glyph charstring executes return while no subroutine frame exists, freetype/src/psaux/psintrp.c:1052-1060, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1737.",
+            "coverage": [
+              "batch231:cff:top-level-return:12-force-autohint:src-tt-cff-1737"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-top-return-12-target-light-009",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-top-level-return.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-top-return-12-target-light-009: Malformed CFF1 glyph 1 uses a top-level return at 12px with 12 target light; FreeType the glyph charstring executes return while no subroutine frame exists, freetype/src/psaux/psintrp.c:1052-1060, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1737.",
+            "coverage": [
+              "batch231:cff:top-level-return:12-target-light:src-tt-cff-1737"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b231-top-return-12-target-mono-010",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-top-level-return.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b231-top-return-12-target-mono-010: Malformed CFF1 glyph 1 uses a top-level return at 12px with 12 target mono; FreeType the glyph charstring executes return while no subroutine frame exists, freetype/src/psaux/psintrp.c:1052-1060, and its public oracle returns Invalid_File_Format (error code 3), matching the Rust guard at src/tt/cff.rs:1737.",
+            "coverage": [
+              "batch231:cff:top-level-return:12-target-mono:src-tt-cff-1737"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-load",
+        "coverage:real-parity",
+        "font_variability:input/fonts",
+        "source-reviewed-expansion"
+      ],
+      "metadata": {
+        "coverage_intent": "Thirty concrete public parity IDs are split across three source-reviewed CFF1 glyph witnesses: negative biased global-subroutine index, recursive global subroutine, and top-level return. Each family spans two sizes and five public load modes; every ID records why the pinned FreeType oracle rejects the input and which Rust guard it targets.",
+        "freetype_review": "The pinned Adobe Type2 interpreter rejects the negative biased lookup through cf2_initGlobalRegionBuffer (`freetype/src/psaux/psintrp.c:1019-1029`, `freetype/src/psaux/psft.c:630-643`), rejects excessive nested subroutines at `freetype/src/psaux/psintrp.c:988-992`, and rejects return at the top charstring at `freetype/src/psaux/psintrp.c:1052-1060`; public glyph loading maps each interpreter failure to Invalid_File_Format."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "rows": "per-font glyph load status and slot snapshot"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "rows[].status",
+            "rows[].slot"
+          ]
+        },
+        "sources_checked": [
+          "freetype/src/psaux/psintrp.c:988-992",
+          "freetype/src/psaux/psintrp.c:1019-1029",
+          "freetype/src/psaux/psintrp.c:1052-1060",
+          "freetype/src/psaux/psft.c:630-643",
+          "src/tt/cff.rs:1705-1740"
         ]
       }
     },
