@@ -124,6 +124,102 @@
             "coverage": [
               "ftglyph.glyph_to_bitmap:explicit-empty-m1"
             ]
+          },
+          {
+            "id": "batch229-wasm-glyph-to-bitmap-overlap-sdf",
+            "assets": {
+              "outline_font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/render-coverage.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "source_creation": "FT_Get_Glyph outline",
+              "destroy": false,
+              "origin": null,
+              "glyph_index": 7,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "batch229:wasm-glyph-to-bitmap-overlap-sdf"
+            ]
+          },
+          {
+            "id": "batch230-overlap-normal-preserve",
+            "assets": {
+              "outline_font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/render-coverage.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "source_creation": "FT_Get_Glyph outline",
+              "destroy": false,
+              "origin": null,
+              "glyph_index": 6,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "batch230:overlap-normal-preserve"
+            ]
+          },
+          {
+            "id": "batch230-cff-cubic-lcd-preserve",
+            "assets": {
+              "outline_font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-cubic.otf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "source_creation": "FT_Get_Glyph outline",
+              "destroy": false,
+              "origin": null,
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_LCD"
+            },
+            "coverage": [
+              "batch230:cff-cubic-lcd-preserve"
+            ]
+          },
+          {
+            "id": "batch230-flat-horizontal-sdf",
+            "assets": {
+              "outline_font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/render-coverage.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "source_creation": "FT_Get_Glyph outline",
+              "destroy": false,
+              "origin": null,
+              "glyph_index": 14,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_SDF"
+            },
+            "coverage": [
+              "batch230:flat-horizontal-sdf"
+            ]
           }
         ]
       },
@@ -205,6 +301,29 @@
             },
             "coverage": [
               "ftglyph.glyph_to_bitmap:explicit-g43-m2"
+            ]
+          },
+          {
+            "id": "batch230-cff-cubic-lcdv-destroy",
+            "assets": {
+              "outline_font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-cubic.otf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "source_creation": "FT_Get_Glyph outline",
+              "destroy": true,
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_LCD_V"
+            },
+            "coverage": [
+              "batch230:cff-cubic-lcdv-destroy"
             ]
           }
         ]

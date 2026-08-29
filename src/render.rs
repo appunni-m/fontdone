@@ -268,12 +268,12 @@ impl Font {
                     buffer: vec![0, 0],
                 });
             }
-            let pixel_mode = match mode {
-                RenderMode::Mono => PixelMode::Mono,
-                RenderMode::Lcd => PixelMode::Lcd,
-                RenderMode::LcdV => PixelMode::LcdV,
-                RenderMode::Sdf => PixelMode::Gray,
-                RenderMode::Normal => PixelMode::Gray,
+            let pixel_mode = if mode == RenderMode::LcdV {
+                PixelMode::LcdV
+            } else {
+                // Mono and LCD returned above; the remaining SDF and normal
+                // empty-outline paths expose an empty grayscale bitmap.
+                PixelMode::Gray
             };
             return Ok(RenderedBitmap {
                 width: 0,
@@ -336,12 +336,14 @@ fn render_empty_loaded_outline(mode: RenderMode) -> Result<RenderedBitmap, FontE
             buffer: vec![0, 0],
         });
     }
-    let pixel_mode = match mode {
-        RenderMode::Mono => PixelMode::Mono,
-        RenderMode::Lcd => PixelMode::Lcd,
-        RenderMode::LcdV => PixelMode::LcdV,
-        RenderMode::Sdf => PixelMode::Gray,
-        RenderMode::Normal => PixelMode::Gray,
+    let pixel_mode = if mode == RenderMode::Lcd {
+        PixelMode::Lcd
+    } else if mode == RenderMode::LcdV {
+        PixelMode::LcdV
+    } else {
+        // The caller excludes normal mode before entering this helper, so
+        // this remaining path is the empty SDF bitmap.
+        PixelMode::Gray
     };
     Ok(RenderedBitmap {
         width: 0,

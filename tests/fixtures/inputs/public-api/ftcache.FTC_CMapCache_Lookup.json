@@ -6,6 +6,11 @@
     "success_lookup_hit_and_repeat_hit",
     "success_lookup_miss_returns_zero",
     "success_negative_cmap_index_uses_current_charmap",
+    "error_format14_charmap_returns_zero",
+    "error_format14_only_charmap_returns_zero",
+    "error_format14_multiple_platform_charmap_returns_zero",
+    "error_format14_platform0_charmap_returns_zero",
+    "error_format14_platform3_charmap_returns_zero",
     "error_requester_failure_returns_zero",
     "error_null_cache_returns_zero",
     "lifecycle_remove_faceid_and_reset"
@@ -877,6 +882,261 @@
         "fixture_requirements": [
           "Harness support for persistent FTC_FaceID callback data and requester invocation log"
         ]
+      }
+    },
+    {
+      "case_id": "ftcache.FTC_CMapCache_Lookup.error_format14_charmap_returns_zero",
+      "subject": "ftcache.FTC_CMapCache_Lookup",
+      "case": "error_format14_charmap_returns_zero",
+      "operation": "ftcache.cmap_cache_lookup",
+      "schema": "cache_operation",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "format14-non-uvs-index-1",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/charmap/cmap-format14-non-uvs-platforms.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {"max_faces": 0, "max_sizes": 0, "max_bytes": 0},
+              "face_ids": ["face-A"],
+              "requester": "path_face_requester_with_log",
+              "scenario": "error_format14_charmap_returns_zero",
+              "cmap_indexes": [1],
+              "repeat_lookup": false,
+              "char_code": 65
+            },
+            "coverage": ["batch-next:cmap:format14:001"]
+          }
+        ]
+      },
+      "classifiers": ["kind:function", "header:ftcache", "area:cache-subsystem"],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_UInt",
+          "glyph_index": true,
+          "active_charmap_identity": true,
+          "requester_log": true
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "glyph_index",
+            "requester_log",
+            "active_charmap_before",
+            "active_charmap_after"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ftcache.FTC_CMapCache_Lookup.error_format14_only_charmap_returns_zero",
+      "subject": "ftcache.FTC_CMapCache_Lookup",
+      "case": "error_format14_only_charmap_returns_zero",
+      "operation": "ftcache.cmap_cache_lookup",
+      "schema": "cache_operation",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "format14-only-index-0",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/charmap/cmap-format14-only.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {"max_faces": 0, "max_sizes": 0, "max_bytes": 0},
+              "face_ids": ["face-A"],
+              "requester": "path_face_requester_with_log",
+              "scenario": "error_format14_only_charmap_returns_zero",
+              "cmap_indexes": [0],
+              "repeat_lookup": false,
+              "char_code": 65
+            },
+            "coverage": ["batch-next:cmap:format14:002"]
+          }
+        ]
+      },
+      "classifiers": ["kind:function", "header:ftcache", "area:cache-subsystem"],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_UInt",
+          "glyph_index": true,
+          "active_charmap_identity": true,
+          "requester_log": true
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "glyph_index",
+            "requester_log",
+            "active_charmap_before",
+            "active_charmap_after"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ftcache.FTC_CMapCache_Lookup.error_format14_multiple_platform_charmap_returns_zero",
+      "subject": "ftcache.FTC_CMapCache_Lookup",
+      "case": "error_format14_multiple_platform_charmap_returns_zero",
+      "operation": "ftcache.cmap_cache_lookup",
+      "schema": "cache_operation",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "format14-non-uvs-indexes-1-2",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/charmap/cmap-format14-non-uvs-platforms.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {"max_faces": 0, "max_sizes": 0, "max_bytes": 0},
+              "face_ids": ["face-A"],
+              "requester": "path_face_requester_with_log",
+              "scenario": "error_format14_multiple_platform_charmap_returns_zero",
+              "cmap_indexes": [1, 2],
+              "repeat_lookup": false,
+              "char_code": 65
+            },
+            "coverage": ["batch-next:cmap:format14:003"]
+          }
+        ]
+      },
+      "classifiers": ["kind:function", "header:ftcache", "area:cache-subsystem"],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_UInt",
+          "glyph_index": true,
+          "active_charmap_identity": true,
+          "requester_log": true
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "glyph_index",
+            "requester_log",
+            "active_charmap_before",
+            "active_charmap_after"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ftcache.FTC_CMapCache_Lookup.error_format14_platform0_charmap_returns_zero",
+      "subject": "ftcache.FTC_CMapCache_Lookup",
+      "case": "error_format14_platform0_charmap_returns_zero",
+      "operation": "ftcache.cmap_cache_lookup",
+      "schema": "cache_operation",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "format14-platform0-index-1",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/charmap/cmap-platform0-variation.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {"max_faces": 0, "max_sizes": 0, "max_bytes": 0},
+              "face_ids": ["face-A"],
+              "requester": "path_face_requester_with_log",
+              "scenario": "error_format14_platform0_charmap_returns_zero",
+              "cmap_indexes": [1],
+              "repeat_lookup": false,
+              "char_code": 65
+            },
+            "coverage": ["batch-next:cmap:format14:004"]
+          }
+        ]
+      },
+      "classifiers": ["kind:function", "header:ftcache", "area:cache-subsystem"],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_UInt",
+          "glyph_index": true,
+          "active_charmap_identity": true,
+          "requester_log": true
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "glyph_index",
+            "requester_log",
+            "active_charmap_before",
+            "active_charmap_after"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ftcache.FTC_CMapCache_Lookup.error_format14_platform3_charmap_returns_zero",
+      "subject": "ftcache.FTC_CMapCache_Lookup",
+      "case": "error_format14_platform3_charmap_returns_zero",
+      "operation": "ftcache.cmap_cache_lookup",
+      "schema": "cache_operation",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "format14-platform3-index-0",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/charmap/cmap-platform3-nonunicode-variation.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "manager_limits": {"max_faces": 0, "max_sizes": 0, "max_bytes": 0},
+              "face_ids": ["face-A"],
+              "requester": "path_face_requester_with_log",
+              "scenario": "error_format14_platform3_charmap_returns_zero",
+              "cmap_indexes": [0],
+              "repeat_lookup": false,
+              "char_code": 65
+            },
+            "coverage": ["batch-next:cmap:format14:005"]
+          }
+        ]
+      },
+      "classifiers": ["kind:function", "header:ftcache", "area:cache-subsystem"],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_UInt",
+          "glyph_index": true,
+          "active_charmap_identity": true,
+          "requester_log": true
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "glyph_index",
+            "requester_log",
+            "active_charmap_before",
+            "active_charmap_after"
+          ]
+        }
       }
     },
     {

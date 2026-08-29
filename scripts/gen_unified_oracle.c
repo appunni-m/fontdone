@@ -3842,6 +3842,21 @@ static int emit_bitmap_copy(const char* scenario) {
     } else if (streq(scenario, "success_flow_flip")) {
         source.pitch = -4;
         target.pitch = 1;
+    } else if (streq(scenario, "error_array_too_large_rows_2_pitch_1073741824")) {
+        source.rows = 2U;
+        source.pitch = 1073741824;
+    } else if (streq(scenario, "error_array_too_large_rows_3_pitch_715827883")) {
+        source.rows = 3U;
+        source.pitch = 715827883;
+    } else if (streq(scenario, "error_array_too_large_rows_4_pitch_536870912")) {
+        source.rows = 4U;
+        source.pitch = 536870912;
+    } else if (streq(scenario, "error_array_too_large_rows_2147483648_pitch_1")) {
+        source.rows = 2147483648U;
+        source.pitch = 1;
+    } else if (streq(scenario, "error_array_too_large_rows_4294967295_pitch_1")) {
+        source.rows = 4294967295U;
+        source.pitch = 1;
     } else if (streq(scenario, "ownership_replaces_target_buffer")) {
         memset(target_bytes, 0xE5, sizeof(target_bytes));
         FT_Bitmap pre_source;
@@ -15866,6 +15881,8 @@ static int emit_outline_render(int argc, char** argv) {
     int batch2_mono = 0;
     int batch2_mono_error = 0;
     int batch4_mono_zero = 0;
+    int batch229_mono_negative_pitch =
+        strstr(input_case_id, "@batch229-mono-negative-pitch") != NULL;
     int batch165_direct_zero_width = strstr(input_case_id, "@batch165-direct-zero-width-") != NULL;
     int batch178_direct_zero_height = strstr(input_case_id, "@b178-direct-zero-height-") != NULL;
     const char* batch_marker = strstr(input_case_id, "@batch2-mono-");
@@ -16692,6 +16709,9 @@ static int emit_outline_render(int argc, char** argv) {
     } else if (batch4_mono_zero) {
         bitmap.pitch = bitmap_width == 0 ? 0 : 4;
     }
+    if (batch229_mono_negative_pitch) {
+        bitmap.pitch = -4;
+    }
     if (strstr(case_id, "@line-partial-below-clip-positive-pitch")) {
         bitmap.pitch = 36;
     } else if (strstr(case_id, "@line-partial-below-clip-negative-pitch")) {
@@ -16736,6 +16756,10 @@ static int emit_outline_render(int argc, char** argv) {
         bitmap.num_grays = 2;
         bitmap.pixel_mode = FT_PIXEL_MODE_MONO;
     }
+    if (batch229_mono_negative_pitch) {
+        bitmap.num_grays = 2;
+        bitmap.pixel_mode = FT_PIXEL_MODE_MONO;
+    }
     if (strstr(case_id, "@cbox-just-beyond-render-limit-non-gray")) {
         bitmap.num_grays = 2;
         bitmap.pixel_mode = FT_PIXEL_MODE_MONO;
@@ -16761,6 +16785,9 @@ static int emit_outline_render(int argc, char** argv) {
         params.flags = 0;
     }
     if (batch4_mono_zero) {
+        params.flags = 0;
+    }
+    if (batch229_mono_negative_pitch) {
         params.flags = 0;
     }
     if (c30_render >= 5 && c30_render <= 9) {
@@ -37631,7 +37658,7 @@ static int slot_outputs_equal_captured(
 }
 
 static int emit_ps_hinting_engine_case(int argc, char** argv) {
-    if (argc != 13 && argc != 14) {
+    if (argc < 13 || argc > 15) {
         fprintf(stderr,
                 "--ps-hinting-engine-case requires three source pairs, "
                 "GLYPH_INDEX, LOAD_FLAGS, VALUE, STRING, RENDER_PIXEL_SIZE\n");
@@ -37642,7 +37669,16 @@ static int emit_ps_hinting_engine_case(int argc, char** argv) {
     FT_UInt property_value = (FT_UInt)strtoul(argv[10], NULL, 10);
     const char* string_value = streq(argv[11], "<null>") ? NULL : argv[11];
     FT_UInt render_pixel_size = (FT_UInt)strtoul(argv[12], NULL, 10);
-    const int invalid_module_selector_present = argc == 14;
+    const char* random_seed_text = NULL;
+    int invalid_module_selector_present = 0;
+    if (argc >= 14) {
+        if (strncmp(argv[13], "random-seed=", 12) == 0) {
+            random_seed_text = argv[13] + 12;
+            invalid_module_selector_present = argc == 15;
+        } else {
+            invalid_module_selector_present = 1;
+        }
+    }
 
     struct ModuleFontPair_ {
         const char* module;
@@ -37682,6 +37718,11 @@ static int emit_ps_hinting_engine_case(int argc, char** argv) {
                    "\"string_value_behavior\":null,\"glyph\":null,"
                    "\"post_error_output_preservation\":null}");
             continue;
+        }
+        if (random_seed_text && streq(pairs[index].module, "cff")) {
+            FT_Int32 random_seed = (FT_Int32)strtol(random_seed_text, NULL, 10);
+            (void)FT_Property_Set(
+                library, pairs[index].module, "random-seed", &random_seed);
         }
         FT_Face face = NULL;
         FT_Error open_error = FT_New_Memory_Face(library, data, data_len, 0, &face);
@@ -42058,7 +42099,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 6 && streq(argv[1], "--sbix-params-case")) {
         return emit_sbix_params_case(argc, argv);
     }
-    if ((argc == 13 || argc == 14) && streq(argv[1], "--ps-hinting-engine-case")) {
+    if (argc >= 13 && argc <= 15 && streq(argv[1], "--ps-hinting-engine-case")) {
         return emit_ps_hinting_engine_case(argc, argv);
     }
     if (argc == 3 && streq(argv[1], "--ps-hinting-engine-null-file")) {

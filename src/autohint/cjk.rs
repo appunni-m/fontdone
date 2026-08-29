@@ -315,9 +315,9 @@ pub fn cjk_metrics_scale(
 /// Key differences from Latin edge detection:
 ///   1. Best-distance matching instead of first-match
 ///   2. Linked segment compatibility check
-///   3. Top-to-bottom edge insertion order
+///   3. C-compatible sorted edge insertion order
 ///
-pub fn cjk_compute_edges(hints: &mut GlyphHints, dim: Dimension, top_to_bottom: bool) {
+pub fn cjk_compute_edges(hints: &mut GlyphHints, dim: Dimension) {
     let axis = &mut hints.axis[dim as usize];
     let scale = if dim == Dimension::Horz {
         hints.x_scale
@@ -411,11 +411,7 @@ pub fn cjk_compute_edges(hints: &mut GlyphHints, dim: Dimension, top_to_bottom: 
             let mut insert_at = axis.edges.len();
             while insert_at > 0 {
                 let prev = &axis.edges[insert_at - 1];
-                let is_before = if top_to_bottom {
-                    prev.fpos > fpos
-                } else {
-                    prev.fpos < fpos
-                };
+                let is_before = prev.fpos < fpos;
                 if is_before {
                     break;
                 }
@@ -487,13 +483,15 @@ pub fn cjk_compute_edges(hints: &mut GlyphHints, dim: Dimension, top_to_bottom: 
                     edge2_idx = axis.segments[linked_seg].edge;
                 }
 
-                if edge2_idx != usize::MAX && edge2_idx != e_idx {
-                    if is_serif {
-                        axis.edges[e_idx].serif = edge2_idx;
-                        axis.edges[edge2_idx].flags |= AF_EDGE_SERIF;
-                    } else {
-                        axis.edges[e_idx].link = edge2_idx;
-                    }
+                // The outer condition and the linked-segment invariant make
+                // edge2_idx a valid edge.  The pinned C path updates it
+                // unconditionally, including the (defensive-only) self-edge
+                // case.
+                if is_serif {
+                    axis.edges[e_idx].serif = edge2_idx;
+                    axis.edges[edge2_idx].flags |= AF_EDGE_SERIF;
+                } else {
+                    axis.edges[e_idx].link = edge2_idx;
                 }
             }
 
@@ -662,10 +660,7 @@ pub fn cjk_link_segments(hints: &mut GlyphHints, dim: Dimension) {
 ///
 /// CJK has horizontal and vertical blue zones and no Latin neutral/round
 /// overshoot special cases. The nearest active reference/shoot blue wins.
-pub fn cjk_compute_blue_edges(hints: &mut GlyphHints, dim: Dimension) {
-    let Some(metrics) = hints.metrics.as_ref() else {
-        return;
-    };
+pub fn cjk_compute_blue_edges(hints: &mut GlyphHints, metrics: &AfLatinMetrics, dim: Dimension) {
     let axis_metrics = &metrics.axis[dim as usize];
     if axis_metrics.blue_count == 0 {
         return;

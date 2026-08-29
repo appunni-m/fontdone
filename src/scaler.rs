@@ -106,6 +106,14 @@ pub(crate) fn scale_adobe_coordinate(value: i32, scale: i32) -> i32 {
     ft_mul_fix(cf2_scale, cf2_value) >> 10
 }
 
+#[inline]
+fn scale_adobe_fixed_coordinate(value: i32, scale: i32) -> i32 {
+    let cf2_scale = scale.wrapping_add(32) / 64;
+    // CFF's Adobe path callback receives the 16.16 operand and the generic
+    // PostScript builder truncates the transformed value with `>> 10`.
+    ft_mul_fix(cf2_scale, value) >> 10
+}
+
 pub(crate) fn prepare_native_bytecode_context(
     data: &FontData,
     scale: ScaleMetrics,
@@ -1277,42 +1285,58 @@ fn scale_glyph_impl_with_scale(
             let mut scaled = Vec::with_capacity(outline_raw.points.len());
             let mut tags = Vec::with_capacity(outline_raw.points.len());
             for (index, p) in outline_raw.points.iter().enumerate() {
-                let (x, y) = outline_raw.unrounded_points.as_ref().map_or_else(
-                    || {
-                        if use_cff_adobe_scale {
+                let cff_fixed_point = outline_raw
+                    .cff_fixed_points
+                    .as_ref()
+                    .and_then(|points| points.get(index));
+                let (x, y) = if use_cff_adobe_scale {
+                    cff_fixed_point.map_or_else(
+                        || {
                             (
                                 scale_adobe_coordinate(p.x, scale.x_scale),
                                 scale_adobe_coordinate(p.y, y_adj),
                             )
-                        } else if data.has_active_variation() {
-                            // `TT_Process_Simple_Glyph` always keeps the
-                            // unrounded 26.6 source copy on a non-default
-                            // TrueType instance, even when this glyph has no
-                            // gvar tuple (`ttgload.c:920-977`).  Falling back
-                            // to integer-coordinate scaling here changes the
-                            // outline CBox and the vertical phantom metric by
-                            // one 26.6 unit at fractional scale boundaries.
+                        },
+                        |point| {
                             (
-                                scale_unrounded_fdot6(p.x << 6, scale.x_scale),
-                                scale_unrounded_fdot6(p.y << 6, y_adj),
+                                scale_adobe_fixed_coordinate(point.x, scale.x_scale),
+                                scale_adobe_fixed_coordinate(point.y, y_adj),
                             )
-                        } else {
-                            (scale.scale_x(p.x), ft_mul_fix(p.y, y_adj))
-                        }
-                    },
-                    |unrounded| {
-                        let point = unrounded.get(index).copied().unwrap_or({
-                            crate::tt::glyf::UnroundedPoint {
-                                x: p.x << 6,
-                                y: p.y << 6,
+                        },
+                    )
+                } else {
+                    outline_raw.unrounded_points.as_ref().map_or_else(
+                        || {
+                            if data.has_active_variation() {
+                                // `TT_Process_Simple_Glyph` always keeps the
+                                // unrounded 26.6 source copy on a non-default
+                                // TrueType instance, even when this glyph has no
+                                // gvar tuple (`ttgload.c:920-977`).  Falling back
+                                // to integer-coordinate scaling here changes the
+                                // outline CBox and the vertical phantom metric by
+                                // one 26.6 unit at fractional scale boundaries.
+                                (
+                                    scale_unrounded_fdot6(p.x << 6, scale.x_scale),
+                                    scale_unrounded_fdot6(p.y << 6, y_adj),
+                                )
+                            } else {
+                                (scale.scale_x(p.x), ft_mul_fix(p.y, y_adj))
                             }
-                        });
-                        (
-                            scale_unrounded_fdot6(point.x, scale.x_scale),
-                            scale_unrounded_fdot6(point.y, y_adj),
-                        )
-                    },
-                );
+                        },
+                        |unrounded| {
+                            let point = unrounded.get(index).copied().unwrap_or({
+                                crate::tt::glyf::UnroundedPoint {
+                                    x: p.x << 6,
+                                    y: p.y << 6,
+                                }
+                            });
+                            (
+                                scale_unrounded_fdot6(point.x, scale.x_scale),
+                                scale_unrounded_fdot6(point.y, y_adj),
+                            )
+                        },
+                    )
+                };
                 scaled.push(OutlinePoint {
                     x: x - shift_x,
                     y,

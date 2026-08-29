@@ -195,6 +195,12 @@ fn bitmap_buffer_len(bitmap: &FT_Bitmap_C) -> Option<usize> {
         .checked_mul(usize::try_from(bitmap.rows).ok()?)
 }
 
+fn bitmap_copy_array_too_large(bitmap: &FT_Bitmap_C) -> bool {
+    let pitch = bitmap.pitch.unsigned_abs() as usize;
+    let rows = bitmap.rows as usize;
+    pitch > 0 && rows > (i32::MAX as usize) / pitch
+}
+
 fn bitmap_pitch_abs(bitmap: &FT_Bitmap_C) -> usize {
     bitmap.pitch.unsigned_abs() as usize
 }
@@ -316,6 +322,16 @@ pub fn FT_Bitmap_Copy(
 
     if source.buffer.is_null() {
         return FT_Err_Ok;
+    }
+
+    // FreeType's `FT_MEM_QALLOC_MULT` rejects a row allocation whose count
+    // would exceed `FT_INT_MAX / item_size` before it reads the source or
+    // asks the allocator for storage.  Keep this guard ahead of the ownership
+    // registry lookup so raw C/WASM source pointers are never materialized for
+    // an allocation that the C API would reject.
+    if bitmap_copy_array_too_large(source) {
+        target.buffer = ptr::null_mut();
+        return FT_Err_Array_Too_Large as FT_Error;
     }
 
     let len = bitmap_buffer_len(source).unwrap_or(0);
@@ -1072,6 +1088,12 @@ pub struct FT_Library {
     cff_hinting_engine: FT_UInt,
     type1_hinting_engine: FT_UInt,
     t1cid_hinting_engine: FT_UInt,
+    /// PostScript driver random seeds consumed while opening a CFF/Type 1
+    /// face.  The C drivers initialize these from process addresses; the
+    /// deterministic public parity route can override them before opening.
+    cff_random_seed: FT_UInt,
+    type1_random_seed: FT_UInt,
+    t1cid_random_seed: FT_UInt,
     autofitter_default_script: FT_UInt,
     autofitter_fallback_script: FT_UInt,
     svg_hooks: Option<SVG_RendererHooks>,
@@ -1790,9 +1812,11 @@ fn has_active_size(face: &FT_Face) -> bool {
 
 fn sync_active_size_state(face: &mut FT_Face) {
     let state = face.inner.borrow().active_size_state();
-    if let Some(entry) = face.sizes.borrow_mut().active_entry_mut() {
-        entry.state = state;
-    }
+    let _ = face
+        .sizes
+        .borrow_mut()
+        .active_entry_mut()
+        .map(|entry| entry.state = state);
     face.size = active_size_handle(face);
     face.size_metrics = face.inner.borrow().size_metrics().into();
 }
@@ -1825,10 +1849,17 @@ pub struct FT_GlyphSlot {
     pub outline_bbox: FT_BBox,
     pub outline: Option<FT_OutlineSnapshot>,
     pub svg: Option<FT_SvgDocumentOwned>,
+    bitmap_present: bool,
     svg_hooks: Option<SVG_RendererHooks>,
     core_slot: api::GlyphSlot,
     source_face: api::Face,
     load_flags: api::LoadFlags,
+}
+
+impl FT_GlyphSlot {
+    pub fn bitmap_descriptor_present(&self) -> bool {
+        self.bitmap_present
+    }
 }
 
 pub fn FT_Init_FreeType() -> FT_Library {
@@ -1848,6 +1879,9 @@ pub fn FT_Init_FreeType() -> FT_Library {
         cff_hinting_engine: 1,
         type1_hinting_engine: 1,
         t1cid_hinting_engine: 1,
+        cff_random_seed: 123_456_789,
+        type1_random_seed: 123_456_789,
+        t1cid_random_seed: 123_456_789,
         // FreeType 2.14.3 `src/autofit/afmodule.c:af_autofitter_init`
         // initializes these to internal AF_SCRIPT_DEFAULT and
         // AF_STYLE_FALLBACK values.  In the pinned build those public
@@ -2085,9 +2119,7 @@ pub fn FT_New_Glyph(
     let Some(library) = library else {
         return Err(FT_Err_Invalid_Argument);
     };
-    if !new_glyph_format_supported(library, format) {
-        return Err(FT_Err_Invalid_Glyph_Format);
-    }
+    let renderer_available = FT_Library_Renderer_Class(Some(library), format).is_some();
     let root = FT_GlyphRec {
         library: ptr::from_ref(library).cast_mut().cast(),
         clazz: ptr::dangling(),
@@ -2095,17 +2127,21 @@ pub fn FT_New_Glyph(
         advance: FT_Vector::default(),
     };
     match format {
-        FT_GLYPH_FORMAT_OUTLINE => Ok(FT_GlyphOwned::Outline(FT_OutlineGlyphOwned {
-            root,
-            outline: FT_OutlineSnapshot::default(),
-        })),
-        FT_GLYPH_FORMAT_BITMAP => Ok(FT_GlyphOwned::Bitmap(FT_BitmapGlyphOwned {
-            root,
-            left: 0,
-            top: 0,
-            bitmap: FT_Bitmap::default(),
-        })),
-        FT_GLYPH_FORMAT_SVG => Ok(FT_GlyphOwned::Svg(FT_SvgGlyphOwned {
+        FT_GLYPH_FORMAT_OUTLINE if renderer_available => {
+            Ok(FT_GlyphOwned::Outline(FT_OutlineGlyphOwned {
+                root,
+                outline: FT_OutlineSnapshot::default(),
+            }))
+        }
+        FT_GLYPH_FORMAT_BITMAP if renderer_available => {
+            Ok(FT_GlyphOwned::Bitmap(FT_BitmapGlyphOwned {
+                root,
+                left: 0,
+                top: 0,
+                bitmap: FT_Bitmap::default(),
+            }))
+        }
+        FT_GLYPH_FORMAT_SVG if renderer_available => Ok(FT_GlyphOwned::Svg(FT_SvgGlyphOwned {
             root,
             svg_document: Vec::new(),
             glyph_index: 0,
@@ -2539,9 +2575,6 @@ fn stroked_dejavu_glyph36_outside_border_outline() -> FT_OutlineSnapshot {
 }
 
 fn stroker_is_dejavu_glyph36_fixture(stroker: FT_Stroker) -> bool {
-    if stroker.is_null() {
-        return false;
-    }
     STROKER_REGISTRY.with(|registry| {
         let registry = registry.borrow();
         let Some(entry) = registry.get(&(stroker as usize)) else {
@@ -3120,7 +3153,10 @@ pub struct FTCSBitCacheLookup<'a> {
 
 fn ftc_sbit_entry_from_slot(slot: FT_GlyphSlot) -> FtcSBitCacheEntry {
     let bitmap = slot.bitmap.as_ref();
-    let rendered_empty_bitmap = bitmap.is_none() && slot.format == FT_GLYPH_FORMAT_BITMAP;
+    let bitmap_slot = slot.format == FT_GLYPH_FORMAT_BITMAP;
+    let missing_bitmap = bitmap_slot && !slot.bitmap_descriptor_present();
+    let rendered_empty_bitmap =
+        bitmap_slot && slot.bitmap.is_none() && slot.bitmap_descriptor_present();
     let mut buffer = bitmap
         .map(|bitmap| bitmap.buffer.clone().into_boxed_slice())
         .unwrap_or_default();
@@ -3141,18 +3177,22 @@ fn ftc_sbit_entry_from_slot(slot: FT_GlyphSlot) -> FtcSBitCacheEntry {
         // FT_Load_Glyph with FT_LOAD_RENDER keeps a zero-sized gray bitmap
         // descriptor for empty outline glyphs. The public Rust slot elides
         // that empty buffer, so restore the observable FTC_SBit fields here.
-        format: bitmap.map_or_else(
-            || {
-                if rendered_empty_bitmap {
-                    FT_PIXEL_MODE_GRAY as FT_Byte
-                } else {
-                    0
-                }
+        format: bitmap.map_or(
+            if rendered_empty_bitmap {
+                FT_PIXEL_MODE_GRAY as FT_Byte
+            } else if missing_bitmap {
+                FT_PIXEL_MODE_MONO as FT_Byte
+            } else {
+                0
             },
             |bitmap| bitmap.pixel_mode as FT_Byte,
         ),
-        max_grays: bitmap.map_or_else(
-            || if rendered_empty_bitmap { 255 } else { 0 },
+        max_grays: bitmap.map_or(
+            if rendered_empty_bitmap || missing_bitmap {
+                255
+            } else {
+                0
+            },
             |bitmap| bitmap.num_grays.saturating_sub(1) as FT_Byte,
         ),
         pitch: bitmap.map_or(0, |bitmap| bitmap.pitch as FT_Short),
@@ -11260,7 +11300,7 @@ fn property_lookup_error<'a>(
             }
         }
         "cff" | "type1" | "t1cid" => {
-            if property_name != "hinting-engine" {
+            if !matches!(property_name, "hinting-engine" | "random-seed") {
                 return Err(FT_Err_Missing_Property as FT_Error);
             }
         }
@@ -11488,6 +11528,25 @@ pub fn FT_Property_Set(
                     } else {
                         FT_Err_Unimplemented_Feature
                     }
+                }
+                (Some("cff"), Some("random-seed"))
+                | (Some("type1"), Some("random-seed"))
+                | (Some("t1cid"), Some("random-seed")) => {
+                    // `ps_property_set` accepts an FT_Int32 and clamps
+                    // negative values to zero.  The compact public setter is
+                    // FT_UInt-shaped, so values outside the signed range take
+                    // the same zero-seed path.
+                    let seed = if value > FT_Int32::MAX as FT_UInt {
+                        0
+                    } else {
+                        value
+                    };
+                    match module_name {
+                        Some("cff") => library.cff_random_seed = seed,
+                        Some("type1") => library.type1_random_seed = seed,
+                        _ => library.t1cid_random_seed = seed,
+                    }
+                    FT_Err_Ok
                 }
                 (Some("autofitter"), Some("default-script")) => {
                     // FreeType `af_property_set` assigns default-script
@@ -12047,12 +12106,12 @@ pub fn FT_List_Finalize_Node(
     if let Some(destroy) = destroy {
         destroy(memory_ptr, node.data, user);
     }
-    if let Some(free) = memory.free {
+    let _ = memory.free.map(|free| {
         free(
             memory_ptr,
             (node as *const FT_ListNodeRec).cast_mut().cast(),
-        );
-    }
+        )
+    });
 }
 
 pub fn FT_List_Finalize_Clear(list: Option<&mut FT_ListRec>, memory: Option<&FT_MemoryRec>) {
@@ -13307,6 +13366,7 @@ pub fn FT_New_Memory_Face(
         .inner
         .new_memory_face(data, face_index, size_pt)
         .map(|mut inner| {
+            inner.set_cff_random_seed(library.cff_random_seed);
             inner.reset_size_to_undefined();
             let mut face = face_to_ffi(inner, probe_only, library.svg_hooks);
             face.retain_memory_stream_source(data);
@@ -13429,6 +13489,7 @@ pub fn FT_New_Memory_Face_With_Name_Options(
         )
         .map(|mut inner| {
             inner.set_truetype_interpreter_version(library.truetype_interpreter_version);
+            inner.set_cff_random_seed(library.cff_random_seed);
             inner.reset_size_to_undefined();
             let mut face = face_to_ffi(inner, probe_only, library.svg_hooks);
             face.retain_memory_stream_source(data);
@@ -15658,16 +15719,14 @@ fn slot_to_ffi(face: &FT_Face, slot: api::GlyphSlot, load_flags: api::LoadFlags)
     let advance: FT_Vector = slot.advance.into();
     let format = glyph_format_from_core(slot.format);
     let num_subglyphs = FT_UInt::try_from(slot.subglyphs.len()).unwrap_or(FT_UInt::MAX);
-    // Keep the core API's empty SBit bitmap available for metrics-only Rust
-    // callers, but expose the C-like slot record the same way FreeType does:
-    // `truetype/ttgload.c:2133-2176` leaves a missing-glyph fallback with a
-    // NULL `FT_Bitmap.buffer`, so the FFI wrapper must not manufacture an
-    // owned zero-byte payload.  The slot format and metrics remain intact.
-    let bitmap = slot
-        .bitmap
-        .clone()
-        .filter(|bitmap| !bitmap.buffer.is_empty())
-        .map(Into::into);
+    // Preserve the bitmap descriptor even when its payload has zero bytes.
+    // `sfnt/ttsbit.c:545-588` still writes width/rows/pitch/pixel_mode for a
+    // valid zero-width SBit before the allocator returns no storage; the
+    // cache then copies those fields in `cache/ftcsbits.c:165-173`.  A missing
+    // bitmap is represented separately by `empty_sbit_glyph_slot` as
+    // `bitmap == None`, so filtering empty buffers here would conflate the
+    // valid `{ width: 0, rows: 1, pitch: 0 }` descriptor with that fallback.
+    let bitmap = slot.bitmap.clone().map(Into::into);
     let bitmap_left = slot.bitmap_left;
     let bitmap_top = slot.bitmap_top;
     let owns_bitmap = format == FT_GLYPH_FORMAT_BITMAP && bitmap.is_some();
@@ -15715,6 +15774,7 @@ fn slot_to_ffi(face: &FT_Face, slot: api::GlyphSlot, load_flags: api::LoadFlags)
         outline_bbox,
         outline,
         svg,
+        bitmap_present: slot.bitmap_descriptor_present(),
         svg_hooks: face.svg_hooks,
         core_slot: slot,
         source_face,
@@ -15728,6 +15788,7 @@ fn refresh_slot_public_fields(slot: &mut FT_GlyphSlot) {
     slot.format = glyph_format_from_core(slot.core_slot.format);
     slot.num_subglyphs = FT_UInt::try_from(slot.core_slot.subglyphs.len()).unwrap_or(FT_UInt::MAX);
     slot.bitmap = slot.core_slot.bitmap.clone().map(Into::into);
+    slot.bitmap_present = slot.core_slot.bitmap_descriptor_present();
     slot.bitmap_left = slot.core_slot.bitmap_left;
     slot.bitmap_top = slot.core_slot.bitmap_top;
     if slot.format != FT_GLYPH_FORMAT_BITMAP || slot.bitmap.is_none() {

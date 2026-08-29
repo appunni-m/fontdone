@@ -568,10 +568,21 @@ argument below Coverage MCP's size limit for a larger 30-case batch:
 ]
 ```
 
+If an exact public `case_id` itself contains a comma, escape that comma as
+`\\,` in the plural form, or pass the ID with the exact singular flag so it
+is not split:
+
+```json
+"arguments": [
+  "--migration-coverage-case-id",
+  "freetype.FT_Set_Pixel_Sizes.set_pixel_size@s[0,_12]"
+]
+```
+
 For a larger batch, repeat the flag/value pair with another comma-separated
 chunk. The registered wrapper is
 `RUSTC_WRAPPER= python3 scripts/run_coverage_command.py`; it combines the
-chunks, validates duplicate IDs, and invokes the existing `make
+chunks and exact IDs, validates duplicate IDs, and invokes the existing `make
 test-coverage-all` matrix. The selector is inherited by every Rust, C-ABI, and
 WASM coverage lane; omitting it retains the complete matrix and denominator.
 The parity harness rejects an explicit selector that matches no runnable or

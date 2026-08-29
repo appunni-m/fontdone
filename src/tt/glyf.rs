@@ -51,6 +51,13 @@ pub struct UnroundedPoint {
     pub y: i32,
 }
 
+/// A CFF/Type 2 outline coordinate in Adobe interpreter 16.16 units.
+#[derive(Debug, Clone, Copy)]
+pub struct CffFixedPoint {
+    pub x: i32,
+    pub y: i32,
+}
+
 /// A glyph outline as a flattened list of contours.
 #[derive(Debug, Clone, Default)]
 pub struct GlyphOutline {
@@ -63,6 +70,10 @@ pub struct GlyphOutline {
     /// parallel unrounded 26.6 array. Scaled variable glyph loads use this
     /// sidecar before hinting; public no-scale outline state uses `points`.
     pub unrounded_points: Option<Vec<UnroundedPoint>>,
+    /// CFF Adobe-interpreter coordinates before the builder's 16.16-to-26.6
+    /// truncation.  Hinted CFF loads need these fractions because the Adobe
+    /// scale is applied before that truncation; unhinted loads use `points`.
+    pub cff_fixed_points: Option<Vec<CffFixedPoint>>,
     pub xmin: i32,
     pub ymin: i32,
     pub xmax: i32,
@@ -124,7 +135,11 @@ pub struct CompositeComponent {
 
 struct CompositeGlyph {
     components: Vec<CompositeComponent>,
-    instructions: Vec<u8>,
+    /// Offset immediately after the component records. FreeType records this
+    /// position in `TT_Load_Composite_Glyph` and does not read it until
+    /// `TT_Process_Composite_Glyph` has confirmed that the assembled glyph has
+    /// points to hint (`ttgload.c:1902-1913`).
+    instruction_pos: Option<usize>,
 }
 
 /// Load a glyph outline from 'glyf'/'loca', resolving composite glyphs recursively.
@@ -517,7 +532,7 @@ fn load_glyph_inner<'a>(
         // and last_sub_lsb from the final recursive sub-glyph, then
         // compute pp1.x = xmin - sub_lsb in scaler.rs — exactly
         // matching C's accidental-but-intentional behavior.
-        let mut composite = parse_composite_components(bytes, 10, load_composite_instructions)?;
+        let mut composite = parse_composite_components(bytes, 10)?;
         if let Some(variation) = variation {
             apply_composite_variation(glyph_index, &mut composite.components, variation)?;
         }
@@ -602,11 +617,40 @@ fn load_glyph_inner<'a>(
             num_contours_total = num_contours_total.saturating_add(sub.num_contours);
         }
 
+        // `TT_Process_Composite_Glyph` is skipped when every component is
+        // empty (`num_points == start_point`). In that case even a truncated
+        // trailing instruction block is accepted by FreeType. Defer this
+        // read until after recursive component loading so malformed public
+        // inputs follow the same control-flow boundary.
+        let instructions = if load_composite_instructions && !points.is_empty() {
+            if let Some(pos) = composite.instruction_pos {
+                if pos + 2 > bytes.len() {
+                    return Err(FontError::InvalidOutline(
+                        "glyf: composite instruction length overflow".into(),
+                    ));
+                }
+                let instruction_length =
+                    u16::from_be_bytes([bytes[pos], bytes[pos + 1]]) as usize;
+                let instruction_start = pos + 2;
+                if instruction_start + instruction_length > bytes.len() {
+                    return Err(FontError::InvalidOutline(
+                        "glyf: composite instructions overflow".into(),
+                    ));
+                }
+                bytes[instruction_start..instruction_start + instruction_length].to_vec()
+            } else {
+                Vec::new()
+            }
+        } else {
+            Vec::new()
+        };
+
         Ok(GlyphOutline {
             num_contours: num_contours_total,
             end_pts_of_contours: end_pts,
             points,
             unrounded_points: None,
+            cff_fixed_points: None,
             xmin: last_sub_xmin,
             ymin,
             xmax,
@@ -619,7 +663,7 @@ fn load_glyph_inner<'a>(
             // only this composite glyph's instruction block.  Component
             // glyph instructions run during recursive component loading and
             // must not be inherited for a second hint pass.
-            instructions: composite.instructions,
+            instructions,
             components: composite.components,
             // C: TT_Load_Glyph keeps OVERLAP_COMPOUND only from the first
             // subglyph flags (`ttgload.c:1917-1920`).
@@ -845,6 +889,7 @@ fn parse_simple_glyph(data: &[u8], num_contours: u16) -> Result<GlyphOutline, Fo
         end_pts_of_contours: end_pts,
         points,
         unrounded_points: None,
+        cff_fixed_points: None,
         xmin: 0,
         ymin: 0,
         xmax: 0,
@@ -885,10 +930,8 @@ fn outline_flags_from_simple_tags(flags: &[u8]) -> u32 {
 fn parse_composite_components(
     data: &[u8],
     mut pos: usize,
-    load_instructions: bool,
 ) -> Result<CompositeGlyph, FontError> {
     let mut components = Vec::new();
-    let mut has_instructions = false;
     loop {
         if pos + 4 > data.len() {
             return Err(FontError::InvalidOutline(
@@ -898,8 +941,6 @@ fn parse_composite_components(
         let flags = u16::from_be_bytes([data[pos], data[pos + 1]]);
         let glyph_index = u16::from_be_bytes([data[pos + 2], data[pos + 3]]);
         pos += 4;
-        has_instructions |= flags & WE_HAVE_INSTRUCTIONS != 0;
-
         let mut count = 2usize;
         if flags & ARG_1_AND_2_ARE_WORDS != 0 {
             count += 2;
@@ -969,27 +1010,16 @@ fn parse_composite_components(
         }
     }
 
-    let instructions = if has_instructions && load_instructions {
-        if pos + 2 > data.len() {
-            return Err(FontError::InvalidOutline(
-                "glyf: composite instruction length overflow".into(),
-            ));
-        }
-        let instruction_length = u16::from_be_bytes([data[pos], data[pos + 1]]) as usize;
-        pos += 2;
-        if pos + instruction_length > data.len() {
-            return Err(FontError::InvalidOutline(
-                "glyf: composite instructions overflow".into(),
-            ));
-        }
-        data[pos..pos + instruction_length].to_vec()
-    } else {
-        Vec::new()
-    };
+    // The C loader tests the final component's flag when deciding whether to
+    // process the parent instruction stream. Preserve that distinction
+    // instead of eagerly treating any intermediate record as a program.
+    let last_has_instructions = components
+        .last()
+        .is_some_and(|component| component.flags & WE_HAVE_INSTRUCTIONS != 0);
 
     Ok(CompositeGlyph {
         components,
-        instructions,
+        instruction_pos: last_has_instructions.then_some(pos),
     })
 }
 

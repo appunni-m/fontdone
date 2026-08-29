@@ -69,10 +69,8 @@ fn ft_udiv(a: i64, r: i64) -> i32 {
 fn fill_rule(area: i32, fill: i32) -> i32 {
     let mut coverage = area >> 9; // PIXEL_BITS * 2 + 1 - 8 = 9
     #[cfg(debug_assertions)]
-    if log::log_enabled!(target: "autohint::rasterizer", log::Level::Trace) {
-        log::trace!(target: "autohint::rasterizer", "[FILL_RULE] area={} fill=0x{:x} cov_before={}",
-            area, fill, coverage);
-    }
+    log::trace!(target: "autohint::rasterizer", "[FILL_RULE] area={} fill=0x{:x} cov_before={}",
+        area, fill, coverage);
     if (coverage & fill) != 0 {
         coverage = !coverage;
     }
@@ -84,9 +82,7 @@ fn fill_rule(area: i32, fill: i32) -> i32 {
         coverage &= 0xFF;
     }
     #[cfg(debug_assertions)]
-    if log::log_enabled!(target: "autohint::rasterizer", log::Level::Trace) {
-        log::trace!(target: "autohint::rasterizer", "[FILL_RESULT] cov={}", coverage);
-    }
+    log::trace!(target: "autohint::rasterizer", "[FILL_RESULT] cov={}", coverage);
     coverage
 }
 
@@ -539,10 +535,8 @@ impl<'a> Worker<'a> {
         let ey2 = trunc(to_y);
 
         #[cfg(debug_assertions)]
-        if log::log_enabled!(target: "autohint::rasterizer", log::Level::Trace) {
-            log::trace!(target: "autohint::rasterizer", "[LINE] from=({},{}) to=({},{}) ey1={ey1} ey2={ey2}",
-                self.x, self.y, to_x, to_y);
-        }
+        log::trace!(target: "autohint::rasterizer", "[LINE] from=({},{}) to=({},{}) ey1={ey1} ey2={ey2}",
+            self.x, self.y, to_x, to_y);
 
         if (ey1 >= self.max_ey && ey2 >= self.max_ey) || (ey1 < self.min_ey && ey2 < self.min_ey) {
             self.x = to_x;
@@ -978,10 +972,8 @@ impl<'a> Worker<'a> {
         };
 
         #[cfg(debug_assertions)]
-        if log::log_enabled!(target: "autohint::rasterizer", log::Level::Trace) {
-            log::trace!(target: "autohint::rasterizer", "[SWEEP] fill=0x{:x} min_ey={} max_ey={} min_ex={} max_ex={}",
-                fill, self.min_ey, self.max_ey, self.min_ex, self.max_ex);
-        }
+        log::trace!(target: "autohint::rasterizer", "[SWEEP] fill=0x{:x} min_ey={} max_ey={} min_ex={} max_ex={}",
+            fill, self.min_ey, self.max_ey, self.min_ex, self.max_ex);
 
         for y in self.min_ey..self.max_ey {
             let yi = usize_from_i32(y - self.min_ey);
@@ -993,10 +985,8 @@ impl<'a> Worker<'a> {
                 if cover != 0 && cell.x > x {
                     let coverage = fill_rule(cover, fill);
                     #[cfg(debug_assertions)]
-                    if log::log_enabled!(target: "autohint::rasterizer", log::Level::Trace) {
-                        log::trace!(target: "autohint::rasterizer", "[SWEEP_SPAN] y={} x={}..{} cov_raw={} cov_out={}",
-                            y, x, cell.x, cover, coverage);
-                    }
+                    log::trace!(target: "autohint::rasterizer", "[SWEEP_SPAN] y={} x={}..{} cov_raw={} cov_out={}",
+                        y, x, cell.x, cover, coverage);
                     if let Some(spans) = self.spans.as_deref_mut() {
                         record_gray_span(spans, y, x, cell.x - x, coverage);
                     } else {
@@ -1023,10 +1013,8 @@ impl<'a> Worker<'a> {
                 if area != 0 && cell.x >= self.min_ex {
                     let coverage = fill_rule(area, fill);
                     #[cfg(debug_assertions)]
-                    if log::log_enabled!(target: "autohint::rasterizer", log::Level::Trace) {
-                        log::trace!(target: "autohint::rasterizer", "[SWEEP_PIX] y={} x={} area={} cov_raw={} cov_out={}",
-                            y, cell.x, area, area, coverage);
-                    }
+                    log::trace!(target: "autohint::rasterizer", "[SWEEP_PIX] y={} x={} area={} cov_raw={} cov_out={}",
+                        y, cell.x, area, area, coverage);
                     if let Some(spans) = self.spans.as_deref_mut() {
                         record_gray_span(spans, y, cell.x, 1, coverage);
                     } else {
@@ -1045,10 +1033,8 @@ impl<'a> Worker<'a> {
             if cover != 0 {
                 let coverage = fill_rule(cover, fill);
                 #[cfg(debug_assertions)]
-                if log::log_enabled!(target: "autohint::rasterizer", log::Level::Trace) {
-                    log::trace!(target: "autohint::rasterizer", "[SWEEP_TAIL] y={} x={}..{} cov_raw={} cov_out={}",
-                        y, x, self.max_ex, cover, coverage);
-                }
+                log::trace!(target: "autohint::rasterizer", "[SWEEP_TAIL] y={} x={}..{} cov_raw={} cov_out={}",
+                    y, x, self.max_ex, cover, coverage);
                 if let Some(spans) = self.spans.as_deref_mut() {
                     record_gray_span(spans, y, x, self.max_ex - x, coverage);
                 } else {

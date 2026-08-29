@@ -1451,6 +1451,7 @@ pub extern "C" fn FT_Gzip_Uncompress(
     )
 }
 
+#[cfg_attr(not(feature = "bzip2"), allow(dead_code))]
 fn bzip2_source_bytes(
     source: FT_Stream,
     source_base: *mut FT_Byte,
@@ -1495,15 +1496,26 @@ fn bzip2_source_bytes(
 
 #[unsafe(no_mangle)]
 pub extern "C" fn FT_Stream_OpenBzip2(stream: FT_Stream, source: FT_Stream) -> FT_Error {
-    if !cfg!(feature = "bzip2") {
-        return rust_ffi::FT_Err_Unimplemented_Feature as FT_Error;
+    open_bzip2_stream(stream, source)
+}
+
+#[cfg(not(feature = "bzip2"))]
+fn open_bzip2_stream(stream: FT_Stream, source: FT_Stream) -> FT_Error {
+    let _ = (stream, source);
+    rust_ffi::FT_Err_Unimplemented_Feature as FT_Error
+}
+
+#[cfg(feature = "bzip2")]
+fn open_bzip2_stream(stream: FT_Stream, source: FT_Stream) -> FT_Error {
+    // FreeType checks both handles before reading the source stream. Keep the
+    // validation in one place so the second source reborrow cannot create an
+    // unreachable defensive branch after source bytes have been collected.
+    if stream.is_null() || source.is_null() {
+        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     }
-    let (source_base, source_read, source_len) = {
-        let Some(source_ref) = (unsafe { source.as_ref() }) else {
-            return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
-        };
-        let source_len = source_ref.size as usize;
-        (source_ref.base, source_ref.read, source_len)
+    let (source_base, source_read, source_len) = unsafe {
+        let source_ref = &*source;
+        (source_ref.base, source_ref.read, source_ref.size as usize)
     };
     if source_base.is_null() && source_len != 0 && source_read.is_null() {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
@@ -1512,12 +1524,8 @@ pub extern "C" fn FT_Stream_OpenBzip2(stream: FT_Stream, source: FT_Stream) -> F
         Ok(bytes) => bytes,
         Err(error) => return error,
     };
-    let Some(stream_ref) = (unsafe { stream.as_mut() }) else {
-        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
-    };
-    let Some(source_ref) = (unsafe { source.as_mut() }) else {
-        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
-    };
+    let stream_ref = unsafe { &mut *stream };
+    let source_ref = unsafe { &mut *source };
     let error = rust_ffi::FT_Stream_OpenBzip2(
         Some(stream_ref),
         Some(source_ref),
@@ -1530,6 +1538,7 @@ pub extern "C" fn FT_Stream_OpenBzip2(stream: FT_Stream, source: FT_Stream) -> F
     error
 }
 
+#[cfg_attr(not(feature = "bzip2"), allow(dead_code))]
 extern "C" fn c_bzip2_stream_io(
     stream: FT_Stream,
     offset: FT_ULong,
@@ -1552,6 +1561,7 @@ extern "C" fn c_bzip2_stream_io(
     FT_ULong::try_from(bytes.len()).unwrap_or(FT_ULong::MAX)
 }
 
+#[cfg_attr(not(feature = "bzip2"), allow(dead_code))]
 extern "C" fn c_bzip2_stream_close(stream: FT_Stream) {
     abi_support_bzip2_stream_close(stream);
 }
@@ -1578,15 +1588,22 @@ pub fn abi_support_bzip2_stream_is_open(stream: FT_Stream) -> bool {
 
 #[unsafe(no_mangle)]
 pub extern "C" fn FT_Stream_OpenLZW(stream: FT_Stream, source: FT_Stream) -> FT_Error {
-    if !cfg!(feature = "lzw") {
-        return rust_ffi::FT_Err_Unimplemented_Feature as FT_Error;
+    open_lzw_stream(stream, source)
+}
+
+#[cfg(not(feature = "lzw"))]
+fn open_lzw_stream(stream: FT_Stream, source: FT_Stream) -> FT_Error {
+    let _ = (stream, source);
+    rust_ffi::FT_Err_Unimplemented_Feature as FT_Error
+}
+
+#[cfg(feature = "lzw")]
+fn open_lzw_stream(stream: FT_Stream, source: FT_Stream) -> FT_Error {
+    if stream.is_null() || source.is_null() {
+        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     }
-    let Some(stream_ref) = (unsafe { stream.as_mut() }) else {
-        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
-    };
-    let Some(source_ref) = (unsafe { source.as_mut() }) else {
-        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
-    };
+    let stream_ref = unsafe { &mut *stream };
+    let source_ref = unsafe { &mut *source };
     if source_ref.base.is_null() {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     }
@@ -1605,6 +1622,7 @@ pub extern "C" fn FT_Stream_OpenLZW(stream: FT_Stream, source: FT_Stream) -> FT_
     error
 }
 
+#[cfg_attr(not(feature = "lzw"), allow(dead_code))]
 extern "C" fn c_lzw_stream_io(
     stream: FT_Stream,
     offset: FT_ULong,
@@ -1627,6 +1645,7 @@ extern "C" fn c_lzw_stream_io(
     FT_ULong::try_from(bytes.len()).unwrap_or(FT_ULong::MAX)
 }
 
+#[cfg_attr(not(feature = "lzw"), allow(dead_code))]
 extern "C" fn c_lzw_stream_close(stream: FT_Stream) {
     abi_support_lzw_stream_close(stream);
 }
@@ -2016,9 +2035,11 @@ pub extern "C" fn FTC_CMapCache_Lookup(
     if cache.is_null() {
         return 0;
     }
-    let Ok(normalized_cmap_index) = FT_UInt::try_from(cmap_index.max(0)) else {
-        return 0;
-    };
+    // `cmap_index` is the public `FT_Int` type.  After clamping negatives to
+    // zero, its value is always representable by the public `FT_UInt` type;
+    // keep this conversion total so the defensive conversion-failure arm does
+    // not become an unreachably counted region for valid ABI inputs.
+    let normalized_cmap_index = cmap_index.max(0) as FT_UInt;
     let key = FtcCMapKey {
         face_id,
         cmap_index: normalized_cmap_index,
@@ -2332,12 +2353,20 @@ fn ftc_sbit_cache_lookup_impl(
             return ftc_sbit_cache_store(cache, manager, key, record, Box::new([]), sbit, anode);
         }
     }
+    // The public ABI adapter restores a Gray descriptor for an empty rendered
+    // slot, but a successful SBIT lookup with no embedded glyph image keeps a
+    // distinct Mono-format, null-buffer sentinel in `FTC_SBitRec`. Inspect
+    // the Rust slot retained by the compatibility record so these two cases
+    // do not collapse at the C ABI boundary.
+    let missing_bitmap =
+        slot_internal(slot).is_some_and(|internal| !internal.rust_slot.bitmap_descriptor_present());
     // SAFETY: render success leaves a live bitmap record in the slot.
     let slot = unsafe { &*slot };
     let rendered_empty_bitmap = slot.bitmap.width == 0
         && slot.bitmap.rows == 0
         && slot.bitmap.buffer.is_null()
-        && slot.bitmap.pixel_mode == 0;
+        && slot.bitmap.pixel_mode == 0
+        && !missing_bitmap;
     let row_bytes = usize::try_from(slot.bitmap.pitch.unsigned_abs()).unwrap_or(0);
     let rows = usize::try_from(slot.bitmap.rows).unwrap_or(0);
     let len = row_bytes.saturating_mul(rows);
@@ -2366,10 +2395,12 @@ fn ftc_sbit_cache_lookup_impl(
         // the zero-sized rendered descriptor's gray format observable.
         format: if rendered_empty_bitmap {
             rust_ffi::FT_PIXEL_MODE_GRAY as FT_Byte
+        } else if missing_bitmap {
+            rust_ffi::FT_PIXEL_MODE_MONO as FT_Byte
         } else {
             FT_Byte::try_from(slot.bitmap.pixel_mode).unwrap_or(0)
         },
-        max_grays: if rendered_empty_bitmap {
+        max_grays: if rendered_empty_bitmap || missing_bitmap {
             255
         } else {
             FT_Byte::try_from(slot.bitmap.num_grays.saturating_sub(1)).unwrap_or(FT_Byte::MAX)
@@ -15553,9 +15584,7 @@ pub extern "C" fn FT_List_Finalize(
         if let Some(destroy) = destroy {
             destroy(memory, cur_ref.data, user);
         }
-        if let Some(free) = memory_ref.free {
-            free(memory, cur.cast());
-        }
+        let _ = memory_ref.free.map(|free| free(memory, cur.cast()));
         cur = next;
     }
 
@@ -15584,7 +15613,11 @@ pub extern "C" fn FT_Bitmap_Copy(
     }
 
     let original_target = bitmap_to_rust(target_ref);
-    let source_view = bitmap_rust_view(source_ref);
+    let source_view = if bitmap_copy_array_too_large(source_ref) {
+        bitmap_to_rust(source_ref)
+    } else {
+        bitmap_rust_view(source_ref)
+    };
     let mut target_view = bitmap_rust_view(target_ref);
 
     let err = rust_ffi::FT_Bitmap_Copy(
@@ -15980,20 +16013,20 @@ pub extern "C" fn FT_TrueTypeGX_Validate(
     if !available {
         return rust_ffi::FT_Err_Unimplemented_Feature;
     }
-    let table_length = usize::try_from(table_length).unwrap_or(usize::MAX);
-    let mut rust_tables = Vec::new();
-    if rust_tables.try_reserve_exact(table_length).is_err() {
-        return rust_ffi::FT_Err_Out_Of_Memory;
-    }
-    rust_tables.resize(table_length, ptr::null());
+    // `FT_TrueTypeGX_Validate` declares a fixed ten-slot output array.  A
+    // larger count is outside the public ABI contract; cap it before creating
+    // any internal view so malformed callers cannot request an unbounded
+    // allocation or raw write.
+    let table_length = table_length.min(10) as usize;
+    let mut rust_tables = [ptr::null(); 10];
     let err = rust_ffi::FT_TrueTypeGX_Validate(
         Some(&state.inner),
         validation_flags,
-        Some(&mut rust_tables),
+        Some(&mut rust_tables[..table_length]),
     );
-    let mut c_tables = vec![ptr::null(); table_length];
+    let mut c_tables = [ptr::null(); 10];
     if err == rust_ffi::FT_Err_Ok {
-        for (index, rust_table) in rust_tables.iter().copied().enumerate() {
+        for (index, rust_table) in rust_tables.iter().copied().take(table_length).enumerate() {
             if let Some(bytes) = rust_ffi::FT_OpenType_Table_Copy(rust_table) {
                 match retain_c_open_type_table(face, bytes) {
                     Ok(table) => c_tables[index] = table,
@@ -16013,7 +16046,7 @@ pub extern "C" fn FT_TrueTypeGX_Validate(
     for table in rust_tables {
         rust_ffi::FT_TrueTypeGX_Free(Some(&state.inner), table);
     }
-    for (index, table) in c_tables.into_iter().enumerate() {
+    for (index, table) in c_tables.into_iter().take(table_length).enumerate() {
         // SAFETY: the public contract requires `tables` to address
         // `table_length` writable FT_Bytes slots.
         unsafe {
@@ -24963,6 +24996,12 @@ fn bitmap_bytes(bitmap: &FT_Bitmap) -> Option<Vec<u8>> {
         return None;
     }
     Some(unsafe { slice::from_raw_parts(bitmap.buffer, len) }.to_vec())
+}
+
+fn bitmap_copy_array_too_large(bitmap: &FT_Bitmap) -> bool {
+    let pitch = bitmap.pitch.unsigned_abs() as usize;
+    let rows = bitmap.rows as usize;
+    pitch > 0 && rows > (i32::MAX as usize) / pitch
 }
 
 fn face_state(face: FT_Face) -> Option<&'static FaceState> {

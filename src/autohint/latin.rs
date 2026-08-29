@@ -1123,10 +1123,8 @@ pub fn metrics_init_widths(
     scaled_points: &[crate::outline::OutlinePoint],
 ) {
     #[cfg(debug_assertions)]
-    if log::log_enabled!(target: "autohint::pipeline", log::Level::Trace) {
-        log::trace!(target: "autohint::pipeline", "[METRICS_INIT] gi={char_glyph_index} nc={} pts={}",
-            raw_outline.num_contours, raw_outline.points.len());
-    }
+    log::trace!(target: "autohint::pipeline", "[METRICS_INIT] gi={char_glyph_index} nc={} pts={}",
+        raw_outline.num_contours, raw_outline.points.len());
     if char_glyph_index == 0 || raw_outline.num_contours == 0 || raw_outline.points.is_empty() {
         // No usable glyph → fallback: use constant widths
         for dim in 0..2 {
@@ -1186,10 +1184,8 @@ pub fn metrics_init_widths(
         );
         metrics.axis[dim].width_count = num_widths;
         #[cfg(debug_assertions)]
-        if log::log_enabled!(target: "autohint::pipeline", log::Level::Trace) {
-            log::trace!(target: "autohint::pipeline", "[MET_DIM] dim={dim} wc={num_widths} w[0].org={}",
-                metrics.axis[dim].widths[0].org);
-        }
+        log::trace!(target: "autohint::pipeline", "[MET_DIM] dim={dim} wc={num_widths} w[0].org={}",
+            metrics.axis[dim].widths[0].org);
     }
 
     // Finalize each axis
@@ -1812,10 +1808,8 @@ pub fn metrics_scale_dim_with_increase_x_height(
         }
         axis.extra_light = ft_mul_fix(axis.standard_width, x_scale) < 32 + 8;
         #[cfg(debug_assertions)]
-        if log::log_enabled!(target: "autohint::pipeline", log::Level::Trace) {
-            log::trace!(target: "autohint::pipeline", "[EL] dim=HORZ std_width={} scale={} ft_mul={} wc={} extra_light={}",
-            axis.standard_width, x_scale, ft_mul_fix(axis.standard_width, x_scale), axis.width_count, axis.extra_light);
-        }
+        log::trace!(target: "autohint::pipeline", "[EL] dim=HORZ std_width={} scale={} ft_mul={} wc={} extra_light={}",
+        axis.standard_width, x_scale, ft_mul_fix(axis.standard_width, x_scale), axis.width_count, axis.extra_light);
     }
 
     // Vertical axis: x-height scale optimization first (aflatin.c:1211-1306).
@@ -2957,8 +2951,8 @@ pub fn apply_hints_with_advance(
             }
         }
         if use_cjk_edges {
-            super::cjk::cjk_compute_edges(&mut hints, Dimension::Horz, false);
-            super::cjk::cjk_compute_blue_edges(&mut hints, Dimension::Horz);
+            super::cjk::cjk_compute_edges(&mut hints, Dimension::Horz);
+            super::cjk::cjk_compute_blue_edges(&mut hints, metrics, Dimension::Horz);
         } else {
             compute_edges(&mut hints, Dimension::Horz, metrics);
         }
@@ -2987,8 +2981,8 @@ pub fn apply_hints_with_advance(
         }
     }
     if use_cjk_edges {
-        super::cjk::cjk_compute_edges(&mut hints, Dimension::Vert, false);
-        super::cjk::cjk_compute_blue_edges(&mut hints, Dimension::Vert);
+        super::cjk::cjk_compute_edges(&mut hints, Dimension::Vert);
+        super::cjk::cjk_compute_blue_edges(&mut hints, metrics, Dimension::Vert);
     } else {
         compute_edges(&mut hints, Dimension::Vert, metrics);
     }

@@ -142,14 +142,10 @@ fn coverage_probe_cblc_missing_glyph() {
     let slot = face
         .load_glyph(0, fontdone::LoadFlags::SBITS_ONLY)
         .expect("missing CBLC glyph should use the empty bitmap fallback");
-    let bitmap = slot
-        .bitmap
-        .as_ref()
-        .expect("missing CBLC glyph should retain a zero-sized bitmap slot");
-    assert_eq!(bitmap.width, 0);
-    assert_eq!(bitmap.rows, 0);
-    assert_eq!(bitmap.pitch, 0);
-    assert!(bitmap.buffer.is_empty());
+    assert!(
+        slot.bitmap.is_none(),
+        "missing CBLC glyph should retain a null bitmap pointer"
+    );
     assert_eq!(slot.metrics.width, 0);
     assert_eq!(slot.metrics.height, 0);
 }
@@ -31541,6 +31537,7 @@ fn property_name_cstr(selector: i32) -> *const std::ffi::c_char {
         3 => c"default-script".as_ptr(),
         4 => c"fallback-script".as_ptr(),
         5 => c"hinting-engine".as_ptr(),
+        6 => c"random-seed".as_ptr(),
         _ => c"fixture-missing-property".as_ptr(),
     }
 }
@@ -35718,7 +35715,7 @@ fn is_glyph_stroke_outline_success_case(case: &InputCase) -> bool {
 }
 
 fn is_glyph_stroke_destroy_option_case(case: &InputCase) -> bool {
-    case.case_id == "ftstroke.FT_Glyph_Stroke.destroy_original_option"
+    case_id_base(&case.case_id) == "ftstroke.FT_Glyph_Stroke.destroy_original_option"
 }
 
 fn is_glyph_stroke_invalid_arguments_case(case: &InputCase) -> bool {
@@ -43126,18 +43123,39 @@ fn case_id_filter() -> Option<BTreeSet<String>> {
         .ok()
         .filter(|value| !value.trim().is_empty())?;
     let mut case_ids = BTreeSet::new();
-    for raw_case_id in value.split(',') {
-        let case_id = raw_case_id.trim();
-        assert!(
-            !case_id.is_empty(),
-            "FONTDONE_UNIFIED_CASE_IDS must contain only non-empty comma-separated case IDs"
-        );
-        assert!(
-            case_ids.insert(case_id.to_owned()),
-            "FONTDONE_UNIFIED_CASE_IDS contains duplicate case ID {case_id:?}"
-        );
+    let mut current = String::new();
+    let mut escaped = false;
+    for character in value.chars() {
+        if escaped {
+            if !matches!(character, ',' | '\\') {
+                current.push('\\');
+            }
+            current.push(character);
+            escaped = false;
+        } else if character == '\\' {
+            escaped = true;
+        } else if character == ',' {
+            insert_case_id(&mut case_ids, &current);
+            current.clear();
+        } else {
+            current.push(character);
+        }
     }
+    assert!(!escaped, "FONTDONE_UNIFIED_CASE_IDS must not end with an escape");
+    insert_case_id(&mut case_ids, &current);
     Some(case_ids)
+}
+
+fn insert_case_id(case_ids: &mut BTreeSet<String>, raw_case_id: &str) {
+    let case_id = raw_case_id.trim();
+    assert!(
+        !case_id.is_empty(),
+        "FONTDONE_UNIFIED_CASE_IDS must contain only non-empty comma-separated case IDs"
+    );
+    assert!(
+        case_ids.insert(case_id.to_owned()),
+        "FONTDONE_UNIFIED_CASE_IDS contains duplicate case ID {case_id:?}"
+    );
 }
 
 fn operation_filter() -> Option<String> {
@@ -46213,6 +46231,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                 .unwrap_or_else(|| "<null>".to_string()),
         );
         args.push(ps_hinting_engine_render_size(case)?.to_string());
+        if let Some(seed) = ps_hinting_engine_random_seed(case)? {
+            args.push(format!("random-seed={seed}"));
+        }
         if let Some(selector) = ps_hinting_invalid_module_selector(case)? {
             args.push(selector.to_string());
         }
@@ -46508,6 +46529,10 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                 == "ftmm.FT_Set_Var_Design_Coordinates.batch78_active_gvar_routing"
             || case_id_base(&case.case_id)
                 == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing"
+            || case_id_base(&case.case_id)
+                == "ftmm.FT_Set_Var_Design_Coordinates.batch010_gvar_composite_error"
+            || case_id_base(&case.case_id)
+                == "ftmm.FT_Set_Var_Design_Coordinates.batch011_no_gvar_composite_error"
             || case_id_base(&case.case_id)
                 == "ftmm.FT_Set_Var_Design_Coordinates.batch120_native_mixed_composite_args"
                 || case_id_base(&case.case_id)
@@ -51575,6 +51600,10 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
                 || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing"
                 || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch010_gvar_composite_error"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch011_no_gvar_composite_error"
+                || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch120_native_mixed_composite_args"
                 || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch135_native_gvar_composite_xy"
@@ -53217,6 +53246,10 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
                 || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing"
                 || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch010_gvar_composite_error"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch011_no_gvar_composite_error"
+                || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch120_native_mixed_composite_args"
                 || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch135_native_gvar_composite_xy"
@@ -54748,6 +54781,10 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch78_active_gvar_routing"
                 || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch79_native_variable_routing"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch010_gvar_composite_error"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch011_no_gvar_composite_error"
                 || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch120_native_mixed_composite_args"
                 || case_id_base(&case.case_id)
@@ -80550,6 +80587,9 @@ fn ps_hinting_engine_runtime_supported(case: &InputCase) -> bool {
             | "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_face_returns_load_error"
             | "ftdriver.FT_HINTING_FREETYPE.mcp_bitmap_invalid_size_batch"
             | "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_batch"
+            | "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch"
+            | "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_failure_batch"
+            | "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch"
             | "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_type1_modes_batch"
     ) && assets_are_runtime_resolved(case)
 }
@@ -80608,6 +80648,18 @@ fn ps_hinting_engine_render_size(case: &InputCase) -> Result<FT_UInt, String> {
         .ok_or_else(|| "ps hinting-engine render_pixel_size is not an integer".to_string())?;
     FT_UInt::try_from(value)
         .map_err(|_| "ps hinting-engine render_pixel_size is out of range".to_string())
+}
+
+fn ps_hinting_engine_random_seed(case: &InputCase) -> Result<Option<FT_UInt>, String> {
+    let Some(value) = case.inputs.params.get("random_seed") else {
+        return Ok(None);
+    };
+    let value = value
+        .as_u64()
+        .ok_or_else(|| "ps hinting-engine random_seed is not an integer".to_string())?;
+    FT_UInt::try_from(value)
+        .map(Some)
+        .map_err(|_| "ps hinting-engine random_seed is out of range".to_string())
 }
 
 fn ps_hinting_invalid_module_selector(case: &InputCase) -> Result<Option<i32>, String> {
@@ -80742,6 +80794,7 @@ fn rust_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
     let glyph_index = ps_hinting_engine_glyph(case)?;
     let load_flags = ps_hinting_engine_load_flags(case)?;
     let render_pixel_size = ps_hinting_engine_render_size(case)?;
+    let random_seed = ps_hinting_engine_random_seed(case)?;
     let mut modules = Vec::new();
     for (module, asset) in ps_hinting_engine_assets() {
         let bytes = required_asset_bytes(case, asset)?;
@@ -80752,6 +80805,16 @@ fn rust_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             Some("hinting-engine"),
             Some(value),
         );
+        if module == "cff"
+            && let Some(seed) = random_seed
+        {
+            let _ = FT_Property_Set(
+                Some(&mut library),
+                Some(module),
+                Some("random-seed"),
+                Some(seed),
+            );
+        }
         let mut readback = 0;
         let get_error = FT_Property_Get(
             Some(&library),
@@ -80800,8 +80863,8 @@ fn rust_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             Err(size_error)
         };
         let first_slot = first.as_ref().ok().cloned();
-        let first_json = match first {
-            Ok(slot) => slot_json(&slot),
+        let first_json = match &first {
+            Ok(slot) => slot_json(slot),
             Err(err) => json!({"load_error": err}),
         };
         let _ = FT_Property_Set(
@@ -80810,7 +80873,11 @@ fn rust_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             Some("hinting-engine"),
             Some(2),
         );
-        let second = FT_Load_Glyph(&face, glyph_index, load_flags);
+        let second = if size_error == FT_Err_Ok {
+            FT_Load_Glyph(&face, glyph_index, load_flags)
+        } else {
+            Err(size_error)
+        };
         let preserved = match (first_slot, second) {
             (Some(first_slot), Ok(second_slot)) => {
                 first_slot.format == second_slot.format
@@ -80867,6 +80934,7 @@ fn c_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
     let glyph_index = ps_hinting_engine_glyph(case)?;
     let load_flags = ps_hinting_engine_load_flags(case)?;
     let render_pixel_size = ps_hinting_engine_render_size(case)?;
+    let random_seed = ps_hinting_engine_random_seed(case)?;
     let mut modules = Vec::new();
     for (module, asset) in ps_hinting_engine_assets() {
         let bytes = required_asset_bytes(case, asset)?;
@@ -80884,6 +80952,17 @@ fn c_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             property_cstr,
             (&value_storage as *const FT_UInt).cast(),
         );
+        if module == "cff"
+            && let Some(seed) = random_seed
+        {
+            let seed_storage = seed;
+            let _ = c_abi::FT_Property_Set(
+                library,
+                module_cstr,
+                property_name_cstr(6),
+                (&seed_storage as *const FT_UInt).cast(),
+            );
+        }
         let mut readback = PROPERTY_SENTINEL;
         let get_error = c_abi::FT_Property_Get(
             library,
@@ -81070,6 +81149,7 @@ fn wasm_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
     let glyph_index = ps_hinting_engine_glyph(case)?;
     let load_flags = ps_hinting_engine_load_flags(case)?;
     let render_pixel_size = ps_hinting_engine_render_size(case)?;
+    let random_seed = ps_hinting_engine_random_seed(case)?;
     let mut modules = Vec::new();
     for (module, asset) in ps_hinting_engine_assets() {
         let bytes = required_asset_bytes(case, asset)?;
@@ -81079,19 +81159,36 @@ fn wasm_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             .map(std::ffi::CString::new)
             .transpose()
             .map_err(|err| err.to_string())?;
-        let status = wasm_abi::fontdone_wasm_ps_hinting_engine_open(
-            ps_hinting_module_selector(module),
-            bytes.as_ptr(),
-            bytes.len(),
-            glyph_index,
-            load_flags,
-            render_pixel_size,
-            value,
-            string_c
-                .as_ref()
-                .map_or(std::ptr::null(), |value| value.as_ptr()),
-            &mut result,
-        );
+        let status = if let Some(seed) = random_seed {
+            wasm_abi::fontdone_wasm_ps_hinting_engine_open_with_random_seed(
+                ps_hinting_module_selector(module),
+                bytes.as_ptr(),
+                bytes.len(),
+                glyph_index,
+                load_flags,
+                render_pixel_size,
+                value,
+                string_c
+                    .as_ref()
+                    .map_or(std::ptr::null(), |value| value.as_ptr()),
+                seed,
+                &mut result,
+            )
+        } else {
+            wasm_abi::fontdone_wasm_ps_hinting_engine_open(
+                ps_hinting_module_selector(module),
+                bytes.as_ptr(),
+                bytes.len(),
+                glyph_index,
+                load_flags,
+                render_pixel_size,
+                value,
+                string_c
+                    .as_ref()
+                    .map_or(std::ptr::null(), |value| value.as_ptr()),
+                &mut result,
+            )
+        };
         let invalid_face = status.handle == 0 && result.load_error != FT_Err_Ok;
         let glyph = if status.handle != 0 && result.load_error == FT_Err_Ok {
             wasm_slot_json(status.handle)?
@@ -100616,7 +100713,7 @@ struct BitmapCopySetup {
 
 fn bitmap_copy_output(case: &InputCase, backend: BitmapCopyBackend) -> Result<RunOutput, String> {
     let scenario = string_param(&case.inputs.params, "scenario")?;
-    let mut setup = bitmap_copy_setup(scenario)?;
+    let mut setup = bitmap_copy_setup(scenario, &case.inputs.params)?;
     let err = match backend {
         BitmapCopyBackend::Rust => bitmap_copy_rust(&mut setup),
         BitmapCopyBackend::CAbi => bitmap_copy_c_abi(&mut setup),
@@ -100777,7 +100874,7 @@ fn bitmap_copy_wasm(setup: &mut BitmapCopySetup) -> FT_Error {
     err
 }
 
-fn bitmap_copy_setup(scenario: &str) -> Result<BitmapCopySetup, String> {
+fn bitmap_copy_setup(scenario: &str, params: &Value) -> Result<BitmapCopySetup, String> {
     let mut setup = BitmapCopySetup {
         source: bitmap_copy_source_record(4),
         source_bytes: Some((0..12).map(|value| value * 17 + 3).collect()),
@@ -100805,6 +100902,13 @@ fn bitmap_copy_setup(scenario: &str) -> Result<BitmapCopySetup, String> {
         "success_flow_flip" => {
             setup.source.pitch = -4;
             setup.target.pitch = 1;
+        }
+        scenario if scenario.starts_with("error_array_too_large_rows_") => {
+            setup.source.rows = u32_param(params, "rows")?;
+            setup.source.pitch = i32::try_from(i64_param(params, "pitch")?)
+                .map_err(|err| format!("bitmap_copy pitch does not fit i32: {err}"))?;
+            setup.source.width = 1;
+            setup.source_bytes = Some(vec![0xA5]);
         }
         "ownership_replaces_target_buffer" => {
             setup.target = dirty_bitmap_record();

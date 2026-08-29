@@ -1,0 +1,9 @@
+# Keep Cargo's build outputs inside this worktree. The compiler cache is the
+# only Rust state shared between worktrees.
+[build]
+rustc-wrapper = "sccache"
+
+# Incremental artifacts are tied to one worktree and are not reusable by
+# sccache. Disable them so dependency compiles can be shared by cache key.
+[env]
+CARGO_INCREMENTAL = { value = "0", force = true }

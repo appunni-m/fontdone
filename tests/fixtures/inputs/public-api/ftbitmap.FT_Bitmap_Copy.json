@@ -8,6 +8,7 @@
     "success_zero_rows_non_null_buffer",
     "success_flow_flip",
     "error_null_library_or_bitmaps",
+    "error_array_too_large_dimensions",
     "ownership_replaces_target_buffer"
   ],
   "cases": [
@@ -388,6 +389,97 @@
           "compare_error_output": true
         },
         "error": "Invalid_Argument"
+      }
+    },
+    {
+      "case_id": "ftbitmap.FT_Bitmap_Copy.error_array_too_large_dimensions",
+      "subject": "ftbitmap.FT_Bitmap_Copy",
+      "case": "error_array_too_large_dimensions",
+      "operation": "ftbitmap.bitmap_copy",
+      "schema": "bitmap_operation",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "rows-2-pitch-1073741824",
+            "params": {
+              "scenario": "error_array_too_large_rows_2_pitch_1073741824",
+              "rows": 2,
+              "pitch": 1073741824
+            },
+            "coverage": [
+              "ftbitmap.bitmap_copy:error-array-too-large-rows-2"
+            ]
+          },
+          {
+            "id": "rows-3-pitch-715827883",
+            "params": {
+              "scenario": "error_array_too_large_rows_3_pitch_715827883",
+              "rows": 3,
+              "pitch": 715827883
+            },
+            "coverage": [
+              "ftbitmap.bitmap_copy:error-array-too-large-rows-3"
+            ]
+          },
+          {
+            "id": "rows-4-pitch-536870912",
+            "params": {
+              "scenario": "error_array_too_large_rows_4_pitch_536870912",
+              "rows": 4,
+              "pitch": 536870912
+            },
+            "coverage": [
+              "ftbitmap.bitmap_copy:error-array-too-large-rows-4"
+            ]
+          },
+          {
+            "id": "rows-2147483648-pitch-1",
+            "params": {
+              "scenario": "error_array_too_large_rows_2147483648_pitch_1",
+              "rows": 2147483648,
+              "pitch": 1
+            },
+            "coverage": [
+              "ftbitmap.bitmap_copy:error-array-too-large-rows-int-max-plus-one"
+            ]
+          },
+          {
+            "id": "rows-4294967295-pitch-1",
+            "params": {
+              "scenario": "error_array_too_large_rows_4294967295_pitch_1",
+              "rows": 4294967295,
+              "pitch": 1
+            },
+            "coverage": [
+              "ftbitmap.bitmap_copy:error-array-too-large-rows-u32-max"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftbitmap",
+        "area:bitmap",
+        "error-trigger"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error"
+          ],
+          "compare_error_output": true
+        },
+        "error": "FT_Err_Array_Too_Large",
+        "source_refs": [
+          "freetype/src/base/ftbitmap.c:100",
+          "freetype/src/base/ftutil.c:132-135"
+        ]
       }
     },
     {

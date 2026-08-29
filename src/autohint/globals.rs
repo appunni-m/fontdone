@@ -328,17 +328,24 @@ impl FaceGlobals {
             let (_, ya) = if cjk_writing_system {
                 cjk_metrics_scale(&mut m, bs.x_scale, bs.y_scale, 0, 0)
             } else {
-                let scaled_em = crate::fixed::ft_mul_fix(upem, bs.x_scale);
-                let x_ppem = (scaled_em + 32) >> 6;
-                super::latin::metrics_scale_dim_with_increase_x_height(
-                    &mut m,
-                    bs.x_scale,
-                    bs.y_scale,
-                    0,
-                    0,
-                    self.increase_x_height.get(),
-                    x_ppem,
-                )
+                let increase_x_height = self.increase_x_height.get();
+                if increase_x_height == 0 {
+                    // Keep the ordinary path on the public zero-property
+                    // wrapper; it is the exact FreeType default operation.
+                    super::latin::metrics_scale_dim(&mut m, bs.x_scale, bs.y_scale, 0, 0)
+                } else {
+                    let scaled_em = crate::fixed::ft_mul_fix(upem, bs.x_scale);
+                    let x_ppem = (scaled_em + 32) >> 6;
+                    super::latin::metrics_scale_dim_with_increase_x_height(
+                        &mut m,
+                        bs.x_scale,
+                        bs.y_scale,
+                        0,
+                        0,
+                        increase_x_height,
+                        x_ppem,
+                    )
+                }
             };
             m.axis[1].org_scale = ya;
 

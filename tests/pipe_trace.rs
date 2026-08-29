@@ -75,6 +75,7 @@ fn trace_one_glyph() {
         outline_flags: raw.outline_flags,
         has_cubic_tags: raw.has_cubic_tags,
         unrounded_points: None,
+        cff_fixed_points: None,
     };
 
     let metrics = font.face_globals.get_metrics(gid);

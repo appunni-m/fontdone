@@ -298,10 +298,14 @@ pub(super) fn error_to_ft(error: FontError) -> FT_Error {
                     | "CFF: vmoveto argument count"
                     | "CFF: rmoveto argument count"
                     | "CFF: rlineto argument count"
+                    | "CFF: hvcurveto/vhcurveto argument count"
                     | "CFF: Type2 op 10 unsupported"
             ) =>
         {
             FT_Err_Invalid_File_Format as FT_Error
+        }
+        FontError::InvalidOutline(message) if message == "glyf: composite recursion too deep" => {
+            FT_Err_Invalid_Composite as FT_Error
         }
         FontError::InvalidOutline(_) => FT_Err_Invalid_Outline,
         FontError::ExecutionTooLong => FT_Err_Execution_Too_Long as FT_Error,

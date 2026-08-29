@@ -90,6 +90,59 @@ def write_native_variable_aliases() -> None:
     write_native_variable_alias("variable-native-no-gvar-composites.ttf", remove_gvar=True)
 
 
+def write_native_malformed_composite(name: str, *, remove_gvar: bool) -> None:
+    """Build an active native face with a public composite parse error."""
+
+    font = TTFont(MVAR_FONT, recalcTimestamp=False)
+    add_native_setup_tables(font)
+    if remove_gvar:
+        del font["gvar"]
+
+    glyph_index = 1
+    glyph_order = font.getGlyphOrder()
+    glyph_name = glyph_order[glyph_index]
+    if not getattr(font["glyf"][glyph_name], "components", None):
+        raise ValueError(f"expected composite glyph {glyph_index}")
+    loca = font["loca"].locations
+    glyf_data = bytearray(font.getTableData("glyf"))
+    glyph_start = loca[glyph_index]
+    glyph_end = loca[glyph_index + 1]
+    if glyph_end - glyph_start < 22:
+        raise ValueError("composite glyph record is unexpectedly short")
+    final_component_flags = int.from_bytes(
+        glyf_data[glyph_end - 6 : glyph_end - 4], "big"
+    )
+    if final_component_flags & 0x0020:
+        raise ValueError("composite glyph already has a continuation flag")
+    # Make the final component claim another component.  The public loader
+    # reaches the composite-record bounds error without any private calls.
+    glyf_data[glyph_end - 6 : glyph_end - 4] = (
+        final_component_flags | 0x0020
+    ).to_bytes(2, "big")
+    font["glyf"] = raw_table("glyf", bytes(glyf_data))
+    # The raw glyf table intentionally has no GlyphSet object for fontTools'
+    # maxp recalculation; preserve the source glyph count while compiling the
+    # byte-level malformed record.
+    font["maxp"].recalc = lambda _font: None
+    save_font(OUT_DIR / name, font)
+
+
+def write_native_no_gvar_malformed_composite() -> None:
+    """Build an active no-gvar face with a public composite parse error."""
+
+    write_native_malformed_composite(
+        "variable-native-no-gvar-malformed-composite.ttf", remove_gvar=True
+    )
+
+
+def write_native_gvar_malformed_composite() -> None:
+    """Build an active gvar face with a public composite parse error."""
+
+    write_native_malformed_composite(
+        "variable-native-gvar-malformed-composite.ttf", remove_gvar=False
+    )
+
+
 def write_native_variable_composite_no_record() -> None:
     """Keep gvar present while removing records from valid composites."""
 
@@ -681,7 +734,9 @@ def embedded_peak_short_gvar_payload() -> bytes:
     return short_glyph_record_gvar_payload(glyph_data)
 
 
-def tuple_header_after_embedded_peak_short_gvar_payload() -> bytes:
+def tuple_header_after_embedded_peak_short_gvar_payload(
+    *, glyph_index: int = 10
+) -> bytes:
     """Build a second tuple whose header follows an embedded peak.
 
     The generic tuple-header length check accounts for four bytes per tuple,
@@ -697,7 +752,7 @@ def tuple_header_after_embedded_peak_short_gvar_payload() -> bytes:
     put_u16(glyph_data, 6, GVAR_EMBEDDED_PEAK_TUPLE)
     put_u16(glyph_data, 8, 0)
     put_u16(glyph_data, 10, 0)
-    return short_glyph_record_gvar_payload(bytes(glyph_data))
+    return short_glyph_record_for_glyph_gvar_payload(glyph_index, bytes(glyph_data))
 
 
 def shared_tuple_index_invalid_gvar_payload() -> bytes:
@@ -1055,6 +1110,11 @@ def write_gvar_fixtures() -> None:
     write_gvar_payload(
         "gvar-tuple-header-after-embedded-peak-short-runtime.ttf",
         tuple_header_after_embedded_peak_short_gvar_payload(),
+        remove_hvar=True,
+    )
+    write_gvar_payload(
+        "gvar-tuple-header-after-embedded-peak-short-composite-runtime.ttf",
+        tuple_header_after_embedded_peak_short_gvar_payload(glyph_index=1),
         remove_hvar=True,
     )
     write_gvar_payload(
@@ -1455,6 +1515,8 @@ def main() -> None:
     write_compact_alias("gvar-hvar-wght.ttf")
     write_mvar_alias("mvar-hvar-vvar.ttf")
     write_native_variable_aliases()
+    write_native_no_gvar_malformed_composite()
+    write_native_gvar_malformed_composite()
     write_native_variable_composite_no_record()
     write_native_variable_mixed_args()
     write_avar_fixtures()

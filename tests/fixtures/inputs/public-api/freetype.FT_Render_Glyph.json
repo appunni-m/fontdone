@@ -3249,6 +3249,32 @@
             "coverage": [
               "render/mono:geometry-gid-130"
             ]
+          },
+          {
+            "id": "batch229-render-overlap-simple-normal",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/render-coverage.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 6,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "coverage": [
+              "batch229:render-overlap-simple-normal"
+            ]
           }
         ]
       },

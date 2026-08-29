@@ -2780,6 +2780,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/cff:hmoveto-missing-args-error"
             ]
@@ -2806,6 +2811,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/cff:vmoveto-missing-args-error"
             ]
@@ -2832,6 +2842,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/cff:rmoveto-missing-args-error"
             ]
@@ -2910,6 +2925,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/cff:hvcurveto-single-operand-error"
             ]
@@ -3014,6 +3034,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/cff:type2-unsupported-op-error"
             ]
@@ -3221,6 +3246,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/cff:rlineto-secondary-malformed-count-error"
             ]
@@ -3373,6 +3403,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/cff:type2-operand-stack-overflow"
             ]
@@ -3399,6 +3434,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/cff:type2-escaped-add-argument-underflow"
             ]
@@ -3450,9 +3490,9 @@
               ],
               "assert_api_load_glyph_agrees": true
             },
-            "expect_error": true,
+            "expect_error": false,
             "coverage": [
-              "tt/cff:type2-unknown-escape-error"
+              "tt/cff:type2-unknown-escape-success"
             ]
           },
           {
@@ -7750,6 +7790,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:glyph-too-short-unscaled"
             ]
@@ -7773,6 +7818,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:glyph-too-short-scaled"
             ]
@@ -7796,6 +7846,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "api/load_glyph:error-no-autohint"
             ]
@@ -7819,6 +7874,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "api/load_glyph:error-force-autohint"
             ]
@@ -7842,6 +7902,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "api/load_glyph:error-default"
             ]
@@ -7865,6 +7930,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "api/load_glyph:error-target-light"
             ]
@@ -7888,6 +7958,11 @@
               "assert_api_load_glyph_agrees": true
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "api/load_glyph:error-compute-metrics"
             ]
@@ -7910,6 +7985,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:simple-end-points-overflow"
             ]
@@ -7932,6 +8012,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:duplicate-contour-endpoint-rejected-before-iup"
             ]
@@ -7954,6 +8039,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:simple-flags-overflow"
             ]
@@ -7976,6 +8066,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:simple-error-propagation-scaled"
             ]
@@ -7998,6 +8093,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:simple-repeat-count-overflow"
             ]
@@ -8020,6 +8120,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:simple-repeat-exceeds-point-count"
             ]
@@ -8042,6 +8147,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:simple-x-short-overflow"
             ]
@@ -8064,6 +8174,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:simple-x-long-overflow"
             ]
@@ -8086,6 +8201,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:simple-y-short-overflow"
             ]
@@ -8108,6 +8228,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:simple-y-long-overflow"
             ]
@@ -8130,6 +8255,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:simple-instructions-overflow"
             ]
@@ -8152,6 +8282,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:composite-header-overflow"
             ]
@@ -8174,6 +8309,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:composite-error-propagation-scaled"
             ]
@@ -8196,6 +8336,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:composite-uniform-scale-overflow"
             ]
@@ -8218,6 +8363,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:composite-independent-scale-overflow"
             ]
@@ -8240,6 +8390,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:composite-two-by-two-overflow"
             ]
@@ -8306,6 +8461,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:pinned-c-hinted-composite-instruction-length-overflow"
             ]
@@ -8328,6 +8488,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:pinned-c-hinted-composite-instructions-overflow"
             ]
@@ -8372,6 +8537,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:error-invalid-attachment-point"
             ]
@@ -8394,6 +8564,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:error-component-glyph-index-out-of-range"
             ]
@@ -8460,6 +8635,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:composite-depth-overflow-unscaled"
             ]
@@ -8482,6 +8662,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/glyf:composite-depth-overflow-scaled"
             ]
@@ -8504,6 +8689,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/loca:error-short-record-truncated"
             ]
@@ -8526,6 +8716,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/loca:error-long-record-truncated"
             ]
@@ -8632,6 +8827,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/hinter:prep-range-fdef-idef-scan"
             ]
@@ -8654,6 +8854,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/hinter:prep-range-idef-scan"
             ]
@@ -8906,6 +9111,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/hinter:fpgm-fdef-index-overflow"
             ]
@@ -9016,6 +9226,11 @@
               "load_flags": ["FT_LOAD_PEDANTIC"]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": ["tt/hinter:error-storage-write-invalid-reference-pedantic"]
           },
           {
@@ -9034,6 +9249,11 @@
               "load_flags": ["FT_LOAD_PEDANTIC"]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": ["tt/hinter:error-storage-read-invalid-reference-pedantic"]
           },
           {
@@ -9052,6 +9272,11 @@
               "load_flags": ["FT_LOAD_PEDANTIC"]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": ["tt/hinter:error-cvt-write-invalid-reference-pedantic"]
           },
           {
@@ -9070,6 +9295,11 @@
               "load_flags": ["FT_LOAD_PEDANTIC"]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": ["tt/hinter:error-cvt-read-invalid-reference-pedantic"]
           },
           {
@@ -9105,6 +9335,11 @@
               "load_flags": ["FT_LOAD_PEDANTIC"]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": ["tt/hinter:error-instctrl-glyph-selector-invalid-reference-pedantic"]
           },
           {
@@ -9140,6 +9375,11 @@
               "load_flags": ["FT_LOAD_PEDANTIC"]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": ["tt/hinter:error-cvt-font-unit-write-invalid-reference-pedantic"]
           },
           {
@@ -9175,6 +9415,11 @@
               "load_flags": ["FT_LOAD_PEDANTIC"]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": ["tt/hinter:error-instctrl-invalid-selector-pedantic"]
           },
           {
@@ -9210,6 +9455,11 @@
               "load_flags": ["FT_LOAD_PEDANTIC"]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": ["tt/hinter:error-instctrl-invalid-value-pedantic"]
           },
           {
@@ -9245,6 +9495,11 @@
               "load_flags": ["FT_LOAD_PEDANTIC"]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": ["tt/hinter:error-deltac-invalid-reference-pedantic"]
           },
           {
@@ -9265,6 +9520,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/hinter:fpgm-nested-fdef"
             ]
@@ -9287,6 +9547,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/hinter:fpgm-idef-opcode-overflow"
             ]
@@ -9309,6 +9574,11 @@
               ]
             },
             "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
             "coverage": [
               "tt/hinter:fpgm-nested-idef"
             ]
@@ -10327,6 +10597,8 @@
 ,{"id":"batch129-cff-load-028","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cff2/malformed-global-index-offsets-out-of-order.otf"}},"params":{"face_index":0,"size":20,"glyph_index":1,"load_flags":["FT_LOAD_DEFAULT"]},"expect_error":true,"expectation":{"compare":{"compare_error_output":true}},"coverage":["batch129:cff2:global-index-offsets-out-of-order"]}
 ,{"id":"batch129-cff-load-029","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cff2/fontinfo-invalid-argument.otf"}},"params":{"face_index":0,"size":40,"glyph_index":1,"load_flags":["FT_LOAD_DEFAULT","FT_LOAD_VERTICAL_LAYOUT"]},"expect_error":false,"coverage":["batch129:cff2:valid-fontinfo-vertical-glyph"]}
 ,{"id":"batch129-cff-load-030","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cff2/malformed-invalid-header-size.otf"}},"params":{"face_index":0,"size":20,"glyph_index":1,"load_flags":["FT_LOAD_NO_SCALE"]},"expect_error":true,"expectation":{"compare":{"compare_error_output":true}},"coverage":["batch129:cff2:invalid-header-size"]}
+,{"id":"batch229-autohint-cjk-mono-render","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-coverage.ttf","asset_kind":"font"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":5,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO","FT_LOAD_RENDER"],"assert_api_load_glyph_agrees":true},"coverage":["batch229:autohint-cjk-mono-render"]}
+,{"id":"batch230-autohint-normal-render","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/arabic-neutral-first.ttf","asset_kind":"font"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":11},"glyph_index":5,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL","FT_LOAD_RENDER"]},"coverage":["batch230:autohint-normal-render"]}
        ]
       },
       "classifiers": [

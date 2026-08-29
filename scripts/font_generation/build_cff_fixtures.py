@@ -215,6 +215,84 @@ def build_cff2(path: Path) -> None:
     builder.save(path)
 
 
+def build_cff_random(path: Path) -> None:
+    """Build a valid CFF Type 2 face whose glyph consumes ``random``.
+
+    FreeType's Adobe CFF interpreter keeps the random state on the opened
+    subfont, so loading this glyph twice produces two different outlines.  The
+    parity case fixes the CFF driver's random-seed property to zero before the
+    face is opened; that makes the private-dictionary fallback seed (the
+    pinned 987654321 default) deterministic while still exercising the
+    stateful operator.
+    """
+    names = {
+        "familyName": "Pure CFF Random Coverage",
+        "styleName": "Regular",
+        "uniqueFontIdentifier": "Pure CFF Random Coverage Regular",
+        "fullName": "Pure CFF Random Coverage Regular",
+        "psName": "PureCFFRandomCoverage-Regular",
+    }
+    glyph_order = [".notdef", "random"]
+    metrics = {".notdef": (600, 0), "random": (600, 0)}
+    builder = FontBuilder(UNITS_PER_EM, isTTF=False)
+    builder.setupGlyphOrder(glyph_order)
+    builder.setupCharacterMap({0x41: "random"})
+    builder.setupHorizontalMetrics(metrics)
+    builder.setupHorizontalHeader(ascent=800, descent=-200)
+    builder.setupNameTable(names)
+    builder.setupOS2(
+        sTypoAscender=800,
+        sTypoDescender=-200,
+        usWinAscent=800,
+        usWinDescent=200,
+    )
+    builder.setupPost()
+    random_charstring = t2_program_charstring(
+        [
+            0,
+            0,
+            "rmoveto",
+            1000,
+            "random",
+            "mul",
+            0,
+            "rlineto",
+            0,
+            700,
+            "rlineto",
+            -1000,
+            0,
+            "rlineto",
+            "endchar",
+        ]
+    )
+    builder.setupCFF(
+        names["psName"],
+        {
+            "FullName": names["fullName"],
+            "FamilyName": names["familyName"],
+            "Weight": names["styleName"],
+        },
+        {".notdef": t2_charstring(), "random": random_charstring},
+        {},
+    )
+    builder.setupMaxp()
+    recalc_font_bbox = TopDict.recalcFontBBox
+    try:
+        # fontTools' bounds walker does not evaluate the stateful random
+        # operator.  Keep the generated table structurally valid and preserve
+        # the explicit bounds used by the maintained fixture.
+        TopDict.recalcFontBBox = lambda self: None
+        builder.font.recalcBBoxes = False
+        builder.font["head"].created = FIXED_HEAD_TIME
+        builder.font["head"].modified = FIXED_HEAD_TIME
+        builder.font.recalcTimestamp = False
+        builder.font["CFF "].cff.topDictIndex[0].FontBBox = [0, 0, 1000, 700]
+        builder.save(path)
+    finally:
+        TopDict.recalcFontBBox = recalc_font_bbox
+
+
 def build_cubic_cff(
     path: Path,
     with_vertical_metrics: bool = False,
@@ -730,8 +808,9 @@ def build_cubic_cff(
                 globalSubrs=[],
             ),
             "type2_escape_unknown": T2CharString(
-                # Escape 99 is outside the pinned Type 2 escaped-op set and
-                # must reach the public unsupported-operation error route.
+                # Escape 99 is outside the pinned Type 2 escaped-op set.
+                # FreeType logs and ignores unknown escaped operators, then
+                # accepts the following endchar.
                 bytecode=bytes([12, 99, 14]),
                 program=None,
                 private=None,
@@ -858,6 +937,83 @@ def write_pure_cff_cubic() -> None:
     if out.exists() or out.is_symlink():
         out.unlink()
     build_cubic_cff(out, include_append_only_glyphs=False)
+
+
+def write_pure_cff_random() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / "pure-cff-random.otf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    build_cff_random(out)
+
+
+def build_cff_random_global_subr_error(path: Path) -> None:
+    """Build a valid CFF face whose second random subroutine call errors.
+
+    The first random value selects global subroutine 107, while the next one
+    selects 108.  With exactly 108 global subroutines, FreeType accepts the
+    first glyph load and rejects the second without changing the public input.
+    The public parity batch varies the seed and reaches the post-error reload
+    branch without malformed input or an invalid glyph index.
+    """
+    names = {
+        "familyName": "Pure CFF Random Global Subr Error",
+        "styleName": "Regular",
+        "uniqueFontIdentifier": "Pure CFF Random Global Subr Error Regular",
+        "fullName": "Pure CFF Random Global Subr Error Regular",
+        "psName": "PureCFFRandomGlobalSubrError-Regular",
+    }
+    builder = FontBuilder(UNITS_PER_EM, isTTF=False)
+    builder.setupGlyphOrder([".notdef", "error"])
+    builder.setupCharacterMap({0x41: "error"})
+    builder.setupHorizontalMetrics({".notdef": (600, 0), "error": (600, 0)})
+    builder.setupHorizontalHeader(ascent=800, descent=-200)
+    builder.setupNameTable(names)
+    builder.setupOS2(
+        sTypoAscender=800,
+        sTypoDescender=-200,
+        usWinAscent=800,
+        usWinDescent=200,
+    )
+    builder.setupPost()
+    error_charstring = t2_program_charstring(
+        ["random", 1, "eq", "callgsubr", "endchar"]
+    )
+    builder.setupCFF(
+        names["psName"],
+        {
+            "FullName": names["fullName"],
+            "FamilyName": names["familyName"],
+            "Weight": names["styleName"],
+        },
+        {".notdef": t2_charstring(), "error": error_charstring},
+        {},
+    )
+    cff = builder.font["CFF "].cff
+    for _ in range(108):
+        cff.GlobalSubrs.append(
+            T2CharString(program=["return"], private=None, globalSubrs=cff.GlobalSubrs)
+        )
+    builder.setupMaxp()
+    recalc_font_bbox = TopDict.recalcFontBBox
+    try:
+        TopDict.recalcFontBBox = lambda self: None
+        builder.font.recalcBBoxes = False
+        builder.font["head"].created = FIXED_HEAD_TIME
+        builder.font["head"].modified = FIXED_HEAD_TIME
+        builder.font.recalcTimestamp = False
+        builder.font["CFF "].cff.topDictIndex[0].FontBBox = [0, 0, 0, 0]
+        builder.save(path)
+    finally:
+        TopDict.recalcFontBBox = recalc_font_bbox
+
+
+def write_pure_cff_random_global_subr_error() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / "pure-cff-random-global-subr-error.otf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    build_cff_random_global_subr_error(out)
 
 
 def write_pure_cff_below_baseline_no_vmtx() -> None:
@@ -2039,6 +2195,8 @@ def main() -> None:
     build_cff(INPUT_OUT_DIR / "fontinfo-populated.otf")
     build_cff2(CFF2_OUT_DIR / "fontinfo-invalid-argument.otf")
     write_pure_cff_cubic()
+    write_pure_cff_random()
+    write_pure_cff_random_global_subr_error()
     write_pure_cff_below_baseline_no_vmtx()
     write_pure_cff_baseline_touch_no_vmtx()
     write_pure_cff_cubic_last_delta()

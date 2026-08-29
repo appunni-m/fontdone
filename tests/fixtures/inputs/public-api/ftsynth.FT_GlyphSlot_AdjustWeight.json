@@ -12,6 +12,7 @@
     "bitmap_weight_owns_emboldens_and_updates_top",
     "batch163_valid_empty_mono_horizontal_pixel_shift",
     "batch166_valid_lcd_padding_reuse",
+    "batch228_valid_zero_advance_rendered_bitmap",
     "null_or_unsupported_format_noop",
     "null_slot_noop"
   ],
@@ -1255,6 +1256,1137 @@
         ]
       }
     },
+{
+  "case_id": "ftsynth.FT_GlyphSlot_AdjustWeight.batch228_valid_zero_advance_rendered_bitmap",
+  "subject": "ftsynth.FT_GlyphSlot_AdjustWeight",
+  "case": "batch228_valid_zero_advance_rendered_bitmap",
+  "operation": "ftsynth.glyphslot_adjust_weight_after_load",
+  "schema": "api_result",
+  "expect_error": false,
+  "inputs": {
+    "variants": [
+      {
+        "id": "batch228-zero-advance-001",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 689 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 24,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              689
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-002",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 690 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 24,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              690
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-003",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 691 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 24,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              691
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-004",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 692 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 24,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              692
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-005",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 693 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 24,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              693
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-006",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 694 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 24,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              694
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-007",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 695 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 24,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              695
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-008",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 696 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 24,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              696
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-009",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 697 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 24,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              697
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-010",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 698 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 24,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              698
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-011",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 699 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 32,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              699
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-012",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 700 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 32,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              700
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-013",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 701 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 32,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              701
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-014",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 702 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 32,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              702
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-015",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 703 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 32,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              703
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-016",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 704 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 32,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              704
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-017",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 705 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 32,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              705
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-018",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 706 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 32,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              706
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-019",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 707 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 32,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              707
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-020",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 708 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 32,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              708
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-021",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 709 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 40,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              709
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-022",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 710 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 40,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              710
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-023",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 711 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 40,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              711
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-024",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 712 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 40,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              712
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-025",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 713 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 40,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              713
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-026",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 714 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 40,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              714
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-027",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 715 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 40,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              715
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-028",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 716 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 40,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              716
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-029",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 717 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 40,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              717
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      },
+      {
+        "id": "batch228-zero-advance-030",
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/os2-unicode-ranges.ttf",
+            "role": "font",
+            "requirements": "Maintained generated Unicode-range SFNT glyph 718 is a non-empty zero-horizontal-advance combining-mark outline."
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "size_ppem": 40,
+          "load": {
+            "operation": "FT_Load_Glyph",
+            "glyph_indices": [
+              718
+            ],
+            "load_flags": [
+              "FT_LOAD_RENDER",
+              "FT_LOAD_TARGET_NORMAL"
+            ]
+          },
+          "adjustments": [
+            {
+              "xdelta_16_16": 4096,
+              "ydelta_16_16": 0
+            }
+          ],
+          "capture_before_after": true
+        },
+        "coverage": [
+          "ftsynth:bitmap-adjust-weight-zero-horizontal-advance"
+        ]
+      }
+    ]
+  },
+  "classifiers": [
+    "kind:function",
+    "header:ftsynth",
+    "format:bitmap",
+    "operation:glyph-slot-mutation",
+    "coverage:zero-horizontal-advance"
+  ],
+  "expectation": {
+    "status": "ok",
+    "output_shape": {
+      "slot_format": "FT_GLYPH_FORMAT_BITMAP",
+      "bitmap_before": "FT_Bitmap descriptor and bytes",
+      "bitmap_after": "FT_Bitmap descriptor and bytes",
+      "bitmap_top_after": "FT_Int",
+      "metrics_after": "FT_Glyph_Metrics",
+      "advance_after": "FT_Vector"
+    },
+    "compare": {
+      "mode": "bytes",
+      "paths": [
+        "slot_format",
+        "bitmap_after.rows",
+        "bitmap_after.width",
+        "bitmap_after.pitch",
+        "bitmap_after.pixel_mode",
+        "bitmap_after.buffer_hex",
+        "bitmap_top_after",
+        "metrics_after",
+        "advance_after"
+      ]
+    },
+    "fixture_requirements": [
+      "Uses the maintained generated Unicode-range SFNT, whose combining-mark glyphs have non-empty outlines and zero horizontal advance, then renders them through the public FT_Load_Glyph route before FT_GlyphSlot_AdjustWeight."
+    ],
+    "source_refs": [
+      "freetype/src/base/ftsynth.c:FT_GlyphSlot_AdjustWeight",
+      "freetype/src/base/ftobjs.c:FT_Load_Glyph"
+    ]
+  }
+},
     {
       "case_id": "ftsynth.FT_GlyphSlot_AdjustWeight.batch163_valid_empty_mono_horizontal_pixel_shift",
       "subject": "ftsynth.FT_GlyphSlot_AdjustWeight",

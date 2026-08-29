@@ -104,6 +104,11 @@ pub struct SbitStrikeMetrics {
 pub struct SbitGlyph {
     pub metrics: SbitMetrics,
     pub bitmap: SbitBitmap,
+    /// Whether the bitmap descriptor represents an image returned by the
+    /// SBIT loader.  A successful bitmap-only missing-glyph fallback still
+    /// supplies metrics and an empty descriptor, but FreeType leaves the
+    /// public `FT_Bitmap.buffer` null in that case.
+    pub bitmap_present: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -704,6 +709,7 @@ fn load_simple_image(
             num_grays,
             buffer,
         },
+        bitmap_present: true,
     })
 }
 
@@ -747,6 +753,7 @@ fn load_bit_aligned_image(
             num_grays,
             buffer,
         },
+        bitmap_present: true,
     })
 }
 
@@ -851,6 +858,7 @@ fn blank_compound_glyph(strike: SbitStrike, metrics: SbitMetrics) -> Result<Sbit
             num_grays,
             buffer: vec![0; len],
         },
+        bitmap_present: true,
     })
 }
 

@@ -136,18 +136,20 @@ impl FontData {
                 return Err(error.clone());
             }
         }
+        // CFF Type 2 `random` is stateful across glyph loads.  FreeType's
+        // Adobe decoder advances the per-face state each time it interprets a
+        // CharString, so caching a CFF outline would incorrectly make a second
+        // FT_Load_Glyph return the first outline again.  CFF2 remains on the
+        // ordinary cache path because this compact runtime has no CFF2 random
+        // state.
+        if let Some(cff) = &self.cff {
+            return Ok(Rc::new(cff.load_glyph(glyph_index)?));
+        }
         {
             let cache = self.glyph_cache.borrow();
             if let Some(outline) = cache.get(&glyph_index) {
                 return Ok(Rc::clone(outline));
             }
-        }
-        if let Some(cff) = &self.cff {
-            let outline = Rc::new(cff.load_glyph(glyph_index)?);
-            self.glyph_cache
-                .borrow_mut()
-                .insert(glyph_index, Rc::clone(&outline));
-            return Ok(outline);
         }
         if let Some(cff2) = &self.cff2 {
             let outline = Rc::new(cff2.load_glyph(glyph_index)?);

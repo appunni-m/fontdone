@@ -165,10 +165,31 @@ def selected_case_ids() -> set[str] | None:
     value = os.environ.get("FONTDONE_UNIFIED_CASE_IDS", "").strip()
     if not value:
         return None
-    case_ids = {case_id.strip() for case_id in value.split(",")}
+
+    case_id_values: list[str] = []
+    current: list[str] = []
+    escaped = False
+    for character in value:
+        if escaped:
+            if character not in (",", "\\"):
+                current.append("\\")
+            current.append(character)
+            escaped = False
+        elif character == "\\":
+            escaped = True
+        elif character == ",":
+            case_id_values.append("".join(current).strip())
+            current = []
+        else:
+            current.append(character)
+    if escaped:
+        raise ValueError("FONTDONE_UNIFIED_CASE_IDS must not end with an escape")
+    case_id_values.append("".join(current).strip())
+
+    case_ids = set(case_id_values)
     if not case_ids or "" in case_ids:
         raise ValueError("FONTDONE_UNIFIED_CASE_IDS contains an empty case ID")
-    if len(case_ids) != len(value.split(",")):
+    if len(case_ids) != len(case_id_values):
         raise ValueError("FONTDONE_UNIFIED_CASE_IDS contains duplicate case IDs")
     return case_ids
 

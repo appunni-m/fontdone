@@ -517,6 +517,266 @@
       }
     },
     {
+      "case_id": "ftstroke.FT_Glyph_Stroke.destroy_original_option@post92915e15-lines-bevel-g36",
+      "subject": "ftstroke.FT_Glyph_Stroke",
+      "case": "destroy_original_option",
+      "operation": "ftstroke.glyph_stroke",
+      "schema": "api_result",
+      "expect_error": false,
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "symbol": "FT_Glyph_Stroke",
+        "signature": "FT_Error FT_Glyph_Stroke(FT_Glyph* pglyph, FT_Stroker stroker, FT_Bool destroy)"
+      },
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "glyph_index": 36,
+          "destroy": true,
+          "ownership_probe": "counting glyph finalizer",
+          "stroker": {
+            "radius": 128,
+            "line_cap": "FT_STROKER_LINECAP_ROUND",
+            "line_join": "FT_STROKER_LINEJOIN_BEVEL",
+            "miter_limit": 65536
+          }
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:glyph",
+        "area:ownership",
+        "coverage:new-public-input"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error",
+          "pglyph_after": "replacement outline glyph",
+          "original_destroyed": true,
+          "outline": "points/tags/contours"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "pglyph_after.nullness",
+            "original_destroyed",
+            "outline.n_points",
+            "outline.n_contours",
+            "outline.points",
+            "outline.tags",
+            "outline.contours"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:2283-2315"
+        ]
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_Stroke.destroy_original_option@post92915e15-conic-g68",
+      "subject": "ftstroke.FT_Glyph_Stroke",
+      "case": "destroy_original_option",
+      "operation": "ftstroke.glyph_stroke",
+      "schema": "api_result",
+      "expect_error": false,
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "symbol": "FT_Glyph_Stroke",
+        "signature": "FT_Error FT_Glyph_Stroke(FT_Glyph* pglyph, FT_Stroker stroker, FT_Bool destroy)"
+      },
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "glyph_index": 68,
+          "destroy": true,
+          "ownership_probe": "counting glyph finalizer",
+          "stroker": {
+            "radius": 128,
+            "line_cap": "FT_STROKER_LINECAP_ROUND",
+            "line_join": "FT_STROKER_LINEJOIN_BEVEL",
+            "miter_limit": 65536
+          }
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:glyph",
+        "area:ownership",
+        "coverage:new-public-input"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error",
+          "pglyph_after": "replacement outline glyph",
+          "original_destroyed": true,
+          "outline": "points/tags/contours"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "pglyph_after.nullness",
+            "original_destroyed",
+            "outline.n_points",
+            "outline.n_contours",
+            "outline.points",
+            "outline.tags",
+            "outline.contours"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:2283-2315"
+        ]
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_Stroke.destroy_original_option@post92915e15-cff-cubic-g1",
+      "subject": "ftstroke.FT_Glyph_Stroke",
+      "case": "destroy_original_option",
+      "operation": "ftstroke.glyph_stroke",
+      "schema": "api_result",
+      "expect_error": false,
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "symbol": "FT_Glyph_Stroke",
+        "signature": "FT_Error FT_Glyph_Stroke(FT_Glyph* pglyph, FT_Stroker stroker, FT_Bool destroy)"
+      },
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/cff/pure-cff-cubic.otf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "glyph_index": 1,
+          "destroy": true,
+          "ownership_probe": "counting glyph finalizer",
+          "stroker": {
+            "radius": 64,
+            "line_cap": "FT_STROKER_LINECAP_ROUND",
+            "line_join": "FT_STROKER_LINEJOIN_ROUND",
+            "miter_limit": 65536
+          }
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:glyph",
+        "area:ownership",
+        "coverage:new-public-input"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error",
+          "pglyph_after": "replacement outline glyph",
+          "original_destroyed": true,
+          "outline": "points/tags/contours"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "pglyph_after.nullness",
+            "original_destroyed",
+            "outline.n_points",
+            "outline.n_contours",
+            "outline.points",
+            "outline.tags",
+            "outline.contours"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:2283-2315"
+        ]
+      }
+    },
+    {
+      "case_id": "ftstroke.FT_Glyph_Stroke.destroy_original_option@post92915e15-empty-outline-g1",
+      "subject": "ftstroke.FT_Glyph_Stroke",
+      "case": "destroy_original_option",
+      "operation": "ftstroke.glyph_stroke",
+      "schema": "api_result",
+      "expect_error": false,
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "symbol": "FT_Glyph_Stroke",
+        "signature": "FT_Error FT_Glyph_Stroke(FT_Glyph* pglyph, FT_Stroker stroker, FT_Bool destroy)"
+      },
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/autohint/latin-empty-standard.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "glyph_index": 1,
+          "destroy": true,
+          "ownership_probe": "counting glyph finalizer",
+          "stroker": {
+            "radius": 64,
+            "line_cap": "FT_STROKER_LINECAP_ROUND",
+            "line_join": "FT_STROKER_LINEJOIN_ROUND",
+            "miter_limit": 65536
+          }
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:glyph",
+        "area:ownership",
+        "coverage:new-public-input"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error",
+          "pglyph_after": "replacement outline glyph",
+          "original_destroyed": true,
+          "outline": "points/tags/contours"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "pglyph_after.nullness",
+            "original_destroyed",
+            "outline.n_points",
+            "outline.n_contours",
+            "outline.points",
+            "outline.tags",
+            "outline.contours"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:2283-2315"
+        ]
+      }
+    },
+    {
      "case_id": "ftstroke.FT_Glyph_Stroke.invalid_outline_parse_rejected",
       "subject": "ftstroke.FT_Glyph_Stroke",
       "case": "invalid_outline_parse_rejected",

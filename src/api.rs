@@ -537,6 +537,10 @@ impl Face {
         self.render_fonts.clear();
     }
 
+    pub(crate) fn set_cff_random_seed(&self, seed: u32) {
+        self.font.set_cff_random_seed(seed);
+    }
+
     /// Return active OpenType design coordinates, equivalent to
     /// `FT_Get_Var_Design_Coordinates`.
     pub(crate) fn var_design_coordinates(&self) -> Result<&[i32], FontError> {
@@ -910,17 +914,29 @@ fn sbit_glyph_slot_with_bitmap(
     include_bitmap: bool,
 ) -> GlyphSlot {
     let metrics = sbit.metrics;
+    let pixel_mode = sbit_pixel_mode_to_render(sbit.bitmap.pixel_mode);
+    // Keep packed grayscale metadata on the same canonical renderer helper
+    // used by rendered bitmaps.  The SBIT parser already guarantees these
+    // values (4 for Gray2 and 16 for Gray4); routing them here preserves the
+    // public bitmap contract while making the format-specific mapping
+    // executable through the public embedded-bitmap load path.  Monochrome
+    // SBIT uses FreeType's separate `num_grays=2` contract and must retain
+    // the parser-provided value.
+    let num_grays = match pixel_mode {
+        PixelMode::Gray2 | PixelMode::Gray4 => pixel_mode.num_grays(),
+        _ => sbit.bitmap.num_grays,
+    };
     let (bitmap_left, bitmap_top) = if vertical_layout {
         (metrics.vert_bearing_x / 64, metrics.vert_bearing_y / 64)
     } else {
         (metrics.hori_bearing_x / 64, metrics.hori_bearing_y / 64)
     };
-    let bitmap = include_bitmap.then(|| RenderedBitmap {
+    let bitmap = (include_bitmap && sbit.bitmap_present).then(|| RenderedBitmap {
         width: sbit.bitmap.width,
         rows: sbit.bitmap.rows,
         pitch: sbit.bitmap.pitch,
-        pixel_mode: sbit_pixel_mode_to_render(sbit.bitmap.pixel_mode),
-        num_grays: sbit.bitmap.num_grays,
+        pixel_mode,
+        num_grays,
         left: bitmap_left,
         top: bitmap_top,
         buffer: sbit.bitmap.buffer,
@@ -949,7 +965,10 @@ fn sbit_glyph_slot_with_bitmap(
         slot_outline: None,
         render_outline: None,
     };
-    GlyphSlot::new(glyph_index, loaded, bitmap, vertical_layout, true)
+    let bitmap_present = sbit.bitmap_present;
+    let mut slot = GlyphSlot::new(glyph_index, loaded, bitmap, vertical_layout, true);
+    slot.bitmap_present = bitmap_present;
+    slot
 }
 
 /// Snapshot of the loaded glyph-slot fields callers normally read from
@@ -978,6 +997,10 @@ pub struct GlyphSlot {
     pub subglyphs: Vec<SubGlyphInfo>,
     /// OpenType SVG document when [`Self::format`] is [`GlyphFormat::Svg`].
     pub svg: Option<SvgGlyphDocument>,
+    // A bitmap descriptor can have no backing bytes. Keep its provenance so
+    // the cache can distinguish a real zero-sized rendered bitmap from the
+    // successful missing-SBIT fallback, which has a different FTC_SBit format.
+    bitmap_present: bool,
     slot_outline: Option<crate::outline::Outline>,
     loaded_outline: Option<LoadedOutline>,
 }
@@ -1019,6 +1042,7 @@ impl GlyphSlot {
             },
             subglyphs: Vec::new(),
             svg: None,
+            bitmap_present: false,
             slot_outline: None,
             loaded_outline: None,
         }
@@ -1046,6 +1070,7 @@ impl GlyphSlot {
         let (bitmap_left, bitmap_top) = bitmap
             .as_ref()
             .map_or((0, 0), |bitmap| (bitmap.left, bitmap.top));
+        let bitmap_present = bitmap.is_some();
 
         Self {
             glyph_index,
@@ -1069,6 +1094,7 @@ impl GlyphSlot {
             outline_bbox: loaded.outline_bbox,
             subglyphs,
             svg: None,
+            bitmap_present,
             slot_outline,
             loaded_outline,
         }
@@ -1112,6 +1138,7 @@ impl GlyphSlot {
             },
             subglyphs: Vec::new(),
             svg: Some(document),
+            bitmap_present: false,
             slot_outline: None,
             loaded_outline: None,
         }
@@ -1123,6 +1150,7 @@ impl GlyphSlot {
     }
 
     fn set_rendered_bitmap(&mut self, bitmap: RenderedBitmap) {
+        self.bitmap_present = true;
         if bitmap.buffer.is_empty() {
             self.bitmap_left = 0;
             self.bitmap_top = 0;
@@ -1133,6 +1161,10 @@ impl GlyphSlot {
             self.bitmap = Some(bitmap);
         }
         self.format = GlyphFormat::Bitmap;
+    }
+
+    pub(crate) fn bitmap_descriptor_present(&self) -> bool {
+        self.bitmap_present
     }
 
     pub(crate) fn render(mut self, mode: RenderMode) -> Result<Self, FontError> {
@@ -1248,42 +1280,44 @@ impl GlyphSlot {
 
     /// Apply FreeType's synthetic bitmap-slot emboldening and slot metric side effects.
     pub(crate) fn adjust_bitmap_weight(&mut self, mut xstrength: i64, mut ystrength: i64) {
-        let Some(ref mut bitmap) = self.bitmap else {
-            return;
-        };
+        let mut applied_strengths = (0, 0);
+        let _ = self.bitmap.as_mut().map(|bitmap| {
+            // FreeType `src/base/ftsynth.c` rounds bitmap slot strengths down
+            // to full pixels before calling FT_Bitmap_Embolden, and forces a
+            // minimum one-pixel horizontal embolden for zero or subpixel x
+            // strength.
+            xstrength &= !63;
+            if xstrength == 0 {
+                xstrength = 1 << 6;
+            }
+            ystrength &= !63;
 
-        // FreeType `src/base/ftsynth.c` rounds bitmap slot strengths down to
-        // full pixels before calling FT_Bitmap_Embolden, and forces a minimum
-        // one-pixel horizontal embolden for zero or subpixel x strength.
-        xstrength &= !63;
-        if xstrength == 0 {
-            xstrength = 1 << 6;
-        }
-        ystrength &= !63;
+            let x_pixels = xstrength >> 6;
+            let y_pixels = ystrength >> 6;
+            // C `FT_GlyphSlot_AdjustWeight` checks vertical `FT_Int` range
+            // before ownership, then `FT_Bitmap_Embolden` rejects either
+            // positive pixel count above `FT_INT_MAX` and all negative
+            // strengths (`src/base/ftsynth.c:137-160`,
+            // `src/base/ftbitmap.c:302-317`).
+            if y_pixels < i64::from(i32::MIN)
+                || x_pixels > i64::from(i32::MAX)
+                || y_pixels > i64::from(i32::MAX)
+                || x_pixels < 0
+                || y_pixels < 0
+            {
+                return;
+            }
+            let (x_pixels, y_pixels) = (x_pixels as usize, y_pixels as usize);
+            if !embolden_rendered_bitmap(bitmap, x_pixels, y_pixels) {
+                return;
+            }
 
-        let x_pixels = xstrength >> 6;
-        let y_pixels = ystrength >> 6;
-        // C `FT_GlyphSlot_AdjustWeight` checks vertical `FT_Int` range before
-        // ownership, then `FT_Bitmap_Embolden` rejects either positive pixel
-        // count above `FT_INT_MAX` and all negative strengths
-        // (`src/base/ftsynth.c:137-160`, `src/base/ftbitmap.c:302-317`).
-        if y_pixels < i64::from(i32::MIN)
-            || x_pixels > i64::from(i32::MAX)
-            || y_pixels > i64::from(i32::MAX)
-            || x_pixels < 0
-            || y_pixels < 0
-        {
-            return;
-        }
-        let (x_pixels, y_pixels) = (x_pixels as usize, y_pixels as usize);
-        if !embolden_rendered_bitmap(bitmap, x_pixels, y_pixels) {
-            return;
-        }
-
-        self.bitmap_top = self.bitmap_top.wrapping_add(y_pixels as i32);
-        bitmap.left = self.bitmap_left;
-        bitmap.top = self.bitmap_top;
-        self.apply_synthetic_weight_metrics(xstrength as i32, ystrength as i32);
+            self.bitmap_top = self.bitmap_top.wrapping_add(y_pixels as i32);
+            bitmap.left = self.bitmap_left;
+            bitmap.top = self.bitmap_top;
+            applied_strengths = (xstrength as i32, ystrength as i32);
+        });
+        self.apply_synthetic_weight_metrics(applied_strengths.0, applied_strengths.1);
     }
 
     fn apply_synthetic_weight_metrics(&mut self, xstrength: i32, ystrength: i32) {
@@ -1484,6 +1518,7 @@ fn convert_packed_gray_bitmap(
     let Some(new_len) = width.checked_mul(rows) else {
         return false;
     };
+
     if pitch < row_bytes || bitmap.buffer.len() < source_len {
         return false;
     }

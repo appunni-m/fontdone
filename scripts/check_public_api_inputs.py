@@ -1637,6 +1637,24 @@ def ftstroke_glyph_stroke_pending_reason(row: ConcreteInput) -> str | None:
     return exact_cases.get(row.case_id)
 
 
+def ftstroke_glyph_stroke_real_parity_reason(row: ConcreteInput) -> str | None:
+    """Exact public glyph-stroke inputs that exercise distinct outline paths."""
+    if row.operation != "ftstroke.glyph_stroke":
+        return None
+    if row.case_id in {
+        "ftstroke.FT_Glyph_Stroke.destroy_original_option@post92915e15-lines-bevel-g36",
+        "ftstroke.FT_Glyph_Stroke.destroy_original_option@post92915e15-conic-g68",
+        "ftstroke.FT_Glyph_Stroke.destroy_original_option@post92915e15-cff-cubic-g1",
+        "ftstroke.FT_Glyph_Stroke.destroy_original_option@post92915e15-empty-outline-g1",
+    }:
+        return (
+            "FT_Glyph_Stroke destroy-option inputs cover distinct line, conic, "
+            "cubic, and empty public outline paths through pinned C, Rust FFI, "
+            "C ABI, and WASM ABI"
+        )
+    return None
+
+
 def ftstroke_stroker_pending_reason(row: ConcreteInput) -> str | None:
     """Rows for the stroker object/path subsystem that do not have a maintained route."""
     if not row.operation.startswith("ftstroke."):
@@ -8991,6 +9009,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     done_glyph_real = done_glyph_lifecycle_real_parity_reason(row)
     if done_glyph_real:
         return ("real-parity", done_glyph_real)
+    ftstroke_glyph_stroke_real = ftstroke_glyph_stroke_real_parity_reason(row)
+    if ftstroke_glyph_stroke_real:
+        return ("real-parity", ftstroke_glyph_stroke_real)
     ftstroke_null_noop_reason = ftstroke_null_noop_real_parity_reason(row)
     if ftstroke_null_noop_reason:
         return ("real-parity", ftstroke_null_noop_reason)

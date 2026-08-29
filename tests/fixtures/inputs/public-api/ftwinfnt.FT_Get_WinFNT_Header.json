@@ -7,7 +7,8 @@
     "winfnt_v2_face_copies_header_success",
     "null_face_returns_invalid_face_handle",
     "null_output_returns_invalid_argument",
-    "non_winfnt_face_returns_invalid_argument"
+    "non_winfnt_face_returns_invalid_argument",
+    "non_winfnt_cff_face_returns_invalid_argument"
   ],
   "cases": [
     {
@@ -374,6 +375,59 @@
         "kind:function",
         "header:ftwinfnt",
         "format:non-winfnt",
+        "error:no-service"
+      ],
+      "expectation": {
+        "status": "error",
+        "error": "FT_Err_Invalid_Argument",
+        "output_shape": {
+          "status": "FT_Err_Invalid_Argument",
+          "header": "sentinel preserved when WINFNT service is absent",
+          "sentinel_unchanged": true
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "status",
+            "sentinel_unchanged"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftwinfnt.c:41-47"
+        ]
+      }
+    },
+    {
+      "case_id": "ftwinfnt.FT_Get_WinFNT_Header.non_winfnt_cff_face_returns_invalid_argument",
+      "subject": "ftwinfnt.FT_Get_WinFNT_Header",
+      "case": "non_winfnt_cff_face_returns_invalid_argument",
+      "operation": "ftwinfnt.get_winfnt_header",
+      "schema": "api_result",
+      "expect_error": true,
+      "abi": {
+        "header": "freetype/ftwinfnt.h",
+        "symbol": "FT_Get_WinFNT_Header"
+      },
+      "inputs": {
+        "assets": {
+          "non_winfnt_font": {
+            "kind": "ref",
+            "id": "input/fonts/cff/pure-cff-cubic.otf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_source": "non_winfnt_font",
+          "face_index": 0,
+          "header_pointer_mode": "caller_owned_record",
+          "initial_header_sentinel": "0xA5"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftwinfnt",
+        "format:non-winfnt",
+        "format:cff",
         "error:no-service"
       ],
       "expectation": {

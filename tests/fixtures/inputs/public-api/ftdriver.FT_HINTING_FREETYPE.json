@@ -12,6 +12,7 @@
     "mcp_wasm_null_file_batch",
     "mcp_wasm_null_output_batch",
     "mcp_wasm_post_error_batch",
+    "mcp_wasm_post_error_global_subr_batch",
     "mcp_wasm_type1_modes_batch"
   ],
   "cases": [
@@ -4051,6 +4052,469 @@
       }
     },
     {
+      "case_id": "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch",
+      "subject": "ftdriver.FT_HINTING_FREETYPE",
+      "case": "mcp_wasm_post_error_cff_random_batch",
+      "covers_manifest_cases": [
+        "mcp_wasm_post_error_cff_random_batch"
+      ],
+      "operation": "ftdriver.hinting_engine_property",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c85-ps-random-001",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 0,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": [],
+              "render_pixel_size": 0,
+              "random_seed": 1,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084",
+              "src/tt/cff.rs:1590-1622"
+            ]
+          },
+          {
+            "id": "c85-ps-random-002",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 0,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_SCALE"],
+              "render_pixel_size": 0,
+              "random_seed": 2,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084",
+              "src/tt/cff.rs:1590-1622"
+            ]
+          },
+          {
+            "id": "c85-ps-random-003",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 0,
+              "string_value": "adobe",
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_HINTING"],
+              "render_pixel_size": 0,
+              "random_seed": 123,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084",
+              "src/tt/cff.rs:1590-1622"
+            ]
+          },
+          {
+            "id": "c85-ps-random-004",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 0,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_RENDER"],
+              "render_pixel_size": 16,
+              "random_seed": 65535,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084",
+              "src/tt/cff.rs:1590-1622"
+            ]
+          },
+          {
+            "id": "c85-ps-random-005",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_RENDER"],
+              "render_pixel_size": 24,
+              "random_seed": 987654321,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084",
+              "src/tt/cff.rs:1590-1622"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:constant",
+        "header:ftdriver",
+        "area:ps-hinting",
+        "path:property",
+        "requires:font",
+        "area:coverage",
+        "runtime:wasm-facade",
+        "post-error-reload",
+        "stateful-cff-charstring"
+      ],
+      "metadata": {
+        "coverage_intent": "Five valid CFF Type 2 random-charstring variants fix the CFF driver seed before face opening, then exercise the false side of the WASM post-error preservation comparison with exact C/Rust/WASM slot parity."
+      },
+      "expectation": {
+        "status": "build_dependent",
+        "output_shape": {
+          "modules": [
+            {
+              "module_name": "string",
+              "set_error": "FT_Error",
+              "get_error": "FT_Error",
+              "readback_value": "FT_UInt",
+              "string_value_behavior": "object",
+              "string_get_error": "FT_Error",
+              "glyph": "object",
+              "post_error_output_preservation": "bool"
+            }
+          ]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "modules[*].module_name",
+            "modules[*].set_error",
+            "modules[*].get_error",
+            "modules[*].readback_value",
+            "modules[*].string_value_behavior",
+            "modules[*].string_get_error",
+            "modules[*].glyph",
+            "modules[*].post_error_output_preservation"
+          ]
+        },
+        "source_refs": [
+          "fontdone-wasm/src/implementation.rs:2078-2084",
+          "src/tt/cff.rs:1590-1622",
+          "freetype/src/psaux/cffdecode.c:1727-1741"
+        ]
+      }
+    },
+    {
+      "case_id": "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_failure_batch",
+      "subject": "ftdriver.FT_HINTING_FREETYPE",
+      "case": "mcp_wasm_post_error_failure_batch",
+      "covers_manifest_cases": [
+        "mcp_wasm_post_error_failure_batch"
+      ],
+      "operation": "ftdriver.hinting_engine_property",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c86-ps-error-001",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-cubic.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 0,
+              "string_value": null,
+              "glyph_index": 65535,
+              "load_flags": [],
+              "render_pixel_size": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084"
+            ]
+          },
+          {
+            "id": "c86-ps-error-002",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-cubic.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 0,
+              "string_value": "freetype",
+              "glyph_index": 65535,
+              "load_flags": [
+                "FT_LOAD_NO_SCALE"
+              ],
+              "render_pixel_size": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084"
+            ]
+          },
+          {
+            "id": "c86-ps-error-003",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-cubic.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 0,
+              "string_value": "adobe",
+              "glyph_index": 65535,
+              "load_flags": [
+                "FT_LOAD_RENDER"
+              ],
+              "render_pixel_size": 16,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084"
+            ]
+          },
+          {
+            "id": "c86-ps-error-004",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-cubic.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": null,
+              "glyph_index": 65535,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING",
+                "FT_LOAD_RENDER"
+              ],
+              "render_pixel_size": 20,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084"
+            ]
+          },
+          {
+            "id": "c86-ps-error-005",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/winfnt/bitmap-header.fnt",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/winfnt/bitmap-header.fnt",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/winfnt/bitmap-header.fnt",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": "freetype",
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_AUTOHINT",
+                "FT_LOAD_RENDER"
+              ],
+              "render_pixel_size": 1,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:constant",
+        "header:ftdriver",
+        "area:ps-hinting",
+        "path:property",
+        "requires:font",
+        "edge:invalid-glyph-index",
+        "edge:invalid-post-load",
+        "area:coverage",
+        "runtime:wasm-facade",
+        "post-error-reload"
+      ],
+      "metadata": {
+        "coverage_intent": "Four valid PostScript font variants deliberately make the first glyph load fail with an out-of-range glyph index, and one valid WinFNT bitmap variant misses its only strike so FT_Set_Pixel_Sizes fails, exercising the WASM wrapper's defensive first-error and second-error preservation branch with exact Rust, C ABI, and WASM comparison."
+      },
+      "expectation": {
+        "status": "build_dependent",
+        "output_shape": {
+          "modules": [
+            {
+              "module_name": "string",
+              "set_error": "FT_Error",
+              "get_error": "FT_Error",
+              "readback_value": "FT_UInt",
+              "string_value_behavior": "object",
+              "string_get_error": "FT_Error",
+              "glyph": "{load_error}",
+              "post_error_output_preservation": "bool"
+            }
+          ]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "modules[*].module_name",
+            "modules[*].set_error",
+            "modules[*].get_error",
+            "modules[*].readback_value",
+            "modules[*].string_value_behavior",
+            "modules[*].string_get_error",
+            "modules[*].glyph",
+            "modules[*].post_error_output_preservation"
+          ]
+        },
+        "source_refs": [
+          "fontdone-wasm/src/implementation.rs:2078-2084",
+          "tests/unified_fixture_parity.rs:80750-81000",
+          "freetype/src/base/ftobjs.c:3565-3595"
+        ]
+      }
+    },
+    {
       "case_id": "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_type1_modes_batch",
       "subject": "ftdriver.FT_HINTING_FREETYPE",
       "case": "mcp_wasm_type1_modes_batch",
@@ -4209,6 +4673,238 @@
             "modules[*].post_error_output_preservation"
           ]
         }
+      }
+    },
+    {
+      "case_id": "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch",
+      "subject": "ftdriver.FT_HINTING_FREETYPE",
+      "case": "mcp_wasm_post_error_global_subr_batch",
+      "covers_manifest_cases": [
+        "mcp_wasm_post_error_global_subr_batch"
+      ],
+      "operation": "ftdriver.hinting_engine_property",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "c101-ps-global-subr-001",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-global-subr-error.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 0,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": [],
+              "render_pixel_size": 0,
+              "random_seed": 7619,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2006-2015",
+              "freetype/src/psaux/psintrp.c:979-1045"
+            ]
+          },
+          {
+            "id": "c101-ps-global-subr-002",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-global-subr-error.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 0,
+              "string_value": "adobe",
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_SCALE"],
+              "render_pixel_size": 0,
+              "random_seed": 123452,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2006-2015",
+              "freetype/src/psaux/psintrp.c:979-1045"
+            ]
+          },
+          {
+            "id": "c101-ps-global-subr-003",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-global-subr-error.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_RENDER"],
+              "render_pixel_size": 16,
+              "random_seed": 138690,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2006-2015",
+              "freetype/src/psaux/psintrp.c:979-1045"
+            ]
+          },
+          {
+            "id": "c101-ps-global-subr-004",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-global-subr-error.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 0,
+              "string_value": "freetype",
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_HINTING", "FT_LOAD_RENDER"],
+              "render_pixel_size": 20,
+              "random_seed": 254525,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2006-2015",
+              "freetype/src/psaux/psintrp.c:979-1045"
+            ]
+          },
+          {
+            "id": "c101-ps-global-subr-005",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-global-subr-error.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_RENDER"],
+              "render_pixel_size": 24,
+              "random_seed": 269761,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2006-2015",
+              "freetype/src/psaux/psintrp.c:979-1045"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:constant",
+        "header:ftdriver",
+        "area:ps-hinting",
+        "path:property",
+        "requires:font",
+        "area:coverage",
+        "runtime:wasm-facade",
+        "post-error-reload",
+        "stateful-cff-charstring",
+        "global-subroutine-boundary"
+      ],
+      "metadata": {
+        "coverage_intent": "Five valid CFF Type 2 variants use random followed by eq to select global subroutine 107 on the first load and out-of-range subroutine 108 on the reload. The fixed public seeds make C's first-success/second-error branch deterministic while Type 1 and CID companion loads remain valid controls."
+      },
+      "expectation": {
+        "status": "build_dependent",
+        "output_shape": {
+          "modules": [
+            {
+              "module_name": "string",
+              "set_error": "FT_Error",
+              "get_error": "FT_Error",
+              "readback_value": "FT_UInt",
+              "string_value_behavior": "object",
+              "string_get_error": "FT_Error",
+              "glyph": "object",
+              "post_error_output_preservation": "bool"
+            }
+          ]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "modules[*].module_name",
+            "modules[*].set_error",
+            "modules[*].get_error",
+            "modules[*].readback_value",
+            "modules[*].string_value_behavior",
+            "modules[*].string_get_error",
+            "modules[*].glyph",
+            "modules[*].post_error_output_preservation"
+          ]
+        },
+        "source_refs": [
+          "fontdone-wasm/src/implementation.rs:2006-2015",
+          "freetype/src/psaux/psintrp.c:979-1045",
+          "freetype/src/psaux/psintrp.c:2241-2258"
+        ]
       }
     }
   ]

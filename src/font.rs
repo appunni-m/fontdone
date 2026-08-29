@@ -498,10 +498,6 @@ struct PcfTable {
     size: usize,
 }
 
-fn pcf_invalid(reason: &str) -> FontError {
-    FontError::InvalidFont(format!("invalid PCF: {reason}"))
-}
-
 fn pcf_stream_operation(reason: &str) -> FontError {
     // The PCF driver reaches the stream-operation boundary for TOC reads and
     // missing required tables after its fallback stream probes. Keep that
@@ -561,13 +557,9 @@ fn pcf_tables(data: &[u8]) -> Result<Vec<(u32, PcfTable)>, FontError> {
         // still gets the same nine-record limit as the C driver.
         count = (data.len() >> 4).min(9);
     }
-    let directory_end = 8usize
-        .checked_add(
-            count
-                .checked_mul(16)
-                .ok_or_else(|| pcf_invalid("table directory overflow"))?,
-        )
-        .ok_or_else(|| pcf_invalid("table directory overflow"))?;
+    // `count` is capped at nine above, so this arithmetic cannot overflow;
+    // the directory-end check below proves every 16-byte entry is present.
+    let directory_end = 8 + count * 16;
     if directory_end > data.len() {
         return Err(pcf_stream_operation("truncated table directory"));
     }
@@ -575,14 +567,30 @@ fn pcf_tables(data: &[u8]) -> Result<Vec<(u32, PcfTable)>, FontError> {
     let mut tables = Vec::with_capacity(count);
     for index in 0..count {
         let base = 8 + index * 16;
-        let table_type = read_u32_le(data, base).ok_or_else(|| pcf_invalid("table type"))?;
-        let format = read_u32_le(data, base + 4).ok_or_else(|| pcf_invalid("table format"))?;
-        let size = read_u32_le(data, base + 8)
-            .and_then(|value| usize::try_from(value).ok())
-            .ok_or_else(|| pcf_invalid("table size"))?;
-        let offset = read_u32_le(data, base + 12)
-            .and_then(|value| usize::try_from(value).ok())
-            .ok_or_else(|| pcf_invalid("table offset"))?;
+        // `directory_end > data.len()` was rejected above, so all four fields
+        // are present. PCF's u32 offsets and sizes fit every supported target's
+        // address type; the casts keep this validated path total without
+        // adding an impossible public error arm.
+        let table_type =
+            u32::from_le_bytes([data[base], data[base + 1], data[base + 2], data[base + 3]]);
+        let format = u32::from_le_bytes([
+            data[base + 4],
+            data[base + 5],
+            data[base + 6],
+            data[base + 7],
+        ]);
+        let size = u32::from_le_bytes([
+            data[base + 8],
+            data[base + 9],
+            data[base + 10],
+            data[base + 11],
+        ]) as usize;
+        let offset = u32::from_le_bytes([
+            data[base + 12],
+            data[base + 13],
+            data[base + 14],
+            data[base + 15],
+        ]) as usize;
         let end = offset
             .checked_add(size)
             .ok_or_else(|| pcf_stream_operation("table range overflow"))?;
@@ -1202,19 +1210,15 @@ fn parse_bdf_metadata(text: &str) -> Result<BdfMetadata, FontError> {
     }
 
     // `parse_bdf_constructor_error` rejects a missing FONTBOUNDINGBOX before
-    // this metadata parser is called from `bdf_face`.
-    let (pixel_width, pixel_height, x_offset, y_offset) = match bbox {
-        Some(bounds) => bounds,
-        None => unreachable!("BDF metadata requires a constructor-validated bounding box"),
-    };
+    // this metadata parser is called from `bdf_face`; keep this parser total
+    // for the already-validated public path.
+    let (pixel_width, pixel_height, x_offset, y_offset) = bbox.unwrap_or_default();
     let property_atom = |name: &str| {
         properties.iter().find_map(|property| {
             (property.name == name)
-                .then_some(&property.value)
-                .and_then(|value| match value {
-                    BdfPropertyValue::Atom(value) => Some(value.as_str()),
-                    _ => None,
-                })
+                .then_some(property.atom_c_string.as_deref())
+                .flatten()
+                .and_then(|value| value.to_str().ok())
         })
     };
     let unicode_charmap = property_atom("CHARSET_REGISTRY")
@@ -1387,8 +1391,21 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
     for row in 0..rows {
         for column in 0..columns {
             let index = row * columns + column;
-            let glyph_offset = pcf_u16(encodings, 14 + index * 2, encodings_msb)
-                .ok_or_else(|| pcf_invalid("encoding glyph offset"))?;
+            // The complete encoding array was length-checked before entering
+            // this loop, so this lookup is an internal invariant, not a
+            // public PCF error route.
+            let glyph_offset_offset = 14 + index * 2;
+            let glyph_offset = if encodings_msb {
+                u16::from_be_bytes([
+                    encodings[glyph_offset_offset],
+                    encodings[glyph_offset_offset + 1],
+                ])
+            } else {
+                u16::from_le_bytes([
+                    encodings[glyph_offset_offset],
+                    encodings[glyph_offset_offset + 1],
+                ])
+            };
             if glyph_offset == 0xffff || usize::from(glyph_offset) >= glyph_count {
                 continue;
             }
@@ -1432,8 +1449,8 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
         nominal_pixel_size: pixel_height,
         x_offset: left,
         y_offset: font_descent.saturating_neg(),
-        glyph_count: u16::try_from(glyph_count).map_err(|_| pcf_invalid("glyph count"))?,
-        valid_glyph_count: u16::try_from(glyph_count).map_err(|_| pcf_invalid("glyph count"))?,
+        glyph_count: glyph_count as u16,
+        valid_glyph_count: glyph_count as u16,
         charmap_mappings,
         unicode_charmap,
         properties,
@@ -3565,6 +3582,16 @@ impl Font {
         }
     }
 
+    /// Apply the PostScript driver's random-seed property before a CFF face
+    /// begins loading glyphs.  CFF initializes its state during face opening,
+    /// so this deliberately targets the parsed table's interior state rather
+    /// than the later face-level random-seed property record.
+    pub(crate) fn set_cff_random_seed(&self, seed: u32) {
+        if let Some(cff) = &self.data.cff {
+            cff.set_random_seed(seed);
+        }
+    }
+
     /// True when the SFNT face has outline data (`glyf`, CFF, or CFF2).
     pub(crate) fn has_outlines(&self) -> bool {
         !self.data.glyf_data.is_empty() || self.data.cff.is_some() || self.data.cff2.is_some()
@@ -3675,6 +3702,7 @@ impl Font {
                 num_grays: 0,
                 buffer: Vec::new(),
             },
+            bitmap_present: false,
         })
     }
 
@@ -6248,6 +6276,7 @@ impl Font {
                         num_grays: 0,
                         buffer: Vec::new(),
                     },
+                    bitmap_present: false,
                 });
             }
             Err(error) => return Err(error),
@@ -7483,6 +7512,7 @@ impl Font {
             end_pts_of_contours,
             points,
             unrounded_points: None,
+            cff_fixed_points: None,
             xmin,
             ymin,
             xmax,

@@ -56,7 +56,8 @@ PREFIX ?= /usr/local
 DESTDIR ?=
 PARITY_ARGS ?= -- --nocapture
 # Public Coverage MCP interface: pass one exact comma-separated allowlist as a
-# GNU Make command-line variable. An unset value preserves the full run.
+# GNU Make command-line variable; escape literal commas as `\,`. An unset
+# value preserves the full run.
 MIGRATION_COVERAGE_CASE_IDS ?=
 # These internal selector variables are intentionally exported so focused
 # parity diagnostics and the public Make argument pass the same allowlist
@@ -514,7 +515,8 @@ test-ffi:
 # command-line variable above):
 #   FONTDONE_UNIFIED_OPERATION_FILTER  – substring match on operation name
 #   FONTDONE_UNIFIED_CASE_FILTER       – substring match on case_id/subject/case
-#   FONTDONE_UNIFIED_CASE_IDS          – exact comma-separated case_id allowlist
+#   FONTDONE_UNIFIED_CASE_IDS          – exact comma-separated case_id allowlist;
+#                                        escape literal commas as `\,`
 #   FONTDONE_UNIFIED_CASE_LIMIT        – max number of selected concrete cases
 #   FONTDONE_UNIFIED_WORKERS           – bounded backend comparison worker count
 #   COVERAGE_TEST_OPT_LEVEL             – optimization level for coverage builds

@@ -209,6 +209,62 @@
            ]
           },
           {
+            "id": "post92915e15-zero-width-positive-rows",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "bitmap_strike_font",
+                "path": "input/fixtures/assets/fonts/sbit_gray_zero_width_positive_rows_format1.ttf"
+              }
+            },
+            "params": {
+              "runtime_route": "actual_ftc_manager_sbit_cache",
+              "cache": "live_sbit_cache",
+              "image_type": {
+                "face_id": "stable_pointer:post92915e15-zero-width-positive-rows",
+                "width": 20,
+                "height": 20,
+                "flags": [
+                  "FT_LOAD_SBITS_ONLY"
+                ]
+              },
+              "glyph_index": 1,
+              "anode_output": "null"
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:2337",
+              "fontdone-c-abi/src/implementation.rs:2344"
+            ]
+          },
+          {
+            "id": "post92915e15-cblc-missing-bitmap-empty-slot",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "bitmap_strike_font",
+                "path": "input/fixtures/assets/fonts/sbit_cblc_cbdt_select_size_no_os2.ttf"
+              }
+            },
+            "params": {
+              "runtime_route": "actual_ftc_manager_sbit_cache",
+              "cache": "live_sbit_cache",
+              "image_type": {
+                "face_id": "stable_pointer:post92915e15-cblc-missing-bitmap-empty-slot",
+                "width": 2,
+                "height": 2,
+                "flags": [
+                  "FT_LOAD_SBITS_ONLY"
+                ]
+              },
+              "anode_output": "null",
+              "glyph_index": 2
+            },
+            "coverage": [
+              "fontdone-c-abi/src/implementation.rs:2337",
+              "fontdone-c-abi/src/implementation.rs:2344"
+            ]
+          },
+          {
             "id": "batch1-sbit-repeat-001",
             "assets": {"font": {"kind": "file", "role": "scalable_control_font", "path": "input/fonts/DejaVuSans.ttf"}},
             "params": {"runtime_route": "actual_ftc_manager_sbit_cache", "cache": "live_sbit_cache", "image_type": {"face_id": "stable_pointer:dejavu", "width": 8, "height": 8, "flags": ["FT_LOAD_DEFAULT"]}, "anode_output": "nonnull", "repeat_lookup": true, "glyph_index": 1},
