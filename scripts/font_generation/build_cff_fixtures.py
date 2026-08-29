@@ -2209,6 +2209,20 @@ def malformed_cff_payload(kind: str) -> bytes:
         # ROS is an escaped operator with three required operands.  Keep the
         # dictionary otherwise minimal so the parser stops at that boundary.
         return minimal_payload(b"\x0C\x1E")
+    if kind == "top_dict_private_operand_missing":
+        # The Top DICT Private operator consumes exactly two operands.  Keep
+        # one zero operand before operator 18 so the pinned callback returns
+        # Stack_Underflow before the required CharStrings check.
+        return minimal_payload(b"\x8B\x12")
+    if kind == "top_dict_private_negative_size":
+        # A negative Private size is rejected by cff_parse_private_dict before
+        # the stream is sought; this is a distinct malformed input from a
+        # missing operand and reaches the Invalid_File_Format guard.
+        return minimal_payload(b"\x8A\x8B\x12")
+    if kind == "top_dict_private_negative_offset":
+        # A negative Private offset is checked after a non-negative size and
+        # is rejected before any Private bytes are read.
+        return minimal_payload(b"\x8B\x8A\x12")
     if kind == "top_dict_longint_operand_missing_charstrings":
         # CFF DICT longint operand encoding (`cffparse.c:cff_parse_integer`) is
         # parsed by a normal numeric Top DICT operator (`UnderlinePosition`).
@@ -2302,6 +2316,9 @@ def write_malformed_cff_faces() -> None:
             "charstrings_operand_missing",
             "charset_operand_missing",
             "ros_operands_missing",
+            "top_dict_private_operand_missing",
+            "top_dict_private_negative_size",
+            "top_dict_private_negative_offset",
             "top_dict_longint_operand_missing_charstrings",
             "top_dict_real_operand_missing_charstrings",
             "top_dict_real_exponent_operand_missing_charstrings",

@@ -326,6 +326,7 @@ pub(super) fn error_to_ft(error: FontError) -> FT_Error {
         FontError::CffStackOverflow | FontError::CffTooFewArguments => {
             FT_Err_Invalid_File_Format as FT_Error
         }
+        FontError::CffStackUnderflow => FT_Err_Stack_Underflow as FT_Error,
         FontError::InvalidReference => FT_Err_Invalid_Reference as FT_Error,
         FontError::CannotRenderGlyph(_) => FT_Err_Cannot_Render_Glyph,
         FontError::UnimplementedFeature(_) => FT_Err_Unimplemented_Feature,

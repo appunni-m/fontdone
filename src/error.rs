@@ -87,6 +87,13 @@ pub enum FontError {
     #[error("CFF Type2 has too few arguments")]
     CffTooFewArguments,
 
+    /// The CFF Top DICT parser did not receive both operands required by the
+    /// `Private` operator.  FreeType exposes this DICT-parser underflow
+    /// directly during face construction, unlike Type2 charstring underflow,
+    /// which the Adobe driver collapses to Invalid_File_Format.
+    #[error("CFF DICT stack underflow")]
+    CffStackUnderflow,
+
     /// Pedantic TrueType bytecode referenced a point outside its active zone.
     #[error("Invalid TrueType bytecode point reference")]
     InvalidReference,

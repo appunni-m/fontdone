@@ -3883,6 +3883,33 @@
             "coverage": [ "tt/cff:top-dict-ros-operands-missing-error" ]
           },
           {
+            "id": "cff-top-dict-private-operand-missing",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-private-operand-missing.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-private-operand-missing.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff:top-dict-private-operand-underflow:one-of-two-operands" ]
+          },
+          {
+            "id": "cff-top-dict-private-negative-size",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-private-negative-size.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-private-negative-size.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff:top-dict-private-negative-size:pre-stream-seek" ]
+          },
+          {
+            "id": "cff-top-dict-private-negative-offset",
+            "assets": {
+              "font_bytes": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-private-negative-offset.otf" },
+              "font": { "kind": "ref", "role": "font", "id": "input/fonts/cff/malformed-top-dict-private-negative-offset.otf" }
+            },
+            "params": { "variants": [ { "face_index": 0 } ] },
+            "coverage": [ "tt/cff:top-dict-private-negative-offset:pre-stream-seek" ]
+          },
+          {
             "id": "cid-cff-missing-charset",
             "assets": {
               "font_bytes": {

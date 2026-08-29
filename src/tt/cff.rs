@@ -376,9 +376,10 @@ fn parse_top_dict(data: &[u8]) -> Result<TopDict, FontError> {
                 dict.charstrings_offset = usize::try_from(offset).ok();
             } else if op == 18 {
                 if stack.len() < 2 {
-                    return Err(FontError::InvalidArgument(
-                        "CFF: Private operands missing".into(),
-                    ));
+                    // `cff_parse_private_dict` returns Stack_Underflow when
+                    // the Top DICT Private operator has fewer than two
+                    // operands (`freetype/src/cff/cffparse.c:789-815`).
+                    return Err(FontError::CffStackUnderflow);
                 }
                 let size = usize::try_from(stack[0].integer).map_err(|_| {
                     FontError::InvalidFileFormat("CFF: Private size is negative".into())
