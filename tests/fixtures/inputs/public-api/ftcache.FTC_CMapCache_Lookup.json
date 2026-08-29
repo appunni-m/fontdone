@@ -570,6 +570,76 @@
             "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [2], "repeat_lookup": true, "char_code": 128512, "preselect_cmap_index": 1},
             "reason": "FreeType retains the caller's active charmap after a supplementary-plane cache lookup; the public contract still executes the restore arm (freetype/src/cache/ftccmap.c:298-315).",
             "coverage": ["batch233:cmap:preselect:010"]
+          },
+          {
+            "id": "batch234-cmap-no-active-001",
+            "assets": {"font": {"kind": "file", "role": "cmap_nonunicode_format6", "path": "input/fonts/charmap/cmap-nonunicode-format6.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [0], "repeat_lookup": true, "char_code": 65},
+            "reason": "FreeType accepts a valid non-Unicode format-6 target while the newly opened face has no active charmap; the cache queries U+0041 and restores the saved null state (freetype/src/cache/ftccmap.c:298-315).",
+            "coverage": ["batch234:cmap:no-active:001"]
+          },
+          {
+            "id": "batch234-cmap-no-active-002",
+            "assets": {"font": {"kind": "file", "role": "cmap_nonunicode_format6", "path": "input/fonts/charmap/cmap-nonunicode-format6.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [0], "repeat_lookup": true, "char_code": 0},
+            "reason": "FreeType leaves the caller's initially unselected charmap unchanged after a lower-boundary lookup that returns glyph zero (freetype/src/cache/ftccmap.c:298-315).",
+            "coverage": ["batch234:cmap:no-active:002"]
+          },
+          {
+            "id": "batch234-cmap-no-active-003",
+            "assets": {"font": {"kind": "file", "role": "cmap_nonunicode_format6", "path": "input/fonts/charmap/cmap-nonunicode-format6.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [0], "repeat_lookup": true, "char_code": 1},
+            "reason": "FreeType's no-active-charmap path is independent of a zero result for the next low code point; the temporary target is still restored to null (freetype/src/cache/ftccmap.c:298-315).",
+            "coverage": ["batch234:cmap:no-active:003"]
+          },
+          {
+            "id": "batch234-cmap-no-active-004",
+            "assets": {"font": {"kind": "file", "role": "cmap_nonunicode_format6", "path": "input/fonts/charmap/cmap-nonunicode-format6.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [0], "repeat_lookup": true, "char_code": 32},
+            "reason": "FreeType permits an ASCII-space lookup through the valid target map without requiring an old active charmap; the saved null pointer remains the post-call state (freetype/src/cache/ftccmap.c:298-315).",
+            "coverage": ["batch234:cmap:no-active:004"]
+          },
+          {
+            "id": "batch234-cmap-no-active-005",
+            "assets": {"font": {"kind": "file", "role": "cmap_nonunicode_format6", "path": "input/fonts/charmap/cmap-nonunicode-format6.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [0], "repeat_lookup": true, "char_code": 66},
+            "reason": "FreeType exercises the false restore condition even for a code adjacent to the only mapped code; no active charmap is synthesized after the lookup (freetype/src/cache/ftccmap.c:298-315).",
+            "coverage": ["batch234:cmap:no-active:005"]
+          },
+          {
+            "id": "batch234-cmap-no-active-006",
+            "assets": {"font": {"kind": "file", "role": "cmap_nonunicode_format6", "path": "input/fonts/charmap/cmap-nonunicode-format6.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [0], "repeat_lookup": true, "char_code": 127},
+            "reason": "FreeType preserves an unselected charmap across the ASCII upper-boundary query, while the valid format-6 target supplies the temporary lookup map (freetype/src/cache/ftccmap.c:298-315).",
+            "coverage": ["batch234:cmap:no-active:006"]
+          },
+          {
+            "id": "batch234-cmap-no-active-007",
+            "assets": {"font": {"kind": "file", "role": "cmap_nonunicode_format6", "path": "input/fonts/charmap/cmap-nonunicode-format6.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [0], "repeat_lookup": true, "char_code": 128},
+            "reason": "FreeType's saved-null behavior also covers the first extended single-byte code point, with no public charmap left selected after the call (freetype/src/cache/ftccmap.c:298-315).",
+            "coverage": ["batch234:cmap:no-active:007"]
+          },
+          {
+            "id": "batch234-cmap-no-active-008",
+            "assets": {"font": {"kind": "file", "role": "cmap_nonunicode_format6", "path": "input/fonts/charmap/cmap-nonunicode-format6.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [0], "repeat_lookup": true, "char_code": 255},
+            "reason": "FreeType retains the initially null charmap across the extended-byte upper boundary; this is a public valid face with a zero glyph result (freetype/src/cache/ftccmap.c:298-315).",
+            "coverage": ["batch234:cmap:no-active:008"]
+          },
+          {
+            "id": "batch234-cmap-no-active-009",
+            "assets": {"font": {"kind": "file", "role": "cmap_nonunicode_format6", "path": "input/fonts/charmap/cmap-nonunicode-format6.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [0], "repeat_lookup": true, "char_code": 256},
+            "reason": "FreeType keeps the no-active-charmap state for the first value beyond the byte range; the cache's temporary assignment is not observable after lookup (freetype/src/cache/ftccmap.c:298-315).",
+            "coverage": ["batch234:cmap:no-active:009"]
+          },
+          {
+            "id": "batch234-cmap-no-active-010",
+            "assets": {"font": {"kind": "file", "role": "cmap_nonunicode_format6", "path": "input/fonts/charmap/cmap-nonunicode-format6.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [0], "repeat_lookup": true, "char_code": 1114111},
+            "reason": "FreeType preserves the saved null charmap for the maximum Unicode scalar input even though the target index is valid; this reaches the same defensive restore omission (freetype/src/cache/ftccmap.c:298-315).",
+            "coverage": ["batch234:cmap:no-active:010"]
           }
         ]
       },

@@ -19,6 +19,11 @@ use std::ffi::{CStr, CString};
 use std::rc::Rc;
 use std::sync::{Arc, OnceLock};
 
+// `FT_Face->charmap` is null when an SFNT has charmaps but none is a
+// selectable Unicode map. Keep that state distinct from selecting cmap 0;
+// the sentinel is outside every real charmap index.
+const NO_SELECTED_CHARMAP: usize = usize::MAX;
+
 /// FreeType glyph load behavior used by high-level render helpers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum LoadMode {
@@ -4468,7 +4473,11 @@ impl Font {
         );
         sync_active_size_metrics(&font_data, size_metrics);
 
-        let selected_charmap = default_unicode_charmap_index(&font_data.cmap).unwrap_or(0);
+        // `find_unicode_charmap` returns no map for a non-Unicode-only SFNT;
+        // FreeType leaves `face->charmap` null instead of selecting the first
+        // non-Unicode record (`freetype/src/base/ftobjs.c:1371-1453`).
+        let selected_charmap =
+            default_unicode_charmap_index(&font_data.cmap).unwrap_or(NO_SELECTED_CHARMAP);
         let family_name = font_data.name.family.clone();
         let subfamily_name = font_data.name.subfamily.clone();
 
@@ -4537,13 +4546,8 @@ impl Font {
             self.size_pt,
             self.load_mode,
         )?;
-        next.selected_charmap = next
-            .data
-            .cmap
-            .charmaps
-            .len()
-            .checked_sub(1)
-            .map_or(0, |last| self.selected_charmap.min(last));
+        next.selected_charmap =
+            carried_charmap_index(self.selected_charmap, next.data.cmap.charmaps.len());
         *self = next;
         Ok(())
     }
@@ -4596,13 +4600,8 @@ impl Font {
             // later `FT_Load_Glyph` call.
             return Err(error);
         }
-        next.selected_charmap = next
-            .data
-            .cmap
-            .charmaps
-            .len()
-            .checked_sub(1)
-            .map_or(0, |last| self.selected_charmap.min(last));
+        next.selected_charmap =
+            carried_charmap_index(self.selected_charmap, next.data.cmap.charmaps.len());
         if size_was_undefined {
             next.reset_size_to_undefined();
         }
@@ -4851,13 +4850,8 @@ impl Font {
                 // design-coordinate setter.
                 return Err(error);
             }
-            next.selected_charmap = next
-                .data
-                .cmap
-                .charmaps
-                .len()
-                .checked_sub(1)
-                .map_or(0, |last| self.selected_charmap.min(last));
+            next.selected_charmap =
+                carried_charmap_index(self.selected_charmap, next.data.cmap.charmaps.len());
             *self = next;
             return Ok(());
         }
@@ -4887,13 +4881,8 @@ impl Font {
             // glyph outline is requested.
             return Err(error);
         }
-        next.selected_charmap = next
-            .data
-            .cmap
-            .charmaps
-            .len()
-            .checked_sub(1)
-            .map_or(0, |last| self.selected_charmap.min(last));
+        next.selected_charmap =
+            carried_charmap_index(self.selected_charmap, next.data.cmap.charmaps.len());
         *self = next;
         Ok(())
     }
@@ -5873,6 +5862,10 @@ impl Font {
         }
         self.selected_charmap = index;
         Ok(())
+    }
+
+    pub(crate) fn restore_charmap_for_cache(&mut self, index: Option<usize>) {
+        self.selected_charmap = index.unwrap_or(NO_SELECTED_CHARMAP);
     }
 
     /// Equivalent to `FT_Get_Char_Index`.
@@ -8080,6 +8073,16 @@ fn is_pathological_metrics_advance(scaled: &scaler::ScaledGlyph) -> bool {
             .saturating_sub(scaled.advance_width)
             .abs()
             > 16_384
+}
+
+fn carried_charmap_index(previous: usize, next_len: usize) -> usize {
+    if previous == NO_SELECTED_CHARMAP {
+        NO_SELECTED_CHARMAP
+    } else {
+        next_len
+            .checked_sub(1)
+            .map_or(NO_SELECTED_CHARMAP, |last| previous.min(last))
+    }
 }
 
 fn default_unicode_charmap_index(cmap: &tt::cmap::CmapTable) -> Option<usize> {

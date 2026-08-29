@@ -2067,36 +2067,36 @@ pub extern "C" fn FTC_CMapCache_Lookup(
     let Ok(face) = ftc_manager_lookup_face_impl(manager, face_id) else {
         return 0;
     };
-    let glyph = if cmap_index < 0 {
-        FT_Get_Char_Index(face, FT_ULong::from(char_code))
-    } else {
-        let Some(state) = face_state(face) else {
-            return 0;
-        };
-        let old_index = state.inner.active_charmap_index;
-        match state.charmap_by_index(normalized_cmap_index) {
-            Some(target) if !target.is_null() => {
-                if FT_Set_Charmap(face, target) != rust_ffi::FT_Err_Ok {
-                    0
-                } else {
-                    let glyph = FT_Get_Char_Index(face, FT_ULong::from(char_code));
-                    if let Ok(old_index) = FT_UInt::try_from(old_index)
-                        && let Some(old) =
-                            face_state(face).and_then(|state| state.charmap_by_index(old_index))
-                    {
-                        let _ = FT_Set_Charmap(face, old);
-                    }
-                    glyph
-                }
-            }
-            _ => 0,
-        }
-    };
+    let glyph = cmap_cache_lookup_glyph_for_face(face, cmap_index, char_code);
     // SAFETY: the cache remains manager-owned for the duration of this call.
     unsafe {
         (*cache).entries.insert(key, glyph);
     }
     glyph
+}
+
+fn cmap_cache_lookup_glyph_for_face(
+    face: FT_Face,
+    cmap_index: FT_Int,
+    char_code: FT_UInt32,
+) -> FT_UInt {
+    let glyph = {
+        let Some(state) = face_state_mut(face) else {
+            return 0;
+        };
+        state.inner.cmap_cache_lookup_glyph(cmap_index, char_code)
+    };
+    sync_face_public_record(face);
+    glyph
+}
+
+#[cfg(feature = "abi-test-support")]
+pub fn cmap_cache_lookup_glyph_for_test(
+    face: FT_Face,
+    cmap_index: FT_Int,
+    char_code: FT_UInt32,
+) -> FT_UInt {
+    cmap_cache_lookup_glyph_for_face(face, cmap_index, char_code)
 }
 
 fn ftc_cache_count(manager: FTC_Manager) -> usize {

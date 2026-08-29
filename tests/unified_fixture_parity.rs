@@ -68200,33 +68200,7 @@ fn rust_cmap_cache_lookup_glyph(
     // but deliberately does not change `face->charmap`; non-negative indexes
     // temporarily select `face->charmaps[cmap_index]` and restore the old
     // charmap before returning (`src/cache/ftccmap.c:230-323`).
-    if cmap_index < 0 {
-        return Ok(FT_Get_Char_Index(face, FT_ULong::from(char_code)));
-    }
-    let Ok(index) = usize::try_from(cmap_index) else {
-        return Ok(0);
-    };
-    if index >= face.charmaps.len() {
-        return Ok(0);
-    }
-    let old_index = rust_face_active_charmap_index(face);
-    let charmap = rust_face_charmap(face, u32::try_from(index).map_err(|err| err.to_string())?);
-    let err = FT_Set_Charmap(Some(face), charmap);
-    if err != FT_Err_Ok {
-        return Ok(0);
-    }
-    let glyph = FT_Get_Char_Index(face, FT_ULong::from(char_code));
-    if old_index >= 0 {
-        let old = rust_face_charmap(
-            face,
-            u32::try_from(old_index).map_err(|err| err.to_string())?,
-        );
-        let restore_err = FT_Set_Charmap(Some(face), old);
-        if restore_err != FT_Err_Ok {
-            return Err(format!("FT_Set_Charmap restore returned {restore_err}"));
-        }
-    }
-    Ok(glyph)
+    Ok(face.cmap_cache_lookup_glyph(cmap_index, char_code))
 }
 
 fn c_cmap_cache_lookup_glyph(
@@ -68240,28 +68214,10 @@ fn c_cmap_cache_lookup_glyph(
     let Ok(index) = u32::try_from(cmap_index) else {
         return Ok(0);
     };
-    let Some(charmap) = c_abi::abi_charmap_by_index(face, index) else {
-        return Ok(0);
-    };
-    let old_index = c_abi::abi_active_charmap_index(face).unwrap_or(-1);
-    let err = c_abi::FT_Set_Charmap(face, charmap);
-    if err != FT_Err_Ok {
+    if c_abi::abi_charmap_by_index(face, index).is_none() {
         return Ok(0);
     }
-    let glyph = c_abi::FT_Get_Char_Index(face, FT_ULong::from(char_code));
-    if old_index >= 0 {
-        let Some(old) = c_abi::abi_charmap_by_index(
-            face,
-            u32::try_from(old_index).map_err(|err| err.to_string())?,
-        ) else {
-            return Err("missing c old charmap".to_string());
-        };
-        let restore_err = c_abi::FT_Set_Charmap(face, old);
-        if restore_err != FT_Err_Ok {
-            return Err(format!("FT_Set_Charmap restore returned {restore_err}"));
-        }
-    }
-    Ok(glyph)
+    Ok(c_abi::cmap_cache_lookup_glyph_for_test(face, cmap_index, char_code))
 }
 
 fn wasm_cmap_cache_lookup_glyph(
@@ -68281,24 +68237,11 @@ fn wasm_cmap_cache_lookup_glyph(
     if index >= wasm_abi::fontdone_wasm_get_charmap_count(handle) {
         return Ok(0);
     }
-    let old_index = wasm_abi::fontdone_wasm_get_active_charmap_index(handle);
-    let err = wasm_abi::fontdone_wasm_set_charmap(handle, index);
-    if err != FT_Err_Ok {
-        return Ok(0);
-    }
-    let glyph = wasm_abi::fontdone_wasm_get_char_index(handle, FT_ULong::from(char_code));
-    if old_index >= 0 {
-        let restore_err = wasm_abi::fontdone_wasm_set_charmap(
-            handle,
-            u32::try_from(old_index).map_err(|err| err.to_string())?,
-        );
-        if restore_err != FT_Err_Ok {
-            return Err(format!(
-                "fontdone_wasm_set_charmap restore returned {restore_err}"
-            ));
-        }
-    }
-    Ok(glyph)
+    Ok(wasm_abi::cmap_cache_lookup_glyph_for_test(
+        handle,
+        cmap_index,
+        char_code,
+    ))
 }
 
 fn render_loaded_glyph_normal(slot: FT_GlyphSlot) -> Result<FT_GlyphSlot, FT_Error> {

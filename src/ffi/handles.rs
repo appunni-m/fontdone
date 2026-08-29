@@ -1229,6 +1229,25 @@ impl FT_Face {
         *self.memory_stream
     }
 
+    /// Executes the temporary charmap selection used by `FTC_CMapCache_Lookup`.
+    ///
+    /// This is hidden from the normal public API because it exists to share
+    /// the cache's direct-select/direct-restore semantics with the companion
+    /// ABI façades. The saved `None` state is restored as `face->charmap == NULL`.
+    #[doc(hidden)]
+    pub fn cmap_cache_lookup_glyph(
+        &mut self,
+        cmap_index: FT_Int,
+        char_code: FT_UInt32,
+    ) -> FT_UInt {
+        let glyph = self
+            .inner
+            .borrow_mut()
+            .cmap_cache_lookup_glyph(cmap_index, char_code);
+        sync_active_charmap_index(self);
+        FT_UInt::from(glyph)
+    }
+
     fn retain_memory_stream_source(&mut self, data: &[u8]) {
         // `FT_New_Memory_Face` borrows this exact caller range for the face
         // lifetime. The pure-Rust parser keeps its own immutable bytes, but

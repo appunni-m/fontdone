@@ -8361,6 +8361,18 @@ pub extern "C" fn fontdone_wasm_set_charmap(handle: usize, index: FT_UInt) -> FT
     rust_ffi::FT_Set_Charmap(Some(&mut face.face), charmap)
 }
 
+#[cfg(feature = "abi-test-support")]
+pub fn cmap_cache_lookup_glyph_for_test(
+    handle: usize,
+    cmap_index: FT_Int,
+    char_code: FT_UInt32,
+) -> FT_UInt {
+    let Some(face) = face_mut(handle) else {
+        return 0;
+    };
+    face.face.cmap_cache_lookup_glyph(cmap_index, char_code)
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn fontdone_wasm_set_charmap_from_face(
     handle: usize,

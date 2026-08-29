@@ -318,6 +318,24 @@ impl Face {
         &mut self.font
     }
 
+    pub(crate) fn cmap_cache_lookup_glyph(&mut self, cmap_index: i32, char_code: u32) -> u16 {
+        let Some(index) = usize::try_from(cmap_index).ok() else {
+            return self.font.char_index(char_code);
+        };
+        if index >= self.font.charmaps().len() {
+            return 0;
+        }
+        let previous = self.font.charmap_index();
+        // FreeType's cache assigns the target charmap pointer directly rather
+        // than calling FT_Set_Charmap; this also permits a format-14 record.
+        let _ = self.font.set_charmap(index);
+        let glyph = self.font.char_index(char_code);
+        // Restore the exact saved state. In particular, a face opened without
+        // a selectable charmap must remain without one after the lookup.
+        self.font.restore_charmap_for_cache(previous);
+        glyph
+    }
+
     /// Return the active charmap index when the face has selectable charmaps.
     pub fn charmap_index(&self) -> Option<usize> {
         self.font.charmap_index()
