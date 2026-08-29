@@ -879,12 +879,16 @@ inner guard rather than an earlier public-record check.
 |---|---|---|---|
 | `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-001` | Use contour ends `[1, 0, 3]` to make the second contour's end fall below its first point with the smallest multi-contour witness. | `freetype/src/base/ftoutln.c:606-667` does not call `FT_Outline_Check`; `freetype/src/smooth/ftgrays.c:1484-1487` checks `last < first` during decomposition. | Add as an AA public parity variant; expect `FT_Err_Invalid_Outline` and preserved sentinel output. |
 | `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-002` | Use `[0, 0, 4]` to exercise the equality boundary where a later contour end equals the preceding contour end and is still below its computed first point. | The same `FT_Outline_Render` dispatch and `FT_Outline_Decompose` guard apply; C does not normalize equal/repeated endpoints before dispatch. | Add as a distinct parity input; retain only after exact C/Rust error-output comparison. |
-| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-005` | Use `[0, -1, 5]` to test a signed negative intermediate contour endpoint while the final endpoint remains valid. | `FT_Outline.contours` is signed; `ftgrays.c:1484-1487` rejects the negative end after the CBox path, while `ftoutln.c` has no earlier contour-order preflight. | Add as a distinct parity input; this is malformed-input evidence for the same inner guard, not a unit-only probe. |
+| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-003` | Use `[2, 1, 3]` so the first contour is fully in range and a later contour end is below its computed first point, without relying on an out-of-range endpoint. | `freetype/src/base/ftoutln.c:606-667` still dispatches without `FT_Outline_Check`; `freetype/src/smooth/ftgrays.c:1484-1487` returns `Invalid_Outline` at the second contour. | Add as a distinct parity input; retain only after exact C/Rust error-output comparison. |
 | `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-006` | Use `[1, 3, 2, 6]` so two complete contours are traversed before a later contour fails, testing that the guard is not only a second-contour artifact. | `ftgrays.c:1484-1487` runs for each contour in order and returns the first decomposition error; `ftoutln.c:647-659` propagates any non-`Cannot_Render_Glyph` renderer error. | Add as a distinct parity input; expect the same `FT_Err_Invalid_Outline` with no rendered bitmap. |
 | `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-009` | Use `[3, 3, 8]` to place the repeated endpoint after a four-point valid contour and probe a later equality boundary. | The C renderer accepts the structurally final endpoint, then the gray decomposer computes the next contour's first index and rejects `last < first`. | Add as a distinct parity input; retain only if the oracle confirms the same error and untouched output. |
 
-The five IDs above are the first implementation slice from the larger
-campaign packet. No WASM `active_size == 0` case is included here: source
+The initially proposed `[0, -1, 5]` negative-endpoint witness was probed
+against the pinned oracle and consistently terminated with `SIGSEGV`; it is
+not retained as a public parity case because it has no stable observable
+`FT_Error` result. The five IDs above are therefore the safe first
+implementation slice from the larger campaign packet. No WASM
+`active_size == 0` case is included here: source
 review of `fontdone-wasm/src/implementation.rs:2121-2126` found no exposed
 public operation that leaves that state immediately before the helper runs.
 That target remains deferred until a real public lifecycle path is found.

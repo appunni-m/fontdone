@@ -92578,6 +92578,21 @@ fn outline_render_outline(case: &InputCase) -> Result<fontdone::outline::Outline
         "outlines/render/cubic-third-flatness.json" => Ok(outline_render_cubic_third_flatness()),
         "outlines/render/cubic-fourth-flatness.json" => Ok(outline_render_cubic_fourth_flatness()),
         "outlines/render/cubic-close-to-start.json" => Ok(outline_render_cubic_close_to_start()),
+        "outlines/render/invalid-intermediate-contour-order-001.json" => Ok(
+            outline_render_invalid_intermediate_contour_order(&[1, 0, 3]),
+        ),
+        "outlines/render/invalid-intermediate-contour-order-002.json" => Ok(
+            outline_render_invalid_intermediate_contour_order(&[0, 0, 4]),
+        ),
+        "outlines/render/invalid-intermediate-contour-order-003.json" => Ok(
+            outline_render_invalid_intermediate_contour_order(&[2, 1, 3]),
+        ),
+        "outlines/render/invalid-intermediate-contour-order-006.json" => Ok(
+            outline_render_invalid_intermediate_contour_order(&[1, 3, 2, 6]),
+        ),
+        "outlines/render/invalid-intermediate-contour-order-009.json" => Ok(
+            outline_render_invalid_intermediate_contour_order(&[3, 3, 8]),
+        ),
         "outlines/render/invalid-contour-order.json" => Ok(outline_render_invalid_contour_order()),
         "outlines/render/invalid-starts-cubic.json" => Ok(outline_render_invalid_starts_cubic()),
         "outlines/render/invalid-conic-bad-tag.json" => Ok(outline_render_invalid_conic_bad_tag()),
@@ -93365,6 +93380,44 @@ fn outline_render_invalid_contour_order() -> fontdone::outline::Outline {
     let mut outline = outline_render_square();
     outline.contours = vec![-1];
     outline
+}
+
+fn outline_render_invalid_intermediate_contour_order(
+    contours: &[i16],
+) -> fontdone::outline::Outline {
+    let final_endpoint = contours
+        .last()
+        .copied()
+        .expect("reviewed contour-order witness has a final endpoint");
+    let point_count = usize::try_from(i32::from(final_endpoint) + 1)
+        .expect("reviewed contour-order witness has a nonnegative final endpoint");
+    let points = (0..point_count)
+        .map(|index| {
+            let (x, y) = match index % 4 {
+                0 => (8, 8),
+                1 => (24, 8),
+                2 => (24, 24),
+                _ => (8, 24),
+            };
+            fontdone::outline::OutlinePoint {
+                x: x * 64,
+                y: y * 64,
+                on_curve: true,
+            }
+        })
+        .collect();
+    fontdone::outline::Outline {
+        n_contours: i32::try_from(contours.len()).expect("contour witness count fits i32"),
+        contours: contours.to_vec(),
+        points,
+        tags: vec![1; point_count],
+        contour_dropouts: Vec::new(),
+        flags: 0,
+        cbox_x_min: 0,
+        cbox_y_min: 0,
+        cbox_x_max: 32,
+        cbox_y_max: 32,
+    }
 }
 
 fn outline_render_invalid_starts_cubic() -> fontdone::outline::Outline {

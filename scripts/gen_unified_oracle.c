@@ -16078,6 +16078,9 @@ static int emit_outline_render(int argc, char** argv) {
     points[2].y = 24 * 64;
     points[3].x = 8 * 64;
     points[3].y = 24 * 64;
+    for (int i = 4; i < 16; i++) {
+        points[i] = points[i % 4];
+    }
     unsigned char tags[16] = {
         FT_CURVE_TAG_ON,
         FT_CURVE_TAG_ON,
@@ -16581,6 +16584,37 @@ static int emit_outline_render(int argc, char** argv) {
         tags[2] = FT_CURVE_TAG_CUBIC;
         contours[0] = 2;
         n_points = 3;
+    } else if (strstr(case_id, "@invalid-intermediate-contour-order-001")) {
+        n_contours = 3;
+        n_points = 4;
+        contours[0] = 1;
+        contours[1] = 0;
+        contours[2] = 3;
+    } else if (strstr(case_id, "@invalid-intermediate-contour-order-002")) {
+        n_contours = 3;
+        n_points = 5;
+        contours[0] = 0;
+        contours[1] = 0;
+        contours[2] = 4;
+    } else if (strstr(case_id, "@invalid-intermediate-contour-order-003")) {
+        n_contours = 3;
+        n_points = 4;
+        contours[0] = 2;
+        contours[1] = 1;
+        contours[2] = 3;
+    } else if (strstr(case_id, "@invalid-intermediate-contour-order-006")) {
+        n_contours = 4;
+        n_points = 7;
+        contours[0] = 1;
+        contours[1] = 3;
+        contours[2] = 2;
+        contours[3] = 6;
+    } else if (strstr(case_id, "@invalid-intermediate-contour-order-009")) {
+        n_contours = 3;
+        n_points = 9;
+        contours[0] = 3;
+        contours[1] = 3;
+        contours[2] = 8;
     } else if (strstr(case_id, "@invalid-contour-order")) {
         contours[0] = -1;
     } else if (strstr(case_id, "@invalid-starts-cubic")) {
