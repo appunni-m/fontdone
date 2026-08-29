@@ -1279,6 +1279,155 @@ def write_pure_cff_fixed_add() -> None:
     build_cff_fixed_add(out)
 
 
+def build_cff_mul(path: Path) -> None:
+    """Build a valid CFF face whose outline uses Type2 ``mul``."""
+    names = {
+        "familyName": "Pure CFF Mul Coverage",
+        "styleName": "Regular",
+        "uniqueFontIdentifier": "Pure CFF Mul Coverage Regular",
+        "fullName": "Pure CFF Mul Coverage Regular",
+        "psName": "PureCFFMulCoverage-Regular",
+    }
+    builder = FontBuilder(UNITS_PER_EM, isTTF=False)
+    builder.setupGlyphOrder([".notdef", "mul"])
+    builder.setupCharacterMap({0x41: "mul"})
+    builder.setupHorizontalMetrics({".notdef": (600, 0), "mul": (600, 0)})
+    builder.setupHorizontalHeader(ascent=800, descent=-200)
+    builder.setupNameTable(names)
+    builder.setupOS2(
+        sTypoAscender=800,
+        sTypoDescender=-200,
+        usWinAscent=800,
+        usWinDescent=200,
+    )
+    builder.setupPost()
+    # Integer operands are converted to fixed by FreeType's popFixed calls;
+    # 220 * 2 produces the integral 440-unit edge while selecting the Rust
+    # Type2Operand::mul implementation.  Keep the contour closed and
+    # deterministic; fixed-real decoding is covered by batch219.
+    mul_charstring = t2_program_charstring(
+        [
+            0,
+            0,
+            "rmoveto",
+            220,
+            2,
+            "mul",
+            0,
+            "rlineto",
+            0,
+            700,
+            "rlineto",
+            -440,
+            0,
+            "rlineto",
+            0,
+            -700,
+            "rlineto",
+            "endchar",
+        ]
+    )
+    builder.setupCFF(
+        names["psName"],
+        {
+            "FullName": names["fullName"],
+            "FamilyName": names["familyName"],
+            "Weight": names["styleName"],
+        },
+        {".notdef": t2_charstring(), "mul": mul_charstring},
+        {},
+    )
+    builder.setupMaxp()
+    recalc_font_bbox = TopDict.recalcFontBBox
+    try:
+        TopDict.recalcFontBBox = lambda self: None
+        builder.font.recalcBBoxes = False
+        builder.font["head"].created = FIXED_HEAD_TIME
+        builder.font["head"].modified = FIXED_HEAD_TIME
+        builder.font.recalcTimestamp = False
+        builder.font["CFF "].cff.topDictIndex[0].FontBBox = [0, 0, 440, 700]
+        builder.save(path)
+    finally:
+        TopDict.recalcFontBBox = recalc_font_bbox
+
+
+def write_pure_cff_mul() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / "pure-cff-mul.otf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    build_cff_mul(out)
+
+
+def build_cff_fixed_global_subr_index(path: Path) -> None:
+    """Build a CFF face with a fixed-valued, malformed ``callgsubr`` index."""
+    names = {
+        "familyName": "Pure CFF Fixed Global Subr Index",
+        "styleName": "Regular",
+        "uniqueFontIdentifier": "Pure CFF Fixed Global Subr Index Regular",
+        "fullName": "Pure CFF Fixed Global Subr Index Regular",
+        "psName": "PureCFFFixedGlobalSubrIndex-Regular",
+    }
+    builder = FontBuilder(UNITS_PER_EM, isTTF=False)
+    builder.setupGlyphOrder([".notdef", "fixed_subr"])
+    builder.setupCharacterMap({0x41: "fixed_subr"})
+    builder.setupHorizontalMetrics(
+        {".notdef": (600, 0), "fixed_subr": (600, 0)}
+    )
+    builder.setupHorizontalHeader(ascent=800, descent=-200)
+    builder.setupNameTable(names)
+    builder.setupOS2(
+        sTypoAscender=800,
+        sTypoDescender=-200,
+        usWinAscent=800,
+        usWinDescent=200,
+    )
+    builder.setupPost()
+    # CFF callgsubr requires an integer operand.  The 0.5 fixed operand is
+    # deliberately malformed: pinned FreeType's popInt records Syntax_Error,
+    # then public glyph loading reports Invalid_File_Format after interpreter
+    # post-validation.  Keep enough global subroutines for the coerced index
+    # (0 + bias 107) to be in range, isolating the type guard.
+    fixed_subr_charstring = t2_program_charstring(
+        [0, 0, "rmoveto", 0.5, "callgsubr", "endchar"]
+    )
+    builder.setupCFF(
+        names["psName"],
+        {
+            "FullName": names["fullName"],
+            "FamilyName": names["familyName"],
+            "Weight": names["styleName"],
+        },
+        {".notdef": t2_charstring(), "fixed_subr": fixed_subr_charstring},
+        {},
+    )
+    cff = builder.font["CFF "].cff
+    for _ in range(108):
+        cff.GlobalSubrs.append(
+            T2CharString(program=["return"], private=None, globalSubrs=cff.GlobalSubrs)
+        )
+    builder.setupMaxp()
+    recalc_font_bbox = TopDict.recalcFontBBox
+    try:
+        TopDict.recalcFontBBox = lambda self: None
+        builder.font.recalcBBoxes = False
+        builder.font["head"].created = FIXED_HEAD_TIME
+        builder.font["head"].modified = FIXED_HEAD_TIME
+        builder.font.recalcTimestamp = False
+        builder.font["CFF "].cff.topDictIndex[0].FontBBox = [0, 0, 0, 0]
+        builder.save(path)
+    finally:
+        TopDict.recalcFontBBox = recalc_font_bbox
+
+
+def write_pure_cff_fixed_global_subr_index() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / "pure-cff-fixed-global-subr-index.otf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    build_cff_fixed_global_subr_index(out)
+
+
 def write_pure_cff_below_baseline_no_vmtx() -> None:
     """Build a valid CFF face whose glyph bbox lies entirely below baseline."""
     out = OUT_DIR / "pure-cff-below-baseline-no-vmtx.otf"
@@ -2634,6 +2783,8 @@ def main() -> None:
     write_pure_cff_random_global_subr_error()
     write_pure_cff_global_subr_eof()
     write_pure_cff_fixed_add()
+    write_pure_cff_mul()
+    write_pure_cff_fixed_global_subr_index()
     write_pure_cff_below_baseline_no_vmtx()
     write_pure_cff_baseline_touch_no_vmtx()
     write_pure_cff_cubic_last_delta()

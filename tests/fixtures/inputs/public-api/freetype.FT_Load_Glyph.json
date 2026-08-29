@@ -13406,6 +13406,1526 @@
       }
     },
     {
+      "case_id": "freetype.FT_Load_Glyph.batch220_cff_mul_and_fixed_subr_error",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "batch220_cff_mul_and_fixed_subr_error",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "b220-mul-08-no-hinting-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-08-no-hinting-001: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 8px with no-hinting; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:8:no-hinting:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-08-force-autohint-002",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-08-force-autohint-002: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 8px with force-autohint; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:8:force-autohint:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-08-target-light-003",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-08-target-light-003: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 8px with target-light; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:8:target-light:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-08-target-mono-004",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-08-target-mono-004: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 8px with target-mono; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:8:target-mono:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-08-target-lcd-005",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-08-target-lcd-005: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 8px with target-lcd; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:8:target-lcd:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-12-no-hinting-006",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-12-no-hinting-006: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 12px with no-hinting; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:12:no-hinting:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-12-force-autohint-007",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-12-force-autohint-007: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 12px with force-autohint; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:12:force-autohint:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-12-target-light-008",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-12-target-light-008: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 12px with target-light; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:12:target-light:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-12-target-mono-009",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-12-target-mono-009: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 12px with target-mono; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:12:target-mono:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-12-target-lcd-010",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-12-target-lcd-010: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 12px with target-lcd; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:12:target-lcd:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-20-no-hinting-011",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-20-no-hinting-011: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 20px with no-hinting; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:20:no-hinting:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-20-force-autohint-012",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-20-force-autohint-012: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 20px with force-autohint; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:20:force-autohint:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-20-target-light-013",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-20-target-light-013: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 20px with target-light; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:20:target-light:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-20-target-mono-014",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-20-target-mono-014: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 20px with target-mono; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:20:target-mono:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-20-target-lcd-015",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-20-target-lcd-015: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 20px with target-lcd; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:20:target-lcd:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-32-no-hinting-016",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-32-no-hinting-016: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 32px with no-hinting; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:32:no-hinting:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-32-force-autohint-017",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-32-force-autohint-017: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 32px with force-autohint; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:32:force-autohint:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-32-target-light-018",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-32-target-light-018: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 32px with target-light; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:32:target-light:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-32-target-mono-019",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-32-target-mono-019: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 32px with target-mono; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:32:target-mono:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-32-target-lcd-020",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-32-target-lcd-020: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 32px with target-lcd; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:32:target-lcd:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-64-no-hinting-021",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-64-no-hinting-021: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 64px with no-hinting; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:64:no-hinting:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-64-force-autohint-022",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-64-force-autohint-022: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 64px with force-autohint; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:64:force-autohint:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-64-target-light-023",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-64-target-light-023: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 64px with target-light; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:64:target-light:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-64-target-mono-024",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-64-target-mono-024: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 64px with target-mono; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:64:target-mono:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-mul-64-target-lcd-025",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-mul.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b220-mul-64-target-lcd-025: Valid CFF1 glyph 1 evaluates integer operands 220 and 2 with Type2 mul at 64px with target-lcd; FreeType converts both through popFixed and emits the 440-unit edge in psaux/psintrp.c:2260-2274, exercising src/tt/cff.rs:1303-1304.",
+            "coverage": [
+              "batch220:cff:mul:64:target-lcd:src-tt-cff-1304"
+            ]
+          },
+          {
+            "id": "b220-fixed-subr-08-no-hinting-026",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-08-no-hinting-026: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 8px with no-hinting; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:8:no-hinting:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-08-force-autohint-027",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-08-force-autohint-027: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 8px with force-autohint; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:8:force-autohint:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-08-target-light-028",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-08-target-light-028: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 8px with target-light; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:8:target-light:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-08-target-mono-029",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-08-target-mono-029: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 8px with target-mono; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:8:target-mono:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-08-target-lcd-030",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-08-target-lcd-030: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 8px with target-lcd; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:8:target-lcd:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-12-no-hinting-031",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-12-no-hinting-031: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 12px with no-hinting; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:12:no-hinting:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-12-force-autohint-032",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-12-force-autohint-032: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 12px with force-autohint; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:12:force-autohint:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-12-target-light-033",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-12-target-light-033: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 12px with target-light; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:12:target-light:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-12-target-mono-034",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-12-target-mono-034: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 12px with target-mono; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:12:target-mono:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-12-target-lcd-035",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-12-target-lcd-035: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 12px with target-lcd; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:12:target-lcd:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-20-no-hinting-036",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-20-no-hinting-036: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 20px with no-hinting; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:20:no-hinting:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-20-force-autohint-037",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-20-force-autohint-037: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 20px with force-autohint; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:20:force-autohint:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-20-target-light-038",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-20-target-light-038: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 20px with target-light; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:20:target-light:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-20-target-mono-039",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-20-target-mono-039: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 20px with target-mono; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:20:target-mono:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-20-target-lcd-040",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-20-target-lcd-040: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 20px with target-lcd; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:20:target-lcd:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-32-no-hinting-041",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-32-no-hinting-041: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 32px with no-hinting; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:32:no-hinting:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-32-force-autohint-042",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-32-force-autohint-042: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 32px with force-autohint; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:32:force-autohint:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-32-target-light-043",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-32-target-light-043: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 32px with target-light; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:32:target-light:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-32-target-mono-044",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-32-target-mono-044: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 32px with target-mono; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:32:target-mono:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-32-target-lcd-045",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-32-target-lcd-045: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 32px with target-lcd; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:32:target-lcd:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-64-no-hinting-046",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-64-no-hinting-046: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 64px with no-hinting; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:64:no-hinting:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-64-force-autohint-047",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-64-force-autohint-047: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 64px with force-autohint; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:64:force-autohint:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-64-target-light-048",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-64-target-light-048: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 64px with target-light; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:64:target-light:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-64-target-mono-049",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-64-target-mono-049: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 64px with target-mono; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:64:target-mono:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b220-fixed-subr-64-target-lcd-050",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-global-subr-index.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b220-fixed-subr-64-target-lcd-050: Malformed Type2 CFF1 glyph 1 supplies a fixed 0.5 operand to callgsubr at 64px with target-lcd; FreeType's popInt records Syntax_Error for the non-integer operand, then post-validation returns Invalid_File_Format, matching the Rust guard at src/tt/cff.rs:1705-1710.",
+            "coverage": [
+              "batch220:cff:fixed-subr-index:64:target-lcd:src-tt-cff-1708"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-load",
+        "coverage:real-parity",
+        "font_variability:input/fonts",
+        "source-reviewed-expansion"
+      ],
+      "metadata": {
+        "coverage_intent": "Fifty concrete public parity IDs are split between two source-reviewed CFF1 witnesses: 25 valid mul programs and 25 malformed fixed-valued callgsubr programs. The size/load-mode grid is retained as distinct public input until Coverage MCP attribution proves redundancy.",
+        "freetype_review": "The pinned C interpreter runs mul through popFixed at psaux/psintrp.c:2260-2274. For fixed-valued callgsubr, psaux/psstack.c:130-151 records Syntax_Error in popInt, psaux/psintrp.c:979-1050 performs the lookup, and psaux/psintrp.c:3030-3035 propagates the error as public Invalid_File_Format."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "rows": "per-font glyph load status and slot snapshot"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "rows[].status",
+            "rows[].slot"
+          ]
+        },
+        "sources_checked": [
+          "freetype/src/psaux/psintrp.c:2260-2274",
+          "freetype/src/psaux/psstack.c:130-151",
+          "freetype/src/psaux/psintrp.c:979-1050",
+          "freetype/src/psaux/psintrp.c:3030-3035",
+          "src/tt/cff.rs:1303-1304",
+          "src/tt/cff.rs:1705-1710"
+        ]
+      }
+    },
+    {
       "case_id": "freetype.FT_Load_Glyph.batch219_cff_eof_and_fixed_add",
       "subject": "freetype.FT_Load_Glyph",
       "case": "batch219_cff_eof_and_fixed_add",
