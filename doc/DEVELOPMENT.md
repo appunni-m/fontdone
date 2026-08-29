@@ -949,6 +949,25 @@ expectations.
 | `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c89-cff-private-default-seed-004` | Use the valid non-empty Private DICT `BlueShift 8` with no seed operator; the unrelated field proves the parser reaches the defaulting arm at `src/tt/cff.rs:513-516`. | `cffload.c:1892-1899` establishes defaults, `cffload.c:1935-1940` changes parsed zero `initialRandomSeed` to `987654321`, and `cffload.c:2130-2131` consumes it. | Add for focused parity; retain only on exact C/Rust/WASM output. |
 | `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c89-cff-private-missing-seed-operand-005` | Use a malformed but openable SFNT whose Private bytes begin with operand-less `initialRandomSeed`; targets the newly corrected Rust error path at `src/tt/cff.rs:496-503`. | `cffparse.c:1361-1365` routes the recognized field with zero operands to Stack_Underflow, and `cffparse.c:1540-1542` returns `Invalid_Argument`; `cffload.c:1924-1930` propagates it from face loading. | Add for focused parity; retain only if C/Rust/WASM report the same error-shaped result. |
 
+The c89 focused parity command retained all five cases: C, Rust, and WASM
+matched 5/5. Coverage MCP run `59bf6605-493b-4144-a5b1-675ef769852b`
+completed at commit `33feaf63fbab4213ce3fd6c91b6ec60f28a7378d` and ingested
+child snapshot `55a8c88f-1dd2-49fa-91c6-b30a4d4c0a67`. Because the child
+metadata resolved to an older internal commit, the same generated report was
+imported with explicit provenance as snapshot
+`5e2acea8-59f3-4a71-8b1a-a9cdded31d5c`; use that snapshot for source review.
+Against explicit baseline `a817755c-319c-41c8-b56a-f8f52a0441d7`, the MCP
+additive union reported `+16` branches, `+3` functions, `+0` lines, and
+`+712` regions. The selected-subset union is measured evidence, not a full
+denominator regression run; its rate changes are not used as a claim of lost
+coverage. The bounded source review confirms the c89 cases cover the no-
+Private return, nonzero-size/zero-offset return, non-empty scan, default seed,
+positive seed, and operand-less-seed error. It still reports one short-circuit
+branch gap at `src/tt/cff.rs:471` (the size-zero condition), the one-byte
+operator arm at `src/tt/cff.rs:487-494`, and the truncated escaped-operator
+guard at `src/tt/cff.rs:489-490`; those are the next source-review targets,
+not reasons to weaken or remove the retained cases.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
