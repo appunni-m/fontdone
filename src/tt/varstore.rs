@@ -125,9 +125,15 @@ impl ItemVariationStore {
                 word_delta_count + region_idx_count
             };
             let delta_start = region_indices_start + region_idx_count * 2;
-            let delta_len = item_count.checked_mul(per_region_size).ok_or_else(|| {
-                FontError::InvalidFont("item variation delta set too large".into())
-            })?;
+            // FreeType's FT_QALLOC_MULT rejects allocations above FT_INT_MAX
+            // before reading the delta set (`ttgxvar.c:696-702`,
+            // `ftutil.c:127-139`). Keep the same limit in addition to the
+            // native usize overflow check so malformed optional HVAR/MVAR
+            // stores report the same internal error classification.
+            let delta_len = item_count
+                .checked_mul(per_region_size)
+                .and_then(|len| (len <= i32::MAX as usize).then_some(len))
+                .ok_or_else(|| FontError::ArrayTooLarge)?;
             let delta_set = data
                 .get(delta_start..delta_start + delta_len)
                 .ok_or_else(|| FontError::InvalidFont("item variation delta set truncated".into()))?

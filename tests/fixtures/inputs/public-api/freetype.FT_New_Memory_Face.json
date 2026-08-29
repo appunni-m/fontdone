@@ -1920,6 +1920,15 @@
             "coverage": ["tt/varstore:delta-set-truncated-ignored-at-face-open"]
           },
           {
+            "id": "hvar-store-delta-size-too-large",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-delta-size-too-large.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-store-delta-size-too-large.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "coverage": ["tt/varstore:delta-set-size-too-large-ignored-at-face-open"]
+          },
+          {
             "id": "hvar-map-format-unsupported",
             "assets": {
               "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/variable/hvar-map-format-unsupported.ttf"},

@@ -1362,6 +1362,49 @@ def write_hvar_fixtures() -> None:
         bytes(store_truncated),
     )
 
+    # FreeType's FT_QALLOC_MULT rejects a declared delta set larger than
+    # FT_INT_MAX before reading its payload. Keep the table physically small:
+    # this malformed public face-open case exercises the allocation-size guard
+    # without allocating the declared multi-gigabyte delta array.
+    oversized_item_count = 0xFFFF
+    oversized_region_count = 0x4001
+    oversized_word_delta_count = 0x4001
+    oversized_region_list_offset = 12
+    oversized_region_list_length = 4 + oversized_region_count * 2 * 6
+    oversized_data_offset = oversized_region_list_offset + oversized_region_list_length
+    oversized_per_region_size = (
+        oversized_word_delta_count + oversized_region_count
+    ) * 2
+    assert oversized_item_count * oversized_per_region_size > 0x7FFF_FFFF
+
+    oversized_store = bytearray(12)
+    put_u16(oversized_store, 0, 1)
+    put_u32(oversized_store, 2, oversized_region_list_offset)
+    put_u16(oversized_store, 6, 1)
+    put_u32(oversized_store, 8, oversized_data_offset)
+    put_u16(oversized_store, len(oversized_store), 2)
+    oversized_store.extend(b"\0\0")
+    oversized_store.extend(bytes(oversized_region_count * 2 * 6))
+    put_u16(oversized_store, len(oversized_store), oversized_item_count)
+    put_u16(
+        oversized_store,
+        len(oversized_store),
+        0x8000 | oversized_word_delta_count,
+    )
+    put_u16(oversized_store, len(oversized_store), oversized_region_count)
+    oversized_store.extend(bytes(oversized_region_count * 2))
+
+    oversized_hvar = bytearray(12)
+    put_u16(oversized_hvar, 0, 1)
+    put_u32(oversized_hvar, 4, 12)
+    oversized_hvar.extend(oversized_store)
+    write_table_payload(
+        BASE_FONT,
+        "HVAR",
+        "hvar-store-delta-size-too-large.ttf",
+        bytes(oversized_hvar),
+    )
+
     map_unsupported = bytearray(base)
     map_unsupported[map_offset] = 2
     write_table_payload(
