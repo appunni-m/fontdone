@@ -49,6 +49,7 @@ pub struct CffTable {
     global_subrs: Vec<Vec<u8>>,
     font_info: Type1FontInfo,
     cid_info: Option<CffCidInfo>,
+    private_random_seed: u32,
     random: Cell<u32>,
 }
 
@@ -103,16 +104,18 @@ pub fn parse_cff(data: &[u8]) -> Result<CffTable, FontError> {
     let (charstrings, _) = read_index(data, charstrings_offset)?;
     let font_info = top.font_info(&strings);
     let cid_info = top.cid_info(data, &strings, charstrings.len())?;
+    let private_random_seed = parse_cff_private_random_seed(data, &top)?;
     Ok(CffTable {
         charstrings: charstrings.into_iter().map(<[u8]>::to_vec).collect(),
         global_subrs: global_subrs.into_iter().map(<[u8]>::to_vec).collect(),
         font_info,
         cid_info,
-        // `cff_load_private_dict` sanitizes an absent initialRandomSeed to
-        // 987654321 before initializing the per-subfont Type2 random state.
-        // Keep that state on the parsed face so repeated glyph loads advance
-        // it just like the Adobe CFF engine.
-        random: Cell::new(CFF_DEFAULT_RANDOM_SEED),
+        // `cff_load_private_dict` leaves the random state at zero when the
+        // Top DICT has an empty Private entry.  A non-empty private dict
+        // sanitizes an absent or zero initialRandomSeed to 987654321 before
+        // the Adobe CFF engine starts interpreting Type2 charstrings.
+        private_random_seed,
+        random: Cell::new(private_random_seed),
     })
 }
 
@@ -196,12 +199,12 @@ impl CffTable {
     }
 
     /// Set the CFF driver seed used when a face is opened.  A zero driver seed
-    /// selects the parsed private dictionary's sanitized initialRandomSeed;
-    /// the compact parser currently uses FreeType's 987654321 default for an
-    /// absent private value.
+    /// selects the parsed private dictionary's sanitized initialRandomSeed.
+    /// An empty Private entry deliberately leaves that seed at zero, matching
+    /// `cffload.c:1889-1890`.
     pub(crate) fn set_random_seed(&self, seed: u32) {
         self.random.set(if seed == 0 {
-            CFF_DEFAULT_RANDOM_SEED
+            self.private_random_seed
         } else {
             seed
         });
@@ -245,6 +248,8 @@ impl CffCidInfo {
 
 struct TopDict {
     charstrings_offset: Option<usize>,
+    private_size: Option<usize>,
+    private_offset: Option<usize>,
     consumed_non_charstrings_operands: bool,
     version_sid: Option<u16>,
     notice_sid: Option<u16>,
@@ -265,6 +270,8 @@ impl Default for TopDict {
     fn default() -> Self {
         Self {
             charstrings_offset: None,
+            private_size: None,
+            private_offset: None,
             consumed_non_charstrings_operands: false,
             version_sid: None,
             notice_sid: None,
@@ -367,6 +374,21 @@ fn parse_top_dict(data: &[u8]) -> Result<TopDict, FontError> {
                     FontError::InvalidArgument("CFF: CharStrings operand missing".into())
                 })?;
                 dict.charstrings_offset = usize::try_from(offset).ok();
+            } else if op == 18 {
+                if stack.len() < 2 {
+                    return Err(FontError::InvalidArgument(
+                        "CFF: Private operands missing".into(),
+                    ));
+                }
+                let size = usize::try_from(stack[0].integer).map_err(|_| {
+                    FontError::InvalidFileFormat("CFF: Private size is negative".into())
+                })?;
+                let offset = usize::try_from(stack[1].integer).map_err(|_| {
+                    FontError::InvalidFileFormat("CFF: Private offset is negative".into())
+                })?;
+                dict.private_size = Some(size);
+                dict.private_offset = Some(offset);
+                dict.consumed_non_charstrings_operands = true;
             } else if op == 0x0C1E {
                 // CFF Top DICT escaped operator 30 is `ROS`.  FreeType sets
                 // `FT_FACE_FLAG_CID_KEYED` for SFNT-wrapped CFF faces when
@@ -438,6 +460,59 @@ fn parse_top_dict(data: &[u8]) -> Result<TopDict, FontError> {
         }
     }
     Ok(dict)
+}
+
+fn parse_cff_private_random_seed(data: &[u8], top: &TopDict) -> Result<u32, FontError> {
+    let (Some(size), Some(offset)) = (top.private_size, top.private_offset) else {
+        // CFF's zero-initialized subfont has no private dictionary state when
+        // the Top DICT omits Private entirely (`cffload.c:1885-1890`).
+        return Ok(0);
+    };
+    if size == 0 {
+        // The pinned loader returns through Exit2 before it applies the
+        // private-dictionary defaults for an empty Private entry.
+        return Ok(0);
+    }
+    let end = offset
+        .checked_add(size)
+        .ok_or_else(|| FontError::InvalidTable("CFF: Private dictionary overflow".into()))?;
+    let private = data
+        .get(offset..end)
+        .ok_or_else(|| FontError::InvalidTable("CFF: Private dictionary out of range".into()))?;
+    let mut pos = 0usize;
+    let mut stack: Vec<DictNumber> = Vec::new();
+    let mut initial_random_seed = 0_i64;
+    while pos < private.len() {
+        let byte = private[pos];
+        if byte <= 21 {
+            pos += 1;
+            let op = if byte == 12 {
+                let escaped = *private.get(pos).ok_or_else(|| {
+                    FontError::InvalidArgument("CFF: Private escaped op overflow".into())
+                })?;
+                pos += 1;
+                0x0C00 | u16::from(escaped)
+            } else {
+                u16::from(byte)
+            };
+            if op == 0x0C13
+                && let Some(value) = stack.last()
+            {
+                initial_random_seed = i64::from(value.integer);
+            }
+            stack.clear();
+        } else {
+            let (number, next) = read_dict_number(private, pos)?;
+            stack.push(number);
+            pos = next;
+        }
+    }
+    let initial_random_seed = initial_random_seed.abs();
+    if initial_random_seed == 0 {
+        return Ok(CFF_DEFAULT_RANDOM_SEED);
+    }
+    u32::try_from(initial_random_seed)
+        .map_err(|_| FontError::InvalidTable("CFF: initialRandomSeed out of range".into()))
 }
 
 fn parse_cff_charset_cids(

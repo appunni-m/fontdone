@@ -907,7 +907,27 @@ baseline hits are not regressions and it is not a replacement for the full
 denominator run.
 
 The next CFF random-seed candidate was source-reviewed before it was retained.
-The candidate ID was `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c88-ps-random-zero-seed-001`. Its intended target was the zero-seed fallback at `src/tt/cff.rs:203-204`: the public `FT_Property_Set` value `0` is accepted by pinned `ftpsprop.c:198-220`, and the Adobe CFF loader normalizes a zero seed to the private-dictionary default at `cffload.c:1935-1940` and `2084-2131`. The first probe used `value: 0`, which selects the legacy `FT_HINTING_FREETYPE` engine rather than the Adobe path. In that path `cffdecode.c:1727-1741` consumes `top_font.random`; the focused public parity result was C `horiBearingX = -1000` versus Rust `horiBearingX = -592`. The probe was removed before campaign ingestion and is not counted as coverage. This is evidence that FreeType accepts the property but that this selector is not an exact witness for the Rust fallback; an Adobe-selector variant must be reduced and reviewed separately before another manifest expansion.
+The candidate ID was `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c88-ps-random-zero-seed-001`. Its intended target was the zero-seed fallback at `src/tt/cff.rs:203-204`: the public `FT_Property_Set` value `0` is accepted by pinned `ftpsprop.c:198-220`. The first probe used `value: 0`, which selects the legacy `FT_HINTING_FREETYPE` engine rather than the Adobe path. In that path `cffdecode.c:1727-1741` consumes `top_font.random`; the focused public parity result was C `horiBearingX = -1000` versus Rust `horiBearingX = -592`. The probe was removed before campaign ingestion and is not counted as coverage.
+
+The corrected Adobe-selector batch below uses the generated fixture's exact
+Top DICT `Private=(0,172)` entry. In pinned FreeType,
+`cffload.c:1889-1890` exits before private-dictionary defaults when either
+private size or offset is zero. Therefore this exact empty-private fixture
+leaves `priv->initial_random_seed` zero; the `987654321` sanitization at
+`cffload.c:1935-1940` applies only after a non-empty private dictionary has
+been parsed. `cffload.c:2084-2131` then initializes the Adobe subfont's
+random state from the accepted driver seed and falls back to that private
+seed. This is the source-reviewed reason the zero-seed input is a valid
+witness for the Rust fallback and why the implementation must preserve zero
+for this fixture. The corrected batch was added only after that review.
+
+| Candidate runtime ID | Why expand this input | Pinned FreeType review | Decision before parity |
+|---|---|---|---|
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c88-ps-random-zero-seed-001` | Set the accepted CFF driver seed to `0` with the Adobe selector and the default glyph-load route; targets `src/tt/cff.rs:203-204` with the smallest public witness. | `ftpsprop.c:198-220` accepts zero; this fixture's `Private=(0,172)` takes `cffload.c:1889-1890`, so the Adobe subfont random state remains zero through `cffload.c:2084-2131`. | Add for focused parity; retain only on exact C/Rust/WASM output. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c88-ps-random-zero-seed-002` | Repeat the zero-seed Adobe path through `FT_LOAD_NO_SCALE`, separating unscaled public metrics from the default scaled route. | The same property and CFF seed initialization runs before glyph loading; `FT_LOAD_NO_SCALE` changes scaling, not the accepted property or empty-private behavior. | Add for focused parity; retain only on exact C/Rust/WASM output. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c88-ps-random-zero-seed-003` | Use the public string spelling `adobe` plus `FT_LOAD_NO_HINTING`, checking the selector parser and zero-seed fallback together. | `ftpsprop.c:198-220` accepts numeric zero; the Adobe selector reaches the same CFF load, where this fixture's empty `Private` entry leaves the fallback seed at zero. | Add for focused parity; retain only on exact C/Rust/WASM output. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c88-ps-random-zero-seed-004` | Render the zero-seed Adobe CFF glyph at 16 ppem, exercising the fallback before bitmap production. | The CFF property is set before `FT_New_Memory_Face`; the renderer consumes the outline after the same accepted CFF load and zero random state. | Add for focused parity; retain only on exact C/Rust/WASM output. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c88-ps-random-zero-seed-005` | Render at 24 ppem with `FT_LOAD_NO_AUTOHINT`, covering the alternate public load selector while preserving the same CFF seed witness. | `cffload.c:2084-2131` initializes the subfont before Type2 interpretation; disabling the auto-hinter does not bypass CFF charstring random handling. | Add for focused parity; retain only on exact C/Rust/WASM output. |
 
 ## 5. Fixtures and generators
 

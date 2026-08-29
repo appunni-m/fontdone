@@ -221,9 +221,12 @@ def build_cff_random(path: Path) -> None:
     FreeType's Adobe CFF interpreter keeps the random state on the opened
     subfont, so loading this glyph twice produces two different outlines.  The
     parity case fixes the CFF driver's random-seed property to zero before the
-    face is opened; that makes the private-dictionary fallback seed (the
-    pinned 987654321 default) deterministic while still exercising the
-    stateful operator.
+    face is opened.  A non-empty private dictionary sanitizes a zero
+    ``initialRandomSeed`` to the pinned 987654321 default, but this generated
+    fixture intentionally emits ``Private=(0, offset)``.  Pinned FreeType
+    exits before applying those defaults for an empty private dictionary, so
+    this fixture's exact initial random state is zero while still exercising
+    the stateful operator.
     """
     names = {
         "familyName": "Pure CFF Random Coverage",

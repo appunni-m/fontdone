@@ -4229,6 +4229,171 @@
               "fontdone-wasm/src/implementation.rs:2078-2084",
               "src/tt/cff.rs:1590-1622"
             ]
+          },
+          {
+            "id": "c88-ps-random-zero-seed-001",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": [],
+              "render_pixel_size": 0,
+              "random_seed": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084",
+              "src/tt/cff.rs:203-204"
+            ]
+          },
+          {
+            "id": "c88-ps-random-zero-seed-002",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_SCALE"],
+              "render_pixel_size": 0,
+              "random_seed": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084",
+              "src/tt/cff.rs:203-204"
+            ]
+          },
+          {
+            "id": "c88-ps-random-zero-seed-003",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": "adobe",
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_HINTING"],
+              "render_pixel_size": 0,
+              "random_seed": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084",
+              "src/tt/cff.rs:203-204"
+            ]
+          },
+          {
+            "id": "c88-ps-random-zero-seed-004",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_RENDER"],
+              "render_pixel_size": 16,
+              "random_seed": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084",
+              "src/tt/cff.rs:203-204"
+            ]
+          },
+          {
+            "id": "c88-ps-random-zero-seed-005",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_AUTOHINT", "FT_LOAD_RENDER"],
+              "render_pixel_size": 24,
+              "random_seed": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2078-2084",
+              "src/tt/cff.rs:203-204"
+            ]
           }
         ]
       },
@@ -4244,7 +4409,7 @@
         "stateful-cff-charstring"
       ],
       "metadata": {
-        "coverage_intent": "Five valid CFF Type 2 random-charstring variants fix the CFF driver seed before face opening, then exercise the false side of the WASM post-error preservation comparison with exact C/Rust/WASM slot parity."
+        "coverage_intent": "Five existing valid CFF Type 2 random-charstring variants exercise the post-error preservation route; five source-reviewed Adobe-selector variants additionally set the accepted zero random seed to reach the Rust CFF fallback at src/tt/cff.rs:203-204, subject to exact C/Rust/WASM parity."
       },
       "expectation": {
         "status": "build_dependent",
