@@ -1016,6 +1016,28 @@ def write_pure_cff_random_private_parser_controls() -> None:
         replace_sfnt_table(base, OUT_DIR / filename, b"CFF ", bytes(payload))
 
 
+def write_pure_cff_random_private_edge_controls() -> None:
+    """Build additional CFF Private edges accepted by the pinned parser."""
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    negative_seed = OUT_DIR / "pure-cff-random-private-seed-negative.otf"
+    build_cff_random(negative_seed, private_dict={"initialRandomSeed": -123})
+    minimum_seed = OUT_DIR / "pure-cff-random-private-seed-minimum.otf"
+    build_cff_random(minimum_seed, private_dict={"initialRandomSeed": -2147483648})
+
+    base = OUT_DIR / "pure-cff-random-private-default-seed.otf"
+    controls = {
+        "pure-cff-random-private-legacy-byte-31.otf": b"\x1f",
+        # FreeType's DICT scanner exits successfully when a real number runs
+        # to the end of the Private range without a 0xf terminator.
+        "pure-cff-random-private-unterminated-real.otf": b"\x1e",
+    }
+    for filename, private_payload in controls.items():
+        payload = bytearray(sfnt_table_payload(base, b"CFF "))
+        patch_cff_private_top_dict(payload, size=len(private_payload))
+        patch_cff_private_payload(payload, private_payload)
+        replace_sfnt_table(base, OUT_DIR / filename, b"CFF ", bytes(payload))
+
+
 def build_cff_random_global_subr_error(path: Path) -> None:
     """Build a valid CFF face whose second random subroutine call errors.
 
@@ -2419,6 +2441,7 @@ def main() -> None:
     write_pure_cff_random()
     write_pure_cff_random_private()
     write_pure_cff_random_private_parser_controls()
+    write_pure_cff_random_private_edge_controls()
     write_pure_cff_random_global_subr_error()
     write_pure_cff_below_baseline_no_vmtx()
     write_pure_cff_baseline_touch_no_vmtx()

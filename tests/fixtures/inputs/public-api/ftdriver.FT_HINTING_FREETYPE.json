@@ -4716,6 +4716,135 @@
             "coverage": [
               "src/tt/cff.rs:491-494"
             ]
+          },
+          {
+            "id": "c91-cff-private-legacy-byte-31-001",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-private-legacy-byte-31.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": [],
+              "render_pixel_size": 0,
+              "random_seed": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "src/tt/cff.rs:485-510"
+            ]
+          },
+          {
+            "id": "c91-cff-private-unterminated-real-002",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-private-unterminated-real.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": "adobe",
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_HINTING"],
+              "render_pixel_size": 0,
+              "random_seed": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "src/tt/cff.rs:511-515",
+              "src/tt/cff.rs:1234-1242"
+            ]
+          },
+          {
+            "id": "c91-cff-private-negative-seed-003",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-private-seed-negative.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_HINTING"],
+              "render_pixel_size": 0,
+              "random_seed": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "src/tt/cff.rs:500-522"
+            ]
+          },
+          {
+            "id": "c91-cff-private-minimum-seed-004",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-private-seed-minimum.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": "adobe",
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_HINTING"],
+              "render_pixel_size": 0,
+              "random_seed": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "src/tt/cff.rs:500-522"
+            ]
           }
         ]
       },
@@ -4731,7 +4860,7 @@
         "stateful-cff-charstring"
       ],
       "metadata": {
-        "coverage_intent": "Five existing valid CFF Type 2 random-charstring variants exercise the post-error preservation route; five source-reviewed CFF Private-dictionary cases cover omitted Private, zero offset, positive seed, default seed, and missing-seed-operand behavior at src/tt/cff.rs:466-518, subject to exact C/Rust/WASM parity."
+        "coverage_intent": "Five existing valid CFF Type 2 random-charstring variants plus fourteen source-reviewed CFF Private-dictionary cases exercise the post-error preservation route and cover omitted Private, zero offset, seed parsing, parser boundary, harmless unterminated-real, and malformed escaped-operator behavior at src/tt/cff.rs:465-523, subject to exact C/Rust/WASM parity."
       },
       "expectation": {
         "status": "build_dependent",

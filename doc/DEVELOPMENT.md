@@ -987,6 +987,29 @@ compound-condition branch is the explicit `byte == 31` side at
 `src/tt/cff.rs:489`, while the size-zero early return remains a separate
 source-reviewed target at `src/tt/cff.rs:471-474`.
 
+The c91 selection deliberately reuses the existing c88 size-zero witness
+instead of adding a duplicate font: `c88-ps-random-zero-seed-001` already
+documents the valid `Private=(0,172)` input and its `cffload.c:1889-1890`
+early exit. The four new c91 IDs were source-reviewed before generation. The
+pinned build leaves `CFF_CONFIG_OPTION_OLD_ENGINE` disabled
+(`freetype/include/freetype/config/ftoption.h:905-910`), so byte 31 follows
+the modern unknown-operator path. The signed seed cases use the existing
+`cff_parse_integer` four-byte range and then the explicit sanitization in
+`cffload.c:1935-1940`; they are valid numeric Private DICT values, not parser
+fuzzing. The unterminated real is the only new permissive malformed control:
+`cffparse.c:1194-1198` intentionally exits successfully at the Private range
+boundary.
+
+| Candidate runtime ID | Why expand this input | Pinned FreeType review | Decision before parity |
+|---|---|---|---|
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c91-cff-private-legacy-byte-31-001` | Use a one-byte Private payload `0x1f` to close the `byte == 31` side of the classifier at `src/tt/cff.rs:489-499`; the ID records the legacy operator value. | `ftoption.h:905-910` leaves the old engine disabled; `cffparse.c:1177-1182` excludes 31 from numbers, and the modern operator path ignores unsupported byte 31 through `cffparse.c:1520-1527`. | Add only if exact C/Rust/WASM parity holds; retain as an oracle-permitted malformed input. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c91-cff-private-unterminated-real-002` | Use a declared one-byte Private range containing only `0x1e` to verify the newly corrected harmless-EOF route at `src/tt/cff.rs:1234-1242`. | `cffparse.c:1189-1198` skips the real and exits successfully when the range ends before a terminator; `cffload.c:1924-1940` continues with the parsed/default seed. | Add only if exact C/Rust/WASM parity holds; retain as an oracle-permitted malformed input. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c91-cff-private-negative-seed-003` | Use valid `initialRandomSeed -123` to exercise signed seed input and the positive-sanitization behavior at `src/tt/cff.rs:517-522`. | `cff_parse_integer` accepts the four-byte/signed CFF number forms (`cffparse.c:94-147`), and `cffload.c:1935-1940` negates a negative seed before `cffload.c:2130-2131` consumes it. | Add only if exact C/Rust/WASM parity holds. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c91-cff-private-minimum-seed-004` | Use valid four-byte `initialRandomSeed -2147483648` to test the signed CFF integer minimum and the Rust absolute-value/cast boundary at `src/tt/cff.rs:517-522`. | `cff_parse_integer` reads the signed long integer (`cffparse.c:111-119`); on the pinned 64-bit build, `cffload.c:1937-1938` converts it to `2147483648` before the `FT_UInt32` cast at `cffload.c:2130-2131`. | Add only if exact C/Rust/WASM parity holds. |
+
+The c91 focused selection will include the existing c88 size-zero ID plus
+these four new IDs; no duplicate size-zero fixture is retained.
+
 The c89 focused parity command retained all five cases: C, Rust, and WASM
 matched 5/5. Coverage MCP run `59bf6605-493b-4144-a5b1-675ef769852b`
 completed at commit `33feaf63fbab4213ce3fd6c91b6ec60f28a7378d` and ingested
