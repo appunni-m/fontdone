@@ -864,6 +864,31 @@ regions are therefore latent dead branches in the pinned FreeType behavior,
 not missing malformed or valid public inputs. They should not be covered by
 fabricating an input or by changing the denominator.
 
+The next source-reviewed slice targets the gray rasterizer's per-contour
+ordering guard. These are deliberately malformed public outline records, but
+they are not rejected by the public render entry point before renderer
+dispatch: pinned FreeType 2.14.3's `FT_Outline_Render` performs the CBox and
+final-endpoint setup, then `ftgrays.c` discovers the earlier contour-order
+error during decomposition. `FT_Outline_Check` would reject the same records
+when called separately; it is not an implicit preflight of
+`FT_Outline_Render` or the outline glyph renderer. The final contour endpoint
+is kept equal to `n_points - 1` in every row so the input reaches the intended
+inner guard rather than an earlier public-record check.
+
+| Candidate runtime ID | Why expand this input | Pinned FreeType review | Decision before parity |
+|---|---|---|---|
+| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-001` | Use contour ends `[1, 0, 3]` to make the second contour's end fall below its first point with the smallest multi-contour witness. | `freetype/src/base/ftoutln.c:606-667` does not call `FT_Outline_Check`; `freetype/src/smooth/ftgrays.c:1484-1487` checks `last < first` during decomposition. | Add as an AA public parity variant; expect `FT_Err_Invalid_Outline` and preserved sentinel output. |
+| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-002` | Use `[0, 0, 4]` to exercise the equality boundary where a later contour end equals the preceding contour end and is still below its computed first point. | The same `FT_Outline_Render` dispatch and `FT_Outline_Decompose` guard apply; C does not normalize equal/repeated endpoints before dispatch. | Add as a distinct parity input; retain only after exact C/Rust error-output comparison. |
+| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-005` | Use `[0, -1, 5]` to test a signed negative intermediate contour endpoint while the final endpoint remains valid. | `FT_Outline.contours` is signed; `ftgrays.c:1484-1487` rejects the negative end after the CBox path, while `ftoutln.c` has no earlier contour-order preflight. | Add as a distinct parity input; this is malformed-input evidence for the same inner guard, not a unit-only probe. |
+| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-006` | Use `[1, 3, 2, 6]` so two complete contours are traversed before a later contour fails, testing that the guard is not only a second-contour artifact. | `ftgrays.c:1484-1487` runs for each contour in order and returns the first decomposition error; `ftoutln.c:647-659` propagates any non-`Cannot_Render_Glyph` renderer error. | Add as a distinct parity input; expect the same `FT_Err_Invalid_Outline` with no rendered bitmap. |
+| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-009` | Use `[3, 3, 8]` to place the repeated endpoint after a four-point valid contour and probe a later equality boundary. | The C renderer accepts the structurally final endpoint, then the gray decomposer computes the next contour's first index and rejects `last < first`. | Add as a distinct parity input; retain only if the oracle confirms the same error and untouched output. |
+
+The five IDs above are the first implementation slice from the larger
+campaign packet. No WASM `active_size == 0` case is included here: source
+review of `fontdone-wasm/src/implementation.rs:2121-2126` found no exposed
+public operation that leaves that state immediately before the helper runs.
+That target remains deferred until a real public lifecycle path is found.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
