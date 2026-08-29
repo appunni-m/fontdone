@@ -758,7 +758,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,038 tracked paths and no symlinks.
+The canonical input tree currently contains 1,046 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -1629,17 +1629,17 @@ or reason is stale.
 | Reason | Paths | Retained context |
 |---|---:|---|
 | R01 | 58 | published pure-Rust runtime |
-| R02 | 86 | package, build, release, and facade contracts |
+| R02 | 88 | package, build, release, and facade contracts |
 | R03 | 1,754 | executable parity tests and public contracts |
-| R04 | 1,039 | licensed canonical fixture inputs |
+| R04 | 1,046 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
-| R06 | 62 | maintained tooling, examples, and benchmarks |
+| R06 | 63 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
 | R08 | 1 | active self-cleaning roadmap |
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,016** | **all retained paths** |
+| **Total** | **3,026** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
