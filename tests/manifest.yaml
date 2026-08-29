@@ -1825,6 +1825,8 @@ subjects:
         description: Thirty valid Latin glyph loads use a sibling overlap-sentinel face with two legal glyphs across fifteen ppem and force-autohint target combinations to exercise the dimensionless-contour sentinel branch.
       - id: batch218_valid_latin_bottom_distance_order
         description: Thirty valid Latin glyph loads use a sibling three-contour bottom-distance face across ten ppem sizes and three legal force-autohint target modes to exercise the ordered-distance false arm.
+      - id: batch219_cff_eof_and_fixed_add
+        description: Fifty source-reviewed CFF glyph loads use an implicit global-subroutine EOF return and a fixed-operand Type2 add across five sizes and five public load modes; every concrete ID records the FreeType source boundary that justifies the expansion.
       # needs-input: operation FT_Load_Glyph; fixture asset input/fonts/DejaVuSans.ttf plus fonts with composite glyphs, vertical metrics, embedded bitmaps, and malformed/out-of-range controls; params glyph indices 0, 36, composite glyph, out-of-range glyph, sizes 10/20, and load_flags default/no_hinting/force_autohint/no_scale/no_recurse/render/target modes/vertical/linear_design/sbits_only; expected output shape FT_Error plus full FT_GlyphSlotRec public fields, outline/subglyph/bitmap data, and slot mutation; comparison rule exact C error, metrics, advance, linear advances, lsb/rsb deltas, format, outline points/tags, bitmap fields/bytes, and subglyph fields when applicable.
       - id: render_and_target_modes
         description: FT_LOAD_RENDER and FT_LOAD_TARGET_* combinations produce the same bitmap pixel mode, dimensions, bearings, pitch, and bytes as C.

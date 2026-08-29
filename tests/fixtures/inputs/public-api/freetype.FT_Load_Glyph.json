@@ -41,6 +41,7 @@
     "batch216_valid_latin_thin_bottom_crossed_tilde",
     "batch217_valid_latin_overlap_sentinel",
     "batch218_valid_latin_bottom_distance_order",
+    "batch219_cff_eof_and_fixed_add",
     "render_and_target_modes",
     "no_scale_no_hinting_and_vertical_flags",
     "error_out_of_range_null_face_or_invalid_flags",
@@ -13401,6 +13402,1401 @@
           "freetype/src/autofit/aflatin.c:5047-5050",
           "src/autohint/latin.rs:2718-2749",
           "src/autohint/latin.rs:3031-3033"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_Load_Glyph.batch219_cff_eof_and_fixed_add",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "batch219_cff_eof_and_fixed_add",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "b219-eof-08-no-hinting-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-08-no-hinting-001: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 8px with no-hinting; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:8:no-hinting:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-08-force-autohint-002",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-08-force-autohint-002: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 8px with force-autohint; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:8:force-autohint:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-08-target-light-003",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-08-target-light-003: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 8px with target-light; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:8:target-light:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-08-target-mono-004",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-08-target-mono-004: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 8px with target-mono; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:8:target-mono:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-08-target-lcd-005",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-08-target-lcd-005: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 8px with target-lcd; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:8:target-lcd:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-12-no-hinting-006",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-12-no-hinting-006: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 12px with no-hinting; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:12:no-hinting:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-12-force-autohint-007",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-12-force-autohint-007: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 12px with force-autohint; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:12:force-autohint:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-12-target-light-008",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-12-target-light-008: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 12px with target-light; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:12:target-light:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-12-target-mono-009",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-12-target-mono-009: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 12px with target-mono; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:12:target-mono:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-12-target-lcd-010",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-12-target-lcd-010: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 12px with target-lcd; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:12:target-lcd:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-20-no-hinting-011",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-20-no-hinting-011: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 20px with no-hinting; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:20:no-hinting:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-20-force-autohint-012",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-20-force-autohint-012: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 20px with force-autohint; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:20:force-autohint:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-20-target-light-013",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-20-target-light-013: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 20px with target-light; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:20:target-light:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-20-target-mono-014",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-20-target-mono-014: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 20px with target-mono; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:20:target-mono:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-20-target-lcd-015",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-20-target-lcd-015: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 20px with target-lcd; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:20:target-lcd:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-32-no-hinting-016",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-32-no-hinting-016: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 32px with no-hinting; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:32:no-hinting:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-32-force-autohint-017",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-32-force-autohint-017: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 32px with force-autohint; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:32:force-autohint:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-32-target-light-018",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-32-target-light-018: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 32px with target-light; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:32:target-light:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-32-target-mono-019",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-32-target-mono-019: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 32px with target-mono; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:32:target-mono:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-32-target-lcd-020",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-32-target-lcd-020: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 32px with target-lcd; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:32:target-lcd:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-64-no-hinting-021",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-64-no-hinting-021: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 64px with no-hinting; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:64:no-hinting:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-64-force-autohint-022",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-64-force-autohint-022: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 64px with force-autohint; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:64:force-autohint:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-64-target-light-023",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-64-target-light-023: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 64px with target-light; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:64:target-light:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-64-target-mono-024",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-64-target-mono-024: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 64px with target-mono; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:64:target-mono:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-eof-64-target-lcd-025",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-global-subr-eof.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-eof-64-target-lcd-025: Valid CFF1 glyph 1 uses a global subroutine whose INDEX object ends at EOF at 64px with target-lcd; pinned FreeType accepts the implicit subroutine return in psaux/psintrp.c:640-667 and enters it through psaux/psintrp.c:979-1050.",
+            "coverage": [
+              "batch219:cff:global-subr-eof:64:target-lcd:src-tt-cff-1346"
+            ]
+          },
+          {
+            "id": "b219-add-08-no-hinting-026",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-08-no-hinting-026: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 8px with no-hinting; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:8:no-hinting:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-08-force-autohint-027",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-08-force-autohint-027: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 8px with force-autohint; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:8:force-autohint:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-08-target-light-028",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-08-target-light-028: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 8px with target-light; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:8:target-light:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-08-target-mono-029",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-08-target-mono-029: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 8px with target-mono; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:8:target-mono:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-08-target-lcd-030",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-08-target-lcd-030: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 8px with target-lcd; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:8:target-lcd:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-12-no-hinting-031",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-12-no-hinting-031: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 12px with no-hinting; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:12:no-hinting:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-12-force-autohint-032",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-12-force-autohint-032: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 12px with force-autohint; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:12:force-autohint:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-12-target-light-033",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-12-target-light-033: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 12px with target-light; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:12:target-light:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-12-target-mono-034",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-12-target-mono-034: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 12px with target-mono; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:12:target-mono:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-12-target-lcd-035",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-12-target-lcd-035: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 12px with target-lcd; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:12:target-lcd:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-20-no-hinting-036",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-20-no-hinting-036: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 20px with no-hinting; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:20:no-hinting:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-20-force-autohint-037",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-20-force-autohint-037: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 20px with force-autohint; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:20:force-autohint:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-20-target-light-038",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-20-target-light-038: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 20px with target-light; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:20:target-light:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-20-target-mono-039",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-20-target-mono-039: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 20px with target-mono; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:20:target-mono:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-20-target-lcd-040",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 20
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-20-target-lcd-040: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 20px with target-lcd; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:20:target-lcd:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-32-no-hinting-041",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-32-no-hinting-041: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 32px with no-hinting; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:32:no-hinting:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-32-force-autohint-042",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-32-force-autohint-042: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 32px with force-autohint; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:32:force-autohint:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-32-target-light-043",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-32-target-light-043: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 32px with target-light; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:32:target-light:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-32-target-mono-044",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-32-target-mono-044: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 32px with target-mono; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:32:target-mono:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-32-target-lcd-045",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 32
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-32-target-lcd-045: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 32px with target-lcd; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:32:target-lcd:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-64-no-hinting-046",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-64-no-hinting-046: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 64px with no-hinting; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:64:no-hinting:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-64-force-autohint-047",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-64-force-autohint-047: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 64px with force-autohint; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:64:force-autohint:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-64-target-light-048",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-64-target-light-048: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 64px with target-light; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:64:target-light:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-64-target-mono-049",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-64-target-mono-049: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 64px with target-mono; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:64:target-mono:src-tt-cff-1297"
+            ]
+          },
+          {
+            "id": "b219-add-64-target-lcd-050",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-fixed-add.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 64
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LCD"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b219-add-64-target-lcd-050: Valid CFF1 glyph 1 executes Type2 fixed-real followed by integer add at 64px with target-lcd; pinned FreeType parses the fixed operand and performs the fixed add in psaux/psintrp.c:1560-1575.",
+            "coverage": [
+              "batch219:cff:fixed-add:64:target-lcd:src-tt-cff-1297"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-load",
+        "coverage:real-parity",
+        "font_variability:input/fonts",
+        "source-reviewed-expansion"
+      ],
+      "metadata": {
+        "coverage_intent": "Fifty concrete public parity IDs are split between two source-reviewed CFF1 witnesses: 25 valid global-subroutine calls whose subroutine INDEX object ends at EOF, and 25 deterministic Type2 fixed-real-plus-integer add programs. Each size/load-mode combination is retained as a distinct input until Coverage MCP attribution proves it redundant.",
+        "freetype_review": "The pinned C interpreter accepts both shapes. psaux/psintrp.c:640-667 synthesizes RETURN when a subroutine buffer ends; psaux/psintrp.c:979-1050 enters callgsubr; psaux/psintrp.c:1560-1575 parses and performs fixed add for mixed operands."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "rows": "per-font glyph load status and slot snapshot"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "rows[].status",
+            "rows[].slot"
+          ]
+        },
+        "sources_checked": [
+          "freetype/src/psaux/psintrp.c:640-667",
+          "freetype/src/psaux/psintrp.c:979-1050",
+          "freetype/src/psaux/psintrp.c:1052-1067",
+          "freetype/src/psaux/psintrp.c:1560-1575",
+          "src/tt/cff.rs:1345-1351",
+          "src/tt/cff.rs:1295-1300"
         ]
       }
     },

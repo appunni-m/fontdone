@@ -1171,6 +1171,26 @@ Coverage MCP snapshot
 selected-subset reachability evidence (`complete=false`), not a new
 full-denominator percentage claim.
 
+### Batch 219: CFF EOF return and fixed-operand arithmetic
+
+Before expanding the public parity matrix, the pinned FreeType interpreter was
+reviewed for two remaining CFF regions. FreeType does allow both behaviors:
+
+| Concrete ID family | Public input | Why this is a distinct witness | Pinned FreeType boundary |
+|---|---|---|---|
+| `b219-eof-08-no-hinting-001` through `b219-eof-64-target-lcd-025` | `input/fonts/cff/pure-cff-global-subr-eof.otf`, glyph 1, sizes 8/12/20/32/64, five legal load modes | The glyph calls a global subroutine whose INDEX object ends at EOF. This is not a malformed-input rejection: the C interpreter synthesizes an implicit `RETURN` when the subroutine buffer ends, exercising Rust `src/tt/cff.rs:1345-1351`. | `freetype/src/psaux/psintrp.c:640-667` and `:979-1050` |
+| `b219-add-08-no-hinting-026` through `b219-add-64-target-lcd-050` | `input/fonts/cff/pure-cff-fixed-add.otf`, glyph 1, the same size/mode grid | The glyph executes valid Type2 fixed-real followed by integer `add`. FreeType parses the fixed operand and performs the mixed-operand fixed add, exercising Rust `src/tt/cff.rs:1295-1300`. | `freetype/src/psaux/psintrp.c:1560-1575` |
+
+The exact 50 IDs and their individual reasons are maintained in
+`tests/fixtures/inputs/public-api/freetype.FT_Load_Glyph.json`. The first
+global-subroutine probe used explicit `return` and produced zero new
+coverage, so it was not treated as evidence for the EOF-resume lines. These
+two generated fonts isolate the source-reviewed shapes while keeping the
+public operation, expected output, and C/Rust comparison unchanged. The fixed-add witness is deterministic; stateful `random` remains covered by the separate seed-controlled property cases. The
+source review therefore confirms that the original implementation knowingly
+allows the inputs; the expansion is for an uncovered interpreter path, not an
+attempt to make a rejected malformed input pass.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained

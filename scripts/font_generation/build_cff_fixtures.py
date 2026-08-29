@@ -1107,6 +1107,177 @@ def write_pure_cff_random_global_subr_error() -> None:
     build_cff_random_global_subr_error(out)
 
 
+def build_cff_global_subr_eof(path: Path) -> None:
+    """Build a valid CFF face whose global subroutine ends at buffer EOF.
+
+    The CFF Type 2 interpreter synthesizes a return when a subroutine buffer
+    ends without an explicit ``return`` operator.  Keep that distinction from
+    ``pure-cff-random-global-subr-error.otf``, whose subroutines contain an
+    explicit return and therefore do not exercise the implicit-resume path.
+    """
+    names = {
+        "familyName": "Pure CFF Global Subr EOF Coverage",
+        "styleName": "Regular",
+        "uniqueFontIdentifier": "Pure CFF Global Subr EOF Coverage Regular",
+        "fullName": "Pure CFF Global Subr EOF Coverage Regular",
+        "psName": "PureCFFGlobalSubrEofCoverage-Regular",
+    }
+    builder = FontBuilder(UNITS_PER_EM, isTTF=False)
+    builder.setupGlyphOrder([".notdef", "eof_subr"])
+    builder.setupCharacterMap({0x41: "eof_subr"})
+    builder.setupHorizontalMetrics({".notdef": (600, 0), "eof_subr": (600, 0)})
+    builder.setupHorizontalHeader(ascent=800, descent=-200)
+    builder.setupNameTable(names)
+    builder.setupOS2(
+        sTypoAscender=800,
+        sTypoDescender=-200,
+        usWinAscent=800,
+        usWinDescent=200,
+    )
+    builder.setupPost()
+    # One global subroutine has the standard CFF bias 107.  Its final
+    # rlineto deliberately ends the INDEX object without ``return``; the
+    # caller completes a closed rectangle after the implicit return.
+    eof_charstring = t2_program_charstring(
+        [
+            0,
+            0,
+            "rmoveto",
+            -107,
+            "callgsubr",
+            0,
+            700,
+            "rlineto",
+            -440,
+            0,
+            "rlineto",
+            0,
+            -700,
+            "rlineto",
+            "endchar",
+        ]
+    )
+    builder.setupCFF(
+        names["psName"],
+        {
+            "FullName": names["fullName"],
+            "FamilyName": names["familyName"],
+            "Weight": names["styleName"],
+        },
+        {".notdef": t2_charstring(), "eof_subr": eof_charstring},
+        {},
+    )
+    cff = builder.font["CFF "].cff
+    cff.GlobalSubrs.append(
+        T2CharString(
+            program=[440, 0, "rlineto"],
+            private=None,
+            globalSubrs=cff.GlobalSubrs,
+        )
+    )
+    builder.setupMaxp()
+    recalc_font_bbox = TopDict.recalcFontBBox
+    try:
+        TopDict.recalcFontBBox = lambda self: None
+        builder.font.recalcBBoxes = False
+        builder.font["head"].created = FIXED_HEAD_TIME
+        builder.font["head"].modified = FIXED_HEAD_TIME
+        builder.font.recalcTimestamp = False
+        builder.font["CFF "].cff.topDictIndex[0].FontBBox = [0, 0, 440, 700]
+        builder.save(path)
+    finally:
+        TopDict.recalcFontBBox = recalc_font_bbox
+
+
+def write_pure_cff_global_subr_eof() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / "pure-cff-global-subr-eof.otf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    build_cff_global_subr_eof(out)
+
+
+def build_cff_fixed_add(path: Path) -> None:
+    """Build a valid CFF face that adds an integer to a fixed real value."""
+    names = {
+        "familyName": "Pure CFF Fixed Add Coverage",
+        "styleName": "Regular",
+        "uniqueFontIdentifier": "Pure CFF Fixed Add Coverage Regular",
+        "fullName": "Pure CFF Fixed Add Coverage Regular",
+        "psName": "PureCFFFixedAddCoverage-Regular",
+    }
+    builder = FontBuilder(UNITS_PER_EM, isTTF=False)
+    builder.setupGlyphOrder([".notdef", "fixed_add"])
+    builder.setupCharacterMap({0x41: "fixed_add"})
+    builder.setupHorizontalMetrics({".notdef": (600, 0), "fixed_add": (600, 0)})
+    builder.setupHorizontalHeader(ascent=800, descent=-200)
+    builder.setupNameTable(names)
+    builder.setupOS2(
+        sTypoAscender=800,
+        sTypoDescender=-200,
+        usWinAscent=800,
+        usWinDescent=200,
+    )
+    builder.setupPost()
+    # The real number pushes a 16.16 operand.  Adding an integer operand
+    # therefore selects the fixed/fixed normalization in the Rust
+    # Type2Operand helper, matching cf2_escADD's two fixed pops and fixed
+    # push.  Keep the witness deterministic; stateful random behavior is
+    # covered by separate seed-controlled property cases.
+    fixed_add_charstring = t2_program_charstring(
+        [
+            0,
+            0,
+            "rmoveto",
+            0.0,
+            440,
+            "add",
+            0,
+            "rlineto",
+            0,
+            700,
+            "rlineto",
+            -440,
+            0,
+            "rlineto",
+            0,
+            -700,
+            "rlineto",
+            "endchar",
+        ]
+    )
+    builder.setupCFF(
+        names["psName"],
+        {
+            "FullName": names["fullName"],
+            "FamilyName": names["familyName"],
+            "Weight": names["styleName"],
+        },
+        {".notdef": t2_charstring(), "fixed_add": fixed_add_charstring},
+        {},
+    )
+    builder.setupMaxp()
+    recalc_font_bbox = TopDict.recalcFontBBox
+    try:
+        TopDict.recalcFontBBox = lambda self: None
+        builder.font.recalcBBoxes = False
+        builder.font["head"].created = FIXED_HEAD_TIME
+        builder.font["head"].modified = FIXED_HEAD_TIME
+        builder.font.recalcTimestamp = False
+        builder.font["CFF "].cff.topDictIndex[0].FontBBox = [0, 0, 440, 700]
+        builder.save(path)
+    finally:
+        TopDict.recalcFontBBox = recalc_font_bbox
+
+
+def write_pure_cff_fixed_add() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / "pure-cff-fixed-add.otf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    build_cff_fixed_add(out)
+
+
 def write_pure_cff_below_baseline_no_vmtx() -> None:
     """Build a valid CFF face whose glyph bbox lies entirely below baseline."""
     out = OUT_DIR / "pure-cff-below-baseline-no-vmtx.otf"
@@ -2460,6 +2631,8 @@ def main() -> None:
     write_pure_cff_random_private_parser_controls()
     write_pure_cff_random_private_edge_controls()
     write_pure_cff_random_global_subr_error()
+    write_pure_cff_global_subr_eof()
+    write_pure_cff_fixed_add()
     write_pure_cff_below_baseline_no_vmtx()
     write_pure_cff_baseline_touch_no_vmtx()
     write_pure_cff_cubic_last_delta()
