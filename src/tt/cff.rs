@@ -473,11 +473,9 @@ fn parse_cff_private_random_seed(data: &[u8], top: &TopDict) -> Result<u32, Font
         // private-dictionary defaults when either Private operand is zero.
         return Ok(0);
     }
-    let end = offset
-        .checked_add(size)
-        .ok_or_else(|| FontError::InvalidTable("CFF: Private dictionary overflow".into()))?;
     let private = data
-        .get(offset..end)
+        .get(offset..)
+        .and_then(|tail| tail.get(..size))
         .ok_or_else(|| FontError::InvalidTable("CFF: Private dictionary out of range".into()))?;
     let mut pos = 0usize;
     let mut stack: Vec<DictNumber> = Vec::new();
@@ -495,9 +493,14 @@ fn parse_cff_private_random_seed(data: &[u8], top: &TopDict) -> Result<u32, Font
             } else {
                 u16::from(byte)
             };
-            if op == 0x0C13
-                && let Some(value) = stack.last()
-            {
+            if op == 0x0C13 {
+                let value = stack.last().ok_or_else(|| {
+                    // `cff_parser_run` rejects a recognized Private DICT
+                    // field with no operand as Stack_Underflow, which the
+                    // pinned C parser exposes as Invalid_Argument
+                    // (`cffparse.c:1361-1365,1540-1542`).
+                    FontError::InvalidArgument("CFF: initialRandomSeed operand missing".into())
+                })?;
                 initial_random_seed = i64::from(value.integer);
             }
             stack.clear();
