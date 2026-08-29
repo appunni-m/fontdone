@@ -6251,6 +6251,8 @@ pub fn abi_property_glyph_to_script_map_mutate(
     handle: usize,
     glyph_index: FT_UInt,
     value: FT_UShort,
+    module_name: &str,
+    property_name: &str,
 ) -> (FT_Error, FT_UShort) {
     let library = rust_ffi::FT_Init_FreeType();
     let Some(face) = face_mut(handle) else {
@@ -6266,8 +6268,8 @@ pub fn abi_property_glyph_to_script_map_mutate(
     };
     let error = rust_ffi::FT_Property_Get_GlyphToScriptMap(
         Some(&library),
-        Some("autofitter"),
-        Some("glyph-to-script-map"),
+        Some(module_name),
+        Some(property_name),
         Some(&face.face),
         Some(&mut prop),
     );

@@ -33301,10 +33301,10 @@ static void load_and_render_property_effect(FT_Face face,
 }
 
 static int emit_property_glyph_map_effect(int argc, char** argv) {
-    if (argc != 5) {
+    if (argc != 7) {
         fprintf(stderr,
                 "--property-glyph-map-effect requires source_kind source_value "
-                "face_index\n");
+                "face_index module_name property_name\n");
         return 2;
     }
     const FT_ULong chars[] = {0x78, 0x78, 0x4ED6, 0x0908};
@@ -33341,8 +33341,8 @@ static int emit_property_glyph_map_effect(int argc, char** argv) {
             prop.map = NULL;
             FT_Error property_error = FT_Property_Get(
                 opened.library,
-                "autofitter",
-                "glyph-to-script-map",
+                argv[5],
+                argv[6],
                 &prop);
             FT_UShort initial_map_value = 0;
             if (!property_error && prop.map &&
@@ -41989,7 +41989,7 @@ static int dispatch(int argc, char** argv) {
     if ((argc == 3 || argc == 6 || argc == 9) && streq(argv[1], "--property-case")) {
         return emit_property_case(argc, argv);
     }
-    if (argc == 5 && streq(argv[1], "--property-glyph-map-effect")) {
+    if (argc == 7 && streq(argv[1], "--property-glyph-map-effect")) {
         return emit_property_glyph_map_effect(argc, argv);
     }
     if (argc == 7 && streq(argv[1], "--property-increase-x-height-effect")) {

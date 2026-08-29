@@ -30321,6 +30321,13 @@ fn glyph_map_effect_mutations(params: &Value) -> Result<Vec<GlyphMapEffectMutati
         .collect()
 }
 
+fn property_effect_names(params: &Value) -> Result<(&str, &str), String> {
+    Ok((
+        string_param(params, "module_name")?,
+        string_param(params, "property_name")?,
+    ))
+}
+
 fn property_effect_ppems(params: &Value, key: &str) -> Result<Vec<FT_UInt>, String> {
     array_param(params, key)?
         .iter()
@@ -30599,6 +30606,7 @@ fn rust_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String>
     let library = FT_Init_FreeType();
     let bytes = required_asset_bytes(case, "font")?;
     let face_index = face_index_param(&case.inputs.params)?;
+    let (module_name, property_name) = property_effect_names(&case.inputs.params)?;
     let mut rows = Vec::new();
     for mutation in glyph_map_effect_mutations(&case.inputs.params)? {
         for ppem in property_effect_ppems(&case.inputs.params, "size_ppems")? {
@@ -30616,8 +30624,8 @@ fn rust_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String>
             };
             let property_error = FT_Property_Get_GlyphToScriptMap(
                 Some(&library),
-                Some("autofitter"),
-                Some("glyph-to-script-map"),
+                Some(module_name),
+                Some(property_name),
                 Some(&face),
                 Some(&mut prop),
             );
@@ -30628,8 +30636,11 @@ fn rust_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String>
                 } else {
                     0
                 };
-            let (load_error, render_error, glyph_slot) =
-                rust_property_effect_load_render(&face, glyph_index)?;
+            let (load_error, render_error, glyph_slot) = if property_error != FT_Err_Ok {
+                (property_error, property_error, Value::Null)
+            } else {
+                rust_property_effect_load_render(&face, glyph_index)?
+            };
             rows.push(json!({
                 "char_code": mutation.char_code,
                 "glyph_index": glyph_index,
@@ -30649,6 +30660,9 @@ fn rust_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String>
 fn c_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = required_asset_bytes(case, "font")?;
     let face_index = face_index_param(&case.inputs.params)?;
+    let (module_name, property_name) = property_effect_names(&case.inputs.params)?;
+    let module_name = CString::new(module_name).map_err(|err| err.to_string())?;
+    let property_name = CString::new(property_name).map_err(|err| err.to_string())?;
     let mut rows = Vec::new();
     for mutation in glyph_map_effect_mutations(&case.inputs.params)? {
         for ppem in property_effect_ppems(&case.inputs.params, "size_ppems")? {
@@ -30665,8 +30679,8 @@ fn c_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String> {
             };
             let property_error = c_abi::FT_Property_Get(
                 library,
-                c"autofitter".as_ptr(),
-                c"glyph-to-script-map".as_ptr(),
+                module_name.as_ptr(),
+                property_name.as_ptr(),
                 (&mut prop as *mut FT_Prop_GlyphToScriptMap).cast(),
             );
             let initial_map_value =
@@ -30676,8 +30690,11 @@ fn c_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String> {
                 } else {
                     0
                 };
-            let (load_error, render_error, glyph_slot) =
-                c_property_effect_load_render(face, glyph_index)?;
+            let (load_error, render_error, glyph_slot) = if property_error != FT_Err_Ok {
+                (property_error, property_error, Value::Null)
+            } else {
+                c_property_effect_load_render(face, glyph_index)?
+            };
             rows.push(json!({
                 "char_code": mutation.char_code,
                 "glyph_index": glyph_index,
@@ -30699,6 +30716,7 @@ fn c_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String> {
 fn wasm_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = required_asset_bytes(case, "font")?;
     let face_index = face_index_param(&case.inputs.params)?;
+    let (module_name, property_name) = property_effect_names(&case.inputs.params)?;
     let mut rows = Vec::new();
     for mutation in glyph_map_effect_mutations(&case.inputs.params)? {
         for ppem in property_effect_ppems(&case.inputs.params, "size_ppems")? {
@@ -30719,10 +30737,15 @@ fn wasm_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String>
                     handle,
                     glyph_index,
                     mutation.value,
+                    module_name,
+                    property_name,
                 )
             };
-            let (load_error, render_error, glyph_slot) =
-                wasm_property_effect_load_render(handle, glyph_index)?;
+            let (load_error, render_error, glyph_slot) = if property_error != FT_Err_Ok {
+                (property_error, property_error, Value::Null)
+            } else {
+                wasm_property_effect_load_render(handle, glyph_index)?
+            };
             rows.push(json!({
                 "char_code": mutation.char_code,
                 "glyph_index": glyph_index,
@@ -46903,6 +46926,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             let mut args = vec!["--property-glyph-map-effect".to_string()];
             push_required_asset_source(case, "font", &mut args)?;
             args.push(face_index_param(params)?.to_string());
+            let (module_name, property_name) = property_effect_names(params)?;
+            args.push(module_name.to_string());
+            args.push(property_name.to_string());
             Ok(args)
         }
         "ftdriver.increase_x_height_effect" => {

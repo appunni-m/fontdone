@@ -1336,6 +1336,23 @@ reported 427 newly covered lines. It did not cover the target WASM helper
 variant intentionally skips map mutation; no selected-only percentage is used
 as a full-denominator claim.
 
+### Batch 225: missing-property glyph-map error
+
+This batch uses one malformed public-property variant with a stable ID; it does
+not add another font, glyph, or size matrix:
+
+| Concrete ID | Public input | Why expand this input | Pinned FreeType review and first divergence |
+|---|---|---|---|
+| `ftdriver.FT_Prop_GlyphToScriptMap.map_mutation_affects_autohint_script@b225-missing-property-glyph-map-error` | The maintained `input/fonts/autohint/mixed-script-map.ttf`, face index 0, the existing four mutation values and three ppems, with `module_name=autofitter` and `property_name=fixture-missing-property` | The valid-property and zero-glyph variants cannot enter the WASM helper's non-OK post-validation return while keeping the face and glyph valid. This unknown property is the smallest public malformed call that targets that error side without padding the campaign. | `ftobjs.c:5301-5382` accepts the public lookup, resolves the `autofitter` module and dispatches its property service; `afmodule.c:296-304` handles the glyph-map property and `:366-368` returns `Missing_Property` for the unknown name. The direct oracle resolved `x` to glyph 34 and returned error 12 for property, load, and render. Before the helper fix, parity reported WASM `/rows/0/glyph_slot`: expected null, actual rendered slot, because the helper still supplied the valid hardcoded property. |
+
+The implementation now passes the case's module/property strings through the
+WASM test-support helper. The parity adapters also propagate a non-OK property
+error to the load/render prefix, matching the pinned oracle's
+`load_and_render_property_effect` guard. Focused parity passed 1 / 1 across
+Rust FFI, C ABI, WASM, and the pinned oracle. The stable ID, expansion reason,
+oracle verdict, and source references are stored in
+`tests/fixtures/inputs/public-api/ftdriver.FT_Prop_GlyphToScriptMap.json`.
+
 
 ## 5. Fixtures and generators
 

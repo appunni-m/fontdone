@@ -291,6 +291,74 @@
             "coverage": [
               "ftdriver.glyph_to_script_map_effect:explicit-b224-zero-glyph-cff-map-guard"
             ]
+          },
+          {
+            "id": "b225-missing-property-glyph-map-error",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/autohint/mixed-script-map.ttf",
+                "requirements": "The maintained mixed-script TrueType font used by the valid glyph-map effect case; its mapped glyphs remain nonzero so only the property lookup is malformed."
+              }
+            },
+            "params": {
+              "module_name": "autofitter",
+              "property_name": "fixture-missing-property",
+              "face_index": 0,
+              "size_ppems": [
+                9,
+                12,
+                18
+              ],
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "runtime_route": "actual_glyph_to_script_map_effect",
+              "mutations": [
+                {
+                  "char_code": 120,
+                  "glyph": "x",
+                  "script": "FT_AUTOHINTER_SCRIPT_NONE",
+                  "value": 0
+                },
+                {
+                  "char_code": 120,
+                  "glyph": "x",
+                  "script": "FT_AUTOHINTER_SCRIPT_LATIN",
+                  "value": 1
+                },
+                {
+                  "char_code": 20182,
+                  "glyph": "他",
+                  "script": "FT_AUTOHINTER_SCRIPT_CJK",
+                  "value": 2
+                },
+                {
+                  "char_code": 2312,
+                  "glyph": "ई",
+                  "script": "FT_AUTOHINTER_SCRIPT_INDIC",
+                  "value": 3
+                }
+              ],
+              "pinned_source": "freetype/src/base/ftobjs.c:5301-5382 and freetype/src/autofit/afmodule.c:285-368",
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "metadata": {
+              "source_behavior": "FreeType accepts the public FT_Property_Get call with a valid module and an unknown property name, dispatches it to the autofitter property service, and returns FT_Err_Missing_Property without populating the glyph-map record.",
+              "expansion_reason": "The existing valid-property and zero-glyph variants cannot enter the WASM helper's non-OK post-validation return. This smallest malformed public-property case keeps the face and glyph valid while making FT_Property_Get return Missing_Property, directly targeting the helper's error side rather than adding another font or glyph matrix.",
+              "oracle_verdict": "The pinned C oracle returns FT_Err_Missing_Property for property_error and propagates the same error to load_error and render_error through its prefix guard; initial_map_value and glyph_slot remain zero/null for all four mutation rows and three ppems.",
+              "source_refs": [
+                "freetype/src/base/ftobjs.c:5301-5382",
+                "freetype/src/autofit/afmodule.c:285-368",
+                "src/ffi/handles.rs:11397-11449",
+                "fontdone-wasm/src/implementation.rs:6250-6294",
+                "scripts/gen_unified_oracle.c:33303-33395"
+              ]
+            },
+            "coverage": [
+              "ftdriver.glyph_to_script_map_effect:explicit-b225-missing-property-glyph-map-error"
+            ]
           }
         ]
       },
