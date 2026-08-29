@@ -1632,8 +1632,20 @@ record in `Font::bdf_bitmap_size`, including the C driver's fallback,
 clamping, and resolution formulas.
 
 After the fix, the 30 concrete IDs passed 30/30 through Rust FFI, C ABI, WASM,
-and the pinned FreeType oracle. Coverage MCP measurement is recorded below
-after the pushed checkpoint.
+and the pinned FreeType oracle.
+
+Coverage MCP run `c8da8ae9-1ea5-483b-8fbe-cd6dd145c990` passed at pushed commit
+`c642ba1` and ingested snapshot
+`bf6d5567-2043-496e-a5ec-47e63bf8e91c` against explicit baseline
+`7405fcdf-db54-48a4-877f-eca87142b938`. The explicit incremental review is
+supported, but its scope is `selected_subset` with `complete=false` and its
+merge is `exact=false` using `conservative_max_fallback`. The canonical
+additive union reports +13 covered functions, +2,913 covered regions, and
++0 covered lines/+0 covered branches. The bounded replacement diff reports
+37 newly covered line identities, 0 regressions, and 47,081 baseline
+observations not observed by the selected run. Test attribution was
+unavailable. These are reachability/additive observations only, not a
+full-denominator percentage.
 
 ## 5. Fixtures and generators
 
