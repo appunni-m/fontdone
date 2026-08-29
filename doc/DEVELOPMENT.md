@@ -1214,6 +1214,27 @@ committed. The source review confirms that the legal arithmetic case is an
 oracle-permitted input, while the malformed operand case is an oracle-matched
 error contract; neither family is coverage-only padding.
 
+### Batch 221: BDF empty atom pointer
+
+The next uncovered WASM region was not a generic failure branch. Coverage MCP
+identified `fontdone-wasm/src/implementation.rs:8941-8942`, where a successful
+`FT_Get_BDF_Property` call must report an atom with a null pointer as length
+zero. The maintained fixture already contains the exact public input needed:
+
+| Concrete ID | Public input | Why expand this input | Pinned FreeType review and first divergence |
+|---|---|---|---|
+| `ftbdf.FT_Get_BDF_Property.success_bdf_empty_atom_returns_null` | `input/fonts/bdf/properties-duplicate-and-empty.bdf`, property `UNNAMED_PROPERTY_WITHOUT_VALUE`, face index 0 | The no-value user-property line is the smallest public parity input that reaches the WASM `atom.is_null()` arm. No size/mode matrix is justified for this metadata API because the property result does not depend on glyph loading. | `bdflib.c:544-604` classifies the line as an atom; `:657-699` creates the user property and leaves its atom pointer `NULL`; `bdfdrivr.c:897-905` returns `BDF_PROPERTY_TYPE_ATOM` with that pointer; `ftbdf.c:71-86` returns success. Before the fix, Rust skipped the no-value line in `src/font.rs:1049-1050` and returned `Invalid_Argument`; focused parity exposed that exact status mismatch. |
+
+The correction accepts a no-value atom line, preserves an empty atom's null C
+pointer, and maps that pointer to `BDF_PROPERTY_TYPE_ATOM` plus `FT_Err_Ok` in
+the Rust FFI. The existing WASM wrapper then executes its null-pointer length
+branch. This is an oracle-permitted malformed-looking input, not an invented
+success case: pinned FreeType knowingly accepts it. The exact input, source
+references, and expansion reason are recorded in
+`tests/fixtures/inputs/public-api/ftbdf.FT_Get_BDF_Property.json`; one case is
+kept until the incremental measurement demonstrates whether further distinct
+property forms are necessary.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained

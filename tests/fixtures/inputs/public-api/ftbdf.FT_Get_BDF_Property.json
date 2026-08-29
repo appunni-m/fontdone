@@ -3,6 +3,7 @@
   "subject": "ftbdf.FT_Get_BDF_Property",
   "manifest_cases": [
     "success_bdf_string_integer_cardinal_properties",
+    "success_bdf_empty_atom_returns_null",
     "success_pcf_properties_signed_only",
     "success_sfnt_bdf_table_selected_strike",
     "error_missing_property_sets_none",
@@ -10,6 +11,64 @@
     "error_null_face_or_output"
   ],
   "cases": [
+    {
+      "case_id": "ftbdf.FT_Get_BDF_Property.success_bdf_empty_atom_returns_null",
+      "subject": "ftbdf.FT_Get_BDF_Property",
+      "case": "success_bdf_empty_atom_returns_null",
+      "operation": "ftbdf.get_bdf_property",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "bdf_font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/properties-duplicate-and-empty.bdf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "property": "UNNAMED_PROPERTY_WITHOUT_VALUE",
+          "face_index": 0
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftbdf",
+        "area:bdf-properties",
+        "path:empty-atom-success"
+      ],
+      "metadata": {
+        "source_behavior": "FreeType treats an unknown BDF property with no value as a user BDF_ATOM whose stored pointer remains NULL; FT_Get_BDF_Property still returns success and BDF_PROPERTY_TYPE_ATOM.",
+        "expansion_reason": "This is the maintained public input needed to reach the WASM atom-null branch at fontdone-wasm/src/implementation.rs:8941-8942 and to verify the Rust parser does not turn an oracle-permitted empty atom into Missing_Property."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "record": "BDF_PropertyRec",
+          "empty_atom_pointer": "null"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "error",
+            "property_name",
+            "property_after.type",
+            "property_after.atom_string"
+          ]
+        },
+        "fixture_requirements": [
+          "BDF user-property line UNNAMED_PROPERTY_WITHOUT_VALUE with no value token"
+        ],
+        "source_refs": [
+          "freetype/src/bdf/bdflib.c:544-604",
+          "freetype/src/bdf/bdflib.c:657-699",
+          "freetype/src/bdf/bdfdrivr.c:897-905",
+          "freetype/src/base/ftbdf.c:71-86",
+          "fontdone-wasm/src/implementation.rs:8937-8942"
+        ]
+      }
+    },
     {
       "case_id": "ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties",
       "subject": "ftbdf.FT_Get_BDF_Property",

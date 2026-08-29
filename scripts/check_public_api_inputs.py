@@ -5054,6 +5054,7 @@ def pending_route_reason(row: ConcreteInput) -> str | None:
     if row.operation == "ftbdf.get_bdf_property":
         if row.case_id in {
             "ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties",
+            "ftbdf.FT_Get_BDF_Property.success_bdf_empty_atom_returns_null",
             "ftbdf.FT_Get_BDF_Property.success_pcf_properties_signed_only",
             "ftbdf.FT_Get_BDF_Property.success_sfnt_bdf_table_selected_strike",
             "ftbdf.FT_Get_BDF_Property.error_missing_property_sets_none",
@@ -5771,6 +5772,17 @@ def focused_success_real_parity_reason(row: ConcreteInput) -> str | None:
             "Type1 MM FontInfo underline blend dictionary presence and public "
             "FT_Get_PS_Font_Info field output validate through pinned C oracle, "
             "Rust FFI, C ABI, and WASM ABI"
+        )
+    if (
+        row.operation == "ftbdf.get_bdf_property"
+        and row.case_id
+        == "ftbdf.FT_Get_BDF_Property.success_bdf_empty_atom_returns_null"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_Get_BDF_Property empty BDF user atom validates FreeType's accepted "
+            "no-value property line, NULL atom pointer, and success status through "
+            "the pinned C oracle, Rust FFI, C ABI, and WASM ABI"
         )
     if (
         row.operation == "ftbdf.get_bdf_property"

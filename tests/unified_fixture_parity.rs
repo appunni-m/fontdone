@@ -28526,6 +28526,7 @@ fn bdf_property_error_case_supported(case: &InputCase) -> bool {
     matches!(
         case_id_base(&case.case_id),
         "ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties"
+            | "ftbdf.FT_Get_BDF_Property.success_bdf_empty_atom_returns_null"
             | "ftbdf.FT_Get_BDF_Property.success_pcf_properties_signed_only"
             | "ftbdf.FT_Get_BDF_Property.success_sfnt_bdf_table_selected_strike"
             | "ftbdf.FT_Get_BDF_Property.error_missing_property_sets_none"
@@ -29288,6 +29289,9 @@ fn bdf_property_run_output(error_code: FT_Error, output: Value) -> RunOutput {
 
 fn bdf_property_name_for_case(case: &InputCase) -> Result<&str, String> {
     match case_id_base(&case.case_id) {
+        "ftbdf.FT_Get_BDF_Property.success_bdf_empty_atom_returns_null" => {
+            Ok("UNNAMED_PROPERTY_WITHOUT_VALUE")
+        }
         "ftbdf.FT_Get_BDF_Property.error_missing_property_sets_none" => Ok("NO_SUCH_PROPERTY"),
         "ftbdf.FT_Get_BDF_Property.error_unsupported_face_or_unselected_strike" => {
             Ok("FAMILY_NAME")

@@ -32591,6 +32591,19 @@ static int emit_bdf_property_case(int argc, char** argv) {
         return 0;
     }
 
+    if (streq(case_id, "ftbdf.FT_Get_BDF_Property.success_bdf_empty_atom_returns_null")) {
+        const char* property_name = "UNNAMED_PROPERTY_WITHOUT_VALUE";
+        BDF_PropertyRec property = bdf_property_sentinel();
+        FT_Error error = FT_Get_BDF_Property(face.face, property_name, &property);
+        printf("{");
+        print_status(error);
+        printf(",\"output\":{\"error\":%d,\"property_name\":\"%s\",\"property_after\":", error, property_name);
+        print_bdf_property_after(&property);
+        printf("}}\n");
+        close_oracle_face(&face);
+        return 0;
+    }
+
     if (streq(case_id, "ftbdf.FT_Get_BDF_Property.success_sfnt_bdf_table_selected_strike")) {
         FT_Error select_error = FT_Select_Size(face.face, 0);
         const char* names[] = {"FAMILY_NAME", "PIXEL_SIZE"};

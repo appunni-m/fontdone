@@ -1047,8 +1047,15 @@ fn parse_bdf_atom(raw_value: &str) -> String {
 }
 
 fn parse_bdf_property_line(line: &str) -> Option<BdfPropertyEntry> {
-    let (name, raw_value) = line.split_once(char::is_whitespace)?;
+    // FreeType's `bdf_is_atom_` accepts a user-property line that ends after
+    // the name.  It records that property as an empty BDF_ATOM whose stored
+    // C pointer remains NULL; do not discard the line merely because there is
+    // no whitespace-delimited value token.
+    let (name, raw_value) = line.split_once(char::is_whitespace).unwrap_or((line, ""));
     let name = name.trim();
+    if name.is_empty() {
+        return None;
+    }
     let format = bdf_property_format(name);
     let value = match format {
         BdfPropertyFormat::Atom => BdfPropertyValue::Atom(parse_bdf_atom(raw_value)),
@@ -1062,7 +1069,9 @@ fn parse_bdf_property_line(line: &str) -> Option<BdfPropertyEntry> {
         }
     };
     let atom_c_string = match &value {
-        BdfPropertyValue::Atom(atom) => CString::new(atom.as_str()).ok(),
+        // `bdflib.c:bdf_add_property_` leaves an empty atom's pointer NULL;
+        // a non-empty atom still owns a stable NUL-terminated string.
+        BdfPropertyValue::Atom(atom) if !atom.is_empty() => CString::new(atom.as_str()).ok(),
         _ => None,
     };
     Some(BdfPropertyEntry {

@@ -10792,10 +10792,12 @@ pub fn FT_Get_BDF_Property(
     match inner.font().bdf_property(prop_name) {
         Some(BdfPropertyValue::Atom(_)) => {
             output.type_ = BDF_PROPERTY_TYPE_ATOM;
-            let Some(atom_c_string) = inner.font().bdf_property_atom_c_str(prop_name) else {
-                return FT_Err_Invalid_Argument;
-            };
-            output.u.atom = atom_c_string.as_ptr();
+            // FreeType returns success for an empty BDF atom while retaining
+            // the parser's NULL atom pointer (`bdflib.c:692-699`).
+            output.u.atom = inner
+                .font()
+                .bdf_property_atom_c_str(prop_name)
+                .map_or(ptr::null(), CStr::as_ptr);
             FT_Err_Ok
         }
         Some(BdfPropertyValue::Integer(integer)) => {
