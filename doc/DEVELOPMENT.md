@@ -788,9 +788,37 @@ The first pre-expansion group is the BDF `PIXEL_SIZE` edge matrix:
 | `ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties@cc50-bdf-009` | Omit `FONT_ASCENT`/`FONT_DESCENT` while retaining `PIXEL_SIZE`, probing the driver's metric fallbacks. | `bdfdrivr.c:450-468` explicitly falls back to the parsed font bounding box for both metrics, so this is a separate, valid target rather than a `PIXEL_SIZE` type case. | Defer to a separate metric-fallback batch so its reason and expected fields remain isolated. |
 | `ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties@cc50-bdf-010` | Use a malformed `BBX` numeric prefix alongside `PIXEL_SIZE`, probing permissive decimal parsing. | `bdflib.c:1027-1033` uses permissive `bdf_atous_`/`bdf_atos_`, but the public face route also has constructor and bitmap consistency requirements; this candidate needs an independent oracle reduction before inclusion. | Defer; do not mix an unverified BBX parser probe into the property batch. |
 
-The four accepted candidates above are intended to be public parity inputs,
-not unit-test-only probes. Their fixtures and manifest variants will be added
-only after this ledger checkpoint is committed and pushed.
+The four accepted candidates above are public parity inputs, not unit-test-only
+probes. Their fixtures and manifest variants were added after this ledger
+checkpoint was committed and pushed.
+
+The first focused parity attempt deliberately queried `FONT_ASCENT` and
+`FONT_DESCENT` to probe the same BDF property machinery, but it exposed an
+oracle-contract issue rather than a runtime mismatch: the exact
+`success_bdf_string_integer_cardinal_properties` oracle uses its fixed public
+property list (`FAMILY_NAME`, `POINT_SIZE`, `PIXEL_SIZE`, `RESOLUTION_X`). The
+variants were corrected to use that list, and the final source-reviewed run
+passed 4 / 4 comparisons with no failures. This matters because the C oracle
+does allow the four font shapes, but it does not allow an arbitrary per-variant
+property list through this logical case.
+
+Coverage MCP then ran exactly those four concrete IDs with
+`--migration-coverage-case-ids` in incremental mode against explicit baseline
+`d77068bd-5110-4d9a-8328-7a1a9d6d708d`:
+
+```text
+run:      c4a0919c-290b-4b61-9ab1-734bffdcf333
+snapshot: 610e6988-067d-47f5-8277-2ef2e1ffe6aa
+status:   passed; ingested=1
+```
+
+The bounded MCP union reports +452 covered region identities and 0 covered
+line, function, or branch identities. Its measurement scope is
+`selected_subset`, `exact=false`, and test attribution is unavailable, so the
+result is evidence that these cases execute the selected BDF paths, not a new
+full-suite coverage percentage. The source review and parity result justify
+retaining the four inputs; the bounded coverage result does not by itself
+justify adding look-alike cases.
 
 ## 5. Fixtures and generators
 
