@@ -1515,6 +1515,57 @@ bounded source review still marks the false side of the restoration condition
 at `fontdone-c-abi/src/implementation.rs:2088` unobserved. The selected-only
 line/region counters are not a full-denominator claim.
 
+### Batch 234: CMap cache restoration from a null active map
+
+This batch targets the false side of the CMap cache restore path with a valid
+public face that has charmaps but no initially selectable Unicode charmap. The
+maintained `input/fonts/charmap/cmap-nonunicode-format6.ttf` contains one
+platform-1/encoding-0 format-6 map, so cmap index 0 is a valid cache target;
+the face itself opens with `face->charmap == NULL`. Each ID below has the same
+font, target cmap, repeat lookup, and public route, and differs only in the
+codepoint used to make the reason for the expansion explicit.
+
+| Variant ID | Codepoint/result class | Why this input is expanded |
+|---|---|---|
+| `batch234-cmap-no-active-001` | U+0041, mapped | Positive witness that a valid target map can be used and the saved null state restored. |
+| `batch234-cmap-no-active-002` | U+0000, lower boundary/unmapped | Confirms restoration is independent of a zero glyph result at the low boundary. |
+| `batch234-cmap-no-active-003` | U+0001, unmapped | Distinguishes the adjacent low codepoint from the boundary case while keeping the same state path. |
+| `batch234-cmap-no-active-004` | U+0020, unmapped | Exercises an ordinary ASCII query through the non-Unicode format-6 target. |
+| `batch234-cmap-no-active-005` | U+0042, adjacent to mapped code | Confirms the no-active state is not synthesized after a query next to the only mapped code. |
+| `batch234-cmap-no-active-006` | U+007F, ASCII upper boundary | Covers the upper ASCII boundary without changing the cache or face setup. |
+| `batch234-cmap-no-active-007` | U+0080, first extended-byte value | Checks the same restore arm at the first value beyond ASCII. |
+| `batch234-cmap-no-active-008` | U+00FF, extended-byte upper boundary | Covers the format-6 byte-range boundary with a zero glyph result. |
+| `batch234-cmap-no-active-009` | U+0100, first value beyond the byte range | Verifies that the temporary target is restored for a codepoint outside format 6's range. |
+| `batch234-cmap-no-active-010` | U+10FFFF, maximum Unicode scalar | Completes the public `FT_UInt32` upper-boundary witness without changing the face state. |
+
+The pinned FreeType review confirms that these are accepted public inputs, not
+invented success cases. `freetype/src/base/ftobjs.c:1371-1453` searches for a
+Unicode charmap and returns `Invalid_CharMap_Handle` without selecting a
+non-Unicode record when none exists, leaving the active pointer null.
+`freetype/src/cache/ftccmap.c:298-315` then saves that pointer, assigns the
+requested `face->charmaps[cmap_index]`, calls `FT_Get_Char_Index`, and restores
+the saved pointer. The restore is unconditional for a valid nonnegative index,
+including when the saved pointer is null and when the glyph result is zero.
+
+Before the fix, all ten focused comparisons exposed the same first divergence:
+the Rust FFI route returned `active_charmap_after=0` instead of the oracle's
+`-1`; C ABI, WASM, and glyph values otherwise matched. The fix carries an
+explicit no-selected-charmap sentinel through face construction and variation
+rebuilds, and centralizes the cache's direct-select/direct-restore operation so
+all three Rust-facing façades restore `None` exactly. It intentionally bypasses
+the public `FT_Set_Charmap` format-14 rejection because the pinned cache code
+assigns the face pointer directly.
+
+Focused parity passed 10 / 10 variants across Rust FFI, C ABI, WASM, and the
+pinned oracle at pushed commit `e89ae3d`. Coverage MCP run
+`dc3e1068-f8b2-4818-bb9d-8b0b6248d379` ingested child snapshot
+`0b716c72-4b98-4e58-b7c1-600e891ac8b9` against explicit baseline
+`7405fcdf-db54-48a4-877f-eca87142b938`. The incremental review is a selected
+subset (`complete=false`); its additive union reports 461 newly covered line
+identities and the targeted CMap helper/adapter regions. Its merge is marked
+non-exact, so the selected-only counters are reachability evidence and not a
+replacement full-denominator percentage or regression claim.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained

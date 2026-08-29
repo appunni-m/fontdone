@@ -1235,11 +1235,7 @@ impl FT_Face {
     /// the cache's direct-select/direct-restore semantics with the companion
     /// ABI façades. The saved `None` state is restored as `face->charmap == NULL`.
     #[doc(hidden)]
-    pub fn cmap_cache_lookup_glyph(
-        &mut self,
-        cmap_index: FT_Int,
-        char_code: FT_UInt32,
-    ) -> FT_UInt {
+    pub fn cmap_cache_lookup_glyph(&mut self, cmap_index: FT_Int, char_code: FT_UInt32) -> FT_UInt {
         let glyph = self
             .inner
             .borrow_mut()
