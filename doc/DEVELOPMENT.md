@@ -1143,13 +1143,33 @@ created:
 
 | Candidate public case ID | Why expand this input | Pinned FreeType review | Decision before parity |
 |---|---|---|---|
-| `freetype.FT_New_Memory_Face.hvar-store-delta-size-too-large` | Set `itemCount=65535`, `longWords=1`, `wordDeltaCount=16385`, and `regionIdxCount=16385`, so the declared delta set is larger than the public allocation limit without allocating or reading gigabytes of payload. This targets `src/tt/varstore.rs:129-130`. | `ttgxvar.c:696-702` computes the same per-item size and calls `FT_QALLOC_MULT`; `ftutil.c:127-139` rejects the request as `Array_Too_Large` before `FT_STREAM_READ`. The optional HVAR failure is then ignored by `ft_var_load_hvvar`, so face construction remains the observable public success path. | Add one malformed public face-open case after the Rust parser returns the same `ArrayTooLarge` classification. Do not claim that FreeType accepts the malformed HVAR internally; it accepts the surrounding SFNT face and rejects this optional table during HVAR loading. |
+| `freetype.FT_New_Memory_Face.success_malformed_optional_tables_ignored@hvar-store-delta-size-too-large` | Set `itemCount=65535`, `longWords=1`, `wordDeltaCount=16385`, and `regionIdxCount=16385`, so the declared delta set is larger than the public allocation limit without allocating or reading gigabytes of payload. This targets the corrected guard at `src/tt/varstore.rs:133-136` (the old uncovered region was `129-130`). | `ttgxvar.c:696-702` computes the same per-item size and calls `FT_QALLOC_MULT`; `ftutil.c:127-139` rejects the request as `Array_Too_Large` before `FT_STREAM_READ`. The optional HVAR failure is then ignored by `ft_var_load_hvvar`, so face construction remains the observable public success path. | Add one malformed public face-open case after the Rust parser returns the same `ArrayTooLarge` classification. Do not claim that FreeType accepts the malformed HVAR internally; it accepts the surrounding SFNT face and rejects this optional table during HVAR loading. |
 
 This ID is intentionally distinct from the existing
 `hvar-store-delta-set-truncated` case: that case reaches the C stream-read
 failure after allocation sizing, while this case reaches the allocation-size
 guard itself. The distinction is the reason for expanding the input rather
 than treating another truncated payload as equivalent coverage.
+
+The source review and focused parity result justify this expansion. The
+concrete fixture is
+`tests/fixtures/input/fonts/variable/hvar-store-delta-size-too-large.ttf`.
+Its HVAR header declares `65535 * 65540 = 4,295,163,900` delta bytes, but the
+fixture is only 238,264 bytes because no delta payload is needed: pinned
+FreeType rejects the allocation request first. The exact public case passed
+1/1 in the Rust, C ABI, and WASM lanes, with matching public face-open output.
+This means FreeType allows the *surrounding face-open operation* to succeed;
+it does not accept the malformed HVAR allocation internally. That distinction
+is why this remains a valid public face-open error-containment witness rather
+than a claim that the malformed table is valid.
+
+Coverage MCP snapshot
+`959840ad-5e25-4f4a-97d7-400747b139ca`, measured at commit
+`cb4bb285b3a6e4f62f7252f5a6e7ec3a18f6e3b8` against baseline
+`05c364db-9864-49d8-8dde-b45169061bbc`, attributes the corrected
+`src/tt/varstore.rs:133-136` guard as covered. The incremental comparison is
+selected-subset reachability evidence (`complete=false`), not a new
+full-denominator percentage claim.
 
 ## 5. Fixtures and generators
 
@@ -1158,7 +1178,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,067 tracked paths and no symlinks.
+The canonical input tree currently contains 1,073 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -2126,7 +2146,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 88 | package, build, release, and facade contracts |
 | R03 | 1,754 | executable parity tests and public contracts |
-| R04 | 1,072 | licensed canonical fixture inputs |
+| R04 | 1,073 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 63 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -2134,7 +2154,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,052** | **all retained paths** |
+| **Total** | **3,053** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
