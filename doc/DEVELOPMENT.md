@@ -842,6 +842,13 @@ reported +0 covered regions, +0 lines, +0 branches, and +0 functions. Its
 scope was `selected_subset` with `exact=false`, so it is reachability evidence,
 not a complete-denominator claim; no new CFF input was added.
 
+The next candidate is one distinct state transition, not another copy of the
+c101 witness. The stable ID and reason are recorded before measurement:
+
+| Candidate public case ID | Why expand this input | Pinned FreeType review | Focused disposition |
+|---|---|---|---|
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch@c102-ps-global-subr-first-error-second-success` | Keep the valid 108-global-subroutine CFF font, but set the public `random_seed` to `65535`. CFF's first random value then has low 16 bits `0xffff`, selecting biased global subroutine 108 (out of range); the xorshifted second value selects subroutine 107 (valid). This is the missing first-error/second-success post-validation state at `fontdone-wasm/src/implementation.rs:2079-2089`. | `psintrp.c:2241-2258` derives the random value used by `callgsubr`, `psobjs.c:2552-2559` advances it with the pinned xorshift, and `psintrp.c:979-1029` rejects only the out-of-range first call. The valid CFF input is therefore accepted by the oracle up to the intended glyph error; it is not a malformed-font assumption. | Focused parity passed 1/1 across Rust, C ABI, and WASM. No implementation mismatch was found; this input is retained as the source-reviewed reachability witness. Coverage MCP measurement is recorded after the commit below. |
+
 The CJK snap-width candidates were then checked against both the pinned C
 implementation and the current source map:
 

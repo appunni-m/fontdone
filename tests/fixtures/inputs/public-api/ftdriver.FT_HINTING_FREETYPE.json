@@ -5469,6 +5469,41 @@
               "fontdone-wasm/src/implementation.rs:2006-2015",
               "freetype/src/psaux/psintrp.c:979-1045"
             ]
+          },
+          {
+            "id": "c102-ps-global-subr-first-error-second-success",
+            "reason": "Use random_seed 65535 so pinned FreeType's first CFF random value has low 16 bits 0xffff and selects biased global subroutine 108 (out of range), while cff_random at psobjs.c:2552-2559 makes the second load select biased subroutine 107 (valid); this is the missing first-error/second-success post-validation branch.",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-global-subr-error.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 0,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": [],
+              "render_pixel_size": 0,
+              "random_seed": 65535,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:2079-2089",
+              "freetype/src/psaux/psintrp.c:979-1029",
+              "freetype/src/psaux/psobjs.c:2552-2559"
+            ]
           }
         ]
       },
@@ -5485,7 +5520,7 @@
         "global-subroutine-boundary"
       ],
       "metadata": {
-        "coverage_intent": "Five valid CFF Type 2 variants use random followed by eq to select global subroutine 107 on the first load and out-of-range subroutine 108 on the reload. The fixed public seeds make C's first-success/second-error branch deterministic while Type 1 and CID companion loads remain valid controls."
+        "coverage_intent": "Five valid CFF Type 2 variants use random followed by eq to select global subroutine 107 on the first load and out-of-range subroutine 108 on the reload; one additional valid variant reverses that transition with random_seed 65535, making the first load fail and the reload succeed. The fixed public seeds make both C state transitions deterministic while Type 1 and CID companion loads remain valid controls."
       },
       "expectation": {
         "status": "build_dependent",

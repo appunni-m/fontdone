@@ -532,6 +532,8 @@ struct InputVariant {
     #[serde(default)]
     params: Value,
     #[serde(default)]
+    reason: String,
+    #[serde(default)]
     expect_error: Option<bool>,
     #[serde(default)]
     expectation: VariantExpectation,

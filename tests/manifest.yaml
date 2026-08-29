@@ -4808,7 +4808,7 @@ subjects:
       - id: mcp_wasm_post_error_cff_random_batch
         description: Five valid CFF Type 2 random-charstring variants plus fourteen source-reviewed Private-dictionary boundary variants fix or probe the CFF driver seed before face opening and exercise the WASM wrapper's post-error slot-preservation path across all ABI lanes.
       - id: mcp_wasm_post_error_global_subr_batch
-        description: Five valid CFF Type 2 random/global-subroutine variants make the first glyph load succeed and the reload fail at a deterministic out-of-range subroutine boundary, exercising the WASM post-error error side across all ABI lanes.
+        description: Valid CFF Type 2 random/global-subroutine variants exercise both deterministic post-error transitions: first load succeeds and reload fails at an out-of-range subroutine, and first load fails while reload succeeds after the CFF random state advances; all lanes compare the exact C behavior.
       - id: mcp_wasm_post_error_failure_batch
         description: Five valid PostScript variants make the first glyph load or size setup fail and exercise the WASM wrapper's defensive first-error and second-error post-error preservation path across all ABI lanes.
       - id: mcp_wasm_type1_modes_batch
