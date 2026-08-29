@@ -1088,6 +1088,34 @@ reliably produce them. The feature-disabled Bzip2/LZW returns are likewise a
 separate `#else` build, already represented by the dedicated disabled-build
 cases, and cannot be reached by expanding an enabled-build input.
 
+The next source-reviewed audit reused an existing bitmap-copy family rather
+than adding duplicate inputs. The logical case ID
+`ftbitmap.FT_Bitmap_Copy.error_array_too_large_dimensions` expands into five
+concrete runtime IDs; Coverage MCP and the runtime filter require the
+`@variant` suffix when selecting those inputs.
+
+| Concrete case ID | Why this exact input exists | Pinned FreeType result | Decision |
+|---|---|---|---|
+| `ftbitmap.FT_Bitmap_Copy.success_deep_copy_all_public_fields` | Reach the normal validated copy and WASM success-record writeback. | `ftbitmap.c:73-124` copies the public record and copies `rows * abs(pitch)` bytes after the checks. | Reuse existing public case. |
+| `ftbitmap.FT_Bitmap_Copy.success_null_source_buffer` | Reach the public empty-payload success route and verify the descriptor is still copied. | `ftbitmap.c:88-94` copies `*target = *source` and explicitly returns `FT_Err_Ok` when `source->buffer == NULL`; this is intentional C behavior. | Reuse existing public case. |
+| `ftbitmap.FT_Bitmap_Copy.success_flow_flip` | Reach the opposite-pitch flow writeback and the normal success side of the WASM `if err == FT_Err_Ok`. | `ftbitmap.c:82-91` negates the copied pitch when flow differs, then `ftbitmap.c:104-120` reverses rows. | Reuse existing public case. |
+| `...error_array_too_large_dimensions@rows-2-pitch-1073741824` | Test the first `rows * pitch > FT_INT_MAX` boundary with a non-null but only one-byte source payload; the guard must run before any read. | `ftmemory.h:214-220` routes to `ft_mem_qrealloc`; `ftutil.c:127-139` returns `Array_Too_Large` before allocation. | Reuse existing concrete variant. |
+| `...error_array_too_large_dimensions@rows-3-pitch-715827883` | Test the next multiplication boundary without relying on a single extreme field. | Same `ft_mem_qrealloc` overflow guard returns `Array_Too_Large`. | Reuse existing concrete variant. |
+| `...error_array_too_large_dimensions@rows-4-pitch-536870912` | Test the exact power-of-two multiplication boundary above `FT_INT_MAX`. | Same guard rejects the count before allocation or source access. | Reuse existing concrete variant. |
+| `...error_array_too_large_dimensions@rows-2147483648-pitch-1` | Test `FT_INT_MAX + 1` rows with unit pitch. | `new_count > FT_INT_MAX / item_size` returns `Array_Too_Large` on the supported 64-bit C ABI. | Reuse existing concrete variant. |
+| `...error_array_too_large_dimensions@rows-4294967295-pitch-1` | Test the maximum public `FT_UInt` row count with unit pitch. | The same pre-allocation guard returns `Array_Too_Large`; no huge buffer is dereferenced. | Reuse existing concrete variant. |
+
+The five concrete error variants are malformed bitmap descriptors in the
+ordinary public ABI sense, but they are deterministic and safe for this
+oracle because FreeType rejects them before reading the one-byte payload. They
+are not allocator-fault cases and do not rely on undefined behavior. The
+focused Coverage MCP run `42c54894-b624-4e6a-b1f1-0ede17ccd346` passed all
+eight selected concrete IDs across Rust, C ABI, WASM, and the pinned C oracle;
+source snapshot `3f0e61c9-e0cb-407b-b48d-558a05f7111e` marks both sides of the
+WASM `if err == FT_Err_Ok` at `fontdone-wasm/src/implementation.rs:1207-1209`
+covered. This is selected-subset reachability evidence, not a full-denominator
+coverage claim. No new input or implementation change was required.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
