@@ -1806,8 +1806,15 @@ The pinned source calls it from `ftc_face_node_init`
 `FTC_Manager_LookupSize` (`ftcmanag.c:163-191`), and propagates miss
 initialization errors through `FTC_MruList_New` (`ftcmru.c:283-295`). The
 focused parity lane passed this one case across Rust, the C ABI, WASM, and the
-pinned oracle; the managed incremental coverage measurement is recorded only
-after the pushed commit below.
+pinned oracle. After commit `d23d226` was pushed to `main`, Coverage MCP
+registration `fa2fed1f-95be-41ee-8af0-1de33906a19f` ran
+`880dfd73-e55d-46eb-9f2c-3794a6fc45bf` with the explicit baseline
+`05c364db-9864-49d8-8dde-b45169061bbc`; it passed and ingested snapshot
+`54dc86bb-2f43-4f71-8462-9702a6c7a3d7`. The bounded source review marks the
+four WASM requester-error arms at `fontdone-wasm/src/implementation.rs:2351`,
+`2356`, `2361`, and `2365` covered. This was a selected incremental subset,
+so its supported review is evidence for those target regions only and is not
+reported as a new full-denominator percentage.
 
 Confirmed runtime divergences fixed during the coverage loop are documented
 next to their implementations and must remain separate from coverage-only
