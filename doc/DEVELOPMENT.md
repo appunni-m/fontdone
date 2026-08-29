@@ -970,6 +970,23 @@ or its public rejection guard.
 | `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c90-cff-private-reserved-number-27-004` | Use Private bytes `0x1b 0x16` to cover the newly restored `read_dict_number` byte-27 arm at `src/tt/cff.rs:511-515` and then prove the following reserved operator clears the stack. | `cffparse.c:1180-1186` pushes byte 27 as a number, `cff_parse_integer` returns `27-139` (`cffparse.c:94-124`), and the following byte 22 is ignored by `cffparse.c:1520-1527`. FreeType accepts this reserved-number encoding. | Add only if exact C/Rust/WASM parity holds; retain as an oracle-permitted malformed input. |
 | `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c90-cff-private-truncated-escape-005` | Use a declared one-byte Private range containing only `0x0c` to reach the Rust escaped-op bounds error at `src/tt/cff.rs:491-494`. | `cffparse.c:1337-1343` advances past escape 12, detects that the second byte is at the limit, and jumps to `Syntax_Error`; `cffparse.c:1544-1546` returns `Invalid_Argument`, propagated by `cffload.c:1924-1930`. | Add only if C/Rust/WASM expose the same error-shaped result; this is a deliberately malformed rejection case, not a valid-font claim. |
 
+The c90 focused parity command retained all five cases: C, Rust, and WASM
+matched 5/5. Coverage MCP run `c6e0e118-71a1-4692-a221-2671019f1983`
+completed at pushed commit `ac7add84bbaeb64a9d0922daa48102aa8639bee5` and
+ingested child snapshot `03084b57-e553-4e1d-989b-1d7931524f7e`. The child
+metadata again resolved to an older internal commit, so the same generated
+LLVM report was imported with explicit provenance as authoritative snapshot
+`239f1431-f188-436b-8e78-11688e494e92`. Against the explicit post-c89
+baseline `5e2acea8-59f3-4a71-8b1a-a9cdded31d5c`, the MCP additive union
+reported `+3` branches, `+1` function, `+52` lines, and `+452` regions;
+the selected-subset result has no regression claim, and LLVM test attribution
+is unavailable. The bounded source review confirms the c90-selected
+measurement reaches the reserved-byte classifier, non-escaped operator arm,
+truncated escaped-operator error, and byte-27 number arm. Its remaining
+compound-condition branch is the explicit `byte == 31` side at
+`src/tt/cff.rs:489`, while the size-zero early return remains a separate
+source-reviewed target at `src/tt/cff.rs:471-474`.
+
 The c89 focused parity command retained all five cases: C, Rust, and WASM
 matched 5/5. Coverage MCP run `59bf6605-493b-4144-a5b1-675ef769852b`
 completed at commit `33feaf63fbab4213ce3fd6c91b6ec60f28a7378d` and ingested
