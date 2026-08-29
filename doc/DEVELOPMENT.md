@@ -1838,6 +1838,34 @@ Rust CFF underflow and both negative-conversion errors at
 measurement is target-region evidence only; it is not a full-denominator
 coverage percentage.
 
+The full local WASM post-error state machine was then checked with the existing
+public IDs below. Each ID names a distinct first/second-load transition or
+public load mode; no new fixture was added and no Rust implementation change
+was needed:
+
+| Concrete public ID | Why this input is relevant |
+|---|---|
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_failure_batch@c86-ps-error-001` | Invalid glyph `65535` with default load flags: first and second loads both fail, targeting the `second_load.is_err()` true arm. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_failure_batch@c86-ps-error-002` | The same invalid-glyph error/error transition through `FT_LOAD_NO_SCALE`. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_failure_batch@c86-ps-error-003` | The same invalid-glyph error/error transition with rendered output and the Adobe selector. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_failure_batch@c86-ps-error-004` | The same invalid-glyph error/error transition with `FT_LOAD_NO_HINTING | FT_LOAD_RENDER`. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_failure_batch@c86-ps-error-005` | The existing bitmap-font control exercises the invalid-load path for a non-CFF face and keeps the public module matrix honest. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch@c101-ps-global-subr-001` | Valid CFF global-subroutine input whose first load succeeds and post-property reload errors, targeting the `first_slot`/non-equivalent false arm. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch@c101-ps-global-subr-002` | The same success/error transition through Adobe plus `FT_LOAD_NO_SCALE`. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch@c101-ps-global-subr-003` | The same success/error transition after normal rendering. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch@c101-ps-global-subr-004` | The same success/error transition with `NO_HINTING | RENDER`, isolating reload behavior from the auto-hinter. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch@c101-ps-global-subr-005` | The same success/error transition with `NO_AUTOHINT | RENDER`, covering the alternate public selector. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch@c102-ps-global-subr-first-error-second-success` | Valid CFF input with deterministic first-load error and second-load success, targeting the opposite `second_load.is_err()` arm. |
+
+Pinned `ftobjs.c:907-921` rejects an invalid face/size/slot before dispatch,
+`cffgload.c:238-239` rejects an out-of-range CFF glyph, and
+`psintrp.c:2241-2258` plus `psobjs.c:2552-2559` provide the valid global-subr
+state transition. Focused parity passed C86 5/5 and C101 5/5; the combined
+Coverage MCP run `38ad9143-3f0b-4c88-9cdf-9f85046b561f` used three repeated
+`--migration-coverage-case-ids` arguments at pushed commit `ed628bf` and
+ingested snapshot `8a3e83ba-d244-4a8a-9167-a17922b18f3a`. Its bounded source
+review found no red regions from `fontdone-wasm/src/implementation.rs:2079-2089`.
+
 Confirmed runtime divergences fixed during the coverage loop are documented
 next to their implementations and must remain separate from coverage-only
 adoption claims:
