@@ -1137,6 +1137,20 @@ all executable lines in `src/ffi/handles.rs:289-360` covered. This is
 selected-subset reachability evidence, not a full-denominator coverage claim.
 No new input or implementation change was required.
 
+The next expansion is a deliberately oversized HVAR item-variation data
+header. Its stable ID and oracle boundary are recorded before the fixture is
+created:
+
+| Candidate public case ID | Why expand this input | Pinned FreeType review | Decision before parity |
+|---|---|---|---|
+| `freetype.FT_New_Memory_Face.hvar-store-delta-size-too-large` | Set `itemCount=65535`, `longWords=1`, `wordDeltaCount=16385`, and `regionIdxCount=16385`, so the declared delta set is larger than the public allocation limit without allocating or reading gigabytes of payload. This targets `src/tt/varstore.rs:129-130`. | `ttgxvar.c:696-702` computes the same per-item size and calls `FT_QALLOC_MULT`; `ftutil.c:127-139` rejects the request as `Array_Too_Large` before `FT_STREAM_READ`. The optional HVAR failure is then ignored by `ft_var_load_hvvar`, so face construction remains the observable public success path. | Add one malformed public face-open case after the Rust parser returns the same `ArrayTooLarge` classification. Do not claim that FreeType accepts the malformed HVAR internally; it accepts the surrounding SFNT face and rejects this optional table during HVAR loading. |
+
+This ID is intentionally distinct from the existing
+`hvar-store-delta-set-truncated` case: that case reaches the C stream-read
+failure after allocation sizing, while this case reaches the allocation-size
+guard itself. The distinction is the reason for expanding the input rather
+than treating another truncated payload as equivalent coverage.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
