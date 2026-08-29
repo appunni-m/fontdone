@@ -46424,7 +46424,14 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
     }
     if is_bzip2_enabled_stream_case(case) {
         let base_case = case_id_base(&case.case_id);
-        let mut args = vec!["--bzip2-stream-case".to_string(), base_case.to_string()];
+        // Preserve a concrete callback-error ID for the external oracle; the
+        // ordinary cases have no suffix, so this remains backward-compatible.
+        let oracle_case_id = if bzip2_callback_failure(&case.case_id).is_some() {
+            case.case_id.as_str()
+        } else {
+            base_case
+        };
+        let mut args = vec!["--bzip2-stream-case".to_string(), oracle_case_id.to_string()];
         match base_case {
             "ftbzip2.FT_Stream_OpenBzip2.success_open_valid_bzip2_stream"
             | "ftbzip2.FT_Stream_OpenBzip2.success_open_callback_bzip2_stream"
@@ -46441,6 +46448,17 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                         .ok_or_else(|| format!("unresolved {}", asset_label(asset)))?;
                     args.push(fixture_dir().join(path).to_string_lossy().into_owned());
                 }
+            }
+            "ftbzip2.FT_Stream_OpenBzip2.error_callback_seek_failure"
+            | "ftbzip2.FT_Stream_OpenBzip2.error_callback_short_header_read" => {
+                let asset = case
+                    .inputs
+                    .assets
+                    .get("compressed")
+                    .ok_or_else(|| "missing bzip2 compressed asset".to_string())?;
+                let path = asset_file_path(asset)
+                    .ok_or_else(|| format!("unresolved {}", asset_label(asset)))?;
+                args.push(fixture_dir().join(path).to_string_lossy().into_owned());
             }
             "ftbzip2.FT_Stream_OpenBzip2.error_null_stream_or_source" => {
                 let asset = case
@@ -84684,7 +84702,12 @@ enum Bzip2StreamBackend {
 struct Bzip2CallbackSource {
     bytes: *const FT_Byte,
     len: usize,
+    failure: u8,
 }
+
+const BZIP2_CALLBACK_FAILURE_NONE: u8 = 0;
+const BZIP2_CALLBACK_FAILURE_SEEK: u8 = 1;
+const BZIP2_CALLBACK_FAILURE_SHORT_HEADER: u8 = 2;
 
 extern "C" fn bzip2_source_read(
     stream: *mut FT_StreamRec,
@@ -84692,9 +84715,6 @@ extern "C" fn bzip2_source_read(
     buffer: *mut FT_Byte,
     count: FT_ULong,
 ) -> FT_ULong {
-    if count == 0 {
-        return 0;
-    }
     let Some(stream) = (unsafe { stream.as_ref() }) else {
         return 0;
     };
@@ -84708,6 +84728,13 @@ extern "C" fn bzip2_source_read(
     let Some(state) = state else {
         return 0;
     };
+    if count == 0 {
+        return if state.failure == BZIP2_CALLBACK_FAILURE_SEEK {
+            1
+        } else {
+            0
+        };
+    }
     let Ok(offset) = usize::try_from(offset) else {
         return 0;
     };
@@ -84717,7 +84744,10 @@ extern "C" fn bzip2_source_read(
     if offset >= state.len || state.bytes.is_null() || buffer.is_null() {
         return 0;
     }
-    let available = (state.len - offset).min(count);
+    let mut available = (state.len - offset).min(count);
+    if state.failure == BZIP2_CALLBACK_FAILURE_SHORT_HEADER {
+        available = available.min(2);
+    }
     // SAFETY: the callback state points at the maintained compressed fixture,
     // and the caller supplies `count` writable bytes for this read.
     unsafe {
@@ -84805,11 +84835,41 @@ fn is_bzip2_enabled_stream_case(case: &InputCase) -> bool {
             | "ftbzip2.FT_Stream_OpenBzip2.mcp_read_gap_matrix"
             | "ftbzip2.FT_Stream_OpenBzip2.error_null_stream_or_source"
             | "ftbzip2.FT_Stream_OpenBzip2.error_invalid_or_truncated_bzip2_header"
+            | "ftbzip2.FT_Stream_OpenBzip2.error_callback_seek_failure"
+            | "ftbzip2.FT_Stream_OpenBzip2.error_callback_short_header_read"
     )
+}
+
+fn bzip2_callback_failure(case_id: &str) -> Option<(&'static str, u8)> {
+    match case_id {
+        "ftbzip2.FT_Stream_OpenBzip2.error_callback_seek_failure" => Some((
+            "seek_failure",
+            BZIP2_CALLBACK_FAILURE_SEEK,
+        )),
+        "ftbzip2.FT_Stream_OpenBzip2.error_callback_short_header_read" => Some((
+            "short_header_read",
+            BZIP2_CALLBACK_FAILURE_SHORT_HEADER,
+        )),
+        _ => None,
+    }
 }
 
 fn bzip2_stream_output(case: &InputCase, backend: Bzip2StreamBackend) -> Result<RunOutput, String> {
     let base_case = case_id_base(&case.case_id);
+    if let Some((variant, failure)) = bzip2_callback_failure(&case.case_id) {
+        let compressed = case
+            .inputs
+            .assets
+            .get("compressed")
+            .ok_or_else(|| "missing bzip2 compressed asset".to_string())
+            .and_then(font_asset_bytes)?;
+        return bzip2_stream_callback_error_output(
+            backend,
+            compressed.as_ref(),
+            variant,
+            failure,
+        );
+    }
     match base_case {
         "ftbzip2.FT_Stream_OpenBzip2.success_open_valid_bzip2_stream"
         | "ftbzip2.FT_Stream_OpenBzip2.success_open_callback_bzip2_stream"
@@ -84875,6 +84935,7 @@ fn bzip2_stream_success_output(
     let mut callback_state = Bzip2CallbackSource {
         bytes: compressed.as_ptr(),
         len: compressed.len(),
+        failure: BZIP2_CALLBACK_FAILURE_NONE,
     };
     let mut memory = FT_MemoryRec::default();
     let mut source = FT_StreamRec {
@@ -84946,6 +85007,56 @@ fn bzip2_stream_success_output(
     } else {
         Ok(error_with_output(status, output))
     }
+}
+
+fn bzip2_stream_callback_error_output(
+    backend: Bzip2StreamBackend,
+    compressed: &[u8],
+    variant: &str,
+    failure: u8,
+) -> Result<RunOutput, String> {
+    let mut memory = FT_MemoryRec::default();
+    let mut callback_state = Bzip2CallbackSource {
+        bytes: compressed.as_ptr(),
+        len: compressed.len(),
+        failure,
+    };
+    let mut source = FT_StreamRec {
+        base: ptr::null_mut(),
+        size: FT_ULong::try_from(compressed.len()).map_err(|err| err.to_string())?,
+        pos: 3,
+        descriptor: FT_StreamDesc {
+            pointer: ptr::from_mut(&mut callback_state).cast(),
+        },
+        read: bzip2_source_read_pointer(),
+        memory: (&mut memory) as *mut FT_MemoryRec,
+        ..FT_StreamRec::default()
+    };
+    let mut target = lzw_stream_sentinel();
+    let target_before = lzw_stream_fields(&target);
+    let source_bytes = match backend {
+        // The direct Rust entry point owns the callback materialization so it
+        // can observe the same seek/short-read result as FreeType.
+        Bzip2StreamBackend::Rust => None,
+        Bzip2StreamBackend::CAbi | Bzip2StreamBackend::Wasm => Some(compressed),
+    };
+    let status = bzip2_stream_open(
+        backend,
+        Some(&mut target),
+        Some(&mut source),
+        source_bytes,
+    );
+    Ok(error_with_output(
+        status,
+        json!({
+            "variant": variant,
+            "source_pos_before": 3,
+            "source_pos_after_open": source.pos,
+            "target_before": target_before,
+            "target_after": lzw_stream_fields(&target),
+            "source_read_class": "callback",
+        }),
+    ))
 }
 
 fn bzip2_stream_null_output(backend: Bzip2StreamBackend, compressed: &[u8]) -> RunOutput {

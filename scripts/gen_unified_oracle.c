@@ -1296,6 +1296,7 @@ static void print_bzip2_target_fields(const FT_StreamRec* stream) {
 typedef struct Bzip2MemorySource_ {
     const unsigned char* bytes;
     long length;
+    int failure;
 } Bzip2MemorySource;
 
 static unsigned long bzip2_memory_source_read(
@@ -1304,12 +1305,21 @@ static unsigned long bzip2_memory_source_read(
     unsigned char* buffer,
     unsigned long count) {
     Bzip2MemorySource* source = (Bzip2MemorySource*)stream->descriptor.pointer;
-    if (!source || count == 0 || offset >= (unsigned long)source->length || !buffer) {
+    if (!source) {
+        return 0;
+    }
+    if (count == 0) {
+        return source->failure == 1 ? 1 : 0;
+    }
+    if (offset >= (unsigned long)source->length || !buffer) {
         return 0;
     }
     unsigned long available = (unsigned long)source->length - offset;
     if (available > count) {
         available = count;
+    }
+    if (source->failure == 2 && available > 2) {
+        available = 2;
     }
     memcpy(buffer, source->bytes + offset, (size_t)available);
     return available;
@@ -1327,6 +1337,56 @@ static int emit_bzip2_stream_case(int argc, char** argv) {
         printf("{");
         print_status(init_error);
         printf(",\"output\":null}\n");
+        return 0;
+    }
+
+    if (streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.error_callback_seek_failure") ||
+        streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.error_callback_short_header_read")) {
+        if (argc != 4) {
+            fprintf(stderr, "bzip2 callback-error case requires COMPRESSED\n");
+            FT_Done_FreeType(library);
+            return 2;
+        }
+        unsigned char* compressed = NULL;
+        long compressed_len = 0;
+        if (load_file(argv[3], &compressed, &compressed_len) != 0) {
+            FT_Done_FreeType(library);
+            return 2;
+        }
+        FT_StreamRec source;
+        FT_StreamRec stream;
+        Bzip2MemorySource callback_source = {
+            compressed,
+            compressed_len,
+            streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.error_callback_seek_failure")
+                ? 1
+                : 2,
+        };
+        memset(&source, 0, sizeof(source));
+        init_lzw_stream_sentinel(&stream);
+        source.base = NULL;
+        source.size = (FT_ULong)compressed_len;
+        source.pos = 3;
+        source.descriptor.pointer = &callback_source;
+        source.read = bzip2_memory_source_read;
+        source.memory = library->memory;
+        FT_Error status = FT_Stream_OpenBzip2(&stream, &source);
+
+        printf("{");
+        print_status(status);
+        printf(",\"output\":{\"variant\":\"");
+        print_json_string_content(
+            streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.error_callback_seek_failure")
+                ? "seek_failure"
+                : "short_header_read");
+        printf("\",\"source_pos_before\":3,\"source_pos_after_open\":%lu,\"target_before\":",
+               (unsigned long)source.pos);
+        print_bzip2_target_fields(&stream);
+        printf(",\"target_after\":");
+        print_bzip2_target_fields(&stream);
+        printf(",\"source_read_class\":\"callback\"}}\n");
+        free(compressed);
+        FT_Done_FreeType(library);
         return 0;
     }
 
@@ -1353,7 +1413,7 @@ static int emit_bzip2_stream_case(int argc, char** argv) {
         }
         FT_StreamRec source;
         FT_StreamRec stream;
-        Bzip2MemorySource callback_source = {compressed, compressed_len};
+        Bzip2MemorySource callback_source = {compressed, compressed_len, 0};
         int callback_source_case =
             streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.success_open_callback_bzip2_stream");
         int coverage_gap_case =

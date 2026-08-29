@@ -2980,6 +2980,10 @@ subjects:
         description: A valid bzip2-compressed source initializes the target stream with C-compatible memory, size sentinel, pos, read, close, and descriptor behavior.
       - id: success_open_callback_bzip2_stream
         description: A valid bzip2-compressed source supplied through a caller-owned FT_Stream_IoFunc opens and reads with the same wrapper state and source ownership as C.
+      - id: error_callback_seek_failure
+        description: A caller-owned FT_Stream_IoFunc that reports failure for the zero-byte seek probe returns Invalid_Stream_Operation before changing the target stream.
+      - id: error_callback_short_header_read
+        description: A caller-owned FT_Stream_IoFunc that returns only two bytes for the four-byte bzip2 header read returns Invalid_Stream_Operation and leaves the source position at two.
       - id: success_read_decompressed_bytes
         description: Reads through the wrapped stream produce exact decompressed bytes and seek/read behavior matching C, including the defined null-buffer zero-count callback probe.
       - id: lifecycle_close_does_not_close_source
@@ -2996,7 +3000,7 @@ subjects:
         description: In the active pinned build without bzip2 support, FT_Stream_OpenBzip2 returns Unimplemented_Feature before reading invalid, truncated, or empty bzip2 headers.
       - id: out_of_scope_uncompiled_bzip2_policy
         description: If this build intentionally excludes bzip2, the ABI-visible behavior must be documented as C-compatible Unimplemented_Feature rather than silently omitting the symbol.
-    # needs-input: operation=FT_Stream_OpenBzip2 plus FT_Stream read/close through wrapper; fixture_asset=valid .pcf.bz2 or compressed byte fixture, raw expected decompressed bytes, invalid/truncated bzip2 byte fixtures; params valid source stream, null target, null source, corrupt header, truncated stream, null-buffer zero-count callback, uncompiled-bzip2 feature configuration; output shape=FT_Error, target FT_Stream fields memory/size/pos/base/read/close/descriptor classification, read byte chunks, and source close-count state; comparison=exact C oracle error, stream field classification, decompressed bytes, close ownership behavior, and Unimplemented_Feature policy when excluded.
+    # needs-input: operation=FT_Stream_OpenBzip2 plus FT_Stream read/close through wrapper; fixture_asset=valid .pcf.bz2 or compressed byte fixture, raw expected decompressed bytes, invalid/truncated bzip2 byte fixtures; params valid source stream, null target, null source, corrupt header, truncated stream, zero-byte seek callback failure, short header-read callback, null-buffer zero-count callback, uncompiled-bzip2 feature configuration; output shape=FT_Error, target FT_Stream fields memory/size/pos/base/read/close/descriptor classification, read byte chunks, and source close-count state; comparison=exact C oracle error, stream field classification, decompressed bytes, close ownership behavior, and Unimplemented_Feature policy when excluded.
 
   - id: ftcache.FTC_CMapCache_Lookup
     kind: function

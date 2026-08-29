@@ -3044,6 +3044,11 @@ fn bzip2_source_bytes(
     if stream_io(source, 0, ptr::null_mut(), 0) != 0 {
         return Err(rust_ffi::FT_Err_Invalid_Stream_Operation as FT_Error);
     }
+    // FT_Stream_Seek commits the zero position only after the callback
+    // reports success; preserve that state before the header read.
+    unsafe {
+        (*source).pos = 0;
+    }
     let requested = FT_ULong::try_from(source_len)
         .map_err(|_| rust_ffi::FT_Err_Invalid_Argument as FT_Error)?;
     let mut bytes = Vec::new();
@@ -3052,6 +3057,11 @@ fn bzip2_source_bytes(
         .map_err(|_| rust_ffi::FT_Err_Out_Of_Memory as FT_Error)?;
     bytes.resize(source_len, 0);
     let read_count = stream_io(source, 0, bytes.as_mut_ptr(), requested);
+    // FreeType advances a callback-backed stream by the number of bytes the
+    // callback returned, including a short read that becomes an error.
+    unsafe {
+        (*source).pos = read_count;
+    }
     if read_count != requested {
         return Err(rust_ffi::FT_Err_Invalid_Stream_Operation as FT_Error);
     }

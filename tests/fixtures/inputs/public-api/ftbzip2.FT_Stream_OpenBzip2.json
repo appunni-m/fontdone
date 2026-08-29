@@ -4,6 +4,8 @@
   "manifest_cases": [
     "success_open_valid_bzip2_stream",
     "success_open_callback_bzip2_stream",
+    "error_callback_seek_failure",
+    "error_callback_short_header_read",
     "success_read_decompressed_bytes",
     "lifecycle_close_does_not_close_source",
     "error_null_stream_or_source",
@@ -133,6 +135,130 @@
         },
         "fixture_requirements": [
           "Valid bzip2-compressed byte fixture with a caller-owned FT_Stream_IoFunc and known decompressed bytes"
+        ]
+      }
+    },
+    {
+      "case_id": "ftbzip2.FT_Stream_OpenBzip2.error_callback_seek_failure",
+      "subject": "ftbzip2.FT_Stream_OpenBzip2",
+      "case": "error_callback_seek_failure",
+      "operation": "ftbzip2.stream_open_bzip2",
+      "schema": "stream_wrapper",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "compressed": {
+            "kind": "ref",
+            "id": "compressed/bzip2/valid-pcf-header.pcf.bz2",
+            "asset_kind": "binary"
+          }
+        },
+        "params": {
+          "target_stream": "sentinel",
+          "source_stream": "read_callback",
+          "source_base": null,
+          "source_size": "compressed_length",
+          "callback_failure": "seek"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftbzip2",
+        "area:bzip2-stream",
+        "area:callbacks",
+        "path:error"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "callback_failure": "seek",
+          "target_stream_unchanged": true,
+          "source_position_unchanged": true
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "variant",
+            "error",
+            "source_pos_before",
+            "source_pos_after_open",
+            "target_before",
+            "target_after",
+            "source_read_class"
+          ]
+        },
+        "error": "Invalid_Stream_Operation",
+        "source_refs": [
+          "freetype/include/freetype/ftsystem.h:247-259",
+          "freetype/src/base/ftstream.c:56-86",
+          "freetype/src/bzip2/ftbzip2.c:122-148"
+        ],
+        "fixture_requirements": [
+          "A caller-owned FT_Stream_IoFunc that reports a seek failure for the zero-byte header probe"
+        ]
+      }
+    },
+    {
+      "case_id": "ftbzip2.FT_Stream_OpenBzip2.error_callback_short_header_read",
+      "subject": "ftbzip2.FT_Stream_OpenBzip2",
+      "case": "error_callback_short_header_read",
+      "operation": "ftbzip2.stream_open_bzip2",
+      "schema": "stream_wrapper",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "compressed": {
+            "kind": "ref",
+            "id": "compressed/bzip2/valid-pcf-header.pcf.bz2",
+            "asset_kind": "binary"
+          }
+        },
+        "params": {
+          "target_stream": "sentinel",
+          "source_stream": "read_callback",
+          "source_base": null,
+          "source_size": "compressed_length",
+          "callback_failure": "short_header_read"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftbzip2",
+        "area:bzip2-stream",
+        "area:callbacks",
+        "path:error"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "callback_failure": "short_header_read",
+          "target_stream_unchanged": true,
+          "source_position": 2
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "variant",
+            "error",
+            "source_pos_before",
+            "source_pos_after_open",
+            "target_before",
+            "target_after",
+            "source_read_class"
+          ]
+        },
+        "error": "Invalid_Stream_Operation",
+        "source_refs": [
+          "freetype/include/freetype/ftsystem.h:247-259",
+          "freetype/src/base/ftstream.c:118-158",
+          "freetype/src/bzip2/ftbzip2.c:122-148"
+        ],
+        "fixture_requirements": [
+          "A valid compressed payload exposed through a callback that returns only two bytes for the four-byte header read"
         ]
       }
     },

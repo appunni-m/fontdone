@@ -1045,6 +1045,23 @@ operator arm at `src/tt/cff.rs:487-494`, and the truncated escaped-operator
 guard at `src/tt/cff.rs:489-490`; those are the next source-review targets,
 not reasons to weaken or remove the retained cases.
 
+The next expansion is a callback-stream error pair for the remaining WASM
+`bzip2_source_bytes` error arm. Both IDs reuse the maintained valid compressed
+payload; the input difference is the caller-owned public `FT_Stream_IoFunc`
+behavior. This was reviewed against the pinned FreeType source before adding
+the cases.
+
+| Candidate public case ID | Why expand this input | Pinned FreeType review | Decision before parity |
+|---|---|---|---|
+| `ftbzip2.FT_Stream_OpenBzip2.error_callback_seek_failure` | Return a nonzero status for the zero-byte seek probe, targeting the WASM callback-materialization error return while verifying the sentinel target remains untouched. | `ftsystem.h:247-259` defines nonzero on `count == 0` as seek failure; `ftstream.c:56-86` maps it to `Invalid_Stream_Operation` and does not update `source.pos`; `ftbzip2.c:122-148` propagates the error before allocation or target reset. | Add as a deliberately malformed public callback contract case; retain only on exact C/Rust/C-ABI/WASM error output. |
+| `ftbzip2.FT_Stream_OpenBzip2.error_callback_short_header_read` | Return two bytes for the four-byte header read, targeting the same WASM error arm with a valid EOF-style short-read failure and the source-position update. | `ftsystem.h:247-259` permits a short count for `count > 0`; `ftstream.c:118-158` advances `source.pos` by the returned count and returns `Invalid_Stream_Operation`; `ftbzip2.c:122-148` propagates it before allocating or resetting the target. | Add as a public malformed-stream callback case; retain only if all endpoints agree on status, `source.pos == 2`, and unchanged target fields. |
+
+The seek-failure row is intentionally labeled malformed because the callback
+violates the usual zero-byte seek success convention; it is still a documented
+public error signal, not a fabricated Rust-only branch. The short-read row is a
+normal public stream failure shape. Neither row adds a binary fixture or
+changes the full denominator.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained

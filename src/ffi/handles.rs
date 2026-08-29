@@ -7674,6 +7674,62 @@ pub fn FT_Gzip_Uncompress(
     FT_Err_Ok
 }
 
+#[cfg(feature = "bzip2")]
+#[allow(
+    unsafe_code,
+    reason = "the public FT_Stream_IoFunc callback is an opaque C ABI field"
+)]
+fn bzip2_source_bytes_from_stream(
+    source: &mut FT_StreamRec,
+) -> Result<Vec<FT_Byte>, FT_Error> {
+    let source_len = match usize::try_from(source.size) {
+        Ok(source_len) => source_len,
+        Err(_) => return Err(FT_Err_Invalid_Stream_Handle as FT_Error),
+    };
+    if source_len == 0 {
+        return Ok(Vec::new());
+    }
+    if !source.base.is_null() {
+        // SAFETY: a non-null memory-backed stream promises `size` readable
+        // bytes for this synchronous call.
+        return Ok(unsafe {
+            std::slice::from_raw_parts(source.base.cast_const(), source_len).to_vec()
+        });
+    }
+    if source.read.is_null() {
+        return Err(FT_Err_Invalid_Stream_Handle as FT_Error);
+    }
+
+    // SAFETY: FT_StreamRec.read has FreeType's public FT_Stream_IoFunc ABI
+    // and the caller retains `source` for the synchronous invocation.
+    let stream_io = unsafe {
+        std::mem::transmute::<
+            FT_Pointer,
+            extern "C" fn(*mut FT_StreamRec, FT_ULong, *mut FT_Byte, FT_ULong) -> FT_ULong,
+        >(source.read)
+    };
+    if stream_io(source, 0, ptr::null_mut(), 0) != 0 {
+        return Err(FT_Err_Invalid_Stream_Operation as FT_Error);
+    }
+    let requested = match FT_ULong::try_from(source_len) {
+        Ok(requested) => requested,
+        Err(_) => return Err(FT_Err_Invalid_Argument as FT_Error),
+    };
+    let mut bytes = Vec::new();
+    if bytes.try_reserve_exact(source_len).is_err() {
+        return Err(FT_Err_Out_Of_Memory as FT_Error);
+    }
+    bytes.resize(source_len, 0);
+    let read_count = stream_io(source, 0, bytes.as_mut_ptr(), requested);
+    // FT_Stream_ReadAt advances the source by the number of bytes the
+    // callback actually returned, including a short read that becomes error.
+    source.pos = read_count;
+    if read_count != requested {
+        return Err(FT_Err_Invalid_Stream_Operation as FT_Error);
+    }
+    Ok(bytes)
+}
+
 pub fn FT_Stream_OpenBzip2(
     stream: Option<&mut FT_StreamRec>,
     source: Option<&mut FT_StreamRec>,
@@ -7689,9 +7745,16 @@ pub fn FT_Stream_OpenBzip2(
 
     #[cfg(feature = "bzip2")]
     {
-        let (Some(stream), Some(source), Some(source_bytes)) = (stream, source, source_bytes)
-        else {
+        let (Some(stream), Some(source)) = (stream, source) else {
             return FT_Err_Invalid_Stream_Handle as FT_Error;
+        };
+
+        let source_bytes = match source_bytes {
+            Some(bytes) => bytes.to_vec(),
+            None => match bzip2_source_bytes_from_stream(source) {
+                Ok(bytes) => bytes,
+                Err(error) => return error,
+            },
         };
 
         // `ft_bzip2_check_header` seeks to zero and performs one four-byte
@@ -7729,7 +7792,7 @@ pub fn FT_Stream_OpenBzip2(
         bzip2_stream_registry()
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
-            .insert(stream_key, source_bytes.to_vec().into_boxed_slice());
+            .insert(stream_key, source_bytes.into_boxed_slice());
         // The second header check in `ft_bzip2_file_init` is followed by a
         // seek back to zero before the wrapper is returned.
         source.pos = 0;
