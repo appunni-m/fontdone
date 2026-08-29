@@ -1287,6 +1287,18 @@ is committed and pushed before measurement; its incremental Coverage MCP run
 must use the explicit campaign baseline and report the selected-subset result
 separately from the full denominator.
 
+Coverage MCP run `f9897189-cefc-4470-a4bc-c5e5fd33f0e5` passed at pushed
+commit `6fd4b5a977a6b061fe402f26ebf48eb0d0bfbdcb` and ingested child snapshot
+`1d559ec9-2e39-42ec-aa1e-db7285668881` against baseline
+`ab608526-5fc6-4840-bc94-fd702aa0fce9`. The additive-union review reported 16
+newly covered lines and 4 newly covered regions, with no branch/function gain;
+the exact-region projection includes the C ABI and WASM wrapper routes. The
+snapshot source projection retains stale pre-batch line text, so the local
+current source is authoritative for the fixed return lines (`8017`, `8055`,
+`23040`, and `23064`). As with the prior batches, this is a selected-subset
+measurement and its replacement-style negative percentages are not full
+regression or denominator results.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
