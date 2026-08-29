@@ -5847,10 +5847,21 @@ impl Font {
                 })
                 .unwrap_or(0);
         }
-        self.data
+        let glyph_index = self
+            .data
             .cmap
             .char_index_in_charmap(self.selected_charmap, codepoint)
-            .unwrap_or(0)
+            .unwrap_or(0);
+        // FreeType's public `FT_Get_Char_Index` clamps cmap results against
+        // `face->num_glyphs` (`src/base/ftobjs.c:3929-3943`).  This matters for
+        // malformed-but-openable SFNT/CFF faces whose cmap still names a glyph
+        // after the face's declared glyph range; return `.notdef` instead of
+        // leaking an out-of-range index into the property and load paths.
+        if glyph_index >= self.data.maxp.num_glyphs {
+            0
+        } else {
+            glyph_index
+        }
     }
 
     /// Return the FreeType autofitter glyph style map for the active face.

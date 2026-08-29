@@ -30365,6 +30365,19 @@ fn rust_property_effect_load_render(
     face: &FT_Face,
     glyph_index: FT_UInt,
 ) -> Result<(FT_Error, FT_Error, Value), String> {
+    // The maintained C property-effect oracle treats a missing cmap result as
+    // an Invalid_Glyph_Index precondition and deliberately does not invoke the
+    // driver load (`scripts/gen_unified_oracle.c:33353-33357`). Keep that
+    // route policy identical across the Rust, C ABI, and WASM adapters; the
+    // direct CFF driver's out-of-range FT_Load_Glyph classification is a
+    // separate public-driver behavior.
+    if glyph_index == 0 {
+        return Ok((
+            FT_Err_Invalid_Glyph_Index,
+            FT_Err_Invalid_Glyph_Index,
+            Value::Null,
+        ));
+    }
     let loaded = match FT_Load_Glyph(face, glyph_index, FT_LOAD_FORCE_AUTOHINT) {
         Ok(slot) => slot,
         Err(error) => return Ok((error, error, Value::Null)),
@@ -30384,6 +30397,13 @@ fn c_property_effect_load_render(
     face: c_abi::FT_Face,
     glyph_index: FT_UInt,
 ) -> Result<(FT_Error, FT_Error, Value), String> {
+    if glyph_index == 0 {
+        return Ok((
+            FT_Err_Invalid_Glyph_Index,
+            FT_Err_Invalid_Glyph_Index,
+            Value::Null,
+        ));
+    }
     let load_error = c_abi::FT_Load_Glyph(face, glyph_index, FT_LOAD_FORCE_AUTOHINT);
     if load_error != FT_Err_Ok {
         return Ok((load_error, load_error, Value::Null));
@@ -30415,6 +30435,13 @@ fn wasm_property_effect_load_render(
     handle: usize,
     glyph_index: FT_UInt,
 ) -> Result<(FT_Error, FT_Error, Value), String> {
+    if glyph_index == 0 {
+        return Ok((
+            FT_Err_Invalid_Glyph_Index,
+            FT_Err_Invalid_Glyph_Index,
+            Value::Null,
+        ));
+    }
     let load_error =
         wasm_abi::fontdone_wasm_load_glyph(handle, glyph_index, FT_LOAD_FORCE_AUTOHINT);
     if load_error != FT_Err_Ok {
@@ -30682,12 +30709,18 @@ fn wasm_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String>
                 &case.inputs.params,
             )?;
             let glyph_index = wasm_abi::fontdone_wasm_get_char_index(handle, mutation.char_code);
-            let (property_error, initial_map_value) =
+            let (property_error, initial_map_value) = if glyph_index == 0 {
+                // Match the Rust/C ABI routes and the C oracle's explicit
+                // missing-glyph precondition: a zero result is not a map entry
+                // to mutate, even when FT_Property_Get itself succeeds.
+                (FT_Err_Ok, 0)
+            } else {
                 wasm_abi::abi_property_glyph_to_script_map_mutate(
                     handle,
                     glyph_index,
                     mutation.value,
-                );
+                )
+            };
             let (load_error, render_error, glyph_slot) =
                 wasm_property_effect_load_render(handle, glyph_index)?;
             rows.push(json!({

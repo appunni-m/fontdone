@@ -1299,6 +1299,35 @@ current source is authoritative for the fixed return lines (`8017`, `8055`,
 measurement and its replacement-style negative percentages are not full
 regression or denominator results.
 
+### Batch 224: zero-glyph CFF glyph-map guard
+
+The next source-reviewed witness uses an existing maintained malformed-but-openable
+font rather than adding a new generated asset. Its stable variant ID records the
+reason for expansion:
+
+| Concrete ID | Public input | Why expand this input | Pinned FreeType review and first divergence |
+|---|---|---|---|
+| `ftdriver.FT_Prop_GlyphToScriptMap.map_mutation_affects_autohint_script@b224-zero-glyph-cff-map-guard` | `input/fonts/cid/ot-cff-cid-keyed-zero-glyph.otf`, face index 0, the existing four mutation values and three ppems | The existing map witness only exercises a non-empty map. This fixture declares zero CFF CharStrings and zero SFNT `maxp.numGlyphs`, so a cmap entry is clamped to glyph 0 and the WASM map-mutation route must not dereference an empty map. The case keeps the public operation and adds no duplicate asset or padding matrix. | `cffload.c:2478-2508` assigns `num_glyphs` from the CharStrings INDEX and intentionally skips Charset/Encoding loading when it is zero; `afglobal.c:331-392` permits the zero-count globals allocation; `ftobjs.c:3929-3943` clamps an out-of-range cmap result to zero. The first parity run exposed Rust returning glyph 121 instead of 0. After that clamp, the oracle's explicit glyph-zero precondition (`scripts/gen_unified_oracle.c:33353-33357`) was aligned across the three parity adapters. |
+
+The pinned oracle was run directly before implementation changes and returned
+`property_error=0`, `glyph_index=0`, `initial_map_value=0`, and
+`Invalid_Glyph_Index` for both load and render on all 12 rows. The source review
+therefore confirms that FreeType knowingly opens this zero-glyph shape and safely
+declines to index its empty map; it is not an invented successful parse. Note that
+the direct CFF driver's out-of-range `FT_Load_Glyph` branch is `Invalid_Argument`
+(`cffgload.c:238-239`); the parity operation's oracle intentionally short-circuits
+before that driver call, so the adapters preserve that explicit route contract.
+
+The runtime fix is in `src/font.rs:5850-5865`: `Font::char_index` now applies the
+same public glyph-range clamp as `FT_Get_Char_Index`. The parity harness also keeps
+the oracle's glyph-zero precondition consistent in
+`tests/unified_fixture_parity.rs:30364-30450` and skips WASM map mutation for that
+non-entry. Focused parity passed 1 / 1 comparison across Rust FFI, C ABI, WASM,
+and the pinned oracle. The input's `expansion_reason`, `oracle_verdict`, and
+source references are stored in
+`tests/fixtures/inputs/public-api/ftdriver.FT_Prop_GlyphToScriptMap.json`.
+
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained

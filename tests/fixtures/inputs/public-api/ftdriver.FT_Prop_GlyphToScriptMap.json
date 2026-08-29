@@ -221,6 +221,76 @@
             "coverage": [
               "ftdriver.glyph_to_script_map_effect:explicit-m1"
             ]
+          },
+          {
+            "id": "b224-zero-glyph-cff-map-guard",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cid/ot-cff-cid-keyed-zero-glyph.otf",
+                "requirements": "Maintained derived CID-keyed CFF fixture whose CharStrings INDEX and SFNT maxp table both declare zero glyphs while the face still opens successfully."
+              }
+            },
+            "params": {
+              "module_name": "autofitter",
+              "property_name": "glyph-to-script-map",
+              "face_index": 0,
+              "size_ppems": [
+                9,
+                12,
+                18
+              ],
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "runtime_route": "actual_glyph_to_script_map_effect",
+              "mutations": [
+                {
+                  "char_code": 120,
+                  "glyph": "x",
+                  "script": "FT_AUTOHINTER_SCRIPT_NONE",
+                  "value": 0
+                },
+                {
+                  "char_code": 120,
+                  "glyph": "x",
+                  "script": "FT_AUTOHINTER_SCRIPT_LATIN",
+                  "value": 1
+                },
+                {
+                  "char_code": 20182,
+                  "glyph": "他",
+                  "script": "FT_AUTOHINTER_SCRIPT_CJK",
+                  "value": 2
+                },
+                {
+                  "char_code": 2312,
+                  "glyph": "ई",
+                  "script": "FT_AUTOHINTER_SCRIPT_INDIC",
+                  "value": 3
+                }
+              ],
+              "pinned_source": "freetype/include/freetype/ftdriver.h:1117-1133, freetype/src/cff/cffload.c:2478-2508, freetype/src/autofit/afglobal.c:331-392, and scripts/gen_unified_oracle.c:33339-33357",
+              "render_mode": "FT_RENDER_MODE_NORMAL"
+            },
+            "metadata": {
+              "source_behavior": "FreeType opens this malformed-but-supported zero-glyph CFF face, returns a successful glyph-to-script-map property query, leaves the zero-glyph map untouched, and reports Invalid_Glyph_Index for the missing glyph during the forced-autohint load/render probe.",
+              "expansion_reason": "The existing map-mutation case only exercises a non-empty map. This maintained zero-glyph input reaches the WASM post-validation branch where a successful FT_Property_Get is combined with an out-of-range glyph index; it verifies that the implementation does not invent a mutation error for a public C route that safely declines to dereference the empty map.",
+              "oracle_verdict": "The pinned C oracle returns property_error=0, glyph_index=0, initial_map_value=0, and Invalid_Glyph_Index (16) for both load and render across all four mutation rows and three ppems. It does not write prop.map[0].",
+              "source_refs": [
+                "tests/fixtures/inputs/public-api/freetype.FT_New_Memory_Face.json:757-779",
+                "tests/fixtures/input/fonts/cid/FDArrayTest257.PROVENANCE.md:88-96",
+                "freetype/include/freetype/ftdriver.h:1117-1133",
+                "freetype/src/cff/cffload.c:2478-2508",
+                "freetype/src/autofit/afglobal.c:331-392",
+                "freetype/src/autofit/afmodule.c:285-305",
+                "scripts/gen_unified_oracle.c:33339-33357"
+              ]
+            },
+            "coverage": [
+              "ftdriver.glyph_to_script_map_effect:explicit-b224-zero-glyph-cff-map-guard"
+            ]
           }
         ]
       },
