@@ -1254,6 +1254,15 @@ so the C reference and all Rust-facing lanes receive the same call shape. It
 does not add a size, glyph, or format matrix because none of those values can
 affect this pre-service face validation.
 
+The focused parity run passed 1 / 1 comparison at pushed commit `a312c70`.
+Coverage MCP run `e75d339c-9128-42a7-aa64-bc03e5c14ac7` produced child
+snapshot `64e5e2c3-8741-42c4-8479-f790de7c2f97` against explicit baseline
+`ab608526-5fc6-4840-bc94-fd702aa0fce9`. Its additive-union review reported 5
+newly covered lines and 4 newly covered regions; the target WASM line
+`fontdone-wasm/src/implementation.rs:8686` is green. This is a selected-subset
+measurement, so it is evidence for the targeted branch only and not a new
+full-denominator percentage.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
