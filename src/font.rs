@@ -878,7 +878,6 @@ fn winfnt_font_data(data: &[u8], size_pt: f32, header: &WinFntHeader) -> Arc<Fon
         normalized_variation_coords_16_16: Vec::new(),
         blend_variation_coords_16_16: Vec::new(),
         variation_coordinates_set: false,
-        variation_coordinates_explicitly_set: false,
         gasp: None,
         head: tt::head::HeadTable {
             units_per_em: header.pixel_height.max(1),
@@ -1488,7 +1487,6 @@ fn bdf_font_data(data: &[u8], size_pt: f32, metadata: &BdfMetadata) -> Arc<FontD
         normalized_variation_coords_16_16: Vec::new(),
         blend_variation_coords_16_16: Vec::new(),
         variation_coordinates_set: false,
-        variation_coordinates_explicitly_set: false,
         gasp: None,
         head: tt::head::HeadTable {
             // BDF and PCF are bitmap strikes, not scalable outlines.  Use a
@@ -2787,7 +2785,6 @@ fn non_sfnt_outline_font_data(
         normalized_variation_coords_16_16: Vec::new(),
         blend_variation_coords_16_16: Vec::new(),
         variation_coordinates_set: false,
-        variation_coordinates_explicitly_set: false,
         gasp: None,
         head: tt::head::HeadTable {
             units_per_em,
@@ -4357,7 +4354,6 @@ impl Font {
             normalized_variation_coords_16_16,
             blend_variation_coords_16_16,
             variation_coordinates_set,
-            variation_coordinates_explicitly_set: design_coords.is_some(),
             head,
             hhea,
             hvar,
@@ -4535,6 +4531,16 @@ impl Font {
             None,
             variation_coordinates_set,
         )?;
+        if let Some(error) = next.data.gvar_error.clone() {
+            // FreeType's `FT_Set_Var_Design_Coordinates` calls
+            // `TT_Set_Var_Design`, which validates the lazy `gvar` header
+            // before it publishes the new coordinates
+            // (`freetype/src/base/ftmm.c:281-360`,
+            // `freetype/src/truetype/ttgxvar.c:3397-3406`).  Preserve that
+            // public error boundary instead of deferring the same error to a
+            // later `FT_Load_Glyph` call.
+            return Err(error);
+        }
         next.selected_charmap = next
             .data
             .cmap
@@ -4784,6 +4790,12 @@ impl Font {
                 Some(&self.data.blend_variation_coords_16_16),
                 false,
             )?;
+            if let Some(error) = next.data.gvar_error.clone() {
+                // `FT_Set_Var_Blend_Coordinates` shares the same
+                // `TT_Set_MM_Blend` lazy-gvar validation boundary as the
+                // design-coordinate setter.
+                return Err(error);
+            }
             next.selected_charmap = next
                 .data
                 .cmap
@@ -4814,6 +4826,12 @@ impl Font {
             Some(coords_16_16),
             variation_coordinates_set,
         )?;
+        if let Some(error) = next.data.gvar_error.clone() {
+            // See the design-coordinate setter above: malformed table-level
+            // `gvar` input is rejected while setting coordinates, before a
+            // glyph outline is requested.
+            return Err(error);
+        }
         next.selected_charmap = next
             .data
             .cmap

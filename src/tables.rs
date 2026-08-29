@@ -43,6 +43,8 @@ pub struct FontData {
     pub fvar: Option<FvarTable>,
     pub avar: Option<AvarTable>,
     pub gvar: Option<GvarTable>,
+    /// A table-level `gvar` parse error retained until the public variation
+    /// setter, matching FreeType's lazy validation boundary.
     pub gvar_error: Option<crate::error::FontError>,
     pub design_variation_coords: Vec<i32>,
     pub normalized_variation_coords: Vec<i16>,
@@ -53,9 +55,6 @@ pub struct FontData {
     pub normalized_variation_coords_16_16: Vec<i32>,
     pub blend_variation_coords_16_16: Vec<i32>,
     pub variation_coordinates_set: bool,
-    /// True after the public design-coordinate setter has rebuilt this face,
-    /// even when the supplied coordinates resolve to the default instance.
-    pub variation_coordinates_explicitly_set: bool,
     pub gasp: Option<GaspTable>,
     pub head: HeadTable,
     pub hhea: HheaTable,
@@ -131,11 +130,6 @@ impl FontData {
         &self,
         glyph_index: u16,
     ) -> Result<Rc<crate::tt::glyf::GlyphOutline>, crate::error::FontError> {
-        if self.variation_coordinates_explicitly_set {
-            if let Some(error) = &self.gvar_error {
-                return Err(error.clone());
-            }
-        }
         // CFF Type 2 `random` is stateful across glyph loads.  FreeType's
         // Adobe decoder advances the per-face state each time it interprets a
         // CharString, so caching a CFF outline would incorrectly make a second
@@ -204,11 +198,6 @@ impl FontData {
         &self,
         glyph_index: u16,
     ) -> Result<Rc<crate::tt::glyf::GlyphOutline>, crate::error::FontError> {
-        if self.variation_coordinates_explicitly_set {
-            if let Some(error) = &self.gvar_error {
-                return Err(error.clone());
-            }
-        }
         if let Some(cff) = &self.cff {
             return Ok(Rc::new(cff.load_glyph(glyph_index)?));
         }
