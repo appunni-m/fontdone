@@ -4555,6 +4555,167 @@
             "coverage": [
               "src/tt/cff.rs:496-503"
             ]
+          },
+          {
+            "id": "c90-cff-private-one-byte-op-001",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-private-one-byte-op.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": "adobe",
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_HINTING"],
+              "render_pixel_size": 0,
+              "random_seed": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "src/tt/cff.rs:489-499"
+            ]
+          },
+          {
+            "id": "c90-cff-private-reserved-byte-22-002",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-private-reserved-byte-22.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": [],
+              "render_pixel_size": 0,
+              "random_seed": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "src/tt/cff.rs:485-510"
+            ]
+          },
+          {
+            "id": "c90-cff-private-reserved-byte-255-003",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-private-reserved-byte-255.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_SCALE"],
+              "render_pixel_size": 0,
+              "random_seed": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "src/tt/cff.rs:485-510"
+            ]
+          },
+          {
+            "id": "c90-cff-private-reserved-number-27-004",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-private-reserved-number-27.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": "adobe",
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_HINTING"],
+              "render_pixel_size": 0,
+              "random_seed": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "src/tt/cff.rs:511-515",
+              "src/tt/cff.rs:1191"
+            ]
+          },
+          {
+            "id": "c90-cff-private-truncated-escape-005",
+            "assets": {
+              "cff_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-random-private-truncated-escape.otf",
+                "asset_kind": "font"
+              },
+              "type1_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/simple-type1.pfb",
+                "asset_kind": "font"
+              },
+              "cid_font": {
+                "kind": "ref",
+                "id": "input/fonts/cid/fontinfo-populated.cid",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "value": 1,
+              "string_value": null,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_RENDER"],
+              "render_pixel_size": 16,
+              "random_seed": 0,
+              "runtime_route": "actual_ps_hinting_engine_property"
+            },
+            "coverage": [
+              "src/tt/cff.rs:491-494"
+            ]
           }
         ]
       },

@@ -988,6 +988,34 @@ def write_pure_cff_random_private() -> None:
     )
 
 
+def write_pure_cff_random_private_parser_controls() -> None:
+    """Build CFF Private parser controls reviewed against pinned cffparse.c."""
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    # `StdHW` is a valid one-byte Private DICT operator (cfftoken.h:90), so
+    # this fixture reaches the non-escaped operator arm without relying on a
+    # malformed dictionary.
+    one_byte = OUT_DIR / "pure-cff-random-private-one-byte-op.otf"
+    build_cff_random(one_byte, private_dict={"StdHW": 50})
+
+    base = OUT_DIR / "pure-cff-random-private-default-seed.otf"
+    controls = {
+        "pure-cff-random-private-reserved-byte-22.otf": b"\x16",
+        "pure-cff-random-private-reserved-byte-255.otf": b"\xff",
+        # cff_parser_run classifies 27 as a number, then 0x16 as an unknown
+        # operator.  This deliberately preserves that permissive C behavior.
+        "pure-cff-random-private-reserved-number-27.otf": b"\x1b\x16",
+        # A one-byte Private range ending after escape 12 reaches Syntax_Error
+        # in pinned FreeType and becomes public Invalid_Argument.
+        "pure-cff-random-private-truncated-escape.otf": b"\x0c",
+    }
+    for filename, private_payload in controls.items():
+        payload = bytearray(sfnt_table_payload(base, b"CFF "))
+        patch_cff_private_top_dict(payload, size=len(private_payload))
+        patch_cff_private_payload(payload, private_payload)
+        replace_sfnt_table(base, OUT_DIR / filename, b"CFF ", bytes(payload))
+
+
 def build_cff_random_global_subr_error(path: Path) -> None:
     """Build a valid CFF face whose second random subroutine call errors.
 
@@ -1728,6 +1756,16 @@ def patch_cff_private_initial_random_seed_missing(data: bytearray) -> None:
     data[offset : offset + 2] = b"\x0c\x13"
 
 
+def patch_cff_private_payload(data: bytearray, private_payload: bytes) -> None:
+    """Replace a Private DICT payload without changing its declared range."""
+    offset, size = cff_private_dict_range(data)
+    if len(private_payload) > size:
+        raise ValueError("CFF Private payload is larger than its declared range")
+    data[offset : offset + size] = private_payload + b"\0" * (
+        size - len(private_payload)
+    )
+
+
 def patch_cff_ros_sids(
     data: bytearray,
     *,
@@ -2380,6 +2418,7 @@ def main() -> None:
     write_pure_cff_cubic()
     write_pure_cff_random()
     write_pure_cff_random_private()
+    write_pure_cff_random_private_parser_controls()
     write_pure_cff_random_global_subr_error()
     write_pure_cff_below_baseline_no_vmtx()
     write_pure_cff_baseline_touch_no_vmtx()

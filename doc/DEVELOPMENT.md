@@ -949,6 +949,27 @@ expectations.
 | `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c89-cff-private-default-seed-004` | Use the valid non-empty Private DICT `BlueShift 8` with no seed operator; the unrelated field proves the parser reaches the defaulting arm at `src/tt/cff.rs:513-516`. | `cffload.c:1892-1899` establishes defaults, `cffload.c:1935-1940` changes parsed zero `initialRandomSeed` to `987654321`, and `cffload.c:2130-2131` consumes it. | Add for focused parity; retain only on exact C/Rust/WASM output. |
 | `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c89-cff-private-missing-seed-operand-005` | Use a malformed but openable SFNT whose Private bytes begin with operand-less `initialRandomSeed`; targets the newly corrected Rust error path at `src/tt/cff.rs:496-503`. | `cffparse.c:1361-1365` routes the recognized field with zero operands to Stack_Underflow, and `cffparse.c:1540-1542` returns `Invalid_Argument`; `cffload.c:1924-1930` propagates it from face loading. | Add for focused parity; retain only if C/Rust/WASM report the same error-shaped result. |
 
+The following c90 candidates were reviewed against the pinned C parser before
+being proposed. In `cffparse.c:1177-1182`, FreeType classifies every byte at
+least 27 as a number except 31 and 255; this is why the reserved byte-27 case
+is intentionally retained even though it is outside the documented DICT
+number encodings. Bytes below 27, 31, and 255 enter the operator path, and
+`cffparse.c:1520-1527` ignores an unsupported operator after clearing the
+operand stack. `cfftoken.h:90` confirms that `StdHW` is a real one-byte
+Private operator. The one-byte escape is different: `cffparse.c:1337-1343`
+requires its second byte and `cffparse.c:1544-1546` exposes the truncated form
+as `Invalid_Argument`. Thus the malformed cases below are not assumed to be
+valid fonts; each ID states whether it probes FreeType's permissive acceptance
+or its public rejection guard.
+
+| Candidate runtime ID | Why expand this input | Pinned FreeType review | Decision before parity |
+|---|---|---|---|
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c90-cff-private-one-byte-op-001` | Use the valid `StdHW 50` Private DICT value to reach the non-escaped operator arm at `src/tt/cff.rs:489-499`; the ID names the exact field family rather than adding another generic CFF font. | `cfftoken.h:90` registers `StdHW` as one-byte operator 10; `cffparse.c:1350-1373` finds and stores its single operand while `cffload.c:1919-1930` accepts the parsed Private DICT. | Add only if exact C/Rust/WASM parity holds. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c90-cff-private-reserved-byte-22-002` | Use a one-byte Private payload `0x16` to exercise the new reserved-operator classifier and stack-clear path at `src/tt/cff.rs:485-510`. | `cffparse.c:1177-1182` sends byte 22 to the operator path; no field matches, and `cffparse.c:1520-1527` explicitly ignores unsupported operators. Pinned FreeType therefore allows this malformed Private payload during face loading. | Add only if exact C/Rust/WASM parity holds; retain as an oracle-permitted malformed input. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c90-cff-private-reserved-byte-255-003` | Use a one-byte CFF1 Private payload `0xff` to cover the explicit reserved-255 exception at `src/tt/cff.rs:489-499` without conflating it with CFF2 fixed-number operands. | `cffparse.c:1177-1182` explicitly excludes 255 from numbers, so it is handled as an operator; `cffparse.c:1520-1527` ignores it as unsupported. This is permissive CFF1 behavior even though the comment says the byte should not appear in fonts. | Add only if exact C/Rust/WASM parity holds; retain as an oracle-permitted malformed input. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c90-cff-private-reserved-number-27-004` | Use Private bytes `0x1b 0x16` to cover the newly restored `read_dict_number` byte-27 arm at `src/tt/cff.rs:511-515` and then prove the following reserved operator clears the stack. | `cffparse.c:1180-1186` pushes byte 27 as a number, `cff_parse_integer` returns `27-139` (`cffparse.c:94-124`), and the following byte 22 is ignored by `cffparse.c:1520-1527`. FreeType accepts this reserved-number encoding. | Add only if exact C/Rust/WASM parity holds; retain as an oracle-permitted malformed input. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c90-cff-private-truncated-escape-005` | Use a declared one-byte Private range containing only `0x0c` to reach the Rust escaped-op bounds error at `src/tt/cff.rs:491-494`. | `cffparse.c:1337-1343` advances past escape 12, detects that the second byte is at the limit, and jumps to `Syntax_Error`; `cffparse.c:1544-1546` returns `Invalid_Argument`, propagated by `cffload.c:1924-1930`. | Add only if C/Rust/WASM expose the same error-shaped result; this is a deliberately malformed rejection case, not a valid-font claim. |
+
 The c89 focused parity command retained all five cases: C, Rust, and WASM
 matched 5/5. Coverage MCP run `59bf6605-493b-4144-a5b1-675ef769852b`
 completed at commit `33feaf63fbab4213ce3fd6c91b6ec60f28a7378d` and ingested
