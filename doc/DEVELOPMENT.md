@@ -1263,6 +1263,30 @@ newly covered lines and 4 newly covered regions; the target WASM line
 measurement, so it is evidence for the targeted branch only and not a new
 full-denominator percentage.
 
+### Batch 223: invalid-face size wrapper routes
+
+Coverage MCP marked the error arms at the baseline lines
+`fontdone-wasm/src/implementation.rs:8015` and `:8051` red. The maintained
+`error_null_face` cases already exercised the public C-shaped call, but their
+harness intentionally short-circuited before the thin C ABI and WASM handle
+wrappers. Source review showed that this was a real wrapper mismatch, not an
+unreachable branch: FreeType first normalizes the request and then defers
+validation to `FT_Request_Size`, whose null-face guard returns
+`Invalid_Face_Handle`.
+
+| Concrete ID | Public input | Why expand this input | Pinned FreeType review and decision |
+|---|---|---|---|
+| `freetype.FT_Set_Pixel_Sizes.invalid_face_handle_abi_routes` | `face:null`, `pixel_width:12`, `pixel_height:12`; the maintained DejaVuSans asset is attached only so the ABI route is selected. | Reach `fontdone-c-abi/src/implementation.rs:23061-23064` and `fontdone-wasm/src/implementation.rs:8014-8017`, which the existing null-face row bypassed; zero is the WASM representation of the null face. | `freetype/src/base/ftobjs.c:3572-3596` performs normalization and calls `FT_Request_Size`; `:3446-3447` returns `Invalid_Face_Handle`. Before the fix both wrappers returned `Invalid_Argument`; the focused oracle comparison exposed that first divergence. |
+| `freetype.FT_Set_Char_Size.invalid_face_handle_abi_routes` | `face:null`, `char_width:768`, `char_height:768`, `horz_resolution:72`, `vert_resolution:72`; the same maintained asset is route-only. | Reach `fontdone-c-abi/src/implementation.rs:23037-23040` and `fontdone-wasm/src/implementation.rs:8052-8055`, which were likewise bypassed by the existing null-face row. | `freetype/src/base/ftobjs.c:3532-3558` performs point-size/resolution normalization and calls `FT_Request_Size`; `:3446-3447` returns `Invalid_Face_Handle`. Before the fix both wrappers returned `Invalid_Argument`; the focused oracle comparison exposed that first divergence. |
+
+The runtime fix maps zero/null face handles to `Invalid_Face_Handle` in both
+size wrappers, matching the already-correct `FT_Request_Size`, `FT_Select_Size`,
+and face-lifecycle wrapper policy. The focused parity run passed 2 / 2
+comparisons after the fix, with no new font or glyph variants added. This batch
+is committed and pushed before measurement; its incremental Coverage MCP run
+must use the explicit campaign baseline and report the selected-subset result
+separately from the full denominator.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained

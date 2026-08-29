@@ -23035,7 +23035,9 @@ pub extern "C" fn FT_Set_Char_Size(
     vert_resolution: FT_UInt,
 ) -> FT_Error {
     let Some(state) = face_state_mut(face) else {
-        return rust_ffi::FT_Err_Invalid_Argument;
+        // FreeType defers null-face validation to FT_Request_Size, which
+        // returns Invalid_Face_Handle before inspecting the size request.
+        return rust_ffi::FT_Err_Invalid_Face_Handle as FT_Error;
     };
     let error = rust_ffi::FT_Set_Char_Size(
         &mut state.inner,
@@ -23057,7 +23059,9 @@ pub extern "C" fn FT_Set_Pixel_Sizes(
     pixel_height: FT_UInt,
 ) -> FT_Error {
     let Some(state) = face_state_mut(face) else {
-        return rust_ffi::FT_Err_Invalid_Argument;
+        // FreeType defers null-face validation to FT_Request_Size, which
+        // returns Invalid_Face_Handle after the dimension normalization.
+        return rust_ffi::FT_Err_Invalid_Face_Handle as FT_Error;
     };
     let error = rust_ffi::FT_Set_Pixel_Sizes(&mut state.inner, pixel_width, pixel_height);
     if error == rust_ffi::FT_Err_Ok {

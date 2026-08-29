@@ -68,6 +68,10 @@ use sha2::{Digest, Sha256};
 const OUTLINE_RENDER_USER_TOKEN: usize = 0x1234_5678;
 const FTMM_AXIS_FLAG_HIDDEN: FT_UInt = 1;
 const INCREMENTAL_CLIENT_OBJECT_MAGIC: u64 = 0x46_54_49_4E_43_4C_49_46;
+const FT_SET_PIXEL_SIZES_INVALID_FACE_HANDLE_CASE: &str =
+    "freetype.FT_Set_Pixel_Sizes.invalid_face_handle_abi_routes";
+const FT_SET_CHAR_SIZE_INVALID_FACE_HANDLE_CASE: &str =
+    "freetype.FT_Set_Char_Size.invalid_face_handle_abi_routes";
 
 #[cfg(coverage_nightly)]
 fn coverage_probe_latin_segment_merge() {
@@ -51097,7 +51101,25 @@ fn is_gzip_stream_invalid_handle_case(case: &InputCase) -> bool {
     case_id_base(&case.case_id) == "ftgzip.FT_Stream_OpenGzip.rejects_invalid_stream_handles"
 }
 
+fn is_invalid_face_handle_size_abi_case(case: &InputCase) -> bool {
+    matches!(
+        case.case_id.as_str(),
+        FT_SET_PIXEL_SIZES_INVALID_FACE_HANDLE_CASE
+            | FT_SET_CHAR_SIZE_INVALID_FACE_HANDLE_CASE
+    )
+}
+
 fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
+    if case.case_id == FT_SET_PIXEL_SIZES_INVALID_FACE_HANDLE_CASE {
+        let (_, pixel_height) = pixel_size_param(&case.inputs.params)?;
+        let request = rust_nominal_size_request(i64::from(pixel_height) << 6);
+        return Ok(error(FT_Request_Size(None, Some(&request))));
+    }
+    if case.case_id == FT_SET_CHAR_SIZE_INVALID_FACE_HANDLE_CASE {
+        let char_height = i64_param(&case.inputs.params, "char_height")?;
+        let request = rust_nominal_size_request(char_height);
+        return Ok(error(FT_Request_Size(None, Some(&request))));
+    }
     if is_gzip_stream_invalid_handle_case(case) {
         return gzip_stream_open_invalid_handle_output(GzipStreamBackend::Rust);
     }
@@ -52614,6 +52636,23 @@ fn catch_font_error(err: String) -> Result<RunOutput, String> {
 }
 
 fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
+    if case.case_id == FT_SET_PIXEL_SIZES_INVALID_FACE_HANDLE_CASE {
+        let (pixel_width, pixel_height) = pixel_size_param(&case.inputs.params)?;
+        return Ok(error(c_abi::FT_Set_Pixel_Sizes(
+            ptr::null_mut(),
+            pixel_width,
+            pixel_height,
+        )));
+    }
+    if case.case_id == FT_SET_CHAR_SIZE_INVALID_FACE_HANDLE_CASE {
+        return Ok(error(c_abi::FT_Set_Char_Size(
+            ptr::null_mut(),
+            i64_param(&case.inputs.params, "char_width")?,
+            i64_param(&case.inputs.params, "char_height")?,
+            u32_param(&case.inputs.params, "horz_resolution")?,
+            u32_param(&case.inputs.params, "vert_resolution")?,
+        )));
+    }
     if is_gzip_stream_invalid_handle_case(case) {
         return gzip_stream_open_invalid_handle_output(GzipStreamBackend::CAbi);
     }
@@ -54213,6 +54252,23 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
 }
 
 fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
+    if case.case_id == FT_SET_PIXEL_SIZES_INVALID_FACE_HANDLE_CASE {
+        let (pixel_width, pixel_height) = pixel_size_param(&case.inputs.params)?;
+        return Ok(error(wasm_abi::fontdone_wasm_set_pixel_sizes(
+            0,
+            pixel_width,
+            pixel_height,
+        )));
+    }
+    if case.case_id == FT_SET_CHAR_SIZE_INVALID_FACE_HANDLE_CASE {
+        return Ok(error(wasm_abi::fontdone_wasm_set_char_size(
+            0,
+            i64_param(&case.inputs.params, "char_width")?,
+            i64_param(&case.inputs.params, "char_height")?,
+            u32_param(&case.inputs.params, "horz_resolution")?,
+            u32_param(&case.inputs.params, "vert_resolution")?,
+        )));
+    }
     if is_gzip_stream_invalid_handle_case(case) {
         return gzip_stream_open_invalid_handle_output(GzipStreamBackend::Wasm);
     }

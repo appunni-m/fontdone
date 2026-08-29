@@ -6,6 +6,7 @@
     "success_zero_dimension_and_resolution_normalization",
     "success_fractional_point_size_rounding",
     "error_null_face",
+    "invalid_face_handle_abi_routes",
     "error_invalid_or_unscalable_face"
   ],
   "cases": [
@@ -444,6 +445,59 @@
           ]
         },
         "error": "FT_Err_Invalid_Pixel_Size"
+      }
+    },
+    {
+      "case_id": "freetype.FT_Set_Char_Size.invalid_face_handle_abi_routes",
+      "subject": "freetype.FT_Set_Char_Size",
+      "case": "invalid_face_handle_abi_routes",
+      "operation": "set_char_size",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "file",
+            "role": "font",
+            "path": "input/fonts/DejaVuSans.ttf"
+          }
+        },
+        "params": {
+          "face": "null",
+          "char_width": 768,
+          "char_height": 768,
+          "horz_resolution": 72,
+          "vert_resolution": 72
+        }
+      },
+      "metadata": {
+        "expansion_reason": "The existing error_null_face case validates the public C-shaped null-face call but its harness short-circuits before the exported C ABI and WASM handle wrappers. This dedicated case keeps the public null-face shape and attaches the maintained font only to select those ABI routes, where handle 0 must be rejected.",
+        "oracle_verdict": "Pinned FreeType freetype/src/base/ftobjs.c:3532-3558 normalizes the point-size and resolution inputs and deliberately defers face validation to FT_Request_Size; freetype/src/base/ftobjs.c:3446-3447 returns FT_Err_Invalid_Face_Handle for the null face.",
+        "source_refs": [
+          "freetype/src/base/ftobjs.c:3446-3447",
+          "freetype/src/base/ftobjs.c:3532-3558",
+          "fontdone-c-abi/src/implementation.rs:23030-23051",
+          "fontdone-wasm/src/implementation.rs:8043-8064"
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:invalid_handle"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "status",
+            "error"
+          ]
+        },
+        "error": "Invalid_Face_Handle"
       }
     }
   ]

@@ -8012,7 +8012,9 @@ pub extern "C" fn fontdone_wasm_set_pixel_sizes(
     pixel_height: FT_UInt,
 ) -> FT_Error {
     let Some(face) = face_mut(handle) else {
-        return rust_ffi::FT_Err_Invalid_Argument;
+        // The C API defers null-face validation to FT_Request_Size, so a zero
+        // WASM face handle has the same Invalid_Face_Handle classification.
+        return rust_ffi::FT_Err_Invalid_Face_Handle as FT_Error;
     };
     let error = rust_ffi::FT_Set_Pixel_Sizes(&mut face.face, pixel_width, pixel_height);
     if error == rust_ffi::FT_Err_Ok {
@@ -8048,7 +8050,9 @@ pub extern "C" fn fontdone_wasm_set_char_size(
     vert_resolution: FT_UInt,
 ) -> FT_Error {
     let Some(face) = face_mut(handle) else {
-        return rust_ffi::FT_Err_Invalid_Argument;
+        // The C API defers null-face validation to FT_Request_Size, so a zero
+        // WASM face handle has the same Invalid_Face_Handle classification.
+        return rust_ffi::FT_Err_Invalid_Face_Handle as FT_Error;
     };
     let error = rust_ffi::FT_Set_Char_Size(
         &mut face.face,

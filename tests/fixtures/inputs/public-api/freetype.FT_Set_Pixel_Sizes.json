@@ -6,6 +6,7 @@
     "success_zero_dimension_normalization",
     "success_large_dimension_clamp",
     "error_null_face",
+    "invalid_face_handle_abi_routes",
     "error_invalid_or_unscalable_face",
     "error_cblc_strike_unavailable"
   ],
@@ -2492,6 +2493,57 @@
           ]
         },
         "error": "FT_Err_Invalid_Pixel_Size"
+      }
+    },
+    {
+      "case_id": "freetype.FT_Set_Pixel_Sizes.invalid_face_handle_abi_routes",
+      "subject": "freetype.FT_Set_Pixel_Sizes",
+      "case": "invalid_face_handle_abi_routes",
+      "operation": "set_pixel_sizes",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "file",
+            "role": "font",
+            "path": "input/fonts/DejaVuSans.ttf"
+          }
+        },
+        "params": {
+          "face": "null",
+          "pixel_width": 12,
+          "pixel_height": 12
+        }
+      },
+      "metadata": {
+        "expansion_reason": "The existing error_null_face case validates the public C-shaped null-face call but its harness short-circuits before the exported C ABI and WASM handle wrappers. This dedicated case keeps the public null-face shape and attaches the maintained font only to select those ABI routes, where handle 0 must be rejected.",
+        "oracle_verdict": "Pinned FreeType freetype/src/base/ftobjs.c:3572-3596 normalizes the dimensions and deliberately defers face validation to FT_Request_Size; freetype/src/base/ftobjs.c:3446-3447 returns FT_Err_Invalid_Face_Handle for the null face.",
+        "source_refs": [
+          "freetype/src/base/ftobjs.c:3446-3447",
+          "freetype/src/base/ftobjs.c:3572-3596",
+          "fontdone-c-abi/src/implementation.rs:23054-23066",
+          "fontdone-wasm/src/implementation.rs:8009-8022"
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:invalid_handle"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "status",
+            "error"
+          ]
+        },
+        "error": "Invalid_Face_Handle"
       }
     }
   ]

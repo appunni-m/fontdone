@@ -2077,6 +2077,8 @@ subjects:
         description: Fractional 26.6 point sizes produce C-matching rounded ppem, scales, and active metrics.
       - id: error_null_face
         description: Null face returns the pinned C invalid-face-handle classification through FT_Request_Size.
+      - id: invalid_face_handle_abi_routes
+        description: A direct zero handle through the C ABI and WASM wrapper returns FT_Err_Invalid_Face_Handle like the public null-face call.
       - id: error_invalid_or_unscalable_face
         description: Bitmap-only, malformed, or unsupported size requests return the exact C error classification.
     # needs-input: operation=set_char_size; fixture_asset=input/fonts/DejaVuSans.ttf plus bitmap-only/non-scalable fixture; params char_width/char_height values 0, 64, 20*64, fractional 20.5*64, asymmetric values, horz_resolution/vert_resolution 0/72/96/asymmetric, null face; expected output shape=FT_Error and active face->size->metrics x_ppem, y_ppem, x_scale, y_scale, ascender, descender, height, max_advance plus one loaded glyph metrics row; comparison=exact C oracle status and metric equality.
@@ -2111,6 +2113,8 @@ subjects:
         description: Pixel dimensions at or above 0xFFFF clamp to the pinned C maximum before requesting metrics.
       - id: error_null_face
         description: Null face returns the pinned C invalid-face-handle classification through FT_Request_Size.
+      - id: invalid_face_handle_abi_routes
+        description: A direct zero handle through the C ABI and WASM wrapper returns FT_Err_Invalid_Face_Handle like the public null-face call.
       - id: error_invalid_or_unscalable_face
         description: Bitmap-only, malformed, or unsupported size requests return the exact C error classification.
       - id: error_cblc_strike_unavailable

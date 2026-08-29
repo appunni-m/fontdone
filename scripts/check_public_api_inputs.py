@@ -1179,6 +1179,8 @@ def exact_error_public_route(operation: str, case_id: str, expect_error: bool) -
         "ftmm.FT_Get_MM_Var.null_output_error",
         "ftmm.FT_Get_MM_Var.invalid_or_non_variable_face_error",
         "ftmm.FT_Get_MM_Var.invalid_face_handle_wasm_route",
+        "freetype.FT_Set_Pixel_Sizes.invalid_face_handle_abi_routes",
+        "freetype.FT_Set_Char_Size.invalid_face_handle_abi_routes",
         "ftmm.FT_Get_MM_WeightVector.len_without_buffer_error",
         "ftmm.FT_Get_MM_WeightVector.unsupported_face_error",
         "ftmm.FT_Get_Multi_Master.true_type_or_opentype_variation_error",
@@ -8857,6 +8859,8 @@ def null_error_real_parity_reason(row: ConcreteInput) -> str | None:
         "freetype.FT_Set_Char_Size.error_invalid_or_unscalable_face": "FT_Set_Char_Size invalid/unscalable-face error validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "freetype.FT_Set_Pixel_Sizes.error_invalid_or_unscalable_face": "FT_Set_Pixel_Sizes invalid/unscalable-face error validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "freetype.FT_Set_Pixel_Sizes.error_cblc_strike_unavailable": "FT_Set_Pixel_Sizes CBLC unavailable-strike error validates through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
+        "freetype.FT_Set_Pixel_Sizes.invalid_face_handle_abi_routes": "FT_Set_Pixel_Sizes null-face validation reaches the exported C ABI and WASM handle wrappers and matches pinned FreeType Invalid_Face_Handle behavior",
+        "freetype.FT_Set_Char_Size.invalid_face_handle_abi_routes": "FT_Set_Char_Size null-face validation reaches the exported C ABI and WASM handle wrappers and matches pinned FreeType Invalid_Face_Handle behavior",
         "ftmm.FT_Get_MM_Var.invalid_face_handle_wasm_route": "FT_Get_MM_Var null-face validation reaches the exported WASM wrapper and matches pinned FreeType Invalid_Face_Handle behavior through the C oracle, Rust FFI, C ABI, and WASM ABI",
     }
     return reasons.get(row.case_id)
