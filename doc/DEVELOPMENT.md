@@ -849,6 +849,18 @@ c101 witness. The stable ID and reason are recorded before measurement:
 |---|---|---|---|
 | `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch@c102-ps-global-subr-first-error-second-success` | Keep the valid 108-global-subroutine CFF font, but set the public `random_seed` to `65535`. CFF's first random value then has low 16 bits `0xffff`, selecting biased global subroutine 108 (out of range); the xorshifted second value selects subroutine 107 (valid). This is the missing first-error/second-success post-validation state at `fontdone-wasm/src/implementation.rs:2079-2089`. | `psintrp.c:2241-2258` derives the random value used by `callgsubr`, `psobjs.c:2552-2559` advances it with the pinned xorshift, and `psintrp.c:979-1029` rejects only the out-of-range first call. The valid CFF input is therefore accepted by the oracle up to the intended glyph error; it is not a malformed-font assumption. | Focused parity passed 1/1 across Rust, C ABI, and WASM. No implementation mismatch was found; this input is retained as the source-reviewed reachability witness. Coverage MCP measurement is recorded after the commit below. |
 
+The exact-head Coverage MCP run was then performed after commit `290e745` was
+pushed: run `9870cb7c-0332-467a-adb3-c42c2d0e722b` used command
+`99e08e7c-f522-4446-885e-0af0d2be0a23`, selected only the C102 ID, and ingested
+snapshot `d4c95909-bf99-4bc5-ac7f-3883c26e2c85` against explicit baseline
+`05c364db-9864-49d8-8dde-b45169061bbc`. The run passed and its selected WASM
+report covered the success side of `second_load.is_err()` at line 2089. The
+additive union reported +76 covered lines and +351 regions but no net branch
+delta; its `selected_subset` scope is reachability evidence, not a new full
+denominator percentage. Existing C86 error/error cases remain the oracle-backed
+witness for the opposite side, so no additional malformed input or Rust fix is
+justified by this check.
+
 The CJK snap-width candidates were then checked against both the pinned C
 implementation and the current source map:
 
