@@ -215,18 +215,19 @@ def build_cff2(path: Path) -> None:
     builder.save(path)
 
 
-def build_cff_random(path: Path) -> None:
+def build_cff_random(
+    path: Path, private_dict: dict[str, object] | None = None
+) -> None:
     """Build a valid CFF Type 2 face whose glyph consumes ``random``.
 
     FreeType's Adobe CFF interpreter keeps the random state on the opened
     subfont, so loading this glyph twice produces two different outlines.  The
     parity case fixes the CFF driver's random-seed property to zero before the
     face is opened.  A non-empty private dictionary sanitizes a zero
-    ``initialRandomSeed`` to the pinned 987654321 default, but this generated
-    fixture intentionally emits ``Private=(0, offset)``.  Pinned FreeType
-    exits before applying those defaults for an empty private dictionary, so
-    this fixture's exact initial random state is zero while still exercising
-    the stateful operator.
+    ``initialRandomSeed`` to the pinned 987654321 default; the default call
+    keeps the generated fixture's ``Private=(0, offset)`` entry so that
+    pinned FreeType exits before applying those defaults and leaves its exact
+    initial random state at zero.
     """
     names = {
         "familyName": "Pure CFF Random Coverage",
@@ -277,7 +278,7 @@ def build_cff_random(path: Path) -> None:
             "Weight": names["styleName"],
         },
         {".notdef": t2_charstring(), "random": random_charstring},
-        {},
+        private_dict or {},
     )
     builder.setupMaxp()
     recalc_font_bbox = TopDict.recalcFontBBox
@@ -950,6 +951,43 @@ def write_pure_cff_random() -> None:
     build_cff_random(out)
 
 
+def write_pure_cff_random_private() -> None:
+    """Build source-reviewed CFF Private-dictionary boundary controls."""
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    seeded = OUT_DIR / "pure-cff-random-private-seed-positive.otf"
+    build_cff_random(seeded, private_dict={"initialRandomSeed": 123})
+    default_seed = OUT_DIR / "pure-cff-random-private-default-seed.otf"
+    build_cff_random(default_seed, private_dict={"BlueShift": 8})
+
+    base = OUT_DIR / "pure-cff-random.otf"
+    no_private_payload = bytearray(sfnt_table_payload(base, b"CFF "))
+    patch_cff_private_top_dict(no_private_payload, operator_replacement=19)
+    replace_sfnt_table(
+        base,
+        OUT_DIR / "pure-cff-random-no-private.otf",
+        b"CFF ",
+        bytes(no_private_payload),
+    )
+
+    offset_zero_payload = bytearray(sfnt_table_payload(base, b"CFF "))
+    patch_cff_private_top_dict(offset_zero_payload, size=1, offset=0)
+    replace_sfnt_table(
+        base,
+        OUT_DIR / "pure-cff-random-private-offset-zero.otf",
+        b"CFF ",
+        bytes(offset_zero_payload),
+    )
+
+    missing_seed_payload = bytearray(sfnt_table_payload(default_seed, b"CFF "))
+    patch_cff_private_initial_random_seed_missing(missing_seed_payload)
+    replace_sfnt_table(
+        default_seed,
+        OUT_DIR / "pure-cff-random-private-seed-missing-operand.otf",
+        b"CFF ",
+        bytes(missing_seed_payload),
+    )
+
+
 def build_cff_random_global_subr_error(path: Path) -> None:
     """Build a valid CFF face whose second random subroutine call errors.
 
@@ -1562,6 +1600,134 @@ def encode_cff_dict_integer(value: int) -> bytes:
     return b"\x1d" + value.to_bytes(4, "big", signed=True)
 
 
+def decode_cff_dict_integer(data: bytes | bytearray, pos: int) -> tuple[int, int]:
+    """Decode one integer DICT operand and return its value and end offset."""
+    byte = data[pos]
+    if 32 <= byte <= 246:
+        return byte - 139, pos + 1
+    if 247 <= byte <= 250:
+        return (byte - 247) * 256 + data[pos + 1] + 108, pos + 2
+    if 251 <= byte <= 254:
+        return -(byte - 251) * 256 - data[pos + 1] - 108, pos + 2
+    if byte == 28:
+        return int.from_bytes(data[pos + 1 : pos + 3], "big", signed=True), pos + 3
+    if byte == 29:
+        return int.from_bytes(data[pos + 1 : pos + 5], "big", signed=True), pos + 5
+    raise ValueError(f"expected integer CFF DICT operand at byte {pos}")
+
+
+def cff_top_dict_range(data: bytes | bytearray) -> tuple[int, int]:
+    """Return the sole CFF Top DICT object's byte range."""
+    header_size = data[2]
+    _, cursor = cff_index_ranges(data, header_size)
+    top_dict_ranges, _ = cff_index_ranges(data, cursor)
+    if len(top_dict_ranges) != 1:
+        raise ValueError("expected one CFF Top DICT")
+    return top_dict_ranges[0]
+
+
+def cff_private_dict_range(data: bytes | bytearray) -> tuple[int, int]:
+    """Find the raw Private DICT range named by the Top DICT."""
+    start, end = cff_top_dict_range(data)
+    top_dict = data[start:end]
+    operands: list[tuple[int, int]] = []
+    pos = 0
+    while pos < len(top_dict):
+        byte = top_dict[pos]
+        if byte <= 21:
+            if byte == 12:
+                operator = 0x0C00 | top_dict[pos + 1]
+                operator_length = 2
+            else:
+                operator = byte
+                operator_length = 1
+            if operator == 18:
+                if len(operands) < 2:
+                    raise ValueError("CFF Private operator has too few operands")
+                size, _ = decode_cff_dict_integer(top_dict, operands[0][0])
+                offset, _ = decode_cff_dict_integer(top_dict, operands[1][0])
+                if size < 0 or offset < 0:
+                    raise ValueError("CFF Private operands are negative")
+                return offset, size
+            operands.clear()
+            pos += operator_length
+            continue
+        length = cff_dict_number_length(top_dict, pos)
+        operands.append((pos, pos + length))
+        pos += length
+    raise ValueError("CFF Top DICT has no Private operator")
+
+
+def _replace_cff_dict_operand(
+    top_dict: bytearray, operand: tuple[int, int], value: int
+) -> None:
+    """Replace an integer operand, retaining its byte width if necessary."""
+    start, end = operand
+    encoded = encode_cff_dict_integer(value)
+    width = end - start
+    if len(encoded) > width:
+        raise ValueError("CFF DICT replacement changed operand width")
+    # A short zero encoding is intentionally padded with another zero number.
+    # The CFF Private callback consumes the first two operands and ignores the
+    # extra value, allowing a same-size `(size=1, offset=0)` boundary mutation.
+    top_dict[start:end] = encoded + b"\x8b" * (width - len(encoded))
+
+
+def patch_cff_private_top_dict(
+    data: bytearray,
+    *,
+    size: int | None = None,
+    offset: int | None = None,
+    operator_replacement: int | None = None,
+) -> None:
+    """Patch a CFF Top DICT Private boundary without changing table size."""
+    start, end = cff_top_dict_range(data)
+    top_dict = bytearray(data[start:end])
+    operands: list[tuple[int, int]] = []
+    pos = 0
+    while pos < len(top_dict):
+        byte = top_dict[pos]
+        if byte <= 21:
+            if byte == 12:
+                operator = 0x0C00 | top_dict[pos + 1]
+                operator_length = 2
+            else:
+                operator = byte
+                operator_length = 1
+            if operator == 18:
+                if len(operands) < 2:
+                    raise ValueError("CFF Private operator has too few operands")
+                if size is not None:
+                    _replace_cff_dict_operand(top_dict, operands[0], size)
+                if offset is not None:
+                    _replace_cff_dict_operand(top_dict, operands[1], offset)
+                if operator_replacement is not None:
+                    if not 0 <= operator_replacement <= 21:
+                        raise ValueError("CFF operator replacement must be one byte")
+                    top_dict[pos] = operator_replacement
+                data[start:end] = top_dict
+                return
+            operands.clear()
+            pos += operator_length
+            continue
+        length = cff_dict_number_length(top_dict, pos)
+        operands.append((pos, pos + length))
+        pos += length
+    raise ValueError("CFF Top DICT has no Private operator")
+
+
+def patch_cff_private_initial_random_seed_missing(data: bytearray) -> None:
+    """Replace a valid Private payload's first field with operand-less seed."""
+    offset, size = cff_private_dict_range(data)
+    if size < 2:
+        raise ValueError("CFF Private payload is too short for escaped operator")
+    # `12 19` is the Private DICT initialRandomSeed operator.  FreeType's
+    # cff_parser_run reports Stack_Underflow when it sees it with no operand;
+    # the remaining byte is deliberately left in place so the SFNT size and
+    # all Top DICT offsets remain stable.
+    data[offset : offset + 2] = b"\x0c\x13"
+
+
 def patch_cff_ros_sids(
     data: bytearray,
     *,
@@ -1791,6 +1957,20 @@ def write_pure_cff_empty_tt_programs() -> None:
 def sfnt_checksum(data: bytes) -> int:
     padded = data + b"\0" * ((4 - len(data) % 4) % 4)
     return sum(int.from_bytes(padded[i : i + 4], "big") for i in range(0, len(padded), 4)) & 0xFFFFFFFF
+
+
+def sfnt_table_payload(source: Path, tag: bytes) -> bytes:
+    """Read one raw SFNT table without asking FontTools to recompile it."""
+    data = source.read_bytes()
+    num_tables = int.from_bytes(data[4:6], "big")
+    for index in range(num_tables):
+        record = 12 + index * 16
+        if bytes(data[record : record + 4]) != tag:
+            continue
+        offset = int.from_bytes(data[record + 8 : record + 12], "big")
+        length = int.from_bytes(data[record + 12 : record + 16], "big")
+        return bytes(data[offset : offset + length])
+    raise ValueError(f"missing table {tag!r} in {source}")
 
 
 def replace_sfnt_table(source: Path, dest: Path, tag: bytes, payload: bytes) -> None:
@@ -2199,6 +2379,7 @@ def main() -> None:
     build_cff2(CFF2_OUT_DIR / "fontinfo-invalid-argument.otf")
     write_pure_cff_cubic()
     write_pure_cff_random()
+    write_pure_cff_random_private()
     write_pure_cff_random_global_subr_error()
     write_pure_cff_below_baseline_no_vmtx()
     write_pure_cff_baseline_touch_no_vmtx()

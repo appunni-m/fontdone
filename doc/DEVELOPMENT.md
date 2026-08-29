@@ -929,6 +929,26 @@ for this fixture. The corrected batch was added only after that review.
 | `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c88-ps-random-zero-seed-004` | Render the zero-seed Adobe CFF glyph at 16 ppem, exercising the fallback before bitmap production. | The CFF property is set before `FT_New_Memory_Face`; the renderer consumes the outline after the same accepted CFF load and zero random state. | Add for focused parity; retain only on exact C/Rust/WASM output. |
 | `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c88-ps-random-zero-seed-005` | Render at 24 ppem with `FT_LOAD_NO_AUTOHINT`, covering the alternate public load selector while preserving the same CFF seed witness. | `cffload.c:2084-2131` initializes the subfont before Type2 interpretation; disabling the auto-hinter does not bypass CFF charstring random handling. | Add for focused parity; retain only on exact C/Rust/WASM output. |
 
+The next five CFF inputs are a separate source-reviewed expansion. Their
+stable IDs identify the exact CFF byte mutation or Private DICT value, so each
+case has a reason independent of its eventual coverage result. FreeType's
+`cffload.c:1884-1890` deliberately accepts an absent or zero-valued Private
+entry by leaving the private state untouched; `cffload.c:1919-1930` parses a
+non-empty entry and propagates parser errors; and
+`cffload.c:1935-1940` sanitizes a parsed zero seed to `987654321`. The
+operand-less case is intentionally malformed: `cffparse.c:1361-1365` detects
+the missing recognized-field operand and `cffparse.c:1540-1542` exposes it as
+`Invalid_Argument`. These are pinned C behaviors, not coverage-only
+expectations.
+
+| Candidate runtime ID | Why expand this input | Pinned FreeType review | Decision before parity |
+|---|---|---|---|
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c89-cff-private-omitted-001` | Use `pure-cff-random-no-private.otf`, whose unsupported one-byte Top DICT operator removes `Private` without moving `CharStrings`; targets the Rust `let-else` no-private route at `src/tt/cff.rs:466-469`. | `cffparse.c:1520-1527` ignores unsupported operators and clears the stack; `cffload.c:1884-1890` accepts the resulting absent Private state and exits before defaults. | Add for focused parity; retain only on exact C/Rust/WASM output. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c89-cff-private-offset-zero-002` | Use a preserved-width Top DICT stack of `1 0 0 Private` to make the size non-zero and offset zero; targets `src/tt/cff.rs:471-474`'s second short-circuit arm. | `cffparse.c:789-815` consumes the first two Private operands and ignores the extra stack value; `cffload.c:1889-1890` exits before reading the pointed-to bytes because the offset is zero. | Add for focused parity; retain only on exact C/Rust/WASM output. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c89-cff-private-positive-seed-003` | Use the valid non-empty Private DICT `initialRandomSeed 123`; targets the ordinary Private scan, recognized seed operand, and positive return at `src/tt/cff.rs:480-505` and `513-518`. | `cffload.c:1919-1930` parses the Private bytes, while `cffload.c:1935-1940` leaves a positive seed unchanged and `cffload.c:2084-2131` uses it when the accepted driver seed is zero. | Add for focused parity; retain only on exact C/Rust/WASM output. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c89-cff-private-default-seed-004` | Use the valid non-empty Private DICT `BlueShift 8` with no seed operator; the unrelated field proves the parser reaches the defaulting arm at `src/tt/cff.rs:513-516`. | `cffload.c:1892-1899` establishes defaults, `cffload.c:1935-1940` changes parsed zero `initialRandomSeed` to `987654321`, and `cffload.c:2130-2131` consumes it. | Add for focused parity; retain only on exact C/Rust/WASM output. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c89-cff-private-missing-seed-operand-005` | Use a malformed but openable SFNT whose Private bytes begin with operand-less `initialRandomSeed`; targets the newly corrected Rust error path at `src/tt/cff.rs:496-503`. | `cffparse.c:1361-1365` routes the recognized field with zero operands to Stack_Underflow, and `cffparse.c:1540-1542` returns `Invalid_Argument`; `cffload.c:1924-1930` propagates it from face loading. | Add for focused parity; retain only if C/Rust/WASM report the same error-shaped result. |
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
