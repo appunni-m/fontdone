@@ -1353,6 +1353,18 @@ Rust FFI, C ABI, WASM, and the pinned oracle. The stable ID, expansion reason,
 oracle verdict, and source references are stored in
 `tests/fixtures/inputs/public-api/ftdriver.FT_Prop_GlyphToScriptMap.json`.
 
+Coverage MCP run `fbd33288-5e3a-4cd9-8e4d-1440ced4a7c3` passed at pushed commit
+`8b87dee2801639066fec06d94fc6781a44fd61a8` and ingested child snapshot
+`1dcf5af3-ab5a-48c8-9cc1-46cb1b1e5917` against the explicit baseline
+`ab608526-5fc6-4840-bc94-fd702aa0fce9`. The supported selected-subset
+additive review reported 441 newly covered lines; its region list includes the
+current local `fontdone-wasm/src/implementation.rs:6287` error return. The
+source-view projection is anchored to stale embedded source commit `f0b1ce...`
+and displays pre-parameterization text, so the local checked-out source is the
+authority for the current line mapping. Test attribution was unavailable, and
+the selected-only replacement percentages and non-exact region fallback are
+not full-denominator claims.
+
 
 ## 5. Fixtures and generators
 
