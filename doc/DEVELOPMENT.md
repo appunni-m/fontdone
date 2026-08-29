@@ -1099,6 +1099,7 @@ concrete runtime IDs; Coverage MCP and the runtime filter require the
 | `ftbitmap.FT_Bitmap_Copy.success_deep_copy_all_public_fields` | Reach the normal validated copy and WASM success-record writeback. | `ftbitmap.c:73-124` copies the public record and copies `rows * abs(pitch)` bytes after the checks. | Reuse existing public case. |
 | `ftbitmap.FT_Bitmap_Copy.success_null_source_buffer` | Reach the public empty-payload success route and verify the descriptor is still copied. | `ftbitmap.c:88-94` copies `*target = *source` and explicitly returns `FT_Err_Ok` when `source->buffer == NULL`; this is intentional C behavior. | Reuse existing public case. |
 | `ftbitmap.FT_Bitmap_Copy.success_flow_flip` | Reach the opposite-pitch flow writeback and the normal success side of the WASM `if err == FT_Err_Ok`. | `ftbitmap.c:82-91` negates the copied pitch when flow differs, then `ftbitmap.c:104-120` reverses rows. | Reuse existing public case. |
+| `ftbitmap.FT_Bitmap_Copy.ownership_replaces_target_buffer` | Reach the non-null target-buffer release before the source record replaces it. | `ftbitmap.c:85-88` calls `FT_FREE(target->buffer)` before assigning the source descriptor. | Reuse existing public case. |
 | `...error_array_too_large_dimensions@rows-2-pitch-1073741824` | Test the first `rows * pitch > FT_INT_MAX` boundary with a non-null but only one-byte source payload; the guard must run before any read. | `ftmemory.h:214-220` routes to `ft_mem_qrealloc`; `ftutil.c:127-139` returns `Array_Too_Large` before allocation. | Reuse existing concrete variant. |
 | `...error_array_too_large_dimensions@rows-3-pitch-715827883` | Test the next multiplication boundary without relying on a single extreme field. | Same `ft_mem_qrealloc` overflow guard returns `Array_Too_Large`. | Reuse existing concrete variant. |
 | `...error_array_too_large_dimensions@rows-4-pitch-536870912` | Test the exact power-of-two multiplication boundary above `FT_INT_MAX`. | Same guard rejects the count before allocation or source access. | Reuse existing concrete variant. |
@@ -1109,12 +1110,13 @@ The five concrete error variants are malformed bitmap descriptors in the
 ordinary public ABI sense, but they are deterministic and safe for this
 oracle because FreeType rejects them before reading the one-byte payload. They
 are not allocator-fault cases and do not rely on undefined behavior. The
-focused Coverage MCP run `42c54894-b624-4e6a-b1f1-0ede17ccd346` passed all
-eight selected concrete IDs across Rust, C ABI, WASM, and the pinned C oracle;
-source snapshot `3f0e61c9-e0cb-407b-b48d-558a05f7111e` marks both sides of the
-WASM `if err == FT_Err_Ok` at `fontdone-wasm/src/implementation.rs:1207-1209`
-covered. This is selected-subset reachability evidence, not a full-denominator
-coverage claim. No new input or implementation change was required.
+focused Coverage MCP run `1d8f54d4-374d-49dd-874c-985b8b36e747` passed all 14
+selected concrete IDs across Rust, C ABI, WASM, and the pinned C oracle; source
+snapshot `863223ce-421b-41cb-8d55-77976afa670d` marks both sides of the WASM
+`if err == FT_Err_Ok` at `fontdone-wasm/src/implementation.rs:1207-1209` and
+all executable lines in `src/ffi/handles.rs:289-360` covered. This is
+selected-subset reachability evidence, not a full-denominator coverage claim.
+No new input or implementation change was required.
 
 ## 5. Fixtures and generators
 
