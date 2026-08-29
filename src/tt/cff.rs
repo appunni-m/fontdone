@@ -468,9 +468,9 @@ fn parse_cff_private_random_seed(data: &[u8], top: &TopDict) -> Result<u32, Font
         // the Top DICT omits Private entirely (`cffload.c:1885-1890`).
         return Ok(0);
     };
-    if size == 0 {
+    if size == 0 || offset == 0 {
         // The pinned loader returns through Exit2 before it applies the
-        // private-dictionary defaults for an empty Private entry.
+        // private-dictionary defaults when either Private operand is zero.
         return Ok(0);
     }
     let end = offset
