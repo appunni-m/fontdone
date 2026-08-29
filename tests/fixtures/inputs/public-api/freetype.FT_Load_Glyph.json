@@ -8460,14 +8460,9 @@
                 "FT_LOAD_DEFAULT"
               ]
             },
-            "expect_error": true,
-            "expectation": {
-              "compare": {
-                "compare_error_output": true
-              }
-            },
+            "expect_error": false,
             "coverage": [
-              "tt/glyf:pinned-c-hinted-composite-instruction-length-overflow"
+              "tt/glyf:pinned-c-success-composite-instruction-length-overflow"
             ]
           },
           {
@@ -8487,14 +8482,9 @@
                 "FT_LOAD_DEFAULT"
               ]
             },
-            "expect_error": true,
-            "expectation": {
-              "compare": {
-                "compare_error_output": true
-              }
-            },
+            "expect_error": false,
             "coverage": [
-              "tt/glyf:pinned-c-hinted-composite-instructions-overflow"
+              "tt/glyf:pinned-c-success-composite-instructions-overflow"
             ]
           },
           {

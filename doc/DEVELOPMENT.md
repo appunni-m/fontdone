@@ -692,6 +692,46 @@ PIPE_SIZE=10 PIPE_CHAR=A RUST_LOG=autohint::pipeline=trace \
 make test-pipe-trace
 ```
 
+### 4.1 Malformed public-input coverage log
+
+Malformed bytes are in scope when they are supplied through a maintained
+public parity case. The case is retained only when the pinned FreeType oracle
+either reaches the targeted guard or explicitly accepts the malformed input;
+Rust output is never promoted to define the expected behavior. The six-case
+investigation below was run through `scripts/run_runtime_parity.py` on
+2026-08-29, with no unit-test-only coverage input.
+
+| Public case ID | Input expansion reason | Pinned FreeType result | First divergence and resolution |
+|---|---|---|---|
+| `freetype.FT_Load_Glyph.default_load@pure-cff-hvcurveto-single-operand-no-hinting` | Put one operand in a Type 2 `hvcurveto` stream to reach the alternating-curve operand guard and its public error conversion. | Rejects with `FT_Err_Invalid_File_Format` (`3`). | The Rust parser raised `Invalid_Outline` (`20`); the CFF parser now reports the matching `InvalidFileFormat` variant, and the FFI conversion preserves it. |
+| `freetype.FT_Load_Glyph.default_load@pure-cff-type2-unknown-escape-no-hinting` | Put escaped operator `12,99` before `endchar` to exercise the unknown escaped-operator arm. | Accepts the glyph. `psintrp.c:1215-1218` traces an unknown CFF operator without returning an error. | Rust now treats an unknown escaped operator as the same no-op, so the case is an exact success case rather than an expected error. |
+| `freetype.FT_Load_Glyph.default_load@glyf-malformed-composite-instruction-length-overflow-hinted` | End a composite component record immediately before its declared instruction length, exercising the deferred composite-instruction read. | Accepts glyph 15 on `FT_LOAD_DEFAULT`. `ftobjs.c:1003-1016` selects the auto-hinter for this SFNT (no `fpgm`, tiny `prep`), so `ttgload.c:1900-1914` does not call the composite instruction processor. | Rust eagerly read the trailing bytes before selecting the fallback. The scaler now reloads auto-hinted outlines without composite instructions, and the glyph loader defers the instruction read. |
+| `freetype.FT_Load_Glyph.default_load@glyf-malformed-composite-instructions-overflow-hinted` | Declare two composite instruction bytes but provide no payload, exercising the same public auto-hinter boundary with a different malformed tail. | Accepts glyph 16 for the same reason as glyph 15. | The same default-auto-hinter selection fix prevents an invalid pre-fallback `Invalid_Outline`; the contract records the pinned success. |
+| `freetype.FT_Load_Glyph.default_load@glyf-depth-overflow-no-scale` | Use a recursive composite chain deeper than the loader limit to reach the unscaled recursion guard. | Rejects with `FT_Err_Invalid_Composite` (`21`). | Rust reached the guard as `Invalid_Outline`; the public FFI mapping now exposes `Invalid_Composite` while retaining the guard. |
+| `freetype.FT_Load_Glyph.default_load@glyf-depth-overflow-no-hinting` | Send the same recursive composite chain through the scaled no-hinting route to verify the guard is not specific to `NO_SCALE`. | Rejects with `FT_Err_Invalid_Composite` (`21`). | The same depth guard and FFI mapping now match the oracle on the no-hinting route. |
+
+The C source makes the two permissive results deliberate rather than
+accidental: unknown CFF escapes only emit a trace, and composite instruction
+bytes are read later by `TT_Process_Composite_Glyph` (`ttgload.c:1210-1228`)
+after the hinted-load condition (`ttgload.c:1900-1914`) is satisfied. The
+focused public parity result is 6/6. Keep this log append-only when a new
+malformed case is added; record its exact case ID, why it reaches a target
+region, the oracle result, and the first Rust divergence.
+
+The surrounding 50-case `FT_Load_Glyph` public batch also passed 50/50. It was
+sent to Coverage MCP as repeatable `--migration-coverage-case-ids` arguments in
+four-case chunks because the MCP limits one argument value to 512 bytes. The
+incremental run is `7dd7d94a-905c-45a7-859e-f714d2313f3b`, measured snapshot
+`2ed9fdbd-e685-4ba0-a8bf-ca43311946dd`, and explicit baseline
+`d77068bd-5110-4d9a-8328-7a1a9d6d708d`. Coverage MCP reports an additive union
+of +1 covered function, +6 covered branches, 0 covered lines, and +1,085
+covered region identities; the merge is marked `exact=false` because the
+selected run is not a complete denominator. Its replacement-style diff is
+therefore `claim_status=limited`, with 44,226 baseline observations marked
+`not_observed`, not regressed. Do not present this selected-subset result as a
+new full-run percentage; obtain a complete source-matched snapshot before
+making a strict denominator claim.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained

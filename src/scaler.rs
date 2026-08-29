@@ -907,6 +907,18 @@ fn scale_glyph_impl_with_scale(
     let h_metric = data.hmtx.get(glyph_index);
     let lsb = scale.scale_x(h_metric.lsb as i32);
 
+    // FreeType's auto-hinter reloads TrueType outlines with
+    // `FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING`.  That reload deliberately
+    // skips composite instruction processing; the original scaled load must
+    // therefore not validate a malformed trailing instruction block before
+    // the auto-hinter fallback is selected.  This matters for public
+    // `FT_LOAD_DEFAULT` on faces without a usable native program as well as
+    // for explicit force-autohint loads.
+    let use_auto_hinter_outline = latin_metrics.is_some()
+        || (allow_bytecode
+            && !round_component_offsets
+            && should_use_default_autohint(data));
+
     let outline_raw: std::rc::Rc<crate::tt::glyf::GlyphOutline> = if round_component_offsets {
         if data.has_cff_outlines() {
             data.load_glyph_outline(glyph_index)?
@@ -917,7 +929,7 @@ fn scale_glyph_impl_with_scale(
                 scale.y_scale,
             )?
         }
-    } else if !allow_bytecode {
+    } else if !allow_bytecode || use_auto_hinter_outline {
         data.load_glyph_outline_no_hinting(glyph_index)?
     } else {
         data.load_glyph_outline(glyph_index)?
