@@ -820,6 +820,50 @@ full-suite coverage percentage. The source review and parity result justify
 retaining the four inputs; the bounded coverage result does not by itself
 justify adding look-alike cases.
 
+The next reachability check covered five already-maintained CFF global-subr
+variants. Their IDs were selected because the fixture has a valid first
+`callgsubr`, then a deterministic second reload into an out-of-range global
+subroutine; pinned `psintrp.c:2241-2258` accepts the first call and reports the
+second error. This is the exact public shape that could reach the parent-data
+restore at `src/tt/cff.rs:1260-1265`.
+
+| Existing public case ID | Why this input is relevant | Pinned FreeType review | Result and disposition |
+|---|---|---|---|
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch@c101-ps-global-subr-001` | Valid CFF1 global-subroutine return/reload witness with the default hinting mode. | `psintrp.c:2241-2258` accepts the first `callgsubr` and rejects the deterministic out-of-range reload. | Parity passed; retained as an existing public witness, no new coverage identity. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch@c101-ps-global-subr-002` | Same valid CFF structure through the Adobe selector and `NO_SCALE` mode. | The CFF subroutine checks are independent of this public mode selection; the first load is accepted and the second reload errors. | Parity passed; no new coverage identity. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch@c101-ps-global-subr-003` | Same valid structure through rendered normal output, exercising the post-error route after a successful first load. | The pinned decoder preserves the first subroutine return before the second invalid index is reported. | Parity passed; no new coverage identity. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch@c101-ps-global-subr-004` | Same valid structure with `NO_HINTING | RENDER`, isolating the CFF reload behavior from auto-hinting. | `psintrp.c:2241-2258` still governs the accepted first call and later invalid reload. | Parity passed; no new coverage identity. |
+| `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch@c101-ps-global-subr-005` | Same valid structure with `NO_AUTOHINT | RENDER`, covering the alternate public selector. | The decoder accepts the valid first call before returning the documented invalid-format error on reload. | Parity passed; no new coverage identity. |
+
+Coverage MCP run `b429c96f-a91e-4c84-aa3f-8a8eca6ea938` measured snapshot
+`18a989ff-6dbb-4f3b-9a7b-5148b1dd0c70` against explicit baseline
+`a817755c-319c-41c8-b56a-f8f52a0441d7`. The additive selected-subset union
+reported +0 covered regions, +0 lines, +0 branches, and +0 functions. Its
+scope was `selected_subset` with `exact=false`, so it is reachability evidence,
+not a complete-denominator claim; no new CFF input was added.
+
+The CJK snap-width candidates were then checked against both the pinned C
+implementation and the current source map:
+
+| Existing public case ID | Why this input is relevant | Pinned FreeType review | Result and disposition |
+|---|---|---|---|
+| `freetype.FT_LOAD_FORCE_AUTOHINT.load_char_force_autohint_behavior@cjk-snap-below-standard-target-mono-20` | Valid U+4ED6 rectangle narrower than the U+7530 standard glyph; intended to test the below-reference snap arm. | `afcjk.c:1440-1478` reads `widths[n].cur`, while initialization at `afcjk.c:217-218` writes only `.org`. | Parity passed; the Rust red arm remains unreachable under the pinned data flow. |
+| `freetype.FT_LOAD_FORCE_AUTOHINT.load_char_force_autohint_behavior@cjk-snap-far-below-standard-target-mono-20` | Valid U+4E1E rectangle far below the standard width; checks the other side of the same snap decision. | `afcjk.c:1440-1478` still compares against zero-initialized `.cur`; a nonnegative working width cannot enter the `width < reference` side. | Parity passed; no input expansion justified. |
+| `freetype.FT_LOAD_FORCE_AUTOHINT.load_char_force_autohint_behavior@cjk-tiny-stem-20` | Valid narrow CJK stem intended to exercise the minimum-width clamp. | `afcjk.c:1497-1511` normalizes `dist` nonnegative; `afcjk.c:1521-1525` can only take the `<48` side after matching a `.cur` standard width. | Parity passed; the current Rust false side at `src/autohint/cjk.rs:772-774` gains no coverage. |
+| `freetype.FT_LOAD_FORCE_AUTOHINT.load_char_force_autohint_behavior@cjk-multi-width-snap-target-mono-20` | Valid multiple-standard-width fixture intended to vary the selected reference. | CJK initialization still leaves every width's `.cur` unset; `af_cjk_metrics_scale_dim` at `afcjk.c:648-679` scales blue zones only. | Parity passed; no new coverage identity. |
+| `freetype.FT_LOAD_FORCE_AUTOHINT.load_char_force_autohint_behavior@cjk-quantized-width-boundary-target-mono-160` | Valid high-ppem width-boundary fixture intended to test reference ordering and the below-reference comparison. | The same `.org`/`.cur` separation applies; `afcjk.c:742-756` does not scale the width array. | Parity passed; no input expansion justified. |
+
+Coverage MCP run `c57f33fe-eb85-4ed2-abba-8867bedb573c` measured snapshot
+`e106908a-50f9-4bf1-a8b2-bafa4087ff32` against the same explicit baseline. The
+additive selected-subset union reported +0 covered regions, +0 lines, +0
+branches, and +0 functions. This is consistent with the source proof: the
+Rust implementation mirrors the pinned C behavior by leaving CJK width `.cur`
+values at zero (`src/autohint/cjk.rs:275-279`), and `compute_stem_width` first
+normalizes its working distance (`src/autohint/cjk.rs:757-762`). These red CJK
+regions are therefore latent dead branches in the pinned FreeType behavior,
+not missing malformed or valid public inputs. They should not be covered by
+fabricating an input or by changing the denominator.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
