@@ -1234,9 +1234,12 @@ fn read_dict_number(data: &[u8], pos: usize) -> Result<(DictNumber, usize), Font
 fn read_real_number(data: &[u8], mut pos: usize) -> Result<(DictNumber, usize), FontError> {
     let mut text = String::new();
     loop {
-        let byte = *data
-            .get(pos)
-            .ok_or_else(|| FontError::InvalidFont("CFF: real number overflow".into()))?;
+        let Some(byte) = data.get(pos).copied() else {
+            // Pinned FreeType treats an unterminated real at the end of a
+            // DICT as invalid but harmless: cff_parser_run stops scanning and
+            // returns success (`cffparse.c:1194-1198`).
+            return Ok((DictNumber::from_fixed(0), data.len()));
+        };
         pos += 1;
         for nibble in [byte >> 4, byte & 0x0F] {
             match nibble {
