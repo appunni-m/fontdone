@@ -1383,7 +1383,7 @@ def write_hvar_fixtures() -> None:
     put_u16(oversized_store, 6, 1)
     put_u32(oversized_store, 8, oversized_data_offset)
     put_u16(oversized_store, len(oversized_store), 2)
-    oversized_store.extend(b"\0\0")
+    put_u16(oversized_store, len(oversized_store), oversized_region_count)
     oversized_store.extend(bytes(oversized_region_count * 2 * 6))
     put_u16(oversized_store, len(oversized_store), oversized_item_count)
     put_u16(
