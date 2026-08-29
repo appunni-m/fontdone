@@ -761,6 +761,37 @@ therefore `claim_status=limited`, with 44,226 baseline observations marked
 new full-run percentage; obtain a complete source-matched snapshot before
 making a strict denominator claim.
 
+### 4.2 Pre-expansion source-review ledger
+
+Before adding another public-input batch, each candidate receives a stable
+runtime ID and a source-backed reason for existing. The input is expanded only
+when the pinned FreeType implementation either accepts the value or reaches
+the defensive branch that the case is intended to exercise. A candidate that
+is structurally unreachable, already represented by an existing public case,
+or rejected before the target region is marked rejected here rather than
+being added as coverage noise. This ledger is deliberately kept beside the
+malformed-input results so that a passing parity result and a coverage gain
+remain separately auditable.
+
+The first pre-expansion group is the BDF `PIXEL_SIZE` edge matrix:
+
+| Candidate runtime ID | Why expand this input | Pinned FreeType review | Decision before parity |
+|---|---|---|---|
+| `ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties@cc50-bdf-001` | Omit the optional `PIXEL_SIZE` property while retaining a parseable BDF face; this is the only public input in the group that can reach Rust's fallback at `src/font.rs:1232-1242`. | `bdfdrivr.c:532-547` only enters the pixel-size block when `bdf_get_font_property` finds the property, so absence is accepted and leaves the default strike value unchanged. | Add and verify with `FONT_ASCENT`, `FONT_DESCENT`, and `POINT_SIZE` queries only; do not query the absent property. |
+| `ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties@cc50-bdf-002` | Set `PIXEL_SIZE 0` to distinguish an explicitly present zero from an absent property and reach the fallback after the positive-value filter. | `bdfdrivr.c:532-547` accepts zero and assigns a zero ppem; there is no positive-value rejection in the oracle. | Add and query `PIXEL_SIZE`; retain only if all public endpoints match. |
+| `ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties@cc50-bdf-003` | Set `PIXEL_SIZE -12` to exercise signed absolute-value handling rather than only the ordinary positive integer path. | `bdflib.c:642-644` parses the built-in integer with `bdf_atol_`; `bdfdrivr.c:535-546` applies `FT_ABS` and accepts the negative value. | Add and query `PIXEL_SIZE`; retain only if all public endpoints match. |
+| `ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties@cc50-bdf-004` | Set `PIXEL_SIZE 40000` to reach the C driver's out-of-range clamp and Rust's saturating `i16::MAX` conversion. | `bdfdrivr.c:539-543` clamps values beyond `+/-0x7FFF` to `0x7FFF << 6`; `bdflib.c:642-644` does not reject the decimal input at parse time. | Add and query `PIXEL_SIZE`; retain only if all public endpoints match. |
+| `ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties@cc50-bdf-005` | Try a quoted/atom `PIXEL_SIZE` value to reach Rust's `Atom` arm in the metadata match. | `bdflib.c:92` declares `PIXEL_SIZE` as `BDF_INTEGER`; `bdf_add_property_` uses that fixed format at `bdflib.c:642-644`, regardless of token spelling. A quoted or nonnumeric value is parsed as integer zero/error behavior, not as an Atom record. | Reject as a structurally unreachable Atom branch for this public BDF route. |
+| `ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties@cc50-bdf-006` | Try to force a Cardinal `PIXEL_SIZE` record. | `bdflib.c:92` fixes the built-in property type to `BDF_INTEGER`; Cardinal is used for properties such as `RESOLUTION_X` (`bdflib.c:123-127`), not `PIXEL_SIZE`. | Reject as structurally unreachable; use the existing `RESOLUTION_X` rows for the Cardinal path. |
+| `ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties@cc50-bdf-007` | Remove `FONTBOUNDINGBOX` while keeping the property matrix, to reach a later metadata fallback. | `bdflib.c:1424-1426` explicitly returns `Missing_Fontboundingbox_Field` before the face property API; the candidate fails before the target metadata line. | Reject for this batch; it is a constructor-error candidate, not a `PIXEL_SIZE` witness. |
+| `ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties@cc50-bdf-008` | Use an oversized `STARTPROPERTIES` count to try to reach property-allocation defenses. | `bdflib.c:1273-1279` bounds the property count against the input size and returns `Invalid_Argument` before the face property API. | Reject for this target; keep it in the constructor-error inventory if a public error row is needed. |
+| `ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties@cc50-bdf-009` | Omit `FONT_ASCENT`/`FONT_DESCENT` while retaining `PIXEL_SIZE`, probing the driver's metric fallbacks. | `bdfdrivr.c:450-468` explicitly falls back to the parsed font bounding box for both metrics, so this is a separate, valid target rather than a `PIXEL_SIZE` type case. | Defer to a separate metric-fallback batch so its reason and expected fields remain isolated. |
+| `ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties@cc50-bdf-010` | Use a malformed `BBX` numeric prefix alongside `PIXEL_SIZE`, probing permissive decimal parsing. | `bdflib.c:1027-1033` uses permissive `bdf_atous_`/`bdf_atos_`, but the public face route also has constructor and bitmap consistency requirements; this candidate needs an independent oracle reduction before inclusion. | Defer; do not mix an unverified BBX parser probe into the property batch. |
+
+The four accepted candidates above are intended to be public parity inputs,
+not unit-test-only probes. Their fixtures and manifest variants will be added
+only after this ledger checkpoint is committed and pushed.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
