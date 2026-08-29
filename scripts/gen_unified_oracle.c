@@ -25876,6 +25876,15 @@ static int emit_ftmm_get_mm_var(int argc, char** argv) {
     return 0;
 }
 
+static int emit_ftmm_get_mm_var_invalid_face(void) {
+    FT_MM_Var master;
+    FT_MM_Var* master_ptr = &master;
+    memset(&master, 0xA5, sizeof(master));
+    FT_Error err = FT_Get_MM_Var(NULL, &master_ptr);
+    print_ftmm_get_mm_var_null_output(err);
+    return 0;
+}
+
 static void print_ftmm_get_and_done_mm_var_output(
     FT_Error get_err,
     FT_Error done_err,
@@ -42127,6 +42136,9 @@ static int dispatch(int argc, char** argv) {
     }
     if ((argc == 5 || argc == 6) && streq(argv[1], "--ftmm-get-mm-var")) {
         return emit_ftmm_get_mm_var(argc, argv);
+    }
+    if (argc == 2 && streq(argv[1], "--ftmm-get-mm-var-invalid-face")) {
+        return emit_ftmm_get_mm_var_invalid_face();
     }
     if (argc == 5 && streq(argv[1], "--ftmm-get-and-done-mm-var")) {
         return emit_ftmm_get_and_done_mm_var(argc, argv);

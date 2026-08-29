@@ -22762,7 +22762,15 @@ fn ftmm_get_mm_var_output_is_null(params: &Value) -> bool {
     params.get("amaster").is_some_and(Value::is_null)
 }
 
+const FTMM_GET_MM_VAR_INVALID_FACE_HANDLE_CASE: &str =
+    "ftmm.FT_Get_MM_Var.invalid_face_handle_wasm_route";
+
 fn rust_ftmm_get_mm_var(case: &InputCase) -> Result<RunOutput, String> {
+    if case.case_id == FTMM_GET_MM_VAR_INVALID_FACE_HANDLE_CASE {
+        let mut master = FT_MM_Var::default();
+        let status = FT_Get_MM_Var(None, Some(&mut master), None, None, None);
+        return Ok(error(status));
+    }
     let face = rust_new_face_without_size(case)?;
     if ftmm_get_mm_var_output_is_null(&case.inputs.params) {
         let status = FT_Get_MM_Var(Some(&face), None, None, None, None);
@@ -22792,6 +22800,12 @@ fn rust_ftmm_get_mm_var(case: &InputCase) -> Result<RunOutput, String> {
 }
 
 fn c_ftmm_get_mm_var(case: &InputCase) -> Result<RunOutput, String> {
+    if case.case_id == FTMM_GET_MM_VAR_INVALID_FACE_HANDLE_CASE {
+        let mut master = FT_MM_Var::default();
+        let mut master_ptr = &mut master as *mut FT_MM_Var;
+        let status = c_abi::FT_Get_MM_Var(std::ptr::null_mut(), &mut master_ptr);
+        return Ok(error(status));
+    }
     let (library, face) = c_new_face_without_size(case)?;
     if ftmm_get_mm_var_output_is_null(&case.inputs.params) {
         let status = c_abi::FT_Get_MM_Var(face, std::ptr::null_mut());
@@ -22824,6 +22838,16 @@ fn c_ftmm_get_mm_var(case: &InputCase) -> Result<RunOutput, String> {
 }
 
 fn wasm_ftmm_get_mm_var(case: &InputCase) -> Result<RunOutput, String> {
+    if case.case_id == FTMM_GET_MM_VAR_INVALID_FACE_HANDLE_CASE {
+        let mut master = FT_MM_Var::default();
+        let status = wasm_abi::fontdone_wasm_get_mm_var(
+            0,
+            &mut master,
+            std::ptr::null_mut(),
+            0,
+        );
+        return Ok(error(status));
+    }
     let handle = wasm_new_face_without_size(case)?;
     if ftmm_get_mm_var_output_is_null(&case.inputs.params) {
         let status = wasm_abi::fontdone_wasm_get_mm_var(
@@ -48947,6 +48971,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             Ok(args)
         }
         "ftmm.get_mm_var" if ftmm_get_mm_var_has_resolved_font(case) => {
+            if case.case_id == FTMM_GET_MM_VAR_INVALID_FACE_HANDLE_CASE {
+                return Ok(vec!["--ftmm-get-mm-var-invalid-face".to_string()]);
+            }
             let mut args = vec!["--ftmm-get-mm-var".to_string()];
             push_font_source(case, &mut args)?;
             args.push(face_index_param(params)?.to_string());

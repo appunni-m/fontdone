@@ -8588,6 +8588,8 @@ subjects:
         description: A null amaster output pointer returns FT_Err_Invalid_Argument.
       - id: invalid_or_non_variable_face_error
         description: A null face returns FT_Err_Invalid_Face_Handle and a non-multiple-master face returns FT_Err_Invalid_Argument.
+      - id: invalid_face_handle_wasm_route
+        description: A direct null-face call through the exported WASM wrapper returns FT_Err_Invalid_Face_Handle before touching the valid output descriptor.
     # needs-input: operation=FT_Get_MM_Var then FT_Done_MM_Var; fixture_asset=variable OpenType font with multiple axes/named instances, CFF2 variable font if available, Adobe MM font if available, non-variable outline font; params={face:null/non_variable/variable, output_pointer:null/valid}; output shape={FT_Error, descriptor pointer class, num_axis, num_designs, num_namedstyles, axis records, namedstyle records, axis flags, allocation/free event}; comparison=exact C oracle descriptor fields, tags, names as string ids/pointers class, numeric coordinates, error codes, and ownership.
 
   - id: ftmm.FT_Get_MM_WeightVector

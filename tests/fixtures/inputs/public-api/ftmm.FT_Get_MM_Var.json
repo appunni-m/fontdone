@@ -307,6 +307,66 @@
           "freetype/src/base/ftmm.c:94-111"
         ]
       }
+    },
+    {
+      "case_id": "ftmm.FT_Get_MM_Var.invalid_face_handle_wasm_route",
+      "subject": "ftmm.FT_Get_MM_Var",
+      "case": "invalid_face_handle_wasm_route",
+      "operation": "ftmm.get_mm_var",
+      "schema": "api_result",
+      "expect_error": true,
+      "abi": {
+        "header": "freetype/ftmm.h",
+        "symbol": "FT_Get_MM_Var",
+        "signature": "FT_Error FT_Get_MM_Var(FT_Face face, FT_MM_Var** amaster)"
+      },
+      "inputs": {
+        "assets": {
+          "non_variable_font": {
+            "kind": "file",
+            "role": "font",
+            "path": "input/fonts/DejaVuSans.ttf"
+          }
+        },
+        "params": {
+          "face": "null",
+          "amaster": "valid_output_pointer",
+          "output_pointer_initial": "sentinel_non_null"
+        }
+      },
+      "metadata": {
+        "expansion_reason": "The existing invalid_or_non_variable_face_error matrix opens a non-variable face before its null-face row reaches the runtime. This dedicated null handle reaches the uncovered WASM wrapper arm while preserving the pinned C call shape.",
+        "oracle_verdict": "FreeType ftmm.c validates a null face through ft_face_get_mm_service and returns Invalid_Face_Handle before writing amaster.",
+        "source_refs": [
+          "freetype/src/base/ftmm.c:130-143",
+          "fontdone-wasm/src/implementation.rs:8669-8686"
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftmm",
+        "area:variations",
+        "area:invalid_handle"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "status": "FT_Error",
+          "descriptor_pointer": "sentinel preserved"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "status",
+            "error"
+          ]
+        },
+        "error": "FT_Err_Invalid_Face_Handle",
+        "source_refs": [
+          "freetype/src/base/ftmm.c:130-143",
+          "fontdone-wasm/src/implementation.rs:8685-8686"
+        ]
+      }
     }
   ]
 }

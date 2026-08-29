@@ -1235,6 +1235,25 @@ references, and expansion reason are recorded in
 kept until the incremental measurement demonstrates whether further distinct
 property forms are necessary.
 
+### Batch 222: WASM invalid-face `FT_Get_MM_Var` route
+
+Coverage MCP left `fontdone-wasm/src/implementation.rs:8686` uncovered even
+though the public `FT_Get_MM_Var` contract already described a null-face error.
+The existing matrix did not execute that row through the runtime: its harness
+opened a real face first and then exercised only the non-variable-face path.
+This batch adds one explicit null-handle case so the input ID matches the
+uncovered wrapper branch.
+
+| Concrete ID | Public input | Why expand this input | Pinned FreeType review and decision |
+|---|---|---|---|
+| `ftmm.FT_Get_MM_Var.invalid_face_handle_wasm_route` | Null `FT_Face`, valid `FT_MM_Var**` output initialized to a sentinel; the maintained DejaVuSans asset remains attached for the public route manifest. | Reach the WASM wrapper's `face_mut(handle)` failure at `fontdone-wasm/src/implementation.rs:8685-8686`, which the existing combined null/non-variable matrix did not dispatch. The case is a distinct public handle shape, not a duplicate font or glyph variant. | `freetype/src/base/ftmm.c:130-143` delays face validation to `ft_face_get_mm_service`; a null face returns `Invalid_Face_Handle` before `amaster` is written. Focused parity matched the pinned oracle, Rust FFI, C ABI, and WASM. FreeType intentionally permits this error input; no implementation mismatch was found. |
+
+The case is classified as `real-parity` and its route audit records the exact
+oracle-backed reason. The oracle command uses a dedicated null-face invocation,
+so the C reference and all Rust-facing lanes receive the same call shape. It
+does not add a size, glyph, or format matrix because none of those values can
+affect this pre-service face validation.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
