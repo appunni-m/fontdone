@@ -1873,14 +1873,18 @@ fn parse_cid_type1_metadata(
         .ok_or_else(|| FontError::InvalidFont("CID Type 1 Registry is missing".into()))?;
     let ordering = type1_string_value(text, "Ordering")
         .ok_or_else(|| FontError::InvalidFont("CID Type 1 Ordering is missing".into()))?;
-    let supplement = type1_i32_value(text, "Supplement")
-        .ok_or_else(|| FontError::InvalidFont("CID Type 1 Supplement is missing".into()))?;
+    // The pinned FreeType CID loader zero-initializes CID_FaceInfo and does
+    // not require a /Supplement token. Preserve that public default instead
+    // of rejecting otherwise loadable CID dictionaries.
+    let supplement = type1_i32_value(text, "Supplement").unwrap_or(0);
     let cid_count = type1_i32_value(text, "CIDCount")
         .and_then(|value| u16::try_from(value).ok())
         .filter(|value| *value != 0)
         .ok_or_else(|| FontError::InvalidFont("CID Type 1 CIDCount is invalid".into()))?;
+    // cidload.c rejects GDBytes == 0 and values above four, but permits
+    // FDBytes == 0 because a CIDMap entry may contain only the glyph offset.
     let fd_bytes = type1_i32_value(text, "FDBytes")
-        .filter(|value| (1..=4).contains(value))
+        .filter(|value| (0..=4).contains(value))
         .ok_or_else(|| FontError::InvalidFont("CID Type 1 FDBytes is invalid".into()))?;
     let gd_bytes = type1_i32_value(text, "GDBytes")
         .filter(|value| (1..=4).contains(value))

@@ -843,6 +843,75 @@
       }
     },
     {
+      "case_id": "ftstroke.FT_Glyph_Stroke.destroy_original_option@generic-rectangle-glyph0",
+      "subject": "ftstroke.FT_Glyph_Stroke",
+      "case": "destroy_original_option",
+      "operation": "ftstroke.glyph_stroke",
+      "schema": "api_result",
+      "expect_error": false,
+      "abi": {
+        "header": "freetype/ftstroke.h",
+        "symbol": "FT_Glyph_Stroke",
+        "signature": "FT_Error FT_Glyph_Stroke(FT_Glyph* pglyph, FT_Stroker stroker, FT_Bool destroy)"
+      },
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/autohint/cjk-wide-stem-snap.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "glyph_index": 0,
+          "destroy": true,
+          "ownership_probe": "counting glyph finalizer",
+          "stroker": {
+            "radius": 64,
+            "line_cap": "FT_STROKER_LINECAP_ROUND",
+            "line_join": "FT_STROKER_LINEJOIN_BEVEL",
+            "miter_limit": 65536
+          }
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftstroke",
+        "area:glyph",
+        "area:stroker",
+        "coverage:reachability-probe"
+      ],
+      "metadata": {
+        "coverage_intent": "Use a valid project-owned rectangle glyph outside the DejaVu special-case to determine whether the generic FT_Glyph_Stroke parse/count/export path is reachable and exact before treating the remaining fallback arm as public behavior."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error",
+          "pglyph_after": "replacement outline glyph",
+          "original_destroyed": true,
+          "outline": "points/tags/contours"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "pglyph_after.nullness",
+            "original_destroyed",
+            "outline.n_points",
+            "outline.n_contours",
+            "outline.points",
+            "outline.tags",
+            "outline.contours"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftstroke.c:2283-2315",
+          "src/ffi/handles.rs:2618-2628"
+        ]
+      }
+    },
+    {
       "case_id": "ftstroke.FT_Glyph_Stroke.failure_sets_output_null_when_preserving_original",
       "subject": "ftstroke.FT_Glyph_Stroke",
       "case": "failure_sets_output_null_when_preserving_original",

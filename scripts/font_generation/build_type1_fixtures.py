@@ -33,9 +33,18 @@ def stable_generator_header(data: bytes) -> bytes:
     )
 
 
-def build_cid_type1(path: Path, *, is_fixed_pitch: bool = False) -> None:
+def build_cid_type1(
+    path: Path,
+    *,
+    is_fixed_pitch: bool = False,
+    include_supplement: bool = True,
+    fd_bytes: int = 1,
+) -> None:
     """Write a minimal synthetic CID-keyed Type 1 resource."""
+    if not 0 <= fd_bytes <= 4:
+        raise ValueError(f"FDBytes must fit the pinned 0..4 range: {fd_bytes}")
     fixed_pitch = "true" if is_fixed_pitch else "false"
+    supplement = "/Supplement 0 def\n" if include_supplement else ""
     postscript = f"""%!PS-Adobe-3.0 Resource-CIDFont
 %%DocumentNeededResources: ProcSet (CIDInit)
 /CIDFontName /FontdoneCIDType1 def
@@ -43,10 +52,9 @@ def build_cid_type1(path: Path, *, is_fixed_pitch: bool = False) -> None:
 /CIDFontType 0 def
 /Registry (Adobe) def
 /Ordering (Identity) def
-/Supplement 0 def
-/UIDBase 424242 def
+{supplement}/UIDBase 424242 def
 /CIDMapOffset 0 def
-/FDBytes 1 def
+/FDBytes {fd_bytes} def
 /GDBytes 1 def
 /CIDCount 3 def
 /FontBBox [0 0 500 700] def
@@ -73,10 +81,15 @@ end put
 %ADOEndFontDict
 (Hex) 8 StartData
 """
-    # Four 2-byte CIDMap entries cover glyphs 0..2 plus the look-ahead
-    # terminator.  Every entry selects FD 0 and an empty charstring at offset
-    # 8; CID service calls need only validate this map and return GID == CID.
-    binary_hex = b"0008000800080008>\n"
+    # Four CIDMap entries cover glyphs 0..2 plus the look-ahead terminator.
+    # Every entry selects an empty charstring at offset 8; with FDBytes == 1,
+    # the leading byte also selects FD 0.  CID service calls need only validate
+    # this map and return GID == CID.
+    binary_hex = (
+        b"0008000800080008>\n"
+        if fd_bytes
+        else b"08080808>\n"
+    )
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists() or path.is_symlink():
         path.unlink()
@@ -1352,6 +1365,14 @@ def main() -> None:
     build_cid_type1(
         CID_OUT_DIR / "fontinfo-fixed-pitch.cid",
         is_fixed_pitch=True,
+    )
+    build_cid_type1(
+        CID_OUT_DIR / "fontinfo-missing-supplement.cid",
+        include_supplement=False,
+    )
+    build_cid_type1(
+        CID_OUT_DIR / "fontinfo-zero-fdbytes.cid",
+        fd_bytes=0,
     )
 
 

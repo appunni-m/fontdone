@@ -383,6 +383,147 @@
       }
     },
     {
+      "case_id": "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_face@cid-type1-missing-supplement-default-zero",
+      "subject": "ftcid.FT_Get_CID_Registry_Ordering_Supplement",
+      "case": "success_cid_keyed_face",
+      "covers_manifest_cases": [
+        "success_cid_keyed_face"
+      ],
+      "operation": "ftcid.get_cid_registry_ordering_supplement",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "cid_font": {
+            "kind": "file",
+            "path": "input/fonts/cid/fontinfo-missing-supplement.cid",
+            "asset_kind": "font",
+            "derived_from": "input/fonts/cid/fontinfo-populated.cid",
+            "generator": "scripts/font_generation/build_type1_fixtures.py"
+          }
+        },
+        "params": {
+          "face_index": 0,
+          "outputs_initialized_to_sentinels": true,
+          "call_variants": [
+            "all_outputs_non_null"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcid",
+        "area:cid",
+        "path:success",
+        "format:cid-type1",
+        "coverage:new-public-input"
+      ],
+      "metadata": {
+        "coverage_intent": "The public CID ROS lookup is run against the project-owned CID Type 1 dictionary with only /Supplement omitted. FreeType zero-initializes CID_FaceInfo and returns supplement 0; the Rust loader must not invent a required-field error."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "registry": "nullable_c_string_face_owned",
+          "ordering": "nullable_c_string_face_owned",
+          "supplement": "FT_Int",
+          "write_bitmap": [
+            "registry",
+            "ordering",
+            "supplement"
+          ]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "error",
+            "registry.string",
+            "registry.identity_class",
+            "ordering.string",
+            "ordering.identity_class",
+            "supplement",
+            "output_write_bitmap"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/cid/cidload.c:396-504",
+          "freetype/src/cid/cidload.c:831-867",
+          "src/font.rs:1855-1887"
+        ]
+      }
+    },
+    {
+      "case_id": "ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_face@cid-type1-zero-fdbytes-single-fd",
+      "subject": "ftcid.FT_Get_CID_Registry_Ordering_Supplement",
+      "case": "success_cid_keyed_face",
+      "covers_manifest_cases": [
+        "success_cid_keyed_face"
+      ],
+      "operation": "ftcid.get_cid_registry_ordering_supplement",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "cid_font": {
+            "kind": "file",
+            "path": "input/fonts/cid/fontinfo-zero-fdbytes.cid",
+            "asset_kind": "font",
+            "derived_from": "input/fonts/cid/fontinfo-populated.cid",
+            "generator": "scripts/font_generation/build_type1_fixtures.py"
+          }
+        },
+        "params": {
+          "face_index": 0,
+          "outputs_initialized_to_sentinels": true,
+          "call_variants": [
+            "all_outputs_non_null"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcid",
+        "area:cid",
+        "path:success",
+        "format:cid-type1",
+        "coverage:new-public-input"
+      ],
+      "metadata": {
+        "coverage_intent": "The public CID ROS lookup is run against the same synthetic dictionary with /FDBytes 0 and one-byte CIDMap entries. FreeType's cidload.c rejects zero GDBytes and values above four, but deliberately permits zero FDBytes; Rust must accept that layout."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "registry": "nullable_c_string_face_owned",
+          "ordering": "nullable_c_string_face_owned",
+          "supplement": "FT_Int",
+          "write_bitmap": [
+            "registry",
+            "ordering",
+            "supplement"
+          ]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "error",
+            "registry.string",
+            "registry.identity_class",
+            "ordering.string",
+            "ordering.identity_class",
+            "supplement",
+            "output_write_bitmap"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/cid/cidload.c:829-867",
+          "src/font.rs:1882-1892"
+        ]
+      }
+    },
+    {
       "case_id": "ftcid.FT_Get_CID_Registry_Ordering_Supplement.error_cff_absent_registry_sentinel",
       "subject": "ftcid.FT_Get_CID_Registry_Ordering_Supplement",
       "case": "error_non_cid_or_null_outputs",

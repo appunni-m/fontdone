@@ -1,0 +1,37 @@
+%!PS-Adobe-3.0 Resource-CIDFont
+%%DocumentNeededResources: ProcSet (CIDInit)
+/CIDFontName /FontdoneCIDType1 def
+/CIDFontVersion 1.0 def
+/CIDFontType 0 def
+/Registry (Adobe) def
+/Ordering (Identity) def
+/Supplement 0 def
+/UIDBase 424242 def
+/CIDMapOffset 0 def
+/FDBytes 0 def
+/GDBytes 1 def
+/CIDCount 3 def
+/FontBBox [0 0 500 700] def
+/version (001.000) def
+/Notice (Project-authored fontdone CID Type 1 fixture) def
+/FullName (Fontdone CID Type 1 Regular) def
+/FamilyName (Fontdone CID Type 1) def
+/Weight (Regular) def
+/ItalicAngle 0 def
+/isFixedPitch false def
+/UnderlinePosition -100 def
+/UnderlineThickness 50 def
+/FDArray 1 array def
+%ADOBeginFontDict
+dup 0 10 dict dup begin
+/FontName /FontdoneCIDType1-Regular def
+/FontType 1 def
+/PaintType 0 def
+/FontMatrix [0.001 0 0 0.001 0 0] def
+/Private 4 dict dup begin
+/lenIV -1 def
+end def
+end put
+%ADOEndFontDict
+(Hex) 8 StartData
+08080808>

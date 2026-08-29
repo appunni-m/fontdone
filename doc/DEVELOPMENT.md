@@ -718,6 +718,25 @@ focused public parity result is 6/6. Keep this log append-only when a new
 malformed case is added; record its exact case ID, why it reaches a target
 region, the oracle result, and the first Rust divergence.
 
+The next five-case expansion was source-reviewed against the pinned FreeType
+implementation before it was retained. These are the exact IDs and reasons;
+the two CID rows intentionally use malformed or unusual metadata because the
+oracle accepts those inputs.
+
+| Public case ID | Target and expansion reason | Pinned FreeType review | Focused result |
+|---|---|---|---|
+| `freetype.FT_LOAD_FORCE_AUTOHINT.load_glyph_force_autohint_behavior.batch35_cjk_latin_size_modes@batch36-load-001-cjk-tiny-stem-mono-snap-above-reference` | Valid U+7530 (`30000`) from `cjk-tiny-stem.ttf`, 20 ppem, `FORCE_AUTOHINT | TARGET_MONO`; reaches the near-round upper snap arm in `src/autohint/cjk.rs:cjk_snap_width`. | `afcjk.c:1440-1480` accepts the glyph and applies the same reference-width snap. | Pass; oracle, Rust, C ABI, and WASM agree. |
+| `freetype.FT_LOAD_FORCE_AUTOHINT.load_glyph_force_autohint_behavior.batch35_cjk_latin_size_modes@batch36-load-002-cjk-tiny-stem-normal-first-width-fallback` | The same valid glyph and size with `FORCE_AUTOHINT | TARGET_NORMAL`; reaches the first standard-width fallback in `compute_stem_width`. | `afcjk.c:1489-1557` accepts the glyph and uses the first standard width when the distance is close enough. | Pass; oracle, Rust, C ABI, and WASM agree. |
+| `ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_face@cid-type1-missing-supplement-default-zero` | Project-owned CID Type 1 derivative with `/Supplement` omitted; verifies whether the apparent required-field guard is real public behavior. | `cidload.c:396-504` parses the dictionary without requiring Supplement; zero-initialized `CID_FaceInfo` yields Supplement `0`, and C returns success. | Initially exposed Rust-only error `3`; Rust now defaults the missing field to `0`, then all endpoints agree. |
+| `ftcid.FT_Get_CID_Registry_Ordering_Supplement.success_cid_keyed_face@cid-type1-zero-fdbytes-single-fd` | Project-owned CID Type 1 derivative with `/FDBytes 0 def` and one-byte CIDMap entries; verifies the loader's lower-bound rule. | `cidload.c:831-867` rejects `GDBytes == 0` and values above four, but does not reject `FDBytes == 0`; C returns success. | Initially exposed Rust-only error `3`; Rust now accepts the pinned `0..=4` FDBytes range, then all endpoints agree. |
+| `ftstroke.FT_Glyph_Stroke.destroy_original_option@generic-rectangle-glyph0` | Valid project-owned rectangle glyph outside the existing DejaVu special case; probes the public generic parse/count/export stroker route and ownership flag. | `ftstroke.c:2283-2315` accepts the outline and replaces the glyph while honoring destruction. | Pass; oracle, Rust, C ABI, and WASM agree. |
+
+The five exact cases passed 5/5 after the CID fixes. The two CID failures were
+therefore implementation mismatches, not evidence that the public inputs should
+be removed. The CJK and stroker rows remain because each is a reproducible
+public route with an oracle-accepted input; incremental Coverage MCP attribution
+determines whether a passing row adds a new executable region.
+
 The surrounding 50-case `FT_Load_Glyph` public batch also passed 50/50. It was
 sent to Coverage MCP as repeatable `--migration-coverage-case-ids` arguments in
 four-case chunks because the MCP limits one argument value to 512 bytes. The
