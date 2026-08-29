@@ -1816,6 +1816,28 @@ four WASM requester-error arms at `fontdone-wasm/src/implementation.rs:2351`,
 so its supported review is evidence for those target regions only and is not
 reported as a new full-denominator percentage.
 
+The next reachability audit reused the three already-maintained CFF face-open
+inputs from commit `5441d86`; no duplicate fonts or coverage-only mutations
+were added. Their stable concrete IDs and expansion reasons remain explicit:
+
+| Concrete public ID | Why this input is relevant | Pinned FreeType 2.14.3 behavior |
+|---|---|---|
+| `freetype.FT_New_Memory_Face.error_malformed_cff_table@cff-top-dict-private-operand-missing` | The Top DICT `Private` operator has one operand instead of the required size/offset pair; this targets `src/tt/cff.rs:378-382`. | `cffparse.c:789-815` initializes `Stack_Underflow` and only accepts the operator when `parser->top >= parser->stack + 2`; `cffload.c:1924-1930` propagates the parser error while opening the face. |
+| `freetype.FT_New_Memory_Face.error_malformed_cff_table@cff-top-dict-private-negative-size` | The first `Private` operand is a signed negative size; this targets the checked conversion at `src/tt/cff.rs:384-386`. | `cffparse.c:794-801` rejects a negative size with `Invalid_File_Format`, before `cffload.c:1919-1930` can seek or enter the Private DICT. |
+| `freetype.FT_New_Memory_Face.error_malformed_cff_table@cff-top-dict-private-negative-offset` | The size is present but the second `Private` operand is a signed negative offset; this targets `src/tt/cff.rs:387-389`. | `cffparse.c:803-810` rejects the negative offset with `Invalid_File_Format`, again propagated by `cffload.c:1924-1930`; FreeType does not silently accept or seek it. |
+
+Focused parity passed all three IDs across the pinned C oracle, Rust FFI, thin
+C ABI, and WASM ABI. Coverage MCP run
+`634b1e6b-627e-44fe-8793-e16de8c2dea6` used the argument-based selector
+`--migration-coverage-case-ids` with those exact comma-separated IDs at pushed
+`main` commit `32185a1`, against explicit baseline
+`05c364db-9864-49d8-8dde-b45169061bbc`; it passed and ingested snapshot
+`53357999-25b1-4f7f-885b-9d9297b1e582`. The bounded source review marks the
+Rust CFF underflow and both negative-conversion errors at
+`src/tt/cff.rs:382`, `386`, and `389` covered. The selected incremental
+measurement is target-region evidence only; it is not a full-denominator
+coverage percentage.
+
 Confirmed runtime divergences fixed during the coverage loop are documented
 next to their implementations and must remain separate from coverage-only
 adoption claims:
