@@ -1418,7 +1418,7 @@ impl<'a> Type2Decoder<'a> {
                 if self.stack.len() >= CFF_MAX_OPERANDS {
                     return Err(FontError::CffStackOverflow);
                 }
-                self.stack.push(Type2Operand::integer(number));
+                self.stack.push(number);
                 self.pos = next;
             }
         }
@@ -1826,7 +1826,7 @@ fn cff_subroutine_bias(count: usize) -> i32 {
     }
 }
 
-fn read_type2_number(data: &[u8], pos: usize) -> Result<(i32, usize), FontError> {
+fn read_type2_number(data: &[u8], pos: usize) -> Result<(Type2Operand, usize), FontError> {
     let byte = *data
         .get(pos)
         .ok_or_else(|| FontError::InvalidOutline("CFF: Type2 number overflow".into()))?;
@@ -1837,22 +1837,22 @@ fn read_type2_number(data: &[u8], pos: usize) -> Result<(i32, usize), FontError>
                 data.get(pos + 2).copied().unwrap_or(0),
             ];
             Ok((
-                i32::from(i16::from_be_bytes(bytes)),
+                Type2Operand::integer(i32::from(i16::from_be_bytes(bytes))),
                 pos.saturating_add(3).min(data.len()),
             ))
         }
-        32..=246 => Ok((i32::from(byte) - 139, pos + 1)),
+        32..=246 => Ok((Type2Operand::integer(i32::from(byte) - 139), pos + 1)),
         247..=250 => {
             let next = i32::from(data.get(pos + 1).copied().unwrap_or(0));
             Ok((
-                ((i32::from(byte) - 247) * 256) + next + 108,
+                Type2Operand::integer(((i32::from(byte) - 247) * 256) + next + 108),
                 pos.saturating_add(2).min(data.len()),
             ))
         }
         251..=254 => {
             let next = i32::from(data.get(pos + 1).copied().unwrap_or(0));
             Ok((
-                -((i32::from(byte) - 251) * 256) - next - 108,
+                Type2Operand::integer(-((i32::from(byte) - 251) * 256) - next - 108),
                 pos.saturating_add(2).min(data.len()),
             ))
         }
@@ -1863,8 +1863,13 @@ fn read_type2_number(data: &[u8], pos: usize) -> Result<(i32, usize), FontError>
                 data.get(pos + 3).copied().unwrap_or(0),
                 data.get(pos + 4).copied().unwrap_or(0),
             ];
+            // FreeType's Type2 interpreter treats opcode 255 as a signed
+            // 16.16 operand for CFF/CFF2 (`psintrp.c:2990-3015`). Keeping
+            // all four bytes is required by arithmetic operators such as
+            // `add`, whose operands are both read through `popFixed`
+            // (`psintrp.c:1560-1575`).
             Ok((
-                i32::from_be_bytes(bytes) >> 16,
+                Type2Operand::fixed(i32::from_be_bytes(bytes)),
                 pos.saturating_add(5).min(data.len()),
             ))
         }

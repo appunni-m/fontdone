@@ -1198,7 +1198,7 @@ def write_pure_cff_global_subr_eof() -> None:
 
 
 def build_cff_fixed_add(path: Path) -> None:
-    """Build a valid CFF face that adds an integer to a fixed real value."""
+    """Build a valid CFF face that adds a fixed real to an integer."""
     names = {
         "familyName": "Pure CFF Fixed Add Coverage",
         "styleName": "Regular",
@@ -1219,17 +1219,18 @@ def build_cff_fixed_add(path: Path) -> None:
         usWinDescent=200,
     )
     builder.setupPost()
-    # The real number pushes a 16.16 operand.  Adding an integer operand
-    # therefore selects the fixed/fixed normalization in the Rust
-    # Type2Operand helper, matching cf2_escADD's two fixed pops and fixed
-    # push.  Keep the witness deterministic; stateful random behavior is
-    # covered by separate seed-controlled property cases.
+    # The fractional number pushes a 16.16 operand.  Adding an integer
+    # therefore selects the fixed normalization in the Rust Type2Operand
+    # helper, matching cf2_escADD's two fixed pops and fixed push.  The
+    # compensating -440.5 delta keeps the contour closed.  Keep the witness
+    # deterministic; stateful random behavior is covered by separate
+    # seed-controlled property cases.
     fixed_add_charstring = t2_program_charstring(
         [
             0,
             0,
             "rmoveto",
-            0.0,
+            0.5,
             440,
             "add",
             0,
@@ -1237,7 +1238,7 @@ def build_cff_fixed_add(path: Path) -> None:
             0,
             700,
             "rlineto",
-            -440,
+            -440.5,
             0,
             "rlineto",
             0,
@@ -1264,7 +1265,7 @@ def build_cff_fixed_add(path: Path) -> None:
         builder.font["head"].created = FIXED_HEAD_TIME
         builder.font["head"].modified = FIXED_HEAD_TIME
         builder.font.recalcTimestamp = False
-        builder.font["CFF "].cff.topDictIndex[0].FontBBox = [0, 0, 440, 700]
+        builder.font["CFF "].cff.topDictIndex[0].FontBBox = [0, 0, 441, 700]
         builder.save(path)
     finally:
         TopDict.recalcFontBBox = recalc_font_bbox

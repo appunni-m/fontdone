@@ -125,7 +125,7 @@ scripts/extract_blues.py	9319	file	688e6a765d9f18b0a1d67d2808a47a8feb907b856daa4
 scripts/fetch_ft.sh	1556	file	a27cbac1dffdd0e8166ba74e86cd84f8521d46f75401c9d78f9e6ec1c7061cda	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/font_generation/README.md	29388	file	c49066257fea713d16413e36f152acdd4b7f14955de339988fdf7b2fb6e7a539	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/font_generation/build_autohint_script_fixtures.py	151273	file	13d75bda2756cfed88372ae805589636f67883997d1726fc167ee36d2bab57ea	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
-scripts/font_generation/build_cff_fixtures.py	101156	file	1a7136d8cf404ecdf3431a24f8cba4dd4b66b3ab17c60e4b0bf8c171e1fd63fb	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
+scripts/font_generation/build_cff_fixtures.py	101207	file	703ec8d4e2342e793dc8ed13bf355d706a84921b50a91ae4322d800dcfd4f6ac	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/font_generation/build_cmap_fixtures.py	16788	file	cd0bc8de2f1f2e1f24d3c366845e58711f93447d56e07d75070b19f38a279a43	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/font_generation/build_cpal_palette_fixtures.py	76836	file	493c55a169665c4c5049f4388033cc92106aebc9d3bb57c6e58bbf0beab51e49	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/font_generation/build_ftmm_future_variable_fixtures.py	57806	file	54598d3b4af743845be1b8e311a241f50abcb2ace8524de71429079dbc88f36c	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
@@ -193,7 +193,7 @@ src/render.rs	97753	file	e6017ca8380252b61f4550831a5d3f3c1211aa042a1ad67dbd1d154
 src/scaler.rs	88216	file	74a9c3e32f6613ba23d4945fc8eab5f1b6b5f3694ba230c837350f190503c083	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tables.rs	15583	file	4128c32a0543eb39082d62d2bb98d26f46ed05b20e3d96022f4374420afb81e9	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/avar.rs	4552	file	6b906cb45b318fc4e2a92e5441a52f42b71c697501b38d1dccba892e57547f29	-	keep-runtime	R01	Published pure-Rust runtime source.
-src/tt/cff.rs	62464	file	ca57fe30f83d6da1e13769e9dceb3fd77d9525478a3f2d0042a66d3e56bedd7a	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/tt/cff.rs	62890	file	2a4cb9a6465538e8a1154a888acae8d964c2ff085b4ad1d099185c986ca2c9cd	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/cmap.rs	38266	file	af6ec13dd113ab5efa4009df09617440169917984296836c00726e05b68cac5e	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/fvar.rs	4897	file	965e7c2e18b040627a7e2015f3f72c10d7973a58b3af8f8830daa373d61aa1dc	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/gasp.rs	2423	file	d8398f9b2545d724b81bd2bc6263864742204bd55380dcab3ec2bee2a90e3126	-	keep-runtime	R01	Published pure-Rust runtime source.
@@ -624,7 +624,7 @@ tests/fixtures/input/fonts/cff/pure-cff-cubic-peak-shifts.otf	1248	file	39ab88a1
 tests/fixtures/input/fonts/cff/pure-cff-cubic-vmtx.otf	2812	file	a3ca0d8c2ed2271d0903607eb922c6ae6599af263ed7830f13f90c32baf9e68b	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/cff/pure-cff-cubic.otf	2648	file	08dfa08cd8d2d27ec2c4ff80bd521a2bb06ea6357e8f50b51bb9619451513063	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/cff/pure-cff-empty-tt-programs.otf	2696	file	f618025b90ab4a64bf1bafae24202dd428228723f311acb35c2d23fece6f44a8	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
-tests/fixtures/input/fonts/cff/pure-cff-fixed-add.otf	1060	file	f8925808782213859e174385df6ff4ec252f7b24785ef304fe8021684c10888d	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
+tests/fixtures/input/fonts/cff/pure-cff-fixed-add.otf	1068	file	a5e54756865def017474e60532d9c7fe5e34566dd3f22a79cd9527b06e1cad3c	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/cff/pure-cff-global-subr-eof.otf	1128	file	4b4e9919c9548e9265c92262cd4f99bb51a9ca7c649373fd388711b08462083b	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/cff/pure-cff-random-global-subr-error.otf	1320	file	23538fd19941f28e9571adf7ca89316621ac9872faee370eff42a4875a9d1be1	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
 tests/fixtures/input/fonts/cff/pure-cff-random-no-private.otf	1020	file	d492bdd0dd848b0d8c0e62618306b82f91b3e0a95b1afdc648d90867a35f78ca	-	keep-fixture-input	R04	Canonical maintained fixture input or its provenance/license record.
