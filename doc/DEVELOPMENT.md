@@ -877,11 +877,11 @@ inner guard rather than an earlier public-record check.
 
 | Candidate runtime ID | Why expand this input | Pinned FreeType review | Decision before parity |
 |---|---|---|---|
-| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-001` | Use contour ends `[1, 0, 3]` to make the second contour's end fall below its first point with the smallest multi-contour witness. | `freetype/src/base/ftoutln.c:606-667` does not call `FT_Outline_Check`; `freetype/src/smooth/ftgrays.c:1484-1487` checks `last < first` during decomposition. | Add as an AA public parity variant; expect `FT_Err_Invalid_Outline` and preserved sentinel output. |
-| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-002` | Use `[0, 0, 4]` to exercise the equality boundary where a later contour end equals the preceding contour end and is still below its computed first point. | The same `FT_Outline_Render` dispatch and `FT_Outline_Decompose` guard apply; C does not normalize equal/repeated endpoints before dispatch. | Add as a distinct parity input; retain only after exact C/Rust error-output comparison. |
-| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-003` | Use `[2, 1, 3]` so the first contour is fully in range and a later contour end is below its computed first point, without relying on an out-of-range endpoint. | `freetype/src/base/ftoutln.c:606-667` still dispatches without `FT_Outline_Check`; `freetype/src/smooth/ftgrays.c:1484-1487` returns `Invalid_Outline` at the second contour. | Add as a distinct parity input; retain only after exact C/Rust error-output comparison. |
-| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-006` | Use `[1, 3, 2, 6]` so two complete contours are traversed before a later contour fails, testing that the guard is not only a second-contour artifact. | `ftgrays.c:1484-1487` runs for each contour in order and returns the first decomposition error; `ftoutln.c:647-659` propagates any non-`Cannot_Render_Glyph` renderer error. | Add as a distinct parity input; expect the same `FT_Err_Invalid_Outline` with no rendered bitmap. |
-| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-009` | Use `[3, 3, 8]` to place the repeated endpoint after a four-point valid contour and probe a later equality boundary. | The C renderer accepts the structurally final endpoint, then the gray decomposer computes the next contour's first index and rejects `last < first`. | Add as a distinct parity input; retain only if the oracle confirms the same error and untouched output. |
+| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-001` | Use contour ends `[1, 0, 3]` to make the second contour's end fall below its first point with the smallest multi-contour witness. | `freetype/src/base/ftoutln.c:606-667` does not call `FT_Outline_Check`; `freetype/src/smooth/ftgrays.c:1484-1487` checks `last < first` during decomposition. | Focused parity passed: C, Rust FFI, and WASM returned exact `FT_Err_Invalid_Outline` with the sentinel bitmap preserved. |
+| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-002` | Use `[0, 0, 4]` to exercise the equality boundary where a later contour end equals the preceding contour end and is still below its computed first point. | The same `FT_Outline_Render` dispatch and `FT_Outline_Decompose` guard apply; C does not normalize equal/repeated endpoints before dispatch. | Focused parity passed: C, Rust FFI, and WASM returned exact `FT_Err_Invalid_Outline` with the sentinel bitmap preserved. |
+| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-003` | Use `[2, 1, 3]` so the first contour is fully in range and a later contour end is below its computed first point, without relying on an out-of-range endpoint. | `freetype/src/base/ftoutln.c:606-667` still dispatches without `FT_Outline_Check`; `freetype/src/smooth/ftgrays.c:1484-1487` returns `Invalid_Outline` at the second contour. | Focused parity passed: C, Rust FFI, and WASM returned exact `FT_Err_Invalid_Outline` with the sentinel bitmap preserved. |
+| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-006` | Use `[1, 3, 2, 6]` so two complete contours are traversed before a later contour fails, testing that the guard is not only a second-contour artifact. | `ftgrays.c:1484-1487` runs for each contour in order and returns the first decomposition error; `ftoutln.c:647-659` propagates any non-`Cannot_Render_Glyph` renderer error. | Focused parity passed: C, Rust FFI, and WASM returned exact `FT_Err_Invalid_Outline` with the sentinel bitmap preserved. |
+| `ftoutln.FT_Outline_Render.bitmap_render_matches_c@invalid-intermediate-contour-order-009` | Use `[3, 3, 8]` to place the repeated endpoint after a four-point valid contour and probe a later equality boundary. | The C renderer accepts the structurally final endpoint, then the gray decomposer computes the next contour's first index and rejects `last < first`. | Focused parity passed: C, Rust FFI, and WASM returned exact `FT_Err_Invalid_Outline` with the sentinel bitmap preserved. |
 
 The initially proposed `[0, -1, 5]` negative-endpoint witness was probed
 against the pinned oracle and consistently terminated with `SIGSEGV`; it is
@@ -893,6 +893,19 @@ review of `fontdone-wasm/src/implementation.rs:2121-2126` found no exposed
 public operation that leaves that state immediately before the helper runs.
 That target remains deferred until a real public lifecycle path is found.
 
+The focused parity command compared all five retained IDs and passed 5/5
+cases across the C oracle, Rust FFI, and WASM backends. No runtime
+implementation fix was needed: the existing Rust guard at `src/grays.rs:822`
+already matches FreeType's `last < first` check. Coverage MCP run
+`e8dc1669-4cd6-408e-9d4e-fdf266403273` then ingested child snapshot
+`fdd39eab-6031-4f1c-9422-db87afaad682` against explicit baseline
+`a817755c-319c-41c8-b56a-f8f52a0441d7`. Its additive union added one covered
+region and one covered line, identifying `src/grays.rs:817` as newly covered;
+the canonical region rate moved from `0.9604448061` to `0.9604556550`.
+Because this was a selected-subset incremental measurement, its unobserved
+baseline hits are not regressions and it is not a replacement for the full
+denominator run.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
@@ -900,7 +913,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,046 tracked paths and no symlinks.
+The canonical input tree currently contains 1,050 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
