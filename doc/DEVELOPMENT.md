@@ -1062,6 +1062,32 @@ public error signal, not a fabricated Rust-only branch. The short-read row is a
 normal public stream failure shape. Neither row adds a binary fixture or
 changes the full denominator.
 
+The focused parity selection for the two new IDs passed 2 / 2 across Rust, the
+C ABI, and WASM. The first managed run executed at pushed commit
+`af32944fb37775c570356d833e3b6dee2c67a3d8` but Coverage MCP marked its report
+stale during automatic ingestion. That exact generated LLVM report was
+therefore imported with explicit provenance as snapshot
+`71d97363-cf71-44e6-b179-1384116714f9`; a current-command rerun of the two
+existing success IDs ingested snapshot `e55d7b20-e09c-4949-b2b5-05ddc18b35cf`,
+and the six-case Bzip2 union ingested snapshot
+`33011723-25b3-4f0a-9629-ccc194dc4cc7`. Bounded source review of the latter
+snapshot shows the callback seek-failure and short-read arms covered in both
+ABI facades, while the existing success and invalid-header cases cover the
+success and post-call error decisions. These are selected-subset measurements;
+they are reachability evidence, not a new full-denominator percentage.
+
+The pinned source review also rejects three tempting look-alike inputs for this
+target. A non-null `FT_Stream` with nonzero size but both `base` and `read`
+null is not a stable C error case: `ftstream.c:56-86` accepts the seek, then
+`ftstream.c:118-158` would copy through `stream->base` during the header read.
+The `FT_ULong`-to-`usize` conversion failure is a 32-bit compile-time arm, not
+an input distinction on the supported 32-bit ABI. Finally, the `FT_QNEW`/Rust
+allocation-failure branches at `ftbzip2.c:485-508` and the corresponding
+materialization helper require allocator fault injection; no byte input can
+reliably produce them. The feature-disabled Bzip2/LZW returns are likewise a
+separate `#else` build, already represented by the dedicated disabled-build
+cases, and cannot be reached by expanding an enabled-build input.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
