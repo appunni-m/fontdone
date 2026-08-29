@@ -2806,6 +2806,8 @@ subjects:
         description: BDF faces return exact property type and value for atom, signed integer, and BDF-only cardinal properties.
       - id: success_bdf_empty_atom_returns_null
         description: A BDF user-property line with no value is accepted by pinned FreeType as an ATOM with a null pointer, and the parity route preserves that success/null result.
+      - id: batch232_bdf_malformed_numeric_prefixes
+        description: Thirty project-authored malformed BDF integer/cardinal property tokens verify FreeType's permissive decimal-prefix, zero, sign, and saturation behavior through the public property query.
       - id: success_pcf_properties_signed_only
         description: PCF faces return exact property values while integer properties are reported as signed, never cardinal.
       - id: success_sfnt_bdf_table_selected_strike

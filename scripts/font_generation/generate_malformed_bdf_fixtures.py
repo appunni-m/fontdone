@@ -61,6 +61,28 @@ CHARS 1
 {VALID_GLYPH}'''
 
 
+def malformed_numeric_property_fixture(
+    index: int, property_name: str, raw_value: str | None
+) -> str:
+    properties = []
+    if property_name != "FONT_ASCENT":
+        properties.append("FONT_ASCENT 6")
+    if property_name != "FONT_DESCENT":
+        properties.append("FONT_DESCENT 2")
+    properties.append(
+        property_name if raw_value is None else f"{property_name} {raw_value}"
+    )
+    return f'''STARTFONT 2.1
+FONT FontdoneBatch232BdfNumeric{index:02d}
+SIZE 12 75 75
+FONTBOUNDINGBOX 8 8 0 -2
+STARTPROPERTIES {len(properties)}
+{chr(10).join(properties)}
+ENDPROPERTIES
+CHARS 1
+{VALID_GLYPH}'''
+
+
 def charset_registry_fixture(family: str, registry: str, encoding: str) -> str:
     return f'''STARTFONT 2.1
 FONT {family}
@@ -98,6 +120,45 @@ ENDFONT
 
 
 def main() -> None:
+    malformed_numeric_variants = [
+        ("AVERAGE_WIDTH", None, "no-value"),
+        ("AVG_CAPITAL_WIDTH", "junk", "junk"),
+        ("AVG_LOWERCASE_WIDTH", "42tail", "prefix"),
+        ("CAP_HEIGHT", "-17tail", "negative-prefix"),
+        ("END_SPACE", "+9", "plus-sign"),
+        ("FIGURE_WIDTH", "-0x1", "hex-prefix"),
+        ("FONT_ASCENT", None, "no-value"),
+        ("FONT_DESCENT", "12oops", "prefix"),
+        ("ITALIC_ANGLE", "3.5", "real-prefix"),
+        ("MAX_SPACE", "2147483647tail", "i32-prefix"),
+        ("MIN_SPACE", "-2147483648tail", "i32-negative-prefix"),
+        ("NORM_SPACE", "999999999999999999999tail", "saturated-prefix"),
+        ("PIXEL_SIZE", "junk", "no-digit"),
+        ("POINT_SIZE", "120oops", "prefix"),
+        ("QUAD_WIDTH", "007suffix", "leading-zero-prefix"),
+        ("RAW_ASCENT", "-7tail", "negative-prefix"),
+        ("RAW_AVERAGE_WIDTH", None, "no-value"),
+        ("RAW_CAP_HEIGHT", "5x", "prefix"),
+        ("RAW_DESCENT", "+11", "plus-sign"),
+        ("RAW_PIXEL_SIZE", "16.0", "real-prefix"),
+        ("SMALL_CAP_SIZE", "4rest", "prefix"),
+        ("STRIKEOUT_ASCENT", "-3tail", "negative-prefix"),
+        ("SUBSCRIPT_X", "9abc", "prefix"),
+        ("UNDERLINE_POSITION", None, "no-value"),
+        ("DEFAULT_CHAR", None, "no-value"),
+        ("DESTINATION", "42tail", "prefix"),
+        ("RELATIVE_SETWIDTH", "+9", "plus-sign"),
+        ("RELATIVE_WEIGHT", "-1", "minus-sign"),
+        ("RESOLUTION_X", "75oops", "prefix"),
+        ("RESOLUTION_Y", "96tail", "prefix"),
+    ]
+    for index, (property_name, raw_value, label) in enumerate(
+        malformed_numeric_variants, start=1
+    ):
+        write_fixture(
+            f"input/fonts/bdf/malformed-numeric/batch232-{index:02d}-{property_name.lower()}-{label}.bdf",
+            malformed_numeric_property_fixture(index, property_name, raw_value),
+        )
     write_fixture(
         "input/fonts/bdf/properties-missing-pixel-size.bdf",
         pixel_size_property_fixture(None),

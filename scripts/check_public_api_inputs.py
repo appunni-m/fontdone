@@ -5058,6 +5058,7 @@ def pending_route_reason(row: ConcreteInput) -> str | None:
         if row.case_id in {
             "ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties",
             "ftbdf.FT_Get_BDF_Property.success_bdf_empty_atom_returns_null",
+            "ftbdf.FT_Get_BDF_Property.batch232_bdf_malformed_numeric_prefixes",
             "ftbdf.FT_Get_BDF_Property.success_pcf_properties_signed_only",
             "ftbdf.FT_Get_BDF_Property.success_sfnt_bdf_table_selected_strike",
             "ftbdf.FT_Get_BDF_Property.error_missing_property_sets_none",
@@ -8875,6 +8876,20 @@ def bdf_property_exact_error_real_parity_reason(row: ConcreteInput) -> str | Non
     return reasons.get(row.case_id)
 
 
+def bdf_property_success_real_parity_reason(row: ConcreteInput) -> str | None:
+    if (
+        row.case_id
+        == "ftbdf.FT_Get_BDF_Property.batch232_bdf_malformed_numeric_prefixes"
+        and unresolved_assets_reason(row) is None
+    ):
+        return (
+            "FT_Get_BDF_Property malformed BDF integer/cardinal tokens validate "
+            "FreeType's public decimal-prefix, zero, sign, and saturation "
+            "semantics through the pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+        )
+    return None
+
+
 def list_value(value: object) -> list[object]:
     return value if isinstance(value, list) else []
 
@@ -9043,6 +9058,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     bdf_property_exact_error_reason = bdf_property_exact_error_real_parity_reason(row)
     if bdf_property_exact_error_reason:
         return ("real-parity", bdf_property_exact_error_reason)
+    bdf_property_success_reason = bdf_property_success_real_parity_reason(row)
+    if bdf_property_success_reason:
+        return ("real-parity", bdf_property_success_reason)
     done_glyph_pending = done_glyph_lifecycle_pending_reason(row)
     if done_glyph_pending:
         return ("pending-route", done_glyph_pending)

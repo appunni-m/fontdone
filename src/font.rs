@@ -1046,6 +1046,54 @@ fn parse_bdf_atom(raw_value: &str) -> String {
     raw_value.trim().trim_matches('"').to_string()
 }
 
+// `bdflib.c:bdf_atol_` is intentionally a permissive decimal-prefix parser:
+// it returns zero when no digits follow the optional minus sign, stops at the
+// first non-digit, and saturates before the final multiply.  BDF files are a
+// public input format, so preserve those pinned FreeType semantics instead of
+// using Rust's all-or-nothing integer parsing.
+fn parse_bdf_signed_decimal_prefix(raw_value: &str) -> i64 {
+    let bytes = raw_value.trim().as_bytes();
+    let (negative, digits) = match bytes.first() {
+        Some(b'-') => (true, &bytes[1..]),
+        _ => (false, bytes),
+    };
+    let mut value = 0_i64;
+    for byte in digits {
+        if !byte.is_ascii_digit() {
+            break;
+        }
+        if value < (i64::MAX - 9) / 10 {
+            value = value * 10 + i64::from(byte - b'0');
+        } else {
+            value = i64::MAX;
+            break;
+        }
+    }
+    if negative {
+        -value
+    } else {
+        value
+    }
+}
+
+// This mirrors `bdflib.c:bdf_atoul_`, including its zero result for a token
+// with no leading decimal digit and its early saturation rule.
+fn parse_bdf_unsigned_decimal_prefix(raw_value: &str) -> u64 {
+    let mut value = 0_u64;
+    for byte in raw_value.trim().as_bytes() {
+        if !byte.is_ascii_digit() {
+            break;
+        }
+        if value < (u64::MAX - 9) / 10 {
+            value = value * 10 + u64::from(byte - b'0');
+        } else {
+            value = u64::MAX;
+            break;
+        }
+    }
+    value
+}
+
 fn parse_bdf_property_line(line: &str) -> Option<BdfPropertyEntry> {
     // FreeType's `bdf_is_atom_` accepts a user-property line that ends after
     // the name.  It records that property as an empty BDF_ATOM whose stored
@@ -1059,14 +1107,12 @@ fn parse_bdf_property_line(line: &str) -> Option<BdfPropertyEntry> {
     let format = bdf_property_format(name);
     let value = match format {
         BdfPropertyFormat::Atom => BdfPropertyValue::Atom(parse_bdf_atom(raw_value)),
-        BdfPropertyFormat::Integer => {
-            let parsed = raw_value.trim().parse::<i64>().ok()? as i32;
-            BdfPropertyValue::Integer(parsed)
-        }
-        BdfPropertyFormat::Cardinal => {
-            let parsed = raw_value.trim().parse::<u64>().ok()? as u32;
-            BdfPropertyValue::Cardinal(parsed)
-        }
+        BdfPropertyFormat::Integer => BdfPropertyValue::Integer(
+            parse_bdf_signed_decimal_prefix(raw_value) as i32,
+        ),
+        BdfPropertyFormat::Cardinal => BdfPropertyValue::Cardinal(
+            parse_bdf_unsigned_decimal_prefix(raw_value) as u32,
+        ),
     };
     let atom_c_string = match &value {
         // `bdflib.c:bdf_add_property_` leaves an empty atom's pointer NULL;

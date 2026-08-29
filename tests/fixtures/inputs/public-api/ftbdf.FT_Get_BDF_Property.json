@@ -70,6 +70,270 @@
       }
     },
     {
+      "case_id": "ftbdf.FT_Get_BDF_Property.batch232_bdf_malformed_numeric_prefixes",
+      "subject": "ftbdf.FT_Get_BDF_Property",
+      "case": "batch232_bdf_malformed_numeric_prefixes",
+      "operation": "ftbdf.get_bdf_property",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "int-average-width-no-value",
+            "reason": "Pinned FreeType bdf_atol_ returns zero when a known integer property has no digit token.",
+            "coverage": ["batch232:bdf:integer:no-value"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-01-average_width-no-value.bdf", "asset_kind": "font"}},
+            "params": {"property": "AVERAGE_WIDTH", "raw_value": null, "face_index": 0}
+          },
+          {
+            "id": "int-avg-capital-width-junk",
+            "reason": "Pinned FreeType bdf_atol_ accepts a known integer property whose token has no leading digit as zero.",
+            "coverage": ["batch232:bdf:integer:no-digit"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-02-avg_capital_width-junk.bdf", "asset_kind": "font"}},
+            "params": {"property": "AVG_CAPITAL_WIDTH", "raw_value": "junk", "face_index": 0}
+          },
+          {
+            "id": "int-avg-lowercase-width-prefix",
+            "reason": "Pinned FreeType bdf_atol_ stops at the first non-digit and returns the decimal prefix.",
+            "coverage": ["batch232:bdf:integer:decimal-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-03-avg_lowercase_width-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "AVG_LOWERCASE_WIDTH", "raw_value": "42tail", "face_index": 0}
+          },
+          {
+            "id": "int-cap-height-negative-prefix",
+            "reason": "Pinned FreeType bdf_atol_ accepts an optional minus sign before a decimal prefix.",
+            "coverage": ["batch232:bdf:integer:negative-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-04-cap_height-negative-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "CAP_HEIGHT", "raw_value": "-17tail", "face_index": 0}
+          },
+          {
+            "id": "int-end-space-plus-sign",
+            "reason": "Pinned FreeType bdf_atol_ recognizes only an optional minus sign, so a leading plus produces zero.",
+            "coverage": ["batch232:bdf:integer:plus-sign"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-05-end_space-plus-sign.bdf", "asset_kind": "font"}},
+            "params": {"property": "END_SPACE", "raw_value": "+9", "face_index": 0}
+          },
+          {
+            "id": "int-figure-width-hex-prefix",
+            "reason": "Pinned FreeType bdf_atol_ is decimal-only and returns zero for a hexadecimal-looking token.",
+            "coverage": ["batch232:bdf:integer:decimal-only"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-06-figure_width-hex-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "FIGURE_WIDTH", "raw_value": "-0x1", "face_index": 0}
+          },
+          {
+            "id": "int-font-ascent-no-value",
+            "reason": "Pinned FreeType replaces a known FONT_ASCENT value with bdf_atol_ zero when the property line has no value.",
+            "coverage": ["batch232:bdf:integer:required-property-no-value"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-07-font_ascent-no-value.bdf", "asset_kind": "font"}},
+            "params": {"property": "FONT_ASCENT", "raw_value": null, "face_index": 0}
+          },
+          {
+            "id": "int-font-descent-prefix",
+            "reason": "Pinned FreeType bdf_atol_ stores the signed decimal prefix even when trailing junk follows it.",
+            "coverage": ["batch232:bdf:integer:required-property-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-08-font_descent-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "FONT_DESCENT", "raw_value": "12oops", "face_index": 0}
+          },
+          {
+            "id": "int-italic-angle-real-prefix",
+            "reason": "Pinned FreeType bdf_atol_ stops before the decimal point and stores the integer prefix.",
+            "coverage": ["batch232:bdf:integer:real-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-09-italic_angle-real-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "ITALIC_ANGLE", "raw_value": "3.5", "face_index": 0}
+          },
+          {
+            "id": "int-max-space-i32-prefix",
+            "reason": "Pinned FreeType accepts an i32-sized decimal prefix without requiring token exhaustion.",
+            "coverage": ["batch232:bdf:integer:i32-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-10-max_space-i32-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "MAX_SPACE", "raw_value": "2147483647tail", "face_index": 0}
+          },
+          {
+            "id": "int-min-space-i32-negative-prefix",
+            "reason": "Pinned FreeType accepts a negative i32-sized decimal prefix without requiring token exhaustion.",
+            "coverage": ["batch232:bdf:integer:i32-negative-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-11-min_space-i32-negative-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "MIN_SPACE", "raw_value": "-2147483648tail", "face_index": 0}
+          },
+          {
+            "id": "int-norm-space-saturated-prefix",
+            "reason": "Pinned FreeType bdf_atol_ saturates an overflowing decimal prefix before the public FT_Int32 truncation.",
+            "coverage": ["batch232:bdf:integer:saturation"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-12-norm_space-saturated-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "NORM_SPACE", "raw_value": "999999999999999999999tail", "face_index": 0}
+          },
+          {
+            "id": "int-pixel-size-no-digit",
+            "reason": "Pinned FreeType preserves a known PIXEL_SIZE property as integer zero when bdf_atol_ sees no leading digit.",
+            "coverage": ["batch232:bdf:integer:pixel-size-zero-fallback"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-13-pixel_size-no-digit.bdf", "asset_kind": "font"}},
+            "params": {"property": "PIXEL_SIZE", "raw_value": "junk", "face_index": 0}
+          },
+          {
+            "id": "int-point-size-prefix",
+            "reason": "Pinned FreeType uses the decimal prefix for POINT_SIZE before face-size conversion.",
+            "coverage": ["batch232:bdf:integer:point-size-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-14-point_size-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "POINT_SIZE", "raw_value": "120oops", "face_index": 0}
+          },
+          {
+            "id": "int-quad-width-leading-zero-prefix",
+            "reason": "Pinned FreeType accepts leading zeroes and stops at the first non-digit.",
+            "coverage": ["batch232:bdf:integer:leading-zero-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-15-quad_width-leading-zero-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "QUAD_WIDTH", "raw_value": "007suffix", "face_index": 0}
+          },
+          {
+            "id": "int-raw-ascent-negative-prefix",
+            "reason": "Pinned FreeType applies the minus sign before storing the RAW_ASCENT decimal prefix.",
+            "coverage": ["batch232:bdf:integer:raw-negative-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-16-raw_ascent-negative-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "RAW_ASCENT", "raw_value": "-7tail", "face_index": 0}
+          },
+          {
+            "id": "int-raw-average-width-no-value",
+            "reason": "Pinned FreeType maps a no-value known integer line through bdf_atol_ as zero.",
+            "coverage": ["batch232:bdf:integer:raw-no-value"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-17-raw_average_width-no-value.bdf", "asset_kind": "font"}},
+            "params": {"property": "RAW_AVERAGE_WIDTH", "raw_value": null, "face_index": 0}
+          },
+          {
+            "id": "int-raw-cap-height-prefix",
+            "reason": "Pinned FreeType accepts the decimal prefix of a malformed RAW_CAP_HEIGHT value.",
+            "coverage": ["batch232:bdf:integer:raw-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-18-raw_cap_height-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "RAW_CAP_HEIGHT", "raw_value": "5x", "face_index": 0}
+          },
+          {
+            "id": "int-raw-descent-plus-sign",
+            "reason": "Pinned FreeType's decimal parser does not treat a leading plus as a sign.",
+            "coverage": ["batch232:bdf:integer:raw-plus-sign"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-19-raw_descent-plus-sign.bdf", "asset_kind": "font"}},
+            "params": {"property": "RAW_DESCENT", "raw_value": "+11", "face_index": 0}
+          },
+          {
+            "id": "int-raw-pixel-size-real-prefix",
+            "reason": "Pinned FreeType stores the integer prefix of a real-looking RAW_PIXEL_SIZE token.",
+            "coverage": ["batch232:bdf:integer:raw-real-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-20-raw_pixel_size-real-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "RAW_PIXEL_SIZE", "raw_value": "16.0", "face_index": 0}
+          },
+          {
+            "id": "int-small-cap-size-prefix",
+            "reason": "Pinned FreeType accepts the decimal prefix of SMALL_CAP_SIZE with trailing text.",
+            "coverage": ["batch232:bdf:integer:small-cap-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-21-small_cap_size-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "SMALL_CAP_SIZE", "raw_value": "4rest", "face_index": 0}
+          },
+          {
+            "id": "int-strikeout-ascent-negative-prefix",
+            "reason": "Pinned FreeType preserves the signed decimal prefix for STRIKEOUT_ASCENT.",
+            "coverage": ["batch232:bdf:integer:strikeout-negative-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-22-strikeout_ascent-negative-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "STRIKEOUT_ASCENT", "raw_value": "-3tail", "face_index": 0}
+          },
+          {
+            "id": "int-subscript-x-prefix",
+            "reason": "Pinned FreeType accepts a decimal prefix for SUBSCRIPT_X even with trailing alphabetic data.",
+            "coverage": ["batch232:bdf:integer:subscript-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-23-subscript_x-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "SUBSCRIPT_X", "raw_value": "9abc", "face_index": 0}
+          },
+          {
+            "id": "int-underline-position-no-value",
+            "reason": "Pinned FreeType converts a known no-value UNDERLINE_POSITION property to integer zero.",
+            "coverage": ["batch232:bdf:integer:underline-no-value"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-24-underline_position-no-value.bdf", "asset_kind": "font"}},
+            "params": {"property": "UNDERLINE_POSITION", "raw_value": null, "face_index": 0}
+          },
+          {
+            "id": "cardinal-default-char-no-value",
+            "reason": "Pinned FreeType bdf_atoul_ returns zero for a known cardinal property with no digit token.",
+            "coverage": ["batch232:bdf:cardinal:no-value"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-25-default_char-no-value.bdf", "asset_kind": "font"}},
+            "params": {"property": "DEFAULT_CHAR", "raw_value": null, "face_index": 0}
+          },
+          {
+            "id": "cardinal-destination-prefix",
+            "reason": "Pinned FreeType bdf_atoul_ accepts the decimal prefix of a malformed cardinal token.",
+            "coverage": ["batch232:bdf:cardinal:decimal-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-26-destination-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "DESTINATION", "raw_value": "42tail", "face_index": 0}
+          },
+          {
+            "id": "cardinal-relative-setwidth-plus-sign",
+            "reason": "Pinned FreeType bdf_atoul_ is unsigned and returns zero for a leading plus sign.",
+            "coverage": ["batch232:bdf:cardinal:plus-sign"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-27-relative_setwidth-plus-sign.bdf", "asset_kind": "font"}},
+            "params": {"property": "RELATIVE_SETWIDTH", "raw_value": "+9", "face_index": 0}
+          },
+          {
+            "id": "cardinal-relative-weight-minus-sign",
+            "reason": "Pinned FreeType bdf_atoul_ does not consume a minus sign and therefore returns zero.",
+            "coverage": ["batch232:bdf:cardinal:minus-sign"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-28-relative_weight-minus-sign.bdf", "asset_kind": "font"}},
+            "params": {"property": "RELATIVE_WEIGHT", "raw_value": "-1", "face_index": 0}
+          },
+          {
+            "id": "cardinal-resolution-x-prefix",
+            "reason": "Pinned FreeType bdf_atoul_ accepts the decimal prefix before BDF face resolution normalization.",
+            "coverage": ["batch232:bdf:cardinal:resolution-x-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-29-resolution_x-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "RESOLUTION_X", "raw_value": "75oops", "face_index": 0}
+          },
+          {
+            "id": "cardinal-resolution-y-prefix",
+            "reason": "Pinned FreeType bdf_atoul_ accepts the decimal prefix before BDF face resolution normalization.",
+            "coverage": ["batch232:bdf:cardinal:resolution-y-prefix"],
+            "assets": {"bdf_font": {"kind": "ref", "id": "input/fonts/bdf/malformed-numeric/batch232-30-resolution_y-prefix.bdf", "asset_kind": "font"}},
+            "params": {"property": "RESOLUTION_Y", "raw_value": "96tail", "face_index": 0}
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftbdf",
+        "area:bdf-properties",
+        "path:malformed-numeric-prefixes"
+      ],
+      "metadata": {
+        "source_behavior": "Pinned FreeType accepts malformed public BDF numeric property tokens through bdf_atol_ and bdf_atoul_: no digits become zero, trailing non-digits are ignored, and overflowing prefixes saturate.",
+        "expansion_reason": "Source review found a real parity mismatch: Rust used all-or-nothing parse::<i64/u64>(), dropping the property, while FreeType stores the permissively parsed numeric value. These 30 inputs distinguish no-value, no-digit, signed, decimal-prefix, saturation, and cardinal cases before and after the fix."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "record": "BDF_PropertyRec",
+          "union_fields": ["atom", "integer", "cardinal"]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "error",
+            "property_name",
+            "property_after.type",
+            "property_after.atom_string",
+            "property_after.integer",
+            "property_after.cardinal"
+          ]
+        },
+        "fixture_requirements": [
+          "Thirty project-authored BDF faces with one known integer or cardinal property carrying a deliberate malformed numeric token",
+          "Each face remains loadable so FT_Get_BDF_Property observes the parsed public property"
+        ],
+        "source_refs": [
+          "freetype/src/bdf/bdflib.c:289-339",
+          "freetype/src/bdf/bdflib.c:1135-1188",
+          "freetype/src/bdf/bdflib.c:608-720",
+          "freetype/src/bdf/bdfdrivr.c:886-937",
+          "freetype/src/base/ftbdf.c:62-86",
+          "src/font.rs:1049-1114",
+          "src/font.rs:1173-1182"
+        ]
+      }
+    },
+    {
       "case_id": "ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties",
       "subject": "ftbdf.FT_Get_BDF_Property",
       "case": "success_bdf_string_integer_cardinal_properties",

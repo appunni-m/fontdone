@@ -32556,7 +32556,11 @@ static BDF_PropertyRec bdf_property_sentinel(void) {
 
 static int emit_bdf_property_case(int argc, char** argv) {
     const char* case_id = argv[2];
-    if (argc != 6) {
+    int is_malformed_numeric_case = streq(
+        case_id,
+        "ftbdf.FT_Get_BDF_Property.batch232_bdf_malformed_numeric_prefixes");
+    if ((is_malformed_numeric_case && argc != 7) ||
+        (!is_malformed_numeric_case && argc != 6)) {
         fprintf(stderr, "--bdf-property-case requires case_id source_kind source_value face_index\n");
         return 2;
     }
@@ -32602,6 +32606,19 @@ static int emit_bdf_property_case(int argc, char** argv) {
 
     if (streq(case_id, "ftbdf.FT_Get_BDF_Property.success_bdf_empty_atom_returns_null")) {
         const char* property_name = "UNNAMED_PROPERTY_WITHOUT_VALUE";
+        BDF_PropertyRec property = bdf_property_sentinel();
+        FT_Error error = FT_Get_BDF_Property(face.face, property_name, &property);
+        printf("{");
+        print_status(error);
+        printf(",\"output\":{\"error\":%d,\"property_name\":\"%s\",\"property_after\":", error, property_name);
+        print_bdf_property_after(&property);
+        printf("}}\n");
+        close_oracle_face(&face);
+        return 0;
+    }
+
+    if (is_malformed_numeric_case) {
+        const char* property_name = argv[6];
         BDF_PropertyRec property = bdf_property_sentinel();
         FT_Error error = FT_Get_BDF_Property(face.face, property_name, &property);
         printf("{");
@@ -42001,7 +42018,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 10 && streq(argv[1], "--face-properties-render-case")) {
         return emit_face_properties_render_case(argc, argv);
     }
-    if (argc == 6 && streq(argv[1], "--bdf-property-case")) {
+    if ((argc == 6 || argc == 7) && streq(argv[1], "--bdf-property-case")) {
         return emit_bdf_property_case(argc, argv);
     }
     if (argc == 6 && streq(argv[1], "--bdf-charset-case")) {

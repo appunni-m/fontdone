@@ -28555,6 +28555,7 @@ fn bdf_property_error_case_supported(case: &InputCase) -> bool {
         case_id_base(&case.case_id),
         "ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties"
             | "ftbdf.FT_Get_BDF_Property.success_bdf_empty_atom_returns_null"
+            | "ftbdf.FT_Get_BDF_Property.batch232_bdf_malformed_numeric_prefixes"
             | "ftbdf.FT_Get_BDF_Property.success_pcf_properties_signed_only"
             | "ftbdf.FT_Get_BDF_Property.success_sfnt_bdf_table_selected_strike"
             | "ftbdf.FT_Get_BDF_Property.error_missing_property_sets_none"
@@ -29316,6 +29317,16 @@ fn bdf_property_run_output(error_code: FT_Error, output: Value) -> RunOutput {
 }
 
 fn bdf_property_name_for_case(case: &InputCase) -> Result<&str, String> {
+    if case_id_base(&case.case_id)
+        == "ftbdf.FT_Get_BDF_Property.batch232_bdf_malformed_numeric_prefixes"
+    {
+        return case
+            .inputs
+            .params
+            .get("property")
+            .and_then(Value::as_str)
+            .ok_or_else(|| format!("{} missing malformed BDF property name", case.case_id));
+    }
     match case_id_base(&case.case_id) {
         "ftbdf.FT_Get_BDF_Property.success_bdf_empty_atom_returns_null" => {
             Ok("UNNAMED_PROPERTY_WITHOUT_VALUE")
@@ -46956,6 +46967,11 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             ];
             push_font_source(case, &mut args)?;
             args.push(face_index_param(params)?.to_string());
+            if case_id_base(&case.case_id)
+                == "ftbdf.FT_Get_BDF_Property.batch232_bdf_malformed_numeric_prefixes"
+            {
+                args.push(bdf_property_name_for_case(case)?.to_string());
+            }
             Ok(args)
         }
         "ftbdf.get_bdf_charset_id" if bdf_charset_case_supported(case) => {
