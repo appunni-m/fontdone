@@ -906,6 +906,9 @@ Because this was a selected-subset incremental measurement, its unobserved
 baseline hits are not regressions and it is not a replacement for the full
 denominator run.
 
+The next CFF random-seed candidate was source-reviewed before it was retained.
+The candidate ID was `ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch@c88-ps-random-zero-seed-001`. Its intended target was the zero-seed fallback at `src/tt/cff.rs:203-204`: the public `FT_Property_Set` value `0` is accepted by pinned `ftpsprop.c:198-220`, and the Adobe CFF loader normalizes a zero seed to the private-dictionary default at `cffload.c:1935-1940` and `2084-2131`. The first probe used `value: 0`, which selects the legacy `FT_HINTING_FREETYPE` engine rather than the Adobe path. In that path `cffdecode.c:1727-1741` consumes `top_font.random`; the focused public parity result was C `horiBearingX = -1000` versus Rust `horiBearingX = -592`. The probe was removed before campaign ingestion and is not counted as coverage. This is evidence that FreeType accepts the property but that this selector is not an exact witness for the Rust fallback; an Adobe-selector variant must be reduced and reviewed separately before another manifest expansion.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
