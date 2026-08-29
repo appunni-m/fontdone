@@ -12760,14 +12760,37 @@ static void print_cmap_lookup_row(FTC_Manager manager,
                                   CMapCacheRequesterData* requester,
                                   int cmap_index,
                                   FT_UInt32 char_code,
+                                  int preselect_cmap_index,
                                   int repeat_lookup,
                                   int lifecycle) {
     int before_count = requester->request_count;
+    if (preselect_cmap_index >= 0) {
+        FT_Face preselected_face = NULL;
+        FT_Error preselect_error = FTC_Manager_LookupFace(
+            manager, (FTC_FaceID)requester, &preselected_face);
+        if (!preselect_error && preselected_face &&
+            preselect_cmap_index < preselected_face->num_charmaps) {
+            (void)FT_Set_Charmap(
+                preselected_face,
+                preselected_face->charmaps[preselect_cmap_index]);
+        }
+    }
     FT_UInt first = FTC_CMapCache_Lookup(cache, (FTC_FaceID)requester, cmap_index, char_code);
     int after_first_count = requester->request_count;
     FT_UInt repeat = 0;
     int after_repeat_count = after_first_count;
     if (repeat_lookup) {
+        if (preselect_cmap_index >= 0) {
+            FT_Face preselected_face = NULL;
+            FT_Error preselect_error = FTC_Manager_LookupFace(
+                manager, (FTC_FaceID)requester, &preselected_face);
+            if (!preselect_error && preselected_face &&
+                preselect_cmap_index < preselected_face->num_charmaps) {
+                (void)FT_Set_Charmap(
+                    preselected_face,
+                    preselected_face->charmaps[preselect_cmap_index]);
+            }
+        }
         repeat = FTC_CMapCache_Lookup(cache, (FTC_FaceID)requester, cmap_index, char_code);
         after_repeat_count = requester->request_count;
     }
@@ -12777,9 +12800,31 @@ static void print_cmap_lookup_row(FTC_Manager manager,
     int after_reset_count = after_repeat_count;
     if (lifecycle) {
         FTC_Manager_RemoveFaceID(manager, (FTC_FaceID)requester);
+        if (preselect_cmap_index >= 0) {
+            FT_Face preselected_face = NULL;
+            FT_Error preselect_error = FTC_Manager_LookupFace(
+                manager, (FTC_FaceID)requester, &preselected_face);
+            if (!preselect_error && preselected_face &&
+                preselect_cmap_index < preselected_face->num_charmaps) {
+                (void)FT_Set_Charmap(
+                    preselected_face,
+                    preselected_face->charmaps[preselect_cmap_index]);
+            }
+        }
         after_remove = FTC_CMapCache_Lookup(cache, (FTC_FaceID)requester, cmap_index, char_code);
         after_remove_count = requester->request_count;
         FTC_Manager_Reset(manager);
+        if (preselect_cmap_index >= 0) {
+            FT_Face preselected_face = NULL;
+            FT_Error preselect_error = FTC_Manager_LookupFace(
+                manager, (FTC_FaceID)requester, &preselected_face);
+            if (!preselect_error && preselected_face &&
+                preselect_cmap_index < preselected_face->num_charmaps) {
+                (void)FT_Set_Charmap(
+                    preselected_face,
+                    preselected_face->charmaps[preselect_cmap_index]);
+            }
+        }
         after_reset = FTC_CMapCache_Lookup(cache, (FTC_FaceID)requester, cmap_index, char_code);
         after_reset_count = requester->request_count;
     }
@@ -12818,6 +12863,7 @@ static int emit_cmap_cache_lookup(int argc, char** argv) {
     }
     memcpy(indexes_arg, argv[5], strlen(argv[5]) + 1);
     FT_UInt32 char_code = (FT_UInt32)strtoul(argv[6], NULL, 0);
+    int preselect_cmap_index = argc > 7 ? (int)strtol(argv[7], NULL, 10) : -1;
 
     unsigned char* data = NULL;
     long data_len = 0;
@@ -12897,7 +12943,8 @@ static int emit_cmap_cache_lookup(int argc, char** argv) {
         if (!first) {
             printf(",");
         }
-        print_cmap_lookup_row(manager, cache, &requester, cmap_index, char_code, repeat_lookup, lifecycle);
+        print_cmap_lookup_row(manager, cache, &requester, cmap_index, char_code,
+                              preselect_cmap_index, repeat_lookup, lifecycle);
         first = 0;
         cursor = next ? next + 1 : NULL;
     }
@@ -42549,7 +42596,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 9 && streq(argv[1], "--image-type-lookup-probe")) {
         return emit_image_type_lookup_probe(argc, argv);
     }
-    if (argc == 7 && streq(argv[1], "--cmap-cache-lookup")) {
+    if (argc == 8 && streq(argv[1], "--cmap-cache-lookup")) {
         return emit_cmap_cache_lookup(argc, argv);
     }
     if (argc == 5 && streq(argv[1], "--cmap-cache-new-route")) {

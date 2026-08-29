@@ -1473,6 +1473,48 @@ selected-run observations only; the non-exact merge and replacement-style
 negative percentages must not be read as full-denominator regression or
 coverage claims.
 
+### Batch 233: caller-selected CMap restoration
+
+This batch adds an explicit caller preselection to the public
+`FTC_CMapCache_Lookup` sequence. The IDs are intentionally distinct by code
+point so the reason for each input is reviewable; they do not change the
+coverage denominator or hide any existing case. The maintained font has
+charmap index 1 as a selectable format-6 map and index 2 as a selectable
+format-4 map; format-14 index 0 is not used because the public
+`FT_Set_Charmap` contract rejects it.
+
+| Variant ID | Public input difference | Why this input is expanded |
+|---|---|---|
+| `batch233-cmap-preselect-001` | Preselect index 1, query index 2, U+0041 | Mapped format-4 glyph; first positive witness for save/select/index/restore. |
+| `batch233-cmap-preselect-002` | Same maps, U+0042 | Second mapped glyph; confirms the restore is not tied to one cache value. |
+| `batch233-cmap-preselect-003` | Same maps, U+0020 | Format-6-only code queried through format 4; restore must still run when the glyph is zero. |
+| `batch233-cmap-preselect-004` | Same maps, U+0021 | Paired unmapped-code witness for the preceding boundary. |
+| `batch233-cmap-preselect-005` | Same maps, U+0000 | Lower-boundary code; exercises the same state transition with no glyph hit. |
+| `batch233-cmap-preselect-006` | Same maps, U+007F | ASCII upper-boundary code; keeps the input public and minimal. |
+| `batch233-cmap-preselect-007` | Same maps, U+00A0 | Upper single-byte boundary; distinguishes ordinary ASCII from extended input. |
+| `batch233-cmap-preselect-008` | Same maps, U+20AC | Extended Unicode code; checks that restore does not depend on byte-sized input. |
+| `batch233-cmap-preselect-009` | Same maps, U+FFFF | BMP upper-boundary code; exercises the public `FT_UInt32` path. |
+| `batch233-cmap-preselect-010` | Same maps, U+1F600 | Supplementary-plane code; completes the scalar-width boundary pair. |
+
+The pinned source review answers whether FreeType knowingly permits this
+sequence. In `freetype/src/cache/ftccmap.c:244-311`, a negative index is the
+special no-change form; a nonnegative valid index saves `face->charmap`,
+temporarily assigns the requested `face->charmaps[cmap_index]`, calls
+`FT_Get_Char_Index`, and restores the saved pointer. The restore is independent
+of whether the resulting glyph index is zero. The first implementation change
+therefore threads `preselect_cmap_index` through the parity adapters and the
+offline oracle; it does not alter the runtime's public behavior.
+
+Focused parity passed all 10 variants across Rust FFI, C ABI, WASM, and the
+pinned oracle. Coverage MCP run `68f7597b-2026-4f0e-bf02-a76b394b00e0` passed
+at pre-push commit `cbfcfa2d471538d595d3f1b70f472a8a397e10c` and ingested child
+snapshot `799a558e-0338-4723-aff4-de9bdba014fd` against explicit baseline
+`7405fcdf-db54-48a4-877f-eca87142b938`. Its supported additive review was a
+selected subset (`complete=false`); it observed the lookup body, but the
+bounded source review still marks the false side of the restoration condition
+at `fontdone-c-abi/src/implementation.rs:2088` unobserved. The selected-only
+line/region counters are not a full-denominator claim.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained

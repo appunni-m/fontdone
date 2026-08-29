@@ -500,6 +500,76 @@
             "coverage": [
               "ftcache.cmap_cache_lookup:explicit-cp57344"
             ]
+          },
+          {
+            "id": "batch233-cmap-preselect-001",
+            "assets": {"font": {"kind": "file", "role": "cmap_format_language_matrix", "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [2], "repeat_lookup": true, "char_code": 65, "preselect_cmap_index": 1},
+            "reason": "FreeType accepts caller-selected charmap index 1, temporarily selects requested index 2, and restores index 1 after the mapped lookup (freetype/src/cache/ftccmap.c:244-311).",
+            "coverage": ["batch233:cmap:preselect:001"]
+          },
+          {
+            "id": "batch233-cmap-preselect-002",
+            "assets": {"font": {"kind": "file", "role": "cmap_format_language_matrix", "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [2], "repeat_lookup": true, "char_code": 66, "preselect_cmap_index": 1},
+            "reason": "FreeType accepts the same public preselection sequence for a second mapped code and restores the caller's index-1 charmap after the index-2 lookup (freetype/src/cache/ftccmap.c:298-311).",
+            "coverage": ["batch233:cmap:preselect:002"]
+          },
+          {
+            "id": "batch233-cmap-preselect-003",
+            "assets": {"font": {"kind": "file", "role": "cmap_format_language_matrix", "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [2], "repeat_lookup": true, "char_code": 32, "preselect_cmap_index": 1},
+            "reason": "FreeType's public cache path permits preselection independently of glyph presence; this format-6-only code returns zero from the requested format-4 map but still drives restore after FT_Get_Char_Index (freetype/src/cache/ftccmap.c:292-315).",
+            "coverage": ["batch233:cmap:preselect:003"]
+          },
+          {
+            "id": "batch233-cmap-preselect-004",
+            "assets": {"font": {"kind": "file", "role": "cmap_format_language_matrix", "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [2], "repeat_lookup": true, "char_code": 33, "preselect_cmap_index": 1},
+            "reason": "FreeType saves and restores the preselected face charmap around a valid nonnegative cache index; this paired format-6-only code is a public unmapped-code witness (freetype/src/cache/ftccmap.c:298-311).",
+            "coverage": ["batch233:cmap:preselect:004"]
+          },
+          {
+            "id": "batch233-cmap-preselect-005",
+            "assets": {"font": {"kind": "file", "role": "cmap_format_language_matrix", "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [2], "repeat_lookup": true, "char_code": 0, "preselect_cmap_index": 1},
+            "reason": "FreeType does not require the preselected charmap to match the requested cache index; it temporarily selects index 2 and restores index 1 for the lower-boundary code (freetype/src/cache/ftccmap.c:298-311).",
+            "coverage": ["batch233:cmap:preselect:005"]
+          },
+          {
+            "id": "batch233-cmap-preselect-006",
+            "assets": {"font": {"kind": "file", "role": "cmap_format_language_matrix", "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [2], "repeat_lookup": true, "char_code": 127, "preselect_cmap_index": 1},
+            "reason": "FreeType performs the save/select/index/restore sequence for an ASCII boundary code when the face and both charmap indexes are valid (freetype/src/cache/ftccmap.c:292-315).",
+            "coverage": ["batch233:cmap:preselect:006"]
+          },
+          {
+            "id": "batch233-cmap-preselect-007",
+            "assets": {"font": {"kind": "file", "role": "cmap_format_language_matrix", "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [2], "repeat_lookup": true, "char_code": 160, "preselect_cmap_index": 1},
+            "reason": "FreeType's restore is independent of whether the selected cmap returns a glyph; this public code probes the extended single-byte boundary after temporary selection (freetype/src/cache/ftccmap.c:298-315).",
+            "coverage": ["batch233:cmap:preselect:007"]
+          },
+          {
+            "id": "batch233-cmap-preselect-008",
+            "assets": {"font": {"kind": "file", "role": "cmap_format_language_matrix", "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [2], "repeat_lookup": true, "char_code": 8364, "preselect_cmap_index": 1},
+            "reason": "FreeType accepts a multi-byte Unicode code through the same caller-charmap restoration contract, even when the selected format-4 map returns zero (freetype/src/cache/ftccmap.c:298-311).",
+            "coverage": ["batch233:cmap:preselect:008"]
+          },
+          {
+            "id": "batch233-cmap-preselect-009",
+            "assets": {"font": {"kind": "file", "role": "cmap_format_language_matrix", "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [2], "repeat_lookup": true, "char_code": 65535, "preselect_cmap_index": 1},
+            "reason": "FreeType permits a BMP upper-boundary lookup after the caller selects another valid charmap and restores that original charmap (freetype/src/cache/ftccmap.c:298-311).",
+            "coverage": ["batch233:cmap:preselect:009"]
+          },
+          {
+            "id": "batch233-cmap-preselect-010",
+            "assets": {"font": {"kind": "file", "role": "cmap_format_language_matrix", "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"}},
+            "params": {"scenario": "success_lookup_hit_and_repeat_hit", "cmap_indexes": [2], "repeat_lookup": true, "char_code": 128512, "preselect_cmap_index": 1},
+            "reason": "FreeType retains the caller's active charmap after a supplementary-plane cache lookup; the public contract still executes the restore arm (freetype/src/cache/ftccmap.c:298-315).",
+            "coverage": ["batch233:cmap:preselect:010"]
           }
         ]
       },

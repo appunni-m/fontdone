@@ -50553,6 +50553,7 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             args.push(cmap_cache_scenario(params)?);
             args.push(cmap_cache_indexes_arg(params)?);
             args.push(cmap_cache_char_code(params)?.to_string());
+            args.push(cmap_cache_preselect_index_arg(params)?);
             Ok(args)
         }
         "ftcache.cmap_cache_new" if !case.expect_error => {
@@ -67144,6 +67145,19 @@ fn rust_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
             if state.face.is_none() {
                 state.requester_count += 1;
                 state.face = Some(rust_new_face_from_bytes(state.bytes.as_ref(), 0)?);
+                if let Some(index) = cmap_cache_preselect_index(&case.inputs.params)? {
+                    let face = state
+                        .face
+                        .as_mut()
+                        .ok_or_else(|| "missing rust cmap cache face".to_string())?;
+                    let charmap = rust_face_charmap(face, index);
+                    let error = FT_Set_Charmap(Some(face), charmap);
+                    if error != FT_Err_Ok {
+                        return Err(format!(
+                            "Rust preselected charmap {index} returned {error}"
+                        ));
+                    }
+                }
             }
             let face = state
                 .face
@@ -67191,6 +67205,25 @@ fn c_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
                     c_abi::FTC_Manager_Reset(manager_handle);
                 }
                 CmapCacheStateChange::None => {}
+            }
+            if cmap_cache_preselect_index(&case.inputs.params)?.is_some() {
+                let mut face = ptr::null_mut();
+                let face_status = c_abi::FTC_Manager_LookupFace(manager_handle, face_id, &mut face);
+                if face_status != FT_Err_Ok {
+                    return Err(format!(
+                        "FTC_Manager_LookupFace for preselection returned {face_status}"
+                    ));
+                }
+                let index = cmap_cache_preselect_index(&case.inputs.params)?
+                    .ok_or_else(|| "missing CMap preselection index".to_string())?;
+                let charmap = c_abi::abi_charmap_by_index(face, index)
+                    .ok_or_else(|| format!("missing CMap preselection charmap {index}"))?;
+                let set_status = c_abi::FT_Set_Charmap(face, charmap);
+                if set_status != FT_Err_Ok {
+                    return Err(format!(
+                        "C ABI preselected charmap {index} returned {set_status}"
+                    ));
+                }
             }
             let glyph_index = c_abi::FTC_CMapCache_Lookup(cache, face_id, cmap_index, char_code);
             let mut face = std::ptr::null_mut();
@@ -67431,6 +67464,14 @@ fn wasm_cmap_cache_lookup(case: &InputCase) -> Result<RunOutput, String> {
             if state.handle == 0 {
                 state.requester_count += 1;
                 state.handle = wasm_new_face_from_bytes(state.bytes.as_ref(), 0)?;
+                if let Some(index) = cmap_cache_preselect_index(&case.inputs.params)? {
+                    let error = wasm_abi::fontdone_wasm_set_charmap(state.handle, index);
+                    if error != FT_Err_Ok {
+                        return Err(format!(
+                            "WASM preselected charmap {index} returned {error}"
+                        ));
+                    }
+                }
             }
             let cache_key = (cmap_index.max(0), char_code);
             let glyph_index = if let Some(glyph) = state.entries.get(&cache_key).copied() {
@@ -68137,6 +68178,17 @@ fn cmap_cache_char_code(params: &Value) -> Result<FT_UInt32, String> {
             .ok_or_else(|| "missing char_code".to_string())?,
         "char_code",
     )
+}
+
+fn cmap_cache_preselect_index(params: &Value) -> Result<Option<u32>, String> {
+    params
+        .get("preselect_cmap_index")
+        .map(|value| u32_value(value, "preselect_cmap_index"))
+        .transpose()
+}
+
+fn cmap_cache_preselect_index_arg(params: &Value) -> Result<String, String> {
+    Ok(cmap_cache_preselect_index(params)?.map_or_else(|| "-1".to_string(), |index| index.to_string()))
 }
 
 fn rust_cmap_cache_lookup_glyph(
