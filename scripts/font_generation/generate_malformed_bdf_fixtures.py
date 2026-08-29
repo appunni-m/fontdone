@@ -46,6 +46,21 @@ def write_fixture(relative: str, text: str) -> None:
     path.write_bytes(text.encode("ascii"))
 
 
+def pixel_size_property_fixture(pixel_size: str | None) -> str:
+    properties = ["FONT_ASCENT 6", "FONT_DESCENT 2", "POINT_SIZE 120"]
+    if pixel_size is not None:
+        properties.append(f"PIXEL_SIZE {pixel_size}")
+    return f'''STARTFONT 2.1
+FONT FontdonePixelSizeEdge
+SIZE 12 75 75
+FONTBOUNDINGBOX 8 8 0 -2
+STARTPROPERTIES {len(properties)}
+{chr(10).join(properties)}
+ENDPROPERTIES
+CHARS 1
+{VALID_GLYPH}'''
+
+
 def charset_registry_fixture(family: str, registry: str, encoding: str) -> str:
     return f'''STARTFONT 2.1
 FONT {family}
@@ -83,6 +98,22 @@ ENDFONT
 
 
 def main() -> None:
+    write_fixture(
+        "input/fonts/bdf/properties-missing-pixel-size.bdf",
+        pixel_size_property_fixture(None),
+    )
+    write_fixture(
+        "input/fonts/bdf/properties-zero-pixel-size.bdf",
+        pixel_size_property_fixture("0"),
+    )
+    write_fixture(
+        "input/fonts/bdf/properties-negative-pixel-size.bdf",
+        pixel_size_property_fixture("-12"),
+    )
+    write_fixture(
+        "input/fonts/bdf/properties-oversized-pixel-size.bdf",
+        pixel_size_property_fixture("40000"),
+    )
     write_fixture(
         "input/fonts/bdf/zero-glyphs-strike.bdf",
         """STARTFONT 2.1
