@@ -1396,6 +1396,83 @@ the selected-only replacement percentages and non-exact region fallback are
 not full-denominator claims.
 
 
+### Batch 232: malformed BDF numeric-property parity
+
+This batch deliberately exercises malformed-but-public BDF property lines. The
+question is whether the public `FT_Get_BDF_Property` route matches pinned
+FreeType, not whether a strict parser would choose to reject the input. Each
+fixture has one known integer or cardinal property, one malformed numeric token,
+and a stable concrete ID with its expansion reason in
+`tests/fixtures/inputs/public-api/ftbdf.FT_Get_BDF_Property.json`.
+
+| Variant ID | Property / raw token | Why this input is expanded |
+|---|---|---|
+| `int-average-width-no-value` | `AVERAGE_WIDTH` / empty | Verifies known signed integer with no digits becomes zero. |
+| `int-avg-capital-width-junk` | `AVG_CAPITAL_WIDTH` / `junk` | Verifies no leading digit becomes zero. |
+| `int-avg-lowercase-width-prefix` | `AVG_LOWERCASE_WIDTH` / `42tail` | Verifies decimal-prefix parsing and the first pre-fix divergence. |
+| `int-cap-height-negative-prefix` | `CAP_HEIGHT` / `-17tail` | Verifies an optional minus before a decimal prefix. |
+| `int-end-space-plus-sign` | `END_SPACE` / `+9` | Verifies that a leading plus is not consumed. |
+| `int-figure-width-hex-prefix` | `FIGURE_WIDTH` / `-0x1` | Verifies decimal-only parsing of a hexadecimal-looking token. |
+| `int-font-ascent-no-value` | `FONT_ASCENT` / empty | Verifies known no-value integer replacement with zero. |
+| `int-font-descent-prefix` | `FONT_DESCENT` / `12oops` | Verifies a signed decimal prefix with trailing junk. |
+| `int-italic-angle-real-prefix` | `ITALIC_ANGLE` / `3.5` | Verifies integer-prefix parsing before a decimal point. |
+| `int-max-space-i32-prefix` | `MAX_SPACE` / `2147483647tail` | Verifies the positive i32 boundary without token exhaustion. |
+| `int-min-space-i32-negative-prefix` | `MIN_SPACE` / `-2147483648tail` | Verifies the negative i32 boundary without token exhaustion. |
+| `int-norm-space-saturated-prefix` | `NORM_SPACE` / overflowing decimal | Verifies pinned signed saturation before public truncation. |
+| `int-pixel-size-no-digit` | `PIXEL_SIZE` / `junk` | Verifies a known no-digit integer is retained as zero. |
+| `int-point-size-prefix` | `POINT_SIZE` / `120oops` | Verifies the prefix survives face-size conversion. |
+| `int-quad-width-leading-zero-prefix` | `QUAD_WIDTH` / `007suffix` | Verifies leading zeroes and stop-at-junk behavior. |
+| `int-raw-ascent-negative-prefix` | `RAW_ASCENT` / `-7tail` | Verifies signed prefix storage for a raw metric. |
+| `int-raw-average-width-no-value` | `RAW_AVERAGE_WIDTH` / empty | Verifies no-value raw integer zero semantics. |
+| `int-raw-cap-height-prefix` | `RAW_CAP_HEIGHT` / `5x` | Verifies raw integer prefix retention. |
+| `int-raw-descent-plus-sign` | `RAW_DESCENT` / `+11` | Verifies plus-sign rejection in the signed parser. |
+| `int-raw-pixel-size-real-prefix` | `RAW_PIXEL_SIZE` / `16.0` | Verifies integer prefix of a real-looking token. |
+| `int-small-cap-size-prefix` | `SMALL_CAP_SIZE` / `4rest` | Verifies prefix parsing for another known integer. |
+| `int-strikeout-ascent-negative-prefix` | `STRIKEOUT_ASCENT` / `-3tail` | Verifies signed prefix retention for strikeout metrics. |
+| `int-subscript-x-prefix` | `SUBSCRIPT_X` / `9abc` | Verifies alphabetic trailing data is ignored. |
+| `int-underline-position-no-value` | `UNDERLINE_POSITION` / empty | Verifies known no-value underline metric becomes zero. |
+| `cardinal-default-char-no-value` | `DEFAULT_CHAR` / empty | Verifies known unsigned integer with no digits becomes zero. |
+| `cardinal-destination-prefix` | `DESTINATION` / `42tail` | Verifies unsigned decimal-prefix parsing. |
+| `cardinal-relative-setwidth-plus-sign` | `RELATIVE_SETWIDTH` / `+9` | Verifies unsigned parsing does not consume a plus sign. |
+| `cardinal-relative-weight-minus-sign` | `RELATIVE_WEIGHT` / `-1` | Verifies unsigned parsing does not consume a minus sign. |
+| `cardinal-resolution-x-prefix` | `RESOLUTION_X` / `75oops` | Verifies prefix parsing before resolution normalization. |
+| `cardinal-resolution-y-prefix` | `RESOLUTION_Y` / `96tail` | Verifies the matching Y-resolution path. |
+
+The source review answers the compatibility question directly. In the pinned
+FreeType tree, `freetype/src/bdf/bdflib.c:289-339` implements `bdf_atol_` and
+`bdf_atoul_`: they consume an optional minus only where applicable, return zero
+when no decimal digit is present, stop at the first non-digit, and saturate an
+overflowing prefix. `bdflib.c:608-720` retains the known property type and
+stores that parsed value; `bdflib.c:1135-1188` tokenizes the public BDF
+property line without rejecting the malformed numeric suffix. The public
+conversion is then exposed by `freetype/src/bdf/bdfdrivr.c:886-937`, through
+the service wrapper in `freetype/src/base/ftbdf.c:62-86`. Thus pinned FreeType
+is knowingly permissive for these public property tokens; the fixtures model
+observed behavior rather than inventing acceptance of bad input.
+
+The concrete pre-fix witness was
+`ftbdf.FT_Get_BDF_Property.batch232_bdf_malformed_numeric_prefixes@int-avg-lowercase-width-prefix`,
+using `input/fonts/bdf/malformed-numeric/batch232-03-avg_lowercase_width-prefix.bdf`.
+Pinned FreeType returned `OK` and integer `42` for `AVG_LOWERCASE_WIDTH 42tail`;
+the old Rust `raw_value.trim().parse::<i64>().ok()?` path in `src/font.rs`
+returned `Missing_Property` (error code 6). The fix adds source-matched signed
+and unsigned decimal-prefix parsers and keeps the known property rather than
+dropping it on parse error. Focused parity then passed all 30 variants across Rust
+FFI, C ABI, WASM, and the pinned oracle: 30 / 30 comparisons.
+
+Coverage MCP run `2b2f3b8e-4fe9-404c-b4b4-905b451c70fa` passed at pushed commit
+`edb6f0385e240aad4584825a4ed5aa7052b4f248` and ingested child snapshot
+`89a9d16c-80b6-4a93-97bc-39e2203570a8` against explicit baseline
+`7405fcdf-db54-48a4-877f-eca87142b938`. The explicit incremental review was
+supported with `measurement_scope=selected_subset` and `complete=false`; its
+baseline-union summary reported +2 covered functions, +931 covered regions,
+and no covered-line or covered-branch delta. The selected source projection
+identified the new parser/property paths in `src/font.rs:1057-1108`,
+`src/font.rs:1201-1296`, and `src/font.rs:1514-1586`. These are additive
+selected-run observations only; the non-exact merge and replacement-style
+negative percentages must not be read as full-denominator regression or
+coverage claims.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
@@ -1403,7 +1480,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,080 tracked paths and no symlinks.
+The canonical input tree currently contains 1,110 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -2371,7 +2448,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 88 | package, build, release, and facade contracts |
 | R03 | 1,754 | executable parity tests and public contracts |
-| R04 | 1,080 | licensed canonical fixture inputs |
+| R04 | 1,110 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 63 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -2379,7 +2456,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,060** | **all retained paths** |
+| **Total** | **3,090** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
