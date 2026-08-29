@@ -4260,7 +4260,7 @@
             },
             "coverage": [
               "fontdone-wasm/src/implementation.rs:2078-2084",
-              "src/tt/cff.rs:203-204"
+              "src/tt/cff.rs:205-207"
             ]
           },
           {
@@ -4293,7 +4293,7 @@
             },
             "coverage": [
               "fontdone-wasm/src/implementation.rs:2078-2084",
-              "src/tt/cff.rs:203-204"
+              "src/tt/cff.rs:205-207"
             ]
           },
           {
@@ -4326,7 +4326,7 @@
             },
             "coverage": [
               "fontdone-wasm/src/implementation.rs:2078-2084",
-              "src/tt/cff.rs:203-204"
+              "src/tt/cff.rs:205-207"
             ]
           },
           {
@@ -4359,7 +4359,7 @@
             },
             "coverage": [
               "fontdone-wasm/src/implementation.rs:2078-2084",
-              "src/tt/cff.rs:203-204"
+              "src/tt/cff.rs:205-207"
             ]
           },
           {
@@ -4392,7 +4392,7 @@
             },
             "coverage": [
               "fontdone-wasm/src/implementation.rs:2078-2084",
-              "src/tt/cff.rs:203-204"
+              "src/tt/cff.rs:205-207"
             ]
           }
         ]
@@ -4409,7 +4409,7 @@
         "stateful-cff-charstring"
       ],
       "metadata": {
-        "coverage_intent": "Five existing valid CFF Type 2 random-charstring variants exercise the post-error preservation route; five source-reviewed Adobe-selector variants additionally set the accepted zero random seed to reach the Rust CFF fallback at src/tt/cff.rs:203-204, subject to exact C/Rust/WASM parity."
+        "coverage_intent": "Five existing valid CFF Type 2 random-charstring variants exercise the post-error preservation route; five source-reviewed Adobe-selector variants additionally set the accepted zero random seed to reach the Rust CFF fallback at src/tt/cff.rs:205-207, subject to exact C/Rust/WASM parity."
       },
       "expectation": {
         "status": "build_dependent",
