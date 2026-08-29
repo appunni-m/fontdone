@@ -2415,6 +2415,17 @@ fn parse_type1_glyph_program(charstring: &[u8]) -> Result<Type1GlyphProgram, Fon
                 // whose last control coordinate is on the other axis.
                 let horizontal_first = op == 31;
                 let mut values = std::mem::take(&mut stack);
+                // FreeType's `psintrp.c` masks only the second operand-count
+                // bit before interpreting alternating curves.  One operand
+                // therefore still enters the curve loop, where
+                // `cf2_stack_getReal` records a stack bounds error; preserve
+                // that public Invalid_File_Format result instead of treating
+                // the lone trailing value as an accepted optional delta.
+                if values.len() == 1 {
+                    return Err(FontError::InvalidFileFormat(
+                        "Type 1 alternating curve stack underflow".into(),
+                    ));
+                }
                 if values.len() >= 4 {
                     type1_start_contour(&mut outline, &mut pending_move);
                 }

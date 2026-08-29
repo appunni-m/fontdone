@@ -1144,7 +1144,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,050 tracked paths and no symlinks.
+The canonical input tree currently contains 1,067 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -1866,6 +1866,27 @@ Coverage MCP run `38ad9143-3f0b-4c88-9cdf-9f85046b561f` used three repeated
 ingested snapshot `8a3e83ba-d244-4a8a-9167-a17922b18f3a`. Its bounded source
 review found no red regions from `fontdone-wasm/src/implementation.rs:2079-2089`.
 
+The malformed Type 1 alternating-curve batch was selected from the remaining
+`src/font.rs` no-point branch rather than from a guessed face-open guard. Each
+case is a compact project-authored `FT_Load_Glyph` input with a stable ID whose
+operand count records the reason for expansion:
+
+| Concrete public ID | Target and expansion reason | Pinned FreeType 2.14.3 result |
+|---|---|---|
+| `freetype.FT_Load_Glyph.default_load@mcp-type1-hvcurveto-single-operand-001` | `src/font.rs:2424`; one `hvcurveto` operand tests whether Rust matches the C stack-bounds error. | `psintrp.c:2841-2890` computes `count=1`, enters the curve loop, and `psstack.c:185-207` records `Stack_Overflow`; public load returns an error. |
+| `freetype.FT_Load_Glyph.default_load@mcp-type1-vhcurveto-single-operand-002` | `src/font.rs:2424`; the vertical-first counterpart proves the same guard for opcode 30. | The same masked-count and `cf2_stack_getReal` bounds path returns the public glyph-format error. |
+| `freetype.FT_Load_Glyph.default_load@mcp-type1-hvcurveto-two-operands-003` | `src/font.rs:2481`; two operands test the accepted malformed/no-point path instead of over-rejecting it. | `count=0`, `idx=2`, and the C curve loop is skipped, so FreeType accepts the no-op. |
+| `freetype.FT_Load_Glyph.default_load@mcp-type1-vhcurveto-two-operands-004` | `src/font.rs:2481`; vertical-first accepted no-op counterpart. | The same `count=0` masked-count behavior is accepted. |
+| `freetype.FT_Load_Glyph.default_load@mcp-type1-hvcurveto-three-operands-005` | `src/font.rs:2481`; three operands verify that the second count bit is masked and the no-point arm remains reachable. | `count=1`, `idx=2`, so the loop is skipped and FreeType accepts the no-op; it does not produce the initially hypothesized error. |
+
+The first focused run was intentionally performed before the Rust change: C
+rejected the two one-operand cases while Rust returned success, and C accepted
+the two- and three-operand cases. The implementation now rejects only
+`values.len() == 1`, preserving the C-accepted malformed counts. Focused parity
+then passed all five cases across the pinned oracle, Rust FFI, C ABI, and WASM.
+The fixture hashes and generator provenance are recorded in
+`tests/fixtures/input/fonts/PROVENANCE.md`.
+
 Confirmed runtime divergences fixed during the coverage loop are documented
 next to their implementations and must remain separate from coverage-only
 adoption claims:
@@ -2091,7 +2112,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 88 | package, build, release, and facade contracts |
 | R03 | 1,754 | executable parity tests and public contracts |
-| R04 | 1,046 | licensed canonical fixture inputs |
+| R04 | 1,072 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 63 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -2099,7 +2120,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,026** | **all retained paths** |
+| **Total** | **3,052** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
