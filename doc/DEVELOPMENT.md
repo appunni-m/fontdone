@@ -1566,6 +1566,75 @@ identities and the targeted CMap helper/adapter regions. Its merge is marked
 non-exact, so the selected-only counters are reachability evidence and not a
 replacement full-denominator percentage or regression claim.
 
++### Batch 235: malformed BDF SIZE decimal-prefix fixed-strike metadata
+
+This batch uses 30 distinct maintained BDF inputs through the public
+`freetype.FT_FaceRec.available_sizes_public_fields_match_c` parity operation.
+The input is malformed by design; each ID records exactly which `SIZE` token
+was expanded and why. The campaign is checking whether the pinned FreeType
+driver knowingly accepts the token and whether the Rust public
+`FT_Bitmap_Size` record matches it.
+
+| Concrete ID suffix | SIZE line | Why expand this input |
+|---|---|---|
+| `batch235-bdf-size-001` | `SIZE 12tail 75 75` | Stops point-size parsing at trailing alphabetic data while preserving the `12` prefix. |
+| `batch235-bdf-size-002` | `SIZE 12 75tail 75` | Stops X-resolution parsing at trailing alphabetic data while preserving the `75` prefix. |
+| `batch235-bdf-size-003` | `SIZE 12 75 96tail` | Stops Y-resolution parsing at trailing alphabetic data while preserving the `96` prefix. |
+| `batch235-bdf-size-004` | `SIZE 12tail 75tail 96tail` | Applies decimal-prefix parsing independently to all three malformed fields. |
+| `batch235-bdf-size-005` | `SIZE +12 75 75` | Confirms `bdf_atoul_` does not consume a leading plus sign. |
+| `batch235-bdf-size-006` | `SIZE -12 75 75` | Confirms `bdf_atoul_` does not consume a leading minus sign. |
+| `batch235-bdf-size-007` | `SIZE junk 75 75` | Confirms a no-digit point-size token becomes zero while the face remains openable. |
+| `batch235-bdf-size-008` | `SIZE 0 75 75` | Distinguishes an explicitly zero point size from a nonzero parsed strike. |
+| `batch235-bdf-size-009` | `SIZE 12 0 0` | Exercises zero X/Y resolutions and the no-resolution `x_ppem=y_ppem` fallback. |
+| `batch235-bdf-size-010` | `SIZE 12 75 0` | Exercises a zero Y resolution with a nonzero X resolution. |
+| `batch235-bdf-size-011` | `SIZE 12 0 75` | Exercises a zero X resolution with a nonzero Y resolution. |
+| `batch235-bdf-size-012` | `SIZE 12 75 99999` | Reaches the public resolution clamp for an oversized Y resolution. |
+| `batch235-bdf-size-013` | `SIZE 12 99999 75` | Reaches the public resolution clamp for an oversized X resolution. |
+| `batch235-bdf-size-014` | `SIZE 12 99999 99999` | Reaches both resolution clamps in the same accepted BDF header. |
+| `batch235-bdf-size-015` | `SIZE 12 75 75junk` | Stops a trailing suffix after the final resolution field. |
+| `batch235-bdf-size-016` | `SIZE 2147483648 75 75` | Reaches the point-size clamp for a value above `0x7fff`. |
+| `batch235-bdf-size-017` | `SIZE 32768 75 75` | Covers the first exact point-size value above the signed-short limit. |
+| `batch235-bdf-size-018` | `SIZE 32767 75 75` | Covers the largest non-clamped point size. |
+| `batch235-bdf-size-019` | `SIZE 32767tail 75 75` | Combines the non-clamped boundary with decimal-prefix suffix handling. |
+| `batch235-bdf-size-020` | `SIZE 999999999999999999999 75 75` | Reaches `bdf_atoul_` saturation from a very long positive prefix. |
+| `batch235-bdf-size-021` | `SIZE -999999999999999 75 75` | Confirms a very long negative-looking token has no unsigned digits and becomes zero. |
+| `batch235-bdf-size-022` | `SIZE +999999999999999 75 75` | Confirms a leading plus still yields zero even for a very long numeric tail. |
+| `batch235-bdf-size-023` | `SIZE 12 +75 75` | Confirms a leading plus on X resolution yields zero. |
+| `batch235-bdf-size-024` | `SIZE 12 -75 75` | Confirms a leading minus on X resolution yields zero. |
+| `batch235-bdf-size-025` | `SIZE 12 75 +75` | Confirms a leading plus on Y resolution yields zero. |
+| `batch235-bdf-size-026` | `SIZE 12 75 -75` | Confirms a leading minus on Y resolution yields zero. |
+| `batch235-bdf-size-027` | `SIZE 12 75 075suffix` | Preserves a zero-padded Y-resolution decimal prefix before its suffix. |
+| `batch235-bdf-size-028` | `SIZE 12 00000000000000000000075 75` | Preserves a zero-padded oversized X-resolution prefix and reaches its clamp. |
+| `batch235-bdf-size-029` | `SIZE 12 75 00000000000000000000096` | Preserves a zero-padded oversized Y-resolution prefix and reaches its clamp. |
+| `batch235-bdf-size-030` | `SIZE 00012 00075 00096` | Covers zero-padded prefixes in all three `SIZE` fields. |
+
+The pinned source review confirms that these are public, input-driven states.
+`freetype/src/bdf/bdflib.c:289-339` implements `bdf_atoul_`: it consumes
+decimal digits only, returns zero when the token has no leading digit, stops at
+the first non-digit, and saturates an overflowing prefix. The `SIZE` parser at
+`bdflib.c:1364-1401` applies that helper independently to point size and both
+resolutions without rejecting malformed suffixes. The public strike is then
+constructed at `freetype/src/bdf/bdfdrivr.c:435-602`: FreeType always exposes
+one `FT_Bitmap_Size`, clamps ascent/descent and resolutions, derives a
+heuristic width when `AVERAGE_WIDTH` is absent, and computes size and ppem
+fields from the parsed values. This is observed permissiveness in the pinned
+oracle, not a Rust-defined acceptance rule.
+
+The first focused case was
+`freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-001`.
+Before the fix, the pinned C route returned
+`{height:8,width:5,size:768,x_ppem:800,y_ppem:800}`, while Rust exposed no
+available-size record (`available_sizes[0] = null`). The cause was twofold:
+`parse_bdf_metadata` used strict `parse::<i32>()` for the first `SIZE`
+token, and `available_sizes_to_ffi` had no BDF branch. The implementation now
+uses the pinned decimal-prefix interpretation and builds the BDF fixed-strike
+record in `Font::bdf_bitmap_size`, including the C driver's fallback,
+clamping, and resolution formulas.
+
+After the fix, the 30 concrete IDs passed 30/30 through Rust FFI, C ABI, WASM,
+and the pinned FreeType oracle. Coverage MCP measurement is recorded below
+after the pushed checkpoint.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained

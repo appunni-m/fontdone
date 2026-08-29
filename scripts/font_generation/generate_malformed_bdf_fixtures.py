@@ -83,6 +83,19 @@ CHARS 1
 {VALID_GLYPH}'''
 
 
+def malformed_size_fixture(index: int, size_line: str) -> str:
+    return f'''STARTFONT 2.1
+FONT FontdoneBatch235BdfSize{index:02d}
+{size_line}
+FONTBOUNDINGBOX 8 8 0 -2
+STARTPROPERTIES 2
+FONT_ASCENT 6
+FONT_DESCENT 2
+ENDPROPERTIES
+CHARS 1
+{VALID_GLYPH}'''
+
+
 def charset_registry_fixture(family: str, registry: str, encoding: str) -> str:
     return f'''STARTFONT 2.1
 FONT {family}
@@ -120,6 +133,44 @@ ENDFONT
 
 
 def main() -> None:
+    malformed_size_variants = [
+        "SIZE 12tail 75 75",
+        "SIZE 12 75tail 75",
+        "SIZE 12 75 96tail",
+        "SIZE 12tail 75tail 96tail",
+        "SIZE +12 75 75",
+        "SIZE -12 75 75",
+        "SIZE junk 75 75",
+        "SIZE 0 75 75",
+        "SIZE 12 0 0",
+        "SIZE 12 75 0",
+        "SIZE 12 0 75",
+        "SIZE 12 75 99999",
+        "SIZE 12 99999 75",
+        "SIZE 12 99999 99999",
+        "SIZE 12 75 75junk",
+        "SIZE 2147483648 75 75",
+        "SIZE 32768 75 75",
+        "SIZE 32767 75 75",
+        "SIZE 32767tail 75 75",
+        "SIZE 999999999999999999999 75 75",
+        "SIZE -999999999999999 75 75",
+        "SIZE +999999999999999 75 75",
+        "SIZE 12 +75 75",
+        "SIZE 12 -75 75",
+        "SIZE 12 75 +75",
+        "SIZE 12 75 -75",
+        "SIZE 12 75 075suffix",
+        "SIZE 12 00000000000000000000075 75",
+        "SIZE 12 75 00000000000000000000096",
+        "SIZE 00012 00075 00096",
+    ]
+    for index, size_line in enumerate(malformed_size_variants, start=1):
+        write_fixture(
+            f"input/fonts/bdf/malformed-size/batch235-{index:02d}.bdf",
+            malformed_size_fixture(index, size_line),
+        )
+
     malformed_numeric_variants = [
         ("AVERAGE_WIDTH", None, "no-value"),
         ("AVG_CAPITAL_WIDTH", "junk", "junk"),

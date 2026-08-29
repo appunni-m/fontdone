@@ -557,6 +557,1836 @@
           "freetype/src/type1/t1afm.c:229-313"
         ]
       }
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-001",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-01.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-002",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-02.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-003",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-03.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-004",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-04.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-005",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-05.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-006",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-06.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-007",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-07.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-008",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-08.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-009",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-09.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-010",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-10.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-011",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-11.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-012",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-12.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-013",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-13.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-014",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-14.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-015",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-15.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-016",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-16.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-017",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-17.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-018",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-18.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-019",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-19.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-020",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-20.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-021",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-21.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-022",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-22.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-023",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-23.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-024",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-24.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-025",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-25.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-026",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-26.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-027",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-27.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-028",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-28.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-029",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-29.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_public_fields_match_c@batch235-bdf-size-030",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/malformed-size/batch235-30.bdf"
+          },
+          "control_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf"
+          }
+        },
+        "params": {
+          "open": "FT_New_Memory_Face",
+          "face_index": 0,
+          "probe": [
+            "face.num_fixed_sizes",
+            "face.available_sizes[]"
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:malformed_bdf_size",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        }
+      },
+      "source_refs": [
+        "freetype/src/bdf/bdflib.c:289-339",
+        "freetype/src/bdf/bdflib.c:1364-1401",
+        "freetype/src/bdf/bdfdrivr.c:435-602"
+      ]
     }
   ]
 }

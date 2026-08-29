@@ -49,7 +49,7 @@ campaign.
 | `build_render_fixtures.py` | Synthetic | Project-authored outlines and TrueType programs. |
 | `build_type1_fixtures.py` | Synthetic | Project-authored Type 1 charstrings, dictionaries, AFM data, notices, a naked CID-keyed Type 1 resource, six valid no-op movement/curve controls, and a valid post-contour `setcurrentpoint` control. |
 | `build_type42_fixtures.py` | Synthetic | Project-authored embedded TrueType tables, outlines, names, and Type 42 wrapper. |
-| `generate_malformed_bdf_fixtures.py` | Synthetic | Project-authored BDF text, including valid atom/integer/cardinal property controls, malformed constructor variants, and the Batch232 numeric-prefix/no-value/sign/saturation property matrix. |
+| `generate_malformed_bdf_fixtures.py` | Synthetic | Project-authored BDF text, including valid atom/integer/cardinal property controls, malformed constructor variants, the Batch232 numeric-prefix/no-value/sign/saturation property matrix, and the Batch235 malformed `SIZE` decimal-prefix fixed-strike matrix. |
 | `generate_winfnt_fixtures.py` | Synthetic | Project-authored binary WinFNT records and bitmap data, including short-header and declared-size validation controls. |
 | `build_cpal_palette_fixtures.py` | Derived | `tests/fixtures/input/fonts/DejaVuSans.ttf`; DejaVu/Bitstream terms remain applicable. |
 | `build_cmap_fixtures.py` | Synthetic derivative | Repository-generated `hinter-control-matrix.ttf`; only cmap/table mutations, including maintained malformed format-13 and format-14 parser matrices beside valid format-6 controls. |

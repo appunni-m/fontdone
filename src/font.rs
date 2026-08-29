@@ -226,6 +226,15 @@ pub(crate) struct WinFntBitmapSize {
     pub(crate) y_ppem: i32,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct BdfBitmapSize {
+    pub(crate) height: i16,
+    pub(crate) width: i16,
+    pub(crate) size: i32,
+    pub(crate) x_ppem: i32,
+    pub(crate) y_ppem: i32,
+}
+
 fn winfnt_bitmap_size(header: WinFntHeader) -> WinFntBitmapSize {
     // FreeType 2.14.3 `fnt_face_get_dll_font` constructs the single public
     // strike from these header fields.  Preserve its `FT_MulDiv`,
@@ -1097,6 +1106,17 @@ fn parse_bdf_unsigned_decimal_prefix(raw_value: &str) -> u64 {
         }
     }
     value
+}
+
+fn bdf_bitmap_resolution(property: Option<u64>, header: u64) -> i32 {
+    let value = property.unwrap_or(header);
+    if value == 0 {
+        0
+    } else if value > 0x7fff {
+        0x7fff
+    } else {
+        value as i32
+    }
 }
 
 fn parse_bdf_property_line(line: &str) -> Option<BdfPropertyEntry> {
@@ -4928,6 +4948,114 @@ impl Font {
             FaceKind::WinFnt { header } => Some(winfnt_bitmap_size(header)),
             _ => None,
         }
+    }
+
+    /// Build the single public BDF strike from the same permissive metadata
+    /// rules as `bdf/bdfdrivr.c:BDF_Face_Init`.
+    pub(crate) fn bdf_bitmap_size(&self) -> Option<BdfBitmapSize> {
+        if self.face_kind != FaceKind::Bdf {
+            return None;
+        }
+
+        let property_integer = |name: &str| {
+            self.bdf_properties.iter().find_map(|property| {
+                (property.name == name).then_some(match &property.value {
+                    BdfPropertyValue::Integer(value) => Some(i64::from(*value)),
+                    BdfPropertyValue::Cardinal(value) => Some(i64::from(*value)),
+                    BdfPropertyValue::Atom(_) => None,
+                })?
+            })
+        };
+        let property_cardinal = |name: &str| {
+            self.bdf_properties.iter().find_map(|property| {
+                (property.name == name).then_some(match &property.value {
+                    BdfPropertyValue::Cardinal(value) => Some(u64::from(*value)),
+                    BdfPropertyValue::Integer(value) => u64::try_from(*value).ok(),
+                    BdfPropertyValue::Atom(_) => None,
+                })?
+            })
+        };
+        let size_header = self
+            .data
+            .raw_data
+            .split(|byte| *byte == b'\n' || *byte == b'\r')
+            .filter_map(|line| std::str::from_utf8(line).ok())
+            .filter_map(|line| line.strip_prefix("SIZE "))
+            .map(|line| {
+                let mut values = line.split_whitespace();
+                (
+                    parse_bdf_unsigned_decimal_prefix(values.next().unwrap_or("")),
+                    parse_bdf_unsigned_decimal_prefix(values.next().unwrap_or("")),
+                    parse_bdf_unsigned_decimal_prefix(values.next().unwrap_or("")),
+                )
+            })
+            .last()
+            .unwrap_or((0, 0, 0));
+
+        let fallback_ascent = i32::from(self.data.head.y_max);
+        let fallback_descent = i32::from(self.data.head.y_min).saturating_neg();
+        let ascent = property_integer("FONT_ASCENT")
+            .map_or(i64::from(fallback_ascent), |value| value)
+            .clamp(0, 0x7fff) as i32;
+        let descent = property_integer("FONT_DESCENT")
+            .map_or(i64::from(fallback_descent), |value| value)
+            .clamp(0, 0x7fff) as i32;
+        let height = i16_from_i32(ascent + descent);
+
+        let width = property_integer("AVERAGE_WIDTH")
+            .map_or_else(
+                || (i32::from(height) * 2 + 1) / 3,
+                |value| {
+                    if value > i64::from(0x7fff * 10 - 5) || value < -i64::from(0x7fff * 10 - 5) {
+                        0x7fff
+                    } else {
+                        i32::from(i16_from_i32(((value + 5) / 10) as i32)).abs()
+                    }
+                },
+            )
+            .clamp(0, 0x7fff);
+
+        let size = match property_integer("POINT_SIZE") {
+            Some(value) if value.unsigned_abs() > 0x504c2 => 0x7fff,
+            Some(value) => ft_mul_div(value.unsigned_abs() as i32, 64 * 7200, 72270),
+            None if size_header.0 != 0 => {
+                if size_header.0 > 0x7fff {
+                    0x7fff
+                } else {
+                    i32::try_from(size_header.0 << 6).unwrap_or(i32::MAX)
+                }
+            }
+            None => width * 64,
+        };
+
+        let mut y_ppem = property_integer("PIXEL_SIZE").map_or(0, |value| {
+            if value.unsigned_abs() > 0x7fff {
+                0x7fff << 6
+            } else {
+                (value.unsigned_abs() as i32) << 6
+            }
+        });
+        let resolution_x = bdf_bitmap_resolution(property_cardinal("RESOLUTION_X"), size_header.1);
+        let resolution_y = bdf_bitmap_resolution(property_cardinal("RESOLUTION_Y"), size_header.2);
+        if y_ppem == 0 {
+            y_ppem = size;
+            if resolution_y != 0 {
+                y_ppem = ft_mul_div(y_ppem, resolution_y, 72);
+            }
+        }
+        let x_ppem = if resolution_x != 0 && resolution_y != 0 {
+            ft_mul_div(y_ppem, resolution_x, resolution_y)
+        } else {
+            y_ppem
+        };
+
+        Some(BdfBitmapSize {
+            height,
+            width: i16_from_i32(width),
+            size,
+            x_ppem,
+            y_ppem,
+        })
     }
 
     /// Return one parsed BDF font property for bitmap BDF faces.

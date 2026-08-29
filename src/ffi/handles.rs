@@ -14306,6 +14306,16 @@ fn parse_tt_pclt(data: &[u8]) -> Option<TT_PCLT> {
 }
 
 fn available_sizes_to_ffi(font: &crate::font::Font) -> Box<[FT_Bitmap_Size]> {
+    if let Some(size) = font.bdf_bitmap_size() {
+        return Box::new([FT_Bitmap_Size {
+            height: size.height,
+            width: size.width,
+            size: FT_Pos::from(size.size),
+            x_ppem: FT_Pos::from(size.x_ppem),
+            y_ppem: FT_Pos::from(size.y_ppem),
+        }]);
+    }
+
     if let Some(sbit) = font.data.sbit.as_ref() {
         // `sfnt_init_face` builds FT_Bitmap_Size records from every valid
         // EBLC/CBLC strike.  A missing OS/2 table uses FreeType's sentinel
