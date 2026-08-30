@@ -1866,6 +1866,48 @@ stream: bytes 0--31 are operators and every byte from 32 through 255 is
 handled by a preceding number arm. These are documented defensive branches,
 not fabricated parity inputs.
 
+### Batch 240: rendered empty-outline SBit descriptors
+
+This batch followed the same source-review rule, but targeted the public
+`FTC_SBitCache_Lookup` route with an empty-outline glyph rather than a direct
+cache or renderer unit call. The maintained input is
+`input/fonts/autohint/latin-empty-standard.ttf`; glyphs 1 (`space`) and 2
+(`latin_o_empty`) have empty outlines. Thirty concrete IDs cover those glyphs
+at 8x8, 16x12, and 24x16 sizes with `FT_LOAD_DEFAULT`, `FT_LOAD_NO_HINTING`,
+`FT_LOAD_TARGET_LIGHT`, `FT_LOAD_TARGET_MONO`, and `FT_LOAD_RENDER`. Each ID
+uses one lookup and requests a newly allocated node, matching the oracle's
+public cache contract.
+
+| Concrete ID family | Why expand this input | Pinned FreeType review | Result and target |
+|---|---|---|---|
+| `b240-sbit-empty-outline-g1-*` and `b240-sbit-empty-outline-g2-*` | Exercise successful SBit conversion when the rendered glyph has no outline and therefore has a null bitmap buffer. The target is the successful empty descriptor, including its pixel mode and cache-node state. | `freetype/src/cache/ftcbasic.c:141-149` always adds `FT_LOAD_RENDER` to the family load flags. `freetype/src/cache/ftcsbits.c:90-98` treats only allocation failure as a lookup error, while `:165-189` copies the rendered bitmap descriptor and buffer into the SBit record. A direct pinned-oracle MONO lookup produces a 1x1 bitmap with pitch 2 and bytes `0000`. | Focused parity passed 30/30 on Rust FFI, the C ABI, WASM, and the pinned oracle. Coverage MCP marks `fontdone-c-abi/src/implementation.rs:2379` newly covered. |
+
+The first focused attempt exposed a test-contract mismatch rather than a
+runtime mismatch: the oracle generator treats a new logical scenario as a
+non-null node request, so the variants were corrected to use `anode_output:
+"nonnull"` and no repeat lookup. The next attempt exposed the behavioral
+divergence: both Rust cache implementations loaded the glyph without the
+cache family's render flag, then rendered it in normal grayscale mode. For a
+MONO target that produced an empty buffer instead of the pinned 1x1 MONO
+descriptor. The fix ORs `FT_LOAD_RENDER` into the load flags in
+`src/ffi/handles.rs` and `fontdone-c-abi/src/implementation.rs`, preserving
+the caller's target-mode bits. The C ABI empty-render predicate also now
+checks the adapter's C-visible `FT_PIXEL_MODE_GRAY` descriptor instead of
+treating pixel mode zero as the successful case.
+
+Coverage MCP run `db67f825-7853-446c-9bf4-567dfee73464` passed and ingested
+snapshot `11db54cd-e0b9-4d14-9b65-e185f677bafe` against explicit baseline
+`df2e52bb-a159-44d0-9e83-88cb5c9ea49a`. It used eight repeatable
+`--migration-coverage-case-ids` arguments to select all 30 concrete IDs and
+ran three 10-case shards with no pending cases. The explicit compact review
+reports the C ABI target region as newly covered. Its selected-subset scope is
+`complete=false`, the merge is `exact=false`, and the replacement diff is
+`claim_status=limited`; this is additive reachability evidence, not a full
+denominator or strict-100% claim. As in earlier batches, the stored measurement
+metadata retains source commit
+`f0b1ce7522edcd151a699923b9eae0df6dbca0ef`, while command provenance records
+the pushed implementation commit `9608b1f`.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
@@ -1873,7 +1915,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,142 tracked paths and no symlinks.
+The canonical input tree currently contains 1,145 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
