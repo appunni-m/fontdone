@@ -1908,6 +1908,38 @@ metadata retains source commit
 `f0b1ce7522edcd151a699923b9eae0df6dbca0ef`, while command provenance records
 the pushed implementation commit `9608b1f`.
 
+### Batch 241: BDF strike-size clamp boundaries
+
+This batch followed the source-first input expansion rule for the remaining
+source-reachable BDF strike metadata branches in `src/font.rs:4953-5058`.
+Thirty maintained BDF faces under
+`tests/fixtures/input/fonts/bdf/malformed-strike-size/` exercise the public
+`freetype.inspect_available_sizes` route. The faces keep a valid glyph and
+vary only the public BDF metadata that `BDF_Face_Init` consumes: exact and
+near-boundary `AVERAGE_WIDTH` values, positive and negative clamps, decimal
+prefixes, no-value and plus-sign forms, and the corresponding
+`POINT_SIZE` boundaries and malformed forms. Three final variants combine
+both fields so the two clamps are observed together.
+
+| Concrete ID family | Why expand this input | Pinned FreeType review | Result and target |
+|---|---|---|---|
+| `freetype.FT_FaceRec.available_sizes_bdf_strike_size_clamp_batch241@batch241-bdf-strike-01` through `-015` | Reach the `AVERAGE_WIDTH` strike-width boundary and its signed, prefix, no-value, and non-clamping neighbors through a public `FT_FaceRec.available_sizes` observation. | `freetype/src/bdf/bdflib.c:289-339` makes integer properties decimal-prefix and minus-sign tolerant. `freetype/src/bdf/bdfdrivr.c:472-493` clamps values outside `0x7fff * 10 - 5` (327665) to `0x7fff`; otherwise it rounds the decipoint value and takes its absolute value. | 15/15 exact parity cases passed. The selected source projection reaches the clamp body at `src/font.rs:5010`; the incremental union reports that line as newly covered. |
+| `...@batch241-bdf-strike-16` through `-027` | Reach the `POINT_SIZE` conversion boundary, both signs, decimal-prefix handling, and the zero/no-value/plus-sign outcomes while preserving a loadable face. | `freetype/src/bdf/bdfdrivr.c:495-520` converts point size with `FT_MulDiv` unless the absolute raw value exceeds `0x504C2` (328898), in which case it stores `0x7fff`. The property parser at `bdflib.c:608-720` supplies the raw signed decimal value. | 12/12 exact parity cases passed. The selected source projection reaches the oversized `src/font.rs:5019` arm with no C/Rust/WASM mismatch. |
+| `...@batch241-bdf-strike-28` through `-030` | Confirm both clamp rules and the exact threshold values in one public strike record, including a signed mixed-boundary case. | The same `BDF_Face_Init` width and point-size rules are applied independently before PPEM derivation in `bdfdrivr.c:521-602`. | 3/3 exact parity cases passed; no additional Rust behavior fix was needed. |
+
+Coverage MCP run `dac789ec-cd54-477c-ba85-f457cf67ce20` passed and ingested
+snapshot `5e781671-3317-4358-b621-b4bd74312745` against explicit baseline
+`df2e52bb-a159-44d0-9e83-88cb5c9ea49a`. It used ten repeatable
+`--migration-coverage-case-ids` arguments, three comma-separated concrete IDs
+per argument, and ran three 10-case shards. The exact incremental target
+review reports `src/font.rs:5010` newly covered; the selected source review
+reaches both the average-width and point-size clamp arms, and all 30 cases
+agree across Rust, the C ABI, WASM, and the pinned oracle. The selected scope
+is `complete=false`, the replacement diff is limited, and the merge is not
+exact; unselected baseline observations are `not_observed`, not regressions.
+This is additive reachability evidence, not a full-denominator percentage or
+a strict-100% claim.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained

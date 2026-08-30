@@ -2387,6 +2387,805 @@
         "freetype/src/bdf/bdflib.c:1364-1401",
         "freetype/src/bdf/bdfdrivr.c:435-602"
       ]
+    },
+    {
+      "case_id": "freetype.FT_FaceRec.available_sizes_bdf_strike_size_clamp_batch241",
+      "subject": "freetype.FT_FaceRec",
+      "case": "available_sizes_public_fields_match_c",
+      "operation": "freetype.inspect_available_sizes",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "batch241-bdf-strike-01-avg-boundary-positive",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:average-width-boundary"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-01.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-02-avg-clamp-positive",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:average-width-positive-clamp"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-02.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-03-avg-clamp-positive-suffix",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/parser:average-width-decimal-prefix-clamp"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-03.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-04-avg-clamp-positive-large",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:average-width-large-positive-clamp"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-04.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-05-avg-near-boundary-positive",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:average-width-positive-nonclamp"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-05.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-06-avg-boundary-negative",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:average-width-negative-boundary"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-06.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-07-avg-clamp-negative",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:average-width-negative-clamp"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-07.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-08-avg-clamp-negative-suffix",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/parser:average-width-negative-prefix-clamp"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-08.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-09-avg-clamp-negative-large",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:average-width-large-negative-clamp"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-09.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-10-avg-near-boundary-negative",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:average-width-negative-nonclamp"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-10.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-11-avg-zero",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:average-width-zero"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-11.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-12-avg-negative-one",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:average-width-negative-absolute-value"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-12.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-13-avg-no-value",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/parser:average-width-no-value"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-13.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-14-avg-plus-sign",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/parser:average-width-plus-sign"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-14.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-15-avg-decimal-prefix",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH strike metadata rule at 0x7fff * 10 - 5 (327665); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/parser:average-width-decimal-prefix"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-15.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-16-point-boundary-positive",
+            "reason": "Pinned FreeType BDF_Face_Init applies the POINT_SIZE strike metadata rule at 0x504C2 (328898); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:point-size-boundary"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-16.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-17-point-clamp-positive",
+            "reason": "Pinned FreeType BDF_Face_Init applies the POINT_SIZE strike metadata rule at 0x504C2 (328898); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:point-size-positive-clamp"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-17.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-18-point-clamp-positive-suffix",
+            "reason": "Pinned FreeType BDF_Face_Init applies the POINT_SIZE strike metadata rule at 0x504C2 (328898); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/parser:point-size-decimal-prefix-clamp"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-18.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-19-point-clamp-positive-large",
+            "reason": "Pinned FreeType BDF_Face_Init applies the POINT_SIZE strike metadata rule at 0x504C2 (328898); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:point-size-large-positive-clamp"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-19.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-20-point-boundary-negative",
+            "reason": "Pinned FreeType BDF_Face_Init applies the POINT_SIZE strike metadata rule at 0x504C2 (328898); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:point-size-negative-boundary"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-20.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-21-point-clamp-negative",
+            "reason": "Pinned FreeType BDF_Face_Init applies the POINT_SIZE strike metadata rule at 0x504C2 (328898); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:point-size-negative-clamp"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-21.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-22-point-clamp-negative-suffix",
+            "reason": "Pinned FreeType BDF_Face_Init applies the POINT_SIZE strike metadata rule at 0x504C2 (328898); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/parser:point-size-negative-prefix-clamp"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-22.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-23-point-clamp-negative-large",
+            "reason": "Pinned FreeType BDF_Face_Init applies the POINT_SIZE strike metadata rule at 0x504C2 (328898); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:point-size-large-negative-clamp"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-23.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-24-point-zero",
+            "reason": "Pinned FreeType BDF_Face_Init applies the POINT_SIZE strike metadata rule at 0x504C2 (328898); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:point-size-zero"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-24.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-25-point-no-value",
+            "reason": "Pinned FreeType BDF_Face_Init applies the POINT_SIZE strike metadata rule at 0x504C2 (328898); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/parser:point-size-no-value"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-25.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-26-point-plus-sign",
+            "reason": "Pinned FreeType BDF_Face_Init applies the POINT_SIZE strike metadata rule at 0x504C2 (328898); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/parser:point-size-plus-sign"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-26.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-27-point-decimal-prefix",
+            "reason": "Pinned FreeType BDF_Face_Init applies the POINT_SIZE strike metadata rule at 0x504C2 (328898); this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/parser:point-size-decimal-prefix"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-27.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-28-both-positive-clamps",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH and POINT_SIZE strike metadata rule at the respective BDF_Face_Init thresholds; this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:average-and-point-positive-clamps"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-28.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-29-both-negative-clamps",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH and POINT_SIZE strike metadata rule at the respective BDF_Face_Init thresholds; this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:average-and-point-negative-clamps"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-29.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          },
+          {
+            "id": "batch241-bdf-strike-30-mixed-boundaries",
+            "reason": "Pinned FreeType BDF_Face_Init applies the AVERAGE_WIDTH and POINT_SIZE strike metadata rule at the respective BDF_Face_Init thresholds; this public inspect_available_sizes case preserves the loadable face so FT_FaceRec.available_sizes exposes the exact clamp or boundary result.",
+            "coverage": [
+              "bdf/driver:average-and-point-boundaries"
+            ],
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-strike-size/batch241-30.bdf"
+              },
+              "control_font": {
+                "kind": "ref",
+                "id": "input/fonts/LiberationSerif-Regular.ttf"
+              }
+            },
+            "params": {
+              "open": "FT_New_Memory_Face",
+              "face_index": 0,
+              "probe": [
+                "face.num_fixed_sizes",
+                "face.available_sizes[]"
+              ]
+            }
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:record",
+        "header:freetype",
+        "runtime:public_record",
+        "input:bdf_strike_size_boundaries",
+        "route:exact"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "num_fixed_sizes": "FT_Int",
+          "available_sizes": "array<FT_Bitmap_Size>",
+          "control_available_sizes": "null_or_empty"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "num_fixed_sizes",
+            "available_sizes[].height",
+            "available_sizes[].width",
+            "available_sizes[].size",
+            "available_sizes[].x_ppem",
+            "available_sizes[].y_ppem",
+            "control_num_fixed_sizes",
+            "control_available_sizes_nullness"
+          ]
+        },
+        "fixture_requirements": [
+          "Thirty loadable BDF faces with boundary, clamp, negative, and malformed numeric strike properties."
+        ],
+        "source_refs": [
+          "freetype/src/bdf/bdflib.c:289-339",
+          "freetype/src/bdf/bdflib.c:608-720",
+          "freetype/src/bdf/bdfdrivr.c:435-602",
+          "src/font.rs:4953-5058"
+        ]
+      }
     }
   ]
 }
