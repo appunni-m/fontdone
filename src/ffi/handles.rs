@@ -3250,7 +3250,11 @@ fn ftc_sbit_cache_fill(
     if size_error != FT_Err_Ok {
         return Err(size_error);
     }
-    let slot = match FT_Load_Glyph(&cache.face, key.glyph_index, key.flags) {
+    // `src/cache/ftcbasic.c` always adds FT_LOAD_RENDER to the family load
+    // flags. Keep the target-mode bits from the caller so mono and LCD cache
+    // lookups select the same renderer as the pinned C implementation.
+    let load_flags = key.flags | FT_LOAD_RENDER;
+    let slot = match FT_Load_Glyph(&cache.face, key.glyph_index, load_flags) {
         Ok(slot) => slot,
         Err(_error) => {
             // FreeType's `ftc_snode_load` converts every glyph-load failure

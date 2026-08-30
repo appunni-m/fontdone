@@ -3268,6 +3268,8 @@ subjects:
         description: The sbit output and optional anode output are set to null before lookup, including failing lookup paths.
       - id: returns_cache_owned_sbit
         description: A successful lookup returns a cache-owned FTC_SBitRec whose bitmap metrics, pitch, format, advances, buffer pointer/null status, and bytes match C.
+      - id: batch240_rendered_empty_outline_descriptor
+        description: Empty outline glyphs that render successfully through the cache preserve the C-visible zero-sized Gray descriptor and null buffer across load-mode and size variants.
       - id: optional_anode_locks_node
         description: A non-null anode output receives the cache node and increments its reference count until FTC_Node_Unref releases it.
       - id: missing_bitmap_has_null_buffer

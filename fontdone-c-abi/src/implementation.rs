@@ -2331,7 +2331,11 @@ fn ftc_sbit_cache_lookup_impl(
     if FT_Long::from(key.glyph_index) >= unsafe { (*face).num_glyphs } {
         return rust_ffi::FT_Err_Invalid_Argument;
     }
-    let error = FT_Load_Glyph(face, key.glyph_index, ftc_load_flags(key.load_flags));
+    // `src/cache/ftcbasic.c` always adds FT_LOAD_RENDER to the family load
+    // flags. Keep the target-mode bits from the caller so mono and LCD cache
+    // lookups select the same renderer as the pinned C implementation.
+    let load_flags = ftc_load_flags(key.load_flags) | rust_ffi::FT_LOAD_RENDER;
+    let error = FT_Load_Glyph(face, key.glyph_index, load_flags);
     if error != rust_ffi::FT_Err_Ok {
         // `ftcsbits.c` suppresses every non-OOM glyph-load error and caches
         // it as an unavailable SBit sentinel with a successful lookup.
@@ -2375,7 +2379,9 @@ fn ftc_sbit_cache_lookup_impl(
     let rendered_empty_bitmap = slot.bitmap.width == 0
         && slot.bitmap.rows == 0
         && slot.bitmap.buffer.is_null()
-        && slot.bitmap.pixel_mode == 0
+        // `rust_slot_to_abi` restores the C-visible Gray descriptor for a
+        // successful empty-outline render, even though its buffer is null.
+        && slot.bitmap.pixel_mode == rust_ffi::FT_PIXEL_MODE_GRAY as FT_Byte
         && !missing_bitmap;
     let row_bytes = usize::try_from(slot.bitmap.pitch.unsigned_abs()).unwrap_or(0);
     let rows = usize::try_from(slot.bitmap.rows).unwrap_or(0);
