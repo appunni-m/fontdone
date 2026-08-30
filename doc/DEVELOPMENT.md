@@ -1647,6 +1647,83 @@ observations not observed by the selected run. Test attribution was
 unavailable. These are reachability/additive observations only, not a
 full-denominator percentage.
 
+### Batch 236: malformed public outline tags reach renderer error returns
+
+This batch uses 30 distinct public `FT_Glyph_To_Bitmap` inputs whose outline
+counts and contour endpoints remain valid while the public tag array is
+malformed. The C, Rust FFI, C ABI, and WASM routes all extract an outline glyph,
+apply the same tag-only mutation, request the selected renderer, and compare
+the exact `FT_Err_Invalid_Outline` result and unchanged caller-handle class.
+The cases cover normal gray, overlap-normal, and SDF renderers, three distinct
+tag-sequence failures, several outline shapes or sizes, and both `destroy`
+values.
+
+| Concrete ID suffix | Renderer/input variation | Why expand this input |
+|---|---|---|
+| `batch236-normal-first-cubic-g36-destroy-false` | normal; DejaVu glyph 36; 16 ppem; first tag cubic; destroy=false | Reaches the normal renderer with a structurally valid outline whose first tag is an invalid cubic start. |
+| `batch236-normal-first-cubic-g36-destroy-true` | normal; glyph 36; 20 ppem; first tag cubic; destroy=true | Checks that the same renderer error preserves the caller glyph under delayed destruction. |
+| `batch236-normal-first-cubic-g43-destroy-false` | normal; glyph 43; 16 ppem; first tag cubic; destroy=false | Separates the first-cubic guard from one glyph's outline geometry. |
+| `batch236-normal-first-cubic-g43-destroy-true` | normal; glyph 43; 20 ppem; first tag cubic; destroy=true | Pairs the alternate glyph with the ownership-preservation observation. |
+| `batch236-normal-first-cubic-g74-destroy-false` | normal; glyph 74; 18 ppem; first tag cubic; destroy=false | Exercises the same tag guard with a larger outline and raster box. |
+| `batch236-normal-first-cubic-g74-destroy-true` | normal; glyph 74; 22 ppem; first tag cubic; destroy=true | Checks destroy=true after the larger-glyph renderer failure. |
+| `batch236-normal-bad-conic-g36-destroy-false` | normal; glyph 36; 16 ppem; conic followed by cubic; destroy=false | Keeps `FT_Outline_Check`-visible structure valid while reaching the pinned bad-conic decomposition error. |
+| `batch236-normal-bad-conic-g36-destroy-true` | normal; glyph 36; 20 ppem; conic/cubic sequence; destroy=true | Distinguishes tag-sequence rejection from the C ownership policy. |
+| `batch236-normal-bad-conic-g43-destroy-false` | normal; glyph 43; 16 ppem; conic/cubic sequence; destroy=false | Confirms the bad-conic rule is independent of one font glyph. |
+| `batch236-normal-bad-conic-g43-destroy-true` | normal; glyph 43; 20 ppem; conic/cubic sequence; destroy=true | Retains the paired error and handle-preservation witness. |
+| `batch236-normal-unpaired-cubic-g36-destroy-false` | normal; glyph 36; 16 ppem; one cubic control; destroy=false | Reaches the gray renderer's invalid cubic-sequence guard without changing counts or endpoints. |
+| `batch236-normal-unpaired-cubic-g36-destroy-true` | normal; glyph 36; 20 ppem; one cubic control; destroy=true | Verifies the same failure before successful replacement. |
+| `batch236-normal-unpaired-cubic-g43-destroy-false` | normal; glyph 43; 16 ppem; one cubic control; destroy=false | Provides an independent outline witness for the unpaired-cubic guard. |
+| `batch236-normal-unpaired-cubic-g43-destroy-true` | normal; glyph 43; 20 ppem; one cubic control; destroy=true | Completes the ownership pair for the alternate glyph. |
+| `batch236-normal-first-cubic-g77-destroy-false` | normal; glyph 77; 18 ppem; first tag cubic; destroy=false | Adds a fifth outline shape so first-cubic reachability is not inferred from four glyphs only. |
+| `batch236-normal-first-cubic-g77-destroy-true` | normal; glyph 77; 22 ppem; first tag cubic; destroy=true | Completes the normal-mode first-cubic destroy pair. |
+| `batch236-normal-bad-conic-g74-destroy-false` | normal; glyph 74; 18 ppem; conic/cubic sequence; destroy=false | Checks bad-conic rejection after a different normal raster allocation. |
+| `batch236-normal-bad-conic-g74-destroy-true` | normal; glyph 74; 22 ppem; conic/cubic sequence; destroy=true | Checks delayed destruction for the larger bad-conic outline. |
+| `batch236-normal-unpaired-cubic-g74-destroy-false` | normal; glyph 74; 18 ppem; one cubic control; destroy=false | Exercises the cubic guard with a separate outline and allocation size. |
+| `batch236-normal-unpaired-cubic-g74-destroy-true` | normal; glyph 74; 22 ppem; one cubic control; destroy=true | Completes the larger-glyph cubic error-cleanup pair. |
+| `batch236-overlap-first-cubic-g6-destroy-false` | overlap-normal; render-coverage glyph 6; 16 ppem; first tag cubic; destroy=false | Selects `render_normal_overlap` through `FT_OUTLINE_OVERLAP` before the malformed-tag failure. |
+| `batch236-overlap-first-cubic-g6-destroy-true` | overlap-normal; glyph 6; 20 ppem; first tag cubic; destroy=true | Checks overlap renderer ownership behavior on the same pinned error. |
+| `batch236-overlap-bad-conic-g6-destroy-false` | overlap-normal; glyph 6; 16 ppem; conic/cubic sequence; destroy=false | Confirms overlap oversampling delegates to the same decomposition guard. |
+| `batch236-overlap-bad-conic-g6-destroy-true` | overlap-normal; glyph 6; 20 ppem; conic/cubic sequence; destroy=true | Checks the bad-conic error after the overlap branch has been selected. |
+| `batch236-sdf-first-cubic-g7-destroy-false` | SDF; render-coverage glyph 7; 16 ppem; first tag cubic; destroy=false | Reaches the SDF subdivision renderer's invalid-outline return. |
+| `batch236-sdf-first-cubic-g7-destroy-true` | SDF; glyph 7; 20 ppem; first tag cubic; destroy=true | Checks SDF caller-handle preservation under destroy=true. |
+| `batch236-sdf-bad-conic-g7-destroy-false` | SDF; glyph 7; 16 ppem; conic/cubic sequence; destroy=false | Verifies SDF uses the pinned bad-conic decomposition semantics. |
+| `batch236-sdf-bad-conic-g7-destroy-true` | SDF; glyph 7; 20 ppem; conic/cubic sequence; destroy=true | Pairs SDF bad-conic rejection with the alternate requested size. |
+| `batch236-sdf-unpaired-cubic-g7-destroy-false` | SDF; glyph 7; 16 ppem; one cubic control; destroy=false | Reaches the SDF unpaired-cubic guard instead of silently accepting the public tags. |
+| `batch236-sdf-unpaired-cubic-g7-destroy-true` | SDF; glyph 7; 20 ppem; one cubic control; destroy=true | Completes the SDF malformed-cubic ownership matrix. |
+
+The pinned source review shows that these malformed records are deliberately
+accepted by the first validation stage, not fabricated through a private
+runtime-only path. `freetype/src/base/ftoutln.c:351-393` checks point and
+contour counts and contour endpoints but contains no tag-array validation.
+`freetype/src/smooth/ftgrays.c:1480-1685` then rejects a first cubic, an
+invalid conic sequence, and an unpaired cubic while decomposing the outline.
+`freetype/src/base/ftglyph.c:771-869` frees the replacement bitmap only on
+failure and changes the caller handle only after successful rendering. This is
+therefore pinned FreeType behavior, not an assumption that malformed tags are
+valid glyph data. The Rust runtime already matched the oracle; the code change
+adds only parity-route test support for applying the public tag mutations to
+the C ABI and WASM facades.
+
+Focused parity passed all 30 concrete IDs across Rust FFI, C ABI, WASM, and the
+pinned oracle. Coverage MCP run `d9f750ef-3e17-44d8-bd59-903f788d79ef` passed
+at pushed commit `7839228` and ingested current snapshot
+`4d6a8135-6c6d-4def-a888-ff361e24f15b`. The managed run used the explicit
+post-probe base `72664c6f-d547-4873-bfab-0b942349c88e` and the repeatable
+argument form `--migration-coverage-case-ids` with ten comma-separated ID
+chunks; it did not execute the full case matrix.
+
+Because that post-probe base is itself a selected snapshot, the stored current
+snapshot was also reviewed against the fixed full baseline
+`7405fcdf-db54-48a4-877f-eca87142b938`. MCP reports the comparison as a
+measured `selected_subset` with `complete=false`, `diff.claim_status=limited`,
+and `merge.exact=false`; its additive union reports +1 covered function and
+the targeted source review marks `src/render.rs:449`, `:530`, and `:605`
+green. The normal, overlap-normal, and SDF success bodies are red in that
+source view only because the selected snapshot contains error cases; they are
+not a full-denominator regression. Test attribution was unavailable. These
+are reachability observations only, not a replacement full-denominator
+percentage or strict-100% claim.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
@@ -1654,7 +1731,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,110 tracked paths and no symlinks.
+The canonical input tree currently contains 1,140 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -2622,7 +2699,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 88 | package, build, release, and facade contracts |
 | R03 | 1,754 | executable parity tests and public contracts |
-| R04 | 1,110 | licensed canonical fixture inputs |
+| R04 | 1,140 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 63 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -2630,7 +2707,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,090** | **all retained paths** |
+| **Total** | **3,120** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
