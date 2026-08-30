@@ -1570,6 +1570,8 @@ subjects:
         description: UNFITTED and UNSCALED modes return the exact C vector units for the same glyph pair.
       - id: missing_pair_or_no_kerning_success_zero
         description: Missing pairs and fonts without extractable kerning return success with the same zero vector and face flag behavior as C.
+      - id: malformed_legacy_kern_is_tolerated
+        description: Malformed but openable legacy kern tables are defensively bounded by FreeType and still return FT_Err_Ok with a zero vector; the case prevents Rust from inventing a post-validation error that the pinned C drivers do not return.
       # needs-input: operation FT_Get_Kerning; fixture asset font with GPOS-only pair kerning and no legacy kern table; params representative LTR and RTL pair glyphs, all three kerning modes; expected output shape FT_Error plus FT_Vector{x,y}; comparison rule exact C build behavior, including zero if TT_CONFIG_OPTION_GPOS_KERNING is disabled or unsupported for the pair.
       - id: gpos_only_pair_build_option_behavior
         description: GPOS-only pair kerning follows the pinned C build behavior and does not assume legacy kern fallback.

@@ -2041,6 +2041,38 @@ its selected-subset replacement diff is `complete=false` and
 `claim_status=limited`, so this is additive reachability evidence rather than
 a full-denominator or strict-100% claim.
 
+### Batch 246: malformed legacy kern inputs confirm `FT_Get_Kerning` success
+
+This batch adds five public malformed-input variants to
+`freetype.FT_Get_Kerning.malformed_legacy_kern_is_tolerated`. Each asset is
+openable but contains a damaged or truncated legacy `kern` table:
+`malformed-classic-kern.ttf`, its length, offset, and pair-order controls, and
+`kerning/kern-truncated.ttf`. The rows use the same public glyph pair and
+`FT_KERNING_DEFAULT` mode so the only expanded dimension is the table shape.
+
+The source-first question was whether one of these inputs makes the pinned C
+`FT_Get_Kerning` return an error after face and output validation, thereby
+reaching the false arm of the WASM wrapper's `if err == FT_Err_Ok`. The pinned
+implementation answers no: `freetype/src/base/ftobjs.c:3603-3675` delegates to
+the driver's callback, while the built-in TrueType, CFF, Type 1, and PFR
+callbacks all return `FT_Err_Ok`; `freetype/src/sfnt/ttkern.c:185-260` bounds
+malformed pair data and returns a value rather than an error. Direct oracle
+probes confirmed all five files open and return a zero vector. The Rust probe
+returned the same status and vector for all three kerning modes, so inventing a
+post-validation Rust error would be a parity regression.
+
+Focused parity passed 5/5 across Rust, the C ABI, WASM, and the pinned oracle.
+Coverage MCP run `f766b5a2-4680-44fa-8174-81ae2cf39370` passed and ingested
+snapshot `95c66b9c-cb10-4fc5-8a9f-af5da81b912d` against explicit baseline
+`df2e52bb-a159-44d0-9e83-88cb5c9ea49a`. The additive union reports 927 newly
+covered LLVM region identities, with no covered-branch, covered-function, or
+covered-line summary-count increase; the selected-subset scope is
+`complete=false`, the merge is conservative, and unselected baseline hits are
+`not_observed`. The WASM `FT_Get_Kerning` post-call false arm remains
+source-unreachable under the pinned built-in driver contract. No runtime fix is
+justified; the five rows are retained as a regression guard for FreeType's
+permissive malformed-input behavior.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
@@ -2048,7 +2080,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,175 tracked paths and no symlinks.
+The canonical input tree currently contains 1,176 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -3016,7 +3048,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 88 | package, build, release, and facade contracts |
 | R03 | 1,754 | executable parity tests and public contracts |
-| R04 | 1,142 | licensed canonical fixture inputs |
+| R04 | 1,176 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 63 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -3024,7 +3056,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,122** | **all retained paths** |
+| **Total** | **3,156** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

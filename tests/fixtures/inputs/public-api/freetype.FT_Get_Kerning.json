@@ -5,6 +5,7 @@
     "legacy_pair_default_mode",
     "legacy_pair_unfitted_and_unscaled_modes",
     "missing_pair_or_no_kerning_success_zero",
+    "malformed_legacy_kern_is_tolerated",
     "gpos_only_pair_build_option_behavior",
     "error_null_face_or_output"
   ],
@@ -200,6 +201,128 @@
             "akerning"
           ]
         }
+      }
+    },
+    {
+      "case_id": "freetype.FT_Get_Kerning.malformed_legacy_kern_is_tolerated",
+      "subject": "freetype.FT_Get_Kerning",
+      "case": "malformed_legacy_kern_is_tolerated",
+      "operation": "freetype.get_kerning",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "malformed-classic-kern",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/kern/malformed-classic-kern.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size_ppem": 20,
+              "pair": "gid:1/gid:2",
+              "kern_mode": "FT_KERNING_DEFAULT"
+            },
+            "coverage": ["kerning:malformed-classic-kern"]
+          },
+          {
+            "id": "malformed-classic-kern-length",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/kern/malformed-classic-kern-length.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size_ppem": 20,
+              "pair": "gid:1/gid:2",
+              "kern_mode": "FT_KERNING_DEFAULT"
+            },
+            "coverage": ["kerning:malformed-classic-kern-length"]
+          },
+          {
+            "id": "malformed-classic-kern-offset",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/kern/malformed-classic-kern-offset.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size_ppem": 20,
+              "pair": "gid:1/gid:2",
+              "kern_mode": "FT_KERNING_DEFAULT"
+            },
+            "coverage": ["kerning:malformed-classic-kern-offset"]
+          },
+          {
+            "id": "malformed-classic-kern-pair-order",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/kern/malformed-classic-kern-pair-order.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size_ppem": 20,
+              "pair": "gid:1/gid:2",
+              "kern_mode": "FT_KERNING_DEFAULT"
+            },
+            "coverage": ["kerning:malformed-classic-kern-pair-order"]
+          },
+          {
+            "id": "malformed-kern-truncated",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/kerning/kern-truncated.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size_ppem": 20,
+              "pair": "gid:1/gid:2",
+              "kern_mode": "FT_KERNING_DEFAULT"
+            },
+            "coverage": ["kerning:malformed-kern-truncated"]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:kerning",
+        "malformed-input",
+        "c-parity-permissive"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "akerning": "FT_Vector zero_or_c_oracle"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "akerning"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftobjs.c:3603-3675",
+          "freetype/src/sfnt/ttkern.c:185-260"
+        ]
       }
     },
     {
