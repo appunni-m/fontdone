@@ -4818,9 +4818,9 @@ subjects:
       - id: mcp_bitmap_invalid_size_batch
         description: A valid WinFNT bitmap face with render sizes that miss its only strike reaches the PostScript hinting wrapper's Invalid_Pixel_Size preservation path across all ABI lanes.
       - id: mcp_wasm_null_file_batch
-        description: One hundred labeled safety variants pass a null file pointer to the WASM PostScript hinting facade and compare its Invalid_Argument guard with the corresponding Rust/C-ABI contract.
+        description: Fifteen labeled safety variants pass a null file pointer to the WASM PostScript hinting facade with distinct pre-guard selectors and scalar or string controls, then compare its Invalid_Argument guard with the corresponding Rust/C-ABI contract.
       - id: mcp_wasm_null_output_batch
-        description: One hundred labeled safety variants pass a non-null file pointer and null output pointer to the WASM PostScript hinting facade and compare its Invalid_Argument guard with the corresponding Rust/C-ABI contract.
+        description: Fifteen labeled safety variants pass a non-null one-byte file pointer and null output pointer to the WASM PostScript hinting facade with distinct pre-guard selectors, file sizes, scalar, and string controls, then compare its Invalid_Argument guard with the corresponding Rust/C-ABI contract.
       - id: mcp_wasm_post_error_batch
         description: One hundred valid PostScript font variants exercise the WASM hinting wrapper's post-invalid-property reload and compare the complete slot-preservation result across all ABI lanes.
       - id: mcp_wasm_post_error_cff_random_batch

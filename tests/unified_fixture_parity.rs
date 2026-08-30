@@ -81163,6 +81163,67 @@ fn ps_hinting_null_file_base_probe(case: &InputCase) -> Result<u64, String> {
     u64_param(&case.inputs.params, "null_file_base_probe")
 }
 
+fn ps_hinting_null_module_selector(case: &InputCase) -> Result<i32, String> {
+    let selector = case
+        .inputs
+        .params
+        .get("module_selector")
+        .map_or(Ok(5), |value| i64_value(value, "module_selector"))?;
+    let selector = i32::try_from(selector)
+        .map_err(|err| format!("module_selector does not fit i32: {err}"))?;
+    if !matches!(selector, 5..=7) {
+        return Err(format!(
+            "null-pointer probe module_selector {selector} is not a valid PostScript module"
+        ));
+    }
+    Ok(selector)
+}
+
+fn ps_hinting_null_u32_param(case: &InputCase, key: &str) -> Result<u32, String> {
+    let Some(value) = case.inputs.params.get(key) else {
+        return Ok(0);
+    };
+    let value = u64_value(value, key)?;
+    u32::try_from(value).map_err(|err| format!("{key} does not fit u32: {err}"))
+}
+
+fn ps_hinting_null_load_flags(case: &InputCase) -> Result<i32, String> {
+    let Some(value) = case.inputs.params.get("load_flags") else {
+        return Ok(FT_LOAD_DEFAULT);
+    };
+    let value = i64_value(value, "load_flags")?;
+    i32::try_from(value).map_err(|err| format!("load_flags does not fit i32: {err}"))
+}
+
+fn ps_hinting_null_file_size(case: &InputCase) -> Result<usize, String> {
+    let value = case
+        .inputs
+        .params
+        .get("file_size")
+        .map_or(Ok(0), |value| u64_value(value, "file_size"))?;
+    let value =
+        usize::try_from(value).map_err(|err| format!("file_size is out of range: {err}"))?;
+    if value > 1 {
+        return Err("null-pointer probe file_size exceeds the one-byte probe buffer".to_string());
+    }
+    Ok(value)
+}
+
+fn ps_hinting_null_string(case: &InputCase) -> Result<Option<std::ffi::CString>, String> {
+    let Some(value) = case.inputs.params.get("string_value") else {
+        return Ok(None);
+    };
+    if value.is_null() {
+        return Ok(None);
+    }
+    let value = value
+        .as_str()
+        .ok_or_else(|| "null-pointer probe string_value is not a string or null".to_string())?;
+    std::ffi::CString::new(value)
+        .map(Some)
+        .map_err(|err| format!("null-pointer probe string_value contains NUL: {err}"))
+}
+
 fn ps_hinting_null_file_output(probe: u64, error_code: FT_Error) -> RunOutput {
     error_with_output(
         error_code,
@@ -81552,32 +81613,49 @@ fn ps_hinting_module_selector(module: &str) -> i32 {
 fn wasm_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
     if ps_hinting_null_file_base_case(case) {
         let probe = ps_hinting_null_file_base_probe(case)?;
+        let module_selector = ps_hinting_null_module_selector(case)?;
+        let glyph_index = ps_hinting_null_u32_param(case, "glyph_index")?;
+        let load_flags = ps_hinting_null_load_flags(case)?;
+        let render_pixel_size = ps_hinting_null_u32_param(case, "render_pixel_size")?;
+        let value = ps_hinting_null_u32_param(case, "value")?;
+        let string = ps_hinting_null_string(case)?;
         let mut result = wasm_abi::FontdoneWasmPsHintingResult::default();
         let status = wasm_abi::fontdone_wasm_ps_hinting_engine_open(
-            ps_hinting_module_selector("cff"),
+            module_selector,
             std::ptr::null(),
             0,
-            0,
-            0,
-            0,
-            0,
-            std::ptr::null(),
+            glyph_index,
+            load_flags,
+            render_pixel_size,
+            value,
+            string
+                .as_ref()
+                .map_or(std::ptr::null(), |value| value.as_ptr()),
             &mut result,
         );
         return Ok(ps_hinting_null_file_output(probe, status.error));
     }
     if ps_hinting_null_output_case(case) {
         let probe = ps_hinting_null_output_probe(case)?;
+        let module_selector = ps_hinting_null_module_selector(case)?;
+        let file_size = ps_hinting_null_file_size(case)?;
+        let glyph_index = ps_hinting_null_u32_param(case, "glyph_index")?;
+        let load_flags = ps_hinting_null_load_flags(case)?;
+        let render_pixel_size = ps_hinting_null_u32_param(case, "render_pixel_size")?;
+        let value = ps_hinting_null_u32_param(case, "value")?;
+        let string = ps_hinting_null_string(case)?;
         let file_bytes = [0_u8; 1];
         let status = wasm_abi::fontdone_wasm_ps_hinting_engine_open(
-            ps_hinting_module_selector("cff"),
+            module_selector,
             file_bytes.as_ptr(),
-            0,
-            0,
-            0,
-            0,
-            0,
-            std::ptr::null(),
+            file_size,
+            glyph_index,
+            load_flags,
+            render_pixel_size,
+            value,
+            string
+                .as_ref()
+                .map_or(std::ptr::null(), |value| value.as_ptr()),
             std::ptr::null_mut(),
         );
         return Ok(ps_hinting_null_output(probe, status.error));

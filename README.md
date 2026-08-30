@@ -106,15 +106,15 @@ The latest full parity snapshot was recorded on **2026-08-30** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 19,342 |
-| Passed cases | 19,342 |
+| Runnable exact-comparison cases | 19,370 |
+| Passed cases | 19,370 |
 | Failed cases | 0 |
 | Explicitly pending cases | 4 |
 | Covered manifest cases | 4,381 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,533 |
-| Concrete expanded cases | 19,346 |
+| Concrete expanded cases | 19,374 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
 `18,802 / 18,802` means every runnable case in that execution matched; the 4
@@ -313,7 +313,7 @@ The latest committed scorecard has **8 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 12,593 / 16,996 pinned-C runtime contract rows exact; 4,403 pending |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 12,851 / 17,114 pinned-C runtime contract rows exact; 4,263 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |

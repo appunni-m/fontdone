@@ -5485,6 +5485,26 @@ def hinting_engine_property_real_parity_reason(row: ConcreteInput) -> str | None
     return None
 
 
+def hinting_engine_null_validation_reason(row: ConcreteInput) -> str | None:
+    reasons = {
+        "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_null_file_batch": (
+            "fontdone_wasm_ps_hinting_engine_open validates a null file_base "
+            "before any byte-slice dereference; the Rust FFI, C ABI, and guarded "
+            "offline oracle preserve FT_Err_Invalid_Argument for the same raw "
+            "boundary contract"
+        ),
+        "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_null_output_batch": (
+            "fontdone_wasm_ps_hinting_engine_open validates a null output pointer "
+            "after the file pointer check and before writing the result or reading "
+            "the file; the Rust FFI, C ABI, and guarded offline oracle preserve "
+            "FT_Err_Invalid_Argument for the same raw boundary contract"
+        ),
+    }
+    if row.operation != "ftdriver.hinting_engine_property":
+        return None
+    return reasons.get(row.case_id)
+
+
 def focused_success_real_parity_reason(row: ConcreteInput) -> str | None:
     svg_glyph_cases = {
         "ftglyph.FT_Get_Glyph.success_svg_slot_deep_copy",
@@ -9137,6 +9157,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     interpreter_version_property_real_reason = interpreter_version_property_real_parity_reason(row)
     if interpreter_version_property_real_reason:
         return ("real-parity", interpreter_version_property_real_reason)
+    hinting_engine_null_validation = hinting_engine_null_validation_reason(row)
+    if hinting_engine_null_validation:
+        return ("real-null-validation", hinting_engine_null_validation)
     hinting_engine_property_real = hinting_engine_property_real_parity_reason(row)
     if hinting_engine_property_real:
         return ("real-parity", hinting_engine_property_real)

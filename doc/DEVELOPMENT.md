@@ -1767,6 +1767,35 @@ target lines above were verified against the ingested LLVM report and the
 pushed `9968720` file. This is additive reachability evidence, not a new
 full-denominator percentage or strict-100% claim.
 
+### Batch 238: WASM PostScript null-pointer validation
+
+The remaining red WASM regions in the public-range review are the two raw
+pointer guards in `fontdone-wasm/src/implementation.rs`: the null
+`file_base` return at lines 1974-1978 and the null `out` return at lines
+1980-1984. The `size_error == FT_Err_Ok` and `out.load_error == FT_Err_Ok`
+arms later in the same wrapper are already line-covered; they are not the
+target of this batch.
+
+The maintained public parity input expands each guard into fifteen stable
+variants: `c82-ps-null-file-001` through `-015` and
+`c83-ps-null-output-001` through `-015`. The variants use valid PostScript
+module selectors 5, 6, and 7, distinct glyph/load/size/property controls,
+null and non-null property-string pointers, and (for the output family)
+zero- or one-byte file sizes. These controls are deliberately sent to the
+WASM entry point but must not be consumed after the guard; the exact-error
+comparison therefore checks the status, probe label, and pointer classes.
+
+The pinned FreeType review found no original public API equivalent to
+`fontdone_wasm_ps_hinting_engine_open`; `freetype/include/freetype/ftdriver.h`
+documents the related `hinting-engine` property only. The offline oracle
+therefore intentionally emits `FT_Err_Invalid_Argument` in
+`scripts/gen_unified_oracle.c:38095-38114` rather than passing an invalid raw
+pointer to FreeType C. This is a wrapper-level safety contract, not a claim
+that the original FreeType property API accepts a null file or output pointer.
+The route audit classifies these concrete rows as `real-null-validation`, and
+both focused parity families pass 15/15 across Rust FFI, C ABI, WASM, and the
+pinned oracle.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained

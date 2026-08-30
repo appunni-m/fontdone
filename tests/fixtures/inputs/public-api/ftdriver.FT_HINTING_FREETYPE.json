@@ -681,12 +681,257 @@
         "variants": [
           {
             "id": "c82-ps-null-file-001",
+            "reason": "Valid module selector 5 with null file_base with a non-null output pointer and module_selector=5, glyph_index=0, load_flags=0, render_pixel_size=0, value=0, string_value=null reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
             "assets": {},
             "params": {
-              "null_file_base_probe": 1
+              "null_file_base_probe": 1,
+              "module_selector": 5,
+              "glyph_index": 0,
+              "load_flags": 0,
+              "render_pixel_size": 0,
+              "value": 0,
+              "string_value": null
             },
             "coverage": [
-              "fontdone-wasm/src/implementation.rs:1915-1918"
+              "fontdone-wasm/src/implementation.rs:1974-1978"
+            ]
+          },
+          {
+            "id": "c82-ps-null-file-002",
+            "reason": "Valid module selector 6 with null file_base with a non-null output pointer and module_selector=6, glyph_index=1, load_flags=4, render_pixel_size=8, value=1, string_value=freetype reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 2,
+              "module_selector": 6,
+              "glyph_index": 1,
+              "load_flags": 4,
+              "render_pixel_size": 8,
+              "value": 1,
+              "string_value": "freetype"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1974-1978"
+            ]
+          },
+          {
+            "id": "c82-ps-null-file-003",
+            "reason": "Valid module selector 7 with null file_base with a non-null output pointer and module_selector=7, glyph_index=2, load_flags=16, render_pixel_size=16, value=2, string_value=adobe reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 3,
+              "module_selector": 7,
+              "glyph_index": 2,
+              "load_flags": 16,
+              "render_pixel_size": 16,
+              "value": 2,
+              "string_value": "adobe"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1974-1978"
+            ]
+          },
+          {
+            "id": "c82-ps-null-file-004",
+            "reason": "Valid module selector 5 with null file_base with a non-null output pointer and module_selector=5, glyph_index=3, load_flags=32, render_pixel_size=20, value=1, string_value=null reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 4,
+              "module_selector": 5,
+              "glyph_index": 3,
+              "load_flags": 32,
+              "render_pixel_size": 20,
+              "value": 1,
+              "string_value": null
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1974-1978"
+            ]
+          },
+          {
+            "id": "c82-ps-null-file-005",
+            "reason": "Valid module selector 6 with null file_base with a non-null output pointer and module_selector=6, glyph_index=65535, load_flags=64, render_pixel_size=24, value=0, string_value=freetype reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 5,
+              "module_selector": 6,
+              "glyph_index": 65535,
+              "load_flags": 64,
+              "render_pixel_size": 24,
+              "value": 0,
+              "string_value": "freetype"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1974-1978"
+            ]
+          },
+          {
+            "id": "c82-ps-null-file-006",
+            "reason": "Valid module selector 7 with null file_base with a non-null output pointer and module_selector=7, glyph_index=1, load_flags=2, render_pixel_size=12, value=2, string_value=null reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 6,
+              "module_selector": 7,
+              "glyph_index": 1,
+              "load_flags": 2,
+              "render_pixel_size": 12,
+              "value": 2,
+              "string_value": null
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1974-1978"
+            ]
+          },
+          {
+            "id": "c82-ps-null-file-007",
+            "reason": "Valid module selector 5 with null file_base with a non-null output pointer and module_selector=5, glyph_index=2, load_flags=8, render_pixel_size=32, value=1, string_value=adobe reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 7,
+              "module_selector": 5,
+              "glyph_index": 2,
+              "load_flags": 8,
+              "render_pixel_size": 32,
+              "value": 1,
+              "string_value": "adobe"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1974-1978"
+            ]
+          },
+          {
+            "id": "c82-ps-null-file-008",
+            "reason": "Valid module selector 6 with null file_base with a non-null output pointer and module_selector=6, glyph_index=4, load_flags=1, render_pixel_size=18, value=0, string_value=null reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 8,
+              "module_selector": 6,
+              "glyph_index": 4,
+              "load_flags": 1,
+              "render_pixel_size": 18,
+              "value": 0,
+              "string_value": null
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1974-1978"
+            ]
+          },
+          {
+            "id": "c82-ps-null-file-009",
+            "reason": "Valid module selector 7 with null file_base with a non-null output pointer and module_selector=7, glyph_index=5, load_flags=16, render_pixel_size=22, value=2, string_value=freetype reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 9,
+              "module_selector": 7,
+              "glyph_index": 5,
+              "load_flags": 16,
+              "render_pixel_size": 22,
+              "value": 2,
+              "string_value": "freetype"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1974-1978"
+            ]
+          },
+          {
+            "id": "c82-ps-null-file-010",
+            "reason": "Valid module selector 5 with null file_base with a non-null output pointer and module_selector=5, glyph_index=6, load_flags=32, render_pixel_size=26, value=0, string_value=null reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 10,
+              "module_selector": 5,
+              "glyph_index": 6,
+              "load_flags": 32,
+              "render_pixel_size": 26,
+              "value": 0,
+              "string_value": null
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1974-1978"
+            ]
+          },
+          {
+            "id": "c82-ps-null-file-011",
+            "reason": "Valid module selector 6 with null file_base with a non-null output pointer and module_selector=6, glyph_index=7, load_flags=64, render_pixel_size=14, value=1, string_value=adobe reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 11,
+              "module_selector": 6,
+              "glyph_index": 7,
+              "load_flags": 64,
+              "render_pixel_size": 14,
+              "value": 1,
+              "string_value": "adobe"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1974-1978"
+            ]
+          },
+          {
+            "id": "c82-ps-null-file-012",
+            "reason": "Valid module selector 7 with null file_base with a non-null output pointer and module_selector=7, glyph_index=8, load_flags=0, render_pixel_size=28, value=2, string_value=null reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 12,
+              "module_selector": 7,
+              "glyph_index": 8,
+              "load_flags": 0,
+              "render_pixel_size": 28,
+              "value": 2,
+              "string_value": null
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1974-1978"
+            ]
+          },
+          {
+            "id": "c82-ps-null-file-013",
+            "reason": "Valid module selector 5 with null file_base with a non-null output pointer and module_selector=5, glyph_index=9, load_flags=4, render_pixel_size=10, value=0, string_value=freetype reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 13,
+              "module_selector": 5,
+              "glyph_index": 9,
+              "load_flags": 4,
+              "render_pixel_size": 10,
+              "value": 0,
+              "string_value": "freetype"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1974-1978"
+            ]
+          },
+          {
+            "id": "c82-ps-null-file-014",
+            "reason": "Valid module selector 6 with null file_base with a non-null output pointer and module_selector=6, glyph_index=10, load_flags=8, render_pixel_size=30, value=1, string_value=null reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 14,
+              "module_selector": 6,
+              "glyph_index": 10,
+              "load_flags": 8,
+              "render_pixel_size": 30,
+              "value": 1,
+              "string_value": null
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1974-1978"
+            ]
+          },
+          {
+            "id": "c82-ps-null-file-015",
+            "reason": "Valid module selector 7 with null file_base with a non-null output pointer and module_selector=7, glyph_index=65535, load_flags=16, render_pixel_size=0, value=2, string_value=adobe reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1974-1978; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_file_base_probe": 15,
+              "module_selector": 7,
+              "glyph_index": 65535,
+              "load_flags": 16,
+              "render_pixel_size": 0,
+              "value": 2,
+              "string_value": "adobe"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1974-1978"
             ]
           }
         ]
@@ -701,7 +946,7 @@
         "null-validation"
       ],
       "metadata": {
-        "coverage_intent": "Coverage MCP selected the direct file_base null guard in fontdone_wasm_ps_hinting_engine_open. One hundred labeled variants execute the real WASM invalid-argument return while Rust, C ABI, and the offline oracle preserve the same explicit safety contract; prune by measured line and region delta."
+        "coverage_intent": "Coverage MCP selected the direct file_base null guard in fontdone_wasm_ps_hinting_engine_open. Fifteen labeled variants execute the real WASM invalid-argument return with distinct pre-guard selectors, scalar controls, and string-pointer classes while Rust, C ABI, and the guarded offline oracle preserve the same explicit safety contract; each reason records the pinned FreeType review and target source region."
       },
       "expectation": {
         "status": "error",
@@ -720,7 +965,8 @@
           ]
         },
         "source_refs": [
-          "fontdone-wasm/src/implementation.rs:1909-1919",
+          "fontdone-wasm/src/implementation.rs:1974-1978",
+          "scripts/gen_unified_oracle.c:38095-38114",
           "freetype/include/freetype/ftdriver.h"
         ],
         "error": "FT_Err_Invalid_Argument"
@@ -739,15 +985,275 @@
       "inputs": {
         "assets": {},
         "params": null,
-          "variants": [
+        "variants": [
           {
             "id": "c83-ps-null-output-001",
+            "reason": "Valid module selector 5 with non-null file_base with a null output pointer and module_selector=5, glyph_index=0, load_flags=0, render_pixel_size=0, value=0, string_value=null, file_size=0 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
             "assets": {},
             "params": {
-              "null_output_probe": 1
+              "null_output_probe": 1,
+              "module_selector": 5,
+              "glyph_index": 0,
+              "load_flags": 0,
+              "render_pixel_size": 0,
+              "value": 0,
+              "string_value": null,
+              "file_size": 0
             },
             "coverage": [
-              "fontdone-wasm/src/implementation.rs:1921-1922"
+              "fontdone-wasm/src/implementation.rs:1980-1984"
+            ]
+          },
+          {
+            "id": "c83-ps-null-output-002",
+            "reason": "Valid module selector 6 with non-null file_base with a null output pointer and module_selector=6, glyph_index=1, load_flags=4, render_pixel_size=8, value=1, string_value=freetype, file_size=1 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_output_probe": 2,
+              "module_selector": 6,
+              "glyph_index": 1,
+              "load_flags": 4,
+              "render_pixel_size": 8,
+              "value": 1,
+              "string_value": "freetype",
+              "file_size": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1980-1984"
+            ]
+          },
+          {
+            "id": "c83-ps-null-output-003",
+            "reason": "Valid module selector 7 with non-null file_base with a null output pointer and module_selector=7, glyph_index=2, load_flags=16, render_pixel_size=16, value=2, string_value=adobe, file_size=0 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_output_probe": 3,
+              "module_selector": 7,
+              "glyph_index": 2,
+              "load_flags": 16,
+              "render_pixel_size": 16,
+              "value": 2,
+              "string_value": "adobe",
+              "file_size": 0
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1980-1984"
+            ]
+          },
+          {
+            "id": "c83-ps-null-output-004",
+            "reason": "Valid module selector 5 with non-null file_base with a null output pointer and module_selector=5, glyph_index=3, load_flags=32, render_pixel_size=20, value=1, string_value=null, file_size=1 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_output_probe": 4,
+              "module_selector": 5,
+              "glyph_index": 3,
+              "load_flags": 32,
+              "render_pixel_size": 20,
+              "value": 1,
+              "string_value": null,
+              "file_size": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1980-1984"
+            ]
+          },
+          {
+            "id": "c83-ps-null-output-005",
+            "reason": "Valid module selector 6 with non-null file_base with a null output pointer and module_selector=6, glyph_index=65535, load_flags=64, render_pixel_size=24, value=0, string_value=freetype, file_size=0 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_output_probe": 5,
+              "module_selector": 6,
+              "glyph_index": 65535,
+              "load_flags": 64,
+              "render_pixel_size": 24,
+              "value": 0,
+              "string_value": "freetype",
+              "file_size": 0
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1980-1984"
+            ]
+          },
+          {
+            "id": "c83-ps-null-output-006",
+            "reason": "Valid module selector 7 with non-null file_base with a null output pointer and module_selector=7, glyph_index=1, load_flags=2, render_pixel_size=12, value=2, string_value=null, file_size=1 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_output_probe": 6,
+              "module_selector": 7,
+              "glyph_index": 1,
+              "load_flags": 2,
+              "render_pixel_size": 12,
+              "value": 2,
+              "string_value": null,
+              "file_size": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1980-1984"
+            ]
+          },
+          {
+            "id": "c83-ps-null-output-007",
+            "reason": "Valid module selector 5 with non-null file_base with a null output pointer and module_selector=5, glyph_index=2, load_flags=8, render_pixel_size=32, value=1, string_value=adobe, file_size=0 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_output_probe": 7,
+              "module_selector": 5,
+              "glyph_index": 2,
+              "load_flags": 8,
+              "render_pixel_size": 32,
+              "value": 1,
+              "string_value": "adobe",
+              "file_size": 0
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1980-1984"
+            ]
+          },
+          {
+            "id": "c83-ps-null-output-008",
+            "reason": "Valid module selector 6 with non-null file_base with a null output pointer and module_selector=6, glyph_index=4, load_flags=1, render_pixel_size=18, value=0, string_value=null, file_size=1 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_output_probe": 8,
+              "module_selector": 6,
+              "glyph_index": 4,
+              "load_flags": 1,
+              "render_pixel_size": 18,
+              "value": 0,
+              "string_value": null,
+              "file_size": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1980-1984"
+            ]
+          },
+          {
+            "id": "c83-ps-null-output-009",
+            "reason": "Valid module selector 7 with non-null file_base with a null output pointer and module_selector=7, glyph_index=5, load_flags=16, render_pixel_size=22, value=2, string_value=freetype, file_size=0 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_output_probe": 9,
+              "module_selector": 7,
+              "glyph_index": 5,
+              "load_flags": 16,
+              "render_pixel_size": 22,
+              "value": 2,
+              "string_value": "freetype",
+              "file_size": 0
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1980-1984"
+            ]
+          },
+          {
+            "id": "c83-ps-null-output-010",
+            "reason": "Valid module selector 5 with non-null file_base with a null output pointer and module_selector=5, glyph_index=6, load_flags=32, render_pixel_size=26, value=0, string_value=null, file_size=1 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_output_probe": 10,
+              "module_selector": 5,
+              "glyph_index": 6,
+              "load_flags": 32,
+              "render_pixel_size": 26,
+              "value": 0,
+              "string_value": null,
+              "file_size": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1980-1984"
+            ]
+          },
+          {
+            "id": "c83-ps-null-output-011",
+            "reason": "Valid module selector 6 with non-null file_base with a null output pointer and module_selector=6, glyph_index=7, load_flags=64, render_pixel_size=14, value=1, string_value=adobe, file_size=0 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_output_probe": 11,
+              "module_selector": 6,
+              "glyph_index": 7,
+              "load_flags": 64,
+              "render_pixel_size": 14,
+              "value": 1,
+              "string_value": "adobe",
+              "file_size": 0
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1980-1984"
+            ]
+          },
+          {
+            "id": "c83-ps-null-output-012",
+            "reason": "Valid module selector 7 with non-null file_base with a null output pointer and module_selector=7, glyph_index=8, load_flags=0, render_pixel_size=28, value=2, string_value=null, file_size=1 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_output_probe": 12,
+              "module_selector": 7,
+              "glyph_index": 8,
+              "load_flags": 0,
+              "render_pixel_size": 28,
+              "value": 2,
+              "string_value": null,
+              "file_size": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1980-1984"
+            ]
+          },
+          {
+            "id": "c83-ps-null-output-013",
+            "reason": "Valid module selector 5 with non-null file_base with a null output pointer and module_selector=5, glyph_index=9, load_flags=4, render_pixel_size=10, value=0, string_value=freetype, file_size=0 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_output_probe": 13,
+              "module_selector": 5,
+              "glyph_index": 9,
+              "load_flags": 4,
+              "render_pixel_size": 10,
+              "value": 0,
+              "string_value": "freetype",
+              "file_size": 0
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1980-1984"
+            ]
+          },
+          {
+            "id": "c83-ps-null-output-014",
+            "reason": "Valid module selector 6 with non-null file_base with a null output pointer and module_selector=6, glyph_index=10, load_flags=8, render_pixel_size=30, value=1, string_value=null, file_size=1 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_output_probe": 14,
+              "module_selector": 6,
+              "glyph_index": 10,
+              "load_flags": 8,
+              "render_pixel_size": 30,
+              "value": 1,
+              "string_value": null,
+              "file_size": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1980-1984"
+            ]
+          },
+          {
+            "id": "c83-ps-null-output-015",
+            "reason": "Valid module selector 7 with non-null file_base with a null output pointer and module_selector=7, glyph_index=65535, load_flags=16, render_pixel_size=0, value=2, string_value=adobe, file_size=0 reaches the WASM pre-dereference guard at fontdone-wasm/src/implementation.rs:1980-1984; the pinned FreeType public API has no equivalent wrapper, so scripts/gen_unified_oracle.c:38095-38114 records the same FT_Err_Invalid_Argument safety contract without dereferencing C memory.",
+            "assets": {},
+            "params": {
+              "null_output_probe": 15,
+              "module_selector": 7,
+              "glyph_index": 65535,
+              "load_flags": 16,
+              "render_pixel_size": 0,
+              "value": 2,
+              "string_value": "adobe",
+              "file_size": 0
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:1980-1984"
             ]
           }
         ]
@@ -762,7 +1268,7 @@
         "null-validation"
       ],
       "metadata": {
-        "coverage_intent": "Coverage MCP selected the null output-pointer guard after the file pointer guard in fontdone_wasm_ps_hinting_engine_open. One hundred labeled variants keep file_base non-null, execute the real WASM Invalid_Argument return, and compare the same explicit safety contract across Rust, C ABI, and the offline oracle; prune by measured line and region delta."
+        "coverage_intent": "Coverage MCP selected the null output-pointer guard after the file pointer guard in fontdone_wasm_ps_hinting_engine_open. Fifteen labeled variants execute the real WASM Invalid_Argument return with distinct pre-guard selectors, file sizes, scalar controls, and string-pointer classes while Rust, C ABI, and the guarded offline oracle preserve the same explicit safety contract; each reason records the pinned FreeType review and target source region."
       },
       "expectation": {
         "status": "error",
@@ -781,7 +1287,8 @@
           ]
         },
         "source_refs": [
-          "fontdone-wasm/src/implementation.rs:1921-1926",
+          "fontdone-wasm/src/implementation.rs:1980-1984",
+          "scripts/gen_unified_oracle.c:38095-38114",
           "freetype/include/freetype/ftdriver.h"
         ],
         "error": "FT_Err_Invalid_Argument"
