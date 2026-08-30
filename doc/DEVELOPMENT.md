@@ -1796,6 +1796,21 @@ The route audit classifies these concrete rows as `real-null-validation`, and
 both focused parity families pass 15/15 across Rust FFI, C ABI, WASM, and the
 pinned oracle.
 
+Coverage MCP run `c6a5c18f-4d86-4a3b-af7c-1767624a160c` passed at pushed
+commit `1fe4541` and ingested snapshot
+`fb1c4d69-d3e8-43a4-99e4-247baf5fe4d1` against explicit baseline
+`25dd6475-f59f-4c2e-a785-5b7b27d88fc0`. It used the argument-based
+`--migration-coverage-case-ids` form ten times, with three comma-separated
+runtime IDs per argument, and did not execute the full matrix. The incremental
+review reports two newly covered line identities and target regions at
+`fontdone-wasm/src/implementation.rs:1975` and `:1981`. Its scope is
+`selected_subset`, so the replacement diff is `claim_status=limited` and
+unobserved baseline hits are not regressions; this is additive reachability
+evidence, not a full-denominator percentage or strict-100% claim. The MCP
+measurement metadata currently retains the older source commit
+`f0b1ce7522edcd151a699923b9eae0df6dbca0ef`; the run provenance records the
+pushed commit above.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
