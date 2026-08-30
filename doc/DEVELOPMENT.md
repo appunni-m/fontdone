@@ -2030,8 +2030,16 @@ The source evidence is `freetype/src/base/ftobjs.c:5301-5382`,
 `src/ffi/handles.rs:11490-11500`, and
 `scripts/gen_unified_oracle.c:33458-33500`. Focused parity passes the valid,
 zero-glyph, and missing-property variants across all four endpoints; the
-managed incremental Coverage MCP result is recorded here after its artifact
-is ingested.
+managed Coverage MCP run `22acbe61-59ec-465f-9d26-8d20cb630f9d` passed from
+committed revision `dfaef9e` and ingested snapshot
+`361fff20-9a7e-45aa-96b7-666cf414ab96` against explicit baseline
+`df2e52bb-a159-44d0-9e83-88cb5c9ea49a`. The exact LLVM projection records 36
+helper calls and 12 true/12 false executions of the nested `error ==
+FT_Err_Ok` decision, including the `FT_Err_Invalid_Glyph_Index` arm. The
+incremental union reports +1,140 regions with conservative metric fallback;
+its selected-subset replacement diff is `complete=false` and
+`claim_status=limited`, so this is additive reachability evidence rather than
+a full-denominator or strict-100% claim.
 
 ## 5. Fixtures and generators
 
