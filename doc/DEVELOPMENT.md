@@ -1940,6 +1940,52 @@ exact; unselected baseline observations are `not_observed`, not regressions.
 This is additive reachability evidence, not a full-denominator percentage or
 a strict-100% claim.
 
+### Batch 242: absent-OS/2 public queries reach the WASM table error
+
+This batch added exactly 30 explicit public `sfnt.get_os2_unicode_ranges`
+variants under the stable case
+`tttables.FT_SFNT_OS2.os2_absent_query_batch242`. The inputs are loadable
+public font assets: three SFNT faces without an OS/2 table, accepted BDF and
+PCF inputs with non-SFNT headers, and accepted WinFNT inputs. Every variant
+uses `face_index: 0` and `preserve_initial_size: true` so the observation is
+isolated from unrelated size-selection behavior. The public helper converts
+the ABI error into its normal `table_present: false` result, so these are
+`expect_error: false` parity cases even though they execute an internal WASM
+error return.
+
+| Concrete ID family | Why expand this input | Pinned FreeType review | Result and target |
+|---|---|---|---|
+| `batch242-os2-absent-01` through `-003` | Query explicit SFNT faces whose parsed OS/2 table is absent. | `freetype/src/sfnt/sfdriver.c:131-133` returns NULL when `ttface->os2.version == 0xFFFFU`; `freetype/src/base/ftobjs.c:4357-4372` returns that NULL through `FT_Get_Sfnt_Table`. | The public observation reports `table_present=false` and reaches the WASM NULL-table error arm. |
+| `batch242-os2-absent-04` through `-024` | Keep loadable BDF/PCF inputs in the public format matrix, including the accepted malformed-property and encoding forms already maintained by the oracle fixtures. | The same `FT_Get_Sfnt_Table` precondition requires `FT_IS_SFNT(face)`, so these faces return NULL before an SFNT service lookup. The pinned oracle was checked for each candidate; inputs that failed earlier face-open or cmap behavior were not retained. | All 21 cases preserve the public no-table result without a Rust/C/WASM mismatch. |
+| `batch242-os2-absent-25` through `-030` | Exercise loadable WinFNT faces through the same public query rather than treating a non-SFNT format as an untested theoretical path. | `ftobjs.c:4357-4372` makes the non-SFNT NULL result part of the public table-query contract. | All six cases reach the same WASM error mapping and agree with the pinned oracle. |
+
+The candidate review was deliberately source-first. The initial default-size
+attempts exposed unrelated invalid-pixel-size and stream/cmap divergences, so
+the final rows retain only loadable public assets, preserve the face's initial
+size, and use neutral unmapped probes where a candidate's cmap behavior would
+otherwise obscure the OS/2 result. This records the actual pinned behavior; it
+does not weaken an expected result or hide a runtime mismatch. No Rust
+implementation change was needed because the existing
+`fontdone_wasm_get_sfnt_os2` wrapper already returns
+`FT_Err_Invalid_Table` and the public operation maps that error to
+`table_present=false`.
+
+Focused parity passed all 30 rows across Rust, the C ABI, WASM, and the pinned
+oracle. Public-input validation also passed. Managed Coverage MCP run
+`fee7951c-21b1-4f6b-98e2-cdc988121d2e` used ten repeated
+`--migration-coverage-case-ids` arguments with three comma-separated concrete
+IDs per argument, plus the explicit baseline
+`df2e52bb-a159-44d0-9e83-88cb5c9ea49a`; it passed and ingested snapshot
+`d3e145af-ff0f-4cda-bf1c-2d0abfa86759`. The bounded source review marks
+`fontdone-wasm/src/implementation.rs:9164` covered, while the adjacent
+predicate at `:9163` still has one unobserved branch and the earlier null
+output/invalid-handle returns remain pre-validation paths. The incremental
+review reports no regression, but its measurement scope is
+`selected_subset` (`complete=false`) and its replacement diff is
+`claim_status=limited`; unselected baseline observations are
+`not_observed`, not regressions. This is additive reachability evidence, not a
+full-denominator percentage or a strict-100% claim.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
@@ -1947,7 +1993,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,145 tracked paths and no symlinks.
+The canonical input tree currently contains 1,175 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 

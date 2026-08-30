@@ -106,18 +106,18 @@ The latest full parity snapshot was recorded on **2026-08-30** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 19,461 |
-| Passed cases | 19,461 |
+| Runnable exact-comparison cases | 19,491 |
+| Passed cases | 19,491 |
 | Failed cases | 0 |
 | Explicitly pending cases | 4 |
-| Covered manifest cases | 4,383 |
+| Covered manifest cases | 4,384 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,536 |
-| Concrete expanded cases | 19,465 |
+| Logical declared cases | 4,537 |
+| Concrete expanded cases | 19,495 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`18,802 / 18,802` means every runnable case in that execution matched; the 4
+`19,491 / 19,491` means every runnable case in that execution matched; the 4
 explicitly pending concrete cases are safety-extension or undefined-input exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
@@ -125,9 +125,9 @@ equivalent to complete behavior for every input, state, or platform.
 
 The latest worktree verification is the full parity snapshot recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-18,802 / 18,802 runnable comparisons with 0 failures and 4 explicitly pending
+19,491 / 19,491 runnable comparisons with 0 failures and 4 explicitly pending
 concrete cases. Its source-bound parity-tree digest is
-`b64f317019ba1af657a42d77f87538b3b42adde9df2f0869f70a7e9bc28617e8`.
+`c68de1467450c94e4e58603da50007b8e7e37be90eca49097ffeab801da7aca3`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -313,7 +313,7 @@ The latest committed scorecard has **8 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 12,912 / 17,175 pinned-C runtime contract rows exact; 4,263 pending |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 12,972 / 17,235 pinned-C runtime contract rows exact; 4,263 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |

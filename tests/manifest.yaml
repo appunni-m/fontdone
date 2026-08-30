@@ -20542,6 +20542,8 @@ subjects:
         description: A C translation unit including <freetype/tttables.h> can pass FT_SFNT_OS2 to FT_Get_Sfnt_Table.
       - id: get_sfnt_table_os2_present_or_null
         description: C oracle returns TT_OS2 only when the parsed OS/2 version sentinel is not 0xFFFF; missing OS/2 returns NULL.
+      - id: os2_absent_query_batch242
+        description: Thirty explicit loadable non-SFNT and no-OS/2 SFNT faces query the public OS/2 observation; the WASM wrapper reaches its NULL-table error path and the parity result reports table_present=false.
     # needs-input: operation=FT_Get_Sfnt_Table; fixture_asset=input/fonts/sfnt/basic-ttf.ttf and input/fonts/sfnt/no-os2.ttf; params={tag=FT_SFNT_OS2}; expected output shape={pointer_null, TT_OS2 scalar fields if present}; comparison=exact C oracle nullness and TT_OS2 fields.
 
   - id: tttables.FT_SFNT_PCLT
