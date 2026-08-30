@@ -1731,6 +1731,42 @@ the CFF Private, ordinary post-error, failure, global-subroutine, and Type 1
 mode batches and keeps those existing public inputs in the Coverage MCP
 public-case range; they are not generic fallback or unit-test-only coverage.
 
+### Batch 237: CFF2 `random` acceptance and Type2 arithmetic underflow
+
+The next CFF gaps were reviewed against the pinned FreeType 2.14.3 source
+before adding input. This batch deliberately combines one oracle-permitted
+valid program with two public glyph-load error witnesses; the malformed bytes
+are allowed because the user-facing contract is the error returned by
+`FT_Load_Glyph`, not successful rendering of every font byte sequence.
+
+| Concrete ID family | Public input and expansion reason | Pinned FreeType behavior | Rust target |
+|---|---|---|---|
+| `b237-cff2-random-08-default-001` through `b237-cff2-random-12-target-mono-010` | `input/fonts/cff2/pure-cff2-random.otf`, glyph 1, sizes 8/12, five public load modes. Each stable ID names the size and mode because the same valid CFF2 glyph must remain accepted through each public dispatch combination. | `freetype/src/psaux/psintrp.c:2241-2258` executes `random` for CFF2; `freetype/src/cff/cffload.c:2075-2132` leaves the CFF2 subfont state zero-initialized because the Private-dictionary seed initialization is CFF1-only. The glyph's `random`/`drop` program is accepted, not rejected as malformed. | `src/tt/cff.rs:1793-1799` |
+| `b237-cff1-mul-underflow-08-default-011` through `b237-cff1-mul-underflow-12-target-mono-020` | `input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf`, glyph 1, sizes 8/12, five public load modes. The glyph invokes `mul` with fewer than two operands; every ID records the exact public mode that reaches the same interpreter guard. | `freetype/src/psaux/psintrp.c:2260-2274` calls `cf2_stack_popFixed`; `freetype/src/psaux/psstack.c:160-178` records `Stack_Underflow`, and `freetype/src/psaux/psft.c:433-435` exposes `Invalid_File_Format` at glyph load. FreeType opens the face, then intentionally rejects this glyph program. | `src/tt/cff.rs:1771-1772` |
+| `b237-cff1-eq-underflow-08-default-021` through `b237-cff1-eq-underflow-12-target-mono-030` | The same maintained CFF1 face, glyph 2, sizes 8/12, and five modes. The separate glyph and stable ID family isolate `eq` from `mul` while preserving the same public error comparison. | `freetype/src/psaux/psintrp.c:1636-1649` pops the two fixed operands for `eq`; the same `Stack_Underflow` and `Invalid_File_Format` boundaries apply. This is an oracle-matched malformed-input error, not a request to make FreeType accept it. | `src/tt/cff.rs:1782-1783` |
+
+The exact 30 IDs, individual reasons, and source references are maintained in
+`tests/fixtures/inputs/public-api/freetype.FT_Load_Glyph.json`. Focused parity
+passed 30/30 across Rust, C ABI, WASM, and the pinned oracle. The implementation
+fix gives CFF2 its own zero-seeded `Cell<u32>` random state and shares the
+accepted Type2 `random` path with CFF1; the previous CFF2-only unsupported
+error was a behavioral mismatch. The two arithmetic error families confirm
+the existing Rust underflow guards against the public C error mapping.
+
+Coverage MCP run `c994085a-9054-48b1-a3e7-83a138b187c9`, snapshot
+`ca524035-e4df-4ae3-a061-8d432e816437`, used pushed commit `9968720` and the
+explicit baseline `e7f7dd3e-86ec-445d-a5e7-e4b1ac66ee6e`. It passed with ten
+repeatable `--migration-coverage-case-ids` arguments, each carrying three
+comma-separated runtime IDs. The incremental union reports 110 newly covered
+line identities, 571 newly covered regions, +3 covered branches, and no new
+functions. The selected-subset review is `complete=false`,
+`diff.claim_status=limited`, and `merge.exact=false`; unselected baseline
+observations are `not_observed`, not regressions. The MCP source projection
+retained the older `f0b1ce` source metadata for line text, so the current
+target lines above were verified against the ingested LLVM report and the
+pushed `9968720` file. This is additive reachability evidence, not a new
+full-denominator percentage or strict-100% claim.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
@@ -1738,7 +1774,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,140 tracked paths and no symlinks.
+The canonical input tree currently contains 1,142 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -2706,7 +2742,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 88 | package, build, release, and facade contracts |
 | R03 | 1,754 | executable parity tests and public contracts |
-| R04 | 1,140 | licensed canonical fixture inputs |
+| R04 | 1,142 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 63 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -2714,7 +2750,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,120** | **all retained paths** |
+| **Total** | **3,122** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

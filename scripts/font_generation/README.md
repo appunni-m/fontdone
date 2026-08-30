@@ -45,7 +45,7 @@ campaign.
 | Generator | Classification | Input or provenance |
 |---|---|---|
 | `build_autohint_script_fixtures.py` | Synthetic | Project-authored outlines and tables; one internal copy remains within the generated synthetic family, including malformed `loca` boundary controls, six append-only valid Hebrew Batch123 long-blue contour variants, six normal-scale Batch126 Latin/Han branch probes, six valid Batch127 CJK edge-link predicate probes, one valid CJK edge-order/link-reduction coverage font, fifteen valid Batch145 CJK edge-interpolation witnesses, six valid Batch152 Latin adjustment-database flag probes, six valid Batch153 Latin no-extremum blue-string probes, six valid Batch159 Latin fallback/adjustment probes, one valid Batch190 Hebrew late-on-curve long-blue witness, one valid Batch191 Hebrew off-curve apex witness, one valid Batch194 lowered Khmer sub-top witness, one valid Batch196 Hebrew near-top span witness, one valid Batch197 mirrored Hebrew near-top span witness, one valid Batch199 Latin vertical-cusp segment-merge witness, one valid Batch200 Latin top-tilde minimum witness, one valid Batch201 Latin top-tilde predecessor-control witness, one valid Batch202 Latin bottom-tilde maximum witness, one valid Batch203 Latin lowest-contour tie-break witness, one valid Batch204 Latin horizontal-overlap witness, one valid Batch210 Latin top-tilde successor-control witness, one valid Batch211 Latin crossed-neighbor measurement witness, one valid Batch212 Latin thin crossed-tilde witness, one valid Batch213 Latin bottom-tilde predecessor-control witness, and one valid Batch214 Latin bottom-tilde successor-control witness. |
-| `build_cff_fixtures.py` | Synthetic and derived | Project-authored CFF1/CFF2, TrueType control, valid cubic-bbox extrema probes, source-reviewed global-subroutine EOF, fixed-operand arithmetic, Type2 `mul`, and fixed-valued `callgsubr` error controls, random-operator Private-dictionary boundary controls including one-byte/reserved-number/reserved-operator parser cases, and malformed CFF1/CFF2 table and INDEX data, plus malformed CID CFF derivatives of the maintained OFL-1.1 `FDArrayTest257` face. |
+| `build_cff_fixtures.py` | Synthetic and derived | Project-authored CFF1/CFF2, TrueType control, valid cubic-bbox extrema probes, source-reviewed global-subroutine EOF, fixed-operand arithmetic, Type2 `mul`, fixed-valued `callgsubr` error controls, CFF2 `random` acceptance, and `mul`/`eq` stack-underflow witnesses, random-operator Private-dictionary boundary controls including one-byte/reserved-number/reserved-operator parser cases, and malformed CFF1/CFF2 table and INDEX data, plus malformed CID CFF derivatives of the maintained OFL-1.1 `FDArrayTest257` face. |
 | `build_render_fixtures.py` | Synthetic | Project-authored outlines and TrueType programs. |
 | `build_type1_fixtures.py` | Synthetic | Project-authored Type 1 charstrings, dictionaries, AFM data, notices, a naked CID-keyed Type 1 resource, six valid no-op movement/curve controls, and a valid post-contour `setcurrentpoint` control. |
 | `build_type42_fixtures.py` | Synthetic | Project-authored embedded TrueType tables, outlines, names, and Type 42 wrapper. |
@@ -379,6 +379,19 @@ bytes / SHA-256
 1,008 bytes / SHA-256
 `2359894b2dad50abce8ce38a00189b3d48f9e549a3e38154e9827c79882961b5`.
 
+The generator also emits two source-reviewed Type2 arithmetic controls for
+Batch 237. `pure-cff-type2-arithmetic-underflow.otf` is a project-authored
+three-glyph CFF1 face: glyph 1 invokes `mul` with an empty operand stack and
+glyph 2 invokes `eq` with an empty operand stack. Pinned FreeType opens the
+face but maps each glyph-load `Stack_Underflow` to `Invalid_File_Format`.
+`pure-cff2-random.otf` is a project-authored two-glyph CFF2 face whose glyph 1
+executes `random` and `drop` before the implicit end-of-charstring boundary;
+the pinned interpreter accepts this valid CFF2 program even though CFF2 has no
+Private-dictionary random seed. Their reviewed outputs are 1,108 bytes /
+SHA-256 `c23caea9568e171cacbb3f5e49b93cbcd330cab6882856b6bbeede32e1abe0d6`
+and 896 bytes / SHA-256
+`b57328622e52cae06895e2ea4bb408a80859e0a3f25fad0e92212b8f492fe1e7`.
+
 `tests/fixtures/input/fonts/cid/ot-cff-cid-keyed-standard-ros.otf` is derived
 from the maintained CID-keyed CFF source with its ROS set to the standard CFF
 string SIDs for `Roman` and `Semibold`. It is used by the CID registry and
@@ -459,3 +472,11 @@ The reviewed output is 804 bytes with SHA-256
 `6f457efaafee3496f42e8e2dd977acf39730a86252066135076050563949c4e3`.
 It contains no third-party font material and needs no third-party license
 notice.
+
+`tests/fixtures/input/fonts/cff2/pure-cff2-random.otf` is the Batch 237
+project-authored CFF2 acceptance witness. Its glyph 1 runs the valid Type2
+`random` and `drop` operators, then relies on the CFF2 end-of-buffer boundary;
+FontTools bounding-box recalculation is disabled because it cannot interpret
+the intentionally non-geometric operator. The pinned FreeType interpreter
+accepts the glyph, and the reviewed output is 896 bytes with SHA-256
+`b57328622e52cae06895e2ea4bb408a80859e0a3f25fad0e92212b8f492fe1e7`.

@@ -252,6 +252,8 @@ document_wasm_entry_points!(
 
 #[cfg(feature = "abi-test-support")]
 document_wasm_test_support!(
+    cmap_cache_lookup_glyph_for_test,
+    fontdone_wasm_ps_hinting_engine_open_with_random_seed,
     abi_palette_data_snapshot,
     abi_palette_select_snapshot,
     abi_palette_select_without_output,

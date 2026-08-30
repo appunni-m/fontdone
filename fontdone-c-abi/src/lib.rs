@@ -285,6 +285,7 @@ document_c_entry_points!(
 
 #[cfg(feature = "abi-test-support")]
 document_abi_test_support!(
+    cmap_cache_lookup_glyph_for_test,
     abi_support_owned_mm_var_count,
     abi_palette_data_snapshot,
     abi_palette_select_snapshot,

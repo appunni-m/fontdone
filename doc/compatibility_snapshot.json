@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "snapshot_kind": "committed_measured_evidence",
-  "snapshot_date": "2026-08-25",
+  "snapshot_date": "2026-08-30",
   "freetype_version": "2.14.3",
   "package_version": "2.14.3-alpha.1",
   "public_function_adoption": {
@@ -21,21 +21,21 @@
     "c_enums": 20,
     "c_enum_variants": 158,
     "c_error_codes": 119,
-    "fontdone_pub_functions": 729,
+    "fontdone_pub_functions": 735,
     "fontdone_pub_consts": 1329,
-    "fontdone_pub_structs": 234,
+    "fontdone_pub_structs": 235,
     "fontdone_pub_enums": 19
   },
   "runtime_parity": {
-    "runnable": 18802,
-    "passed": 18802,
+    "runnable": 19342,
+    "passed": 19342,
     "failed": 0,
     "pending": 4,
-    "covered_manifest": 4355,
+    "covered_manifest": 4381,
     "validated_input_subjects": 1543,
     "validated_input_files": 1537,
-    "logical_input_cases": 4507,
-    "concrete_input_cases": 18806,
+    "logical_input_cases": 4533,
+    "concrete_input_cases": 19346,
     "function_route_evidence": 218,
     "function_total": 218
   },
@@ -43,9 +43,9 @@
     "categories_complete": 8,
     "categories_total": 12,
     "is_complete": false,
-    "runtime_contract_rows_complete": 12252,
-    "runtime_contract_rows_total": 16546,
-    "runtime_contract_rows_pending": 4294,
+    "runtime_contract_rows_complete": 12593,
+    "runtime_contract_rows_total": 16996,
+    "runtime_contract_rows_pending": 4403,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
     "platform_lanes_complete": 1,
@@ -1358,9 +1358,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "5c391af6b94273e0283f9e35957f13ba1635676c07e01ec57501625e73e11ae6",
-    "parity_tree_sha256": "b64f317019ba1af657a42d77f87538b3b42adde9df2f0869f70a7e9bc28617e8",
-    "log_sha256": "1be95d82013fff67f3193d18c082f8c2f2d27b5b800e85d7cb835b8eb769518d",
+    "sha256": "78ee913d18ce412a59cef241de718ba26d349ddaa35b14fe3be42b8c5ccf6d8e",
+    "parity_tree_sha256": "014c771d6f3e5cf9bf5e3580ba669c82d97503a492450108d729ffc4d3e6aca0",
+    "log_sha256": "e0bf399ef63905da272043445da6ce67e70cfd3755fc2a1b5b3220a41de7b1bb",
     "command": "make test-parity"
   }
 }
