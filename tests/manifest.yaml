@@ -6544,6 +6544,8 @@ subjects:
         description: Renderer failures do not destroy the original glyph even when destroy is true, free the partial bitmap glyph, and leave the caller handle unchanged.
       - id: error_invalid_outline_record_rejected
         description: A nonzero public FT_Outline contour count with a null contours pointer is rejected with FT_Err_Invalid_Outline while preserving the caller handle, for both destroy values.
+      - id: error_malformed_outline_tags_rejected
+        description: Public FT_Outline records with structurally valid counts but malformed first-cubic, conic, or cubic tag sequences reach the renderer and return FT_Err_Invalid_Outline without replacing the caller handle.
     # needs-input: operation=FT_Get_Glyph then FT_Glyph_To_Bitmap; fixture_asset=outline font with glyphs covering normal/mono/lcd render, bitmap glyph control, and malformed or unsupported glyph format facade; params={render_mode, origin vectors including null/negative/fractional 26.6, destroy true/false, null handle cases}; output shape={FT_Error, resulting glyph kind, handle replacement class, bitmap fields/bytes, left/top, advance, original-glyph mutation/free events}; comparison=exact C oracle error, bytes, placement, ownership, origin restoration, and output-handle preservation.
   - id: ftglyph.FT_Glyph_Transform
     kind: function

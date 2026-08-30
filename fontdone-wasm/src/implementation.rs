@@ -2542,6 +2542,32 @@ pub fn abi_support_corrupt_outline_glyph_for_stroke_parse(glyph_handle: usize) -
 }
 
 #[cfg(feature = "abi-test-support")]
+pub fn abi_support_corrupt_outline_glyph_for_render_tags(glyph_handle: usize, kind: u8) -> bool {
+    let glyph = ptr::with_exposed_provenance_mut::<FontdoneWasmGlyph>(glyph_handle);
+    let Some(owned) = wasm_owned_outline_glyph_from_root_mut(glyph) else {
+        return false;
+    };
+    let tags = &mut owned.core.outline.tags;
+    match kind {
+        0 if !tags.is_empty() => {
+            tags[0] = rust_ffi::FT_CURVE_TAG_CUBIC as FT_Byte;
+        }
+        1 if tags.len() >= 2 => {
+            tags[0] = rust_ffi::FT_CURVE_TAG_CONIC as FT_Byte;
+            tags[1] = rust_ffi::FT_CURVE_TAG_CUBIC as FT_Byte;
+        }
+        2 if tags.len() >= 3 => {
+            tags[0] = rust_ffi::FT_CURVE_TAG_ON as FT_Byte;
+            tags[1] = rust_ffi::FT_CURVE_TAG_CUBIC as FT_Byte;
+            tags[2] = rust_ffi::FT_CURVE_TAG_ON as FT_Byte;
+        }
+        _ => return false,
+    }
+    owned.refresh_record();
+    true
+}
+
+#[cfg(feature = "abi-test-support")]
 pub fn abi_support_corrupt_outline_glyph_for_record_sync(glyph_handle: usize) -> bool {
     let glyph = ptr::with_exposed_provenance_mut::<FontdoneWasmGlyph>(glyph_handle);
     let Some(owned) = wasm_owned_outline_glyph_from_root_mut(glyph) else {

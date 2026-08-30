@@ -420,6 +420,275 @@
       }
     },
     {
+      "case_id": "ftglyph.FT_Glyph_To_Bitmap.error_malformed_outline_tags_rejected",
+      "subject": "ftglyph.FT_Glyph_To_Bitmap",
+      "case": "error_malformed_outline_tags_rejected",
+      "covers_manifest_cases": ["error_malformed_outline_tags_rejected"],
+      "operation": "ftglyph.glyph_to_bitmap",
+      "schema": "glyph_to_bitmap",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "batch236-normal-first-cubic-g36-destroy-false",
+            "reason": "A structurally valid DejaVu outline with its first tag changed to cubic must reach the normal gray renderer's Invalid_Outline return.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 36, "pixel_size": {"x": 0, "y": 16}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": false, "corruption": "first_cubic"},
+            "coverage": ["batch236:render-normal:error-side:first-cubic:g36:destroy-false"]
+          },
+          {
+            "id": "batch236-normal-first-cubic-g36-destroy-true",
+            "reason": "The same normal-render malformed tag with destroy=true verifies that a renderer error still preserves the caller glyph before replacement.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 36, "pixel_size": {"x": 0, "y": 20}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": true, "corruption": "first_cubic"},
+            "coverage": ["batch236:render-normal:error-side:first-cubic:g36:destroy-true"]
+          },
+          {
+            "id": "batch236-normal-first-cubic-g43-destroy-false",
+            "reason": "A different DejaVu glyph confirms first-tag validation is independent of the glyph's normal outline geometry.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 43, "pixel_size": {"x": 0, "y": 16}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": false, "corruption": "first_cubic"},
+            "coverage": ["batch236:render-normal:error-side:first-cubic:g43:destroy-false"]
+          },
+          {
+            "id": "batch236-normal-first-cubic-g43-destroy-true",
+            "reason": "The ownership counterpart for glyph 43 checks the same pinned error after a successful public glyph extraction.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 43, "pixel_size": {"x": 0, "y": 20}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": true, "corruption": "first_cubic"},
+            "coverage": ["batch236:render-normal:error-side:first-cubic:g43:destroy-true"]
+          },
+          {
+            "id": "batch236-normal-first-cubic-g74-destroy-false",
+            "reason": "A larger DejaVu glyph exercises the unchanged count/endpoints proof while selecting another normal raster box.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 74, "pixel_size": {"x": 0, "y": 18}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": false, "corruption": "first_cubic"},
+            "coverage": ["batch236:render-normal:error-side:first-cubic:g74:destroy-false"]
+          },
+          {
+            "id": "batch236-normal-first-cubic-g74-destroy-true",
+            "reason": "The destroy=true form checks that the delayed destruction rule is retained for a normal-render tag error.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 74, "pixel_size": {"x": 0, "y": 22}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": true, "corruption": "first_cubic"},
+            "coverage": ["batch236:render-normal:error-side:first-cubic:g74:destroy-true"]
+          },
+          {
+            "id": "batch236-normal-bad-conic-g36-destroy-false",
+            "reason": "A first conic followed by a cubic is accepted by FT_Outline_Check but rejected by pinned FT_Outline_Decompose in normal rendering.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 36, "pixel_size": {"x": 0, "y": 16}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": false, "corruption": "bad_conic"},
+            "coverage": ["batch236:render-normal:error-side:bad-conic:g36:destroy-false"]
+          },
+          {
+            "id": "batch236-normal-bad-conic-g36-destroy-true",
+            "reason": "The destroy=true variant distinguishes renderer rejection from ownership cleanup for the bad conic sequence.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 36, "pixel_size": {"x": 0, "y": 20}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": true, "corruption": "bad_conic"},
+            "coverage": ["batch236:render-normal:error-side:bad-conic:g36:destroy-true"]
+          },
+          {
+            "id": "batch236-normal-bad-conic-g43-destroy-false",
+            "reason": "A second glyph confirms the bad conic guard is a tag-sequence rule, not a font-specific malformed record result.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 43, "pixel_size": {"x": 0, "y": 16}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": false, "corruption": "bad_conic"},
+            "coverage": ["batch236:render-normal:error-side:bad-conic:g43:destroy-false"]
+          },
+          {
+            "id": "batch236-normal-bad-conic-g43-destroy-true",
+            "reason": "The paired ownership case keeps the pinned C error observable after selecting a different size and glyph.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 43, "pixel_size": {"x": 0, "y": 20}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": true, "corruption": "bad_conic"},
+            "coverage": ["batch236:render-normal:error-side:bad-conic:g43:destroy-true"]
+          },
+          {
+            "id": "batch236-normal-unpaired-cubic-g36-destroy-false",
+            "reason": "A single cubic control followed by ON is structurally valid to FT_Outline_Check but reaches the gray renderer's bad cubic sequence error.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 36, "pixel_size": {"x": 0, "y": 16}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": false, "corruption": "unpaired_cubic"},
+            "coverage": ["batch236:render-normal:error-side:unpaired-cubic:g36:destroy-false"]
+          },
+          {
+            "id": "batch236-normal-unpaired-cubic-g36-destroy-true",
+            "reason": "The destroy=true counterpart proves the unpaired cubic failure occurs before successful replacement.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 36, "pixel_size": {"x": 0, "y": 20}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": true, "corruption": "unpaired_cubic"},
+            "coverage": ["batch236:render-normal:error-side:unpaired-cubic:g36:destroy-true"]
+          },
+          {
+            "id": "batch236-normal-unpaired-cubic-g43-destroy-false",
+            "reason": "A different glyph makes the bad cubic tag guard independently observable through the normal public conversion route.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 43, "pixel_size": {"x": 0, "y": 16}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": false, "corruption": "unpaired_cubic"},
+            "coverage": ["batch236:render-normal:error-side:unpaired-cubic:g43:destroy-false"]
+          },
+          {
+            "id": "batch236-normal-unpaired-cubic-g43-destroy-true",
+            "reason": "The matching destroy=true case checks the same C error and caller-handle preservation for glyph 43.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 43, "pixel_size": {"x": 0, "y": 20}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": true, "corruption": "unpaired_cubic"},
+            "coverage": ["batch236:render-normal:error-side:unpaired-cubic:g43:destroy-true"]
+          },
+          {
+            "id": "batch236-normal-first-cubic-g77-destroy-false",
+            "reason": "A fifth DejaVu glyph checks the first-cubic error with another control-box shape instead of relying on one glyph witness.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 77, "pixel_size": {"x": 0, "y": 18}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": false, "corruption": "first_cubic"},
+            "coverage": ["batch236:render-normal:error-side:first-cubic:g77:destroy-false"]
+          },
+          {
+            "id": "batch236-normal-first-cubic-g77-destroy-true",
+            "reason": "The final normal-mode ownership witness keeps the first-cubic malformed input paired across both destroy values.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 77, "pixel_size": {"x": 0, "y": 22}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": true, "corruption": "first_cubic"},
+            "coverage": ["batch236:render-normal:error-side:first-cubic:g77:destroy-true"]
+          },
+          {
+            "id": "batch236-normal-bad-conic-g74-destroy-false",
+            "reason": "A larger glyph checks the bad conic sequence after a different normal raster allocation.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 74, "pixel_size": {"x": 0, "y": 18}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": false, "corruption": "bad_conic"},
+            "coverage": ["batch236:render-normal:error-side:bad-conic:g74:destroy-false"]
+          },
+          {
+            "id": "batch236-normal-bad-conic-g74-destroy-true",
+            "reason": "The paired larger-glyph case checks delayed destruction on the bad conic renderer failure.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 74, "pixel_size": {"x": 0, "y": 22}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": true, "corruption": "bad_conic"},
+            "coverage": ["batch236:render-normal:error-side:bad-conic:g74:destroy-true"]
+          },
+          {
+            "id": "batch236-normal-unpaired-cubic-g74-destroy-false",
+            "reason": "A larger glyph exercises the unpaired cubic guard with a separate outline and allocation size.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 74, "pixel_size": {"x": 0, "y": 18}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": false, "corruption": "unpaired_cubic"},
+            "coverage": ["batch236:render-normal:error-side:unpaired-cubic:g74:destroy-false"]
+          },
+          {
+            "id": "batch236-normal-unpaired-cubic-g74-destroy-true",
+            "reason": "The matching destroy=true larger-glyph witness checks error cleanup without successful glyph replacement.",
+            "assets": {"outline_font": {"kind": "file", "role": "font", "path": "input/fonts/DejaVuSans.ttf"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 74, "pixel_size": {"x": 0, "y": 22}, "load_flags": ["FT_LOAD_NO_BITMAP"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": true, "corruption": "unpaired_cubic"},
+            "coverage": ["batch236:render-normal:error-side:unpaired-cubic:g74:destroy-true"]
+          },
+          {
+            "id": "batch236-overlap-first-cubic-g6-destroy-false",
+            "reason": "The maintained render-coverage glyph 6 carries FT_OUTLINE_OVERLAP, so the same public malformed tag reaches render_normal_overlap's rasterizer error arm.",
+            "assets": {"outline_font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/render-coverage.ttf", "asset_kind": "font"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 6, "pixel_size": {"x": 0, "y": 16}, "load_flags": ["FT_LOAD_NO_HINTING"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": false, "corruption": "first_cubic"},
+            "coverage": ["batch236:render-normal-overlap:error-side:first-cubic:g6:destroy-false"]
+          },
+          {
+            "id": "batch236-overlap-first-cubic-g6-destroy-true",
+            "reason": "The overlap destroy=true counterpart verifies that malformed-tag raster failure still leaves the caller handle for the C replacement policy.",
+            "assets": {"outline_font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/render-coverage.ttf", "asset_kind": "font"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 6, "pixel_size": {"x": 0, "y": 20}, "load_flags": ["FT_LOAD_NO_HINTING"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": true, "corruption": "first_cubic"},
+            "coverage": ["batch236:render-normal-overlap:error-side:first-cubic:g6:destroy-true"]
+          },
+          {
+            "id": "batch236-overlap-bad-conic-g6-destroy-false",
+            "reason": "A bad conic sequence on the overlap glyph proves the overlap rasterizer shares pinned tag decomposition failure semantics.",
+            "assets": {"outline_font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/render-coverage.ttf", "asset_kind": "font"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 6, "pixel_size": {"x": 0, "y": 16}, "load_flags": ["FT_LOAD_NO_HINTING"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": false, "corruption": "bad_conic"},
+            "coverage": ["batch236:render-normal-overlap:error-side:bad-conic:g6:destroy-false"]
+          },
+          {
+            "id": "batch236-overlap-bad-conic-g6-destroy-true",
+            "reason": "The overlap bad-conic ownership pair checks the error path after the oversampling branch has been selected.",
+            "assets": {"outline_font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/render-coverage.ttf", "asset_kind": "font"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 6, "pixel_size": {"x": 0, "y": 20}, "load_flags": ["FT_LOAD_NO_HINTING"], "render_mode": "FT_RENDER_MODE_NORMAL", "destroy": true, "corruption": "bad_conic"},
+            "coverage": ["batch236:render-normal-overlap:error-side:bad-conic:g6:destroy-true"]
+          },
+          {
+            "id": "batch236-sdf-first-cubic-g7-destroy-false",
+            "reason": "The maintained SDF glyph 7 with a first cubic reaches rasterize_sdf_outline's pinned Invalid_Outline error return.",
+            "assets": {"outline_font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/render-coverage.ttf", "asset_kind": "font"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 7, "pixel_size": {"x": 0, "y": 16}, "load_flags": ["FT_LOAD_NO_HINTING"], "render_mode": "FT_RENDER_MODE_SDF", "destroy": false, "corruption": "first_cubic"},
+            "coverage": ["batch236:render-sdf:error-side:first-cubic:g7:destroy-false"]
+          },
+          {
+            "id": "batch236-sdf-first-cubic-g7-destroy-true",
+            "reason": "The SDF destroy=true witness checks caller-handle preservation after the SDF renderer rejects the public tag sequence.",
+            "assets": {"outline_font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/render-coverage.ttf", "asset_kind": "font"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 7, "pixel_size": {"x": 0, "y": 20}, "load_flags": ["FT_LOAD_NO_HINTING"], "render_mode": "FT_RENDER_MODE_SDF", "destroy": true, "corruption": "first_cubic"},
+            "coverage": ["batch236:render-sdf:error-side:first-cubic:g7:destroy-true"]
+          },
+          {
+            "id": "batch236-sdf-bad-conic-g7-destroy-false",
+            "reason": "A bad conic sequence in SDF mode verifies that the SDF subdivision path delegates malformed public tags to the same C decomposition guard.",
+            "assets": {"outline_font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/render-coverage.ttf", "asset_kind": "font"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 7, "pixel_size": {"x": 0, "y": 16}, "load_flags": ["FT_LOAD_NO_HINTING"], "render_mode": "FT_RENDER_MODE_SDF", "destroy": false, "corruption": "bad_conic"},
+            "coverage": ["batch236:render-sdf:error-side:bad-conic:g7:destroy-false"]
+          },
+          {
+            "id": "batch236-sdf-bad-conic-g7-destroy-true",
+            "reason": "The paired SDF bad-conic case checks ownership behavior at a different requested size.",
+            "assets": {"outline_font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/render-coverage.ttf", "asset_kind": "font"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 7, "pixel_size": {"x": 0, "y": 20}, "load_flags": ["FT_LOAD_NO_HINTING"], "render_mode": "FT_RENDER_MODE_SDF", "destroy": true, "corruption": "bad_conic"},
+            "coverage": ["batch236:render-sdf:error-side:bad-conic:g7:destroy-true"]
+          },
+          {
+            "id": "batch236-sdf-unpaired-cubic-g7-destroy-false",
+            "reason": "An unpaired cubic in SDF mode reaches the SDF renderer's same public Invalid_Outline result instead of being silently accepted.",
+            "assets": {"outline_font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/render-coverage.ttf", "asset_kind": "font"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 7, "pixel_size": {"x": 0, "y": 16}, "load_flags": ["FT_LOAD_NO_HINTING"], "render_mode": "FT_RENDER_MODE_SDF", "destroy": false, "corruption": "unpaired_cubic"},
+            "coverage": ["batch236:render-sdf:error-side:unpaired-cubic:g7:destroy-false"]
+          },
+          {
+            "id": "batch236-sdf-unpaired-cubic-g7-destroy-true",
+            "reason": "The final SDF ownership witness completes the malformed cubic matrix for both public destroy values.",
+            "assets": {"outline_font": {"kind": "ref", "role": "font", "id": "input/fonts/glyf/render-coverage.ttf", "asset_kind": "font"}},
+            "params": {"source_creation": "FT_Get_Glyph outline then public FT_Outline tag corruption", "glyph_index": 7, "pixel_size": {"x": 0, "y": 20}, "load_flags": ["FT_LOAD_NO_HINTING"], "render_mode": "FT_RENDER_MODE_SDF", "destroy": true, "corruption": "unpaired_cubic"},
+            "coverage": ["batch236:render-sdf:error-side:unpaired-cubic:g7:destroy-true"]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph",
+        "area:glyph",
+        "area:render",
+        "error:invalid-outline",
+        "malformed:public-outline-tags"
+      ],
+      "metadata": {
+        "source_behavior": "Pinned FT_Outline_Check at freetype/src/base/ftoutln.c:351-393 deliberately omits tag validation; FT_Outline_Decompose in freetype/src/smooth/ftgrays.c:1480-1685 rejects malformed cubic and conic sequences during rendering.",
+        "expansion_reason": "Batch 236 is the first public FT_Glyph_To_Bitmap family that keeps counts and contour endpoints valid while corrupting only the public tags. The 30 cases separate normal, overlap-normal, and SDF renderer entry points, three pinned decomposition failures, multiple glyph boxes, sizes, and both destroy values so every retained input has a distinct reachability or ownership reason.",
+        "oracle_verdict": "Pinned FreeType does not unknowingly accept these records: the public outline pre-check passes them because it does not inspect tags, and the renderer returns FT_Err_Invalid_Outline from its decomposition stage."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "corruption": "selected public tag mutation",
+          "destroy": "requested destroy value",
+          "caller_handle_class": "original_unchanged"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "error",
+            "corruption",
+            "destroy",
+            "caller_handle_class"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftglyph.c:771-869",
+          "freetype/src/base/ftoutln.c:351-393",
+          "freetype/src/smooth/ftgrays.c:1480-1685",
+          "src/render.rs:393-449",
+          "src/render.rs:462-530",
+          "src/render.rs:570-605"
+        ],
+        "error": "FT_Err_Invalid_Outline",
+        "fixture_requirements": [
+          "DejaVuSans glyphs 36, 43, 74, and 77 remain outline glyphs with at least three points.",
+          "render-coverage.ttf glyph 6 retains FT_OUTLINE_OVERLAP and glyph 7 is usable by the SDF renderer.",
+          "Each mutation leaves n_points, n_contours, and contour endpoints unchanged so FT_Outline_Check reaches rendering."
+        ]
+      }
+    },
+    {
       "case_id": "ftglyph.FT_Glyph_To_Bitmap.pending_stroked_mono_target_outline_to_bitmap",
       "subject": "ftglyph.FT_Glyph_To_Bitmap",
       "case": "pending_stroked_mono_target_outline_to_bitmap",

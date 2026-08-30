@@ -50146,6 +50146,19 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                 args.push(load_flags_param(params)?.to_string());
                 return Ok(args);
             }
+            if case_id_base(&case.case_id)
+                == "ftglyph.FT_Glyph_To_Bitmap.error_malformed_outline_tags_rejected"
+            {
+                let mut args = vec!["--glyph-to-bitmap-malformed-outline-tags".to_string()];
+                push_font_source(case, &mut args)?;
+                push_face_size(params, &mut args)?;
+                args.push(glyph_index_param(params)?.to_string());
+                args.push(load_flags_param(params)?.to_string());
+                args.push(render_mode_param(params)?.to_string());
+                args.push(i32::from(bool_param(params, "destroy", false)?).to_string());
+                args.push(string_param(params, "corruption")?.to_string());
+                return Ok(args);
+            }
             if case.case_id
                 == "ftglyph.FT_Glyph_To_Bitmap.error_invalid_arguments_or_unrenderable_format"
                 && glyph_to_bitmap_invalid_inputs_supported(&case.inputs.params)
@@ -52251,6 +52264,11 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
                 ensure_malformed_glyph_facade(case)?;
                 return rust_glyph_to_bitmap_invalid_outline_record(case);
             }
+            if case_id_base(&case.case_id)
+                == "ftglyph.FT_Glyph_To_Bitmap.error_malformed_outline_tags_rejected"
+            {
+                return rust_glyph_to_bitmap_malformed_outline_tags(case);
+            }
             if case.case_id == "ftglyph.FT_Glyph_To_Bitmap.error_render_failure_preserves_original"
             {
                 return rust_glyph_to_bitmap_render_failure(case);
@@ -53951,6 +53969,15 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
                 c_done_library(library);
                 return output;
             }
+            if case_id_base(&case.case_id)
+                == "ftglyph.FT_Glyph_To_Bitmap.error_malformed_outline_tags_rejected"
+            {
+                let (library, face) = c_open_face(case)?;
+                let output = c_glyph_to_bitmap_malformed_outline_tags(face, case);
+                c_done_face(face);
+                c_done_library(library);
+                return output;
+            }
             if case.case_id == "ftglyph.FT_Glyph_To_Bitmap.error_render_failure_preserves_original"
             {
                 let (library, face) = c_open_face(case)?;
@@ -55514,6 +55541,14 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
                 ensure_malformed_glyph_facade(case)?;
                 let handle = wasm_open_face(case)?;
                 let output = wasm_glyph_to_bitmap_invalid_outline_record(handle, case);
+                wasm_done_face(handle);
+                return output;
+            }
+            if case_id_base(&case.case_id)
+                == "ftglyph.FT_Glyph_To_Bitmap.error_malformed_outline_tags_rejected"
+            {
+                let handle = wasm_open_face(case)?;
+                let output = wasm_glyph_to_bitmap_malformed_outline_tags(handle, case);
                 wasm_done_face(handle);
                 return output;
             }
@@ -61602,6 +61637,161 @@ fn glyph_to_bitmap_invalid_outline_record_output(rows: Vec<Value>) -> RunOutput 
         .find(|error| *error != i64::from(FT_Err_Ok))
         .unwrap_or(i64::from(FT_Err_Ok)) as FT_Error;
     error_with_output(first_error, json!({ "rows": rows }))
+}
+
+fn glyph_to_bitmap_malformed_outline_tag_kind(params: &Value) -> Result<u8, String> {
+    match string_param(params, "corruption")? {
+        "first_cubic" => Ok(0),
+        "bad_conic" => Ok(1),
+        "unpaired_cubic" => Ok(2),
+        other => Err(format!("unsupported malformed outline tag corruption {other}")),
+    }
+}
+
+fn glyph_to_bitmap_malformed_outline_tags_output(
+    corruption: &str,
+    destroy: bool,
+    error: FT_Error,
+    handle_unchanged: bool,
+) -> RunOutput {
+    error_with_output(
+        error,
+        json!({
+            "corruption": corruption,
+            "destroy": destroy,
+            "caller_handle_class": if handle_unchanged {
+                "original_unchanged"
+            } else {
+                "changed"
+            }
+        }),
+    )
+}
+
+fn rust_glyph_to_bitmap_malformed_outline_tags(case: &InputCase) -> Result<RunOutput, String> {
+    let face = open_face(case)?;
+    let params = &case.inputs.params;
+    let corruption = string_param(params, "corruption")?;
+    let tag_kind = glyph_to_bitmap_malformed_outline_tag_kind(params)?;
+    let destroy = bool_param(params, "destroy", false)?;
+    let slot = match FT_Load_Glyph(
+        &face,
+        glyph_index_param(params)?,
+        load_flags_param(params)?,
+    ) {
+        Ok(slot) => slot,
+        Err(err) => return Ok(error(err)),
+    };
+    let mut glyph = match FT_Get_Outline_Glyph(Some(&slot)) {
+        Ok(glyph) => glyph,
+        Err(err) => return Ok(error(err)),
+    };
+    let tags = &mut glyph.outline.tags;
+    match tag_kind {
+        0 if !tags.is_empty() => tags[0] = FT_CURVE_TAG_CUBIC as FT_Byte,
+        1 if tags.len() >= 2 => {
+            tags[0] = FT_CURVE_TAG_CONIC as FT_Byte;
+            tags[1] = FT_CURVE_TAG_CUBIC as FT_Byte;
+        }
+        2 if tags.len() >= 3 => {
+            tags[0] = FT_CURVE_TAG_ON as FT_Byte;
+            tags[1] = FT_CURVE_TAG_CUBIC as FT_Byte;
+            tags[2] = FT_CURVE_TAG_ON as FT_Byte;
+        }
+        _ => return Err(format!("malformed outline has too few tags for {corruption}")),
+    }
+    let render_error = FT_Outline_Glyph_To_Bitmap_In_Place(
+        &mut glyph,
+        render_mode_param(params)?,
+        None,
+        destroy,
+    )
+    .map_or_else(|err| err, |_| FT_Err_Ok);
+    let handle_unchanged = render_error != FT_Err_Ok;
+    FT_Done_Glyph(true);
+    drop(glyph);
+    Ok(glyph_to_bitmap_malformed_outline_tags_output(
+        corruption,
+        destroy,
+        render_error,
+        handle_unchanged,
+    ))
+}
+
+fn c_glyph_to_bitmap_malformed_outline_tags(
+    face: c_abi::FT_Face,
+    case: &InputCase,
+) -> Result<RunOutput, String> {
+    let params = &case.inputs.params;
+    let corruption = string_param(params, "corruption")?;
+    let tag_kind = glyph_to_bitmap_malformed_outline_tag_kind(params)?;
+    let destroy = bool_param(params, "destroy", false)?;
+    let original = match c_get_glyph_from_face(
+        face,
+        glyph_index_param(params)?,
+        load_flags_param(params)?,
+    ) {
+        Ok(glyph) => glyph,
+        Err(err) => return Ok(error(err)),
+    };
+    if !c_abi::abi_support_corrupt_outline_glyph_for_render_tags(original, tag_kind) {
+        c_abi::FT_Done_Glyph(original);
+        return Err(format!("failed to corrupt C ABI outline tags for {corruption}"));
+    }
+    let mut handle = original;
+    let render_error = c_abi::FT_Glyph_To_Bitmap(
+        &mut handle,
+        render_mode_param(params)?,
+        ptr::null(),
+        u8::from(destroy),
+    );
+    let handle_unchanged = handle == original;
+    if !handle.is_null() {
+        c_abi::FT_Done_Glyph(handle);
+    }
+    Ok(glyph_to_bitmap_malformed_outline_tags_output(
+        corruption,
+        destroy,
+        render_error,
+        handle_unchanged,
+    ))
+}
+
+fn wasm_glyph_to_bitmap_malformed_outline_tags(
+    face_handle: usize,
+    case: &InputCase,
+) -> Result<RunOutput, String> {
+    let params = &case.inputs.params;
+    let corruption = string_param(params, "corruption")?;
+    let tag_kind = glyph_to_bitmap_malformed_outline_tag_kind(params)?;
+    let destroy = bool_param(params, "destroy", false)?;
+    let original = match wasm_get_glyph_from_face(
+        face_handle,
+        glyph_index_param(params)?,
+        load_flags_param(params)?,
+    ) {
+        Ok(glyph) => glyph,
+        Err(err) => return Ok(error(err)),
+    };
+    if !wasm_abi::abi_support_corrupt_outline_glyph_for_render_tags(original, tag_kind) {
+        wasm_done_glyph_handle(original);
+        return Err(format!("failed to corrupt WASM outline tags for {corruption}"));
+    }
+    let mut handle = original;
+    let render_error = wasm_abi::fontdone_wasm_glyph_to_bitmap_handle(
+        &mut handle,
+        render_mode_param(params)?,
+        ptr::null(),
+        u8::from(destroy),
+    );
+    let handle_unchanged = handle == original;
+    wasm_done_glyph_handle(handle);
+    Ok(glyph_to_bitmap_malformed_outline_tags_output(
+        corruption,
+        destroy,
+        render_error,
+        handle_unchanged,
+    ))
 }
 
 fn rust_glyph_to_bitmap_invalid_outline_record(case: &InputCase) -> Result<RunOutput, String> {

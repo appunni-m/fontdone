@@ -264,6 +264,7 @@ document_wasm_test_support!(
     abi_support_colr_v1_public_paint_solid,
     abi_outline_glyph_snapshot,
     abi_support_corrupt_outline_glyph_for_render_failure,
+    abi_support_corrupt_outline_glyph_for_render_tags,
     abi_support_corrupt_outline_glyph_for_stroke_parse,
     abi_support_corrupt_outline_glyph_for_record_sync,
     abi_support_corrupt_outline_glyph_points_for_record_sync,
