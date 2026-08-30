@@ -421,6 +421,19 @@ ifeq ($(COVERAGE_UNIFIED_LANE_SPLIT),1)
 	done; \
 	for pid in $$pids; do wait $$pid || lane_status=1; done; \
 	exit $$lane_status
+	# The split lane processes write one raw profile per backend/shard.  cargo-llvm-cov
+	# report only consumes its conventional `fontdone.profdata`, so merge every
+	# lane profile explicitly before asking it to export the MCP artifact.
+	@set -eu; \
+	coverage_host=$$($(CARGO) +$(COVERAGE_TOOLCHAIN) -vV | sed -n 's/^host: //p'); \
+	coverage_sysroot=$$(rustc +$(COVERAGE_TOOLCHAIN) --print sysroot); \
+	llvm_profdata="$$coverage_sysroot/lib/rustlib/$$coverage_host/bin/llvm-profdata"; \
+	if test ! -x "$$llvm_profdata"; then \
+	  echo "coverage llvm-profdata not found: $$llvm_profdata" >&2; \
+	  exit 1; \
+	fi; \
+	"$$llvm_profdata" merge -sparse $(COVERAGE_PROFILE_DIR)/fontdone-*.profraw \
+	  -o $(COVERAGE_PROFILE_DIR)/fontdone.profdata
 	CARGO_TARGET_DIR=$(COVERAGE_ALL_TARGET_DIR) \
 	$(CARGO) +$(COVERAGE_TOOLCHAIN) llvm-cov report \
 		--package fontdone --package fontdone-c-abi --package fontdone-wasm \

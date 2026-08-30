@@ -30640,12 +30640,20 @@ fn rust_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String>
                 Some(&face),
                 Some(&mut prop),
             );
-            let initial_map_value =
-                if property_error == FT_Err_Ok && !prop.map.is_null() && glyph_index != 0 {
-                    FT_Glyph_To_Script_Map_Mutate_For_Test(&mut face, glyph_index, mutation.value)
-                        .unwrap_or(0)
+            let (mutation_validation_error, initial_map_value) =
+                if property_error != FT_Err_Ok {
+                    (property_error, 0)
+                } else if prop.map.is_null() || glyph_index == 0 {
+                    (FT_Err_Invalid_Glyph_Index, 0)
                 } else {
-                    0
+                    match FT_Glyph_To_Script_Map_Mutate_For_Test(
+                        &mut face,
+                        glyph_index,
+                        mutation.value,
+                    ) {
+                        Some(initial) => (FT_Err_Ok, initial),
+                        None => (FT_Err_Invalid_Glyph_Index, 0),
+                    }
                 };
             let (load_error, render_error, glyph_slot) = if property_error != FT_Err_Ok {
                 (property_error, property_error, Value::Null)
@@ -30657,6 +30665,7 @@ fn rust_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String>
                 "glyph_index": glyph_index,
                 "ppem": ppem,
                 "property_error": property_error,
+                "mutation_validation_error": mutation_validation_error,
                 "initial_map_value": initial_map_value,
                 "mutated_map_value": mutation.value,
                 "load_error": load_error,
@@ -30694,12 +30703,17 @@ fn c_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String> {
                 property_name.as_ptr(),
                 (&mut prop as *mut FT_Prop_GlyphToScriptMap).cast(),
             );
-            let initial_map_value =
-                if property_error == FT_Err_Ok && !prop.map.is_null() && glyph_index != 0 {
-                    c_abi::abi_glyph_to_script_map_mutate(face, glyph_index, mutation.value)
-                        .unwrap_or(0)
+            let (mutation_validation_error, initial_map_value) =
+                if property_error != FT_Err_Ok {
+                    (property_error, 0)
+                } else if prop.map.is_null() || glyph_index == 0 {
+                    (FT_Err_Invalid_Glyph_Index, 0)
                 } else {
-                    0
+                    match c_abi::abi_glyph_to_script_map_mutate(face, glyph_index, mutation.value)
+                    {
+                        Some(initial) => (FT_Err_Ok, initial),
+                        None => (FT_Err_Invalid_Glyph_Index, 0),
+                    }
                 };
             let (load_error, render_error, glyph_slot) = if property_error != FT_Err_Ok {
                 (property_error, property_error, Value::Null)
@@ -30711,6 +30725,7 @@ fn c_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String> {
                 "glyph_index": glyph_index,
                 "ppem": ppem,
                 "property_error": property_error,
+                "mutation_validation_error": mutation_validation_error,
                 "initial_map_value": initial_map_value,
                 "mutated_map_value": mutation.value,
                 "load_error": load_error,
@@ -30738,20 +30753,14 @@ fn wasm_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String>
                 &case.inputs.params,
             )?;
             let glyph_index = wasm_abi::fontdone_wasm_get_char_index(handle, mutation.char_code);
-            let (property_error, initial_map_value) = if glyph_index == 0 {
-                // Match the Rust/C ABI routes and the C oracle's explicit
-                // missing-glyph precondition: a zero result is not a map entry
-                // to mutate, even when FT_Property_Get itself succeeds.
-                (FT_Err_Ok, 0)
-            } else {
-                wasm_abi::abi_property_glyph_to_script_map_mutate(
+            let (property_error, mutation_validation_error, initial_map_value) =
+                wasm_abi::abi_property_glyph_to_script_map_mutate_with_status(
                     handle,
                     glyph_index,
                     mutation.value,
                     module_name,
                     property_name,
-                )
-            };
+                );
             let (load_error, render_error, glyph_slot) = if property_error != FT_Err_Ok {
                 (property_error, property_error, Value::Null)
             } else {
@@ -30762,6 +30771,7 @@ fn wasm_property_glyph_map_effect(case: &InputCase) -> Result<RunOutput, String>
                 "glyph_index": glyph_index,
                 "ppem": ppem,
                 "property_error": property_error,
+                "mutation_validation_error": mutation_validation_error,
                 "initial_map_value": initial_map_value,
                 "mutated_map_value": mutation.value,
                 "load_error": load_error,
@@ -46656,6 +46666,8 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                 == "ftmm.FT_Set_Var_Design_Coordinates.batch120_native_mixed_composite_args"
                 || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch135_native_gvar_composite_xy"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch243_native_gvar_composite_error"
     {
         let set_coords = ftmm_optional_coords_from_params(params)?;
         let mut args = vec!["--ftmm-set-var-design-glyph-output".to_string()];
@@ -51785,6 +51797,8 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch120_native_mixed_composite_args"
                 || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch135_native_gvar_composite_xy"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch243_native_gvar_composite_error"
                 =>
         {
             rust_ftmm_set_var_design_glyph_output(case)
@@ -53459,6 +53473,8 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch120_native_mixed_composite_args"
                 || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch135_native_gvar_composite_xy"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch243_native_gvar_composite_error"
                 =>
         {
             c_ftmm_set_var_design_glyph_output(case)
@@ -55027,6 +55043,8 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch120_native_mixed_composite_args"
                 || case_id_base(&case.case_id)
                     == "ftmm.FT_Set_Var_Design_Coordinates.batch135_native_gvar_composite_xy"
+                || case_id_base(&case.case_id)
+                    == "ftmm.FT_Set_Var_Design_Coordinates.batch243_native_gvar_composite_error"
                 =>
         {
             wasm_ftmm_set_var_design_glyph_output(case)

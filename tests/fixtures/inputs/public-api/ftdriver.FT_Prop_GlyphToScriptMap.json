@@ -275,9 +275,9 @@
               "render_mode": "FT_RENDER_MODE_NORMAL"
             },
             "metadata": {
-              "source_behavior": "FreeType opens this malformed-but-supported zero-glyph CFF face, returns a successful glyph-to-script-map property query, leaves the zero-glyph map untouched, and reports Invalid_Glyph_Index for the missing glyph during the forced-autohint load/render probe.",
-              "expansion_reason": "The existing map-mutation case only exercises a non-empty map. This maintained zero-glyph input reaches the WASM post-validation branch where a successful FT_Property_Get is combined with an out-of-range glyph index; it verifies that the implementation does not invent a mutation error for a public C route that safely declines to dereference the empty map.",
-              "oracle_verdict": "The pinned C oracle returns property_error=0, glyph_index=0, initial_map_value=0, and Invalid_Glyph_Index (16) for both load and render across all four mutation rows and three ppems. It does not write prop.map[0].",
+              "source_behavior": "FreeType opens this malformed-but-supported zero-glyph CFF face, returns a successful glyph-to-script-map property query, leaves the zero-glyph map untouched, and reports Invalid_Glyph_Index for the missing glyph during the forced-autohint load/render probe. The parity harness separately records Invalid_Glyph_Index for the checked mutation attempt.",
+              "expansion_reason": "The existing map-mutation case only exercises a non-empty map. This maintained zero-glyph input reaches the WASM post-validation branch where a successful FT_Property_Get is combined with an out-of-range glyph index; the explicit mutation_validation_error field makes that safety result comparable without changing the public property_error or load/render behavior.",
+              "oracle_verdict": "The pinned C oracle returns property_error=0, mutation_validation_error=Invalid_Glyph_Index (16), glyph_index=0, initial_map_value=0, and Invalid_Glyph_Index (16) for both load and render across all four mutation rows and three ppems. It does not write prop.map[0].",
               "source_refs": [
                 "tests/fixtures/inputs/public-api/freetype.FT_New_Memory_Face.json:757-779",
                 "tests/fixtures/input/fonts/cid/FDArrayTest257.PROVENANCE.md:88-96",
@@ -345,7 +345,7 @@
               "render_mode": "FT_RENDER_MODE_NORMAL"
             },
             "metadata": {
-              "source_behavior": "FreeType accepts the public FT_Property_Get call with a valid module and an unknown property name, dispatches it to the autofitter property service, and returns FT_Err_Missing_Property without populating the glyph-map record.",
+              "source_behavior": "FreeType accepts the public FT_Property_Get call with a valid module and an unknown property name, dispatches it to the autofitter property service, and returns FT_Err_Missing_Property without populating the glyph-map record. The checked mutation attempt reports the same error and does not load or render a glyph.",
               "expansion_reason": "The existing valid-property and zero-glyph variants cannot enter the WASM helper's non-OK post-validation return. This smallest malformed public-property case keeps the face and glyph valid while making FT_Property_Get return Missing_Property, directly targeting the helper's error side rather than adding another font or glyph matrix.",
               "oracle_verdict": "The pinned C oracle returns FT_Err_Missing_Property for property_error and propagates the same error to load_error and render_error through its prefix guard; initial_map_value and glyph_slot remain zero/null for all four mutation rows and three ppems.",
               "source_refs": [
@@ -374,7 +374,7 @@
         "status": "ok",
         "fixture_requirements": "The runner must mutate the returned FT_UShort map entries before the first auto-hinted load for the face, then compare C/Rust/C-FFI/Wasm glyph metrics, outline cbox, and bitmap bytes for each script override.",
         "output_shape": {
-          "rows": "fresh-face mutation x ppem matrix with exact property/load/render status and complete glyph slot"
+        "rows": "fresh-face mutation x ppem matrix with exact property status, checked mutation-validation status, load/render status, and complete glyph slot"
         },
         "compare": {
           "mode": "exact",

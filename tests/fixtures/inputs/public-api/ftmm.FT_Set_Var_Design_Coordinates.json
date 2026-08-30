@@ -1,7 +1,7 @@
 {
   "version": 1,
   "subject": "ftmm.FT_Set_Var_Design_Coordinates",
-  "manifest_cases": ["success_set_design_coordinates", "success_partial_extra_and_reset", "success_updates_metrics_variations", "error_null_coords_with_nonzero_count", "output_changes_for_design_coordinates", "batch76_avar_hvar_scalar", "batch77_fvar_no_gvar_composite", "batch78_active_gvar_routing", "batch79_native_variable_routing", "batch010_gvar_composite_error", "batch011_no_gvar_composite_error", "batch120_native_mixed_composite_args", "batch135_native_gvar_composite_xy"],
+  "manifest_cases": ["success_set_design_coordinates", "success_partial_extra_and_reset", "success_updates_metrics_variations", "error_null_coords_with_nonzero_count", "output_changes_for_design_coordinates", "batch76_avar_hvar_scalar", "batch77_fvar_no_gvar_composite", "batch78_active_gvar_routing", "batch79_native_variable_routing", "batch010_gvar_composite_error", "batch243_native_gvar_composite_error", "batch011_no_gvar_composite_error", "batch120_native_mixed_composite_args", "batch135_native_gvar_composite_xy"],
   "cases": [
     {
       "case_id": "ftmm.FT_Set_Var_Design_Coordinates.success_set_design_coordinates",
@@ -642,6 +642,27 @@
       "classifiers": ["kind:function", "header:ftmm", "surface:public-c-api", "operation:variation-setter", "coverage:batch010"],
       "metadata": {"abi": {"header": "freetype/ftmm.h", "symbol": "FT_Set_Var_Design_Coordinates", "kind": "function", "c_signature": "FT_Error FT_Set_Var_Design_Coordinates(FT_Face face, FT_UInt num_coords, FT_Fixed* coords)"}, "coverage_intent": "Thirty valid public variation glyph-output cases attach a runtime-short gvar tuple to composite glyph 1 and exercise the composite variation error-propagation path across legal active coordinates, public load targets, and ppem sizes."},
       "expectation": {"status": "error", "output_shape": {"return": "FT_Error"}, "compare": {"mode": "exact_error", "paths": ["return"]}, "error": "FT_Err_Invalid_Table", "source_refs": ["src/tt/glyf.rs", "src/tt/gvar.rs", "scripts/font_generation/build_ftmm_future_variable_fixtures.py", "freetype/src/truetype/ttgload.c", "freetype/src/truetype/ttgxvar.c"]}
+    },
+    {
+      "case_id": "ftmm.FT_Set_Var_Design_Coordinates.batch243_native_gvar_composite_error",
+      "subject": "ftmm.FT_Set_Var_Design_Coordinates",
+      "case": "batch243_native_gvar_composite_error",
+      "operation": "ftmm.set_var_design_coordinates",
+      "schema": "glyph_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {"id":"batch243-native-gvar-error-001","expect_error":true,"assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/variable-native-gvar-runtime-composite-error.ttf","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_16_16":[6553600,32768000],"glyph_index":1,"pixel_size":13,"load_flags":["FT_LOAD_DEFAULT"],"render_mode":"FT_RENDER_MODE_NORMAL"},"coverage":["batch243:native-gvar-error:glyph-1:wdth100-wght500:default:size-13"]},
+          {"id":"batch243-native-gvar-error-002","expect_error":true,"assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/variable-native-gvar-runtime-composite-error.ttf","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_16_16":[6553600,32768000],"glyph_index":1,"pixel_size":13,"load_flags":["FT_LOAD_NO_AUTOHINT"],"render_mode":"FT_RENDER_MODE_NORMAL"},"coverage":["batch243:native-gvar-error:glyph-1:wdth100-wght500:no-autohint:size-13"]},
+          {"id":"batch243-native-gvar-error-003","expect_error":true,"assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/variable-native-gvar-runtime-composite-error.ttf","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_16_16":[6553600,52428800],"glyph_index":1,"pixel_size":17,"load_flags":["FT_LOAD_DEFAULT","FT_LOAD_VERTICAL_LAYOUT"],"render_mode":"FT_RENDER_MODE_NORMAL"},"coverage":["batch243:native-gvar-error:glyph-1:wdth100-wght800:default+vertical:size-17"]},
+          {"id":"batch243-native-gvar-error-004","expect_error":true,"assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/variable-native-gvar-runtime-composite-error.ttf","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_16_16":[4915200,52428800],"glyph_index":1,"pixel_size":29,"load_flags":["FT_LOAD_NO_AUTOHINT","FT_LOAD_VERTICAL_LAYOUT","FT_LOAD_PEDANTIC"],"render_mode":"FT_RENDER_MODE_NORMAL"},"coverage":["batch243:native-gvar-error:glyph-1:wdth75-wght800:no-autohint+vertical+pedantic:size-29"]},
+          {"id":"batch243-native-gvar-error-005","expect_error":true,"assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/variable/variable-native-gvar-runtime-composite-error.ttf","asset_kind":"font"}},"params":{"face_index":0,"num_coords":2,"coords_16_16":[6553600,26214400],"glyph_index":1,"pixel_size":37,"load_flags":["FT_LOAD_TARGET_LIGHT"],"render_mode":"FT_RENDER_MODE_NORMAL"},"coverage":["batch243:native-gvar-error:glyph-1:wdth100-wght400:target-light:size-37"]}
+        ]
+      },
+      "covers_manifest_cases": ["batch243_native_gvar_composite_error"],
+      "classifiers": ["kind:function", "header:ftmm", "surface:public-c-api", "operation:variation-setter", "coverage:batch243"],
+      "metadata": {"abi": {"header": "freetype/ftmm.h", "symbol": "FT_Set_Var_Design_Coordinates", "kind": "function", "c_signature": "FT_Error FT_Set_Var_Design_Coordinates(FT_Face face, FT_UInt num_coords, FT_Fixed* coords)"}, "coverage_intent": "Five public native-variable glyph-output cases keep composite glyph 1 structurally valid, add harmless native setup tables, and attach a runtime-short gvar tuple. This separates the pinned TT_Load_Composite_Glyph record parser from TT_Vary_Apply_Glyph_Deltas so the native tables.rs error edge is exercised after composite parsing."},
+      "expectation": {"status": "error", "output_shape": {"return": "FT_Error"}, "compare": {"mode": "exact_error", "paths": ["return"]}, "error": "FT_Err_Invalid_Table", "source_refs": ["src/tables.rs", "src/tt/glyf.rs", "src/tt/gvar.rs", "scripts/font_generation/build_ftmm_future_variable_fixtures.py", "freetype/src/truetype/ttgload.c", "freetype/src/truetype/ttgxvar.c"]}
     },
     {
       "case_id": "ftmm.FT_Set_Var_Design_Coordinates.batch011_no_gvar_composite_error",

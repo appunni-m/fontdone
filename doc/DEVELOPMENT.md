@@ -1986,6 +1986,53 @@ review reports no regression, but its measurement scope is
 `not_observed`, not regressions. This is additive reachability evidence, not a
 full-denominator percentage or a strict-100% claim.
 
+### Batch 243: native gvar composite runtime-error control
+
+This batch adds five public `FT_Set_Var_Design_Coordinates` cases using the
+maintained `variable-native-gvar-runtime-composite-error.ttf` fixture. The
+composite record remains structurally valid; a compact runtime-short `gvar`
+tuple is applied only after composite loading, so the cases distinguish the
+native composite parser from the later gvar delta application path. The five
+rows vary active design coordinates, ppem, and public load flags while keeping
+the same source-level reason for expansion.
+
+| Concrete ID family | Why expand this input | Pinned FreeType review | Result and target |
+|---|---|---|---|
+| `batch243-native-gvar-error-001` through `-005` | Exercise a runtime gvar error after a valid composite has been accepted, including neutral, no-autohint, vertical, pedantic, and light-target load routes. | `freetype/src/truetype/ttgload.c` and `ttgxvar.c` apply composite loading before gvar deltas; the fixture builder documents the generated table bytes and the runtime-short tuple. | All five focused cases pass across Rust, the C ABI, WASM, and the pinned oracle. The trace shows the candidate error is already reported by the runtime gvar scaler path rather than the intended `src/tables.rs:165` loader guard, so no unrelated implementation change is justified. |
+
+The split all-lane coverage recipe now explicitly merges each backend/shard's
+raw LLVM profile before exporting `unified-runtime-all-lanes.json`; without
+that merge, a focused MCP artifact could contain only the conventional
+single-profile subset and under-report the selected source execution.
+
+### Batch 244: zero-glyph glyph-map mutation validation
+
+The existing public `ftdriver.glyph_to_script_map_effect` zero-glyph CFF case
+is the source-backed witness for the remaining WASM post-validation arm. The
+maintained face opens successfully, `FT_Property_Get` returns `FT_Err_Ok`, and
+the public route derives glyph index zero from a character lookup while the
+face reports zero glyphs. FreeType leaves the map untouched and reports
+`FT_Err_Invalid_Glyph_Index` only through the explicit load/render missing-glyph
+precondition.
+
+The parity output now records a separate
+`mutation_validation_error`. It is a checked test-support safety observation:
+Rust, C-ABI, and WASM all report `FT_Err_Invalid_Glyph_Index` for the attempted
+out-of-range map write, while `property_error` remains the pinned public
+`FT_Property_Get` result. The WASM adapter uses the helper's detailed status
+without converting that safety result into a public property failure. The
+existing zero-glyph variant provides 12 concrete mutation-by-ppem rows, so
+five duplicate cases would add no new reachability information.
+
+The source evidence is `freetype/src/base/ftobjs.c:5301-5382`,
+`freetype/src/autofit/afmodule.c:285-305`,
+`fontdone-wasm/src/implementation.rs:6275-6348`,
+`src/ffi/handles.rs:11490-11500`, and
+`scripts/gen_unified_oracle.c:33458-33500`. Focused parity passes the valid,
+zero-glyph, and missing-property variants across all four endpoints; the
+managed incremental Coverage MCP result is recorded here after its artifact
+is ingested.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained

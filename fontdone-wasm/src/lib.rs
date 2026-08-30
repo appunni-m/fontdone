@@ -322,6 +322,7 @@ document_wasm_test_support!(
     abi_support_subpixel_lcd_filter_weights,
     abi_property_glyph_to_script_map_snapshot,
     abi_property_glyph_to_script_map_mutate,
+    abi_property_glyph_to_script_map_mutate_with_status,
     abi_support_set_default_properties,
     abi_face_properties_state,
     abi_support_truetype_engine_observation,

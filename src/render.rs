@@ -1287,7 +1287,7 @@ impl MonoOutlineProfileBuilder {
                 }
             }
 
-            self.move_to_scaled(v_start_scaled);
+            self.move_to(v_start);
             let start = if first_tag == CURVE_TAG_CONIC {
                 if first == 0 {
                     -1

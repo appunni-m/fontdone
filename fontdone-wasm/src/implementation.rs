@@ -6280,9 +6280,28 @@ pub fn abi_property_glyph_to_script_map_mutate(
     module_name: &str,
     property_name: &str,
 ) -> (FT_Error, FT_UShort) {
+    let (_, mutation_error, initial) = abi_property_glyph_to_script_map_mutate_with_status(
+        handle,
+        glyph_index,
+        value,
+        module_name,
+        property_name,
+    );
+    (mutation_error, initial)
+}
+
+#[cfg(any(test, feature = "abi-test-support"))]
+pub fn abi_property_glyph_to_script_map_mutate_with_status(
+    handle: usize,
+    glyph_index: FT_UInt,
+    value: FT_UShort,
+    module_name: &str,
+    property_name: &str,
+) -> (FT_Error, FT_Error, FT_UShort) {
     let library = rust_ffi::FT_Init_FreeType();
     let Some(face) = face_mut(handle) else {
         return (
+            rust_ffi::FT_Err_Invalid_Face_Handle as FT_Error,
             rust_ffi::FT_Err_Invalid_Face_Handle as FT_Error,
             FT_UShort::default(),
         );
@@ -6300,13 +6319,17 @@ pub fn abi_property_glyph_to_script_map_mutate(
         Some(&mut prop),
     );
     let Ok(index) = usize::try_from(glyph_index) else {
-        return (rust_ffi::FT_Err_Invalid_Glyph_Index, 0);
+        return (error, rust_ffi::FT_Err_Invalid_Glyph_Index, 0);
     };
     let Ok(glyph_count) = usize::try_from(face.face.num_glyphs) else {
-        return (rust_ffi::FT_Err_Invalid_Glyph_Index, 0);
+        return (error, rust_ffi::FT_Err_Invalid_Glyph_Index, 0);
     };
-    if error != rust_ffi::FT_Err_Ok || prop.map.is_null() || index >= glyph_count {
+    // The public parity route treats glyph index zero as the missing-glyph
+    // precondition. Keep the test-support mutation helper from touching the
+    // `.notdef` map entry when that precondition is active.
+    if error != rust_ffi::FT_Err_Ok || prop.map.is_null() || index == 0 || index >= glyph_count {
         return (
+            error,
             if error == rust_ffi::FT_Err_Ok {
                 rust_ffi::FT_Err_Invalid_Glyph_Index
             } else {
@@ -6316,8 +6339,8 @@ pub fn abi_property_glyph_to_script_map_mutate(
         );
     }
     match rust_ffi::FT_Glyph_To_Script_Map_Mutate_For_Test(&mut face.face, glyph_index, value) {
-        Some(initial) => (rust_ffi::FT_Err_Ok, initial),
-        None => (rust_ffi::FT_Err_Invalid_Glyph_Index, 0),
+        Some(initial) => (error, rust_ffi::FT_Err_Ok, initial),
+        None => (error, rust_ffi::FT_Err_Invalid_Glyph_Index, 0),
     }
 }
 

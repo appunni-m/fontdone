@@ -8819,6 +8819,8 @@ subjects:
         description: Thirty valid two-axis active-variable composite outputs use native TrueType loading on gvar-present and fvar-only twins with USE_MY_METRICS glyphs at three ppem sizes.
       - id: batch010_gvar_composite_error
         description: Thirty valid public variation glyph-output cases exercise runtime gvar error propagation for composite glyph 1 across legal active coordinates, public load targets, and ppem sizes.
+      - id: batch243_native_gvar_composite_error
+        description: Five public native-variable glyph-output cases keep composite glyph 1 valid and attach a runtime-short gvar tuple so the native TT_Vary_Apply_Glyph_Deltas error propagates through the tables loader after composite parsing.
       - id: batch011_no_gvar_composite_error
         description: Thirty valid public variation glyph-output cases use an active fvar-only face with a malformed composite glyph record to exercise the no-gvar runtime error path across legal coordinates and ppem sizes.
       - id: batch120_native_mixed_composite_args

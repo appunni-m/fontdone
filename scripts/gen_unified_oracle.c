@@ -33461,11 +33461,20 @@ static int emit_property_glyph_map_effect(int argc, char** argv) {
                 argv[5],
                 argv[6],
                 &prop);
+            /* This is a parity-harness safety observation, not a return from
+             * FreeType's public FT_Property_Get call.  The Rust facades expose
+             * the same checked mutation attempt so a zero-glyph map cannot be
+             * dereferenced while property_error remains the public result. */
+            FT_Error mutation_validation_error = property_error;
             FT_UShort initial_map_value = 0;
             if (!property_error && prop.map &&
+                glyph_index != 0 &&
                 glyph_index < (FT_UInt)opened.face->num_glyphs) {
                 initial_map_value = prop.map[glyph_index];
                 prop.map[glyph_index] = mutations[mutation_index];
+                mutation_validation_error = FT_Err_Ok;
+            } else if (!property_error) {
+                mutation_validation_error = FT_Err_Invalid_Glyph_Index;
             }
             FT_Error prefix_error =
                 size_error ? size_error :
@@ -33488,13 +33497,15 @@ static int emit_property_glyph_map_effect(int argc, char** argv) {
             }
             first = 0;
             printf("{\"char_code\":%lu,\"glyph_index\":%u,\"ppem\":%u,"
-                   "\"property_error\":%d,\"initial_map_value\":%u,"
+                   "\"property_error\":%d,\"mutation_validation_error\":%d,"
+                   "\"initial_map_value\":%u,"
                    "\"mutated_map_value\":%u,\"load_error\":%d,"
                    "\"render_error\":%d,\"glyph_slot\":",
                    chars[mutation_index],
                    glyph_index,
                    ppems[ppem_index],
                    property_error,
+                   mutation_validation_error,
                    initial_map_value,
                    mutations[mutation_index],
                    load_error,

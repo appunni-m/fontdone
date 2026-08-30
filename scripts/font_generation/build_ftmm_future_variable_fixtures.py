@@ -143,6 +143,22 @@ def write_native_gvar_malformed_composite() -> None:
     )
 
 
+def write_native_gvar_runtime_composite_error() -> None:
+    """Build a native face whose valid composite reaches a runtime gvar error."""
+
+    font = TTFont(MVAR_FONT, recalcTimestamp=False)
+    add_native_setup_tables(font)
+    # Keep the composite record valid so TT_Load_Composite_Glyph completes;
+    # the second tuple header then fails only when FreeType applies gvar
+    # deltas to the composite's synthetic component points.
+    font["gvar"] = raw_table(
+        "gvar", tuple_header_after_embedded_peak_short_gvar_payload(glyph_index=1)
+    )
+    if "HVAR" in font:
+        del font["HVAR"]
+    save_font(OUT_DIR / "variable-native-gvar-runtime-composite-error.ttf", font)
+
+
 def write_native_variable_composite_no_record() -> None:
     """Keep gvar present while removing records from valid composites."""
 
@@ -1560,6 +1576,7 @@ def main() -> None:
     write_native_variable_aliases()
     write_native_no_gvar_malformed_composite()
     write_native_gvar_malformed_composite()
+    write_native_gvar_runtime_composite_error()
     write_native_variable_composite_no_record()
     write_native_variable_mixed_args()
     write_avar_fixtures()
