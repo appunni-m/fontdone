@@ -1724,11 +1724,12 @@ not a full-denominator regression. Test attribution was unavailable. These
 are reachability observations only, not a replacement full-denominator
 percentage or strict-100% claim.
 
-The CFF Private-dictionary post-error batch is classified as `real-parity` by
-the route audit because its concrete variants execute the maintained
-`ftdriver.hinting_engine_property` Rust FFI, C ABI, and WASM paths. This keeps
-those existing public inputs in the Coverage MCP public-case range; they are
-not generic fallback or unit-test-only coverage.
+The maintained PS-hinting post-error batches are classified as `real-parity`
+by the route audit because their concrete variants execute the maintained
+`ftdriver.hinting_engine_property` Rust FFI, C ABI, and WASM paths. This covers
+the CFF Private, ordinary post-error, failure, global-subroutine, and Type 1
+mode batches and keeps those existing public inputs in the Coverage MCP
+public-case range; they are not generic fallback or unit-test-only coverage.
 
 ## 5. Fixtures and generators
 

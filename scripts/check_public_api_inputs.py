@@ -5463,9 +5463,13 @@ def hinting_engine_property_real_parity_reason(row: ConcreteInput) -> str | None
         "ftdriver.FT_HINTING_FREETYPE.hinting_engine_null_string_invalid_glyph",
         "ftdriver.FT_HINTING_FREETYPE.hinting_engine_invalid_face_returns_load_error",
         "ftdriver.FT_HINTING_FREETYPE.mcp_bitmap_invalid_size_batch",
+        "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_batch",
         # This maintained batch has variant IDs on one concrete manifest row;
         # each variant still executes the exact CFF property route below.
         "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_cff_random_batch",
+        "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_failure_batch",
+        "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_post_error_global_subr_batch",
+        "ftdriver.FT_HINTING_FREETYPE.mcp_wasm_type1_modes_batch",
     }
     if (
         row.operation == "ftdriver.hinting_engine_property"
