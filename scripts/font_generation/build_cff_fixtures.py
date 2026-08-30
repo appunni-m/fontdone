@@ -1632,6 +1632,41 @@ def write_pure_cff_negative_global_subr_index() -> None:
     )
 
 
+def write_pure_cff_subroutine_bias_boundaries() -> None:
+    """Build CFF1 faces that select the middle and high subroutine biases."""
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    cases = [
+        (
+            "pure-cff-subroutine-bias-middle.otf",
+            "Pure CFF Middle Subroutine Bias",
+            "PureCFFMiddleSubroutineBias-Regular",
+            "middle_bias",
+            -1_131,
+            1_240,
+        ),
+        (
+            "pure-cff-subroutine-bias-high.otf",
+            "Pure CFF High Subroutine Bias",
+            "PureCFFHighSubroutineBias-Regular",
+            "high_bias",
+            -32_768,
+            33_900,
+        ),
+    ]
+    for filename, family_name, ps_name, glyph_name, operand, count in cases:
+        out = OUT_DIR / filename
+        if out.exists() or out.is_symlink():
+            out.unlink()
+        build_cff_global_subr_guard(
+            out,
+            family_name,
+            ps_name,
+            glyph_name,
+            [0, 0, "rmoveto", operand, "callgsubr", "endchar"],
+            [["return"] for _ in range(count)],
+        )
+
+
 def write_pure_cff_global_subr_recursion() -> None:
     """Build a self-recursive CFF1 global subroutine for the depth guard."""
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -3024,6 +3059,7 @@ def main() -> None:
     write_pure_cff_type2_arithmetic_underflow()
     write_pure_cff_fixed_global_subr_index()
     write_pure_cff_negative_global_subr_index()
+    write_pure_cff_subroutine_bias_boundaries()
     write_pure_cff_global_subr_recursion()
     write_pure_cff_top_level_return()
     write_pure_cff_below_baseline_no_vmtx()

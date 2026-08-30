@@ -515,6 +515,29 @@
               "properties": ["FAMILY_NAME","POINT_SIZE","PIXEL_SIZE","RESOLUTION_X"],
               "face_index": 0
             }
+          },
+          {
+            "id": "batch239-bdf-empty-line-001",
+            "reason": "Pinned FreeType passes a whitespace-only line inside STARTPROPERTIES through its permissive property parser; the public FAMILY_NAME query must still succeed.",
+            "coverage": [
+              "batch239:bdf:property-line:empty"
+            ],
+            "assets": {
+              "bdf_font": {
+                "kind": "ref",
+                "id": "input/fonts/bdf/malformed-empty-property/batch239-01-empty-line.bdf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "properties": [
+                "FAMILY_NAME",
+                "POINT_SIZE",
+                "PIXEL_SIZE",
+                "RESOLUTION_X"
+              ],
+              "face_index": 0
+            }
           }
         ]
       },

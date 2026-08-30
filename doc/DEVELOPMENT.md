@@ -1811,6 +1811,61 @@ measurement metadata currently retains the older source commit
 `f0b1ce7522edcd151a699923b9eae0df6dbca0ef`; the run provenance records the
 pushed commit above.
 
+### Batch 239: BDF permissive empty lines and CFF subroutine-bias boundaries
+
+This batch followed the source-review rule in section 4.2: each input was
+first checked against pinned FreeType 2.14.3, then retained only after the
+public parity route agreed. The BDF witness is malformed text accepted by the
+original parser; the CFF witnesses are structurally valid CFF1 fonts with
+unusual but legal global-subroutine counts.
+
+| Concrete ID family | Why expand this input | Pinned FreeType review | Result and target |
+|---|---|---|---|
+| `ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties@batch239-bdf-empty-line-001` | Put an empty line inside `STARTPROPERTIES` so `parse_bdf_property_line` receives a line whose trimmed property name is empty. This is the public way to test the `None` path rather than calling the private parser directly. | `freetype/src/bdf/bdflib.c:544-604` classifies the empty line as an atom; `bdf_parse_properties_` (`:1137-1188`) and `bdf_add_property_` (`:600-745`) retain it without rejecting the face. The fixed public property query still succeeds. | Focused parity passed 1/1. Coverage MCP newly covered `src/font.rs:1130` and `src/font.rs:1253` (2 lines/regions), with no branch or function delta. |
+| `b239-cff-bias-middle-08-default-001` through `b239-cff-bias-middle-16-target-mono-015` | Use `input/fonts/cff/pure-cff-subroutine-bias-middle.otf` with exactly 1,240 global subroutines and operand `-1,131`, then exercise three sizes and five existing public load modes. The biased index is zero only when the middle threshold is selected. | `freetype/src/psaux/cffdecode.c:407-417` selects bias 1,131 for counts from 1,240 through 33,899; `cffdecode.c:2182-2196` applies it and accepts the zero-returning subroutine. | Focused parity passed 15/15. Coverage MCP marks `src/tt/cff.rs:1822-1823` newly covered. |
+| `b239-cff-bias-high-08-default-016` through `b239-cff-bias-high-16-target-mono-030` | Use `input/fonts/cff/pure-cff-subroutine-bias-high.otf` with exactly 33,900 global subroutines and operand `-32,768`, across the same public size/load matrix. The biased index is zero only when the high threshold is selected. | `freetype/src/psaux/cffdecode.c:407-417` selects bias 32,768 at 33,900 or more globals; the same `callgsubr` path accepts the zero-returning subroutine. | Focused parity passed 15/15. Coverage MCP marks `src/tt/cff.rs:1825` newly covered. |
+
+The CFF batch is maintained as 30 concrete public IDs in
+`tests/fixtures/inputs/public-api/freetype.FT_Load_Glyph.json`, not as a
+direct unit call to `cff_subroutine_bias`. The generator records both exact
+thresholds in `scripts/font_generation/build_cff_fixtures.py`; rerunning it
+recreates the tracked fonts byte-for-byte. No Rust behavior fix was needed:
+the existing `src/tt/cff.rs:1819-1827` implementation agrees with the pinned
+C oracle at both boundaries.
+
+Coverage MCP run `80f84a64-577c-4899-a3bf-0dd7c5a472f0` passed and ingested
+snapshot `f3872557-6256-4892-a1f9-ec17b4e3ffef` against the source-matched
+full baseline `df2e52bb-a159-44d0-9e83-88cb5c9ea49a` (commit `c4ce368`). It
+used eight repeatable `--migration-coverage-case-ids` arguments, with four
+comma-separated IDs per value where possible; this works within Coverage
+MCP's 512-byte per-argument limit while executing all 30 IDs in one managed
+run. The additive union reports +3 covered branches, +3 covered regions, and
+three newly covered line identities; its canonical metric deltas report
+`covered_lines_delta=0` because the selected report uses conservative summary
+fallback for detailed line merging. The selected-subset scope is
+`complete=false`, `merge.exact=false`, and the replacement diff is
+`claim_status=limited` with unobserved baseline hits treated as
+`not_observed`, not regressions. This is additive reachability evidence, not
+a replacement full-denominator percentage or strict-100% claim.
+
+The BDF witness was measured separately in Coverage MCP run
+`0f0b6c6c-c180-44c7-ae5e-7e3432f7239c`, snapshot
+`039c22f3-d62f-4115-a9ad-c44881742bf4`, with the same explicit baseline. Its
+additive union reports two newly covered lines/regions at `src/font.rs:1130`
+and `:1253`; branch and function deltas are zero. The run passed and its
+selected-subset comparison is likewise limited, so neither result changes
+the full-suite denominator claim.
+
+Two tempting expansions were rejected after the same pinned-source review.
+The `PIXEL_SIZE` Atom and Cardinal arms in `src/font.rs:1318` cannot be
+constructed through public BDF text because FreeType's built-in property
+table declares `PIXEL_SIZE` as `BDF_INTEGER` (`freetype/src/bdf/bdflib.c:92`);
+Cardinal remains represented by properties such as `RESOLUTION_X`. The `_`
+arm in `src/tt/cff.rs:1876` is also not reachable through a public Type2 byte
+stream: bytes 0--31 are operators and every byte from 32 through 255 is
+handled by a preceding number arm. These are documented defensive branches,
+not fabricated parity inputs.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
