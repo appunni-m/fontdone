@@ -43,6 +43,7 @@
     "batch218_valid_latin_bottom_distance_order",
     "batch219_cff_eof_and_fixed_add",
     "batch231_cff_post_validation_guards",
+    "batch237_cff2_random_and_type2_arithmetic_underflow",
     "render_and_target_modes",
     "no_scale_no_hinting_and_vertical_flags",
     "error_out_of_range_null_face_or_invalid_flags",
@@ -22298,6 +22299,962 @@
         },
         "sources_checked": [
           "freetype/src/autofit/afcjk.c:883-1116"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_Load_Glyph.batch237_cff2_random_and_type2_arithmetic_underflow",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "batch237_cff2_random_and_type2_arithmetic_underflow",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "b237-cff2-random-08-default-001",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff2/pure-cff2-random.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b237-cff2-random-08-default-001: Valid CFF2 glyph 1 executes Type 2 random followed by drop at 8px with default; pinned FreeType accepts random for CFF2 at freetype/src/psaux/psintrp.c:2241-2258, leaves the CFF2 subfont random state zero-initialized at freetype/src/cff/cffload.c:2075-2132, and the Rust implementation now mirrors that stateful path at src/tt/cff.rs:1792-1799.",
+            "coverage": [
+              "batch237:cff2:random:08-default:src-tt-cff-1792"
+            ]
+          },
+          {
+            "id": "b237-cff2-random-08-no-hinting-002",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff2/pure-cff2-random.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b237-cff2-random-08-no-hinting-002: Valid CFF2 glyph 1 executes Type 2 random followed by drop at 8px with no-hinting; pinned FreeType accepts random for CFF2 at freetype/src/psaux/psintrp.c:2241-2258, leaves the CFF2 subfont random state zero-initialized at freetype/src/cff/cffload.c:2075-2132, and the Rust implementation now mirrors that stateful path at src/tt/cff.rs:1792-1799.",
+            "coverage": [
+              "batch237:cff2:random:08-no-hinting:src-tt-cff-1792"
+            ]
+          },
+          {
+            "id": "b237-cff2-random-08-force-autohint-003",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff2/pure-cff2-random.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b237-cff2-random-08-force-autohint-003: Valid CFF2 glyph 1 executes Type 2 random followed by drop at 8px with force-autohint; pinned FreeType accepts random for CFF2 at freetype/src/psaux/psintrp.c:2241-2258, leaves the CFF2 subfont random state zero-initialized at freetype/src/cff/cffload.c:2075-2132, and the Rust implementation now mirrors that stateful path at src/tt/cff.rs:1792-1799.",
+            "coverage": [
+              "batch237:cff2:random:08-force-autohint:src-tt-cff-1792"
+            ]
+          },
+          {
+            "id": "b237-cff2-random-08-target-light-004",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff2/pure-cff2-random.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b237-cff2-random-08-target-light-004: Valid CFF2 glyph 1 executes Type 2 random followed by drop at 8px with target-light; pinned FreeType accepts random for CFF2 at freetype/src/psaux/psintrp.c:2241-2258, leaves the CFF2 subfont random state zero-initialized at freetype/src/cff/cffload.c:2075-2132, and the Rust implementation now mirrors that stateful path at src/tt/cff.rs:1792-1799.",
+            "coverage": [
+              "batch237:cff2:random:08-target-light:src-tt-cff-1792"
+            ]
+          },
+          {
+            "id": "b237-cff2-random-08-target-mono-005",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff2/pure-cff2-random.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b237-cff2-random-08-target-mono-005: Valid CFF2 glyph 1 executes Type 2 random followed by drop at 8px with target-mono; pinned FreeType accepts random for CFF2 at freetype/src/psaux/psintrp.c:2241-2258, leaves the CFF2 subfont random state zero-initialized at freetype/src/cff/cffload.c:2075-2132, and the Rust implementation now mirrors that stateful path at src/tt/cff.rs:1792-1799.",
+            "coverage": [
+              "batch237:cff2:random:08-target-mono:src-tt-cff-1792"
+            ]
+          },
+          {
+            "id": "b237-cff2-random-12-default-006",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff2/pure-cff2-random.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b237-cff2-random-12-default-006: Valid CFF2 glyph 1 executes Type 2 random followed by drop at 12px with default; pinned FreeType accepts random for CFF2 at freetype/src/psaux/psintrp.c:2241-2258, leaves the CFF2 subfont random state zero-initialized at freetype/src/cff/cffload.c:2075-2132, and the Rust implementation now mirrors that stateful path at src/tt/cff.rs:1792-1799.",
+            "coverage": [
+              "batch237:cff2:random:12-default:src-tt-cff-1792"
+            ]
+          },
+          {
+            "id": "b237-cff2-random-12-no-hinting-007",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff2/pure-cff2-random.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b237-cff2-random-12-no-hinting-007: Valid CFF2 glyph 1 executes Type 2 random followed by drop at 12px with no-hinting; pinned FreeType accepts random for CFF2 at freetype/src/psaux/psintrp.c:2241-2258, leaves the CFF2 subfont random state zero-initialized at freetype/src/cff/cffload.c:2075-2132, and the Rust implementation now mirrors that stateful path at src/tt/cff.rs:1792-1799.",
+            "coverage": [
+              "batch237:cff2:random:12-no-hinting:src-tt-cff-1792"
+            ]
+          },
+          {
+            "id": "b237-cff2-random-12-force-autohint-008",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff2/pure-cff2-random.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b237-cff2-random-12-force-autohint-008: Valid CFF2 glyph 1 executes Type 2 random followed by drop at 12px with force-autohint; pinned FreeType accepts random for CFF2 at freetype/src/psaux/psintrp.c:2241-2258, leaves the CFF2 subfont random state zero-initialized at freetype/src/cff/cffload.c:2075-2132, and the Rust implementation now mirrors that stateful path at src/tt/cff.rs:1792-1799.",
+            "coverage": [
+              "batch237:cff2:random:12-force-autohint:src-tt-cff-1792"
+            ]
+          },
+          {
+            "id": "b237-cff2-random-12-target-light-009",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff2/pure-cff2-random.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b237-cff2-random-12-target-light-009: Valid CFF2 glyph 1 executes Type 2 random followed by drop at 12px with target-light; pinned FreeType accepts random for CFF2 at freetype/src/psaux/psintrp.c:2241-2258, leaves the CFF2 subfont random state zero-initialized at freetype/src/cff/cffload.c:2075-2132, and the Rust implementation now mirrors that stateful path at src/tt/cff.rs:1792-1799.",
+            "coverage": [
+              "batch237:cff2:random:12-target-light:src-tt-cff-1792"
+            ]
+          },
+          {
+            "id": "b237-cff2-random-12-target-mono-010",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff2/pure-cff2-random.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "b237-cff2-random-12-target-mono-010: Valid CFF2 glyph 1 executes Type 2 random followed by drop at 12px with target-mono; pinned FreeType accepts random for CFF2 at freetype/src/psaux/psintrp.c:2241-2258, leaves the CFF2 subfont random state zero-initialized at freetype/src/cff/cffload.c:2075-2132, and the Rust implementation now mirrors that stateful path at src/tt/cff.rs:1792-1799.",
+            "coverage": [
+              "batch237:cff2:random:12-target-mono:src-tt-cff-1792"
+            ]
+          },
+          {
+            "id": "b237-cff1-mul-underflow-08-default-011",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-mul-underflow-08-default-011: Malformed CFF1 glyph 1 invokes Type 2 mul with fewer than two operands at 8px with default; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:2260-2274 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1765-1774.",
+            "coverage": [
+              "batch237:cff1:mul-stack-underflow:08-default:src-tt-cff-1772"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-mul-underflow-08-no-hinting-012",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-mul-underflow-08-no-hinting-012: Malformed CFF1 glyph 1 invokes Type 2 mul with fewer than two operands at 8px with no-hinting; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:2260-2274 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1765-1774.",
+            "coverage": [
+              "batch237:cff1:mul-stack-underflow:08-no-hinting:src-tt-cff-1772"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-mul-underflow-08-force-autohint-013",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-mul-underflow-08-force-autohint-013: Malformed CFF1 glyph 1 invokes Type 2 mul with fewer than two operands at 8px with force-autohint; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:2260-2274 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1765-1774.",
+            "coverage": [
+              "batch237:cff1:mul-stack-underflow:08-force-autohint:src-tt-cff-1772"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-mul-underflow-08-target-light-014",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-mul-underflow-08-target-light-014: Malformed CFF1 glyph 1 invokes Type 2 mul with fewer than two operands at 8px with target-light; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:2260-2274 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1765-1774.",
+            "coverage": [
+              "batch237:cff1:mul-stack-underflow:08-target-light:src-tt-cff-1772"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-mul-underflow-08-target-mono-015",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-mul-underflow-08-target-mono-015: Malformed CFF1 glyph 1 invokes Type 2 mul with fewer than two operands at 8px with target-mono; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:2260-2274 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1765-1774.",
+            "coverage": [
+              "batch237:cff1:mul-stack-underflow:08-target-mono:src-tt-cff-1772"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-mul-underflow-12-default-016",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-mul-underflow-12-default-016: Malformed CFF1 glyph 1 invokes Type 2 mul with fewer than two operands at 12px with default; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:2260-2274 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1765-1774.",
+            "coverage": [
+              "batch237:cff1:mul-stack-underflow:12-default:src-tt-cff-1772"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-mul-underflow-12-no-hinting-017",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-mul-underflow-12-no-hinting-017: Malformed CFF1 glyph 1 invokes Type 2 mul with fewer than two operands at 12px with no-hinting; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:2260-2274 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1765-1774.",
+            "coverage": [
+              "batch237:cff1:mul-stack-underflow:12-no-hinting:src-tt-cff-1772"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-mul-underflow-12-force-autohint-018",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-mul-underflow-12-force-autohint-018: Malformed CFF1 glyph 1 invokes Type 2 mul with fewer than two operands at 12px with force-autohint; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:2260-2274 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1765-1774.",
+            "coverage": [
+              "batch237:cff1:mul-stack-underflow:12-force-autohint:src-tt-cff-1772"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-mul-underflow-12-target-light-019",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-mul-underflow-12-target-light-019: Malformed CFF1 glyph 1 invokes Type 2 mul with fewer than two operands at 12px with target-light; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:2260-2274 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1765-1774.",
+            "coverage": [
+              "batch237:cff1:mul-stack-underflow:12-target-light:src-tt-cff-1772"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-mul-underflow-12-target-mono-020",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 1,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-mul-underflow-12-target-mono-020: Malformed CFF1 glyph 1 invokes Type 2 mul with fewer than two operands at 12px with target-mono; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:2260-2274 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1765-1774.",
+            "coverage": [
+              "batch237:cff1:mul-stack-underflow:12-target-mono:src-tt-cff-1772"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-eq-underflow-08-default-021",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-eq-underflow-08-default-021: Malformed CFF1 glyph 2 invokes Type 2 eq with fewer than two operands at 8px with default; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:1636-1649 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1781-1790.",
+            "coverage": [
+              "batch237:cff1:eq-stack-underflow:08-default:src-tt-cff-1783"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-eq-underflow-08-no-hinting-022",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-eq-underflow-08-no-hinting-022: Malformed CFF1 glyph 2 invokes Type 2 eq with fewer than two operands at 8px with no-hinting; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:1636-1649 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1781-1790.",
+            "coverage": [
+              "batch237:cff1:eq-stack-underflow:08-no-hinting:src-tt-cff-1783"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-eq-underflow-08-force-autohint-023",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-eq-underflow-08-force-autohint-023: Malformed CFF1 glyph 2 invokes Type 2 eq with fewer than two operands at 8px with force-autohint; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:1636-1649 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1781-1790.",
+            "coverage": [
+              "batch237:cff1:eq-stack-underflow:08-force-autohint:src-tt-cff-1783"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-eq-underflow-08-target-light-024",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-eq-underflow-08-target-light-024: Malformed CFF1 glyph 2 invokes Type 2 eq with fewer than two operands at 8px with target-light; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:1636-1649 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1781-1790.",
+            "coverage": [
+              "batch237:cff1:eq-stack-underflow:08-target-light:src-tt-cff-1783"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-eq-underflow-08-target-mono-025",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 8
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-eq-underflow-08-target-mono-025: Malformed CFF1 glyph 2 invokes Type 2 eq with fewer than two operands at 8px with target-mono; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:1636-1649 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1781-1790.",
+            "coverage": [
+              "batch237:cff1:eq-stack-underflow:08-target-mono:src-tt-cff-1783"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-eq-underflow-12-default-026",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_DEFAULT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-eq-underflow-12-default-026: Malformed CFF1 glyph 2 invokes Type 2 eq with fewer than two operands at 12px with default; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:1636-1649 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1781-1790.",
+            "coverage": [
+              "batch237:cff1:eq-stack-underflow:12-default:src-tt-cff-1783"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-eq-underflow-12-no-hinting-027",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_NO_HINTING"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-eq-underflow-12-no-hinting-027: Malformed CFF1 glyph 2 invokes Type 2 eq with fewer than two operands at 12px with no-hinting; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:1636-1649 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1781-1790.",
+            "coverage": [
+              "batch237:cff1:eq-stack-underflow:12-no-hinting:src-tt-cff-1783"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-eq-underflow-12-force-autohint-028",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_FORCE_AUTOHINT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-eq-underflow-12-force-autohint-028: Malformed CFF1 glyph 2 invokes Type 2 eq with fewer than two operands at 12px with force-autohint; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:1636-1649 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1781-1790.",
+            "coverage": [
+              "batch237:cff1:eq-stack-underflow:12-force-autohint:src-tt-cff-1783"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-eq-underflow-12-target-light-029",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_TARGET_LIGHT"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-eq-underflow-12-target-light-029: Malformed CFF1 glyph 2 invokes Type 2 eq with fewer than two operands at 12px with target-light; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:1636-1649 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1781-1790.",
+            "coverage": [
+              "batch237:cff1:eq-stack-underflow:12-target-light:src-tt-cff-1783"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          },
+          {
+            "id": "b237-cff1-eq-underflow-12-target-mono-030",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/cff/pure-cff-type2-arithmetic-underflow.otf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {
+                "x": 0,
+                "y": 12
+              },
+              "glyph_index": 2,
+              "load_flags": [
+                "FT_LOAD_TARGET_MONO"
+              ],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": true,
+            "reason": "b237-cff1-eq-underflow-12-target-mono-030: Malformed CFF1 glyph 2 invokes Type 2 eq with fewer than two operands at 12px with target-mono; pinned FreeType's cf2_stack_popFixed records Stack_Underflow at freetype/src/psaux/psintrp.c:1636-1649 and freetype/src/psaux/psstack.c:160-178, then freetype/src/psaux/psft.c:433-435 exposes Invalid_File_Format, matching the Rust CffTooFewArguments guard at src/tt/cff.rs:1781-1790.",
+            "coverage": [
+              "batch237:cff1:eq-stack-underflow:12-target-mono:src-tt-cff-1783"
+            ],
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            }
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-load",
+        "coverage:real-parity",
+        "font_variability:input/fonts",
+        "source-reviewed-expansion"
+      ],
+      "metadata": {
+        "coverage_intent": "Thirty concrete public parity IDs combine ten valid CFF2 random-operator acceptance witnesses with twenty malformed CFF1 arithmetic stack-underflow witnesses. Each family spans two sizes and five public load modes; every ID records whether pinned FreeType accepts the glyph or maps the source interpreter failure to Invalid_File_Format.",
+        "freetype_review": "Pinned FreeType executes random for both CFF1 and CFF2 through psaux/psintrp.c:2241-2258; CFF2 leaves its subfont random state zero-initialized because cffload.c:2075-2132 only initializes the CFF1 path. The CFF1 mul and eq operators pop two fixed operands at psaux/psintrp.c:1636-1649 and 2260-2274, Stack_Underflow is recorded by psaux/psstack.c:160-178, and psaux/psft.c:433-435 maps the glyph-load failure to Invalid_File_Format."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "rows": "per-font glyph load status and slot snapshot"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "rows[].status",
+            "rows[].slot"
+          ]
+        },
+        "sources_checked": [
+          "freetype/src/psaux/psintrp.c:1636-1649",
+          "freetype/src/psaux/psintrp.c:2241-2258",
+          "freetype/src/psaux/psintrp.c:2260-2274",
+          "freetype/src/psaux/psstack.c:160-178",
+          "freetype/src/psaux/psft.c:433-435",
+          "freetype/src/cff/cffload.c:2075-2132",
+          "src/tt/cff.rs:1765-1799"
         ]
       }
     }

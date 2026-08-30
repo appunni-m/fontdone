@@ -56,6 +56,10 @@ pub struct CffTable {
 #[derive(Debug, Clone)]
 pub struct Cff2Table {
     charstrings: Vec<Vec<u8>>,
+    // CFF2 has no Private DICT random seed.  FreeType nevertheless keeps a
+    // mutable per-subfont random state for the Type 2 `random` operator; the
+    // zero-initialized state is observable through repeated glyph loads.
+    random: Cell<u32>,
 }
 
 #[derive(Debug, Clone)]
@@ -156,6 +160,7 @@ pub fn parse_cff2(data: &[u8]) -> Result<Cff2Table, FontError> {
     let (charstrings, _) = read_cff2_index(data, charstrings_offset)?;
     Ok(Cff2Table {
         charstrings: charstrings.into_iter().map(<[u8]>::to_vec).collect(),
+        random: Cell::new(0),
     })
 }
 
@@ -195,7 +200,7 @@ impl CffTable {
             // FreeType 2.14.3's `cff_slot_load` returns Invalid_Argument for a
             // CharStrings index outside `num_glyphs` (`cffgload.c`).
             .ok_or_else(|| FontError::InvalidArgument("CFF: glyph index out of range".into()))?;
-        Type2Decoder::new(charstring, Some(&self.random), &self.global_subrs).decode()
+        Type2Decoder::new(charstring, &self.random, &self.global_subrs).decode()
     }
 
     /// Set the CFF driver seed used when a face is opened.  A zero driver seed
@@ -222,7 +227,7 @@ impl Cff2Table {
         // so add an internal sentinel without altering the stored bytes.
         let mut terminated = charstring.clone();
         terminated.push(14);
-        Type2Decoder::new(&terminated, None, &[]).decode()
+        Type2Decoder::new(&terminated, &self.random, &[]).decode()
     }
 }
 
@@ -1318,11 +1323,11 @@ struct Type2Decoder<'a> {
     end_pts: Vec<u16>,
     contour_start: Option<usize>,
     width_seen: bool,
-    random: Option<&'a Cell<u32>>,
+    random: &'a Cell<u32>,
 }
 
 impl<'a> Type2Decoder<'a> {
-    fn new(data: &'a [u8], random: Option<&'a Cell<u32>>, global_subrs: &'a [Vec<u8>]) -> Self {
+    fn new(data: &'a [u8], random: &'a Cell<u32>, global_subrs: &'a [Vec<u8>]) -> Self {
         Self {
             data,
             pos: 0,
@@ -1785,15 +1790,10 @@ impl<'a> Type2Decoder<'a> {
                 Ok(false)
             }
             23 => {
-                let Some(random) = self.random else {
-                    return Err(FontError::InvalidOutline(
-                        "CFF2: random operator unsupported".into(),
-                    ));
-                };
-                let seed = random.get();
+                let seed = self.random.get();
                 self.stack
                     .push(Type2Operand::fixed(((seed & 0xFFFF) + 1) as i32));
-                random.set(cff_random(seed));
+                self.random.set(cff_random(seed));
                 // `random` pushes a value for a following arithmetic or path
                 // operator, so do not clear the operand stack here.
                 Ok(false)

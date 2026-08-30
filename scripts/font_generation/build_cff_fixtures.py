@@ -215,6 +215,133 @@ def build_cff2(path: Path) -> None:
     builder.save(path)
 
 
+def build_cff2_random(path: Path) -> None:
+    """Build a valid CFF2 face whose glyph consumes Type 2 ``random``."""
+    names = {
+        "familyName": "Pure CFF2 Random Coverage",
+        "styleName": "Regular",
+        "uniqueFontIdentifier": "Pure CFF2 Random Coverage Regular",
+        "fullName": "Pure CFF2 Random Coverage Regular",
+        "psName": "PureCFF2RandomCoverage-Regular",
+    }
+    builder = FontBuilder(UNITS_PER_EM, isTTF=False)
+    builder.setupGlyphOrder([".notdef", "random"])
+    builder.setupCharacterMap({0x41: "random"})
+    builder.setupHorizontalMetrics({".notdef": (600, 0), "random": (600, 0)})
+    builder.setupHorizontalHeader(ascent=800, descent=-200)
+    builder.setupNameTable(names)
+    builder.setupOS2(
+        sTypoAscender=800,
+        sTypoDescender=-200,
+        usWinAscent=800,
+        usWinDescent=200,
+    )
+    builder.setupPost()
+    # CFF2 has no endchar.  Consume the generated random operand with `drop`,
+    # then let FreeType synthesize the end-of-charstring event at EOF.
+    random_charstring = T2CharString(
+        bytecode=bytes([12, 23, 12, 18]),
+        program=None,
+        private=None,
+        globalSubrs=[],
+    )
+    builder.setupCFF2(
+        {".notdef": t2_charstring(), "random": random_charstring}
+    )
+    builder.setupMaxp()
+    # FontTools cannot interpret the intentionally non-geometric `random`
+    # operator while calculating a CFF2 bounding box.  Keep the raw
+    # charstring and suppress that optional derived calculation.
+    recalc_font_bbox = TopDict.recalcFontBBox
+    try:
+        TopDict.recalcFontBBox = lambda self: None
+        builder.font.recalcBBoxes = False
+        builder.font["head"].created = FIXED_HEAD_TIME
+        builder.font["head"].modified = FIXED_HEAD_TIME
+        builder.font.recalcTimestamp = False
+        path.parent.mkdir(parents=True, exist_ok=True)
+        builder.save(path)
+    finally:
+        TopDict.recalcFontBBox = recalc_font_bbox
+
+
+def build_cff_type2_arithmetic_underflow(path: Path) -> None:
+    """Build CFF1 glyphs that exercise Type 2 arithmetic stack underflow."""
+    names = {
+        "familyName": "Pure CFF Type2 Arithmetic Underflow",
+        "styleName": "Regular",
+        "uniqueFontIdentifier": "Pure CFF Type2 Arithmetic Underflow Regular",
+        "fullName": "Pure CFF Type2 Arithmetic Underflow Regular",
+        "psName": "PureCFFType2ArithmeticUnderflow-Regular",
+    }
+    builder = FontBuilder(UNITS_PER_EM, isTTF=False)
+    builder.setupGlyphOrder([".notdef", "mul_underflow", "eq_underflow"])
+    builder.setupCharacterMap({0x41: "mul_underflow", 0x42: "eq_underflow"})
+    builder.setupHorizontalMetrics(
+        {
+            ".notdef": (600, 0),
+            "mul_underflow": (600, 0),
+            "eq_underflow": (600, 0),
+        }
+    )
+    builder.setupHorizontalHeader(ascent=800, descent=-200)
+    builder.setupNameTable(names)
+    builder.setupOS2(
+        sTypoAscender=800,
+        sTypoDescender=-200,
+        usWinAscent=800,
+        usWinDescent=200,
+    )
+    builder.setupPost()
+    # FreeType's cf2_stack_popFixed records Stack_Underflow when either
+    # operator has fewer than two operands; the public CFF load boundary maps
+    # that interpreter error to Invalid_File_Format.
+    charstrings = {
+        ".notdef": t2_charstring(),
+        "mul_underflow": T2CharString(
+            bytecode=bytes([12, 24, 14]),
+            program=None,
+            private=None,
+            globalSubrs=[],
+        ),
+        "eq_underflow": T2CharString(
+            bytecode=bytes([12, 15, 14]),
+            program=None,
+            private=None,
+            globalSubrs=[],
+        ),
+    }
+    builder.setupCFF(names["psName"], {"FullName": names["fullName"]}, charstrings, {})
+    builder.setupMaxp()
+    recalc_font_bbox = TopDict.recalcFontBBox
+    try:
+        TopDict.recalcFontBBox = lambda self: None
+        builder.font.recalcBBoxes = False
+        builder.font["head"].created = FIXED_HEAD_TIME
+        builder.font["head"].modified = FIXED_HEAD_TIME
+        builder.font.recalcTimestamp = False
+        builder.font["CFF "].cff.topDictIndex[0].FontBBox = [0, 0, 0, 0]
+        builder.save(path)
+    finally:
+        TopDict.recalcFontBBox = recalc_font_bbox
+
+
+def write_pure_cff2_random() -> None:
+    CFF2_OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = CFF2_OUT_DIR / "pure-cff2-random.otf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    build_cff2_random(out)
+
+
+def write_pure_cff_type2_arithmetic_underflow() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / "pure-cff-type2-arithmetic-underflow.otf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    build_cff_type2_arithmetic_underflow(out)
+
+
 def build_cff_random(
     path: Path, private_dict: dict[str, object] | None = None
 ) -> None:
@@ -2884,6 +3011,7 @@ def main() -> None:
     INPUT_OUT_DIR.mkdir(parents=True, exist_ok=True)
     build_cff(INPUT_OUT_DIR / "fontinfo-populated.otf")
     build_cff2(CFF2_OUT_DIR / "fontinfo-invalid-argument.otf")
+    write_pure_cff2_random()
     write_pure_cff_cubic()
     write_pure_cff_random()
     write_pure_cff_random_private()
@@ -2893,6 +3021,7 @@ def main() -> None:
     write_pure_cff_global_subr_eof()
     write_pure_cff_fixed_add()
     write_pure_cff_mul()
+    write_pure_cff_type2_arithmetic_underflow()
     write_pure_cff_fixed_global_subr_index()
     write_pure_cff_negative_global_subr_index()
     write_pure_cff_global_subr_recursion()
