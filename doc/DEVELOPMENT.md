@@ -3060,6 +3060,57 @@ The source review still resolves the snapshot to commit
 later commit with the dirty fix, so its old line markers are not treated as
 exact source-closure proof.
 
+### Batch 301: stream callback edges, SBit sentinels, and outline safety guards
+
+This batch exercised 50 distinct existing public parity IDs. The exact ID
+families were `ftgzip.FT_Stream_OpenGzip.mcp_read_close_gap_matrix@c49-gzip-001`
+and `@batch98-gzip-01` through `@batch98-gzip-30` (31 IDs),
+`ftbzip2.FT_Stream_OpenBzip2.mcp_read_gap_matrix@c47-001`,
+`ftlzw.FT_Stream_OpenLZW.mcp_stream_gap_matrix@c48-lzw-001`, all five
+`ftcache.FTC_SBitCache_Lookup.mcp_no_scale_outline_sentinel_cff_batch` IDs,
+all five `ftcache.FTC_SBitCache_Lookup.mcp_no_scale_outline_sentinel_truetype_batch`
+IDs, and seven outline-helper IDs: the five `batch265-*` variants plus
+`batch266-render-tags-null-glyph-001` and
+`batch266-record-sync-null-glyph-002` under
+`ftglyph.FT_Glyph_To_Bitmap.error_outline_support_guards`.
+
+The 31 gzip IDs vary the public header/read plan to reach the optional-header
+branches, short header handling, out-of-range read, and null close behavior;
+the one bzip ID targets callback short-read position propagation; and the one
+LZW ID targets the public dictionary/read-close boundary. Pinned FreeType
+performs these stream reads and reports the corresponding stream-operation or
+file-format error in `freetype/src/gzip/ftgzip.c:194-264,615-645`,
+`freetype/src/bzip2/ftbzip2.c:520-530`,
+`freetype/src/base/ftstream.c:118-160`, and
+`freetype/src/lzw/ftzopen.c:59-90,327-343`. These are malformed or truncated
+byte streams where the original accepts the call boundary and intentionally
+returns an error; the cases preserve those exact outcomes.
+
+The ten SBit IDs use valid CFF and TrueType fonts with `FT_LOAD_NO_SCALE`.
+FreeType's `freetype/src/cache/ftcsbits.c:89-208` intentionally converts a
+successful non-bitmap outline load into an unavailable SBit sentinel instead
+of rendering it a second time. The two font families and ten glyphs keep that
+public cache behavior observable across both format loaders. The seven
+outline-helper IDs exercise null handles, empty outlines, invalid tags, and
+deliberately inconsistent internal records through the maintained C ABI/WASM
+support surface. The pinned `freetype/src/base/ftglyph.c:786-817` validates
+null glyph/class/prepare-hook states and has a bitmap no-op, but the exact
+corrupt-record mutations are Fontdone wrapper-safety extensions rather than
+claims that a normal public FreeType glyph can have those private states.
+
+Focused parity passed 50/50 with the normal parallel workers and no unit test
+was used. Coverage MCP run `a171c2cf-702a-410d-b6d7-cbd295407408` ingested
+snapshot `bcb86021-2118-4e3f-bdba-b7c49dd3f294` against explicit full baseline
+`e97404aa-fb4c-43b3-b057-49a0f79b7473`. The additive baseline union reported
+`covered_regions_delta=1,221`, 711 newly covered line identities, 18 covered
+branch identities, three covered functions, and zero regressions. The
+selected comparison is explicitly `measurement_scope.kind=selected_subset`
+with `complete=false` and `merge.exact=false`; it is not a replacement full
+coverage percentage. The source view still reports the historical snapshot
+commit `4c982ce98572420a07922abf120b36ccf82f9061` while the execution was
+recorded at the later pushed commit, so MCP source markers are retained as
+bounded evidence and not treated as exact closure of the current source.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
