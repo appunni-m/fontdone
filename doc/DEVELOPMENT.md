@@ -3111,6 +3111,66 @@ commit `4c982ce98572420a07922abf120b36ccf82f9061` while the execution was
 recorded at the later pushed commit, so MCP source markers are retained as
 bounded evidence and not treated as exact closure of the current source.
 
+### Batch 302: outline validation, malformed BDF numerics, and optional face tables
+
+This batch exercised 50 distinct existing public parity IDs after the Batch
+301 checkpoint. The exact selection was the five remaining
+`batch266`/`batch274` variants plus the three WASM MCP witnesses under
+`ftglyph.FT_Glyph_To_Bitmap.error_outline_support_guards` and the three
+single-case `mcp_bitmap_noop_batch`, `mcp_null_handle_batch`, and
+`mcp_null_glyph_handle_batch` IDs; all 30 variants under
+`ftbdf.FT_Get_BDF_Property.batch232_bdf_malformed_numeric_prefixes`; and the
+first 12 variants under
+`freetype.FT_New_Memory_Face.success_malformed_optional_tables_ignored` (five
+`name`, two `cmap`, and five `CPAL` inputs).
+
+The outline cases distinguish the public WASM null-output/null-glyph
+validation returns and already-bitmap no-op from the maintained wrapper's
+private outline bookkeeping guards. The null and bitmap witnesses correspond
+to public `FT_Glyph_To_Bitmap` contract states; the deliberately inconsistent
+record mutations remain wrapper-safety extensions, not claims that ordinary
+public FreeType callers can manufacture those private records. The pinned
+validation and bitmap behavior is in `freetype/src/base/ftglyph.c:786-817`.
+
+The 30 BDF cases use loadable faces whose known integer or cardinal property
+tokens contain no value, no leading digit, a sign FreeType does not consume,
+or a decimal prefix followed by junk. Pinned FreeType's `bdf_atol_` and
+`bdf_atoul_` intentionally keep those permissive prefix results (including
+zero and saturation), so these are malformed public inputs accepted at face
+open and observed through `FT_Get_BDF_Property`, not invented private states.
+The relevant oracle paths are `freetype/src/bdf/bdflib.c:289-339,608-720,
+1135-1188` and `freetype/src/bdf/bdfdrivr.c:886-937`; the Rust mapping is in
+`src/font.rs:1049-1114,1173-1182`.
+
+The 12 optional-table cases keep face creation successful while truncating
+optional `name`, `cmap`, or `CPAL` data. This follows the pinned SFNT open
+policy: the table loaders defensively reject unusable optional data, while
+face construction retains the loadable face where the format permits it.
+The source contract is `freetype/src/sfnt/sfobjs.c:sfnt_open_font` together
+with `ttload.c:tt_face_load_name`, `ttcmap.c:tt_face_build_cmaps`, and the
+corresponding optional-table loaders. The cases therefore test the original
+permissiveness and do not change the public error denominator.
+
+Focused parity passed 50/50 with the normal parallel workers and no unit test
+was used. Coverage MCP run `0c261f3a-7084-4f11-816e-7b94b8c775b6` ingested
+snapshot `7ebb7d3e-57eb-434b-8681-538e4645b68a` against explicit full baseline
+`e97404aa-fb4c-43b3-b057-49a0f79b7473`. Its additive baseline union reported
+`covered_regions_delta=1,307`; the selected run carried 572 newly observed
+line identities, while the conservative merged line/function/branch covered
+deltas remained zero. The selected diff separately reported 61 newly covered
+lines, 69 branch-state changes, 5,114 hit-count-only observations, and zero
+regressions. The run increased the observed denominator by 8,853 regions,
+126 lines, three functions, and 18 branches because this is a selected
+subset, not a replacement full snapshot.
+
+The MCP result is explicitly `measurement_scope.kind=selected_subset` with
+`complete=false` and `merge.exact=false`; its selected-union percentage must
+not be reported as strict project coverage. The source/measurement metadata
+still resolves to historical commit
+`4c982ce98572420a07922abf120b36ccf82f9061` even though execution used pushed
+commit `ef4df02dc1bd63cc566848147e1736705f31c490`, so source markers remain
+bounded evidence rather than exact current-source closure.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
