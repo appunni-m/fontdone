@@ -3119,6 +3119,57 @@ fn bzip2_source_bytes(
     Ok(bytes)
 }
 
+#[cfg_attr(not(feature = "lzw"), allow(dead_code))]
+fn lzw_source_bytes(
+    source: *mut rust_ffi::FT_StreamRec,
+    source_len: usize,
+) -> Result<Vec<FT_Byte>, FT_Error> {
+    if source_len == 0 {
+        return Ok(Vec::new());
+    }
+    let source_ref = unsafe { &mut *source };
+    if !source_ref.base.is_null() {
+        // SAFETY: a non-null host source promises `size` readable bytes for
+        // this synchronous public call.
+        return Ok(unsafe {
+            slice::from_raw_parts(source_ref.base.cast_const(), source_len).to_vec()
+        });
+    }
+    if source_ref.read.is_null() {
+        return Err(rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error);
+    }
+    // SAFETY: FT_StreamRec.read has FreeType's public FT_Stream_IoFunc ABI;
+    // the host retains the source stream for this synchronous materialization.
+    let stream_io = unsafe {
+        std::mem::transmute::<
+            FT_Pointer,
+            extern "C" fn(
+                *mut rust_ffi::FT_StreamRec,
+                FT_ULong,
+                *mut FT_Byte,
+                FT_ULong,
+            ) -> FT_ULong,
+        >(source_ref.read)
+    };
+    if stream_io(source, 0, ptr::null_mut(), 0) != 0 {
+        return Err(rust_ffi::FT_Err_Invalid_Stream_Operation as FT_Error);
+    }
+    source_ref.pos = 0;
+    let requested = FT_ULong::try_from(source_len)
+        .map_err(|_| rust_ffi::FT_Err_Invalid_Argument as FT_Error)?;
+    let mut bytes = Vec::new();
+    bytes
+        .try_reserve_exact(source_len)
+        .map_err(|_| rust_ffi::FT_Err_Out_Of_Memory as FT_Error)?;
+    bytes.resize(source_len, 0);
+    let read_count = stream_io(source, 0, bytes.as_mut_ptr(), requested);
+    source_ref.pos = read_count;
+    if read_count != requested {
+        return Err(rust_ffi::FT_Err_Invalid_Stream_Operation as FT_Error);
+    }
+    Ok(bytes)
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn fontdone_wasm_stream_open_bzip2(
     stream: *mut rust_ffi::FT_StreamRec,
@@ -3204,18 +3255,18 @@ fn open_lzw_stream(
     let Ok(source_len) = usize::try_from(source_ref.size) else {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     };
-    if source_ref.base.is_null() && source_len != 0 {
+    if source_ref.base.is_null() && source_len != 0 && source_ref.read.is_null() {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     }
-    // SAFETY: non-zero host sources promise `size` readable bytes. Keep the
-    // zero-length path separate because Rust slices require a non-null
-    // pointer even when their length is zero.
-    let source_bytes = if source_len == 0 {
-        &[][..]
-    } else {
-        unsafe { slice::from_raw_parts(source_ref.base.cast_const(), source_len) }
+    let source_bytes = match lzw_source_bytes(source.cast_mut(), source_len) {
+        Ok(bytes) => bytes,
+        Err(error) => return error,
     };
-    rust_ffi::FT_Stream_OpenLZW(Some(stream_ref), Some(source_ref), Some(source_bytes))
+    rust_ffi::FT_Stream_OpenLZW(
+        Some(stream_ref),
+        Some(source_ref),
+        Some(source_bytes.as_slice()),
+    )
 }
 
 #[unsafe(no_mangle)]

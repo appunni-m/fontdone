@@ -46587,11 +46587,20 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             return Ok(vec!["--lzw-stream-empty-null-base".to_string()]);
         }
         let base_case = case_id_base(&case.case_id);
-        let mut args = vec!["--lzw-stream-case".to_string(), base_case.to_string()];
+        let oracle_case_id = match base_case {
+            "ftlzw.FT_Stream_OpenLZW.success_open_callback_lzw_stream"
+            | "ftlzw.FT_Stream_OpenLZW.error_callback_seek_failure"
+            | "ftlzw.FT_Stream_OpenLZW.error_callback_short_header_read" => {
+                case.case_id.as_str()
+            }
+            _ => base_case,
+        };
+        let mut args = vec!["--lzw-stream-case".to_string(), oracle_case_id.to_string()];
         match base_case {
             "ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream"
             | "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams"
             | "ftlzw.FT_Stream_OpenLZW.reads_malformed_lzw_streams"
+            | "ftlzw.FT_Stream_OpenLZW.success_open_callback_lzw_stream"
             | "ftlzw.FT_Stream_OpenLZW.mcp_stream_gap_matrix" => {
                 for payload in lzw_stream_manifest(case)?.payloads {
                     args.push(payload.id);
@@ -46608,6 +46617,17 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                             .into_owned(),
                     );
                 }
+            }
+            "ftlzw.FT_Stream_OpenLZW.error_callback_seek_failure"
+            | "ftlzw.FT_Stream_OpenLZW.error_callback_short_header_read" => {
+                let asset = case
+                    .inputs
+                    .assets
+                    .get("compressed")
+                    .ok_or_else(|| "missing LZW compressed asset".to_string())?;
+                let path = asset_file_path(asset)
+                    .ok_or_else(|| format!("unresolved {}", asset_label(asset)))?;
+                args.push(fixture_dir().join(path).to_string_lossy().into_owned());
             }
             "ftlzw.FT_Stream_OpenLZW.invalid_header_error" => {
                 let asset = case
@@ -85719,6 +85739,68 @@ fn bzip2_source_read_pointer() -> FT_Pointer {
     bzip2_source_read as *const () as FT_Pointer
 }
 
+#[repr(C)]
+struct LzwCallbackSource {
+    bytes: *const FT_Byte,
+    len: usize,
+    failure: u8,
+}
+
+const LZW_CALLBACK_FAILURE_NONE: u8 = 0;
+const LZW_CALLBACK_FAILURE_SEEK: u8 = 1;
+const LZW_CALLBACK_FAILURE_SHORT_HEADER: u8 = 2;
+
+extern "C" fn lzw_source_read(
+    stream: *mut FT_StreamRec,
+    offset: FT_ULong,
+    buffer: *mut FT_Byte,
+    count: FT_ULong,
+) -> FT_ULong {
+    let Some(stream) = (unsafe { stream.as_ref() }) else {
+        return 0;
+    };
+    let state = unsafe {
+        stream
+            .descriptor
+            .pointer
+            .cast::<LzwCallbackSource>()
+            .as_ref()
+    };
+    let Some(state) = state else {
+        return 0;
+    };
+    if count == 0 {
+        return if state.failure == LZW_CALLBACK_FAILURE_SEEK {
+            1
+        } else {
+            0
+        };
+    }
+    let Ok(offset) = usize::try_from(offset) else {
+        return 0;
+    };
+    let Ok(count) = usize::try_from(count) else {
+        return 0;
+    };
+    if offset >= state.len || state.bytes.is_null() || buffer.is_null() {
+        return 0;
+    }
+    let mut available = (state.len - offset).min(count);
+    if state.failure == LZW_CALLBACK_FAILURE_SHORT_HEADER {
+        available = available.min(1);
+    }
+    // SAFETY: the callback state points at the maintained compressed fixture,
+    // and the caller supplies `count` writable bytes for this read.
+    unsafe {
+        ptr::copy_nonoverlapping(state.bytes.add(offset), buffer, available);
+    }
+    FT_ULong::try_from(available).unwrap_or(FT_ULong::MAX)
+}
+
+fn lzw_source_read_pointer() -> FT_Pointer {
+    lzw_source_read as *const () as FT_Pointer
+}
+
 #[derive(Debug, Clone, Copy)]
 enum LzwStreamBackend {
     Rust,
@@ -86280,6 +86362,9 @@ fn is_lzw_stream_case(case: &InputCase) -> bool {
             | "ftlzw.FT_Stream_OpenLZW.invalid_header_error"
             | "ftlzw.FT_Stream_OpenLZW.null_stream_or_source_error"
             | "ftlzw.FT_Stream_OpenLZW.error_empty_source_without_base"
+            | "ftlzw.FT_Stream_OpenLZW.success_open_callback_lzw_stream"
+            | "ftlzw.FT_Stream_OpenLZW.error_callback_seek_failure"
+            | "ftlzw.FT_Stream_OpenLZW.error_callback_short_header_read"
             | "ftlzw.FT_Stream_OpenLZW.mcp_stream_gap_matrix"
             | "ftlzw.FT_Stream_OpenLZW.unsupported_build_error"
     )
@@ -86295,6 +86380,31 @@ fn lzw_stream_output(case: &InputCase, backend: LzwStreamBackend) -> Result<RunO
         }
         "ftlzw.FT_Stream_OpenLZW.reads_malformed_lzw_streams" => {
             lzw_stream_success_output(case, backend)
+        }
+        "ftlzw.FT_Stream_OpenLZW.success_open_callback_lzw_stream" => {
+            lzw_stream_success_output(case, backend)
+        }
+        "ftlzw.FT_Stream_OpenLZW.error_callback_seek_failure"
+        | "ftlzw.FT_Stream_OpenLZW.error_callback_short_header_read" => {
+            let compressed = case
+                .inputs
+                .assets
+                .get("compressed")
+                .ok_or_else(|| "missing LZW compressed asset".to_string())
+                .and_then(font_asset_bytes)?;
+            let (variant, failure) = if case_id_base(&case.case_id)
+                == "ftlzw.FT_Stream_OpenLZW.error_callback_seek_failure"
+            {
+                ("seek_failure", LZW_CALLBACK_FAILURE_SEEK)
+            } else {
+                ("short_header_read", LZW_CALLBACK_FAILURE_SHORT_HEADER)
+            };
+            lzw_stream_callback_error_output(
+                backend,
+                compressed.as_ref(),
+                variant,
+                failure,
+            )
         }
         "ftlzw.FT_Stream_OpenLZW.mcp_stream_gap_matrix" => {
             lzw_stream_success_output(case, backend)
@@ -86491,6 +86601,8 @@ fn lzw_stream_success_output(
 ) -> Result<RunOutput, String> {
     let manifest = lzw_stream_manifest(case)?;
     let base_case = case_id_base(&case.case_id);
+    let callback_source =
+        base_case == "ftlzw.FT_Stream_OpenLZW.success_open_callback_lzw_stream";
     let sequential_reads = matches!(
         base_case,
         "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams"
@@ -86509,6 +86621,7 @@ fn lzw_stream_success_output(
                 raw.as_ref(),
                 lzw.as_ref(),
                 sequential_reads,
+                callback_source,
             )?);
         }
     }
@@ -86530,17 +86643,44 @@ fn lzw_stream_success_row(
     raw: &[u8],
     lzw: &[u8],
     sequential_reads: bool,
+    callback_source: bool,
 ) -> Result<Value, String> {
+    let mut callback_state = LzwCallbackSource {
+        bytes: lzw.as_ptr(),
+        len: lzw.len(),
+        failure: LZW_CALLBACK_FAILURE_NONE,
+    };
     let mut source = FT_StreamRec {
-        base: lzw.as_ptr().cast_mut(),
+        base: if callback_source {
+            ptr::null_mut()
+        } else {
+            lzw.as_ptr().cast_mut()
+        },
         size: FT_ULong::try_from(lzw.len()).map_err(|err| err.to_string())?,
         pos: initial_pos,
+        descriptor: if callback_source {
+            FT_StreamDesc {
+                pointer: ptr::from_mut(&mut callback_state).cast(),
+            }
+        } else {
+            FT_StreamDesc::default()
+        },
+        read: if callback_source {
+            lzw_source_read_pointer()
+        } else {
+            ptr::null_mut()
+        },
         ..FT_StreamRec::default()
     };
     let mut memory = FT_MemoryRec::default();
     source.memory = (&mut memory) as *mut FT_MemoryRec;
     let mut stream = lzw_stream_sentinel();
-    let status = lzw_stream_open(backend, Some(&mut stream), Some(&mut source), Some(lzw));
+    let status = lzw_stream_open(
+        backend,
+        Some(&mut stream),
+        Some(&mut source),
+        if callback_source { None } else { Some(lzw) },
+    );
     let decoded_reads = if status == FT_Err_Ok {
         lzw_stream_read_ranges(backend, &stream, raw, sequential_reads)?
     } else {
@@ -86561,6 +86701,84 @@ fn lzw_stream_success_row(
             "source": 0,
         },
     }))
+}
+
+fn lzw_stream_callback_error_output(
+    backend: LzwStreamBackend,
+    compressed: &[u8],
+    variant: &str,
+    failure: u8,
+) -> Result<RunOutput, String> {
+    let mut callback_state = LzwCallbackSource {
+        bytes: compressed.as_ptr(),
+        len: compressed.len(),
+        failure,
+    };
+    let mut source = FT_StreamRec {
+        base: ptr::null_mut(),
+        size: FT_ULong::try_from(compressed.len()).map_err(|err| err.to_string())?,
+        pos: 3,
+        descriptor: FT_StreamDesc {
+            pointer: ptr::from_mut(&mut callback_state).cast(),
+        },
+        read: lzw_source_read_pointer(),
+        ..FT_StreamRec::default()
+    };
+    let mut target = lzw_stream_sentinel();
+    let target_before = lzw_stream_fields(&target);
+    let status = lzw_stream_open(backend, Some(&mut target), Some(&mut source), None);
+    Ok(error_with_output(
+        status,
+        json!({
+            "variant": variant,
+            "source_pos_before": 3,
+            "source_pos_after_open": source.pos,
+            "target_before": target_before,
+            "target_after": lzw_stream_fields(&target),
+            "source_read_class": "callback",
+        }),
+    ))
+}
+
+fn lzw_source_bytes_from_callback(
+    source: &mut FT_StreamRec,
+) -> Result<Vec<FT_Byte>, FT_Error> {
+    let source_len = usize::try_from(source.size)
+        .map_err(|_| FT_Err_Invalid_Stream_Handle as FT_Error)?;
+    if source_len == 0 {
+        return Ok(Vec::new());
+    }
+    if !source.base.is_null() {
+        // SAFETY: a non-null source base is paired with its advertised size
+        // by this maintained parity input.
+        return Ok(unsafe {
+            std::slice::from_raw_parts(source.base.cast_const(), source_len).to_vec()
+        });
+    }
+    if source.read.is_null() {
+        return Err(FT_Err_Invalid_Stream_Handle as FT_Error);
+    }
+    // SAFETY: the callback is the maintained FT_Stream_IoFunc-compatible
+    // function installed above and the source remains live for this call.
+    let stream_io = unsafe {
+        std::mem::transmute::<
+            FT_Pointer,
+            extern "C" fn(*mut FT_StreamRec, FT_ULong, *mut FT_Byte, FT_ULong) -> FT_ULong,
+        >(source.read)
+    };
+    if stream_io(source, 0, ptr::null_mut(), 0) != 0 {
+        return Err(FT_Err_Invalid_Stream_Operation as FT_Error);
+    }
+    source.pos = 0;
+    let requested = FT_ULong::try_from(source_len)
+        .map_err(|_| FT_Err_Invalid_Argument as FT_Error)?;
+    let mut bytes = vec![0; source_len];
+    let read_count = stream_io(source, 0, bytes.as_mut_ptr(), requested);
+    source.pos = read_count;
+    if read_count != requested {
+        return Err(FT_Err_Invalid_Stream_Operation as FT_Error);
+    }
+    Ok(bytes)
 }
 
 fn lzw_stream_invalid_header_output(
@@ -86643,11 +86861,25 @@ fn lzw_stream_empty_null_base_output(backend: LzwStreamBackend) -> RunOutput {
 fn lzw_stream_open(
     backend: LzwStreamBackend,
     stream: Option<&mut FT_StreamRec>,
-    source: Option<&mut FT_StreamRec>,
+    mut source: Option<&mut FT_StreamRec>,
     source_bytes: Option<&[u8]>,
 ) -> FT_Error {
     match backend {
-        LzwStreamBackend::Rust => FT_Stream_OpenLZW(stream, source.as_deref(), source_bytes),
+        LzwStreamBackend::Rust => {
+            let materialized = match source_bytes {
+                Some(bytes) => bytes.to_vec(),
+                None => {
+                    let Some(source) = source.as_deref_mut() else {
+                        return FT_Err_Invalid_Stream_Handle as FT_Error;
+                    };
+                    match lzw_source_bytes_from_callback(source) {
+                        Ok(bytes) => bytes,
+                        Err(error) => return error,
+                    }
+                }
+            };
+            FT_Stream_OpenLZW(stream, source.as_deref(), Some(materialized.as_slice()))
+        }
         LzwStreamBackend::CAbi => c_abi::FT_Stream_OpenLZW(
             stream.map_or(ptr::null_mut(), |stream| stream),
             source.map_or(ptr::null_mut(), |source| source),

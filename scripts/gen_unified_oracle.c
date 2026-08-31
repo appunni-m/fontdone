@@ -1113,6 +1113,38 @@ static void print_lzw_stream_reads(
     printf("]");
 }
 
+typedef struct LzwMemorySource_ {
+    const unsigned char* bytes;
+    long length;
+    int failure;
+} LzwMemorySource;
+
+static unsigned long lzw_memory_source_read(
+    FT_Stream stream,
+    unsigned long offset,
+    unsigned char* buffer,
+    unsigned long count) {
+    LzwMemorySource* source = (LzwMemorySource*)stream->descriptor.pointer;
+    if (!source) {
+        return 0;
+    }
+    if (count == 0) {
+        return source->failure == 1 ? 1 : 0;
+    }
+    if (offset >= (unsigned long)source->length || !buffer) {
+        return 0;
+    }
+    unsigned long available = (unsigned long)source->length - offset;
+    if (available > count) {
+        available = count;
+    }
+    if (source->failure == 2 && available > 1) {
+        available = 1;
+    }
+    memcpy(buffer, source->bytes + offset, (size_t)available);
+    return available;
+}
+
 static int emit_lzw_stream_case(int argc, char** argv) {
     if (argc < 3) {
         fprintf(stderr, "--lzw-stream-case requires CASE_ID and fixture paths\n");
@@ -1128,9 +1160,58 @@ static int emit_lzw_stream_case(int argc, char** argv) {
         return 0;
     }
 
+    if (streq(case_id, "ftlzw.FT_Stream_OpenLZW.error_callback_seek_failure") ||
+        streq(case_id, "ftlzw.FT_Stream_OpenLZW.error_callback_short_header_read")) {
+        if (argc != 4) {
+            fprintf(stderr, "LZW callback-error case requires COMPRESSED\n");
+            FT_Done_FreeType(library);
+            return 2;
+        }
+        unsigned char* compressed = NULL;
+        long compressed_len = 0;
+        if (load_file(argv[3], &compressed, &compressed_len) != 0) {
+            FT_Done_FreeType(library);
+            return 2;
+        }
+        LzwMemorySource callback_source = {
+            compressed,
+            compressed_len,
+            streq(case_id, "ftlzw.FT_Stream_OpenLZW.error_callback_seek_failure") ? 1 : 2,
+        };
+        FT_StreamRec source;
+        FT_StreamRec target;
+        memset(&source, 0, sizeof(source));
+        init_lzw_stream_sentinel(&target);
+        source.base = NULL;
+        source.size = (FT_ULong)compressed_len;
+        source.pos = 3;
+        source.descriptor.pointer = &callback_source;
+        source.read = lzw_memory_source_read;
+        source.memory = library->memory;
+        FT_StreamRec before = target;
+        FT_Error status = FT_Stream_OpenLZW(&target, &source);
+        printf("{");
+        print_status(status);
+        printf(",\"output\":{\"variant\":\"");
+        print_json_string_content(
+            streq(case_id, "ftlzw.FT_Stream_OpenLZW.error_callback_seek_failure")
+                ? "seek_failure"
+                : "short_header_read");
+        printf("\",\"source_pos_before\":3,\"source_pos_after_open\":%lu,\"target_before\":",
+               (unsigned long)source.pos);
+        print_lzw_stream_fields(&before);
+        printf(",\"target_after\":");
+        print_lzw_stream_fields(&target);
+        printf(",\"source_read_class\":\"callback\"}}\n");
+        free(compressed);
+        FT_Done_FreeType(library);
+        return 0;
+    }
+
     if (streq(case_id, "ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream") ||
         streq(case_id, "ftlzw.FT_Stream_OpenLZW.opens_dictionary_and_block_reset_streams") ||
         streq(case_id, "ftlzw.FT_Stream_OpenLZW.reads_malformed_lzw_streams") ||
+        streq(case_id, "ftlzw.FT_Stream_OpenLZW.success_open_callback_lzw_stream") ||
         streq(case_id, "ftlzw.FT_Stream_OpenLZW.mcp_stream_gap_matrix")) {
         if (argc < 6 || ((argc - 3) % 3) != 0) {
             fprintf(stderr, "LZW success requires PAYLOAD_ID RAW LZW groups\n");
@@ -1155,11 +1236,18 @@ static int emit_lzw_stream_case(int argc, char** argv) {
             for (int source_case = 0; source_case < 2; source_case++) {
                 FT_StreamRec source;
                 FT_StreamRec stream;
+                LzwMemorySource callback_source = {lzw, lzw_len, 0};
+                int callback_source_case =
+                    streq(case_id, "ftlzw.FT_Stream_OpenLZW.success_open_callback_lzw_stream");
                 memset(&source, 0, sizeof(source));
                 init_lzw_stream_sentinel(&stream);
-                source.base = lzw;
+                source.base = callback_source_case ? NULL : lzw;
                 source.size = (FT_ULong)lzw_len;
                 source.pos = source_case == 0 ? 0UL : 3UL;
+                if (callback_source_case) {
+                    source.descriptor.pointer = &callback_source;
+                    source.read = lzw_memory_source_read;
+                }
                 source.memory = library->memory;
                 FT_Error status = FT_Stream_OpenLZW(&stream, &source);
                 printf("%s{\"payload\":\"", first ? "" : ",");

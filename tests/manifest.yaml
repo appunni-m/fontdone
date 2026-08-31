@@ -8516,6 +8516,12 @@ subjects:
         description: A null target stream or source stream returns FT_Err_Invalid_Stream_Handle.
       - id: error_empty_source_without_base
         description: An empty source with null base and read callback is rejected by FT_Stream_ReadAt as Invalid_Stream_Operation before any base dereference, matching the pinned C stream contract.
+      - id: success_open_callback_lzw_stream
+        description: A callback-backed .Z source is rewound through the public FT_Stream callback contract, materialized, opened, read, and closed with the same stream bytes as a memory-backed source.
+      - id: error_callback_seek_failure
+        description: A callback that rejects the zero-count seek required by ft_lzw_check_header returns FT_Err_Invalid_Stream_Operation without mutating the target stream.
+      - id: error_callback_short_header_read
+        description: A callback that returns fewer than two bytes for the initial LZW header read returns FT_Err_Invalid_Stream_Operation and preserves the observed short source position.
       - id: mcp_stream_gap_matrix
         description: Batch parity inputs exercise the null LZW close guard selected from the current coverage snapshot.
       - id: unsupported_build_error

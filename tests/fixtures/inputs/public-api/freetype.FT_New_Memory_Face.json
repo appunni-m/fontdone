@@ -2555,6 +2555,41 @@
             ]
           },
           {
+            "id": "batch313-cid-invalid-utf8-cleartext",
+            "reason": "The byte sequence begins with the pinned CID Type 1 header but contains an invalid UTF-8 byte immediately afterward. This is a public FT_New_Memory_Face input that reaches the Rust CID dictionary UTF-8 guard before later dictionary validation.",
+            "assets": {
+              "font_bytes": {
+                "kind": "inline_bytes",
+                "encoding": "hex",
+                "value": "252150532d41646f62652d332e30205265736f757263652d434944466f6e74ff"
+              },
+              "font": {
+                "kind": "inline_bytes",
+                "encoding": "hex",
+                "value": "252150532d41646f62652d332e30205265736f757263652d434944466f6e74ff"
+              }
+            },
+            "params": {
+              "variants": [
+                {
+                  "face_index": 0
+                }
+              ]
+            },
+            "metadata": {
+              "expansion_reason": "Exercise src/font.rs:2037 through the public memory-face constructor with a malformed CID dictionary.",
+              "original_freetype_behavior": "Pinned FreeType 2.14.3 checks the same 31-byte CID header in cidparse.c:80-87, then rejects this short dictionary as Invalid_File_Format while parsing its required StartData structure; it does not require UTF-8.",
+              "source_refs": [
+                "freetype/src/cid/cidparse.c:80-87",
+                "freetype/src/cid/cidparse.c:282-285",
+                "src/font.rs:2027-2041"
+              ]
+            },
+            "coverage": [
+              "batch313:cid:invalid-utf8-cleartext"
+            ]
+          },
+          {
             "id": "type1-invalid-first-pfb-segment",
             "assets": {
               "font_bytes": {

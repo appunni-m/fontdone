@@ -9,6 +9,9 @@
     "invalid_header_error",
     "null_stream_or_source_error",
     "error_empty_source_without_base",
+    "success_open_callback_lzw_stream",
+    "error_callback_seek_failure",
+    "error_callback_short_header_read",
     "mcp_stream_gap_matrix",
     "unsupported_build_error"
   ],
@@ -497,6 +500,161 @@
         "source_refs": [
           "freetype/src/lzw/ftlzw.c:390-399"
         ]
+      }
+    },
+    {
+      "case_id": "ftlzw.FT_Stream_OpenLZW.success_open_callback_lzw_stream",
+      "subject": "ftlzw.FT_Stream_OpenLZW",
+      "case": "success_open_callback_lzw_stream",
+      "operation": "ftlzw.stream_open_lzw",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {
+          "lzw_streams": {
+            "kind": "ref",
+            "id": "compressed/lzw/small-streams.json",
+            "asset_kind": "manifest"
+          }
+        },
+        "params": {
+          "source_mode": "callback"
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftlzw",
+        "area:lzw-stream",
+        "coverage:callback-source"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "rows": "callback-backed decoded stream rows"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "rows[*].status",
+            "rows[*].decoded_reads[*].bytes",
+            "null_close_safe"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/lzw/ftlzw.c:82-125",
+          "freetype/src/base/ftstream.c:56-90",
+          "fontdone-c-abi/src/implementation.rs:1508-1558",
+          "fontdone-wasm/src/implementation.rs:3180-3235"
+        ]
+      }
+    },
+    {
+      "case_id": "ftlzw.FT_Stream_OpenLZW.error_callback_seek_failure",
+      "subject": "ftlzw.FT_Stream_OpenLZW",
+      "case": "error_callback_seek_failure",
+      "operation": "ftlzw.stream_open_lzw",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "compressed": {
+            "kind": "ref",
+            "id": "compressed/lzw/small-valid-pcf.Z",
+            "asset_kind": "fixture"
+          }
+        },
+        "params": {
+          "source_mode": "callback",
+          "callback_failure": "seek"
+        }
+      },
+      "metadata": {
+        "expansion_reason": "A public FT_Stream source callback that returns nonzero for the required zero-count seek reaches the C ABI lzw_source_bytes Invalid_Stream_Operation return.",
+        "original_freetype_behavior": "Pinned FreeType 2.14.3 ft_lzw_check_header calls FT_STREAM_SEEK(0), and ftstream.c propagates a nonzero zero-count callback result as a stream-operation error before reading the two-byte magic.",
+        "source_refs": [
+          "freetype/src/lzw/ftlzw.c:82-91",
+          "freetype/src/base/ftstream.c:56-72",
+          "fontdone-c-abi/src/implementation.rs:1531-1535"
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftlzw",
+        "area:lzw-stream",
+        "coverage:callback-seek-error"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "target_stream": "unchanged sentinel"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "status",
+            "error",
+            "source_pos_after_open",
+            "target_before",
+            "target_after"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ftlzw.FT_Stream_OpenLZW.error_callback_short_header_read",
+      "subject": "ftlzw.FT_Stream_OpenLZW",
+      "case": "error_callback_short_header_read",
+      "operation": "ftlzw.stream_open_lzw",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "compressed": {
+            "kind": "ref",
+            "id": "compressed/lzw/small-valid-pcf.Z",
+            "asset_kind": "fixture"
+          }
+        },
+        "params": {
+          "source_mode": "callback",
+          "callback_failure": "short_header"
+        }
+      },
+      "metadata": {
+        "expansion_reason": "A public callback-backed LZW source that returns only one byte for the initial two-byte header read reaches the C ABI short-read error path.",
+        "original_freetype_behavior": "Pinned FreeType 2.14.3 treats a callback count smaller than the requested header length as FT_Err_Invalid_Stream_Operation in FT_Stream_ReadAt; the source position records the returned byte count.",
+        "source_refs": [
+          "freetype/src/lzw/ftlzw.c:89-105",
+          "freetype/src/base/ftstream.c:118-160",
+          "fontdone-c-abi/src/implementation.rs:1544-1553"
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftlzw",
+        "area:lzw-stream",
+        "coverage:callback-short-read"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "target_stream": "unchanged sentinel"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "status",
+            "error",
+            "source_pos_after_open",
+            "target_before",
+            "target_after"
+          ]
+        }
       }
     },
     {
