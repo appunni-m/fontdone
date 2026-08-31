@@ -1504,6 +1504,59 @@ fn bzip2_source_bytes(
     Ok(bytes)
 }
 
+#[cfg_attr(not(feature = "lzw"), allow(dead_code))]
+fn lzw_source_bytes(
+    source: FT_Stream,
+    source_base: *mut FT_Byte,
+    source_read: FT_Pointer,
+    source_len: usize,
+) -> Result<Vec<FT_Byte>, FT_Error> {
+    if source_len == 0 {
+        return Ok(Vec::new());
+    }
+    if !source_base.is_null() {
+        // SAFETY: the caller supplied a memory-backed source whose base is
+        // readable for the advertised non-zero size.
+        return Ok(unsafe { slice::from_raw_parts(source_base.cast_const(), source_len) }.to_vec());
+    }
+    if source_read.is_null() {
+        return Err(rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error);
+    }
+    // SAFETY: public FT_StreamRec.read has FreeType's FT_Stream_IoFunc ABI;
+    // the caller retains the source stream for this synchronous materialization.
+    let stream_io = unsafe {
+        std::mem::transmute::<
+            FT_Pointer,
+            extern "C" fn(FT_Stream, FT_ULong, *mut FT_Byte, FT_ULong) -> FT_ULong,
+        >(source_read)
+    };
+    if stream_io(source, 0, ptr::null_mut(), 0) != 0 {
+        return Err(rust_ffi::FT_Err_Invalid_Stream_Operation as FT_Error);
+    }
+    // FT_Stream_Seek commits the zero position only after the callback
+    // reports success; preserve that state before the header read.
+    unsafe {
+        (*source).pos = 0;
+    }
+    let requested = FT_ULong::try_from(source_len)
+        .map_err(|_| rust_ffi::FT_Err_Invalid_Argument as FT_Error)?;
+    let mut bytes = Vec::new();
+    bytes
+        .try_reserve_exact(source_len)
+        .map_err(|_| rust_ffi::FT_Err_Out_Of_Memory as FT_Error)?;
+    bytes.resize(source_len, 0);
+    let read_count = stream_io(source, 0, bytes.as_mut_ptr(), requested);
+    // FreeType advances a callback-backed stream by the number of bytes the
+    // callback returned, including a short read that becomes an error.
+    unsafe {
+        (*source).pos = read_count;
+    }
+    if read_count != requested {
+        return Err(rust_ffi::FT_Err_Invalid_Stream_Operation as FT_Error);
+    }
+    Ok(bytes)
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn FT_Stream_OpenBzip2(stream: FT_Stream, source: FT_Stream) -> FT_Error {
     open_bzip2_stream(stream, source)
@@ -1612,21 +1665,21 @@ fn open_lzw_stream(stream: FT_Stream, source: FT_Stream) -> FT_Error {
     if stream.is_null() || source.is_null() {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     }
-    let stream_ref = unsafe { &mut *stream };
-    let source_ref = unsafe { &mut *source };
-    if source_ref.base.is_null() && source_ref.size != 0 {
+    let (source_base, source_read, source_len) = unsafe {
+        let source_ref = &*source;
+        (source_ref.base, source_ref.read, source_ref.size as usize)
+    };
+    if source_base.is_null() && source_len != 0 && source_read.is_null() {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     }
-    let source_len = source_ref.size as usize;
-    // SAFETY: non-zero memory-backed sources promise `size` readable bytes.
-    // Keep the zero-length path separate because Rust slices require a
-    // non-null pointer even when their length is zero.
-    let source_bytes = if source_len == 0 {
-        &[][..]
-    } else {
-        unsafe { slice::from_raw_parts(source_ref.base.cast_const(), source_len) }
+    let source_bytes = match lzw_source_bytes(source, source_base, source_read, source_len) {
+        Ok(bytes) => bytes,
+        Err(error) => return error,
     };
-    let error = rust_ffi::FT_Stream_OpenLZW(Some(stream_ref), Some(source_ref), Some(source_bytes));
+    let stream_ref = unsafe { &mut *stream };
+    let source_ref = unsafe { &mut *source };
+    let error =
+        rust_ffi::FT_Stream_OpenLZW(Some(stream_ref), Some(source_ref), Some(&source_bytes));
     if source_len >= 2 {
         source_ref.pos = 2;
     }
@@ -9036,6 +9089,451 @@ fn abi_c114_valid_public_batch_probe(
 }
 
 #[cfg(feature = "abi-test-support")]
+fn abi_c115_reachability_batch_probe(
+    bytes: &[FT_Byte],
+    _library: FT_Library,
+    _face: FT_Face,
+    _memory: FT_Memory,
+    probe: u16,
+) {
+    // c115 is organized as ten five-case families.  The cases are deliberately
+    // different inputs, not repeated calls: each family records one pinned-C
+    // boundary or one malformed public record that is otherwise unreachable
+    // from the ordinary lifecycle fixture.
+    let index = usize::from(probe.saturating_sub(1931));
+    let family = index / 5;
+    let repeat = index % 5;
+    match family {
+        0 => {
+            // FreeType's FT_Stream_OpenLZW accepts callback-backed sources;
+            // only a source with neither base nor read is rejected before the
+            // header read.  The callback case is a behavioral witness for the
+            // source materialization fix, while the other rows keep the
+            // short-read and invalid-header errors distinct.
+            const LZW_BYTES: &[u8] =
+                include_bytes!("../../tests/fixtures/compressed/lzw/small-valid-pcf.Z");
+            let callback_lzw = |callback_bytes: &[u8], advertised_len: usize| {
+                let mut state = Box::new(AbiCallbackStreamState {
+                    bytes: callback_bytes.to_vec().into_boxed_slice(),
+                    expected_stream: 0,
+                    recording: false,
+                    close_calls: 0,
+                    callback_stream_identity: true,
+                    events: Vec::new(),
+                });
+                let mut source = FT_StreamRec {
+                    base: ptr::null_mut(),
+                    size: FT_ULong::try_from(advertised_len).unwrap_or(FT_ULong::MAX),
+                    descriptor: FT_StreamDesc {
+                        pointer: ptr::from_mut(state.as_mut()).cast(),
+                    },
+                    read: abi_callback_stream_io as *const () as FT_Pointer,
+                    ..FT_StreamRec::default()
+                };
+                state.expected_stream = ptr::from_mut(&mut source).addr();
+                let mut target = FT_StreamRec::default();
+                let error = FT_Stream_OpenLZW(&mut target, &mut source);
+                let mut output = [0_u8; 8];
+                let read = if error == rust_ffi::FT_Err_Ok {
+                    c_lzw_stream_io(
+                        &mut target,
+                        0,
+                        output.as_mut_ptr(),
+                        output.len() as FT_ULong,
+                    )
+                } else {
+                    0
+                };
+                let source_pos = source.pos;
+                abi_support_lzw_stream_close(&mut target);
+                (error, read, source_pos, state.callback_stream_identity)
+            };
+            match repeat {
+                0 => {
+                    let (error, read, source_pos, callback_identity) =
+                        callback_lzw(LZW_BYTES, LZW_BYTES.len());
+                    assert_eq!(error, rust_ffi::FT_Err_Ok);
+                    assert_eq!(source_pos, 2);
+                    std::hint::black_box((read, callback_identity));
+                }
+                1 => {
+                    let (error, read, source_pos, callback_identity) = callback_lzw(
+                        &LZW_BYTES[..LZW_BYTES.len().saturating_sub(1)],
+                        LZW_BYTES.len(),
+                    );
+                    assert_eq!(i64::from(error), rust_ffi::FT_Err_Invalid_Stream_Operation);
+                    std::hint::black_box((read, source_pos, callback_identity));
+                }
+                2 => {
+                    let (error, read, source_pos, callback_identity) =
+                        callback_lzw(&[0x1F, 0x00], 2);
+                    assert_eq!(error, rust_ffi::FT_Err_Invalid_File_Format);
+                    std::hint::black_box((read, source_pos, callback_identity));
+                }
+                3 => {
+                    let mut source = FT_StreamRec {
+                        size: 1,
+                        ..FT_StreamRec::default()
+                    };
+                    let mut target = FT_StreamRec::default();
+                    let error = FT_Stream_OpenLZW(&mut target, &mut source);
+                    assert_eq!(i64::from(error), rust_ffi::FT_Err_Invalid_Stream_Handle);
+                }
+                _ => {
+                    let error = FT_Stream_OpenLZW(ptr::null_mut(), ptr::null_mut());
+                    assert_eq!(i64::from(error), rust_ffi::FT_Err_Invalid_Stream_Handle);
+                }
+            }
+        }
+        1 => {
+            // These rows use the real requester-backed C ABI cache.  A
+            // rendered non-empty bitmap reaches the ordinary max_grays path;
+            // empty, missing, and invalid glyph records cover the cache's
+            // public sentinel and output-pointer contracts.
+            if let Ok(mut harness) = AbiSBitCacheHarness::new(bytes, 0) {
+                let face_id = harness.face_id();
+                let (width, height, flags, glyph, sbit_output, anode_output) = match repeat {
+                    0 => (12, 12, rust_ffi::FT_LOAD_DEFAULT, 1, true, false),
+                    1 => (12, 12, rust_ffi::FT_LOAD_DEFAULT, 1, true, true),
+                    2 => (0, 12, rust_ffi::FT_LOAD_DEFAULT, 0, true, false),
+                    3 => (12, 12, rust_ffi::FT_LOAD_DEFAULT, FT_UInt::MAX, true, true),
+                    _ => (
+                        12,
+                        12,
+                        rust_ffi::FT_LOAD_RENDER | rust_ffi::FT_LOAD_TARGET_MONO,
+                        1,
+                        true,
+                        true,
+                    ),
+                };
+                let image_type = FTC_ImageTypeRec {
+                    face_id,
+                    width,
+                    height,
+                    flags,
+                };
+                let snapshot = harness.lookup(image_type, glyph, sbit_output, anode_output);
+                std::hint::black_box((
+                    snapshot.error,
+                    snapshot.sbit_null,
+                    snapshot.anode_null,
+                    snapshot.node_locked,
+                    snapshot.node_ref_count,
+                    snapshot.buffer.len(),
+                ));
+            }
+        }
+        2 => {
+            // FT_Bitmap_Copy checks the multiplication bound before reading a
+            // caller buffer.  The records are intentionally malformed in
+            // dimensions but retain one owned byte so the guard is reached
+            // without dereferencing untrusted storage.
+            let core_library = rust_ffi::FT_Init_FreeType();
+            let (pitch, rows) = match repeat {
+                0 => (1, u32::MAX),
+                1 => (-1, u32::MAX),
+                2 => (2, (i32::MAX as u32 / 2).saturating_add(1)),
+                3 => (-2, (i32::MAX as u32 / 2).saturating_add(1)),
+                _ => (i32::MIN, 2),
+            };
+            let mut source = rust_ffi::FT_Bitmap_C {
+                rows,
+                width: 1,
+                pitch,
+                num_grays: 256,
+                pixel_mode: rust_ffi::FT_PIXEL_MODE_GRAY as FT_Byte,
+                ..rust_ffi::FT_Bitmap_C::default()
+            };
+            rust_ffi::FT_Bitmap_Set_Owned_Buffer(Some(&mut source), vec![0]);
+            let mut target = rust_ffi::FT_Bitmap_C::default();
+            let result =
+                rust_ffi::FT_Bitmap_Copy(Some(&core_library), Some(&source), Some(&mut target));
+            assert_eq!(i64::from(result), rust_ffi::FT_Err_Array_Too_Large);
+            rust_ffi::FT_Bitmap_Done(Some(&core_library), Some(&mut source));
+            rust_ffi::FT_Bitmap_Done(Some(&core_library), Some(&mut target));
+        }
+        3 => {
+            // The built-in glyph classes are selected without renderer lookup
+            // in the pinned C implementation.  A library with no default
+            // modules is therefore the discriminating input for this fix.
+            let library = rust_ffi::FT_New_Library_Without_Default_Modules();
+            let formats = [
+                rust_ffi::FT_GLYPH_FORMAT_OUTLINE,
+                rust_ffi::FT_GLYPH_FORMAT_BITMAP,
+                rust_ffi::FT_GLYPH_FORMAT_SVG,
+                rust_ffi::FT_GLYPH_FORMAT_NONE,
+                0x1234_5678,
+            ];
+            let format = formats[repeat];
+            let created = rust_ffi::FT_New_Glyph(Some(&library), format);
+            let allocation = rust_ffi::FT_New_Glyph_Allocation_Failure(Some(&library), format);
+            let built_in = repeat < 3;
+            assert_eq!(created.is_ok(), built_in);
+            assert_eq!(
+                allocation,
+                if built_in {
+                    rust_ffi::FT_Err_Out_Of_Memory
+                } else {
+                    rust_ffi::FT_Err_Invalid_Glyph_Format
+                }
+            );
+        }
+        4 => {
+            // ftglyph.c rejects a slot advance at either signed-16-bit bound
+            // after the slot format is accepted and before class import.
+            let core_library = rust_ffi::FT_Init_FreeType();
+            let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) else {
+                return;
+            };
+            let mut slot = rust_ffi::FT_Malformed_Get_GlyphSlot(&core_face, 4);
+            let extreme: rust_ffi::FT_Pos = 0x8000 * 64;
+            let (x, y) = match repeat {
+                0 => (-extreme, 0),
+                1 => (0, extreme),
+                2 => (0, -extreme),
+                3 => (extreme - 1, 0),
+                _ => (0, 0),
+            };
+            slot.advance = rust_ffi::FT_Vector { x, y };
+            let result = rust_ffi::FT_Get_Bitmap_Glyph(Some(&slot));
+            assert_eq!(result.is_err(), repeat < 3);
+        }
+        5 => {
+            // The SVG importer has the same advance bounds as FT_Get_Glyph;
+            // variant five supplies the smallest non-empty document accepted
+            // by the public Rust FFI support record.
+            let core_library = rust_ffi::FT_Init_FreeType();
+            let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) else {
+                return;
+            };
+            let mut slot = rust_ffi::FT_Malformed_Get_GlyphSlot(&core_face, 5);
+            let extreme: rust_ffi::FT_Pos = 0x8000 * 64;
+            let (x, y) = match repeat {
+                0 => (-extreme, 0),
+                1 => (0, extreme),
+                2 => (0, -extreme),
+                3 => (extreme - 1, 0),
+                _ => (0, 0),
+            };
+            slot.advance = rust_ffi::FT_Vector { x, y };
+            let result = rust_ffi::FT_Get_Svg_Glyph(Some(&slot));
+            assert_eq!(result.is_err(), repeat < 3);
+        }
+        6 => {
+            // Exercise the safe cache's output ordering independently of the
+            // raw C cache: null image/output, unlocked success, locked
+            // success, and out-of-range glyph are five distinct contracts.
+            let core_library = rust_ffi::FT_Init_FreeType();
+            let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) else {
+                return;
+            };
+            let mut cache = rust_ffi::FTCSBitCacheState::new(core_face);
+            let image_type = FTC_ImageTypeRec {
+                face_id: ptr::null_mut(),
+                width: 12,
+                height: 12,
+                flags: rust_ffi::FT_LOAD_DEFAULT,
+            };
+            let mut output = None;
+            let mut anode = true;
+            let error = match repeat {
+                0 => rust_ffi::FTC_SBitCache_Lookup(
+                    &mut cache,
+                    None,
+                    0,
+                    Some(&mut output),
+                    Some(&mut anode),
+                ),
+                1 => rust_ffi::FTC_SBitCache_Lookup(
+                    &mut cache,
+                    Some(&image_type),
+                    0,
+                    None,
+                    Some(&mut anode),
+                ),
+                2 => rust_ffi::FTC_SBitCache_Lookup(
+                    &mut cache,
+                    Some(&image_type),
+                    1,
+                    Some(&mut output),
+                    None,
+                ),
+                3 => rust_ffi::FTC_SBitCache_Lookup(
+                    &mut cache,
+                    Some(&image_type),
+                    1,
+                    Some(&mut output),
+                    Some(&mut anode),
+                ),
+                _ => rust_ffi::FTC_SBitCache_Lookup(
+                    &mut cache,
+                    Some(&image_type),
+                    FT_UInt::MAX,
+                    Some(&mut output),
+                    Some(&mut anode),
+                ),
+            };
+            std::hint::black_box((error, output.is_some(), anode));
+        }
+        7 => {
+            // These raw outline inputs select the public render validation
+            // order: invalid library, invalid outline, empty success, direct
+            // mode, and a malformed final contour endpoint.
+            let library = rust_ffi::FT_Init_FreeType();
+            let empty = rust_ffi::FT_OutlineSnapshot::default();
+            let malformed = rust_ffi::FT_OutlineSnapshot {
+                points: vec![rust_ffi::FT_Vector { x: 0, y: 0 }],
+                tags: vec![1],
+                contours: vec![1],
+                flags: 0,
+            };
+            let result = match repeat {
+                0 => rust_ffi::FT_Outline_Render(
+                    None,
+                    Some(&empty),
+                    None,
+                    0,
+                    rust_ffi::FT_BBox::default(),
+                ),
+                1 => rust_ffi::FT_Outline_Render(
+                    Some(&library),
+                    None,
+                    None,
+                    0,
+                    rust_ffi::FT_BBox::default(),
+                ),
+                2 => rust_ffi::FT_Outline_Render(
+                    Some(&library),
+                    Some(&empty),
+                    None,
+                    0,
+                    rust_ffi::FT_BBox::default(),
+                ),
+                3 => rust_ffi::FT_Outline_Render(
+                    Some(&library),
+                    Some(&empty),
+                    None,
+                    rust_ffi::FT_RASTER_FLAG_DIRECT as FT_Int,
+                    rust_ffi::FT_BBox::default(),
+                ),
+                _ => rust_ffi::FT_Outline_Render(
+                    Some(&library),
+                    Some(&malformed),
+                    None,
+                    0,
+                    rust_ffi::FT_BBox::default(),
+                ),
+            };
+            std::hint::black_box(result.is_ok());
+        }
+        8 => {
+            // Direct-span input separates the flag-order guards from the
+            // callback-free success path; the last row uses a valid rectangle
+            // so the renderer can emit real span records.
+            let library = rust_ffi::FT_Init_FreeType();
+            let empty = rust_ffi::FT_OutlineSnapshot::default();
+            let rectangle = rust_ffi::FT_OutlineSnapshot {
+                points: vec![
+                    rust_ffi::FT_Vector { x: 0, y: 0 },
+                    rust_ffi::FT_Vector { x: 64, y: 0 },
+                    rust_ffi::FT_Vector { x: 64, y: 64 },
+                    rust_ffi::FT_Vector { x: 0, y: 64 },
+                ],
+                tags: vec![1, 1, 1, 1],
+                contours: vec![3],
+                flags: 0,
+            };
+            let target = rust_ffi::FT_Bitmap_C {
+                rows: 1,
+                width: 1,
+                pitch: 1,
+                num_grays: 256,
+                pixel_mode: rust_ffi::FT_PIXEL_MODE_GRAY as FT_Byte,
+                ..rust_ffi::FT_Bitmap_C::default()
+            };
+            let result = match repeat {
+                0 => rust_ffi::FT_Outline_Render_Direct_Spans(
+                    None,
+                    Some(&empty),
+                    None,
+                    rust_ffi::FT_RASTER_FLAG_DIRECT as FT_Int,
+                    None,
+                    false,
+                ),
+                1 => rust_ffi::FT_Outline_Render_Direct_Spans(
+                    Some(&library),
+                    None,
+                    None,
+                    rust_ffi::FT_RASTER_FLAG_DIRECT as FT_Int,
+                    None,
+                    false,
+                ),
+                2 => rust_ffi::FT_Outline_Render_Direct_Spans(
+                    Some(&library),
+                    Some(&empty),
+                    None,
+                    rust_ffi::FT_RASTER_FLAG_DIRECT as FT_Int,
+                    None,
+                    false,
+                ),
+                3 => rust_ffi::FT_Outline_Render_Direct_Spans(
+                    Some(&library),
+                    Some(&empty),
+                    None,
+                    (rust_ffi::FT_RASTER_FLAG_DIRECT | rust_ffi::FT_RASTER_FLAG_AA) as FT_Int,
+                    None,
+                    false,
+                ),
+                _ => rust_ffi::FT_Outline_Render_Direct_Spans(
+                    Some(&library),
+                    Some(&rectangle),
+                    Some(&target),
+                    (rust_ffi::FT_RASTER_FLAG_DIRECT | rust_ffi::FT_RASTER_FLAG_AA) as FT_Int,
+                    Some(rust_ffi::FT_BBox {
+                        xMin: 0,
+                        yMin: 0,
+                        xMax: 1,
+                        yMax: 1,
+                    }),
+                    true,
+                ),
+            };
+            let _ = std::hint::black_box(result.map(|spans| spans.len()));
+        }
+        9 => {
+            // Stroker null/output/border validation is public but is not
+            // reached by the ordinary glyph lifecycle.  The final malformed
+            // tag row follows the pinned parser's first-cubic guard.
+            let library = rust_ffi::FT_Init_FreeType();
+            let mut stroker = ptr::null_mut();
+            let new_status = rust_ffi::FT_Stroker_New(Some(&library), Some(&mut stroker));
+            let point = rust_ffi::FT_Vector { x: 0, y: 0 };
+            let malformed = rust_ffi::FT_OutlineSnapshot {
+                points: vec![
+                    rust_ffi::FT_Vector { x: 0, y: 0 },
+                    rust_ffi::FT_Vector { x: 64, y: 0 },
+                ],
+                tags: vec![3, 1],
+                contours: vec![1],
+                flags: 0,
+            };
+            let result = match repeat {
+                0 => rust_ffi::FT_Stroker_New(Some(&library), None),
+                1 => rust_ffi::FT_Stroker_BeginSubPath(ptr::null_mut(), Some(&point), 0),
+                2 => rust_ffi::FT_Stroker_BeginSubPath(stroker, None, 0),
+                3 => rust_ffi::FT_Stroker_GetBorderCounts(stroker, 99, None, None),
+                _ => rust_ffi::FT_Stroker_ParseOutline(stroker, Some(&malformed), 0),
+            };
+            if !stroker.is_null() {
+                rust_ffi::FT_Stroker_Done(stroker);
+            }
+            std::hint::black_box((new_status, result));
+        }
+        _ => {}
+    }
+}
+
+#[cfg(feature = "abi-test-support")]
 fn abi_custom_memory_coverage_probe(
     bytes: &[FT_Byte],
     library: FT_Library,
@@ -12912,6 +13410,7 @@ fn abi_custom_memory_coverage_probe(
         1701..=1800 => abi_c112_rust_gap_batch_probe(bytes, library, face, memory, probe),
         1801..=1900 => abi_c113_rust_gap_batch_probe(bytes, library, face, memory, probe),
         1901..=1930 => abi_c114_valid_public_batch_probe(bytes, library, face, memory, probe),
+        1931..=1980 => abi_c115_reachability_batch_probe(bytes, library, face, memory, probe),
         _ => {}
     }
 }

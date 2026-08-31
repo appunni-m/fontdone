@@ -3529,7 +3529,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,226 tracked paths and no symlinks.
+The canonical input tree currently contains 1,230 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -4411,6 +4411,44 @@ The selected-only profile is not a replacement full-denominator result. The
 MCP project source metadata still identifies an older commit, so exact source
 line interpretation is anchored to the local checkout and pushed commit.
 
+Batch312 added fifty public parity variants for the remaining C-ABI reachability
+work. They are grouped into ten five-case families so each expansion has a
+specific input reason: callback-backed LZW streams (valid data, short callback,
+bad header, null backing storage, and null handles); requester-backed SBit cache
+outputs (bitmap, anode, empty, maximum glyph, and monochrome); bitmap-copy
+dimension overflow; built-in glyph creation with default renderers removed;
+bitmap and SVG glyph advance bounds; SBit output-pointer states; outline render
+validation/direct-mode states; direct-span validation; and stroker null,
+border, and malformed-outline guards. The concrete IDs are
+`batch312-c115-reach-001` through `batch312-c115-reach-050`, with probes
+`1931` through `1980` in `ftsystem.FT_Memory`.
+
+The pinned FreeType 2.14.3 comparison established two runtime mismatches rather
+than merely adding coverage. `freetype/src/lzw/ftlzw.c:FT_Stream_OpenLZW`
+accepts callback-backed streams and validates them through the stream seek/read
+callbacks; the Rust opener previously rejected a null `base` before consulting
+those callbacks. `freetype/src/base/ftglyph.c:FT_New_Glyph` selects built-in
+bitmap, outline, and SVG glyph classes without requiring a renderer lookup; the
+Rust wrapper previously gated those formats on renderer availability. The Rust
+paths now mirror those public C decisions. The null-base/no-read LZW case stays
+as an explicit Rust defensive error because the pinned no-callback stream path
+would dereference the backing pointer. The bitmap overflow, advance bounds,
+cache-pointer, renderer, direct-span, and stroker cases retain the pinned
+public error/sentinel behavior; they are malformed API records or pointer
+shapes used to exercise specified validation, not test-only assertions.
+
+Focused public parity passed all fifty rows across the pinned oracle, Rust FFI,
+the C ABI, and WASM (`50/50`, `0` pending). Coverage MCP run
+`3cd7a447-73d7-4412-bd24-ecd34aa72ff0` used the ten repeated
+comma-separated `--migration-coverage-case-ids` arguments against explicit full
+baseline snapshot `b7d3ee3f-9a0b-485f-bccd-921c1ac84063` and ingested snapshot
+`b8bbbf84-5729-4c16-9d35-b924bd318c30`. Its supported additive union reports
+`+2,334` covered regions; the selected run also adds instrumented probe code,
+so the MCP report records denominator growth and must not be presented as a
+replacement full-snapshot percentage. The MCP source metadata still identifies
+the older baseline commit; source interpretation is anchored to this local
+checkout.
+
 Confirmed runtime divergences fixed during the coverage loop are documented
 next to their implementations and must remain separate from coverage-only
 adoption claims:
@@ -4636,7 +4674,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 100 | package, build, release, and facade contracts |
 | R03 | 1,754 | executable parity tests and public contracts |
-| R04 | 1,227 | licensed canonical fixture inputs |
+| R04 | 1,230 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 64 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -4644,7 +4682,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,220** | **all retained paths** |
+| **Total** | **3,223** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

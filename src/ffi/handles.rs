@@ -2119,11 +2119,16 @@ pub enum FT_GlyphOwned {
     Svg(FT_SvgGlyphOwned),
 }
 
-fn new_glyph_format_supported(library: &FT_Library, format: FT_Glyph_Format) -> bool {
+fn new_glyph_format_supported(_library: &FT_Library, format: FT_Glyph_Format) -> bool {
+    // FreeType 2.14.3 selects the built-in glyph classes directly in
+    // `src/base/ftglyph.c:595-626`; renderer lookup is only needed for a
+    // format supplied by an extension renderer.  The pure-Rust owned enum
+    // models these three built-in classes, so a library without default
+    // renderer modules must still accept them.
     matches!(
         format,
         FT_GLYPH_FORMAT_OUTLINE | FT_GLYPH_FORMAT_BITMAP | FT_GLYPH_FORMAT_SVG
-    ) && FT_Library_Renderer_Class(Some(library), format).is_some()
+    )
 }
 
 /// Creates an empty glyph of one of the built-in FreeType glyph classes.
@@ -2134,7 +2139,6 @@ pub fn FT_New_Glyph(
     let Some(library) = library else {
         return Err(FT_Err_Invalid_Argument);
     };
-    let renderer_available = FT_Library_Renderer_Class(Some(library), format).is_some();
     let root = FT_GlyphRec {
         library: ptr::from_ref(library).cast_mut().cast(),
         clazz: ptr::dangling(),
@@ -2142,21 +2146,17 @@ pub fn FT_New_Glyph(
         advance: FT_Vector::default(),
     };
     match format {
-        FT_GLYPH_FORMAT_OUTLINE if renderer_available => {
-            Ok(FT_GlyphOwned::Outline(FT_OutlineGlyphOwned {
-                root,
-                outline: FT_OutlineSnapshot::default(),
-            }))
-        }
-        FT_GLYPH_FORMAT_BITMAP if renderer_available => {
-            Ok(FT_GlyphOwned::Bitmap(FT_BitmapGlyphOwned {
-                root,
-                left: 0,
-                top: 0,
-                bitmap: FT_Bitmap::default(),
-            }))
-        }
-        FT_GLYPH_FORMAT_SVG if renderer_available => Ok(FT_GlyphOwned::Svg(FT_SvgGlyphOwned {
+        FT_GLYPH_FORMAT_OUTLINE => Ok(FT_GlyphOwned::Outline(FT_OutlineGlyphOwned {
+            root,
+            outline: FT_OutlineSnapshot::default(),
+        })),
+        FT_GLYPH_FORMAT_BITMAP => Ok(FT_GlyphOwned::Bitmap(FT_BitmapGlyphOwned {
+            root,
+            left: 0,
+            top: 0,
+            bitmap: FT_Bitmap::default(),
+        })),
+        FT_GLYPH_FORMAT_SVG => Ok(FT_GlyphOwned::Svg(FT_SvgGlyphOwned {
             root,
             svg_document: Vec::new(),
             glyph_index: 0,
@@ -7673,9 +7673,7 @@ pub fn FT_Gzip_Uncompress(
     unsafe_code,
     reason = "the public FT_Stream_IoFunc callback is an opaque C ABI field"
 )]
-fn bzip2_source_bytes_from_stream(
-    source: &mut FT_StreamRec,
-) -> Result<Vec<FT_Byte>, FT_Error> {
+fn bzip2_source_bytes_from_stream(source: &mut FT_StreamRec) -> Result<Vec<FT_Byte>, FT_Error> {
     let source_len = match usize::try_from(source.size) {
         Ok(source_len) => source_len,
         Err(_) => return Err(FT_Err_Invalid_Stream_Handle as FT_Error),
@@ -15542,8 +15540,7 @@ fn dispatch_svg_render_hooks(
         hooks.free_svg,
         hooks.preset_slot,
         hooks.render_svg,
-    )
-    else {
+    ) else {
         return Err(FT_Err_Missing_SVG_Hooks as FT_Error);
     };
     let mut state: FT_Pointer = (probe as *mut super::types::SvgCallbackProbe).cast();
