@@ -18,7 +18,7 @@ NOTICE.md	1275	file	b2a99b4906d6ff998690cfda4db4c23dff3e8351c6de65d5c9a8b1835a6a
 README.md	24576	file	19b75a04b2db112f7d454d5801f006c8ae2d05210c2776e0f363a95d34b736c5	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 SECURITY.md	1462	file	43c23f8239bc1536b688b89fac6bde6ad1420b467346f4d74ce5a2bc2cd38142	-	keep-community	R09	Public community or security contract.
 deny.toml	341	file	d4d516ffd41e0c8e3de633cc3d807b5e0b1a53ec7b5f56ad8ea95c73da0a2bf1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-doc/DEVELOPMENT.md	340782	file	2c69e2d47ec94ac70ae5f11713330347a573ffa5312e94bce6dfaf8871f3d0cd	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/DEVELOPMENT.md	341410	file	508fb595ca2cc053e049a00a6179b3276380d2afd9ed11e747ab9febf44977d2	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/FILE_RETENTION_INVENTORY.tsv	0	generated	-	-	generated-audit	R11	Generated exhaustive inventory; refresh with scripts/audit_repository_files.py.
 doc/FREETYPE_SUPPORT.md	30950	file	6b6b13666ef8d7dd27a4dbc9546cca45565a6fd517476cbaecf02a0201ac2305	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/INTEGRATION.md	9545	file	8c78fa316efca6fd92ac012d8ef887ab51b2d71218aa5aef8b05f37704ecace2	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
