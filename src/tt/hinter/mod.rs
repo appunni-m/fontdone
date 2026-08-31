@@ -110,9 +110,11 @@ pub(crate) fn prepare_context(
 ) -> Result<exec::ExecContext, FontError> {
     let mut ctx = exec::ExecContext::new(cvt, fpgm, scale)?;
 
-    if !fpgm.is_empty() {
-        ctx.run_fpgm()?;
-    }
+    // FreeType still enters TT_Run_Context for an empty `fpgm`; the interpreter
+    // returns through its zero-length code range before `prep` is run.  Keep
+    // that public empty-program lifecycle visible instead of making the caller
+    // encode an implementation-only special case.
+    ctx.run_fpgm()?;
     let saved_storage = ctx.storage.clone();
     ctx.run_prep(prep, &saved_storage)?;
     ctx.backward_compatibility = if scale.native_hint_mode == NativeHintMode::Mono {
