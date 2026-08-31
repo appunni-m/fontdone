@@ -96,6 +96,35 @@ CHARS 1
 {VALID_GLYPH}'''
 
 
+def bitmap_limit_fixture(
+    family: str, size_line: str, bbx_line: str, bitmap_rows: str = ""
+) -> str:
+    return f'''STARTFONT 2.1
+FONT {family}
+{size_line}
+FONTBOUNDINGBOX 8 8 0 -2
+STARTPROPERTIES 3
+FONT_ASCENT 6
+FONT_DESCENT 2
+PIXEL_SIZE 12
+ENDPROPERTIES
+CHARS 1
+STARTCHAR A
+ENCODING 65
+SWIDTH 500 0
+DWIDTH 65535 0
+{bbx_line}
+BITMAP
+{bitmap_rows}
+ENDCHAR
+ENDFONT
+'''
+
+
+def malformed_bbx_fixture(family: str, bbx_line: str, bitmap_rows: str = "") -> str:
+    return bitmap_limit_fixture(family, "SIZE 12 75 75", bbx_line, bitmap_rows)
+
+
 def charset_registry_fixture(family: str, registry: str, encoding: str) -> str:
     return f'''STARTFONT 2.1
 FONT {family}
@@ -394,6 +423,85 @@ ENDCHAR
 ENDFONT
 """,
     )
+    bitmap_limit_variants = [
+        (
+            "zero-height",
+            "FontdoneBatch259ZeroHeight",
+            "SIZE 12 75 75",
+            "BBX 1 0 0 0",
+            "",
+        ),
+        (
+            "width-saturates",
+            "FontdoneBatch259WidthSaturates",
+            "SIZE 12 75 75",
+            "BBX 524288 1 0 0",
+            "00",
+        ),
+        (
+            "bpp2-overflow",
+            "FontdoneBatch259Bpp2Overflow",
+            "SIZE 12 75 75 2",
+            "BBX 65535 4 0 0",
+            "00",
+        ),
+        (
+            "bpp4-overflow",
+            "FontdoneBatch259Bpp4Overflow",
+            "SIZE 12 75 75 4",
+            "BBX 65535 2 0 0",
+            "00",
+        ),
+        (
+            "bpp8-overflow",
+            "FontdoneBatch259Bpp8Overflow",
+            "SIZE 12 75 75 8",
+            "BBX 65535 2 0 0",
+            "00",
+        ),
+    ]
+    for suffix, family, size_line, bbx_line, bitmap_rows in bitmap_limit_variants:
+        write_fixture(
+            f"input/fonts/bdf/batch259-{suffix}.bdf",
+            bitmap_limit_fixture(family, size_line, bbx_line, bitmap_rows),
+        )
+    malformed_bbx_variants = [
+        (
+            "width-no-digit",
+            "FontdoneBatch273BdfBbxWidthNoDigit",
+            "BBX junk 8 0 -2",
+            "",
+        ),
+        (
+            "height-no-digit",
+            "FontdoneBatch273BdfBbxHeightNoDigit",
+            "BBX 8 junk 0 -2",
+            "",
+        ),
+        (
+            "width-decimal-prefix",
+            "FontdoneBatch273BdfBbxWidthPrefix",
+            "BBX 42tail 8 0 -2",
+            "\n".join(["00"] * 8),
+        ),
+        (
+            "height-decimal-prefix",
+            "FontdoneBatch273BdfBbxHeightPrefix",
+            "BBX 8 42tail 0 -2",
+            "\n".join(["00"] * 42),
+        ),
+        (
+            "empty-fields",
+            "FontdoneBatch273BdfBbxEmptyFields",
+            "BBX ",
+            "",
+        ),
+    ]
+    for suffix, family, bbx_line, bitmap_rows in malformed_bbx_variants:
+        write_fixture(
+            f"input/fonts/bdf/batch273-{suffix}.bdf",
+            malformed_bbx_fixture(family, bbx_line, bitmap_rows),
+        )
     write_fixture(
         "input/fixtures/assets/bdf/missing_startfont_field.bdf",
         "FONT PillowRsMalformedBDF\nSIZE 8 75 75\nFONTBOUNDINGBOX 8 8 0 -2\nCHARS 0\nENDFONT\n",

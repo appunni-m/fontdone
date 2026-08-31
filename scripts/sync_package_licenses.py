@@ -8,7 +8,11 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGES = (ROOT / "fontdone-c-abi", ROOT / "fontdone-wasm")
+PACKAGES = (
+    ROOT / "fontdone-c-abi",
+    ROOT / "fontdone-wasm",
+    ROOT / "fontdone-wasm" / "npm",
+)
 FILES = ("LICENSE", "FTL.TXT", "NOTICE.md")
 
 

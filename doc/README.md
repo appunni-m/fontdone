@@ -9,7 +9,8 @@ which package to choose, and the current compatibility boundary.
 |---|---|
 | Integrate from Rust | [Integration guide](INTEGRATION.md) |
 | Integrate from C | [`fontdone-c-abi`](../fontdone-c-abi/README.md) |
-| Integrate from Node/WebAssembly | [`fontdone-wasm`](../fontdone-wasm/README.md) |
+| Integrate in a browser | [`fontdone` npm package](../fontdone-wasm/npm/README.md) |
+| Integrate through the raw WebAssembly ABI | [`fontdone-wasm`](../fontdone-wasm/README.md) |
 | Build, test, debug, or add fixtures | [Development guide](DEVELOPMENT.md) |
 | Prepare or publish a release | [Release guide](RELEASING.md) |
 

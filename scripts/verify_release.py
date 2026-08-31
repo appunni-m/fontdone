@@ -24,6 +24,7 @@ PACKAGES = (
     ("fontdone-c-abi", ROOT / "fontdone-c-abi" / "Cargo.toml"),
     ("fontdone-wasm", ROOT / "fontdone-wasm" / "Cargo.toml"),
 )
+NPM_MANIFEST = ROOT / "fontdone-wasm" / "npm" / "package.json"
 REQUIRED = {
     "fontdone": {
         "Cargo.toml",
@@ -116,6 +117,17 @@ def verify_metadata() -> str:
         pattern = rf'{re.escape(name)}\s*=\s*\{{[^}}]*path\s*=\s*"{re.escape(name)}"'
         if re.search(pattern, root_manifest) is None:
             raise ValueError(f"Cargo.toml: path-only dev dependency {name} is missing")
+    npm_manifest = json.loads(NPM_MANIFEST.read_text(encoding="utf-8"))
+    if npm_manifest.get("name") != "fontdone":
+        raise ValueError("browser npm package must be named fontdone")
+    if npm_manifest.get("version") != version:
+        raise ValueError(
+            "browser npm package version drift: "
+            f"{npm_manifest.get('version')} != {version}"
+        )
+    npm_publish = npm_manifest.get("publishConfig", {})
+    if npm_publish.get("access") != "public" or npm_publish.get("tag") != "next":
+        raise ValueError("browser npm alpha must publish publicly under next")
     consumer_template = (
         ROOT / "tests" / "external" / "rust-consumer" / "Cargo.toml.in"
     ).read_text(encoding="utf-8")
@@ -130,7 +142,7 @@ def verify_metadata() -> str:
     for path in (ROOT / "README.md", ROOT / "CHANGELOG.md"):
         if version not in path.read_text(encoding="utf-8"):
             raise ValueError(f"{path}: release version {version} is absent")
-    print(f"release metadata: 3 packages synchronized at {version}")
+    print(f"release metadata: 3 Cargo crates and browser npm package at {version}")
     return version
 
 
@@ -290,6 +302,10 @@ def package_and_inspect(version: str) -> list[dict[str, object]]:
     checksums = "\n".join(
         f"{item['sha256']}  {Path(str(item['archive'])).name}" for item in reports
     )
+    npm_archive = ROOT / "target" / "npm-package" / f"fontdone-{version}.tgz"
+    if npm_archive.is_file():
+        npm_digest = hashlib.sha256(npm_archive.read_bytes()).hexdigest()
+        checksums += f"\n{npm_digest}  {npm_archive.name}"
     (output / "SHA256SUMS").write_text(checksums + "\n", encoding="utf-8")
     snapshot = json.loads(
         (ROOT / "doc" / "compatibility_snapshot.json").read_text(encoding="utf-8")
@@ -324,9 +340,11 @@ def package_and_inspect(version: str) -> list[dict[str, object]]:
         f"{contract['binary_artifact_items_total']}, platforms "
         f"{contract['platform_lanes_complete']}/"
         f"{contract['platform_lanes_total']})\n\n"
-        "Published in dependency order: `fontdone`, `fontdone-c-abi`, "
-        "`fontdone-wasm`. Route evidence is not a claim that every success path "
-        "is complete; see the repository adoption map and C-contract scorecard.\n"
+        "Cargo publication order: `fontdone`, `fontdone-c-abi`, "
+        "`fontdone-wasm`. The synchronized browser npm artifact is also named "
+        "`fontdone` and publishes separately under the `next` dist-tag. Route "
+        "evidence is not a claim that every success path is complete; see the "
+        "repository adoption map and C-contract scorecard.\n"
     )
     (output / "release-notes.md").write_text(notes, encoding="utf-8")
     print(f"release packages: {len(reports)} archives inspected and compiled")

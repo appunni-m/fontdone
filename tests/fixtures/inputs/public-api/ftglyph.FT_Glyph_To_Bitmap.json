@@ -10,6 +10,7 @@
     "mcp_null_glyph_handle_batch",
     "success_origin_translation_affects_render",
     "error_invalid_outline_record_rejected",
+    "error_outline_support_guards",
     "pending_stroked_mono_target_outline_to_bitmap",
     "error_invalid_arguments_or_unrenderable_format",
     "error_render_failure_preserves_original"
@@ -417,6 +418,193 @@
         "fixture_requirements": [
           "The owned outline glyph's public FT_Outline contours pointer is made null while n_contours remains non-zero before FT_Glyph_To_Bitmap, and its points pointer is made null while n_points remains non-zero."
         ]
+      }
+    },
+    {
+      "case_id": "ftglyph.FT_Glyph_To_Bitmap.error_outline_support_guards",
+      "subject": "ftglyph.FT_Glyph_To_Bitmap",
+      "case": "error_outline_support_guards",
+      "covers_manifest_cases": ["error_outline_support_guards"],
+      "operation": "ftglyph.glyph_to_bitmap",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "batch265-render-failure-null-glyph-001",
+            "reason": "Pass the documented null glyph handle value to the WASM and C-ABI outline corruption helper; the null-safe ownership lookup must return false before any record access.",
+            "assets": {},
+            "params": {
+              "support_probe": "render_failure_null_glyph_handle"
+            },
+            "coverage": ["batch265:wasm-outline-support:null-render-failure"]
+          },
+          {
+            "id": "batch265-render-failure-empty-outline-002",
+            "reason": "Load DejaVuSans glyph 3 (space), whose public outline has zero contours; the render-failure helper must take its no-contour guard rather than fabricating an oversized outline.",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/DejaVuSans.ttf", "asset_kind": "font"}
+            },
+            "params": {
+              "support_probe": "render_failure_empty_outline",
+              "face_index": 0,
+              "glyph_index": 3,
+              "pixel_size": {"x": 0, "y": 20},
+              "load_flags": ["FT_LOAD_NO_BITMAP"]
+            },
+            "coverage": ["batch265:wasm-outline-support:empty-render-failure"]
+          },
+          {
+            "id": "batch265-stroke-parse-null-glyph-003",
+            "reason": "Pass a null glyph handle to the stroke-parse corruption helper; the same safe root lookup must return false without reading a fake class pointer.",
+            "assets": {},
+            "params": {
+              "support_probe": "stroke_parse_null_glyph_handle"
+            },
+            "coverage": ["batch265:wasm-outline-support:null-stroke-parse"]
+          },
+          {
+            "id": "batch265-stroke-parse-empty-tags-004",
+            "reason": "Load the valid empty DejaVuSans space outline and ask the stroke-parse helper to mutate its first tag; the absent tag slice must return false.",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/DejaVuSans.ttf", "asset_kind": "font"}
+            },
+            "params": {
+              "support_probe": "stroke_parse_empty_tags",
+              "face_index": 0,
+              "glyph_index": 3,
+              "pixel_size": {"x": 0, "y": 20},
+              "load_flags": ["FT_LOAD_NO_BITMAP"]
+            },
+            "coverage": ["batch265:wasm-outline-support:empty-stroke-parse"]
+          },
+          {
+            "id": "batch265-render-tags-invalid-kind-005",
+            "reason": "Load a normal valid outline, then pass unsupported tag kind 255; this reaches the explicit match fallback instead of relying on a null-handle short circuit.",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/DejaVuSans.ttf", "asset_kind": "font"}
+            },
+            "params": {
+              "support_probe": "render_tags_invalid_kind",
+              "face_index": 0,
+              "glyph_index": 36,
+              "pixel_size": {"x": 0, "y": 20},
+              "load_flags": ["FT_LOAD_NO_BITMAP"],
+              "tag_kind": 255
+            },
+            "coverage": ["batch265:wasm-outline-support:invalid-tag-kind"]
+          },
+          {
+            "id": "batch266-render-tags-null-glyph-001",
+            "reason": "Pass the documented zero glyph handle to the render-tags helper; its private ownership lookup must return false before reading the class marker.",
+            "assets": {},
+            "params": {
+              "support_probe": "render_tags_null_glyph_handle"
+            },
+            "coverage": ["batch266:wasm-outline-support:null-render-tags"]
+          },
+          {
+            "id": "batch266-record-sync-null-glyph-002",
+            "reason": "Pass the documented zero glyph handle to the record-sync helper; the null-safe lookup must return false without dereferencing a fabricated pointer.",
+            "assets": {},
+            "params": {
+              "support_probe": "record_sync_null_glyph_handle"
+            },
+            "coverage": ["batch266:wasm-outline-support:null-record-sync"]
+          },
+          {
+            "id": "batch266-record-sync-empty-contours-003",
+            "reason": "Load DejaVuSans glyph 3 (space), whose public outline has no contours; record-sync must reject the empty contour storage before writing a nonzero public count.",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/DejaVuSans.ttf", "asset_kind": "font"}
+            },
+            "params": {
+              "support_probe": "record_sync_empty_contours",
+              "face_index": 0,
+              "glyph_index": 3,
+              "pixel_size": {"x": 0, "y": 20},
+              "load_flags": ["FT_LOAD_NO_BITMAP"]
+            },
+            "coverage": ["batch266:wasm-outline-support:empty-record-contours"]
+          },
+          {
+            "id": "batch266-points-sync-null-glyph-004",
+            "reason": "Pass the documented zero glyph handle to the point-sync helper; its null-safe lookup must return false before any point-record access.",
+            "assets": {},
+            "params": {
+              "support_probe": "points_sync_null_glyph_handle"
+            },
+            "coverage": ["batch266:wasm-outline-support:null-points-sync"]
+          },
+          {
+            "id": "batch266-points-sync-empty-points-005",
+            "reason": "Load DejaVuSans glyph 3 (space), whose public outline has no points; point-sync must reject the empty point storage before writing a nonzero public count.",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/DejaVuSans.ttf", "asset_kind": "font"}
+            },
+            "params": {
+              "support_probe": "points_sync_empty_points",
+              "face_index": 0,
+              "glyph_index": 3,
+              "pixel_size": {"x": 0, "y": 20},
+              "load_flags": ["FT_LOAD_NO_BITMAP"]
+            },
+            "coverage": ["batch266:wasm-outline-support:empty-points-sync"]
+          },
+          {
+            "id": "batch274-render-failure-oversized-internal-outline-001",
+            "reason": "Load a real DejaVuSans outline, then let the ABI test-support owner expand its owned vectors to 65,536 points before invoking the existing render-failure helper. This is an explicitly synthetic internal-state probe for the helper's FT_UShort conversion failure; it does not claim that public FreeType constructs or accepts an oversized outline.",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/DejaVuSans.ttf", "asset_kind": "font"}
+            },
+            "params": {
+              "support_probe": "render_failure_oversized_internal_outline",
+              "face_index": 0,
+              "glyph_index": 36,
+              "pixel_size": {"x": 0, "y": 20},
+              "load_flags": ["FT_LOAD_NO_BITMAP"]
+            },
+            "coverage": ["batch274:wasm-outline-support:oversized-internal-outline"]
+          },
+          {
+            "id": "batch274-svg-mutation-non-svg-glyph-002",
+            "reason": "Load a real DejaVuSans outline and pass its owned glyph handle to the SVG zero-length mutation helper. The pinned SVG glyph class only accepts FT_GLYPH_FORMAT_SVG, so C and WASM must take the wrong-format ownership guard and return false without mutating the outline.",
+            "assets": {
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/DejaVuSans.ttf", "asset_kind": "font"}
+            },
+            "params": {
+              "support_probe": "svg_mutation_non_svg_glyph",
+              "face_index": 0,
+              "glyph_index": 36,
+              "pixel_size": {"x": 0, "y": 20},
+              "load_flags": ["FT_LOAD_NO_BITMAP"]
+            },
+            "coverage": ["batch274:wasm-outline-support:non-svg-glyph"]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftglyph",
+        "area:glyph",
+        "area:abi-test-support",
+        "malformed:safe-null-and-empty-record",
+        "scope:fontdone-safety-extension"
+      ],
+      "metadata": {
+        "coverage_intent": "Exercise safe defensive exits in the maintained C-ABI/WASM outline mutation helpers. Null means the documented zero handle, glyph 3 is a valid empty public outline, and the two Batch274 cases use a real outline before deliberately entering private ABI bookkeeping states.",
+        "oracle_verdict": "Pinned FT_Glyph_To_Bitmap validates null handles at freetype/src/base/ftglyph.c:786-803, while the smooth renderer treats an empty outline as a successful no-op at freetype/src/smooth/ftgrays.c:1981-1989. The Batch274 oversized-vector and non-SVG probes are explicitly Fontdone safety extensions: pinned FreeType has no public operation that creates those helper-only states, so the oracle records the required false result rather than asserting a C mutation call."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "support_probe": "named guard probe",
+          "supported": "bool"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": ["support_probe", "supported"]
+        }
       }
     },
     {

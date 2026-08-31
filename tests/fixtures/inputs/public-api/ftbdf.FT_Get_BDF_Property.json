@@ -8,7 +8,8 @@
     "success_sfnt_bdf_table_selected_strike",
     "error_missing_property_sets_none",
     "error_unsupported_face_or_unselected_strike",
-    "error_null_face_or_output"
+    "error_null_face_or_output",
+    "error_null_property_name"
   ],
   "cases": [
     {
@@ -865,6 +866,61 @@
           ]
         },
         "error": "Invalid_Argument"
+      }
+    },
+    {
+      "case_id": "ftbdf.FT_Get_BDF_Property.error_null_property_name",
+      "subject": "ftbdf.FT_Get_BDF_Property",
+      "case": "error_null_property_name",
+      "operation": "ftbdf.get_bdf_property",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "bdf_font": {
+            "kind": "ref",
+            "id": "input/fonts/bdf/properties-atoms-integers-cardinals.bdf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "face_index": 0,
+          "property_pointer_mode": "null",
+          "sentinel_property": true
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftbdf",
+        "area:null-arguments",
+        "path:error"
+      ],
+      "metadata": {
+        "source_behavior": "Pinned FreeType's BDF service safely rejects a null prop_name pointer with Invalid_Argument after initializing BDF_PropertyRec.type to BDF_PROPERTY_TYPE_NONE; the output union remains caller-owned.",
+        "expansion_reason": "Reach the WASM fontdone_wasm_get_bdf_property prop_name.is_null branch with an actual public BDF face, then verify that Rust maps the null pointer to None without inventing a property name or changing the C error/output contract."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "record": "BDF_PropertyRec",
+          "null_property_name": true
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error",
+            "property.type",
+            "sentinel_write_state"
+          ]
+        },
+        "error": "Invalid_Argument",
+        "source_refs": [
+          "freetype/src/base/ftbdf.c:62-86",
+          "freetype/src/bdf/bdflib.c:1763-1772",
+          "freetype/src/sfnt/ttbdf.c:158-180",
+          "fontdone-wasm/src/implementation.rs:8984-8990"
+        ]
       }
     }
   ]

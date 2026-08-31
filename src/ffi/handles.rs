@@ -2450,8 +2450,9 @@ fn outline_glyph_to_bitmap_translated(
     // dummy slot, renders it, then copies the rendered bitmap and root advance
     // into a newly allocated bitmap glyph.
     let mut scratch = grays::RasterScratch::default();
-    let bitmap = render::render_loaded_outline(outline, left, bottom, top, mode, &mut scratch)
-        .map_err(error_to_ft)?;
+    let bitmap =
+        render::render_loaded_outline(outline, left, bottom, top, mode, None, &mut scratch)
+            .map_err(error_to_ft)?;
     Ok(FT_BitmapGlyphOwned {
         root: FT_GlyphRec {
             library: glyph.root.library,
@@ -2630,31 +2631,12 @@ pub fn FT_Outline_Glyph_Stroke(
             outline: stroked_dejavu_glyph36_outline(),
         });
     }
-    match stroke_outline_glyph_general(glyph, stroker) {
-        Ok(stroked) => return Ok(stroked),
-        Err(error) if error == FT_Err_Unimplemented_Feature => {}
-        Err(error) => return Err(error),
-    }
-    if !stroker_is_dejavu_glyph36_fixture(stroker)
-        || glyph.root.advance != (FT_Vector { x: 1_048_576, y: 0 })
-        || !outline_is_dejavu_glyph36_fixture(&glyph.outline)
-    {
-        return Err(FT_Err_Unimplemented_Feature);
-    }
-    // FreeType 2.14.3 `src/base/ftstroke.c:2248-2325` copies the source
-    // outline glyph, parses it as a closed outline, allocates a replacement
-    // outline sized from combined border counts, and exports left then right
-    // borders into the replacement.  This pins the active DejaVuSans glyph 36
-    // public fixture; the general glyph stroker remains pending.
-    Ok(FT_OutlineGlyphOwned {
-        root: FT_GlyphRec {
-            library: glyph.root.library,
-            clazz: glyph.root.clazz,
-            format: glyph.root.format,
-            advance: glyph.root.advance,
-        },
-        outline: stroked_dejavu_glyph36_outline(),
-    })
+    // FreeType 2.14.3 `src/base/ftstroke.c:2283-2315` propagates the first
+    // parse/count/allocation error.  Its stroker implementation has no
+    // `Unimplemented_Feature` return, so do not add a Rust-only fallback for a
+    // condition that no public or malformed outline can produce in the pinned
+    // C implementation.
+    stroke_outline_glyph_general(glyph, stroker)
 }
 
 fn stroke_outline_glyph_general(
@@ -3267,24 +3249,17 @@ fn ftc_sbit_cache_fill(
             return Ok(());
         }
     };
-    let slot = if slot.format == FT_GLYPH_FORMAT_BITMAP {
-        slot
-    } else {
-        match FT_Render_Glyph(slot, FT_RENDER_MODE_NORMAL) {
-            Ok(slot) => slot,
-            Err(error) if error == FT_Err_Out_Of_Memory => return Err(error),
-            Err(_error) => {
-                // `ftcsbits.c:133-137,193-204` converts a successful glyph
-                // load that cannot render into the same unavailable-SBit
-                // sentinel used for glyph-load failures. Only OOM escapes
-                // the cache lookup as an error.
-                cache
-                    .entries
-                    .insert(key, Box::new(ftc_missing_sbit_entry()));
-                return Ok(());
-            }
-        }
-    };
+    // `ftcbasic.c` adds FT_LOAD_RENDER before calling FT_Load_Glyph, but
+    // FreeType's load-flag normalization removes it when FT_LOAD_NO_SCALE is
+    // also present. `ftcsbits.c` does not render an outline a second time: any
+    // successful load that is not already a bitmap goes directly to its
+    // width=255 unavailable-SBit sentinel (`ftcsbits.c:121-137`).
+    if slot.format != FT_GLYPH_FORMAT_BITMAP {
+        cache
+            .entries
+            .insert(key, Box::new(ftc_missing_sbit_entry()));
+        return Ok(());
+    }
     cache
         .entries
         .insert(key, Box::new(ftc_sbit_entry_from_slot(slot)));
@@ -8035,6 +8010,12 @@ fn open_lzw_enabled(
     let (Some(stream), Some(source), Some(source_bytes)) = (stream, source, source_bytes) else {
         return FT_Err_Invalid_Stream_Handle as FT_Error;
     };
+    if source_bytes.len() < 2 {
+        // `ft_lzw_check_header` seeks to zero and then performs a two-byte
+        // read. An empty or one-byte source therefore reports a stream
+        // operation failure before the magic bytes can be classified.
+        return FT_Err_Invalid_Stream_Operation as FT_Error;
+    }
     if !source_bytes.starts_with(&[0x1F, 0x9D]) {
         return FT_Err_Invalid_File_Format;
     }
@@ -12517,6 +12498,14 @@ pub fn FT_Select_Size(face: Option<&mut FT_Face>, strike_index: FT_Int) -> FT_Er
     let Some(face) = face else {
         return FT_Err_Invalid_Face_Handle as FT_Error;
     };
+    // FreeType's negative-face-index probe is metadata-only: the font driver
+    // returns before its full face load, so `FT_HAS_FIXED_SIZES` is false and
+    // `FT_Select_Size` rejects the face before the driver's callback.  Do the
+    // same before asking the Rust face model to select a parsed strike (see
+    // `freetype/src/base/ftobjs.c`).
+    if face.probe_only {
+        return FT_Err_Invalid_Face_Handle as FT_Error;
+    }
     let Ok(strike_index) = usize::try_from(strike_index) else {
         return FT_Err_Invalid_Argument as FT_Error;
     };
@@ -15493,7 +15482,11 @@ pub fn FT_Render_Glyph(
     // it reparses public SFNT records, charmaps, and the autofitter script map
     // for every `FT_Render_Glyph` call. Keep the slot's already-owned source
     // face and refresh only the public fields that mirror its new core slot.
-    slot.core_slot = slot.core_slot.render(mode).map_err(error_to_ft)?;
+    let metrics = slot.source_face.size_metrics();
+    slot.core_slot = slot
+        .core_slot
+        .render_with_ppem(mode, Some((metrics.x_ppem, metrics.y_ppem)))
+        .map_err(error_to_ft)?;
     refresh_slot_public_fields(&mut slot);
     Ok(slot)
 }
@@ -15531,8 +15524,12 @@ fn dispatch_svg_render_hooks(
     render_mode: FT_Render_Mode,
     rendered: FT_GlyphSlot,
 ) -> Result<FT_GlyphSlot, FT_Error> {
-    let (Some(init_svg), Some(preset_slot), Some(render_svg)) =
-        (hooks.init_svg, hooks.preset_slot, hooks.render_svg)
+    let (Some(init_svg), Some(free_svg), Some(preset_slot), Some(render_svg)) = (
+        hooks.init_svg,
+        hooks.free_svg,
+        hooks.preset_slot,
+        hooks.render_svg,
+    )
     else {
         return Err(FT_Err_Missing_SVG_Hooks as FT_Error);
     };
@@ -15542,14 +15539,23 @@ fn dispatch_svg_render_hooks(
     unsafe {
         let init_error = init_svg(&mut state);
         if init_error != FT_Err_Ok {
+            // `ft_svg_render` marks the renderer loaded before returning an
+            // init-hook error; `ft_svg_done` consequently still invokes the
+            // matching free hook when the temporary library is destroyed.
+            free_svg(&mut state);
             return Err(init_error);
         }
         let slot_pointer = (probe as *mut super::types::SvgCallbackProbe).cast::<c_void>();
         let preset_error = preset_slot(slot_pointer, 1, &mut state);
         if preset_error != FT_Err_Ok {
+            free_svg(&mut state);
             return Err(preset_error);
         }
         let render_error = render_svg(slot_pointer, &mut state);
+        // The Rust core owns this hook state only for the synchronous render
+        // dispatch. Release it at the same lifetime boundary at which the
+        // pinned SVG renderer releases its module state in `ft_svg_done`.
+        free_svg(&mut state);
         if render_error != FT_Err_Ok {
             return Err(render_error);
         }

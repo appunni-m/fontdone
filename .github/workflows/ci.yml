@@ -119,7 +119,7 @@ jobs:
           retention-days: 14
 
   integrations:
-    name: Thorough / Rust, C, and WASM consumers
+    name: Thorough / Rust, C, raw WASM, and npm consumers
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
@@ -390,7 +390,7 @@ jobs:
           retention-days: 30
 
   packages:
-    name: Thorough / Package archives
+    name: Thorough / Cargo and npm archives
     if: github.event_name == 'workflow_dispatch'
     needs: commit-gate
     runs-on: ubuntu-24.04
@@ -404,11 +404,16 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
           key: cargo-${{ runner.os }}-${{ env.RUST_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
-      - name: Install Rust
+      - name: Install Rust and WASM target
         run: |
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
           rustup override set "$RUST_TOOLCHAIN"
-      - run: make package-verify
+          rustup target add wasm32-unknown-unknown
+      - name: Install Node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
+      - run: make package-verify npm-package-verify
       - name: Retain inspected packages
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -416,7 +421,9 @@ jobs:
           name: package-archives
           path: |
             target/package/*.crate
+            target/npm-package/*.tgz
             target/release-evidence/*.json
+            target/release-evidence/*.sha256
             target/release-evidence/*.txt
           if-no-files-found: error
           retention-days: 30

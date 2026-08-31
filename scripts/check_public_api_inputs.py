@@ -1211,6 +1211,7 @@ def exact_error_public_route(operation: str, case_id: str, expect_error: bool) -
         "freetype.FT_New_Face.error_null_library_or_aface",
         "ftbdf.FT_Get_BDF_Property.error_missing_property_sets_none",
         "ftbdf.FT_Get_BDF_Property.error_null_face_or_output",
+        "ftbdf.FT_Get_BDF_Property.error_null_property_name",
         "ftbdf.FT_Get_BDF_Property.error_unsupported_face_or_unselected_strike",
         "ftbdf.FT_Get_BDF_Charset_ID.error_non_bdf_face",
         "ftcolor.FT_COLOR_ROOT_TRANSFORM_MAX.invalid_runtime_behavior",
@@ -4639,6 +4640,8 @@ def otsvg_document_real_parity_reason(row: ConcreteInput) -> str | None:
             "otsvg.FT_SVG_DocumentRec.transform_and_metrics_fields",
             "otsvg.FT_SVG_Document.renderer_callback_observes_document",
             "otsvg.FT_SVG_Document.renderer_callback_zeroes_after_invalid_glyph",
+            "otsvg.FT_SVG_Document.mcp_invalid_font_open_batch",
+            "otsvg.FT_SVG_Document.mcp_renderer_error_batch",
         }
         and row.operation
         in {
@@ -4654,6 +4657,13 @@ def otsvg_document_real_parity_reason(row: ConcreteInput) -> str | None:
                 "four-hook SVG renderer through pinned C, Rust FFI, C ABI, and "
                 "WASM and proves the callback observes the document pointer "
                 "class, glyph ID, and lifetime fields exactly like pinned C"
+            )
+        if row.case_id == "otsvg.FT_SVG_Document.mcp_renderer_error_batch":
+            return (
+                "FT_SVG_Document callback parity drives the existing valid "
+                "large-coordinate CFF witness through FT_Render_Glyph and "
+                "compares the nested Raster_Overflow result and zero callback "
+                "fields across pinned C, Rust FFI, C ABI, and WASM"
             )
         return (
             "FT_SVG_DocumentRec compares the same-input pinned C, Rust FFI, "
@@ -5063,6 +5073,7 @@ def pending_route_reason(row: ConcreteInput) -> str | None:
             "ftbdf.FT_Get_BDF_Property.success_sfnt_bdf_table_selected_strike",
             "ftbdf.FT_Get_BDF_Property.error_missing_property_sets_none",
             "ftbdf.FT_Get_BDF_Property.error_null_face_or_output",
+            "ftbdf.FT_Get_BDF_Property.error_null_property_name",
             "ftbdf.FT_Get_BDF_Property.error_unsupported_face_or_unselected_strike",
         }:
             return None
@@ -8898,6 +8909,7 @@ def bdf_property_exact_error_real_parity_reason(row: ConcreteInput) -> str | Non
     reasons = {
         "ftbdf.FT_Get_BDF_Property.error_missing_property_sets_none": "FT_Get_BDF_Property missing-property error validates exact status and BDF_PropertyRec NONE/sentinel state through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "ftbdf.FT_Get_BDF_Property.error_null_face_or_output": "FT_Get_BDF_Property null-face/null-output errors validate exact status and output preservation through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
+        "ftbdf.FT_Get_BDF_Property.error_null_property_name": "FT_Get_BDF_Property null-property-name error validates exact status and BDF_PropertyRec NONE/sentinel state through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
         "ftbdf.FT_Get_BDF_Property.error_unsupported_face_or_unselected_strike": "FT_Get_BDF_Property unsupported-face error validates exact status and BDF_PropertyRec NONE/sentinel state through pinned C oracle, Rust FFI, C ABI, and WASM ABI",
     }
     return reasons.get(row.case_id)

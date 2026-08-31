@@ -289,7 +289,12 @@ impl Font {
 
         match mode {
             RenderMode::Normal => {
-                render_scaled_normal(scaled, &mut self.raster_scratch.borrow_mut())
+                let metrics = self.size_metrics();
+                render_scaled_normal(
+                    scaled,
+                    Some((metrics.x_ppem, metrics.y_ppem)),
+                    &mut self.raster_scratch.borrow_mut(),
+                )
             }
             RenderMode::Mono => render_scaled_mono(scaled),
             RenderMode::Lcd => render_scaled_lcd(scaled),
@@ -305,6 +310,7 @@ pub(crate) fn render_loaded_outline(
     bottom: i32,
     top: i32,
     mode: RenderMode,
+    ppem: Option<(u16, u16)>,
     scratch: &mut crate::grays::RasterScratch,
 ) -> Result<RenderedBitmap, FontError> {
     // C `ft_smooth_render` presets normal-mode empty outlines, then exits on
@@ -315,7 +321,7 @@ pub(crate) fn render_loaded_outline(
     }
 
     match mode {
-        RenderMode::Normal => render_normal(outline, left, top, scratch),
+        RenderMode::Normal => render_normal(outline, left, bottom, top, ppem, scratch),
         RenderMode::Mono => render_mono(outline, left, bottom),
         RenderMode::Lcd => render_lcd(outline, left, top),
         RenderMode::LcdV => render_lcd_v(outline, left, top),
@@ -359,12 +365,15 @@ fn render_empty_loaded_outline(mode: RenderMode) -> Result<RenderedBitmap, FontE
 
 fn render_scaled_normal(
     scaled: scaler::ScaledGlyph,
+    ppem: Option<(u16, u16)>,
     scratch: &mut crate::grays::RasterScratch,
 ) -> Result<RenderedBitmap, FontError> {
     render_normal(
         scaled.outline,
         scaled.bbox_x_min,
+        scaled.bbox_y_min,
         scaled.bbox_y_max,
+        ppem,
         scratch,
     )
 }
@@ -393,7 +402,9 @@ fn render_scaled_sdf(scaled: scaler::ScaledGlyph) -> Result<RenderedBitmap, Font
 fn render_normal(
     outline: Outline,
     left: i32,
+    bottom: i32,
     top: i32,
+    ppem: Option<(u16, u16)>,
     scratch: &mut crate::grays::RasterScratch,
 ) -> Result<RenderedBitmap, FontError> {
     if outline.points.is_empty() || outline.n_contours == 0 {
@@ -407,6 +418,13 @@ fn render_normal(
             top,
             buffer: Vec::new(),
         });
+    }
+    if normal_render_bounds_overflow(&outline, left, bottom, top, ppem) {
+        // FreeType's smooth renderer calls `ft_glyphslot_preset_bitmap` before
+        // allocating a bitmap. That helper rejects dimensions and pixel boxes
+        // that cannot be represented safely, plus outlines wider than ten
+        // times the active face size (`src/base/ftobjs.c:490-507`).
+        return Err(FontError::RasterOverflow);
     }
     let width = usize_from_i32(outline.cbox_x_max - outline.cbox_x_min);
     let height = usize_from_i32(outline.cbox_y_max - outline.cbox_y_min);
@@ -457,6 +475,27 @@ fn render_normal(
         top,
         buffer: target,
     })
+}
+
+fn normal_render_bounds_overflow(
+    outline: &Outline,
+    left: i32,
+    bottom: i32,
+    top: i32,
+    ppem: Option<(u16, u16)>,
+) -> bool {
+    let width = i64::from(outline.cbox_x_max) - i64::from(outline.cbox_x_min);
+    let height = i64::from(outline.cbox_y_max) - i64::from(outline.cbox_y_min);
+    let x_min = i64::from(left);
+    let y_min = i64::from(bottom);
+    let x_max = x_min + width;
+    let y_max = i64::from(top);
+    let coordinate_overflow =
+        x_min < -0x1000000 || x_max >= 0x1000000 || y_min < -0x1000000 || y_max >= 0x1000000;
+    let size_overflow = ppem.is_some_and(|(x_ppem, y_ppem)| {
+        width > 10 * i64::from(x_ppem) || height > 10 * i64::from(y_ppem)
+    });
+    width >= 0x10000 || height >= 0x10000 || coordinate_overflow || size_overflow
 }
 
 fn render_normal_overlap(
@@ -908,11 +947,6 @@ impl MonoOutlineProfileBuilder {
         Ok(self.profiles)
     }
 
-    fn move_to(&mut self, point: crate::outline::OutlinePoint) {
-        let point = self.transform(point);
-        self.move_to_scaled(point);
-    }
-
     fn move_to_scaled(&mut self, point: Point) {
         self.last_x = point.x;
         self.last_y = point.y;
@@ -1263,7 +1297,7 @@ impl MonoOutlineProfileBuilder {
                 ));
             }
             let limit = usize_from_i64(last);
-            let mut v_start = pts[first];
+            let v_start = pts[first];
             let v_last = pts[limit];
             let mut limit_eff = limit;
             let mut v_start_scaled = self.transform(v_start);
@@ -1276,8 +1310,7 @@ impl MonoOutlineProfileBuilder {
             }
             if first_tag == CURVE_TAG_CONIC {
                 if curve_tag_at(pts, tags, limit) == CURVE_TAG_ON {
-                    v_start = v_last;
-                    v_start_scaled = self.transform(v_start);
+                    v_start_scaled = self.transform(v_last);
                     limit_eff = limit.checked_sub(1).ok_or_else(|| {
                         FontError::InvalidOutline("outline: conic start underflow".into())
                     })?;
@@ -1287,7 +1320,11 @@ impl MonoOutlineProfileBuilder {
                 }
             }
 
-            self.move_to(v_start);
+            // FreeType initializes `lastX/lastY` from the effective start
+            // point.  With conic controls at both ends, that point is the
+            // midpoint computed above rather than the first control point;
+            // otherwise the initial conic arc is silently omitted.
+            self.move_to_scaled(v_start_scaled);
             let start = if first_tag == CURVE_TAG_CONIC {
                 if first == 0 {
                     -1

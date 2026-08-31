@@ -3,7 +3,8 @@
   "subject": "fterrdef.FT_Err_Bbx_Too_Big",
   "manifest_cases": [
     "value_matches_header",
-    "bdf_bitmap_size_overflow_returns_error"
+    "bdf_bitmap_size_overflow_returns_error",
+    "bdf_bitmap_bpp_normalization_matrix"
   ],
   "cases": [
     {
@@ -107,6 +108,24 @@
           ]
         }
       }
+    },
+    {
+      "case_id": "fterrdef.FT_Err_Bbx_Too_Big.bdf_bitmap_bpp_normalization_matrix",
+      "subject": "fterrdef.FT_Err_Bbx_Too_Big",
+      "case": "bdf_bitmap_bpp_normalization_matrix",
+      "operation": "new_memory_face",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {"id":"batch259-bpp2-overflow","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/bdf/batch259-bpp2-overflow.bdf"},"font":{"kind":"ref","role":"font","id":"input/fonts/bdf/batch259-bpp2-overflow.bdf"}},"params":{"face_index":0},"coverage":["batch259:bdf:bpp-normalization:2"]},
+          {"id":"batch259-bpp4-overflow","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/bdf/batch259-bpp4-overflow.bdf"},"font":{"kind":"ref","role":"font","id":"input/fonts/bdf/batch259-bpp4-overflow.bdf"}},"params":{"face_index":0},"coverage":["batch259:bdf:bpp-normalization:4"]},
+          {"id":"batch259-bpp8-overflow","assets":{"font_bytes":{"kind":"ref","role":"font","id":"input/fonts/bdf/batch259-bpp8-overflow.bdf"},"font":{"kind":"ref","role":"font","id":"input/fonts/bdf/batch259-bpp8-overflow.bdf"}},"params":{"face_index":0},"coverage":["batch259:bdf:bpp-normalization:8"]}
+        ]
+      },
+      "classifiers": ["kind:error","header:fterrdef","area:bdf","error-trigger","requires:fixture"],
+      "metadata": {"source_behavior":"Pinned FreeType bdf_parse_start_ normalizes the optional SIZE bits-per-pixel token to 1, 2, 4, or 8; bdf_parse_glyphs_ then applies that normalized depth when checking the 0xFFFF row/bitmap limits."},
+      "expectation": {"status":"error","output_shape":{"return":"FT_Error","face":"not_created"},"compare":{"mode":"exact_error","compare_error_output":true,"paths":["outputs[*].status","outputs[*].error","outputs[*].face_nullness"]},"error":"c_oracle","source_refs":["freetype/src/bdf/bdflib.c:1364-1397","freetype/src/bdf/bdflib.c:1082-1109","src/font.rs:1722-1817"]}
     }
   ]
 }

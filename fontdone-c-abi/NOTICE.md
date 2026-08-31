@@ -1,6 +1,6 @@
 # Notice
 
-This crate is a Rust migration of FreeType-compatible font loading, hinting,
+This package is a Rust migration of FreeType-compatible font loading, hinting,
 metrics, outline, and rasterization behavior.
 
 The project is distributed under the FreeType License (`FTL`). The unmodified

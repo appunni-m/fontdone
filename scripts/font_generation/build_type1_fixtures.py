@@ -503,6 +503,229 @@ def build_adobe_mm_one_axis(path: Path) -> None:
     )
 
 
+def build_malformed_mm_fixtures() -> None:
+    """Build Type 1 MM dictionaries for pinned-parser error parity.
+
+    These are deliberately malformed top-level MM dictionaries.  FreeType
+    invokes the corresponding parser callback and rejects each one with
+    ``Invalid_File_Format``; keeping the keys in project-authored PFBs makes
+    the same public face-open boundary reproducible without mutating a valid
+    Multiple Master control font.
+    """
+
+    base = b"/FontBBox {0 0 500 700} def"
+    variants = [
+        (
+            "malformed-mm-empty-axis.pfb",
+            "Type1MMEmptyAxis",
+            b"/BlendAxisTypes [] def\n",
+        ),
+        (
+            "malformed-mm-too-many-axes.pfb",
+            "Type1MMTooManyAxes",
+            b"/BlendAxisTypes [/A /B /C /D /E] def\n",
+        ),
+        (
+            "malformed-mm-empty-design-positions.pfb",
+            "Type1MMEmptyDesignPositions",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [] def\n",
+        ),
+        (
+            "malformed-mm-zero-axis-design-position.pfb",
+            "Type1MMZeroAxisDesignPosition",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[]] def\n",
+        ),
+        (
+            "malformed-mm-empty-weight-vector.pfb",
+            "Type1MMEmptyWeightVector",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[0 0] [1 1]]] def\n"
+            b"/WeightVector [] def\n",
+        ),
+        (
+            "batch280-mm-empty-axis-name.pfb",
+            "Type1MMEmptyAxisName",
+            b"/BlendAxisTypes [/] def\n",
+        ),
+        (
+            "batch280-mm-axis-procedure-empty.pfb",
+            "Type1MMAxisProcedureEmpty",
+            b"/BlendAxisTypes {} def\n",
+        ),
+        (
+            "batch280-mm-design-procedure-empty.pfb",
+            "Type1MMDesignProcedureEmpty",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions {} def\n",
+        ),
+        (
+            "batch280-mm-map-procedure-empty.pfb",
+            "Type1MMMapProcedureEmpty",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap {} def\n",
+        ),
+        (
+            "batch280-mm-weight-procedure-empty.pfb",
+            "Type1MMWeightProcedureEmpty",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[0 0] [1 1]]] def\n"
+            b"/WeightVector {} def\n",
+        ),
+        (
+            "batch280-mm-design-numeric-token.pfb",
+            "Type1MMDesignNumericToken",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [0] def\n",
+        ),
+        (
+            "batch280-mm-design-row-mismatch.pfb",
+            "Type1MMDesignRowMismatch",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1 2]] def\n",
+        ),
+        (
+            "batch280-mm-map-17-points.pfb",
+            "Type1MMMapSeventeenPoints",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[0 0] [1 1] [2 2] [3 3] [4 4] [5 5] [6 6] [7 7] "
+            b"[8 8] [9 9] [10 10] [11 11] [12 12] [13 13] [14 14] [15 15] [16 16]]] def\n"
+            b"/WeightVector [0 1] def\n",
+        ),
+        (
+            "batch280-mm-weight-count-three.pfb",
+            "Type1MMWeightCountThree",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[0 0] [1 1]]] def\n"
+            b"/WeightVector [0 0.5 1] def\n",
+        ),
+        (
+            "batch280-mm-design-count-three.pfb",
+            "Type1MMDesignCountThree",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1] [2]] def\n"
+            b"/BlendDesignMap [[[0 0] [1 1]]] def\n"
+            b"/WeightVector [0 0.5 1] def\n",
+        ),
+        (
+            "batch280-mm-design-nonnumeric.pfb",
+            "Type1MMDesignNonnumeric",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[foo] [1]] def\n"
+            b"/BlendDesignMap [[[0 0] [1 1]]] def\n"
+            b"/WeightVector [0 1] def\n",
+        ),
+        (
+            "batch280-mm-map-single-value.pfb",
+            "Type1MMMapSingleValue",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[0]]] def\n"
+            b"/WeightVector [0 1] def\n",
+        ),
+        (
+            "batch280-mm-map-nonnumeric.pfb",
+            "Type1MMMapNonnumeric",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[foo 0]]] def\n"
+            b"/WeightVector [0 1] def\n",
+        ),
+        (
+            "batch280-mm-map-fractional-design.pfb",
+            "Type1MMMapFractionalDesign",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[0.5 0]]] def\n"
+            b"/WeightVector [0 1] def\n",
+        ),
+        (
+            "batch280-mm-map-extra-coordinate.pfb",
+            "Type1MMMapExtraCoordinate",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[0 0 7]]] def\n"
+            b"/WeightVector [0 1] def\n",
+        ),
+        (
+            "batch280-mm-map-nan.pfb",
+            "Type1MMMapNan",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[NaN 0]]] def\n"
+            b"/WeightVector [0 1] def\n",
+        ),
+        (
+            "batch280-mm-weight-nonnumeric.pfb",
+            "Type1MMWeightNonnumeric",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[0 0] [1 1]]] def\n"
+            b"/WeightVector [foo 1] def\n",
+        ),
+        (
+            "batch280-mm-weight-nan.pfb",
+            "Type1MMWeightNan",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[0 0] [1 1]]] def\n"
+            b"/WeightVector [NaN 1] def\n",
+        ),
+        (
+            "batch280-mm-axis-no-slash.pfb",
+            "Type1MMAxisNoSlash",
+            b"/BlendAxisTypes [Weight] def\n",
+        ),
+        (
+            "batch280-mm-axis-nonname.pfb",
+            "Type1MMAxisNonname",
+            b"/BlendAxisTypes [1] def\n",
+        ),
+        (
+            "batch280-mm-axis-nonarray.pfb",
+            "Type1MMAxisNonarray",
+            b"/BlendAxisTypes 1 def\n",
+        ),
+        (
+            "batch280-mm-axis-unclosed.pfb",
+            "Type1MMAxisUnclosed",
+            b"/BlendAxisTypes [/A def\n",
+        ),
+        (
+            "batch280-mm-partial-axis-only.pfb",
+            "Type1MMPartialAxisOnly",
+            b"/BlendAxisTypes [/A] def\n",
+        ),
+        (
+            "batch280-mm-partial-map-missing.pfb",
+            "Type1MMPartialMapMissing",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n",
+        ),
+        (
+            "batch280-mm-partial-weight-missing.pfb",
+            "Type1MMPartialWeightMissing",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[0 0] [1 1]]] def\n",
+        ),
+    ]
+    for filename, font_name, fields in variants:
+        build_simple_type1(
+            INPUT_MM_OUT_DIR / filename,
+            font_name,
+            font_name.replace("Type1", "Type 1 "),
+            "Generated for fontdone malformed Type 1 MM parser parity",
+            cleartext_replacements=[(base, base + b"\n" + fields)],
+        )
+
+
 def build_mm_blend_fontinfo_private(path: Path) -> None:
     """Build the declared Type 1 MM fixture for private blend-table parity.
 
@@ -1422,6 +1645,7 @@ def main() -> None:
         )
     build_adobe_mm_two_axis(MM_OUT_DIR / "adobe-mm-two-axis.pfb")
     build_adobe_mm_one_axis(MM_OUT_DIR / "adobe-mm-one-axis.pfb")
+    build_malformed_mm_fixtures()
     build_adobe_mm_two_axis(LEGACY_MM_OUT_DIR / "adobe-multiple-master.pfb")
     build_mm_blend_fontinfo_private(OUT_DIR / "mm-blend-fontinfo-private.pfb")
     build_mm_underline_blend_fixture(

@@ -1033,6 +1033,52 @@
               "capture_render_error_slot": true
             },
             "coverage": ["render:bitmap-sdf-bgra-unimplemented-retained"]
+          },
+          {
+            "id": "lcd",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf",
+                "requirements": "Scalable outline control rendered into an LCD bitmap before the second SDF render request."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {"x": 0, "y": 20},
+              "glyph_index": 36,
+              "load_flags": ["FT_LOAD_RENDER", "FT_LOAD_TARGET_LCD"],
+              "render_mode": "FT_RENDER_MODE_SDF",
+              "capture_render_error_slot": true
+            },
+            "coverage": [
+              "render:bitmap-sdf-lcd-unimplemented-retained",
+              "source-review:ftbsdf-sdf-renderer-rejects-non-gray-bitmap"
+            ]
+          },
+          {
+            "id": "lcd-v",
+            "assets": {
+              "font": {
+                "kind": "file",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf",
+                "requirements": "Scalable outline control rendered into an LCD_V bitmap before the second SDF render request."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {"x": 0, "y": 20},
+              "glyph_index": 36,
+              "load_flags": ["FT_LOAD_RENDER", "FT_LOAD_TARGET_LCD_V"],
+              "render_mode": "FT_RENDER_MODE_SDF",
+              "capture_render_error_slot": true
+            },
+            "coverage": [
+              "render:bitmap-sdf-lcd-v-unimplemented-retained",
+              "source-review:ftbsdf-sdf-renderer-rejects-non-gray-bitmap"
+            ]
           }
         ]
       },

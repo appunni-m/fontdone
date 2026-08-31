@@ -31,6 +31,7 @@ def properties_table(
     family_name: str | int = "Fontdone PCF",
     charset_registry: str | int = "ISO10646",
     charset_encoding: str | int = "1",
+    extra_properties: int = 0,
 ) -> bytes:
     strings = bytearray()
     offsets: dict[str, int] = {}
@@ -53,6 +54,7 @@ def properties_table(
         ("CHARSET_REGISTRY", charset_registry),
         ("CHARSET_ENCODING", charset_encoding),
     ]
+    properties.extend([("FAMILY_NAME", family_name)] * extra_properties)
     endian = ">" if msb else "<"
     records = bytearray()
     for name, value in properties:
@@ -102,6 +104,17 @@ def metrics_table() -> bytes:
     return align4(struct.pack("<IH", PCF_COMPRESSED_METRICS, 1) + metric)
 
 
+def metrics_count_clamped_table() -> bytes:
+    # FreeType accepts a larger declared metric array, but limits the loaded
+    # portion to 65534 entries so the synthesized glyph-zero record and the
+    # 0xffff missing-glyph sentinel remain representable.
+    metric = bytes([0x80, 0x88, 0x88, 0x88, 0x82])
+    return align4(
+        struct.pack("<IH", PCF_COMPRESSED_METRICS, 0xFFFF)
+        + metric * 0xFFFF
+    )
+
+
 def zero_metrics_table() -> bytes:
     # FreeType rejects a PCF metrics table with no glyph metrics.
     return align4(struct.pack("<IH", PCF_COMPRESSED_METRICS, 0))
@@ -136,6 +149,15 @@ def bitmaps_table() -> bytes:
         + struct.pack("<IIII", *sizes)
         + bitmap
     )
+
+
+def bitmaps_count_clamped_table() -> bytes:
+    # The bitmap count follows the same FreeType 65534 cap. Keep all declared
+    # offsets in the source table; the driver intentionally consumes only the
+    # capped prefix before reading the four size words.
+    offsets = bytes(4 * 0xFFFF)
+    sizes = struct.pack("<IIII", 1, 2, 4, 8)
+    return align4(struct.pack("<II", 0, 0xFFFF) + offsets + sizes + bytes([0]))
 
 
 def encodings_table(*, msb: bool = False) -> bytes:
@@ -290,6 +312,29 @@ def main() -> None:
             (PCF_PROPERTIES, 0, properties_table(family_name=10)),
             *tables[1:],
         ]
+    )
+    properties_count_clamped_data = build_pcf(
+        [
+            # FreeType clamps the original property count to 256 records
+            # while still skipping the complete original record area. The
+            # extra record is therefore valid input that exercises the
+            # driver's count-clamp acceptance path.
+            (PCF_PROPERTIES, 0, properties_table(extra_properties=250)),
+            *tables[1:],
+        ]
+    )
+    metrics_count_clamped_data = build_pcf(
+        replace_table(
+            replace_table(
+                tables,
+                PCF_METRICS,
+                PCF_COMPRESSED_METRICS,
+                metrics_count_clamped_table(),
+            ),
+            PCF_BITMAPS,
+            0,
+            bitmaps_count_clamped_table(),
+        )
     )
 
     metrics_format_mismatch_data = build_pcf(
@@ -518,6 +563,8 @@ def main() -> None:
     write_fixture("properties-iso646.pcf", iso646_data)
     write_fixture("properties-iso646-non-irv.pcf", iso646_non_irv_data)
     write_fixture("properties-non-atom-family.pcf", non_atom_family_data)
+    write_fixture("properties-count-clamped.pcf", properties_count_clamped_data)
+    write_fixture("metrics-count-clamped.pcf", metrics_count_clamped_data)
     write_fixture("unsupported-metrics-format.pcf", unsupported_metrics_data)
     write_fixture("truncated-metrics.pcf", truncated_metrics_data)
     write_fixture("oversized-metrics-count.pcf", oversized_metrics_data)

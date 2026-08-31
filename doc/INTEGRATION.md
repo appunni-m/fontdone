@@ -6,9 +6,9 @@ This guide covers the two safe Rust surfaces:
 - the FreeType-shaped `fontdone::ffi` facade for migration work.
 
 C consumers should use the
-[`fontdone-c-abi` guide](../fontdone-c-abi/README.md). Node/WebAssembly
-consumers should use the
-[`fontdone-wasm` guide](../fontdone-wasm/README.md).
+[`fontdone-c-abi` guide](../fontdone-c-abi/README.md). Browser consumers should
+use the [`fontdone` npm guide](../fontdone-wasm/npm/README.md); raw JavaScript
+hosts should use the [`fontdone-wasm` guide](../fontdone-wasm/README.md).
 
 ## 1. Select and install the exact alpha
 
@@ -145,12 +145,15 @@ Handle invalid input explicitly:
 ```rust
 use fontdone::{Font, FontError};
 
-match Font::truetype(b"not a font", 16.0) {
-    Err(FontError::InvalidFont(message)) => assert!(!message.is_empty()),
-    Err(other) => return Err::<(), _>(other),
-    Ok(_) => panic!("invalid bytes must not open"),
+fn main() -> Result<(), FontError> {
+    match Font::truetype(b"not a font", 16.0) {
+        Err(FontError::InvalidFont(message)) => assert!(!message.is_empty()),
+        Err(other) => return Err(other),
+        Ok(_) => panic!("invalid bytes must not open"),
+    }
+
+    Ok(())
 }
-# Ok::<(), FontError>(())
 ```
 
 ### 2.6 Maintained examples

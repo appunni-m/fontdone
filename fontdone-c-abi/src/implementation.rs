@@ -1614,13 +1614,18 @@ fn open_lzw_stream(stream: FT_Stream, source: FT_Stream) -> FT_Error {
     }
     let stream_ref = unsafe { &mut *stream };
     let source_ref = unsafe { &mut *source };
-    if source_ref.base.is_null() {
+    if source_ref.base.is_null() && source_ref.size != 0 {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     }
     let source_len = source_ref.size as usize;
-    // SAFETY: the maintained C ABI route supplies a memory-backed source
-    // stream whose caller-owned `base` remains readable for `size` bytes.
-    let source_bytes = unsafe { slice::from_raw_parts(source_ref.base.cast_const(), source_len) };
+    // SAFETY: non-zero memory-backed sources promise `size` readable bytes.
+    // Keep the zero-length path separate because Rust slices require a
+    // non-null pointer even when their length is zero.
+    let source_bytes = if source_len == 0 {
+        &[][..]
+    } else {
+        unsafe { slice::from_raw_parts(source_ref.base.cast_const(), source_len) }
+    };
     let error = rust_ffi::FT_Stream_OpenLZW(Some(stream_ref), Some(source_ref), Some(source_bytes));
     if source_len >= 2 {
         source_ref.pos = 2;
@@ -2090,15 +2095,6 @@ fn cmap_cache_lookup_glyph_for_face(
     glyph
 }
 
-#[cfg(feature = "abi-test-support")]
-pub fn cmap_cache_lookup_glyph_for_test(
-    face: FT_Face,
-    cmap_index: FT_Int,
-    char_code: FT_UInt32,
-) -> FT_UInt {
-    cmap_cache_lookup_glyph_for_face(face, cmap_index, char_code)
-}
-
 fn ftc_cache_count(manager: FTC_Manager) -> usize {
     if manager.is_null() {
         return 0;
@@ -2345,27 +2341,25 @@ fn ftc_sbit_cache_lookup_impl(
         };
         return ftc_sbit_cache_store(cache, manager, key, record, Box::new([]), sbit, anode);
     }
-    // SAFETY: face is live and owns its public glyph slot.
+    // `FT_Load_Glyph` has already validated `face->glyph` and a successful
+    // load leaves that face-owned slot live (`ftobjs.c:1136-1138`). Keep the
+    // same invariant as the pinned cache path instead of adding a public
+    // null-slot outcome that FreeType cannot produce here.
+    // SAFETY: `face` is the live manager-owned face returned by the requester;
+    // its glyph slot is guaranteed non-null after the successful load above.
     let slot = unsafe { (*face).glyph };
-    if slot.is_null() {
-        return rust_ffi::FT_Err_Invalid_Slot_Handle as FT_Error;
-    }
+    // `ftcbasic.c` adds FT_LOAD_RENDER before calling FT_Load_Glyph, but
+    // FreeType's load-flag normalization removes it when FT_LOAD_NO_SCALE is
+    // also present. `ftcsbits.c` does not render an outline a second time: any
+    // successful load that is not already a bitmap goes directly to its
+    // width=255 unavailable-SBit sentinel (`ftcsbits.c:121-137`).
     // SAFETY: slot is a live face-owned wrapper record.
     if unsafe { (*slot).format } != rust_ffi::FT_GLYPH_FORMAT_BITMAP {
-        let error = FT_Render_Glyph(slot, rust_ffi::FT_RENDER_MODE_NORMAL);
-        if error != rust_ffi::FT_Err_Ok {
-            if error == rust_ffi::FT_Err_Out_Of_Memory {
-                return error;
-            }
-            // `ftcsbits.c:133-137,193-204` converts a successful glyph load
-            // that cannot render into the unavailable-SBit sentinel. Only
-            // OOM escapes the cache lookup as an error.
-            let record = FTC_SBitRec {
-                width: FT_Byte::MAX,
-                ..FTC_SBitRec::default()
-            };
-            return ftc_sbit_cache_store(cache, manager, key, record, Box::new([]), sbit, anode);
-        }
+        let record = FTC_SBitRec {
+            width: FT_Byte::MAX,
+            ..FTC_SBitRec::default()
+        };
+        return ftc_sbit_cache_store(cache, manager, key, record, Box::new([]), sbit, anode);
     }
     // The public ABI adapter restores a Gray descriptor for an empty rendered
     // slot, but a successful SBIT lookup with no embedded glyph image keeps a
@@ -15409,13 +15403,18 @@ pub extern "C" fn FT_Stream_OpenGzip(stream: FT_Stream, source: FT_Stream) -> FT
     let Some(source_ref) = (unsafe { source.as_ref() }) else {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     };
-    if source_ref.base.is_null() {
+    if source_ref.base.is_null() && source_ref.size != 0 {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     }
     let source_len = source_ref.size as usize;
-    // SAFETY: this thin ABI wrapper supports the memory-backed stream shape
-    // used by the parity fixtures; `base` and `size` are caller-provided.
-    let source_bytes = unsafe { slice::from_raw_parts(source_ref.base.cast_const(), source_len) };
+    // SAFETY: non-zero memory-backed sources promise `size` readable bytes.
+    // Keep the zero-length path separate because Rust slices require a
+    // non-null pointer even when their length is zero.
+    let source_bytes = if source_len == 0 {
+        &[][..]
+    } else {
+        unsafe { slice::from_raw_parts(source_ref.base.cast_const(), source_len) }
+    };
     let error =
         rust_ffi::FT_Stream_OpenGzip(Some(stream_ref), Some(source_ref), Some(source_bytes));
     if error == rust_ffi::FT_Err_Ok {
@@ -18331,10 +18330,25 @@ pub fn abi_outline_glyph_snapshot(glyph: FT_Glyph) -> Option<AbiOutlineGlyphSnap
 }
 
 #[cfg(feature = "abi-test-support")]
-pub fn abi_support_corrupt_outline_glyph_for_render_failure(glyph: FT_Glyph) -> bool {
+pub fn abi_support_corrupt_outline_glyph_for_render_failure(
+    glyph: FT_Glyph,
+    oversized_internal_state: bool,
+) -> bool {
     let Some(owned) = owned_outline_glyph_from_root_mut(glyph) else {
         return false;
     };
+    if oversized_internal_state {
+        // This is an ABI bookkeeping probe, not a public glyph-construction
+        // path. Keep the oversized vector owned by the support wrapper so the
+        // checked FT_UShort conversion below can be exercised without
+        // fabricating a raw pointer or changing the public outline limit.
+        let point = owned.core.outline.points[0];
+        let tag = owned.core.outline.tags[0];
+        let oversized_len = usize::from(FT_UShort::MAX) + 1;
+        owned.core.outline.points.resize(oversized_len, point);
+        owned.core.outline.tags.resize(oversized_len, tag);
+        owned.refresh_record();
+    }
     let Ok(invalid_endpoint) = FT_UShort::try_from(owned.core.outline.points.len()) else {
         return false;
     };

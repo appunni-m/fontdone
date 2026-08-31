@@ -45,6 +45,11 @@
     "batch231_cff_post_validation_guards",
     "batch237_cff2_random_and_type2_arithmetic_underflow",
     "batch239_cff_subroutine_bias_boundaries",
+    "batch260_cjk_width_adjustment_branches",
+    "batch262_cjk_smooth_width_clamp_boundaries",
+    "batch263_cjk_smooth_width_quantization",
+    "batch264_cjk_mode_guards",
+    "batch276_cjk_strong_snap_width_branch",
     "render_and_target_modes",
     "no_scale_no_hinting_and_vertical_flags",
     "error_out_of_range_null_face_or_invalid_flags",
@@ -18768,6 +18773,69 @@
       }
     },
     {
+      "case_id": "freetype.FT_Load_Glyph.error_out_of_range_null_face_or_invalid_flags.large_composite_point_limit",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "error_out_of_range_null_face_or_invalid_flags",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "role": "font",
+            "id": "input/fonts/glyf/large-composite-point-limit.ttf",
+            "requirements": "Gid 2 is a 40-component composite whose 2,001-point children flatten to 80,040 points while maxp stays at the representable point-limit boundary."
+          }
+        },
+        "params": {
+          "face_index": 0,
+          "glyph_index": 2,
+          "load_flags": [
+            "FT_LOAD_DEFAULT"
+          ],
+          "size": 20,
+          "assert_api_load_glyph_agrees": true
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-load",
+        "coverage:real-error-trigger",
+        "input:malformed",
+        "source-reviewed-expansion"
+      ],
+      "reason": "A malformed composite exceeds FreeType's cumulative FT_OUTLINE_POINTS_MAX loader limit. Pinned FreeType rejects the glyph with FT_Err_Array_Too_Large in freetype/src/base/ftgloadr.c:222-233 before copying the overflowing component; Rust previously flattened the points and panicked at src/casts.rs:106 while converting the contour endpoint. This public case records the first real mismatch and the required error parity.",
+      "coverage": [
+        "batch274:glyf:composite-point-limit:src-tt-glyf-composite-loader"
+      ],
+      "expectation": {
+        "status": "error",
+        "error": "FT_Err_Array_Too_Large",
+        "output_shape": {
+          "return": "FT_Error",
+          "slot_mutation": "cleared_then_driver_error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "status",
+            "error",
+            "slot_snapshot"
+          ]
+        },
+        "sources_checked": [
+          "freetype/src/base/ftgloadr.c:222-291",
+          "freetype/src/base/ftoutln.c:303-339",
+          "freetype/src/truetype/ttgload.c:1800-1845",
+          "src/tt/glyf.rs:540-625",
+          "src/ffi/convert.rs:255"
+        ]
+      }
+    },
+    {
       "case_id": "freetype.FT_Load_Glyph.error_null_face_or_invalid_flags.null_face",
       "subject": "freetype.FT_Load_Glyph",
       "case": "error_out_of_range_null_face_or_invalid_flags",
@@ -23329,6 +23397,250 @@
           "freetype/src/psaux/cffdecode.c:2182-2196",
           "src/tt/cff.rs:1715-1734",
           "src/tt/cff.rs:1819-1827"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_Load_Glyph.batch260_cjk_width_adjustment_branches",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "batch260_cjk_width_adjustment_branches",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "b260-cjk-snap-below-near-001",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/autohint/cjk-snap-below-standard.ttf"}},
+            "params": {"face_index": 0, "pixel_size": {"x": 0, "y": 12}, "glyph_index": 3, "load_flags": ["FT_LOAD_FORCE_AUTOHINT", "FT_LOAD_TARGET_NORMAL"], "assert_api_load_glyph_agrees": true},
+            "expect_error": false,
+            "reason": "A valid CJK stem just below the reference width reaches FreeType's af_cjk_snap_width width<reference and scaled-minus-48 acceptance arm.",
+            "coverage": ["batch260:cjk:snap-width:below-near:src-autohint-cjk-737"]
+          },
+          {
+            "id": "b260-cjk-snap-below-far-002",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/autohint/cjk-snap-below-standard.ttf"}},
+            "params": {"face_index": 0, "pixel_size": {"x": 0, "y": 12}, "glyph_index": 4, "load_flags": ["FT_LOAD_FORCE_AUTOHINT", "FT_LOAD_TARGET_NORMAL"], "assert_api_load_glyph_agrees": true},
+            "expect_error": false,
+            "reason": "A valid CJK stem far below the reference width reaches FreeType's false scaled-minus-48 threshold arm while remaining a public accepted glyph load.",
+            "coverage": ["batch260:cjk:snap-width:below-far:src-autohint-cjk-739"]
+          },
+          {
+            "id": "b260-cjk-snap-above-reference-003",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/autohint/cjk-wide-stem-snap.ttf"}},
+            "params": {"face_index": 0, "pixel_size": {"x": 0, "y": 12}, "glyph_index": 3, "load_flags": ["FT_LOAD_FORCE_AUTOHINT", "FT_LOAD_TARGET_NORMAL"], "assert_api_load_glyph_agrees": true},
+            "expect_error": false,
+            "reason": "A valid wide CJK stem above the reference width exercises the upper-side scaled-plus-48 snap decision in the pinned af_cjk_snap_width routine.",
+            "coverage": ["batch260:cjk:snap-width:above:src-autohint-cjk-733"]
+          },
+          {
+            "id": "b260-cjk-tiny-stem-clamp-004",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/autohint/cjk-tiny-stem.ttf"}},
+            "params": {"face_index": 0, "pixel_size": {"x": 0, "y": 12}, "glyph_index": 2, "load_flags": ["FT_LOAD_FORCE_AUTOHINT", "FT_LOAD_TARGET_NORMAL"], "assert_api_load_glyph_agrees": true},
+            "expect_error": false,
+            "reason": "A valid sub-pixel CJK stem exercises FreeType's smooth-hinting minimum-width clamp at af_cjk_compute_stem_width dist<48.",
+            "coverage": ["batch260:cjk:stem-width:minimum-clamp:src-autohint-cjk-774"]
+          },
+          {
+            "id": "b260-cjk-nonmonotonic-width-selection-005",
+            "assets": {"font": {"kind": "ref", "role": "font", "id": "input/fonts/autohint/cjk-quantized-widths.ttf"}},
+            "params": {"face_index": 0, "pixel_size": {"x": 0, "y": 12}, "glyph_index": 3, "load_flags": ["FT_LOAD_FORCE_AUTOHINT", "FT_LOAD_TARGET_NORMAL"], "assert_api_load_glyph_agrees": true},
+            "expect_error": false,
+            "reason": "A valid CJK outline with non-monotonic standard widths exercises reference-width selection before the public width-fitting branches.",
+            "coverage": ["batch260:cjk:snap-width:nonmonotonic-reference"]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-load",
+        "area:autohint-cjk",
+        "coverage:real-parity",
+        "font_variability:input/fonts",
+        "source-reviewed-expansion"
+      ],
+      "metadata": {
+        "coverage_intent": "Five distinct valid public glyph loads target the CJK width-fitting decisions absent from the full baseline: near and far below-reference widths, an above-reference width, the smooth narrow-stem minimum clamp, and non-monotonic reference-width selection.",
+        "freetype_review": "Pinned FreeType uses af_cjk_snap_width at freetype/src/autofit/afcjk.c:1442-1481 and af_cjk_compute_stem_width at freetype/src/autofit/afcjk.c:1489-1592. The maintained synthetic outlines vary only the CJK stem geometry and are accepted by the pinned face and glyph-load path.",
+        "expansion_reason": "The full baseline's source report identifies src/autohint/cjk.rs:737, 739, and 774 as uncovered. These cases test the corresponding public geometry decisions before considering any source refactor for genuinely unreachable defensive arms."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {"rows": "per-font glyph load status and slot snapshot"},
+        "compare": {"mode": "exact", "paths": ["rows[].status", "rows[].slot"]},
+        "sources_checked": [
+          "freetype/src/autofit/afcjk.c:1442-1481",
+          "freetype/src/autofit/afcjk.c:1489-1592",
+          "src/autohint/cjk.rs:720-742",
+          "src/autohint/cjk.rs:744-830"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_Load_Glyph.batch262_cjk_smooth_width_clamp_boundaries",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "batch262_cjk_smooth_width_clamp_boundaries",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"b262-cjk-smooth-width-08-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-smooth-width-clamps.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid CJK glyph with an 8-unit horizontal stem keeps the smooth stem-width path below 40 scaled units and reaches the pinned minimum-width comparison at freetype/src/autofit/afcjk.c:1519-1524, matching src/autohint/cjk.rs:769-775.","coverage":["batch262:cjk:smooth-width:08:src-autohint-cjk-774"]},
+          {"id":"b262-cjk-smooth-width-16-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-smooth-width-clamps.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":4,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid CJK glyph with a 16-unit horizontal stem remains below the 40-unit standard-width proximity threshold after public scaling, exercising the smooth branch before the 48-unit clamp at freetype/src/autofit/afcjk.c:1519-1524 and src/autohint/cjk.rs:769-775.","coverage":["batch262:cjk:smooth-width:16:src-autohint-cjk-774"]},
+          {"id":"b262-cjk-smooth-width-31-003","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-smooth-width-clamps.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":5,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid CJK glyph with a 31-unit horizontal stem is the last below-threshold boundary witness for the smooth width comparison and its minimum-width clamp at freetype/src/autofit/afcjk.c:1519-1524, matching src/autohint/cjk.rs:769-775.","coverage":["batch262:cjk:smooth-width:31:src-autohint-cjk-774"]},
+          {"id":"b262-cjk-smooth-width-32-004","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-smooth-width-clamps.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":6,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid CJK glyph exactly at the scaled 40-unit proximity boundary verifies FreeType's strict less-than comparison at freetype/src/autofit/afcjk.c:1519-1524 against src/autohint/cjk.rs:770-776.","coverage":["batch262:cjk:smooth-width:32-boundary:src-autohint-cjk-770"]},
+          {"id":"b262-cjk-smooth-width-40-005","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-smooth-width-clamps.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":7,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid CJK glyph with a 40-unit horizontal stem leaves the standard-width proximity arm and reaches the smooth quantization boundary at freetype/src/autofit/afcjk.c:1527-1550, matching src/autohint/cjk.rs:779-796.","coverage":["batch262:cjk:smooth-width:40:src-autohint-cjk-779"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-load",
+        "area:autohint-cjk",
+        "coverage:real-parity",
+        "font_variability:input/fonts",
+        "source-reviewed-expansion"
+      ],
+      "metadata": {
+        "coverage_intent": "Five distinct valid public CJK glyph loads vary only the horizontal-stem height across the strict 40-unit smooth-width boundary, covering the standard-width proximity arm, the 48-unit minimum clamp, and the subsequent smooth quantization entry.",
+        "freetype_review": "Pinned FreeType enters af_cjk_compute_stem_width's smooth path when the public NORMAL target leaves the relevant dimension unsnapped; afcjk.c:1519-1524 compares against axis->widths[0].cur and afcjk.c:1527-1550 performs the short-width quantization. The standard CJK glyph supplies a non-empty width array while the probe glyphs use valid short horizontal stems away from blue-zone coordinates.",
+        "expansion_reason": "Batch260 used NORMAL mode but varied vertical stems, so Coverage MCP showed no execution of src/autohint/cjk.rs:774. This batch changes the orthogonal geometry to short horizontal stems and checks both sides of the pinned strict comparison before adding any source-level conclusion."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {"rows": "per-font glyph load status and slot snapshot"},
+        "compare": {"mode": "exact", "paths": ["rows[].status", "rows[].slot"]},
+        "sources_checked": [
+          "freetype/src/autofit/afcjk.c:1489-1592",
+          "src/autohint/cjk.rs:744-821"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_Load_Glyph.batch263_cjk_smooth_width_quantization",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "batch263_cjk_smooth_width_quantization",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"b263-cjk-smooth-width-delta-05-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-smooth-width-quantization.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid CJK stem calibrated to 69 scaled 26.6 units enters FreeType's smooth quantization interval delta<10 at freetype/src/autofit/afcjk.c:1527-1538, matching src/autohint/cjk.rs:779-786.","coverage":["batch263:cjk:smooth-width:delta-05:src-autohint-cjk-785"]},
+          {"id":"b263-cjk-smooth-width-delta-10-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-smooth-width-quantization.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":4,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid CJK stem calibrated to 74 scaled 26.6 units lands exactly on delta 10 and takes FreeType's strict delta<22 arm at freetype/src/autofit/afcjk.c:1539-1541, matching src/autohint/cjk.rs:787-788.","coverage":["batch263:cjk:smooth-width:delta-10:src-autohint-cjk-787"]},
+          {"id":"b263-cjk-smooth-width-delta-22-003","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-smooth-width-quantization.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":5,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid CJK stem calibrated to 86 scaled 26.6 units lands exactly on delta 22 and takes FreeType's strict delta<42 arm at freetype/src/autofit/afcjk.c:1542-1544, matching src/autohint/cjk.rs:789-790.","coverage":["batch263:cjk:smooth-width:delta-22:src-autohint-cjk-789"]},
+          {"id":"b263-cjk-smooth-width-delta-46-004","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-smooth-width-quantization.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":6,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid CJK stem calibrated to 110 scaled 26.6 units lands in delta 42..53 and takes FreeType's strict delta<54 arm at freetype/src/autofit/afcjk.c:1545-1547, matching src/autohint/cjk.rs:791-792.","coverage":["batch263:cjk:smooth-width:delta-46:src-autohint-cjk-791"]},
+          {"id":"b263-cjk-smooth-width-delta-54-005","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-smooth-width-quantization.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":7,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid CJK stem calibrated to 118 scaled 26.6 units lands exactly on delta 54 and takes FreeType's final delta arm at freetype/src/autofit/afcjk.c:1548-1550, matching src/autohint/cjk.rs:793-795.","coverage":["batch263:cjk:smooth-width:delta-54:src-autohint-cjk-793"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-load",
+        "area:autohint-cjk",
+        "coverage:real-parity",
+        "font_variability:input/fonts",
+        "source-reviewed-expansion"
+      ],
+      "metadata": {
+        "coverage_intent": "Five distinct valid CJK glyph loads select one witness for each remaining smooth stem-width quantization interval: delta<10, delta 10..21, delta 22..41, delta 42..53, and delta>=54.",
+        "freetype_review": "Pinned FreeType enters af_cjk_compute_stem_width's smooth path for FT_LOAD_TARGET_NORMAL, then applies the strict delta thresholds at freetype/src/autofit/afcjk.c:1527-1550. The standard Han glyph supplies a non-empty width array whose CJK current width remains zero, so calibrated positive stems are outside the earlier <40 comparison and reach the quantizer.",
+        "expansion_reason": "Batch262 proved the smooth entry and short-width arm but did not execute the five delta intervals after the dist<54 guard. This batch adds one valid public glyph geometry per interval, with calibrated 26.6 distances and no malformed input or denominator/filter change."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {"rows": "per-font glyph load status and slot snapshot"},
+        "compare": {"mode": "exact", "paths": ["rows[].status", "rows[].slot"]},
+        "sources_checked": [
+          "freetype/src/autofit/afcjk.c:1489-1592",
+          "src/autohint/cjk.rs:744-821"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_Load_Glyph.batch264_cjk_mode_guards",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "batch264_cjk_mode_guards",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"b264-cjk-empty-standard-normal-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-mode-guards.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_NORMAL"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid Han load uses an empty U+7530 standard glyph but a non-empty target outline, so pinned FreeType's af_cjk_compute_stem_width reaches the axis-widths-empty fallback at freetype/src/autofit/afcjk.c:1519-1524, matching src/autohint/cjk.rs:768-779.","coverage":["batch264:cjk:empty-standard:src-autohint-cjk-769"]},
+          {"id":"b264-cjk-mono-vertical-short-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-mode-guards.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":4,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid short Han horizontal stem under monochrome vertical snapping is below 64 scaled units, reaching FreeType's strong vertical minimum at freetype/src/autofit/afcjk.c:1560-1564 and src/autohint/cjk.rs:800-805.","coverage":["batch264:cjk:mono:vertical-short:src-autohint-cjk-803"]},
+          {"id":"b264-cjk-mono-vertical-tall-003","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-mode-guards.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":5,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid tall Han horizontal stem under monochrome vertical snapping is at least 64 scaled units, reaching FreeType's strong vertical integer-pixel rounding at freetype/src/autofit/afcjk.c:1555-1559 and src/autohint/cjk.rs:801-802.","coverage":["batch264:cjk:mono:vertical-tall:src-autohint-cjk-801"]},
+          {"id":"b264-cjk-mono-horizontal-short-004","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-mode-guards.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":6,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid narrow Han vertical stem under monochrome horizontal snapping is below 64 scaled units, reaching FreeType's strong horizontal minimum at freetype/src/autofit/afcjk.c:1570-1574 and src/autohint/cjk.rs:812-815.","coverage":["batch264:cjk:mono:horizontal-short:src-autohint-cjk-812"]},
+          {"id":"b264-cjk-mono-horizontal-tall-005","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-mode-guards.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":7,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid wide Han vertical stem under monochrome horizontal snapping is at least 64 scaled units, reaching FreeType's strong horizontal integer-pixel rounding at freetype/src/autofit/afcjk.c:1574-1576 and src/autohint/cjk.rs:814-815.","coverage":["batch264:cjk:mono:horizontal-tall:src-autohint-cjk-814"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-load",
+        "area:autohint-cjk",
+        "coverage:real-parity",
+        "font_variability:input/fonts",
+        "source-reviewed-expansion"
+      ],
+      "metadata": {
+        "coverage_intent": "Five distinct valid Han glyph loads isolate the missing CJK mode guards: a non-empty target with no standard widths, strong monochrome vertical stems below and above 64 scaled units, and strong monochrome horizontal stems below and above 64 scaled units.",
+        "freetype_review": "Pinned FreeType sets both CJK snap flags for FT_RENDER_MODE_MONO and retains STEM_ADJUST; afcjk.c:1391-1421 selects the strong path, while afcjk.c:1555-1576 applies the vertical and monochrome-horizontal 64-unit thresholds. The empty standard glyph is accepted by the public face/load path and makes axis->width_count zero without malformed bytes.",
+        "expansion_reason": "The Batch263 source review covered all five smooth quantization intervals, but the full CJK function still lacked the empty-width fallback and both sides of the strong MONO thresholds. These five valid outlines vary only the standard-glyph presence and stem dimension; no malformed input or denominator/filter change is used."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {"rows": "per-font glyph load status and slot snapshot"},
+        "compare": {"mode": "exact", "paths": ["rows[].status", "rows[].slot"]},
+        "sources_checked": [
+          "freetype/src/autofit/afcjk.c:1371-1423",
+          "freetype/src/autofit/afcjk.c:1489-1592",
+          "src/autohint/cjk.rs:744-821"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_Load_Glyph.batch276_cjk_strong_snap_width_branch",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "batch276_cjk_strong_snap_width_branch",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"b276-cjk-below-near-mono-08-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-snap-below-standard.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":8},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid CJK stem narrower than the standard glyph enters FreeType's strong snap path under MONO and evaluates the width<reference arm at freetype/src/autofit/afcjk.c:1442-1481, matching src/autohint/cjk.rs:720-739.","coverage":["batch276:cjk:strong-snap:below-near:mono:08:src-autohint-cjk-737"]},
+          {"id":"b276-cjk-below-near-mono-12-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-snap-below-standard.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":12},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"The same accepted below-reference CJK geometry at a second ppem verifies that public scaling preserves the strong snap dispatch and the lower-side comparison in the pinned af_cjk_snap_width routine.","coverage":["batch276:cjk:strong-snap:below-near:mono:12:src-autohint-cjk-737"]},
+          {"id":"b276-cjk-below-near-mono-20-003","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-snap-below-standard.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A larger public ppem keeps the target stem below its standard reference while exercising the same FreeType strong-mode lower-side width decision after integer scaling.","coverage":["batch276:cjk:strong-snap:below-near:mono:20:src-autohint-cjk-737"]},
+          {"id":"b276-cjk-below-near-lcdv-12-004","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-snap-below-standard.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":12},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD_V"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"LCD_V is a public mode with vertical snapping and stem adjustment enabled, so this accepted below-reference CJK stem reaches the same lower-side strong snap arm through the alternate target dispatch.","coverage":["batch276:cjk:strong-snap:below-near:lcdv:12:src-autohint-cjk-737"]},
+          {"id":"b276-cjk-below-near-lcdv-20-005","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-snap-below-standard.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":20},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD_V"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A second accepted LCD_V size distinguishes target-mode selection from geometry and confirms the pinned lower-side snap comparison is not limited to monochrome rendering.","coverage":["batch276:cjk:strong-snap:below-near:lcdv:20:src-autohint-cjk-737"]},
+          {"id":"b276-cjk-below-far-mono-08-006","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-snap-below-standard.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":8},"glyph_index":4,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid far-below CJK stem reaches the lower-side scaled-minus-48 predicate in FreeType's af_cjk_snap_width instead of relying on the upper-side branch.","coverage":["batch276:cjk:strong-snap:below-far:mono:08:src-autohint-cjk-737"]},
+          {"id":"b276-cjk-below-far-mono-12-007","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-snap-below-standard.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":12},"glyph_index":4,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"This accepted far-below geometry at an intermediate ppem checks the strict lower-side threshold after public 26.6 scaling and preserves exact C/Rust slot parity.","coverage":["batch276:cjk:strong-snap:below-far:mono:12:src-autohint-cjk-737"]},
+          {"id":"b276-cjk-below-far-lcdv-12-008","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-snap-below-standard.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":12},"glyph_index":4,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD_V"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"LCD_V supplies the public vertical-snap flag without MONO; this accepted far-below stem checks that the lower-side FreeType guard is reachable through both snap-enabled public modes.","coverage":["batch276:cjk:strong-snap:below-far:lcdv:12:src-autohint-cjk-737"]},
+          {"id":"b276-cjk-wide-above-mono-12-009","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-wide-stem-snap.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":12},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_MONO"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"A valid wider CJK stem exercises the complementary width>=reference and scaled-plus-48 decision under the same public strong-snap path, providing an oracle-controlled pair for the new lower-side cases.","coverage":["batch276:cjk:strong-snap:above:mono:12:src-autohint-cjk-733"]},
+          {"id":"b276-cjk-wide-above-lcdv-12-010","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/autohint/cjk-wide-stem-snap.ttf"}},"params":{"face_index":0,"pixel_size":{"x":0,"y":12},"glyph_index":3,"load_flags":["FT_LOAD_FORCE_AUTOHINT","FT_LOAD_TARGET_LCD_V"],"assert_api_load_glyph_agrees":true},"expect_error":false,"reason":"The same accepted above-reference geometry through LCD_V confirms the strong snap comparison is mode-independent for the vertical dimension and remains aligned with afcjk.c:1442-1481.","coverage":["batch276:cjk:strong-snap:above:lcdv:12:src-autohint-cjk-733"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-load",
+        "area:autohint-cjk",
+        "coverage:real-parity",
+        "font_variability:input/fonts",
+        "source-reviewed-expansion"
+      ],
+      "metadata": {
+        "coverage_intent": "Ten accepted public CJK glyph loads activate MONO or LCD_V snapping and vary below/above-reference stem geometry, ppem, and target mode to reach both sides of af_cjk_snap_width's comparison.",
+        "freetype_review": "Pinned FreeType enters af_cjk_snap_width from af_cjk_compute_stem_width when stem adjustment and the relevant snap flag are active (freetype/src/autofit/afcjk.c:1391-1421), then compares width against reference and scaled +/- 48 (freetype/src/autofit/afcjk.c:1442-1481). All fixtures are maintained, valid TrueType fonts accepted by the pinned public glyph-load path.",
+        "expansion_reason": "The strict profile shows src/autohint/cjk.rs:733's width>=reference branch is always true and the else arm at lines 737-739 has zero observations. Earlier Batch260 used NORMAL and therefore could not enter this snap routine; this batch changes only public target mode and controlled stem geometry, without changing the denominator or expected-output contract."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {"rows": "per-font glyph load status and slot snapshot"},
+        "compare": {"mode": "exact", "paths": ["rows[].status", "rows[].slot"]},
+        "sources_checked": [
+          "freetype/src/autofit/afcjk.c:1391-1421",
+          "freetype/src/autofit/afcjk.c:1442-1481",
+          "src/autohint/cjk.rs:720-821"
         ]
       }
     }

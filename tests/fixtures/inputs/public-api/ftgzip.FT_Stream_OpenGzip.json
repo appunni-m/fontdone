@@ -5,6 +5,7 @@
     "opens_valid_gzip_stream",
     "rejects_invalid_stream_handles",
     "rejects_invalid_gzip_header",
+    "error_empty_source_without_base",
     "mcp_stream_gap_matrix",
     "mcp_read_close_gap_matrix",
     "reports_unimplemented_without_zlib"
@@ -211,6 +212,58 @@
         "error": "FT_Err_Unimplemented_Feature",
         "source_refs": [
           "freetype/src/gzip/ftgzip.c:773-784"
+        ]
+      }
+    },
+    {
+      "case_id": "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base",
+      "subject": "ftgzip.FT_Stream_OpenGzip",
+      "case": "error_empty_source_without_base",
+      "operation": "ftgzip.stream_open_gzip",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "target_stream": "sentinel",
+          "source_stream": "empty caller-owned FT_StreamRec",
+          "source_base": null,
+          "source_read": null,
+          "source_size": 0
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftgzip",
+        "area:gzip-stream",
+        "area:malformed-input",
+        "path:error"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "target_stream": "unchanged sentinel",
+          "source_record": "base null, read null, size zero"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "variant",
+            "target_before",
+            "target_after",
+            "source"
+          ]
+        },
+        "error": "FT_Err_Invalid_Stream_Operation",
+        "source_refs": [
+          "freetype/src/base/ftstream.c:55-61",
+          "freetype/src/base/ftstream.c:88-121",
+          "freetype/src/gzip/ftgzip.c:194-216"
+        ],
+        "fixture_requirements": [
+          "An empty source FT_StreamRec with base and read both null; FT_Stream_ReadAt rejects pos >= size before dereferencing base, making this malformed record safe for the pinned oracle."
         ]
       }
     },

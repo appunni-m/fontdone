@@ -367,6 +367,96 @@
             "coverage": [
               "freetype.select_size:no-fixed-size-error"
             ]
+          },
+          {
+            "id": "negative-probe-eblc-gray",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_gray_format1.ttf"
+              }
+            },
+            "params": {
+              "face_index": -1,
+              "preserve_initial_size": true,
+              "strike_index": 0
+            },
+            "coverage": [
+              "freetype.select_size:negative-probe-eblc-gray"
+            ]
+          },
+          {
+            "id": "negative-probe-cblc-matrix",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_select_size_matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": -1,
+              "preserve_initial_size": true,
+              "strike_index": 0
+            },
+            "coverage": [
+              "freetype.select_size:negative-probe-cblc-matrix"
+            ]
+          },
+          {
+            "id": "negative-probe-cblc-no-os2",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_select_size_no_os2.ttf"
+              }
+            },
+            "params": {
+              "face_index": -1,
+              "preserve_initial_size": true,
+              "strike_index": 0
+            },
+            "coverage": [
+              "freetype.select_size:negative-probe-cblc-no-os2"
+            ]
+          },
+          {
+            "id": "negative-probe-cblc-vmtx",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_select_size_vmtx.ttf"
+              }
+            },
+            "params": {
+              "face_index": -1,
+              "preserve_initial_size": true,
+              "strike_index": 0
+            },
+            "coverage": [
+              "freetype.select_size:negative-probe-cblc-vmtx"
+            ]
+          },
+          {
+            "id": "negative-probe-strike-metrics",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fixtures/assets/fonts/sbit_cblc_cbdt_strike_metrics.ttf"
+              }
+            },
+            "params": {
+              "face_index": -1,
+              "preserve_initial_size": true,
+              "strike_index": 0
+            },
+            "coverage": [
+              "freetype.select_size:negative-probe-strike-metrics"
+            ]
           }
         ]
       },

@@ -603,6 +603,21 @@ fn load_glyph_inner<'a>(
                     }
                 }
             };
+            // FreeType's `FT_GlyphLoader_CheckPoints` rejects a composite
+            // before copying a component when the accumulated outline would
+            // exceed `FT_OUTLINE_POINTS_MAX` or
+            // `FT_OUTLINE_CONTOURS_MAX` (`base/ftgloadr.c:222-291`).  Keep
+            // the public loader error as `Array_Too_Large` instead of letting
+            // the endpoint conversion below reach a debug assertion.
+            let Some(new_point_count) = points.len().checked_add(transformed.len()) else {
+                return Err(FontError::ArrayTooLarge);
+            };
+            if new_point_count > usize::from(u16::MAX) {
+                return Err(FontError::ArrayTooLarge);
+            }
+            let Some(new_contour_count) = num_contours_total.checked_add(sub.num_contours) else {
+                return Err(FontError::ArrayTooLarge);
+            };
             for pt in transformed {
                 points.push(OutlinePoint {
                     x: pt.x + dx,
@@ -614,7 +629,7 @@ fn load_glyph_inner<'a>(
             for &ep in &sub.end_pts_of_contours {
                 end_pts.push(u16_from_u32(u32_from_usize(base) + ep as u32));
             }
-            num_contours_total = num_contours_total.saturating_add(sub.num_contours);
+            num_contours_total = new_contour_count;
         }
 
         // `TT_Process_Composite_Glyph` is skipped when every component is

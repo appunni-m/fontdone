@@ -25,9 +25,11 @@ Pinned FreeType source is used only by ignored offline test tooling.
 | Rust application | `fontdone` | Compact masks/metrics API | [Rust integration](https://github.com/appunni-m/fontdone/blob/main/doc/INTEGRATION.md#2-compact-rust-api) |
 | Rust FreeType migration | `fontdone` | Safe Rust API preserving measured `FT_*` concepts | [Safe migration](https://github.com/appunni-m/fontdone/blob/main/doc/INTEGRATION.md#3-freetype-shaped-safe-rust) |
 | C or C-compatible host | `fontdone-c-abi` | Raw pointers, shipped headers, shared/static libraries | [C ABI guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-c-abi/README.md) |
-| Node.js host | `fontdone-wasm` | Low-level wasm32 linear-memory ABI | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
+| Browser application | `fontdone` on npm | Prebuilt Wasm with a typed ESM lifecycle wrapper | [Browser package guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/npm/README.md) |
+| Raw JavaScript host | `fontdone-wasm` | Low-level wasm32 linear-memory ABI | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
 
-The crates are not on crates.io yet. Evaluate from a local checkout while
+The crates are not on crates.io yet, and the browser package is not on npm yet.
+Evaluate Rust from a local checkout while
 keeping the version requirement that a publishable downstream package needs:
 
 ```toml
@@ -386,7 +388,7 @@ Always use the adoption map and exact parity cases for a compatibility claim.
 ```text
 src/                  pure-Rust engine and safe APIs
 fontdone-c-abi/       native C artifact, headers, and C example
-fontdone-wasm/        wasm32 ABI, schema, declarations, and Node example
+fontdone-wasm/        wasm32 ABI, browser npm package, schema, and examples
 tests/data/           maintained, non-generated contracts
 tests/fixtures/input/ tracked font and auxiliary inputs
 scripts/font_generation/
@@ -412,6 +414,7 @@ make setup       # fetch and build the pinned offline C oracle
 make test-fast   # workspace tests that do not need full parity
 make test-parity-smoke # eight exact runtime cases across every facade
 make test-parity # exact C/Rust/C-ABI/WASM parity
+make npm-package-verify # build and install-test the browser npm tarball
 make lint        # rustfmt and Clippy
 make doc-test    # compile public Rust examples
 make ci-fast     # exact fast per-commit local gate (make ci is an alias)
@@ -425,7 +428,8 @@ Important complete gates:
 | `make c-abi-contract` | Report every C-contract numerator, denominator, and debt item |
 | `make c-abi-contract-all-platforms` | Validate five target bundles and report current C-contract debt |
 | `make c-abi-contract-complete` | Fail unless all 12 C-contract categories complete |
-| `make test-integrations` | Run downstream Rust, external C, exports, and Node/WASM consumers |
+| `make test-integrations` | Run downstream Rust, external C, raw WASM, and installed npm consumers |
+| `make npm-package-verify` | Build, inspect, install, and execute the publishable `fontdone` npm tarball |
 | `make check-docs` | Check every tracked Markdown document, status snapshot, links, commands, and rustdoc policy |
 | `make bench-regression` | Fail unless reviewed latency, throughput, memory, and size thresholds all pass |
 | `make ci-thorough` | Run the requested local pre-merge full parity, coverage, performance, contract, package, and supply-chain gate |

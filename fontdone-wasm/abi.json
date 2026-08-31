@@ -1,11 +1,13 @@
 {
   "schema_version": 1,
   "package": "fontdone-wasm",
+  "browser_package": "fontdone",
   "package_version": "2.14.3-alpha.1",
   "target": "wasm32-unknown-unknown",
   "pointer_width": 4,
   "endianness": "little",
   "supported_hosts": [
+    "browsers with ESM, fetch, WebAssembly, and JavaScript BigInt integration",
     "Node.js >= 20"
   ],
   "integer_lowering": {

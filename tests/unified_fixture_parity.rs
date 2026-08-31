@@ -2284,13 +2284,18 @@ fn classify_null_operation(op: &str) -> Result<i32, String> {
 fn has_no_font_assets(case: &InputCase) -> bool {
     // Check if any asset looks like it could provide font data
     !case.inputs.assets.values().any(|v| {
-        // Only count as "font asset" if the key is font/font_bytes/fixture/blob
-        // or the ref path ends in .ttf/.otf/.ttc/.pfb/.pfa/.bdf/.pcf/.fnt
+        // Count named font assets even when their deliberately malformed
+        // payload uses a neutral binary suffix. Otherwise a concrete variant
+        // like otsvg_font: not-a-font.bin is mistaken for a null-face case
+        // and the backend is bypassed before face opening.
         let has_font_key = case
             .inputs
             .assets
             .iter()
-            .any(|(key, _)| matches!(key.as_str(), "font" | "font_bytes" | "fixture" | "blob"));
+            .any(|(key, _)| {
+                matches!(key.as_str(), "font" | "font_bytes" | "fixture" | "blob")
+                    || key.contains("font")
+            });
         if has_font_key {
             return matches!(
                 v,
@@ -3407,6 +3412,7 @@ impl BackendComparisonWorker {
             && case.expect_error
             && classify_null_operation(&case.operation).is_ok()
             && !is_stroker_simple_line_counts_case(case)
+            && !is_empty_stream_without_base_case(case)
         {
             let op = case.operation.as_str();
             if op == "sfnt.load_sfnt_table" {
@@ -3558,6 +3564,7 @@ impl BackendComparisonWorker {
                 if matches!(
                     case_id_base(&case.case_id),
                     "ftgzip.FT_Stream_OpenGzip.opens_valid_gzip_stream"
+                        | "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base"
                         | "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix"
                         | "ftgzip.FT_Stream_OpenGzip.mcp_read_close_gap_matrix"
                 ) =>
@@ -4149,6 +4156,7 @@ impl BackendComparisonWorker {
                 if matches!(
                     case_id_base(&case.case_id),
                     "ftgzip.FT_Stream_OpenGzip.opens_valid_gzip_stream"
+                        | "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base"
                         | "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix"
                         | "ftgzip.FT_Stream_OpenGzip.mcp_read_close_gap_matrix"
                 ) =>
@@ -4753,6 +4761,7 @@ impl BackendComparisonWorker {
                 if matches!(
                     case_id_base(&case.case_id),
                     "ftgzip.FT_Stream_OpenGzip.opens_valid_gzip_stream"
+                        | "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base"
                         | "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix"
                         | "ftgzip.FT_Stream_OpenGzip.mcp_read_close_gap_matrix"
                 ) =>
@@ -28560,8 +28569,13 @@ fn bdf_property_error_case_supported(case: &InputCase) -> bool {
             | "ftbdf.FT_Get_BDF_Property.success_sfnt_bdf_table_selected_strike"
             | "ftbdf.FT_Get_BDF_Property.error_missing_property_sets_none"
             | "ftbdf.FT_Get_BDF_Property.error_null_face_or_output"
+            | "ftbdf.FT_Get_BDF_Property.error_null_property_name"
             | "ftbdf.FT_Get_BDF_Property.error_unsupported_face_or_unselected_strike"
     )
+}
+
+fn bdf_property_null_name_case(case: &InputCase) -> bool {
+    case_id_base(&case.case_id) == "ftbdf.FT_Get_BDF_Property.error_null_property_name"
 }
 
 fn bdf_property_success_row_case(case: &InputCase) -> bool {
@@ -29367,6 +29381,21 @@ fn rust_bdf_property_output(case: &InputCase) -> Result<RunOutput, String> {
         ));
     }
 
+    if bdf_property_null_name_case(case) {
+        let data = font_bytes(case)?;
+        let face = rust_new_face_from_bytes(data.as_ref(), face_index_param(&case.inputs.params)?)?;
+        let mut property = bdf_property_sentinel();
+        let error = FT_Get_BDF_Property(Some(&face), None, Some(&mut property));
+        return Ok(bdf_property_run_output(
+            error,
+            json!({
+                "error": error,
+                "property_name": null,
+                "property_after": bdf_property_after_json(&property)
+            }),
+        ));
+    }
+
     if bdf_property_success_row_case(case) {
         let data = font_bytes(case)?;
         let mut face =
@@ -29442,6 +29471,22 @@ fn c_bdf_property_output(case: &InputCase) -> Result<RunOutput, String> {
                         "property_after": null
                     }
                 ]
+            }),
+        ));
+    }
+
+    if bdf_property_null_name_case(case) {
+        let (library, face) = c_new_face_without_size(case)?;
+        let mut property = bdf_property_sentinel();
+        let error = c_abi::FT_Get_BDF_Property(face, std::ptr::null(), &mut property);
+        c_done_face(face);
+        c_done_library(library);
+        return Ok(bdf_property_run_output(
+            error,
+            json!({
+                "error": error,
+                "property_name": null,
+                "property_after": bdf_property_after_json(&property)
             }),
         ));
     }
@@ -29571,6 +29616,28 @@ fn wasm_bdf_property_output(case: &InputCase) -> Result<RunOutput, String> {
                         "property_after": null
                     }
                 ]
+            }),
+        ));
+    }
+
+    if bdf_property_null_name_case(case) {
+        let data = font_bytes(case)?;
+        let handle =
+            wasm_new_face_from_bytes(data.as_ref(), face_index_param(&case.inputs.params)?)?;
+        let mut property = wasm_bdf_property_sentinel();
+        let error = wasm_abi::fontdone_wasm_get_bdf_property(
+            handle,
+            std::ptr::null(),
+            0,
+            &mut property,
+        );
+        wasm_done_face(handle);
+        return Ok(bdf_property_run_output(
+            error,
+            json!({
+                "error": error,
+                "property_name": null,
+                "property_after": wasm_bdf_property_after_json(&property)
             }),
         ));
     }
@@ -43993,7 +44060,10 @@ fn with_public_family_exact_error(mut case: InputCase) -> InputCase {
             || case.case_id
                 == "freetype.FT_Attach_Stream.error_invalid_open_args_or_unsupported_driver"
             || case.case_id == "freetype.FT_New_Face.error_null_library_or_aface"
-            || case.case_id == "fterrdef.FT_Err_Bbx_Too_Big.bdf_bitmap_size_overflow_returns_error"
+            || case_id_base(&case.case_id)
+                == "fterrdef.FT_Err_Bbx_Too_Big.bdf_bitmap_size_overflow_returns_error"
+            || case_id_base(&case.case_id)
+                == "fterrdef.FT_Err_Bbx_Too_Big.bdf_bitmap_bpp_normalization_matrix"
             || case_id_base(&case.case_id)
                 == "fterrdef.FT_Err_Corrupted_Font_Glyphs.bdf_glyph_parse_failure_returns_error"
             || case.case_id
@@ -44010,6 +44080,7 @@ fn with_public_family_exact_error(mut case: InputCase) -> InputCase {
                 == "fterrdef.FT_Err_Missing_Startchar_Field.bdf_nested_startchar_before_endchar"
             || case.case_id == "ftbdf.FT_Get_BDF_Property.error_missing_property_sets_none"
             || case.case_id == "ftbdf.FT_Get_BDF_Property.error_null_face_or_output"
+            || case.case_id == "ftbdf.FT_Get_BDF_Property.error_null_property_name"
             || case.case_id
                 == "ftbdf.FT_Get_BDF_Property.error_unsupported_face_or_unselected_strike"
             || case.case_id == "ftbdf.FT_Get_BDF_Charset_ID.error_non_bdf_face"
@@ -46283,6 +46354,34 @@ fn error_status_success_slot_route_supported(case: &InputCase) -> bool {
 
 fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
     let params = &case.inputs.params;
+    if case_id_base(&case.case_id)
+        == "ftglyph.FT_Glyph_To_Bitmap.error_outline_support_guards"
+    {
+        let probe = glyph_outline_support_probe(params)?;
+        if matches!(
+            probe,
+            "render_failure_null_glyph_handle"
+                | "stroke_parse_null_glyph_handle"
+                | "render_tags_null_glyph_handle"
+                | "record_sync_null_glyph_handle"
+                | "points_sync_null_glyph_handle"
+        ) {
+            return Ok(vec![
+                "--glyph-outline-support-null".to_string(),
+                probe.to_string(),
+            ]);
+        }
+        let mut args = vec!["--glyph-outline-support".to_string()];
+        push_font_source(case, &mut args)?;
+        push_face_size(params, &mut args)?;
+        args.push(glyph_index_param(params)?.to_string());
+        args.push(load_flags_param(params)?.to_string());
+        args.push(probe.to_string());
+        if probe == "render_tags_invalid_kind" {
+            args.push(u64_param(params, "tag_kind")?.to_string());
+        }
+        return Ok(args);
+    }
     if interpreter_version_null_file_case(case) {
         return Ok(vec![
             "--interpreter-version-null-file".to_string(),
@@ -46443,9 +46542,15 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
     if case.case_id == "ftgzip.FT_Stream_OpenGzip.rejects_invalid_stream_handles" {
         return Ok(vec!["--gzip-stream-open-errors".to_string()]);
     }
+    if case_id_base(&case.case_id)
+        == "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base"
+    {
+        return Ok(vec!["--gzip-stream-empty-null-base".to_string()]);
+    }
     if matches!(
         case_id_base(&case.case_id),
         "ftgzip.FT_Stream_OpenGzip.opens_valid_gzip_stream"
+            | "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base"
             | "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix"
             | "ftgzip.FT_Stream_OpenGzip.mcp_read_close_gap_matrix"
     ) {
@@ -46476,6 +46581,11 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         return Ok(args);
     }
     if is_lzw_stream_case(case) {
+        if case_id_base(&case.case_id)
+            == "ftlzw.FT_Stream_OpenLZW.error_empty_source_without_base"
+        {
+            return Ok(vec!["--lzw-stream-empty-null-base".to_string()]);
+        }
         let base_case = case_id_base(&case.case_id);
         let mut args = vec!["--lzw-stream-case".to_string(), base_case.to_string()];
         match base_case {
@@ -46581,6 +46691,7 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                     .ok_or_else(|| format!("unresolved {}", asset_label(asset)))?;
                 args.push(fixture_dir().join(path).to_string_lossy().into_owned());
             }
+            "ftbzip2.FT_Stream_OpenBzip2.error_empty_source_without_base" => {}
             "ftbzip2.FT_Stream_OpenBzip2.error_invalid_or_truncated_bzip2_header" => {
                 for key in ["invalid", "truncated"] {
                     let asset = case
@@ -49818,6 +49929,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                     .unwrap_or("installed")
                     .to_string(),
             );
+            if let Some(pointer_probe) = params.get("pointer_probe").and_then(Value::as_str) {
+                args.push(pointer_probe.to_string());
+            }
             Ok(args)
         }
         "freetype.load_glyph_pair" => {
@@ -51202,6 +51316,15 @@ fn is_gzip_stream_invalid_handle_case(case: &InputCase) -> bool {
     case_id_base(&case.case_id) == "ftgzip.FT_Stream_OpenGzip.rejects_invalid_stream_handles"
 }
 
+fn is_empty_stream_without_base_case(case: &InputCase) -> bool {
+    matches!(
+        case_id_base(&case.case_id),
+        "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base"
+            | "ftlzw.FT_Stream_OpenLZW.error_empty_source_without_base"
+            | "ftbzip2.FT_Stream_OpenBzip2.error_empty_source_without_base"
+    )
+}
+
 fn is_invalid_face_handle_size_abi_case(case: &InputCase) -> bool {
     matches!(
         case.case_id.as_str(),
@@ -51233,6 +51356,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
     if matches!(
         case_id_base(&case.case_id),
         "ftgzip.FT_Stream_OpenGzip.opens_valid_gzip_stream"
+            | "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base"
             | "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix"
             | "ftgzip.FT_Stream_OpenGzip.mcp_read_close_gap_matrix"
     ) {
@@ -52261,6 +52385,11 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             rust_outline_get_bitmap(case)
         }
         "ftglyph.glyph_to_bitmap" => {
+            if case_id_base(&case.case_id)
+                == "ftglyph.FT_Glyph_To_Bitmap.error_outline_support_guards"
+            {
+                return rust_glyph_outline_support_guards(case);
+            }
             if case.inputs.params.get("null_glyph_handle_probe").is_some() {
                 return rust_glyph_to_bitmap_null_glyph_handle(case);
             }
@@ -53964,6 +54093,11 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             c_outline_get_bitmap(case)
         }
         "ftglyph.glyph_to_bitmap" => {
+            if case_id_base(&case.case_id)
+                == "ftglyph.FT_Glyph_To_Bitmap.error_outline_support_guards"
+            {
+                return c_glyph_outline_support_guards(case);
+            }
             if case.inputs.params.get("null_glyph_handle_probe").is_some() {
                 return c_glyph_to_bitmap_null_glyph_handle(case);
             }
@@ -55542,6 +55676,11 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             wasm_outline_get_bitmap(case)
         }
         "ftglyph.glyph_to_bitmap" => {
+            if case_id_base(&case.case_id)
+                == "ftglyph.FT_Glyph_To_Bitmap.error_outline_support_guards"
+            {
+                return wasm_glyph_outline_support_guards(case);
+            }
             if case.inputs.params.get("null_glyph_handle_probe").is_some() {
                 return wasm_glyph_to_bitmap_null_glyph_handle(case);
             }
@@ -61666,6 +61805,277 @@ fn glyph_to_bitmap_malformed_outline_tag_kind(params: &Value) -> Result<u8, Stri
     }
 }
 
+fn glyph_outline_support_probe<'a>(params: &'a Value) -> Result<&'a str, String> {
+    let probe = string_param(params, "support_probe")?;
+    match probe {
+        "render_failure_null_glyph_handle"
+        | "render_failure_empty_outline"
+        | "stroke_parse_null_glyph_handle"
+        | "stroke_parse_empty_tags"
+        | "render_tags_invalid_kind"
+        | "render_tags_null_glyph_handle"
+        | "record_sync_null_glyph_handle"
+        | "record_sync_empty_contours"
+        | "points_sync_null_glyph_handle"
+        | "render_failure_oversized_internal_outline"
+        | "svg_mutation_non_svg_glyph"
+        | "points_sync_empty_points" => Ok(probe),
+        other => Err(format!("unsupported outline support probe {other}")),
+    }
+}
+
+fn glyph_outline_support_output(probe: &str, supported: bool) -> RunOutput {
+    ok(json!({
+        "support_probe": probe,
+        "supported": supported
+    }))
+}
+
+fn rust_glyph_outline_support_guards(case: &InputCase) -> Result<RunOutput, String> {
+    let probe = glyph_outline_support_probe(&case.inputs.params)?;
+    let supported = match probe {
+        "render_failure_null_glyph_handle"
+        | "stroke_parse_null_glyph_handle"
+        | "render_tags_null_glyph_handle"
+        | "record_sync_null_glyph_handle"
+        | "points_sync_null_glyph_handle"
+        | "render_failure_oversized_internal_outline"
+        | "svg_mutation_non_svg_glyph"
+        | "render_tags_invalid_kind" => false,
+        "render_failure_empty_outline"
+        | "stroke_parse_empty_tags"
+        | "record_sync_empty_contours"
+        | "points_sync_empty_points" => {
+            let face = open_face(case)?;
+            let slot = FT_Load_Glyph(
+                &face,
+                glyph_index_param(&case.inputs.params)?,
+                load_flags_param(&case.inputs.params)?,
+            )
+            .map_err(|error| format!("FT_Load_Glyph returned {error}"))?;
+            let glyph = FT_Get_Outline_Glyph(Some(&slot))
+                .map_err(|error| format!("FT_Get_Outline_Glyph returned {error}"))?;
+            if probe == "render_failure_empty_outline"
+                || probe == "record_sync_empty_contours"
+            {
+                glyph.outline.contours.last().is_some()
+            } else if probe == "stroke_parse_empty_tags" {
+                glyph.outline.tags.first().is_some()
+            } else {
+                glyph.outline.points.first().is_some()
+            }
+        }
+        _ => unreachable!(),
+    };
+    Ok(glyph_outline_support_output(&probe, supported))
+}
+
+fn c_glyph_outline_support_guards(case: &InputCase) -> Result<RunOutput, String> {
+    let probe = glyph_outline_support_probe(&case.inputs.params)?;
+    let supported = match probe {
+        "render_failure_null_glyph_handle" => {
+            c_abi::abi_support_corrupt_outline_glyph_for_render_failure(ptr::null_mut(), false)
+        }
+        "stroke_parse_null_glyph_handle" => {
+            c_abi::abi_support_corrupt_outline_glyph_for_stroke_parse(ptr::null_mut())
+        }
+        "render_tags_null_glyph_handle" => {
+            c_abi::abi_support_corrupt_outline_glyph_for_render_tags(ptr::null_mut(), 255)
+        }
+        "record_sync_null_glyph_handle" => {
+            c_abi::abi_support_corrupt_outline_glyph_for_record_sync(ptr::null_mut())
+        }
+        "points_sync_null_glyph_handle" => {
+            c_abi::abi_support_corrupt_outline_glyph_points_for_record_sync(ptr::null_mut())
+        }
+        "render_failure_empty_outline" | "stroke_parse_empty_tags" => {
+            let (library, face) = c_open_face(case)?;
+            let glyph = c_get_glyph_from_face(
+                face,
+                glyph_index_param(&case.inputs.params)?,
+                load_flags_param(&case.inputs.params)?,
+            )
+            .map_err(|error| format!("C ABI glyph extraction returned {error}"))?;
+            let supported = if probe == "render_failure_empty_outline" {
+                c_abi::abi_support_corrupt_outline_glyph_for_render_failure(glyph, false)
+            } else {
+                c_abi::abi_support_corrupt_outline_glyph_for_stroke_parse(glyph)
+            };
+            c_abi::FT_Done_Glyph(glyph);
+            c_done_face(face);
+            c_done_library(library);
+            supported
+        }
+        "render_failure_oversized_internal_outline" => {
+            let (library, face) = c_open_face(case)?;
+            let glyph = c_get_glyph_from_face(
+                face,
+                glyph_index_param(&case.inputs.params)?,
+                load_flags_param(&case.inputs.params)?,
+            )
+            .map_err(|error| format!("C ABI glyph extraction returned {error}"))?;
+            let supported = c_abi::abi_support_corrupt_outline_glyph_for_render_failure(glyph, true);
+            c_abi::FT_Done_Glyph(glyph);
+            c_done_face(face);
+            c_done_library(library);
+            supported
+        }
+        "svg_mutation_non_svg_glyph" => {
+            let (library, face) = c_open_face(case)?;
+            let glyph = c_get_glyph_from_face(
+                face,
+                glyph_index_param(&case.inputs.params)?,
+                load_flags_param(&case.inputs.params)?,
+            )
+            .map_err(|error| format!("C ABI glyph extraction returned {error}"))?;
+            let supported = c_abi::abi_support_zero_length_svg_glyph(glyph, false);
+            c_abi::FT_Done_Glyph(glyph);
+            c_done_face(face);
+            c_done_library(library);
+            supported
+        }
+        "record_sync_empty_contours" | "points_sync_empty_points" => {
+            let (library, face) = c_open_face(case)?;
+            let glyph = c_get_glyph_from_face(
+                face,
+                glyph_index_param(&case.inputs.params)?,
+                load_flags_param(&case.inputs.params)?,
+            )
+            .map_err(|error| format!("C ABI glyph extraction returned {error}"))?;
+            let supported = if probe == "record_sync_empty_contours" {
+                c_abi::abi_support_corrupt_outline_glyph_for_record_sync(glyph)
+            } else {
+                c_abi::abi_support_corrupt_outline_glyph_points_for_record_sync(glyph)
+            };
+            c_abi::FT_Done_Glyph(glyph);
+            c_done_face(face);
+            c_done_library(library);
+            supported
+        }
+        "render_tags_invalid_kind" => {
+            let (library, face) = c_open_face(case)?;
+            let glyph = c_get_glyph_from_face(
+                face,
+                glyph_index_param(&case.inputs.params)?,
+                load_flags_param(&case.inputs.params)?,
+            )
+            .map_err(|error| format!("C ABI glyph extraction returned {error}"))?;
+            let supported = c_abi::abi_support_corrupt_outline_glyph_for_render_tags(
+                glyph,
+                u8::try_from(u64_param(&case.inputs.params, "tag_kind")?)
+                    .map_err(|err| format!("tag_kind does not fit u8: {err}"))?,
+            );
+            c_abi::FT_Done_Glyph(glyph);
+            c_done_face(face);
+            c_done_library(library);
+            supported
+        }
+        _ => unreachable!(),
+    };
+    Ok(glyph_outline_support_output(&probe, supported))
+}
+
+fn wasm_glyph_outline_support_guards(case: &InputCase) -> Result<RunOutput, String> {
+    let probe = glyph_outline_support_probe(&case.inputs.params)?;
+    let supported = match probe {
+        "render_failure_null_glyph_handle" => {
+            wasm_abi::abi_support_corrupt_outline_glyph_for_render_failure(0, false)
+        }
+        "stroke_parse_null_glyph_handle" => {
+            wasm_abi::abi_support_corrupt_outline_glyph_for_stroke_parse(0)
+        }
+        "render_tags_null_glyph_handle" => {
+            wasm_abi::abi_support_corrupt_outline_glyph_for_render_tags(0, 255)
+        }
+        "record_sync_null_glyph_handle" => {
+            wasm_abi::abi_support_corrupt_outline_glyph_for_record_sync(0)
+        }
+        "points_sync_null_glyph_handle" => {
+            wasm_abi::abi_support_corrupt_outline_glyph_points_for_record_sync(0)
+        }
+        "render_failure_empty_outline" | "stroke_parse_empty_tags" => {
+            let handle = wasm_open_face(case)?;
+            let glyph = wasm_get_glyph_from_face(
+                handle,
+                glyph_index_param(&case.inputs.params)?,
+                load_flags_param(&case.inputs.params)?,
+            )
+            .map_err(|error| format!("WASM glyph extraction returned {error}"))?;
+            let supported = if probe == "render_failure_empty_outline" {
+                wasm_abi::abi_support_corrupt_outline_glyph_for_render_failure(glyph, false)
+            } else {
+                wasm_abi::abi_support_corrupt_outline_glyph_for_stroke_parse(glyph)
+            };
+            wasm_done_glyph_handle(glyph);
+            wasm_done_face(handle);
+            supported
+        }
+        "render_failure_oversized_internal_outline" => {
+            let handle = wasm_open_face(case)?;
+            let glyph = wasm_get_glyph_from_face(
+                handle,
+                glyph_index_param(&case.inputs.params)?,
+                load_flags_param(&case.inputs.params)?,
+            )
+            .map_err(|error| format!("WASM glyph extraction returned {error}"))?;
+            let supported =
+                wasm_abi::abi_support_corrupt_outline_glyph_for_render_failure(glyph, true);
+            wasm_done_glyph_handle(glyph);
+            wasm_done_face(handle);
+            supported
+        }
+        "svg_mutation_non_svg_glyph" => {
+            let handle = wasm_open_face(case)?;
+            let glyph = wasm_get_glyph_from_face(
+                handle,
+                glyph_index_param(&case.inputs.params)?,
+                load_flags_param(&case.inputs.params)?,
+            )
+            .map_err(|error| format!("WASM glyph extraction returned {error}"))?;
+            let supported = wasm_abi::abi_support_zero_length_svg_glyph(glyph, false);
+            wasm_done_glyph_handle(glyph);
+            wasm_done_face(handle);
+            supported
+        }
+        "record_sync_empty_contours" | "points_sync_empty_points" => {
+            let handle = wasm_open_face(case)?;
+            let glyph = wasm_get_glyph_from_face(
+                handle,
+                glyph_index_param(&case.inputs.params)?,
+                load_flags_param(&case.inputs.params)?,
+            )
+            .map_err(|error| format!("WASM glyph extraction returned {error}"))?;
+            let supported = if probe == "record_sync_empty_contours" {
+                wasm_abi::abi_support_corrupt_outline_glyph_for_record_sync(glyph)
+            } else {
+                wasm_abi::abi_support_corrupt_outline_glyph_points_for_record_sync(glyph)
+            };
+            wasm_done_glyph_handle(glyph);
+            wasm_done_face(handle);
+            supported
+        }
+        "render_tags_invalid_kind" => {
+            let handle = wasm_open_face(case)?;
+            let glyph = wasm_get_glyph_from_face(
+                handle,
+                glyph_index_param(&case.inputs.params)?,
+                load_flags_param(&case.inputs.params)?,
+            )
+            .map_err(|error| format!("WASM glyph extraction returned {error}"))?;
+            let tag_kind = u8::try_from(u64_param(&case.inputs.params, "tag_kind")?)
+                .map_err(|err| format!("tag_kind does not fit u8: {err}"))?;
+            let supported = wasm_abi::abi_support_corrupt_outline_glyph_for_render_tags(
+                glyph, tag_kind,
+            );
+            wasm_done_glyph_handle(glyph);
+            wasm_done_face(handle);
+            supported
+        }
+        _ => unreachable!(),
+    };
+    Ok(glyph_outline_support_output(&probe, supported))
+}
+
 fn glyph_to_bitmap_malformed_outline_tags_output(
     corruption: &str,
     destroy: bool,
@@ -61976,7 +62386,7 @@ fn c_glyph_to_bitmap_render_failure(
             Ok(glyph) => glyph,
             Err(err) => return Ok(error(err)),
         };
-        if !c_abi::abi_support_corrupt_outline_glyph_for_render_failure(original) {
+        if !c_abi::abi_support_corrupt_outline_glyph_for_render_failure(original, false) {
             c_abi::FT_Done_Glyph(original);
             return Err("failed to corrupt C ABI outline glyph".to_string());
         }
@@ -62078,7 +62488,7 @@ fn wasm_glyph_to_bitmap_render_failure(
             Ok(glyph) => glyph,
             Err(err) => return Ok(error(err)),
         };
-        if !wasm_abi::abi_support_corrupt_outline_glyph_for_render_failure(original) {
+        if !wasm_abi::abi_support_corrupt_outline_glyph_for_render_failure(original, false) {
             wasm_done_glyph_handle(original);
             return Err("failed to corrupt WASM outline glyph".to_string());
         }
@@ -64092,13 +64502,45 @@ fn wasm_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, Str
     let params = &case.inputs.params;
     let bytes = named_font_bytes(case, "otsvg_font")?;
     let glyph_index = svg_document_glyph_index(params)?;
+    if let Some(pointer_probe) = params.get("pointer_probe").and_then(Value::as_str) {
+        let status = match pointer_probe {
+            "null_output" => wasm_abi::fontdone_wasm_svg_renderer_capture(
+                bytes.as_ptr(),
+                bytes.len(),
+                glyph_index,
+                std::ptr::null_mut(),
+            ),
+            "null_file_base" => {
+                let mut capture = wasm_abi::WasmSvgRendererCallbackCapture::default();
+                wasm_abi::fontdone_wasm_svg_renderer_capture(
+                    std::ptr::null(),
+                    bytes.len(),
+                    glyph_index,
+                    &mut capture,
+                )
+            }
+            _ => return Err(format!("unknown SVG renderer pointer probe: {pointer_probe}")),
+        };
+        return Ok(error(status));
+    }
     let mut capture = wasm_abi::WasmSvgRendererCallbackCapture::default();
-    wasm_abi::fontdone_wasm_svg_renderer_capture(
+    let capture_status = wasm_abi::fontdone_wasm_svg_renderer_capture(
         bytes.as_ptr(),
         bytes.len(),
         glyph_index,
         &mut capture,
     );
+    // The exported helper returns the renderer status as its ABI result, but
+    // still writes the capture record after a loaded glyph fails to render.
+    // Preserve that nested result shape for parity; a face-open or hook setup
+    // error returns before the record is populated and remains a top-level
+    // backend error.
+    let capture_contains_render_error = capture.hooks_status == FT_Err_Ok
+        && capture.render_status == capture_status
+        && capture_status != FT_Err_Ok;
+    if capture_status != FT_Err_Ok && !capture_contains_render_error {
+        return Ok(error(capture_status));
+    }
     let fields = SvgRendererCallbackFields {
         glyph_index: capture.glyph_index,
         svg_document_length: capture.svg_document_length,
@@ -64231,6 +64673,12 @@ fn svg_callback_output(
 
 fn rust_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, String> {
     let params = &case.inputs.params;
+    if matches!(
+        params.get("pointer_probe").and_then(Value::as_str),
+        Some("null_output" | "null_file_base")
+    ) {
+        return Ok(error(FT_Err_Invalid_Argument as FT_Error));
+    }
     let data = named_font_bytes(case, "otsvg_font")?;
     let glyph_index = svg_document_glyph_index(params)?;
     unsafe {
@@ -64356,6 +64804,12 @@ unsafe extern "C" fn c_svg_probe_render(
 
 fn c_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, String> {
     let params = &case.inputs.params;
+    if matches!(
+        params.get("pointer_probe").and_then(Value::as_str),
+        Some("null_output" | "null_file_base")
+    ) {
+        return Ok(error(FT_Err_Invalid_Argument as FT_Error));
+    }
     let bytes = named_font_bytes(case, "otsvg_font")?;
     let glyph_index = svg_document_glyph_index(params)?;
     unsafe {
@@ -68409,23 +68863,6 @@ fn rust_cmap_cache_lookup_glyph(
     // temporarily select `face->charmaps[cmap_index]` and restore the old
     // charmap before returning (`src/cache/ftccmap.c:230-323`).
     Ok(face.cmap_cache_lookup_glyph(cmap_index, char_code))
-}
-
-fn c_cmap_cache_lookup_glyph(
-    face: c_abi::FT_Face,
-    cmap_index: i32,
-    char_code: FT_UInt32,
-) -> Result<FT_UInt, String> {
-    if cmap_index < 0 {
-        return Ok(c_abi::FT_Get_Char_Index(face, FT_ULong::from(char_code)));
-    }
-    let Ok(index) = u32::try_from(cmap_index) else {
-        return Ok(0);
-    };
-    if c_abi::abi_charmap_by_index(face, index).is_none() {
-        return Ok(0);
-    }
-    Ok(c_abi::cmap_cache_lookup_glyph_for_test(face, cmap_index, char_code))
 }
 
 fn wasm_cmap_cache_lookup_glyph(
@@ -85350,6 +85787,7 @@ fn is_bzip2_enabled_stream_case(case: &InputCase) -> bool {
             | "ftbzip2.FT_Stream_OpenBzip2.lifecycle_close_does_not_close_source"
             | "ftbzip2.FT_Stream_OpenBzip2.mcp_read_gap_matrix"
             | "ftbzip2.FT_Stream_OpenBzip2.error_null_stream_or_source"
+            | "ftbzip2.FT_Stream_OpenBzip2.error_empty_source_without_base"
             | "ftbzip2.FT_Stream_OpenBzip2.error_invalid_or_truncated_bzip2_header"
             | "ftbzip2.FT_Stream_OpenBzip2.error_callback_seek_failure"
             | "ftbzip2.FT_Stream_OpenBzip2.error_callback_short_header_read"
@@ -85419,6 +85857,9 @@ fn bzip2_stream_output(case: &InputCase, backend: Bzip2StreamBackend) -> Result<
                 .ok_or_else(|| "missing bzip2 compressed asset".to_string())
                 .and_then(font_asset_bytes)?;
             Ok(bzip2_stream_null_output(backend, compressed.as_ref()))
+        }
+        "ftbzip2.FT_Stream_OpenBzip2.error_empty_source_without_base" => {
+            Ok(bzip2_stream_empty_null_base_output(backend))
         }
         "ftbzip2.FT_Stream_OpenBzip2.error_invalid_or_truncated_bzip2_header" => {
             let invalid = case
@@ -85604,6 +86045,39 @@ fn bzip2_stream_null_output(backend: Bzip2StreamBackend, compressed: &[u8]) -> R
                     "target_after": lzw_stream_fields(&target),
                 },
             ]
+        }),
+    )
+}
+
+fn bzip2_stream_empty_null_base_output(backend: Bzip2StreamBackend) -> RunOutput {
+    let mut memory = FT_MemoryRec::default();
+    let mut source = FT_StreamRec {
+        base: ptr::null_mut(),
+        size: 0,
+        pos: 3,
+        read: ptr::null_mut(),
+        memory: (&mut memory) as *mut FT_MemoryRec,
+        ..FT_StreamRec::default()
+    };
+    let mut target = lzw_stream_sentinel();
+    let target_before = lzw_stream_fields(&target);
+    let status = bzip2_stream_open(
+        backend,
+        Some(&mut target),
+        Some(&mut source),
+        Some(&[]),
+    );
+    error_with_output(
+        status,
+        json!({
+            "variant": "empty_null_base",
+            "target_before": target_before,
+            "target_after": lzw_stream_fields(&target),
+            "source": {
+                "base_class": pointer_class(source.base.cast_const()),
+                "read_class": pointer_class(source.read.cast_const()),
+                "size": source.size,
+            },
         }),
     )
 }
@@ -85799,6 +86273,7 @@ fn is_lzw_stream_case(case: &InputCase) -> bool {
             | "ftlzw.FT_Stream_OpenLZW.reads_malformed_lzw_streams"
             | "ftlzw.FT_Stream_OpenLZW.invalid_header_error"
             | "ftlzw.FT_Stream_OpenLZW.null_stream_or_source_error"
+            | "ftlzw.FT_Stream_OpenLZW.error_empty_source_without_base"
             | "ftlzw.FT_Stream_OpenLZW.mcp_stream_gap_matrix"
             | "ftlzw.FT_Stream_OpenLZW.unsupported_build_error"
     )
@@ -85835,6 +86310,9 @@ fn lzw_stream_output(case: &InputCase, backend: LzwStreamBackend) -> Result<RunO
                 .ok_or_else(|| "missing valid_lzw asset".to_string())?;
             let bytes = font_asset_bytes(asset)?;
             Ok(lzw_stream_null_output(backend, bytes.as_ref()))
+        }
+        "ftlzw.FT_Stream_OpenLZW.error_empty_source_without_base" => {
+            Ok(lzw_stream_empty_null_base_output(backend))
         }
         "ftlzw.FT_Stream_OpenLZW.unsupported_build_error" => {
             lzw_disabled_build_output(case, backend)
@@ -86130,6 +86608,32 @@ fn lzw_stream_null_output(backend: LzwStreamBackend, bytes: &[u8]) -> RunOutput 
     )
 }
 
+fn lzw_stream_empty_null_base_output(backend: LzwStreamBackend) -> RunOutput {
+    let mut source = FT_StreamRec {
+        base: ptr::null_mut(),
+        size: 0,
+        pos: 3,
+        read: ptr::null_mut(),
+        ..FT_StreamRec::default()
+    };
+    let mut target = lzw_stream_sentinel();
+    let target_before = lzw_stream_fields(&target);
+    let status = lzw_stream_open(backend, Some(&mut target), Some(&mut source), Some(&[]));
+    error_with_output(
+        status,
+        json!({
+            "variant": "empty_null_base",
+            "target_before": target_before,
+            "target_after": lzw_stream_fields(&target),
+            "source": {
+                "base_class": pointer_class(source.base.cast_const()),
+                "read_class": pointer_class(source.read.cast_const()),
+                "size": source.size,
+            },
+        }),
+    )
+}
+
 fn lzw_stream_open(
     backend: LzwStreamBackend,
     stream: Option<&mut FT_StreamRec>,
@@ -86320,6 +86824,11 @@ fn gzip_stream_open_output(
     case: &InputCase,
     backend: GzipStreamBackend,
 ) -> Result<RunOutput, String> {
+    if case_id_base(&case.case_id)
+        == "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base"
+    {
+        return Ok(gzip_stream_empty_null_base_output(backend));
+    }
     if case_id_base(&case.case_id) == "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix" {
         return gzip_stream_gap_output(case, backend);
     }
@@ -86345,6 +86854,40 @@ fn gzip_stream_open_output(
         }
     }
     Ok(ok(json!({ "rows": rows })))
+}
+
+fn gzip_stream_empty_null_base_output(backend: GzipStreamBackend) -> RunOutput {
+    let mut source = FT_StreamRec {
+        base: ptr::null_mut(),
+        size: 0,
+        pos: 3,
+        read: ptr::null_mut(),
+        ..FT_StreamRec::default()
+    };
+    let mut target = lzw_stream_sentinel();
+    let target_before = lzw_stream_fields(&target);
+    let status = match backend {
+        GzipStreamBackend::Rust => {
+            FT_Stream_OpenGzip(Some(&mut target), Some(&source), Some(&[]))
+        }
+        GzipStreamBackend::CAbi => c_abi::FT_Stream_OpenGzip(&mut target, &mut source),
+        GzipStreamBackend::Wasm => {
+            wasm_abi::fontdone_wasm_stream_open_gzip(&mut target, &source)
+        }
+    };
+    error_with_output(
+        status,
+        json!({
+            "variant": "empty_null_base",
+            "target_before": target_before,
+            "target_after": lzw_stream_fields(&target),
+            "source": {
+                "base_class": pointer_class(source.base.cast_const()),
+                "read_class": pointer_class(source.read.cast_const()),
+                "size": source.size,
+            },
+        }),
+    )
 }
 
 fn gzip_stream_gap_output(

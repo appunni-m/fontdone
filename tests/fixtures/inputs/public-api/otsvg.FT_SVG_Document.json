@@ -4,7 +4,10 @@
   "manifest_cases": [
     "alias_defined",
     "pointer_abi_contract",
-    "renderer_callback_observes_document"
+    "renderer_callback_observes_document",
+    "mcp_invalid_font_open_batch",
+    "mcp_renderer_error_batch",
+    "mcp_wasm_argument_validation_batch"
   ],
   "cases": [
     {
@@ -218,6 +221,385 @@
         "fixture_requirements": [
           "The maintained OT-SVG font is opened with an out-of-range glyph index; the pinned C callback probe keeps its renderer status at FT_Err_Ok and returns zero document fields when glyph loading fails.",
           "The valid callback case remains the source of document-field observations."
+        ]
+      }
+    },
+    {
+      "case_id": "otsvg.FT_SVG_Document.mcp_invalid_font_open_batch",
+      "subject": "otsvg.FT_SVG_Document",
+      "case": "mcp_invalid_font_open_batch",
+      "operation": "otsvg.svg_renderer_callback_capture",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "batch267-invalid-font-not-a-font-001",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/malformed/not-a-font.bin",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 20,
+              "glyph_index": 1,
+              "hooks": "installed"
+            },
+            "coverage": [
+              "batch267:wasm-svg-renderer:face-open-not-a-font"
+            ]
+          },
+          {
+            "id": "batch267-invalid-font-cff-short-header-002",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/malformed-short-header.otf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 20,
+              "glyph_index": 1,
+              "hooks": "installed"
+            },
+            "coverage": [
+              "batch267:wasm-svg-renderer:face-open-cff-short-header"
+            ]
+          },
+          {
+            "id": "batch267-invalid-font-cff2-offsize-003",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff2/malformed-charstrings-index-offsize-missing.otf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 20,
+              "glyph_index": 1,
+              "hooks": "installed"
+            },
+            "coverage": [
+              "batch267:wasm-svg-renderer:face-open-cff2-offsize"
+            ]
+          },
+          {
+            "id": "batch267-invalid-font-type1-segment-004",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/type1/invalid-first-segment-type1.pfb",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 20,
+              "glyph_index": 1,
+              "hooks": "installed"
+            },
+            "coverage": [
+              "batch267:wasm-svg-renderer:face-open-type1-segment"
+            ]
+          },
+          {
+            "id": "batch267-invalid-font-pcf-version-005",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/pcf/invalid-version.pcf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 20,
+              "glyph_index": 1,
+              "hooks": "installed"
+            },
+            "coverage": [
+              "batch267:wasm-svg-renderer:face-open-pcf-version"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:type",
+        "header:otsvg",
+        "format:otsvg",
+        "area:coverage",
+        "input:malformed-font"
+      ],
+      "metadata": {
+        "coverage_intent": "Coverage MCP selected five maintained malformed font inputs that make FT_New_Memory_Face fail before any SVG hook or glyph render work. The cases verify that the exported WASM capture reports the pinned face-open error instead of treating an unwritten capture record as a successful render."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "output": "null when face construction fails"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "error",
+            "output"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftobjs.c",
+          "fontdone-wasm/src/implementation.rs:2798-2813"
+        ],
+        "fixture_requirements": [
+          "Each referenced malformed font remains a tracked input already used by the public FT_New_Memory_Face error corpus; no generated or private pointer state is introduced."
+        ]
+      }
+    },
+    {
+      "case_id": "otsvg.FT_SVG_Document.mcp_renderer_error_batch",
+      "subject": "otsvg.FT_SVG_Document",
+      "case": "mcp_renderer_error_batch",
+      "operation": "otsvg.svg_renderer_callback_capture",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "batch268-render-error-peak-y-max-001",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-cubic-peak-shifts.otf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 20,
+              "glyph_index": 1,
+              "hooks": "installed"
+            },
+            "coverage": [
+              "batch268:wasm-svg-renderer:render-error-peak-y-max"
+            ]
+          },
+          {
+            "id": "batch268-render-error-peak-y-min-002",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-cubic-peak-shifts.otf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 20,
+              "glyph_index": 2,
+              "hooks": "installed"
+            },
+            "coverage": [
+              "batch268:wasm-svg-renderer:render-error-peak-y-min"
+            ]
+          },
+          {
+            "id": "batch268-render-error-peak-x-max-003",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-cubic-peak-shifts.otf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 20,
+              "glyph_index": 3,
+              "hooks": "installed"
+            },
+            "coverage": [
+              "batch268:wasm-svg-renderer:render-error-peak-x-max"
+            ]
+          },
+          {
+            "id": "batch268-render-error-peak-x-min-004",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-cubic-peak-shifts.otf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 20,
+              "glyph_index": 4,
+              "hooks": "installed"
+            },
+            "coverage": [
+              "batch268:wasm-svg-renderer:render-error-peak-x-min"
+            ]
+          },
+          {
+            "id": "batch268-render-error-peak-xy-max-005",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/cff/pure-cff-cubic-peak-shifts.otf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 20,
+              "glyph_index": 5,
+              "hooks": "installed"
+            },
+            "coverage": [
+              "batch268:wasm-svg-renderer:render-error-peak-xy-max"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:type",
+        "header:otsvg",
+        "format:otsvg",
+        "area:coverage",
+        "input:valid-extreme-outline"
+      ],
+      "metadata": {
+        "coverage_intent": "These five public variants use the project-authored valid CFF cubic peak-shift face. Each selected contour loads successfully, then its extreme coordinates make the pinned normal smooth renderer return FT_Err_Raster_Overflow; the cases verify that the WASM capture preserves that nested render error after writing the output record."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error nested in callback capture",
+          "callback_document_fields": "zeroed when the non-SVG outline render fails",
+          "hooks_status": "FT_Error",
+          "unsupported_status": "enabled"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "callback_document_fields.svg_document_length",
+            "callback_document_fields.units_per_EM",
+            "callback_document_fields.start_glyph_id",
+            "callback_document_fields.end_glyph_id",
+            "callback_document_fields.transform",
+            "callback_document_fields.delta",
+            "callback_glyph_index",
+            "hooks_status",
+            "unsupported_status"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/smooth/ftsmooth.c:589-598",
+          "freetype/src/base/ftobjs.c:1129-1178",
+          "fontdone-wasm/src/implementation.rs:2819-2827"
+        ],
+        "fixture_requirements": [
+          "The maintained pure-cff-cubic-peak-shifts.otf face is valid CFF with six large-coordinate cubic contours; glyphs 1-5 load successfully but exercise the pinned smooth renderer's Raster_Overflow return before callback capture fields are populated."
+        ]
+      }
+    },
+    {
+      "case_id": "otsvg.FT_SVG_Document.mcp_wasm_argument_validation_batch",
+      "subject": "otsvg.FT_SVG_Document",
+      "case": "mcp_wasm_argument_validation_batch",
+      "operation": "otsvg.svg_renderer_callback_capture",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "batch275-wasm-null-output-001",
+            "reason": "The public WASM callback-capture export receives a null out_capture pointer and must return FT_Err_Invalid_Argument before reading the font buffer at fontdone-wasm/src/implementation.rs:2799-2803. The pinned FreeType renderer has no equivalent export, so the oracle records the same wrapper safety contract without dereferencing C memory.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 20,
+              "glyph_index": 1,
+              "hooks": "installed",
+              "pointer_probe": "null_output"
+            },
+            "coverage": [
+              "batch275:wasm-svg-renderer:null-output-guard"
+            ]
+          },
+          {
+            "id": "batch275-wasm-null-file-002",
+            "reason": "The public WASM callback-capture export receives a null file_base pointer with a non-null output record and must return FT_Err_Invalid_Argument before constructing a slice at fontdone-wasm/src/implementation.rs:2804-2808. The pinned FreeType renderer has no equivalent export, so the oracle records the same wrapper safety contract without dereferencing C memory.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 20,
+              "glyph_index": 1,
+              "hooks": "installed",
+              "pointer_probe": "null_file_base"
+            },
+            "coverage": [
+              "batch275:wasm-svg-renderer:null-file-guard"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:type",
+        "header:otsvg",
+        "format:otsvg",
+        "area:wasm-abi-validation",
+        "input:invalid-pointer",
+        "scope:fontdone-safety-extension"
+      ],
+      "metadata": {
+        "coverage_intent": "These two distinct public ABI pointer classes exercise the WASM export's early Invalid_Argument guards. They are wrapper-boundary safety extensions, not claims that ordinary FreeType font bytes can create null pointers; the maintained SVG font keeps the operation tied to the public callback-capture surface."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "error": "FT_Err_Invalid_Argument",
+          "output": null
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "error"
+          ]
+        },
+        "source_refs": [
+          "fontdone-wasm/src/implementation.rs:2793-2808",
+          "freetype/include/freetype/ftdriver.h:897-924"
+        ],
+        "fixture_requirements": [
+          "The tracked OT-SVG font is used only to keep the case on the public renderer-capture operation; both pointer guards return before the bytes or glyph are inspected."
         ]
       }
     }

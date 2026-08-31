@@ -1008,6 +1008,66 @@ static void print_lzw_stream_fields(const FT_StreamRec* stream) {
     printf(",\"memory_class\":\"%s\"}", stream_ptr_class(stream->memory));
 }
 
+static int emit_gzip_stream_empty_null_base(void) {
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{");
+        print_status(init_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+
+    FT_StreamRec source;
+    FT_StreamRec target;
+    memset(&source, 0, sizeof(source));
+    source.size = 0;
+    source.pos = 3UL;
+    source.memory = library->memory;
+    init_lzw_stream_sentinel(&target);
+    FT_StreamRec before = target;
+    FT_Error status = FT_Stream_OpenGzip(&target, &source);
+    printf("{");
+    print_status(status);
+    printf(",\"output\":{\"variant\":\"empty_null_base\",\"target_before\":");
+    print_lzw_stream_fields(&before);
+    printf(",\"target_after\":");
+    print_lzw_stream_fields(&target);
+    printf(",\"source\":{\"base_class\":\"null\",\"read_class\":\"null\",\"size\":0}}}\n");
+    FT_Done_FreeType(library);
+    return 0;
+}
+
+static int emit_lzw_stream_empty_null_base(void) {
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{");
+        print_status(init_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+
+    FT_StreamRec source;
+    FT_StreamRec target;
+    memset(&source, 0, sizeof(source));
+    source.size = 0;
+    source.pos = 3UL;
+    source.memory = library->memory;
+    init_lzw_stream_sentinel(&target);
+    FT_StreamRec before = target;
+    FT_Error status = FT_Stream_OpenLZW(&target, &source);
+    printf("{");
+    print_status(status);
+    printf(",\"output\":{\"variant\":\"empty_null_base\",\"target_before\":");
+    print_lzw_stream_fields(&before);
+    printf(",\"target_after\":");
+    print_lzw_stream_fields(&target);
+    printf(",\"source\":{\"base_class\":\"null\",\"read_class\":\"null\",\"size\":0}}}\n");
+    FT_Done_FreeType(library);
+    return 0;
+}
+
 static void print_lzw_stream_reads(
     FT_Stream stream,
     const unsigned char* raw,
@@ -1337,6 +1397,28 @@ static int emit_bzip2_stream_case(int argc, char** argv) {
         printf("{");
         print_status(init_error);
         printf(",\"output\":null}\n");
+        return 0;
+    }
+
+    if (streq(case_id,
+              "ftbzip2.FT_Stream_OpenBzip2.error_empty_source_without_base")) {
+        FT_StreamRec source;
+        FT_StreamRec target;
+        memset(&source, 0, sizeof(source));
+        source.size = 0;
+        source.pos = 3UL;
+        source.memory = library->memory;
+        init_lzw_stream_sentinel(&target);
+        FT_StreamRec before = target;
+        FT_Error status = FT_Stream_OpenBzip2(&target, &source);
+        printf("{");
+        print_status(status);
+        printf(",\"output\":{\"variant\":\"empty_null_base\",\"target_before\":");
+        print_lzw_stream_fields(&before);
+        printf(",\"target_after\":");
+        print_lzw_stream_fields(&target);
+        printf(",\"source\":{\"base_class\":\"null\",\"read_class\":\"null\",\"size\":0}}}\n");
+        FT_Done_FreeType(library);
         return 0;
     }
 
@@ -11192,6 +11274,15 @@ static int emit_glyph_to_bitmap_null_glyph_handle(const char* probe_text) {
     return 0;
 }
 
+static int emit_glyph_outline_support_null(const char* probe) {
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"support_probe\":\"");
+    print_json_string_content(probe);
+    printf("\",\"supported\":false}}\n");
+    return 0;
+}
+
 static void print_sbit_payload(FT_GlyphSlot slot) {
     FT_Bitmap* bitmap = &slot->bitmap;
     long len = 0;
@@ -20552,15 +20643,30 @@ static FT_Error svg_probe_render_hook(FT_GlyphSlot slot, FT_Pointer* state) {
 }
 
 static int emit_otsvg_renderer_callback_probe(int argc, char** argv) {
-    if (argc != 9) {
+    if (argc != 9 && argc != 10) {
         fprintf(stderr,
-                "--otsvg-renderer-callback-probe requires SOURCE_KIND SOURCE_VALUE FACE_INDEX X Y GLYPH_INDEX HOOKS\n");
+                "--otsvg-renderer-callback-probe requires SOURCE_KIND SOURCE_VALUE FACE_INDEX X Y GLYPH_INDEX HOOKS [POINTER_PROBE]\n");
         return 2;
+    }
+    if (argc == 10 &&
+        (streq(argv[9], "null_output") || streq(argv[9], "null_file_base"))) {
+        /* The WASM export is a public ABI wrapper around the same callback
+         * flow. These pointer classes are validated before the face bytes are
+         * read; the pinned C library has no corresponding wrapper export, so
+         * retain the public Invalid_Argument contract as an explicit safety
+         * extension rather than dereferencing a fabricated pointer. */
+        printf("{");
+        print_status((FT_Error)FT_Err_Invalid_Argument);
+        printf(",\"output\":null}\n");
+        return 0;
     }
     OracleFace face;
     int opened = open_oracle_face(argv[2], argv[3], atol(argv[4]), &face);
     if (opened != 0) {
-        return opened;
+        /* `open_oracle_face` already emitted the exact face-construction
+         * error.  Keep the batch process successful so malformed public
+         * inputs remain comparable rows rather than aborting the batch. */
+        return 0;
     }
     FT_Error size_error = FT_Set_Pixel_Sizes(
         face.face,
@@ -32686,6 +32792,18 @@ static int emit_bdf_property_case(int argc, char** argv) {
         return 0;
     }
 
+    if (streq(case_id, "ftbdf.FT_Get_BDF_Property.error_null_property_name")) {
+        BDF_PropertyRec property = bdf_property_sentinel();
+        FT_Error error = FT_Get_BDF_Property(face.face, NULL, &property);
+        printf("{");
+        print_status(error);
+        printf(",\"output\":{\"error\":%d,\"property_name\":null,\"property_after\":", error);
+        print_bdf_property_after(&property);
+        printf("}}\n");
+        close_oracle_face(&face);
+        return 0;
+    }
+
     if (streq(case_id, "ftbdf.FT_Get_BDF_Property.success_bdf_string_integer_cardinal_properties")) {
         const char* names[] = {"FAMILY_NAME", "POINT_SIZE", "PIXEL_SIZE", "RESOLUTION_X"};
         printf("{");
@@ -36985,7 +37103,7 @@ static int emit_face_or_slot(int argc, char** argv) {
     } else if (streq(command, "--load-glyph-num-glyphs")) {
         glyph_index = (FT_UInt)face->num_glyphs;
         load_flags = (FT_Int32)strtol(argv[7], NULL, 10);
-    } else if (streq(command, "--load-glyph") || streq(command, "--load-svg-glyph") || streq(command, "--render-glyph-index") || streq(command, "--inspect-glyph-metrics") || streq(command, "--inspect-glyph-slot") || streq(command, "--load-glyph-outline") || streq(command, "--outline-get-bbox") || streq(command, "--outline-get-cbox") || streq(command, "--glyph-get-cbox") || streq(command, "--glyph-transform") || streq(command, "--glyph-transform-bitmap") || streq(command, "--svg-glyph-transform") || streq(command, "--glyph-to-bitmap") || streq(command, "--glyph-to-bitmap-origins") || streq(command, "--glyph-to-bitmap-render-failure") || streq(command, "--glyph-to-bitmap-invalid-outline-record") || streq(command, "--glyph-to-bitmap-malformed-outline-tags") || streq(command, "--glyph-record") || streq(command, "--get-glyph-unsupported-format") || streq(command, "--done-glyph-outline") || streq(command, "--done-glyph-bitmap") || streq(command, "--get-glyph-advance-boundaries") || streq(command, "--sbit-cache-lookup") || streq(command, "--get-subglyph-info") || streq(command, "--get-subglyph-info-null-outputs")) {
+    } else if (streq(command, "--load-glyph") || streq(command, "--load-svg-glyph") || streq(command, "--render-glyph-index") || streq(command, "--inspect-glyph-metrics") || streq(command, "--inspect-glyph-slot") || streq(command, "--load-glyph-outline") || streq(command, "--outline-get-bbox") || streq(command, "--outline-get-cbox") || streq(command, "--glyph-get-cbox") || streq(command, "--glyph-transform") || streq(command, "--glyph-transform-bitmap") || streq(command, "--svg-glyph-transform") || streq(command, "--glyph-to-bitmap") || streq(command, "--glyph-to-bitmap-origins") || streq(command, "--glyph-to-bitmap-render-failure") || streq(command, "--glyph-to-bitmap-invalid-outline-record") || streq(command, "--glyph-to-bitmap-malformed-outline-tags") || streq(command, "--glyph-outline-support") || streq(command, "--glyph-record") || streq(command, "--get-glyph-unsupported-format") || streq(command, "--done-glyph-outline") || streq(command, "--done-glyph-bitmap") || streq(command, "--get-glyph-advance-boundaries") || streq(command, "--sbit-cache-lookup") || streq(command, "--get-subglyph-info") || streq(command, "--get-subglyph-info-null-outputs")) {
         glyph_index = (FT_UInt)strtoul(argv[7], NULL, 10);
         load_flags = (FT_Int32)strtol(argv[8], NULL, 10);
     } else {
@@ -37013,6 +37131,52 @@ static int emit_face_or_slot(int argc, char** argv) {
         err = FT_Load_Char(face, char_code, load_flags);
     } else {
         err = FT_Load_Glyph(face, glyph_index, load_flags);
+    }
+    if (streq(command, "--glyph-outline-support")) {
+        FT_Glyph glyph = NULL;
+        if (!err) {
+            err = FT_Get_Glyph(face->glyph, &glyph);
+        }
+        int supported = 0;
+        if (!err && glyph && glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
+            FT_Outline* outline = &((FT_OutlineGlyph)glyph)->outline;
+            const char* probe = argv[9];
+            if (streq(probe, "render_failure_empty_outline")) {
+                supported = outline->n_points >= 0 && outline->n_contours > 0;
+            } else if (streq(probe, "stroke_parse_empty_tags")) {
+                supported = outline->n_points > 0 && outline->tags != NULL;
+            } else if (streq(probe, "record_sync_empty_contours")) {
+                supported = outline->n_contours > 0 && outline->contours != NULL;
+            } else if (streq(probe, "points_sync_empty_points")) {
+                supported = outline->n_points > 0 && outline->points != NULL;
+            } else if (streq(probe, "render_tags_invalid_kind")) {
+                long kind = argc > 10 ? strtol(argv[10], NULL, 10) : -1;
+                supported = (kind == 0 && outline->n_points > 0 && outline->tags != NULL)
+                    || (kind == 1 && outline->n_points > 1 && outline->tags != NULL)
+                    || (kind == 2 && outline->n_points > 2 && outline->tags != NULL);
+            } else if (streq(probe, "render_failure_oversized_internal_outline")
+                       || streq(probe, "svg_mutation_non_svg_glyph")) {
+                /* These are Fontdone ABI bookkeeping probes.  The pinned
+                 * oracle has no corresponding public mutation helper, so
+                 * both helper-only states are rejected. */
+                supported = 0;
+            }
+        }
+        print_status(err);
+        if (err) {
+            printf(",\"output\":null}\n");
+        } else {
+            printf(",\"output\":{\"support_probe\":\"");
+            print_json_string_content(argv[9]);
+            printf("\",\"supported\":%s}}\n", supported ? "true" : "false");
+        }
+        if (glyph) {
+            FT_Done_Glyph(glyph);
+        }
+        FT_Done_Face(face);
+        FT_Done_FreeType(library);
+        free(data);
+        return 0;
     }
     int render_error_slot_ready = !err &&
         (streq(command, "--render-glyph") || streq(command, "--render-glyph-index"));
@@ -41357,7 +41521,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 15 && streq(argv[1], "--otsvg-document-probe")) {
         return emit_otsvg_document_probe(argc, argv);
     }
-    if (argc == 9 && streq(argv[1], "--otsvg-renderer-callback-probe")) {
+    if ((argc == 9 || argc == 10) && streq(argv[1], "--otsvg-renderer-callback-probe")) {
         return emit_otsvg_renderer_callback_probe(argc, argv);
     }
     // Generic null-source handler: intercept commands with "null" in handle-level
@@ -42520,6 +42684,9 @@ static int dispatch(int argc, char** argv) {
     if (argc == 3 && streq(argv[1], "--glyph-to-bitmap-null-glyph-handle")) {
         return emit_glyph_to_bitmap_null_glyph_handle(argv[2]);
     }
+    if (argc == 3 && streq(argv[1], "--glyph-outline-support-null")) {
+        return emit_glyph_outline_support_null(argv[2]);
+    }
     if (argc == 2 && streq(argv[1], "--glyph-to-bitmap-invalid-inputs")) {
         return emit_glyph_to_bitmap_invalid_inputs();
     }
@@ -42535,6 +42702,9 @@ static int dispatch(int argc, char** argv) {
     if (argc == 6 && streq(argv[1], "--gzip-uncompress-errors")) {
         return emit_gzip_uncompress_errors(argc, argv);
     }
+    if (argc == 2 && streq(argv[1], "--gzip-stream-empty-null-base")) {
+        return emit_gzip_stream_empty_null_base();
+    }
     if (argc >= 5 && streq(argv[1], "--gzip-stream-open")) {
         return emit_gzip_stream_open(argc, argv);
     }
@@ -42546,6 +42716,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 2 && streq(argv[1], "--gzip-stream-open-errors")) {
         return emit_gzip_stream_open_errors();
+    }
+    if (argc == 2 && streq(argv[1], "--lzw-stream-empty-null-base")) {
+        return emit_lzw_stream_empty_null_base();
     }
     if (argc >= 3 && streq(argv[1], "--lzw-stream-case")) {
         return emit_lzw_stream_case(argc, argv);
@@ -42604,6 +42777,9 @@ static int dispatch(int argc, char** argv) {
         return emit_face_or_slot(argc, argv);
     }
     if (argc == 11 && streq(argv[1], "--glyph-to-bitmap-render-failure")) {
+        return emit_face_or_slot(argc, argv);
+    }
+    if ((argc == 10 || argc == 11) && streq(argv[1], "--glyph-outline-support")) {
         return emit_face_or_slot(argc, argv);
     }
     if (argc == 12 && streq(argv[1], "--glyph-to-bitmap-malformed-outline-tags")) {

@@ -16,7 +16,9 @@
 //!
 //! The generated `abi.json` file is authoritative for all exports and
 //! `#[repr(C)]` field offsets. `fontdone_wasm.d.ts` describes the smaller direct
-//! Node-host subset promoted for application use.
+//! JavaScript-host subset. Browser applications should normally use the
+//! higher-level `fontdone` npm package, which owns allocation and face cleanup
+//! around that subset.
 
 mod implementation;
 

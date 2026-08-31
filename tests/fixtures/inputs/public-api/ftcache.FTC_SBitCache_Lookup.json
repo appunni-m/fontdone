@@ -8,7 +8,9 @@
     "batch240_rendered_empty_outline_descriptor",
     "optional_anode_locks_node",
     "missing_bitmap_has_null_buffer",
-    "missing_bitmap_without_sbits_only_caches_unavailable_sbit"
+    "missing_bitmap_without_sbits_only_caches_unavailable_sbit",
+    "mcp_no_scale_outline_sentinel_cff_batch",
+    "mcp_no_scale_outline_sentinel_truetype_batch"
   ],
   "cases": [
     {
@@ -899,6 +901,108 @@
             "sbit.buffer_bytes"
           ]
         }
+      }
+    },
+    {
+      "case_id": "ftcache.FTC_SBitCache_Lookup.mcp_no_scale_outline_sentinel_cff_batch",
+      "subject": "ftcache.FTC_SBitCache_Lookup",
+      "case": "mcp_no_scale_outline_sentinel_cff_batch",
+      "operation": "ftcache.sbit_cache_lookup",
+      "schema": "cache_sbit_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"batch269-sbit-no-scale-outline-sentinel-g1-001","assets":{"font":{"kind":"file","role":"extreme_coordinate_cff_font","path":"input/fonts/cff/pure-cff-cubic-peak-shifts.otf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:batch269-peak-y-max","width":20,"height":20,"flags":["FT_LOAD_NO_SCALE","FT_LOAD_RENDER"]},"anode_output":"nonnull","glyph_index":1},"coverage":["batch269:sbit:no-scale-outline-sentinel:g1"]},
+          {"id":"batch269-sbit-no-scale-outline-sentinel-g2-002","assets":{"font":{"kind":"file","role":"extreme_coordinate_cff_font","path":"input/fonts/cff/pure-cff-cubic-peak-shifts.otf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:batch269-peak-y-min","width":20,"height":20,"flags":["FT_LOAD_NO_SCALE","FT_LOAD_RENDER"]},"anode_output":"nonnull","glyph_index":2},"coverage":["batch269:sbit:no-scale-outline-sentinel:g2"]},
+          {"id":"batch269-sbit-no-scale-outline-sentinel-g3-003","assets":{"font":{"kind":"file","role":"extreme_coordinate_cff_font","path":"input/fonts/cff/pure-cff-cubic-peak-shifts.otf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:batch269-peak-x-max","width":20,"height":20,"flags":["FT_LOAD_NO_SCALE","FT_LOAD_RENDER"]},"anode_output":"nonnull","glyph_index":3},"coverage":["batch269:sbit:no-scale-outline-sentinel:g3"]},
+          {"id":"batch269-sbit-no-scale-outline-sentinel-g4-004","assets":{"font":{"kind":"file","role":"extreme_coordinate_cff_font","path":"input/fonts/cff/pure-cff-cubic-peak-shifts.otf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:batch269-peak-x-min","width":20,"height":20,"flags":["FT_LOAD_NO_SCALE","FT_LOAD_RENDER"]},"anode_output":"nonnull","glyph_index":4},"coverage":["batch269:sbit:no-scale-outline-sentinel:g4"]},
+          {"id":"batch269-sbit-no-scale-outline-sentinel-g5-005","assets":{"font":{"kind":"file","role":"extreme_coordinate_cff_font","path":"input/fonts/cff/pure-cff-cubic-peak-shifts.otf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:batch269-peak-xy-max","width":20,"height":20,"flags":["FT_LOAD_NO_SCALE","FT_LOAD_RENDER"]},"anode_output":"nonnull","glyph_index":5},"coverage":["batch269:sbit:no-scale-outline-sentinel:g5"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcache",
+        "area:sbit-cache",
+        "state:no-scale-outline-unavailable-sbit-cff"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "sbit": "descriptor_with_unavailable_sentinel",
+          "buffer": "null"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "sbit.width",
+            "sbit.height",
+            "sbit.left",
+            "sbit.top",
+            "sbit.format",
+            "sbit.max_grays",
+            "sbit.pitch",
+            "sbit.xadvance",
+            "sbit.yadvance",
+            "sbit.buffer_null",
+            "sbit.buffer_bytes"
+          ]
+        },
+        "fixture_requirements": [
+          "The project-authored pure-cff-cubic-peak-shifts.otf remains a valid CFF font whose glyphs 1 through 5 load as outlines under FT_LOAD_NO_SCALE; pinned ftcbasic.c adds FT_LOAD_RENDER, FT_Load_Glyph clears it for NO_SCALE, and ftcsbits.c records the successful unavailable-SBit sentinel without a second render."
+        ]
+      }
+    },
+    {
+      "case_id": "ftcache.FTC_SBitCache_Lookup.mcp_no_scale_outline_sentinel_truetype_batch",
+      "subject": "ftcache.FTC_SBitCache_Lookup",
+      "case": "mcp_no_scale_outline_sentinel_truetype_batch",
+      "operation": "ftcache.sbit_cache_lookup",
+      "schema": "cache_sbit_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {"id":"batch270-sbit-no-scale-outline-sentinel-g36-001","assets":{"font":{"kind":"file","role":"ordinary_outline_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:batch270-dejavu-g36","width":20,"height":20,"flags":["FT_LOAD_NO_SCALE","FT_LOAD_RENDER"]},"anode_output":"nonnull","glyph_index":36},"coverage":["batch270:sbit:no-scale-outline-sentinel:g36"]},
+          {"id":"batch270-sbit-no-scale-outline-sentinel-g68-002","assets":{"font":{"kind":"file","role":"ordinary_outline_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:batch270-dejavu-g68","width":20,"height":20,"flags":["FT_LOAD_NO_SCALE","FT_LOAD_RENDER"]},"anode_output":"nonnull","glyph_index":68},"coverage":["batch270:sbit:no-scale-outline-sentinel:g68"]},
+          {"id":"batch270-sbit-no-scale-outline-sentinel-g1-003","assets":{"font":{"kind":"file","role":"ordinary_outline_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:batch270-dejavu-g1","width":20,"height":20,"flags":["FT_LOAD_NO_SCALE","FT_LOAD_RENDER"]},"anode_output":"nonnull","glyph_index":1},"coverage":["batch270:sbit:no-scale-outline-sentinel:g1"]},
+          {"id":"batch270-sbit-no-scale-outline-sentinel-g43-004","assets":{"font":{"kind":"file","role":"ordinary_outline_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:batch270-dejavu-g43","width":20,"height":20,"flags":["FT_LOAD_NO_SCALE","FT_LOAD_RENDER"]},"anode_output":"nonnull","glyph_index":43},"coverage":["batch270:sbit:no-scale-outline-sentinel:g43"]},
+          {"id":"batch270-sbit-no-scale-outline-sentinel-g130-005","assets":{"font":{"kind":"file","role":"ordinary_outline_font","path":"input/fonts/DejaVuSans.ttf"}},"params":{"runtime_route":"actual_ftc_manager_sbit_cache","cache":"live_sbit_cache","image_type":{"face_id":"stable_pointer:batch270-dejavu-g130","width":20,"height":20,"flags":["FT_LOAD_NO_SCALE","FT_LOAD_RENDER"]},"anode_output":"nonnull","glyph_index":130},"coverage":["batch270:sbit:no-scale-outline-sentinel:g130"]}
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftcache",
+        "area:sbit-cache",
+        "state:no-scale-outline-unavailable-sbit-truetype"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "sbit": "descriptor_with_unavailable_sentinel",
+          "buffer": "null"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "sbit.width",
+            "sbit.height",
+            "sbit.left",
+            "sbit.top",
+            "sbit.format",
+            "sbit.max_grays",
+            "sbit.pitch",
+            "sbit.xadvance",
+            "sbit.yadvance",
+            "sbit.buffer_null",
+            "sbit.buffer_bytes"
+          ]
+        },
+        "fixture_requirements": [
+          "DejaVuSans.ttf remains a valid scalable outline font whose selected glyphs load as outlines under FT_LOAD_NO_SCALE; pinned ftcbasic.c adds FT_LOAD_RENDER, FT_Load_Glyph clears it for NO_SCALE, and ftcsbits.c records the successful unavailable-SBit sentinel without a second render."
+        ]
       }
     }
   ]

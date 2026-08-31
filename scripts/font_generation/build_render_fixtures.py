@@ -335,6 +335,75 @@ def sbit_negative_bearing_controls() -> None:
     builder.save(OUT_DIR / "sbit-negative-bearing-controls.ttf")
 
 
+def large_composite_point_limit() -> None:
+    """Build a malformed composite whose flattened outline exceeds 65535 points."""
+    component_point_count = 2001
+    component_count = 40
+
+    base_pen = TTGlyphPen(None)
+    base_pen.moveTo((0, 0))
+    for index in range(1, component_point_count):
+        base_pen.lineTo((index % 1024, (index // 1024) % 1024))
+    base_pen.closePath()
+    base = base_pen.glyph()
+    assert len(base.coordinates) == component_point_count
+
+    composite_pen = TTGlyphPen({"point_limit_base": None})
+    for _ in range(component_count):
+        composite_pen.addComponent("point_limit_base", (1, 0, 0, 1, 0, 0))
+
+    glyphs = {
+        ".notdef": empty_glyph(),
+        "point_limit_base": base,
+        "point_limit_composite": composite_pen.glyph(),
+    }
+    metrics = {name: (1024, 0) for name in glyphs}
+
+    builder = FontBuilder(UNITS_PER_EM, isTTF=True)
+    builder.setupGlyphOrder(list(glyphs))
+    builder.setupCharacterMap({0xE200: "point_limit_composite"})
+    builder.setupGlyf(glyphs)
+    builder.setupHorizontalMetrics(metrics)
+    builder.setupHorizontalHeader(ascent=1024, descent=0)
+    builder.setupNameTable(
+        {
+            "familyName": "Large Composite Point Limit",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Large Composite Point Limit Regular",
+            "fullName": "Large Composite Point Limit Regular",
+            "psName": "LargeCompositePointLimit-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    builder.setupOS2(
+        sTypoAscender=1024,
+        sTypoDescender=0,
+        usWinAscent=1024,
+        usWinDescent=0,
+    )
+    builder.setupPost()
+    builder.setupMaxp()
+
+    # This is intentionally an underdeclared composite: the actual flattened
+    # outline has 40 * 2001 = 80,040 points, while the SFNT maxp field stays at
+    # its representable boundary.  FreeType validates the accumulated loader
+    # state rather than trusting this metadata and returns Array_Too_Large.
+    maxp = builder.font["maxp"]
+    maxp.maxCompositePoints = 0xFFFF
+    maxp.maxCompositeContours = 0xFFFF
+    maxp.maxComponentElements = component_count
+    maxp.maxComponentDepth = 1
+
+    head = builder.font["head"]
+    head.created = 0
+    head.modified = 0
+    builder.font.recalcBBoxes = False
+    builder.font.recalcTimestamp = False
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    builder.save(OUT_DIR / "large-composite-point-limit.ttf")
+
+
 def build_render_coverage_font(name: str, notdef_glyph=None, ascender: int = 256) -> None:
     glyphs = {
         ".notdef": notdef_glyph or empty_glyph(),
@@ -463,6 +532,7 @@ def build_render_fpgm_no_cvt() -> None:
 
 def main() -> None:
     sbit_negative_bearing_controls()
+    large_composite_point_limit()
     build_render_coverage()
     build_render_prep_only()
     build_render_fpgm_no_cvt()

@@ -2,6 +2,9 @@ target/
 /freetype/
 /fontdone-c-abi/Cargo.lock
 /fontdone-wasm/Cargo.lock
+/fontdone-wasm/npm/abi.json
+/fontdone-wasm/npm/fontdone.wasm
+/fontdone-wasm/npm/*.tgz
 /tests/fixtures/*.json
 /tests/fixtures/outputs/
 *.profraw

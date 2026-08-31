@@ -860,6 +860,10 @@ impl Face {
                     lo.bottom,
                     lo.top,
                     mode,
+                    {
+                        let metrics = font.size_metrics();
+                        Some((metrics.x_ppem, metrics.y_ppem))
+                    },
                     &mut scratch,
                 )?;
                 drop(scratch);
@@ -887,7 +891,9 @@ impl Face {
     ) -> Result<GlyphSlot, FontError> {
         let load_only_flags = load_flags.without(LoadFlags::RENDER);
         let font = self.render_font(load_only_flags)?;
-        Self::load_glyph_from_font(&font, glyph_index, load_only_flags, None)?.render(mode)
+        let metrics = font.size_metrics();
+        Self::load_glyph_from_font(&font, glyph_index, load_only_flags, None)?
+            .render_with_ppem(mode, Some((metrics.x_ppem, metrics.y_ppem)))
     }
 
     fn render_font(&self, flags: LoadFlags) -> Result<Font, FontError> {
@@ -1185,7 +1191,15 @@ impl GlyphSlot {
         self.bitmap_present
     }
 
-    pub(crate) fn render(mut self, mode: RenderMode) -> Result<Self, FontError> {
+    pub(crate) fn render(self, mode: RenderMode) -> Result<Self, FontError> {
+        self.render_with_ppem(mode, None)
+    }
+
+    pub(crate) fn render_with_ppem(
+        mut self,
+        mode: RenderMode,
+        ppem: Option<(u16, u16)>,
+    ) -> Result<Self, FontError> {
         if self.format == GlyphFormat::Bitmap {
             if mode == RenderMode::Sdf {
                 let Some(bitmap) = self.bitmap.take() else {
@@ -1217,6 +1231,7 @@ impl GlyphSlot {
             loaded.bottom,
             loaded.top,
             mode,
+            ppem,
             &mut scratch,
         )?;
         self.set_rendered_bitmap(bitmap);

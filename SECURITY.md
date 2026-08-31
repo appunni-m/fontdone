@@ -31,4 +31,4 @@ operations. No runtime package may call FreeType C. Do not bypass those
 boundaries as a fix.
 
 Only the current prerelease is supported. Security fixes are released as a new
-synchronized version of all three packages.
+synchronized version of all three Cargo crates and the browser npm package.

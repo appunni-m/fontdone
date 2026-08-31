@@ -3703,6 +3703,218 @@ def build_cjk_tiny_stem() -> None:
     font.save(OUT_DIR / "cjk-tiny-stem.ttf")
 
 
+def build_cjk_smooth_width_clamps() -> None:
+    """Build CJK glyphs with short horizontal stems for smooth-width probes."""
+    glyph_order = [
+        ".notdef",
+        "space",
+        "hani_standard",
+        "hani_height_08",
+        "hani_height_16",
+        "hani_height_31",
+        "hani_height_32",
+        "hani_height_40",
+    ]
+    glyphs = {
+        ".notdef": rectangle_glyph(80, -120, 520, 720),
+        "space": empty_glyph(),
+        "hani_standard": rectangle_glyph(100, 0, 200, 560),
+        **{
+            f"hani_height_{height:02d}": rectangle_glyph(100, 100, 200, 100 + height)
+            for height in (8, 16, 31, 32, 40)
+        },
+    }
+    metrics = {
+        ".notdef": (600, 80),
+        "space": (300, 0),
+        "hani_standard": (700, 100),
+        **{f"hani_height_{height:02d}": (700, 100) for height in (8, 16, 31, 32, 40)},
+    }
+    cmap = {
+        0x20: "space",
+        0x7530: "hani_standard",
+        **{
+            0x4E10 + index: f"hani_height_{height:02d}"
+            for index, height in enumerate((8, 16, 31, 32, 40))
+        },
+    }
+
+    font = FontBuilder(UNITS_PER_EM, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=820, descent=-220)
+    font.setupNameTable(
+        {
+            "familyName": "Autohint CJK Smooth Width Clamps",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Autohint CJK Smooth Width Clamps Regular",
+            "fullName": "Autohint CJK Smooth Width Clamps Regular",
+            "psName": "AutohintCJKSmoothWidthClamps-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=820,
+        sTypoDescender=-220,
+        usWinAscent=820,
+        usWinDescent=220,
+    )
+    font.setupPost()
+
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "cjk-smooth-width-clamps.ttf")
+
+
+def build_cjk_smooth_width_quantization() -> None:
+    """Build CJK glyphs for each smooth stem-width quantization interval."""
+    heights = (54, 58, 67, 86, 92)
+    glyph_order = [
+        ".notdef",
+        "space",
+        "hani_standard",
+        *(f"hani_height_{height:02d}" for height in heights),
+    ]
+    glyphs = {
+        ".notdef": rectangle_glyph(80, -120, 520, 720),
+        "space": empty_glyph(),
+        "hani_standard": rectangle_glyph(100, 0, 200, 560),
+        **{
+            f"hani_height_{height:02d}": rectangle_glyph(
+                100, 100, 200, 100 + height
+            )
+            for height in heights
+        },
+    }
+    metrics = {
+        ".notdef": (600, 80),
+        "space": (300, 0),
+        "hani_standard": (700, 100),
+        **{f"hani_height_{height:02d}": (700, 100) for height in heights},
+    }
+    cmap = {
+        0x20: "space",
+        0x7530: "hani_standard",
+        **{
+            0x4E20 + index: f"hani_height_{height:02d}"
+            for index, height in enumerate(heights)
+        },
+    }
+
+    font = FontBuilder(UNITS_PER_EM, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=820, descent=-220)
+    font.setupNameTable(
+        {
+            "familyName": "Autohint CJK Smooth Width Quantization",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Autohint CJK Smooth Width Quantization Regular",
+            "fullName": "Autohint CJK Smooth Width Quantization Regular",
+            "psName": "AutohintCJKSmoothWidthQuantization-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=820,
+        sTypoDescender=-220,
+        usWinAscent=820,
+        usWinDescent=220,
+    )
+    font.setupPost()
+
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "cjk-smooth-width-quantization.ttf")
+
+
+def build_cjk_mode_guards() -> None:
+    """Build CJK outlines for empty-standard and strong-mode width guards."""
+    glyph_order = [
+        ".notdef",
+        "space",
+        "hani_empty_standard",
+        "hani_normal_probe",
+        "hani_vertical_short",
+        "hani_vertical_tall",
+        "hani_horizontal_short",
+        "hani_horizontal_tall",
+    ]
+    glyphs = {
+        ".notdef": rectangle_glyph(80, -120, 520, 720),
+        "space": empty_glyph(),
+        "hani_empty_standard": empty_glyph(),
+        "hani_normal_probe": rectangle_glyph(100, 100, 200, 200),
+        "hani_vertical_short": rectangle_glyph(100, 100, 200, 140),
+        "hani_vertical_tall": rectangle_glyph(100, 100, 200, 200),
+        "hani_horizontal_short": rectangle_glyph(100, 100, 140, 300),
+        "hani_horizontal_tall": rectangle_glyph(100, 100, 200, 300),
+    }
+    metrics = {
+        ".notdef": (600, 80),
+        "space": (300, 0),
+        "hani_empty_standard": (700, 100),
+        "hani_normal_probe": (700, 100),
+        "hani_vertical_short": (700, 100),
+        "hani_vertical_tall": (700, 100),
+        "hani_horizontal_short": (700, 100),
+        "hani_horizontal_tall": (700, 100),
+    }
+    cmap = {
+        0x20: "space",
+        0x7530: "hani_empty_standard",
+        0x4E30: "hani_normal_probe",
+        0x4E31: "hani_vertical_short",
+        0x4E32: "hani_vertical_tall",
+        0x4E33: "hani_horizontal_short",
+        0x4E34: "hani_horizontal_tall",
+    }
+
+    font = FontBuilder(UNITS_PER_EM, isTTF=True)
+    font.setupGlyphOrder(glyph_order)
+    font.setupCharacterMap(cmap)
+    font.setupGlyf(glyphs)
+    font.setupHorizontalMetrics(metrics)
+    font.setupHorizontalHeader(ascent=820, descent=-220)
+    font.setupNameTable(
+        {
+            "familyName": "Autohint CJK Mode Guards",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "Autohint CJK Mode Guards Regular",
+            "fullName": "Autohint CJK Mode Guards Regular",
+            "psName": "AutohintCJKModeGuards-Regular",
+            "version": "Version 1.0",
+        }
+    )
+    font.setupOS2(
+        sTypoAscender=820,
+        sTypoDescender=-220,
+        usWinAscent=820,
+        usWinDescent=220,
+    )
+    font.setupPost()
+
+    head = font.font["head"]
+    head.created = 0
+    head.modified = 0
+    font.font.recalcTimestamp = False
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_DIR / "cjk-mode-guards.ttf")
+
+
 def build_cjk_snap_below_standard() -> None:
     glyph_order = [
         ".notdef",
@@ -4716,6 +4928,9 @@ def main() -> None:
     build_latin_blue_edge_cases()
     build_cjk_malformed_blue()
     build_cjk_tiny_stem()
+    build_cjk_smooth_width_clamps()
+    build_cjk_smooth_width_quantization()
+    build_cjk_mode_guards()
     build_cjk_snap_below_standard()
     build_cjk_multi_width_snap()
     build_cjk_quantized_widths()

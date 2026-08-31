@@ -89,18 +89,31 @@ ALL_LANES_COVERAGE_IGNORE_REGEX := /tests/
 # `--no-report` retains old instrumented workspace artifacts.  Reusing those
 # artifacts is fast only while the compiler inputs and coverage configuration
 # are unchanged; otherwise llvm-cov can merge coverage maps from two feature/
-# cfg builds of the same source file.  Use the newest commit touching compiler
-# inputs instead of the current HEAD, so fixture/docs-only commits do not
-# discard a reusable instrumented binary.  A dirty compiler-input tree still
-# forces a clean rebuild. The Makefile itself is excluded because coverage
-# compiler settings are recorded below and preparation/lane orchestration does
-# not change the compiled coverage map. The integration harness is also
-# excluded: it is ignored from the report denominator, and harness-only edits
-# rebuild the test executable while reusing unchanged instrumented runtime
-# libraries and coverage maps.
-COVERAGE_SOURCE_STATE := $(shell git log -1 --format=%H -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm 2>/dev/null || printf unknown)-$(shell if test -n "$(shell git status --porcelain --untracked-files=all -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm 2>/dev/null)"; then printf dirty; else printf clean; fi)
+# cfg builds of the same source file.  Hash the exact tracked, staged, and
+# untracked compiler inputs instead of recording only `dirty`: two different
+# dirty trees must never reuse one instrumented binary or its source mapping.
+# The integration harness is excluded from this key because it is ignored from
+# the report denominator; Cargo still rebuilds the test executable when its
+# source changes while the instrumented runtime maps remain reusable.
+COVERAGE_SOURCE_STATE := $(shell \
+	{ \
+		git rev-parse HEAD 2>/dev/null || printf unknown; \
+		git diff --no-ext-diff --binary -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm 2>/dev/null; \
+		git diff --no-ext-diff --cached --binary -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm 2>/dev/null; \
+		git ls-files --others --exclude-standard -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm 2>/dev/null | \
+		while IFS= read -r file; do shasum -a 256 "$$file"; done; \
+	} | shasum -a 256 | cut -d ' ' -f1 \
+)
 COVERAGE_BUILD_STATE := $(COVERAGE_SOURCE_STATE)|toolchain=$(COVERAGE_TOOLCHAIN)|opt=$(COVERAGE_TEST_OPT_LEVEL)|debug=$(COVERAGE_TEST_DEBUG)|flags=$(COVERAGE_LLVM_COV_FLAGS)
-COVERAGE_PREPARATION_SOURCE_STATE := $(shell git log -1 --format=%H -- Makefile Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/manifest.yaml tests/data tests/fixtures scripts 2>/dev/null || printf unknown)-$(shell if test -n "$(shell git status --porcelain --untracked-files=all -- Makefile Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/manifest.yaml tests/data tests/fixtures scripts 2>/dev/null)"; then printf dirty; else printf clean; fi)
+COVERAGE_PREPARATION_SOURCE_STATE := $(shell \
+	{ \
+		git rev-parse HEAD 2>/dev/null || printf unknown; \
+		git diff --no-ext-diff --binary -- Makefile Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/manifest.yaml tests/data tests/fixtures scripts 2>/dev/null; \
+		git diff --no-ext-diff --cached --binary -- Makefile Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/manifest.yaml tests/data tests/fixtures scripts 2>/dev/null; \
+		git ls-files --others --exclude-standard -- Makefile Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/manifest.yaml tests/data tests/fixtures scripts 2>/dev/null | \
+		while IFS= read -r file; do shasum -a 256 "$$file"; done; \
+	} | shasum -a 256 | cut -d ' ' -f1 \
+)
 COVERAGE_PREPARATION_STATE := $(COVERAGE_PREPARATION_SOURCE_STATE)|optional=$(COVERAGE_PREPARE_OPTIONAL_FEATURES)|abi_preflight=$(COVERAGE_ABI_PREFLIGHT)
 # Evaluate preparation inputs before the target recipe cleans stale coverage
 # artifacts. This lets the recursive make stay on its own recipe line, where
@@ -135,7 +148,7 @@ PLATFORM_SYSROOT ?=
 PLATFORM_CLANG_TARGET ?= $(PLATFORM_TARGET)
 
 .DEFAULT_GOAL := help
-.NOTPARALLEL: ci ci-fast ci-commit ci-thorough release-verify
+.NOTPARALLEL: ci ci-fast ci-commit ci-thorough release-verify release-dry-run
 
 .PHONY: help
 help:
@@ -179,6 +192,7 @@ help:
 	@printf "  make check-font-fixtures  Reject fixture generator drift\n"
 	@printf "  make check-generated      Reject generated contract drift\n"
 	@printf "  make repository-inventory Refresh the reviewed file-retention ledger\n"
+	@printf "  make npm-package-verify   Build, pack, inspect, install, and run the browser npm package\n"
 	@printf "\nDocumentation:\n"
 	@printf "  make check-docs           Validate every tracked guide and rustdoc policy\n"
 	@printf "  make doc                  Build strict workspace API documentation\n"
@@ -957,8 +971,15 @@ check-c-exports:
 test-wasm-consumer:
 	$(PYTHON) scripts/test_wasm_consumer.py
 
+.PHONY: test-npm-consumer
+test-npm-consumer:
+	$(PYTHON) scripts/test_npm_consumer.py
+
+.PHONY: npm-package-verify
+npm-package-verify: test-npm-consumer
+
 .PHONY: test-integrations
-test-integrations: test-rust-consumer test-c-consumer check-c-exports test-wasm-consumer
+test-integrations: test-rust-consumer test-c-consumer check-c-exports test-wasm-consumer test-npm-consumer
 
 .PHONY: supply-chain
 supply-chain:
@@ -993,8 +1014,8 @@ release-verify: ci-thorough c-abi-contract-complete bench-regression
 	$(MAKE) check-docs
 
 .PHONY: release-dry-run
-release-dry-run: package-verify
-	@echo "local ordered 3-package archive verification complete"
+release-dry-run: package-verify npm-package-verify
+	@echo "local ordered 3-crate and browser npm archive verification complete"
 	@echo "after the exact root version is on crates.io, run: python3 scripts/publish_release.py --dry-run"
 
 .PHONY: release
@@ -1008,6 +1029,7 @@ release: release-verify
 .PHONY: clean
 clean:
 	$(CARGO) clean
+	$(RM) fontdone-wasm/npm/fontdone.wasm fontdone-wasm/npm/abi.json
 	@if [ -d freetype/build ]; then cmake --build freetype/build --target clean; fi
 	@if [ -d tests/fixtures/outputs ]; then \
 		find tests/fixtures/outputs -mindepth 1 -delete; \

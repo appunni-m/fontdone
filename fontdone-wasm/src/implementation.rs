@@ -2509,11 +2509,26 @@ pub fn abi_outline_glyph_snapshot(glyph_handle: usize) -> Option<AbiOutlineGlyph
 }
 
 #[cfg(feature = "abi-test-support")]
-pub fn abi_support_corrupt_outline_glyph_for_render_failure(glyph_handle: usize) -> bool {
+pub fn abi_support_corrupt_outline_glyph_for_render_failure(
+    glyph_handle: usize,
+    oversized_internal_state: bool,
+) -> bool {
     let glyph = ptr::with_exposed_provenance_mut::<FontdoneWasmGlyph>(glyph_handle);
     let Some(owned) = wasm_owned_outline_glyph_from_root_mut(glyph) else {
         return false;
     };
+    if oversized_internal_state {
+        // This is an ABI bookkeeping probe, not a public glyph-construction
+        // path. Keep the oversized vector owned by the support wrapper so the
+        // checked FT_UShort conversion below can be exercised without
+        // fabricating a raw pointer or changing the public outline limit.
+        let point = owned.core.outline.points[0];
+        let tag = owned.core.outline.tags[0];
+        let oversized_len = usize::from(FT_UShort::MAX) + 1;
+        owned.core.outline.points.resize(oversized_len, point);
+        owned.core.outline.tags.resize(oversized_len, tag);
+        owned.refresh_record();
+    }
     let Ok(invalid_endpoint) = FT_UShort::try_from(owned.core.outline.points.len()) else {
         return false;
     };
@@ -3021,18 +3036,23 @@ pub extern "C" fn fontdone_wasm_stream_open_gzip(
     let Some(source_ref) = (unsafe { source.as_ref() }) else {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     };
-    if source_ref.base.is_null() {
-        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
-    }
     #[cfg(target_pointer_width = "64")]
     let source_len = source_ref.size as usize;
     #[cfg(target_pointer_width = "32")]
     let Ok(source_len) = usize::try_from(source_ref.size) else {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     };
-    // SAFETY: the WASM ABI parity fixtures pass a memory-backed source stream
-    // with `base` readable for `size` bytes.
-    let source_bytes = unsafe { slice::from_raw_parts(source_ref.base.cast_const(), source_len) };
+    if source_ref.base.is_null() && source_len != 0 {
+        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
+    }
+    // SAFETY: non-zero host sources promise `size` readable bytes. Keep the
+    // zero-length path separate because Rust slices require a non-null
+    // pointer even when their length is zero.
+    let source_bytes = if source_len == 0 {
+        &[][..]
+    } else {
+        unsafe { slice::from_raw_parts(source_ref.base.cast_const(), source_len) }
+    };
     rust_ffi::FT_Stream_OpenGzip(Some(stream_ref), Some(source_ref), Some(source_bytes))
 }
 
@@ -3173,18 +3193,23 @@ fn open_lzw_stream(
     }
     let stream_ref = unsafe { &mut *stream };
     let source_ref = unsafe { &*source };
-    if source_ref.base.is_null() {
-        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
-    }
     #[cfg(target_pointer_width = "64")]
     let source_len = source_ref.size as usize;
     #[cfg(target_pointer_width = "32")]
     let Ok(source_len) = usize::try_from(source_ref.size) else {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     };
-    // SAFETY: the host parity facade supplies a memory-backed source stream
-    // whose `base` remains readable for `size` bytes during this call.
-    let source_bytes = unsafe { slice::from_raw_parts(source_ref.base.cast_const(), source_len) };
+    if source_ref.base.is_null() && source_len != 0 {
+        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
+    }
+    // SAFETY: non-zero host sources promise `size` readable bytes. Keep the
+    // zero-length path separate because Rust slices require a non-null
+    // pointer even when their length is zero.
+    let source_bytes = if source_len == 0 {
+        &[][..]
+    } else {
+        unsafe { slice::from_raw_parts(source_ref.base.cast_const(), source_len) }
+    };
     rust_ffi::FT_Stream_OpenLZW(Some(stream_ref), Some(source_ref), Some(source_bytes))
 }
 

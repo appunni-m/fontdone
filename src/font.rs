@@ -655,19 +655,25 @@ fn parse_pcf_properties(data: &[u8], table: PcfTable) -> Result<Vec<BdfPropertyE
         return Ok(Vec::new());
     }
     let msb = format & PCF_BYTE_MASK != 0;
-    let count = pcf_u32(bytes, 4, msb)
+    let original_count = pcf_u32(bytes, 4, msb)
         .and_then(|value| usize::try_from(value).ok())
-        .filter(|count| *count <= 256)
         .ok_or_else(|| pcf_stream_operation("property count"))?;
+    let record_bytes = original_count
+        .checked_mul(9)
+        .ok_or_else(|| pcf_stream_operation("property records overflow"))?;
+    // FreeType first applies a rough table-size check against the original
+    // count, then loads at most 256 records as a defensive allocation cap.
+    // The skipped records and padding still belong to the on-disk layout, so
+    // later offsets must be based on `original_count`, not the loaded count.
+    if original_count > bytes.len() / 9 {
+        return Err(pcf_stream_operation("property count"));
+    }
+    let count = original_count.min(256);
     let records_end = 8usize
-        .checked_add(
-            count
-                .checked_mul(9)
-                .ok_or_else(|| pcf_stream_operation("property records overflow"))?,
-        )
+        .checked_add(record_bytes)
         .ok_or_else(|| pcf_stream_operation("property records overflow"))?;
     let string_size_offset = records_end
-        .checked_add((4 - count % 4) % 4)
+        .checked_add((4 - original_count % 4) % 4)
         .ok_or_else(|| pcf_stream_operation("property padding overflow"))?;
     let string_size = pcf_u32(bytes, string_size_offset, msb)
         .and_then(|value| usize::try_from(value).ok())
@@ -1279,7 +1285,8 @@ fn parse_bdf_metadata(text: &str) -> Result<BdfMetadata, FontError> {
                 charmap_mappings.push((encoding, current_glyph));
             }
         } else if line.starts_with("BBX ") && current_glyph != 0 {
-            glyph_has_bbx = parse_bdf_bbx(line).is_some();
+            let _ = parse_bdf_bbx(line);
+            glyph_has_bbx = true;
         } else if line == "ENDCHAR" {
             if glyph_has_encoding && glyph_has_bbx {
                 valid_glyph_count = valid_glyph_count.saturating_add(1);
@@ -1349,7 +1356,7 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
     }
     let metrics_msb = metrics_format & PCF_BYTE_MASK != 0;
     let compressed = metrics_format & PCF_FORMAT_MASK == PCF_COMPRESSED_METRICS;
-    let (glyph_count, metric_offset) = if compressed {
+    let (original_glyph_count, metric_offset) = if compressed {
         (
             usize::from(
                 pcf_u16(metrics, 4, metrics_msb)
@@ -1365,10 +1372,17 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
             8,
         )
     };
-    if glyph_count == 0 || glyph_count > 65_534 {
+    let metric_size = if compressed { 5 } else { 12 };
+    if original_glyph_count == 0
+        || original_glyph_count > metrics.len() / metric_size
+    {
         return Err(pcf_unknown_file_format("metric count out of range"));
     }
-    let metric_size = if compressed { 5 } else { 12 };
+    // FreeType accepts a larger declared metric array but only loads 65534
+    // entries, reserving one synthesized glyph and the 0xffff missing-glyph
+    // sentinel. The size guard above intentionally uses the original count:
+    // a short table must still be rejected before the defensive cap applies.
+    let glyph_count = original_glyph_count.min(65_534);
     let metrics_end = metric_offset
         + glyph_count
             .checked_mul(metric_size)
@@ -1430,9 +1444,10 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
         return Err(pcf_unknown_file_format("unsupported bitmaps format"));
     }
     let bitmaps_msb = bitmaps_format & PCF_BYTE_MASK != 0;
-    let bitmap_count = pcf_u32(bitmaps, 4, bitmaps_msb)
+    let original_bitmap_count = pcf_u32(bitmaps, 4, bitmaps_msb)
         .and_then(|value| usize::try_from(value).ok())
         .ok_or_else(|| pcf_unknown_file_format("bitmap count"))?;
+    let bitmap_count = original_bitmap_count.min(65_534);
     if bitmap_count != glyph_count {
         return Err(pcf_unknown_file_format("bitmap and metric counts differ"));
     }
@@ -1690,41 +1705,74 @@ fn is_bdf_probe_keyword(keyword: &str) -> bool {
     )
 }
 
-fn parse_bdf_bbx(line: &str) -> Option<(i64, i64)> {
+fn parse_bdf_bbx(line: &str) -> (i64, i64) {
     let mut parts = line.split_whitespace();
-    if parts.next()? != "BBX" {
-        return None;
-    }
+    // The callers have already selected the `BBX` record.  FreeType's
+    // `bdf_strtok_` always returns a pointer, including an empty token, so a
+    // missing or non-numeric width/height is passed to `bdf_atous_` and becomes
+    // zero rather than an Invalid_File_Format error.
+    let _ = parts.next();
     // `bdflib.c:bdf_atous_` consumes a decimal prefix and yields zero when
     // the first character is not a digit.  Preserve that permissive parser
-    // shape here, while keeping a missing token distinguishable for the
-    // malformed-field error path below.
-    let parse_unsigned_prefix = |value: Option<&str>| {
-        let value = value?;
-        let mut number = 0_i64;
-        let mut saw_digit = false;
+    // shape here, including the empty-token case.
+    let parse_unsigned_short_prefix = |value: Option<&str>| {
+        let Some(value) = value else {
+            return 0_i64;
+        };
+        let mut number = 0_u16;
         for byte in value.bytes() {
             if !byte.is_ascii_digit() {
                 break;
             }
-            saw_digit = true;
-            number = number
-                .saturating_mul(10)
-                .saturating_add(i64::from(byte - b'0'));
+            if number < (u16::MAX - 9) / 10 {
+                number = number * 10 + u16::from(byte - b'0');
+            } else {
+                number = u16::MAX;
+                break;
+            }
         }
-        saw_digit.then_some(number)
+        i64::from(number)
     };
-    let width = parse_unsigned_prefix(parts.next())?;
-    let height = parse_unsigned_prefix(parts.next())?;
-    Some((width, height))
+    let width = parse_unsigned_short_prefix(parts.next());
+    let height = parse_unsigned_short_prefix(parts.next());
+    (width, height)
 }
 
-fn bdf_bitmap_too_large(width: i64, height: i64) -> bool {
+fn bdf_size_bits_per_pixel(line: &str) -> u32 {
+    let mut parts = line.split_whitespace();
+    let _ = parts.next();
+    let _ = parts.next();
+    let _ = parts.next();
+    let _ = parts.next();
+    let raw = parts
+        .next()
+        .map(parse_bdf_unsigned_decimal_prefix)
+        .unwrap_or(0);
+    if raw > 4 {
+        8
+    } else if raw > 2 {
+        4
+    } else if raw > 1 {
+        2
+    } else {
+        1
+    }
+}
+
+fn bdf_bitmap_too_large(width: i64, height: i64, bits_per_pixel: u32) -> bool {
     if width <= 0 || height <= 0 {
         return false;
     }
-    let bytes_per_row = (width + 7) / 8;
+    let bytes_per_row = (width * i64::from(bits_per_pixel) + 7) / 8;
     bytes_per_row > 0xFFFF || bytes_per_row.saturating_mul(height) > 0xFFFF
+}
+
+fn bdf_bitmap_size(width: i64, height: i64, bits_per_pixel: u32) -> i64 {
+    if width <= 0 || height <= 0 {
+        return 0;
+    }
+    let bytes_per_row = (width * i64::from(bits_per_pixel) + 7) / 8;
+    bytes_per_row.saturating_mul(height)
 }
 
 // FreeType's BDF driver classifies these malformed inputs during
@@ -1750,16 +1798,35 @@ fn parse_bdf_constructor_error(data: &[u8]) -> Option<FontError> {
     let mut in_glyph = false;
     let mut glyph_has_encoding = false;
     let mut glyph_has_bbx = false;
+    let mut glyph_bbx_width = 0_i64;
+    let mut glyph_bbx_height = 0_i64;
+    let mut bitmap_rows_remaining = 0_usize;
+    let mut zero_bitmap_record_pending = false;
+    let mut bits_per_pixel = 1;
 
     for raw_line in text.lines() {
         let line = raw_line.trim();
         if line.is_empty() {
             continue;
         }
+        // `bdf_parse_glyphs_` switches to `bdf_parse_bitmap_` only after a
+        // nonzero bitmap allocation.  Those rows are consumed without
+        // keyword validation.  A zero-sized bitmap leaves the callback in
+        // `bdf_parse_glyphs_`, so the next data row is instead an invalid
+        // record (pinned `bdflib.c:1108-1113,1118-1120`).
+        if bitmap_rows_remaining != 0 {
+            bitmap_rows_remaining -= 1;
+            continue;
+        }
         let keyword = line.split_whitespace().next().unwrap_or("");
         match keyword {
             "FONT" => has_font = true,
-            "SIZE" => has_size = true,
+            "SIZE" => {
+                has_size = true;
+                // `bdflib.c:bdf_parse_start_` maps the optional fourth SIZE
+                // token to the only supported bitmap depths: 1, 2, 4, or 8.
+                bits_per_pixel = bdf_size_bits_per_pixel(line);
+            }
             "FONTBOUNDINGBOX" => has_font_bounding_box = true,
             "CHARS" => {
                 saw_chars = true;
@@ -1789,6 +1856,9 @@ fn parse_bdf_constructor_error(data: &[u8]) -> Option<FontError> {
                 in_glyph = true;
                 glyph_has_encoding = false;
                 glyph_has_bbx = false;
+                glyph_bbx_width = 0;
+                glyph_bbx_height = 0;
+                zero_bitmap_record_pending = false;
             }
             "ENCODING" => {
                 if !in_glyph {
@@ -1806,14 +1876,12 @@ fn parse_bdf_constructor_error(data: &[u8]) -> Option<FontError> {
                 if !glyph_has_encoding {
                     return Some(FontError::BdfMissingEncodingField);
                 }
-                let Some((width, height)) = parse_bdf_bbx(line) else {
-                    return Some(FontError::InvalidFileFormat(
-                        "malformed BDF BBX field".into(),
-                    ));
-                };
-                if bdf_bitmap_too_large(width, height) {
+                let (width, height) = parse_bdf_bbx(line);
+                if bdf_bitmap_too_large(width, height, bits_per_pixel) {
                     return Some(FontError::BdfBbxTooBig);
                 }
+                glyph_bbx_width = width;
+                glyph_bbx_height = height;
                 glyph_has_bbx = true;
             }
             "BITMAP" => {
@@ -1826,6 +1894,18 @@ fn parse_bdf_constructor_error(data: &[u8]) -> Option<FontError> {
                 if !glyph_has_bbx {
                     return Some(FontError::BdfMissingBbxField);
                 }
+                // FreeType does not enter `bdf_parse_bitmap_` for a zero
+                // allocation.  A following bitmap row consequently falls
+                // through the glyph parser's Invalid_File_Format arm; an
+                // immediate ENDCHAR remains accepted, matching the C state
+                // machine rather than imposing a format-level BBX rejection.
+                let bitmap_size =
+                    bdf_bitmap_size(glyph_bbx_width, glyph_bbx_height, bits_per_pixel);
+                bitmap_rows_remaining = usize::try_from(glyph_bbx_height)
+                    .ok()
+                    .filter(|_| bitmap_size != 0)
+                    .unwrap_or(0);
+                zero_bitmap_record_pending = bitmap_size == 0;
             }
             "ENDCHAR" => {
                 // FreeType clears the glyph-state bits on ENDCHAR without
@@ -1835,9 +1915,23 @@ fn parse_bdf_constructor_error(data: &[u8]) -> Option<FontError> {
                 in_glyph = false;
                 glyph_has_encoding = false;
                 glyph_has_bbx = false;
+                glyph_bbx_width = 0;
+                glyph_bbx_height = 0;
+                bitmap_rows_remaining = 0;
+                zero_bitmap_record_pending = false;
             }
             "ENDFONT" if in_glyph => {
                 return Some(FontError::BdfCorruptedFontGlyphs);
+            }
+            // The glyph parser accepts comments and repeated metric records
+            // even after a zero-sized BITMAP allocation was skipped.  Keep
+            // the pending state until ENDCHAR; an actual bitmap row still
+            // falls through to Invalid_File_Format just as C does.
+            "COMMENT" | "SWIDTH" | "DWIDTH" if zero_bitmap_record_pending => {}
+            _ if zero_bitmap_record_pending => {
+                return Some(FontError::InvalidFileFormat(
+                    "BDF bitmap row follows a zero-sized bitmap".into(),
+                ));
             }
             _ => {}
         }
@@ -2757,56 +2851,133 @@ fn first_u16(text: &str, key: &str) -> Option<u16> {
     u16_from_f64(value)
 }
 
-fn parse_type1_multi_master(cleartext: &[u8]) -> Option<Type1MultiMaster> {
-    let text = std::str::from_utf8(cleartext).ok()?;
-    let axes = type1_name_array(text, "BlendAxisTypes")?;
-    if axes.is_empty() || axes.len() > 4 {
-        return None;
+fn parse_type1_multi_master(cleartext: &[u8]) -> Result<Option<Type1MultiMaster>, FontError> {
+    let Ok(text) = std::str::from_utf8(cleartext) else {
+        return Ok(None);
+    };
+    // FreeType treats an absent MM dictionary as an ordinary Type 1 face.
+    // Once an array-valued MM field is present, however, its callback errors
+    // are propagated by T1_Open_Face instead of being silently discarded.
+    let Some(_) = type1_bracket_value(text, "BlendAxisTypes") else {
+        return Ok(None);
+    };
+    let Some(axes) = type1_name_array(text, "BlendAxisTypes") else {
+        return Ok(None);
+    };
+    if axes.is_empty() || axes.len() > 4 || axes.iter().any(String::is_empty) {
+        return Err(FontError::InvalidFileFormat(
+            "Type 1 MM axis count is outside the FreeType limit".into(),
+        ));
     }
-    let design_positions = type1_nested_number_array(text, "BlendDesignPositions")?;
-    let design_maps = type1_nested_number_array(text, "BlendDesignMap")?;
-    let weight_vector = type1_number_array(text, "WeightVector")?
+
+    // A missing field leaves FreeType with an incomplete blend that is
+    // discarded during T1_Open_Face cleanup.  A present but empty/malformed
+    // array reaches the callback's Invalid_File_Format guard.
+    let Some(_) = type1_bracket_value(text, "BlendDesignPositions") else {
+        return Ok(None);
+    };
+    let Some(design_positions) = type1_nested_number_array(text, "BlendDesignPositions") else {
+        return Err(FontError::InvalidFileFormat(
+            "Type 1 MM design positions are malformed".into(),
+        ));
+    };
+    let Some(first_position) = design_positions.first() else {
+        return Err(FontError::InvalidFileFormat(
+            "Type 1 MM design positions are empty".into(),
+        ));
+    };
+    if first_position.is_empty()
+        || first_position.len() > 4
+        || first_position.len() != axes.len()
+        || design_positions
+            .iter()
+            .any(|position| position.len() != first_position.len())
+    {
+        return Err(FontError::InvalidFileFormat(
+            "Type 1 MM design-position axis counts disagree".into(),
+        ));
+    }
+    let Some(_) = type1_bracket_value(text, "BlendDesignMap") else {
+        return Ok(None);
+    };
+    let Some(design_maps) = type1_nested_map_array(text, "BlendDesignMap") else {
+        return Err(FontError::InvalidFileFormat(
+            "Type 1 MM design map is malformed".into(),
+        ));
+    };
+    // The callback rejects an empty or over-limit axis map immediately;
+    // this happens before a missing later WeightVector can cause the
+    // incomplete blend to be discarded (freetype/src/type1/t1load.c:1027-1036).
+    if design_maps.is_empty()
+        || design_maps.len() > 4
+        || design_maps.iter().any(|map| map.is_empty() || map.len() > 20)
+    {
+        return Err(FontError::InvalidFileFormat(
+            "Type 1 MM design map has an invalid point count".into(),
+        ));
+    }
+    let Some(_) = type1_bracket_value(text, "WeightVector") else {
+        return Ok(None);
+    };
+    let Some(weight_vector) = type1_mm_number_array(text, "WeightVector") else {
+        return Err(FontError::InvalidFileFormat(
+            "Type 1 MM weight vector is malformed".into(),
+        ));
+    };
+    let weight_vector = weight_vector
         .into_iter()
         .map(type1_weight_to_fixed)
-        .collect::<Option<Vec<_>>>()?;
-    let num_designs = 1usize.checked_shl(u32::try_from(axes.len()).ok()?)?;
-    if design_positions.len() != num_designs
-        || weight_vector.len() != num_designs
+        .collect::<Option<Vec<_>>>()
+        .ok_or_else(|| {
+            FontError::InvalidFileFormat("Type 1 MM weight vector is malformed".into())
+        })?;
+    // The upper-bound check above makes this shift infallible under the
+    // FreeType T1_MAX_MM_AXIS contract.
+    let num_designs = 1usize << axes.len();
+    if design_positions.len() > 16
+        || weight_vector.len() > 16
+        || weight_vector.len() != design_positions.len()
         || design_maps.len() != axes.len()
         || design_positions
             .iter()
             .any(|position| position.len() != axes.len())
     {
-        return None;
+        return Err(FontError::InvalidFileFormat(
+            "Type 1 MM dictionary array lengths disagree".into(),
+        ));
+    }
+    // FreeType parses intermediate-design dictionaries, then drops the
+    // resulting blend in T1_Open_Face when the design count is not 2^axes.
+    // It consequently opens the Type 1 face as an ordinary font instead of
+    // returning Invalid_File_Format (freetype/src/type1/t1load.c:2570-2578).
+    if design_positions.len() != num_designs {
+        return Ok(None);
     }
     let axes = axes
         .into_iter()
         .zip(design_maps)
         .map(|(name, map)| {
-            if map.len() < 2 || map.len() % 2 != 0 {
-                return None;
+            if map.is_empty() || map.len() > 20 {
+                return Err(FontError::InvalidFileFormat(
+                    "Type 1 MM design map has an invalid point count".into(),
+                ));
             }
-            Some(Type1MultiMasterAxis {
+            Ok(Type1MultiMasterAxis {
                 name,
-                minimum: i32_from_f64(map[0])?,
-                maximum: i32_from_f64(map[map.len() - 2])?,
+                minimum: map[0].0,
+                maximum: map[map.len() - 1].0,
                 design_map: map
-                    .chunks_exact(2)
-                    .map(|pair| {
-                        Some(Type1DesignMapPoint {
-                            design: i32_from_f64(pair[0])?,
-                            blend: type1_weight_to_fixed(pair[1])?,
-                        })
-                    })
-                    .collect::<Option<Vec<_>>>()?,
+                    .into_iter()
+                    .map(|(design, blend)| Type1DesignMapPoint { design, blend })
+                    .collect(),
             })
         })
-        .collect::<Option<Vec<_>>>()?;
-    Some(Type1MultiMaster {
+        .collect::<Result<Vec<_>, FontError>>()?;
+    Ok(Some(Type1MultiMaster {
         axes,
         num_designs,
         default_weight_vector: weight_vector,
-    })
+    }))
 }
 
 fn type1_font_data(
@@ -2955,30 +3126,21 @@ fn type1_value_tail<'a>(text: &'a str, key: &str) -> Option<&'a str> {
 
 fn type1_bracket_value<'a>(text: &'a str, key: &str) -> Option<&'a str> {
     let tail = type1_value_tail(text, key)?;
-    let start = tail.find('[')?;
-    let mut depth = 0usize;
-    for (index, ch) in tail[start..].char_indices() {
-        match ch {
-            '[' => depth += 1,
-            ']' => {
-                depth = depth.checked_sub(1)?;
-                if depth == 0 {
-                    return Some(&tail[start..start + index + 1]);
-                }
-            }
-            _ => {}
-        }
-    }
-    None
+    let start = tail
+        .bytes()
+        .position(|byte| matches!(byte, b'[' | b'{'))?;
+    let end = type1_delimited_end(tail, start)?;
+    Some(&tail[start..end])
 }
 
 fn type1_name_array(text: &str, key: &str) -> Option<Vec<String>> {
     let value = type1_bracket_value(text, key)?;
-    value
-        .trim_matches(['[', ']'])
-        .split_whitespace()
-        .map(|item| item.strip_prefix('/').map(str::to_owned))
-        .collect::<Option<Vec<_>>>()
+    Some(
+        type1_array_elements(value)?
+            .into_iter()
+            .map(|item| item.strip_prefix('/').unwrap_or(item).to_owned())
+            .collect(),
+    )
 }
 
 fn type1_number_array(text: &str, key: &str) -> Option<Vec<f64>> {
@@ -2988,37 +3150,217 @@ fn type1_number_array(text: &str, key: &str) -> Option<Vec<f64>> {
 
 fn type1_nested_number_array(text: &str, key: &str) -> Option<Vec<Vec<f64>>> {
     let value = type1_bracket_value(text, key)?;
-    let inner = value.strip_prefix('[')?.strip_suffix(']')?;
-    let mut rows = Vec::new();
-    let mut depth = 0usize;
-    let mut row_start = None;
-    for (index, ch) in inner.char_indices() {
-        match ch {
-            '[' => {
-                if depth == 0 {
-                    row_start = Some(index);
-                }
-                depth += 1;
-            }
-            ']' => {
-                depth = depth.checked_sub(1)?;
-                if depth == 0 {
-                    let start = row_start.take()?;
-                    rows.push(parse_type1_numbers(&inner[start..=index])?);
-                }
-            }
-            _ => {}
-        }
+    let rows = type1_array_elements(value)?;
+    let mut parsed = Vec::with_capacity(rows.len());
+    for row in rows {
+        let coordinates = type1_array_elements(row)?;
+        parsed.push(
+            coordinates
+                .into_iter()
+                .map(type1_mm_fixed_as_real)
+                .collect(),
+        );
     }
-    (depth == 0 && !rows.is_empty()).then_some(rows)
+    Some(parsed)
 }
 
 fn parse_type1_numbers(value: &str) -> Option<Vec<f64>> {
-    let normalized = value.replace(['[', ']'], " ");
+    let normalized = value.replace(['[', ']', '{', '}'], " ");
     normalized
         .split_whitespace()
         .map(|item| item.parse::<f64>().ok())
         .collect()
+}
+
+fn type1_mm_number_array(text: &str, key: &str) -> Option<Vec<f64>> {
+    let value = type1_bracket_value(text, key)?;
+    Some(
+        type1_array_elements(value)?
+            .into_iter()
+            .map(type1_mm_fixed_as_real)
+            .collect(),
+    )
+}
+
+fn type1_nested_map_array(text: &str, key: &str) -> Option<Vec<Vec<(i32, i32)>>> {
+    let value = type1_bracket_value(text, key)?;
+    let axis_values = type1_array_elements(value)?;
+    let mut maps = Vec::with_capacity(axis_values.len());
+    for axis_value in axis_values {
+        let point_values = type1_array_elements(axis_value)?;
+        let mut points = Vec::with_capacity(point_values.len());
+        for point_value in point_values {
+            let operands = type1_array_elements(point_value)?;
+            let design = operands
+                .first()
+                .map_or(0, |token| type1_mm_integer_prefix(token));
+            let blend = operands
+                .get(1)
+                .map_or(0, |token| type1_mm_fixed_token(token));
+            // T1_Open_Face only consumes the first two operands of a point;
+            // extra operands are ignored by the pinned parser
+            // (freetype/src/type1/t1load.c:1058-1064).
+            points.push((design, blend));
+        }
+        maps.push(points);
+    }
+    Some(maps)
+}
+
+fn type1_delimited_end(value: &str, start: usize) -> Option<usize> {
+    let bytes = value.as_bytes();
+    let open = *bytes.get(start)?;
+    let close = match open {
+        b'[' => b']',
+        b'{' => b'}',
+        _ => return None,
+    };
+    let mut depth = 0usize;
+    for (offset, byte) in bytes[start..].iter().copied().enumerate() {
+        if byte == open {
+            depth = depth.checked_add(1)?;
+        } else if byte == close {
+            depth = depth.checked_sub(1)?;
+            if depth == 0 {
+                return Some(start + offset + 1);
+            }
+        }
+    }
+    None
+}
+
+fn type1_array_elements<'a>(value: &'a str) -> Option<Vec<&'a str>> {
+    let bytes = value.as_bytes();
+    let (open, close) = match (bytes.first().copied(), bytes.last().copied()) {
+        (Some(b'['), Some(b']')) => (b'[', b']'),
+        (Some(b'{'), Some(b'}')) => (b'{', b'}'),
+        _ => return None,
+    };
+    let inner = &value[1..value.len() - 1];
+    let mut elements = Vec::new();
+    let mut index = 0usize;
+    while index < inner.len() {
+        while index < inner.len() && inner.as_bytes()[index].is_ascii_whitespace() {
+            index += 1;
+        }
+        if index >= inner.len() {
+            break;
+        }
+        let byte = inner.as_bytes()[index];
+        if byte == open || byte == b'[' || byte == b'{' {
+            let end = type1_delimited_end(inner, index)?;
+            elements.push(&inner[index..end]);
+            index = end;
+        } else if byte == close || byte == b']' || byte == b'}' {
+            return None;
+        } else {
+            let start = index;
+            while index < inner.len()
+                && !inner.as_bytes()[index].is_ascii_whitespace()
+                && !matches!(inner.as_bytes()[index], b'[' | b']' | b'{' | b'}')
+            {
+                index += 1;
+            }
+            if start == index {
+                return None;
+            }
+            elements.push(&inner[start..index]);
+        }
+    }
+    Some(elements)
+}
+
+fn type1_mm_fixed_as_real(token: &str) -> f64 {
+    type1_mm_number_prefix(token).unwrap_or(0.0)
+}
+
+fn type1_mm_fixed_token(token: &str) -> i32 {
+    let value = type1_mm_fixed_as_real(token);
+    type1_real_to_fixed(value).unwrap_or_else(|| {
+        if value.is_sign_negative() {
+            i32::MIN
+        } else {
+            i32::MAX
+        }
+    })
+}
+
+fn type1_mm_integer_prefix(token: &str) -> i32 {
+    let bytes = token.as_bytes();
+    let mut index = 0usize;
+    let negative = match bytes.first().copied() {
+        Some(b'-') => {
+            index = 1;
+            true
+        }
+        Some(b'+') => {
+            index = 1;
+            false
+        }
+        _ => false,
+    };
+    let start = index;
+    let mut magnitude = 0i64;
+    while let Some(byte) = bytes.get(index).copied() {
+        if !byte.is_ascii_digit() {
+            break;
+        }
+        magnitude = magnitude
+            .saturating_mul(10)
+            .saturating_add(i64::from(byte - b'0'));
+        index += 1;
+    }
+    if index == start {
+        return 0;
+    }
+    let signed = if negative { -magnitude } else { magnitude };
+    signed.clamp(i64::from(i32::MIN), i64::from(i32::MAX)) as i32
+}
+
+fn type1_mm_number_prefix(token: &str) -> Option<f64> {
+    let bytes = token.as_bytes();
+    let mut index = 0usize;
+    if matches!(bytes.first().copied(), Some(b'-' | b'+')) {
+        index = 1;
+    }
+    let mut digits_before = 0usize;
+    while bytes.get(index).is_some_and(u8::is_ascii_digit) {
+        digits_before += 1;
+        index += 1;
+    }
+    let mut digits_after = 0usize;
+    if bytes.get(index) == Some(&b'.') {
+        index += 1;
+        while bytes.get(index).is_some_and(u8::is_ascii_digit) {
+            digits_after += 1;
+            index += 1;
+        }
+    }
+    if digits_before == 0 && digits_after == 0 {
+        return None;
+    }
+    if matches!(bytes.get(index), Some(b'e' | b'E')) {
+        let exponent_start = index;
+        index += 1;
+        if matches!(bytes.get(index), Some(b'-' | b'+')) {
+            index += 1;
+        }
+        let exponent_digits_start = index;
+        while bytes.get(index).is_some_and(u8::is_ascii_digit) {
+            index += 1;
+        }
+        if index == exponent_digits_start {
+            // PS_Conv_ToFixed returns zero when an exponent marker is not
+            // followed by an integer (psconv.c:273-285).
+            let _ = exponent_start;
+            return None;
+        }
+    }
+    token
+        .get(..index)?
+        .parse::<f64>()
+        .ok()
+        .filter(|value| value.is_finite())
 }
 
 fn i32_from_f64(value: f64) -> Option<i32> {
@@ -3647,6 +3989,18 @@ impl Font {
         if type1_cleartext(data).is_some() {
             return Self::type1_face(data, face_index, size_pt);
         }
+        if data.len() >= 17 && data.iter().all(|byte| *byte < b' ') {
+            // FreeType's final BDF driver probe (`bdf/bdflib.c`) skips every
+            // byte below ASCII space while looking for a line.  An all-
+            // control stream therefore reaches EOF with no `STARTFONT`
+            // line and returns Invalid_File_Format from `bdf_load_font`;
+            // `BDF_Face_Init` preserves that error for `FT_Open_Face`.
+            // Keep the length guard because earlier C driver probes use
+            // fixed-size frames and win the error race on shorter streams.
+            return Err(FontError::InvalidFileFormat(
+                "BDF stream ended before a complete line".into(),
+            ));
+        }
         match Self::truetype_face(data, face_index, size_pt) {
             Ok(face) => Ok(face),
             Err(error) if data.len() >= 118 => {
@@ -3856,7 +4210,7 @@ impl Font {
         let cleartext = type1_cleartext(data)
             .ok_or_else(|| FontError::InvalidFont("missing Type 1 clear-text dictionary".into()))?;
         let metadata = parse_type1_metadata(cleartext)?;
-        let type1_multi_master = parse_type1_multi_master(cleartext).map(Arc::new);
+        let type1_multi_master = parse_type1_multi_master(cleartext)?.map(Arc::new);
         let type1_font_info = type1_font_info_from_metadata(&metadata);
         let type1_private = parse_type1_private(data);
         let type1_encoding = parse_type1_encoding(cleartext)?;
@@ -7045,6 +7399,7 @@ impl Font {
             scaled.bbox_y_min,
             scaled.bbox_y_max,
             RenderMode::Normal,
+            Some((self.size_metrics.x_ppem, self.size_metrics.y_ppem)),
             &mut scratch,
         )?;
         drop(scratch);

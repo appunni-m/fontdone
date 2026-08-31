@@ -8,6 +8,7 @@
     "reads_malformed_lzw_streams",
     "invalid_header_error",
     "null_stream_or_source_error",
+    "error_empty_source_without_base",
     "mcp_stream_gap_matrix",
     "unsupported_build_error"
   ],
@@ -378,6 +379,64 @@
         "error": "FT_Err_Invalid_Stream_Handle",
         "source_refs": [
           "freetype/src/lzw/ftlzw.c:348-352"
+        ]
+      }
+    },
+    {
+      "case_id": "ftlzw.FT_Stream_OpenLZW.error_empty_source_without_base",
+      "subject": "ftlzw.FT_Stream_OpenLZW",
+      "case": "error_empty_source_without_base",
+      "operation": "ftlzw.stream_open_lzw",
+      "schema": "api_result",
+      "expect_error": true,
+      "abi": {
+        "header": "freetype/ftlzw.h",
+        "symbol": "FT_Stream_OpenLZW",
+        "signature": "FT_Error FT_Stream_OpenLZW(FT_Stream stream, FT_Stream source)",
+        "build_option": "FT_CONFIG_OPTION_USE_LZW"
+      },
+      "inputs": {
+        "assets": {},
+        "params": {
+          "target_stream": "sentinel",
+          "source_stream": "empty caller-owned FT_StreamRec",
+          "source_base": null,
+          "source_read": null,
+          "source_size": 0
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftlzw",
+        "area:lzw-stream",
+        "area:malformed-input",
+        "path:error"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "target_stream": "unchanged sentinel",
+          "source_record": "base null, read null, size zero"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "variant",
+            "target_before",
+            "target_after",
+            "source"
+          ]
+        },
+        "error": "FT_Err_Invalid_Stream_Operation",
+        "source_refs": [
+          "freetype/src/base/ftstream.c:55-61",
+          "freetype/src/base/ftstream.c:88-121",
+          "freetype/src/lzw/ftlzw.c:82-97"
+        ],
+        "fixture_requirements": [
+          "An empty source FT_StreamRec with base and read both null; FT_Stream_ReadAt rejects pos >= size before dereferencing base, making this malformed record safe for the pinned oracle."
         ]
       }
     },

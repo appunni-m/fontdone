@@ -34,6 +34,10 @@ jobs:
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component clippy,rustfmt
           rustup override set "$RUST_TOOLCHAIN"
           rustup target add wasm32-unknown-unknown
+      - name: Install Node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
       - name: Verify requested version
         shell: bash
         run: |
@@ -70,6 +74,7 @@ jobs:
           name: release-preflight-${{ inputs.version }}
           path: |
             target/package/*.crate
+            target/npm-package/*.tgz
             target/release-evidence/
           retention-days: 90
 
@@ -83,6 +88,11 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
+      - name: Restore verified release archives
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-preflight-${{ inputs.version }}
+          path: target
       - name: Install Rust
         run: |
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
@@ -103,4 +113,5 @@ jobs:
             --title "fontdone ${version}" \
             --notes-file target/release-evidence/release-notes.md \
             target/package/*.crate \
+            target/npm-package/*.tgz \
             target/release-evidence/SHA256SUMS

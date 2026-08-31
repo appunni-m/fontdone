@@ -9,6 +9,7 @@
     "success_read_decompressed_bytes",
     "lifecycle_close_does_not_close_source",
     "error_null_stream_or_source",
+    "error_empty_source_without_base",
     "error_invalid_or_truncated_bzip2_header",
     "disabled_build_precedes_null_validation",
     "disabled_build_precedes_header_validation",
@@ -416,6 +417,59 @@
           ]
         },
         "error": "Invalid_Stream_Handle"
+      }
+    },
+    {
+      "case_id": "ftbzip2.FT_Stream_OpenBzip2.error_empty_source_without_base",
+      "subject": "ftbzip2.FT_Stream_OpenBzip2",
+      "case": "error_empty_source_without_base",
+      "operation": "ftbzip2.stream_open_bzip2",
+      "schema": "stream_wrapper",
+      "expect_error": true,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "target_stream": "sentinel",
+          "source_stream": "empty caller-owned FT_StreamRec",
+          "source_base": null,
+          "source_read": null,
+          "source_size": 0
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftbzip2",
+        "area:bzip2-stream",
+        "area:malformed-input",
+        "path:error"
+      ],
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error",
+          "target_stream": "unchanged sentinel",
+          "source_record": "base null, read null, size zero"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "compare_error_output": true,
+          "paths": [
+            "variant",
+            "target_before",
+            "target_after",
+            "source"
+          ]
+        },
+        "error": "FT_Err_Invalid_Stream_Operation",
+        "source_refs": [
+          "freetype/src/base/ftstream.c:55-61",
+          "freetype/src/base/ftstream.c:88-121",
+          "freetype/src/bzip2/ftbzip2.c:122-140",
+          "freetype/src/bzip2/ftbzip2.c:471-496"
+        ],
+        "fixture_requirements": [
+          "An empty source FT_StreamRec with base and read both null; FT_Stream_ReadAt rejects pos >= size before dereferencing base, making this malformed record safe for the pinned oracle."
+        ]
       }
     },
     {

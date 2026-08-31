@@ -1,0 +1,67 @@
+{
+  "name": "fontdone",
+  "version": "2.14.3-alpha.1",
+  "description": "Pure-Rust font loading and rasterization for browsers through WebAssembly",
+  "type": "module",
+  "main": "./index.js",
+  "module": "./index.js",
+  "browser": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "default": "./index.js"
+    },
+    "./wasm": "./fontdone.wasm",
+    "./abi": "./abi.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "build.mjs",
+    "test.mjs",
+    "fontdone.wasm",
+    "abi.json",
+    "examples/browser.html",
+    "examples/browser.mjs",
+    "examples/node.mjs",
+    "LICENSE",
+    "FTL.TXT",
+    "NOTICE.md"
+  ],
+  "scripts": {
+    "build": "node ./build.mjs",
+    "test": "node --test ./test.mjs",
+    "verify": "npm run build && npm test",
+    "prepack": "npm run verify"
+  },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/appunni-m/fontdone.git",
+    "directory": "fontdone-wasm/npm"
+  },
+  "homepage": "https://github.com/appunni-m/fontdone/tree/main/fontdone-wasm/npm#readme",
+  "bugs": {
+    "url": "https://github.com/appunni-m/fontdone/issues"
+  },
+  "keywords": [
+    "font",
+    "freetype",
+    "rust",
+    "wasm",
+    "webassembly",
+    "browser",
+    "rasterization"
+  ],
+  "license": "FTL",
+  "publishConfig": {
+    "access": "public",
+    "tag": "next"
+  }
+}
