@@ -3171,6 +3171,48 @@ still resolves to historical commit
 commit `ef4df02dc1bd63cc566848147e1736705f31c490`, so source markers remain
 bounded evidence rather than exact current-source closure.
 
+### Batch 303: CFF fixed operands and public subroutine errors
+
+This batch exercised the complete 50-ID public
+`freetype.FT_Load_Glyph.batch220_cff_mul_and_fixed_subr_error` matrix. The
+first 25 IDs are valid CFF1 Type 2 `mul` programs across five sizes and five
+public load modes. The remaining 25 use fixed-valued operands for
+`callgsubr`, again across the same size/mode grid, to preserve the pinned
+public error route. The dimensions are intentionally distinct public calls;
+they remain in the campaign until attribution proves that a smaller witness
+set reaches the same source regions.
+
+The valid `mul` inputs target the Type 2 fixed-operand decode and arithmetic
+path. The malformed `callgsubr` inputs target the integer-only subroutine
+index conversion: pinned `popInt` records `Syntax_Error` for a fixed operand,
+the subroutine lookup propagates it, and the public glyph load maps it to
+`FT_Err_Invalid_File_Format`. The oracle references are
+`freetype/src/psaux/psintrp.c:2260-2274,979-1050,3030-3035` and
+`freetype/src/psaux/psstack.c:130-151`; the Rust paths are
+`src/tt/cff.rs:1303-1304,1705-1710`. These are source-reviewed public CFF
+inputs, including the malformed cases that the original accepts at the API
+boundary only to return its defined glyph-format error.
+
+Focused parity passed 50/50 with the normal parallel workers and no unit test
+was used. Coverage MCP run `554c046d-bc22-4813-8327-05b405aa8f99` ingested
+snapshot `1482bddb-7bc1-40b1-a949-b68dce5aa529` against explicit full baseline
+`e97404aa-fb4c-43b3-b057-49a0f79b7473`. The additive baseline union reported
+`covered_regions_delta=963` and 450 newly observed line identities; the
+conservative merged line/function/branch covered deltas remained zero. The
+selected diff separately reported 52 newly covered lines, 35 branch-state
+changes, 4,292 hit-count-only observations, and zero regressions. The
+selection increased the observed denominator by 8,853 regions, 126 lines,
+three functions, and 18 branches because it is a selected subset, not a
+replacement full snapshot.
+
+The MCP result is explicitly `measurement_scope.kind=selected_subset` with
+`complete=false` and `merge.exact=false`; its selected-union percentage is not
+a strict project score. Source and measurement metadata still resolve to
+historical commit `4c982ce98572420a07922abf120b36ccf82f9061` while this run
+executed at pushed commit `7996eae2135d5489c51027478650afbf9b00470e`, so the
+source markers remain bounded reachability evidence rather than exact closure
+of current source lines.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
