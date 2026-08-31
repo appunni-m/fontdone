@@ -1923,6 +1923,13 @@ fn parse_bdf_constructor_error(data: &[u8]) -> Option<FontError> {
             "ENDFONT" if in_glyph => {
                 return Some(FontError::BdfCorruptedFontGlyphs);
             }
+            "ENDFONT" => {
+                // `bdf_parse_glyphs_` switches to the no-op
+                // `bdf_parse_end_` callback after a complete ENDFONT record.
+                // FreeType therefore ignores every later line, including
+                // malformed-looking records that are outside the BDF face.
+                break;
+            }
             // The glyph parser accepts comments and repeated metric records
             // even after a zero-sized BITMAP allocation was skipped.  Keep
             // the pending state until ENDCHAR; an actual bitmap row still

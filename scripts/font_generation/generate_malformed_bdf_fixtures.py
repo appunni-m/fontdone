@@ -161,6 +161,13 @@ ENDFONT
 '''
 
 
+def trailing_after_endfont_fixture() -> str:
+    # FreeType switches to its no-op end parser at ENDFONT and ignores later
+    # records.  The Rust metadata pass still scans the complete public byte
+    # stream, so this trailing BBX reaches its current_glyph == 0 branch.
+    return VALID_PREFIX + VALID_GLYPH + "BBX 1 1 0 0\n"
+
+
 def main() -> None:
     malformed_size_variants = [
         "SIZE 12tail 75 75",
@@ -304,6 +311,10 @@ F8
 ENDCHAR
 ENDFONT
 """,
+    )
+    write_fixture(
+        "input/fonts/bdf/trailing-bbx-after-endfont.bdf",
+        trailing_after_endfont_fixture(),
     )
     write_fixture(
         "input/fonts/bdf/properties-duplicate-and-empty.bdf",
