@@ -3252,6 +3252,57 @@ used pushed commit `5597837d5f25dbc5eb1264bdfb01042246c3eee2`, so source
 markers remain bounded reachability evidence rather than exact closure of
 current source lines.
 
+### Batch 305: absent OS/2 table states and Type 1 MM parser boundaries
+
+This batch used 50 concrete IDs added after the retained full baseline: all
+30 variants of `tttables.FT_SFNT_OS2.os2_absent_query_batch242` and the first
+20 variants of `freetype.FT_New_Memory_Face.batch280_type1_mm_parser_permissiveness`.
+The OS/2 rows cover no-OS/2 SFNTs plus loadable BDF, PCF, and WinFNT faces;
+the Type 1 rows cover eight malformed callback/cardinality errors and twelve
+accepted-but-incomplete or permissively converted dictionaries.
+
+The OS/2 inputs are loadable public fonts chosen to make the table service
+return its defined absence result. Pinned FreeType returns `NULL` from
+`FT_Get_Sfnt_Table` for non-SFNT faces and for an SFNT whose parsed OS/2
+version is `0xFFFF`; the public helper and WASM facade preserve that as
+`table_present=false`. The source contract is
+`freetype/src/base/ftobjs.c:4357-4372`,
+`freetype/src/sfnt/sfdriver.c:131-133`, and
+`fontdone-wasm/src/implementation.rs:9151-9165`. These cases exercise the
+original format distinction and do not turn a missing optional table into an
+invented success.
+
+The Type 1 MM inputs target `T1_Open_Face` and its public dictionary callbacks.
+Pinned FreeType rejects empty axis/design/map/weight arrays and mismatched
+cardinalities with `FT_Err_Invalid_File_Format`, but accepts several missing
+or scalar fields by discarding the blend, coercing nonnumeric values to zero,
+or ignoring trailing map operands. The maintained rows therefore preserve
+both the error and permissive sides of the original behavior. The reviewed
+paths are `freetype/src/type1/t1load.c:764-1165`,
+`freetype/src/psaux/psobjs.c:570-744`, and
+`freetype/src/psaux/psconv.c:195-353`; the Rust parser is
+`src/font.rs:2854-2980`.
+
+Focused parity passed 50/50 with the normal parallel workers and no unit test
+was used. Coverage MCP run `68f62e1a-a6a5-4b52-998d-e1d6663b45c2` ingested
+snapshot `4af4ab30-2d53-46b2-aa9e-36cbc6d212dc` against explicit full baseline
+`e97404aa-fb4c-43b3-b057-49a0f79b7473`. The additive baseline union reported
+`covered_regions_delta=951` and 386 newly observed line identities; the
+conservative merged line/function/branch covered deltas remained zero. The
+selected diff separately reported 47 newly covered lines, 34 branch-state
+changes, 3,715 hit-count-only observations, and zero regressions. The
+observed denominator increased by 8,853 regions, 126 lines, three functions,
+and 18 branches because this was a selected subset rather than a replacement
+full snapshot.
+
+The MCP result is explicitly `measurement_scope.kind=selected_subset` with
+`complete=false` and `merge.exact=false`; its selected-union percentage is not
+a strict project score. Source and measurement metadata still resolve to
+historical commit `4c982ce98572420a07922abf120b36ccf82f9061` while execution
+used pushed commit `8945252d26a0cef30a87a29ffea967bc18c4c3e5`, so source
+markers remain bounded reachability evidence rather than exact closure of
+current source lines.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
