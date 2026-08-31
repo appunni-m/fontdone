@@ -3303,6 +3303,56 @@ used pushed commit `8945252d26a0cef30a87a29ffea967bc18c4c3e5`, so source
 markers remain bounded reachability evidence rather than exact closure of
 current source lines.
 
+### Batch 306: CJK width modes, composite limits, and remaining malformed face inputs
+
+This batch exercised 50 concrete IDs added after the retained full baseline:
+the new composite-point-limit error and all 30 CJK width/mode variants under
+`freetype.FT_Load_Glyph`, the five remaining Type 1 MM permissiveness cases,
+the five malformed Type 1 MM dictionary errors, the two newly added PCF
+property/metrics-count cases, and seven newly added malformed BDF face-open
+variants. No ID from the post-baseline Batch 300, 301, or 305 selections was
+reused.
+
+The CJK inputs are valid public glyph loads that vary only stem geometry,
+target mode, and ppem. They target the pinned autofitter's smooth-width
+thresholds and strong-snap mode decisions in
+`freetype/src/autofit/afcjk.c:1439-1604`, while the composite witness is a
+deliberately malformed but public font whose glyph exceeds FreeType's
+cumulative outline-point limit. Pinned FreeType rejects that glyph with
+`FT_Err_Array_Too_Large` before copying the overflowing component, as checked
+against `freetype/src/base/ftgloadr.c:222-291` and
+`freetype/src/truetype/ttgload.c:1800-1845`.
+
+The remaining face-open cases preserve the original parser boundaries. Pinned
+Type 1 MM rejects empty or mismatched callback arrays but accepts incomplete
+blend dictionaries by discarding the blend; the PCF cases exercise bounded
+property/metrics-count handling; and the BDF variants remain loadable while
+testing the documented malformed metadata. The reviewed Rust routes are
+`src/autohint/cjk.rs`, `src/tt/glyf.rs:540-625`, and `src/font.rs:2854-2980`.
+These cases use malformed bytes only where the pinned public loader has a
+defined success or error result; no unsafe out-of-bounds oracle input was
+introduced.
+
+Focused parity passed 50/50 with the normal parallel workers and no unit test
+was used. Coverage MCP run `b2fcd1bd-6129-4cee-a429-3295130f1c77` ingested
+snapshot `3f8e1a26-2cef-445b-907d-55af8f64c33e` against explicit full baseline
+`e97404aa-fb4c-43b3-b057-49a0f79b7473`. The additive baseline union reported
+`covered_regions_delta=984` and 466 newly observed line identities; the
+conservative merged line/function/branch covered deltas remained zero. The
+selected diff separately reported 54 newly covered lines, 40 branch-state
+changes, 5,796 hit-count-only observations, and zero regressions. The
+observed denominator increased by 8,853 regions, 126 lines, three functions,
+and 18 branches because this was a selected subset rather than a replacement
+full snapshot.
+
+The MCP result is explicitly `measurement_scope.kind=selected_subset` with
+`complete=false` and `merge.exact=false`; its selected-union percentage is not
+a strict project score. Source and measurement metadata still resolve to
+historical commit `4c982ce98572420a07922abf120b36ccf82f9061` while execution
+used pushed commit `65249cbd14d09611dee1e5b7821950e41a12f2b0`, so source
+markers remain bounded reachability evidence rather than exact closure of
+current source lines.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
