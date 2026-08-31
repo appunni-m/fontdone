@@ -3566,7 +3566,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,230 tracked paths and no symlinks.
+The canonical input tree currently contains 1,231 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -4486,6 +4486,18 @@ replacement full-snapshot percentage. The MCP source metadata still identifies
 the older baseline commit; source interpretation is anchored to this local
 checkout.
 
+On 2026-09-01 the complete all-lane snapshot was rerun at pushed `main`
+commit `7d09933ad37b7f817cd8c42a0b0fcd4c62a99351` through Coverage MCP run
+`e61c4286-2693-4729-bfee-4fd2673fa37d`. The process passed all 6,577 runnable
+runtime comparisons with exit code 0 and regenerated
+`target/coverage/unified-runtime-all-lanes.json`. Coverage MCP marked the
+result stale and created no duplicate snapshot, so the already retained
+complete snapshot `0b9d9797-3d18-4434-ac14-694ed9739a62` remains authoritative.
+Its complete denominator remains 90,150/93,718 regions
+(96.192834%), 65,384/67,428 lines (96.968618%), 12,080/13,772 branches
+(87.714203%), and 3,782/4,064 functions (93.061024%). This verification is
+full-snapshot evidence, not a coverage gain or a selected-subset claim.
+
 Confirmed runtime divergences fixed during the coverage loop are documented
 next to their implementations and must remain separate from coverage-only
 adoption claims:
@@ -4711,7 +4723,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 100 | package, build, release, and facade contracts |
 | R03 | 1,754 | executable parity tests and public contracts |
-| R04 | 1,230 | licensed canonical fixture inputs |
+| R04 | 1,231 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 64 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -4719,7 +4731,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,223** | **all retained paths** |
+| **Total** | **3,224** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
