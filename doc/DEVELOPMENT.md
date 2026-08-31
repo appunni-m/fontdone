@@ -3353,6 +3353,67 @@ used pushed commit `65249cbd14d09611dee1e5b7821950e41a12f2b0`, so source
 markers remain bounded reachability evidence rather than exact closure of
 current source lines.
 
+### Batch 307: malformed kern, Select_Size, BDF, and native gvar boundaries
+
+This batch exercised the exact 19 concrete public parity IDs added after the
+retained full baseline that remained unselected after Batch 306: five
+malformed legacy-kern variants, five `FT_Select_Size` negative probes, the
+null-property-name BDF query, three BDF bitmap-bpp normalization cases, and
+five native-gvar composite-error variants. The focused parity run also included
+two already-covered Select_Size control IDs; all 21 cases passed, including all
+19 exact post-baseline IDs. No unit test was used.
+
+The legacy-kern inputs are loadable faces with bounded malformed classic-kern
+table shapes: truncated data, offset/length inconsistencies, and a reversed
+pair order. They were selected because the pinned loader treats these legacy
+tables defensively, tolerating or ignoring malformed records rather than
+reading past the table. The relevant oracle paths are
+`freetype/src/base/ftobjs.c:3603-3675` and
+`freetype/src/sfnt/ttkern.c:185-260`; the expected zero/defined result is the
+pinned public outcome, not a private-table unit-test assumption.
+
+The five `FT_Select_Size` probes use public faces and strike-table layouts
+with no fixed sizes or unusable strike metadata. They exercise the public
+validation/no-fixed-size result, with the fixture oracle retaining the pinned
+error instead of forcing a successful size selection. The BDF null-property
+case passes a null public property-name pointer and records the wrapper's
+defined `None` result. These routes were reviewed against
+`freetype/src/base/ftobjs.c`'s size-selection validation and
+`freetype/src/base/ftbdf.c:62-86`, `freetype/src/bdf/bdflib.c:1763-1772`,
+and `freetype/src/sfnt/ttbdf.c:158-180`; the WASM null mapping is in
+`fontdone-wasm/src/implementation.rs:8984-8990`.
+
+The three BDF bpp cases use bounded malformed bitmap metadata whose requested
+bits-per-pixel values overflow the supported 1/2/4/8 normalization choices.
+Pinned BDF parsing normalizes supported values and returns its defined error
+for the overflow cases, as implemented through
+`freetype/src/bdf/bdflib.c:1082-1109,1364-1397`. The Rust conversion under
+test is `src/font.rs:1722-1817`. The five native-gvar cases keep the composite
+glyph structurally valid, then provide a runtime-short variation tuple so the
+public variable-coordinate load reaches the defined gvar error after
+composite parsing. The pinned reference paths are
+`freetype/src/truetype/ttgload.c` and `freetype/src/truetype/ttgxvar.c`; the
+Rust routes are `src/tables.rs`, `src/tt/glyf.rs`, and `src/tt/gvar.rs`.
+
+Coverage MCP run `58236197-079b-45bd-ac88-ab25ed75b1cd` ingested child
+snapshot `3da79a23-92af-4f9c-96f7-2c2e32a41658` against explicit full baseline
+`e97404aa-fb4c-43b3-b057-49a0f79b7473`, using four comma-separated
+`--migration-coverage-case-ids` argument values. The additive baseline union
+reported `covered_regions_delta=1,244` and 612 run-specific newly observed
+line identities. The conservative merged line/function/branch covered deltas
+remained zero; the selected diff separately reported 71 newly observed line
+identities, 54 branch-state changes, 6,501 hit-count-only observations, and
+zero regressions. The selected run is explicitly
+`measurement_scope.kind=selected_subset` with `complete=false` and
+`merge.exact=false`, so it is not a replacement strict full-denominator score.
+
+The source resolver still identifies historical commit
+`4c982ce98572420a07922abf120b36ccf82f9061` while the execution recorded the
+then-current pushed checkout at commit `1c1546aad4f709e4e9e65d3d4b1f8e42ae055dc0`.
+The MCP line markers are therefore retained as bounded reachability evidence,
+not exact closure of current source lines. The next required measurement is a
+new unfiltered full snapshot from the committed checkout.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
