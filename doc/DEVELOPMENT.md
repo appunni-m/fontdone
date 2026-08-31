@@ -3013,6 +3013,53 @@ Rust implementation change was made because the new public cases already
 match pinned C behavior; the next step is a commit-aligned source measurement
 or a different remaining red region.
 
+### Batch 300: concurrent SVG callback capture and public outline validation
+
+This batch exercised 50 existing public parity cases without adding a new
+fixture: two SVG callback observer cases, four outline direct-render/no-gray/
+no-target/fallback cases, five malformed-font open cases, five valid extreme-CFF
+renderer-error cases, two public WASM null-pointer validation cases, 14
+`null_library` C32 ABI variants, and 18 `null_outline` C32 ABI variants. The
+groups were selected to cover callback-document population and zeroing, the
+public `FT_Outline_Render` validation and fallback routes, face-open defensive
+exits for malformed input, post-load `FT_Err_Raster_Overflow` behavior, WASM
+wrapper pointer guards, and the C ABI's public invalid-handle matrix. The
+malformed cases are intentionally public byte inputs rather than private
+unit-test calls. The WASM null-pointer cases are a public wrapper-safety
+extension with no direct pinned-FreeType equivalent; the C32 invalid-handle
+cases were checked against FreeType's validation contract.
+
+The pinned source review covered the render and callback flow in
+`freetype/src/base/ftobjs.c:1129-1178`, raster overflow in
+`freetype/src/smooth/ftsmooth.c:589-598`, outline validation and fallback in
+`freetype/src/base/ftoutln.c:614-666`, the direct no-op/null-target behavior in
+`freetype/src/smooth/ftgrays.c:1998-2006`, and the WASM pointer guards in
+`fontdone-wasm/src/implementation.rs:2798-2808`. The malformed-font routes
+were reviewed against the existing parser/open-input references recorded in
+their fixture metadata.
+
+The first parallel parity run exposed a real race: 48/50 passed, while
+`otsvg.FT_SVG_Document.mcp_renderer_error_batch@batch268-render-error-peak-y-min-002`
+and `...@batch268-render-error-peak-xy-max-005` reported Rust FFI `delta` as
+`{x:0,y:0}` instead of the expected null value. A serial 2/2 rerun passed,
+identifying process-global callback capture as the first divergence rather
+than an input mismatch. The fix makes the WASM capture and both parity probe
+records worker-local `RefCell` state, preserving synchronous callback
+observations when public parity cases run concurrently. No unit test was used;
+the full focused batch passed 50/50 with normal parallel workers.
+
+Coverage MCP run `55087357-f615-484a-8f03-213aa5ad15e9` ingested child
+snapshot `4a90d673-d582-4dee-97ed-79a02d9374e6` against the explicit full
+baseline `e97404aa-fb4c-43b3-b057-49a0f79b7473`. The selected run reported
+1,171 additive covered regions and 622 newly covered line identities, with no
+regressions. Covered-line/function/branch metric deltas remained zero under
+the MCP's conservative fallback. This is selected-subset evidence
+(`complete=false`, `merge.exact=false`), not a new full-denominator score.
+The source review still resolves the snapshot to commit
+`4c982ce98572420a07922abf120b36ccf82f9061` while the local checkout is at a
+later commit with the dirty fix, so its old line markers are not treated as
+exact source-closure proof.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained

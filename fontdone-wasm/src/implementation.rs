@@ -2686,22 +2686,27 @@ pub struct WasmSvgRendererCallbackCapture {
     pub delta_y: FT_Pos,
 }
 
-static mut WASM_SVG_CALLBACK_CAPTURE: WasmSvgRendererCallbackCapture =
-    WasmSvgRendererCallbackCapture {
-        hooks_status: 0,
-        render_status: 0,
-        glyph_index: 0,
-        svg_document_length: 0,
-        units_per_EM: 0,
-        start_glyph_id: 0,
-        end_glyph_id: 0,
-        transform_xx: 0,
-        transform_xy: 0,
-        transform_yx: 0,
-        transform_yy: 0,
-        delta_x: 0,
-        delta_y: 0,
-    };
+thread_local! {
+    // Public parity calls may execute on several host worker threads.  The
+    // hook callbacks are synchronous, so a worker-local record carries the
+    // observation without letting another call overwrite it mid-render.
+    static WASM_SVG_CALLBACK_CAPTURE: RefCell<WasmSvgRendererCallbackCapture> =
+        const { RefCell::new(WasmSvgRendererCallbackCapture {
+            hooks_status: 0,
+            render_status: 0,
+            glyph_index: 0,
+            svg_document_length: 0,
+            units_per_EM: 0,
+            start_glyph_id: 0,
+            end_glyph_id: 0,
+            transform_xx: 0,
+            transform_xy: 0,
+            transform_yx: 0,
+            transform_yy: 0,
+            delta_x: 0,
+            delta_y: 0,
+        }) };
+}
 
 unsafe extern "C" fn wasm_svg_probe_init(_state: *mut rust_ffi::FT_Pointer) -> rust_ffi::FT_Error {
     rust_ffi::FT_Err_Ok
@@ -2728,8 +2733,8 @@ unsafe extern "C" fn wasm_svg_probe_preset(
     // SAFETY: the core hands hooks a live `FT_SVG_DocumentRec` view during
     // the synchronous render call.
     let document = unsafe { &*document };
-    unsafe {
-        WASM_SVG_CALLBACK_CAPTURE = WasmSvgRendererCallbackCapture {
+    WASM_SVG_CALLBACK_CAPTURE.with(|capture| {
+        *capture.borrow_mut() = WasmSvgRendererCallbackCapture {
             hooks_status: 0,
             render_status: 0,
             glyph_index: probe.glyph_index,
@@ -2744,7 +2749,7 @@ unsafe extern "C" fn wasm_svg_probe_preset(
             delta_x: document.delta.x,
             delta_y: document.delta.y,
         };
-    }
+    });
     let _ = slot;
     rust_ffi::FT_Err_Ok
 }
@@ -2766,8 +2771,8 @@ unsafe extern "C" fn wasm_svg_probe_render(
     let document = probe.document_ptr as *const rust_ffi::FT_SVG_DocumentRec;
     // SAFETY: see `wasm_svg_probe_preset`.
     let document = unsafe { &*document };
-    unsafe {
-        WASM_SVG_CALLBACK_CAPTURE = WasmSvgRendererCallbackCapture {
+    WASM_SVG_CALLBACK_CAPTURE.with(|capture| {
+        *capture.borrow_mut() = WasmSvgRendererCallbackCapture {
             hooks_status: 0,
             render_status: 0,
             glyph_index: probe.glyph_index,
@@ -2782,7 +2787,7 @@ unsafe extern "C" fn wasm_svg_probe_render(
             delta_x: document.delta.x,
             delta_y: document.delta.y,
         };
-    }
+    });
     let _ = slot;
     rust_ffi::FT_Err_Ok
 }
@@ -2834,7 +2839,7 @@ pub extern "C" fn fontdone_wasm_svg_renderer_capture(
     if let Ok(slot) = rust_ffi::FT_Load_Glyph(&face, glyph_index, rust_ffi::FT_LOAD_COLOR) {
         match rust_ffi::FT_Render_Glyph(slot, rust_ffi::FT_RENDER_MODE_NORMAL) {
             Ok(_) => {
-                capture = unsafe { WASM_SVG_CALLBACK_CAPTURE };
+                capture = WASM_SVG_CALLBACK_CAPTURE.with(|capture| *capture.borrow());
                 capture.hooks_status = set_error;
                 capture.render_status = rust_ffi::FT_Err_Ok;
             }

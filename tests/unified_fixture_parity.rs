@@ -64574,15 +64574,22 @@ struct SvgRendererCallbackFields {
     delta: (i64, i64),
 }
 
-static mut RUST_SVG_CALLBACK_FIELDS: SvgRendererCallbackFields = SvgRendererCallbackFields {
-    glyph_index: 0,
-    svg_document_length: 0,
-    units_per_em: 0,
-    start_glyph_id: 0,
-    end_glyph_id: 0,
-    transform: (0, 0, 0, 0),
-    delta: (0, 0),
-};
+thread_local! {
+    // The parity runner executes concrete cases concurrently.  Keep callback
+    // observations scoped to the worker that owns the synchronous hook call;
+    // a process-global capture lets an unrelated CFF render-error case steal
+    // fields from an SVG case.
+    static RUST_SVG_CALLBACK_FIELDS: RefCell<SvgRendererCallbackFields> =
+        const { RefCell::new(SvgRendererCallbackFields {
+            glyph_index: 0,
+            svg_document_length: 0,
+            units_per_em: 0,
+            start_glyph_id: 0,
+            end_glyph_id: 0,
+            transform: (0, 0, 0, 0),
+            delta: (0, 0),
+        }) };
+}
 
 unsafe extern "C" fn rust_svg_probe_init(_state: *mut FT_Pointer) -> FT_Error {
     FT_Err_Ok
@@ -64606,8 +64613,8 @@ unsafe extern "C" fn rust_svg_probe_preset(
         return FT_Err_Invalid_Slot_Handle as FT_Error;
     }
     let document = unsafe { &*(probe.document_ptr as *const FT_SVG_DocumentRec) };
-    unsafe {
-        RUST_SVG_CALLBACK_FIELDS = SvgRendererCallbackFields {
+    RUST_SVG_CALLBACK_FIELDS.with(|fields| {
+        *fields.borrow_mut() = SvgRendererCallbackFields {
             glyph_index: probe.glyph_index,
             svg_document_length: document.svg_document_length,
             units_per_em: document.units_per_EM,
@@ -64621,7 +64628,7 @@ unsafe extern "C" fn rust_svg_probe_preset(
             ),
             delta: (document.delta.x, document.delta.y),
         };
-    }
+    });
     FT_Err_Ok
 }
 
@@ -64681,9 +64688,7 @@ fn rust_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, Str
     }
     let data = named_font_bytes(case, "otsvg_font")?;
     let glyph_index = svg_document_glyph_index(params)?;
-    unsafe {
-        RUST_SVG_CALLBACK_FIELDS = SvgRendererCallbackFields::default();
-    }
+    RUST_SVG_CALLBACK_FIELDS.with(|fields| *fields.borrow_mut() = SvgRendererCallbackFields::default());
     let mut library = FT_Init_FreeType();
     let hooks = SVG_RendererHooks {
         init_svg: Some(rust_svg_probe_init),
@@ -64708,17 +64713,17 @@ fn rust_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, Str
                 } else {
                     hooks_status
                 },
-                unsafe { RUST_SVG_CALLBACK_FIELDS },
+                RUST_SVG_CALLBACK_FIELDS.with(|fields| *fields.borrow()),
                 hooks_status,
                 hooks_status != FT_Err_Ok,
             ));
         }
     };
-    let mut fields = unsafe { RUST_SVG_CALLBACK_FIELDS };
+    let mut fields = RUST_SVG_CALLBACK_FIELDS.with(|fields| *fields.borrow());
     if hooks_status == FT_Err_Ok {
         match FT_Render_Glyph(loaded, FT_RENDER_MODE_NORMAL) {
             Ok(_) => {
-                fields = unsafe { RUST_SVG_CALLBACK_FIELDS };
+                fields = RUST_SVG_CALLBACK_FIELDS.with(|fields| *fields.borrow());
             }
             Err(error) => status = error,
         }
@@ -64734,15 +64739,18 @@ fn rust_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, Str
     ))
 }
 
-static mut C_SVG_CALLBACK_FIELDS: SvgRendererCallbackFields = SvgRendererCallbackFields {
-    glyph_index: 0,
-    svg_document_length: 0,
-    units_per_em: 0,
-    start_glyph_id: 0,
-    end_glyph_id: 0,
-    transform: (0, 0, 0, 0),
-    delta: (0, 0),
-};
+thread_local! {
+    static C_SVG_CALLBACK_FIELDS: RefCell<SvgRendererCallbackFields> =
+        const { RefCell::new(SvgRendererCallbackFields {
+            glyph_index: 0,
+            svg_document_length: 0,
+            units_per_em: 0,
+            start_glyph_id: 0,
+            end_glyph_id: 0,
+            transform: (0, 0, 0, 0),
+            delta: (0, 0),
+        }) };
+}
 
 unsafe extern "C" fn c_svg_probe_init(_state: *mut c_abi::FT_Pointer) -> FT_Error {
     FT_Err_Ok
@@ -64762,8 +64770,8 @@ fn c_svg_probe_capture(state: *mut c_abi::FT_Pointer) -> Result<(), FT_Error> {
         return Err(FT_Err_Invalid_Slot_Handle as FT_Error);
     }
     let document = unsafe { &*(probe.document_ptr as *const FT_SVG_DocumentRec) };
-    unsafe {
-        C_SVG_CALLBACK_FIELDS = SvgRendererCallbackFields {
+    C_SVG_CALLBACK_FIELDS.with(|fields| {
+        *fields.borrow_mut() = SvgRendererCallbackFields {
             glyph_index: probe.glyph_index,
             svg_document_length: document.svg_document_length,
             units_per_em: document.units_per_EM,
@@ -64777,7 +64785,7 @@ fn c_svg_probe_capture(state: *mut c_abi::FT_Pointer) -> Result<(), FT_Error> {
             ),
             delta: (document.delta.x, document.delta.y),
         };
-    }
+    });
     Ok(())
 }
 
@@ -64812,9 +64820,7 @@ fn c_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, String
     }
     let bytes = named_font_bytes(case, "otsvg_font")?;
     let glyph_index = svg_document_glyph_index(params)?;
-    unsafe {
-        C_SVG_CALLBACK_FIELDS = SvgRendererCallbackFields::default();
-    }
+    C_SVG_CALLBACK_FIELDS.with(|fields| *fields.borrow_mut() = SvgRendererCallbackFields::default());
     let mut library = std::ptr::null_mut();
     let init_error = c_abi::FT_Init_FreeType(&mut library);
     if init_error != FT_Err_Ok {
@@ -64855,7 +64861,7 @@ fn c_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, String
     } else {
         FT_Err_Ok
     };
-    let fields = unsafe { C_SVG_CALLBACK_FIELDS };
+    let fields = C_SVG_CALLBACK_FIELDS.with(|fields| *fields.borrow());
     c_done_face(face);
     c_done_library(library);
     Ok(svg_callback_output(
