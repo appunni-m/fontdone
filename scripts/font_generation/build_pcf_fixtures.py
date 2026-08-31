@@ -337,6 +337,31 @@ def main() -> None:
         )
     )
 
+    missing_metrics_data = build_pcf(
+        [(PCF_PROPERTIES, 0, properties_table())]
+    )
+    missing_accelerators_data = build_pcf(
+        [
+            (PCF_PROPERTIES, 0, properties_table()),
+            (PCF_METRICS, PCF_COMPRESSED_METRICS, metrics_table()),
+        ]
+    )
+    missing_bitmaps_data = build_pcf(
+        [
+            (PCF_PROPERTIES, 0, properties_table()),
+            (PCF_METRICS, PCF_COMPRESSED_METRICS, metrics_table()),
+            (PCF_ACCELERATORS, 0, accelerators_table()),
+        ]
+    )
+    missing_encodings_data = build_pcf(
+        [
+            (PCF_PROPERTIES, 0, properties_table()),
+            (PCF_METRICS, PCF_COMPRESSED_METRICS, metrics_table()),
+            (PCF_ACCELERATORS, 0, accelerators_table()),
+            (PCF_BITMAPS, 0, bitmaps_table()),
+        ]
+    )
+
     metrics_format_mismatch_data = build_pcf(
         replace_table(
             tables,
@@ -565,6 +590,10 @@ def main() -> None:
     write_fixture("properties-non-atom-family.pcf", non_atom_family_data)
     write_fixture("properties-count-clamped.pcf", properties_count_clamped_data)
     write_fixture("metrics-count-clamped.pcf", metrics_count_clamped_data)
+    write_fixture("missing-metrics-table.pcf", missing_metrics_data)
+    write_fixture("missing-accelerators-table.pcf", missing_accelerators_data)
+    write_fixture("missing-bitmaps-table.pcf", missing_bitmaps_data)
+    write_fixture("missing-encodings-table.pcf", missing_encodings_data)
     write_fixture("unsupported-metrics-format.pcf", unsupported_metrics_data)
     write_fixture("truncated-metrics.pcf", truncated_metrics_data)
     write_fixture("oversized-metrics-count.pcf", oversized_metrics_data)

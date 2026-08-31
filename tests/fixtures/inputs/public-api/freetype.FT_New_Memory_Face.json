@@ -2757,6 +2757,106 @@
             ]
           },
           {
+            "id": "batch309-pcf-missing-metrics-table",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/missing-metrics-table.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/missing-metrics-table.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "metadata": {
+              "expansion_reason": "Reach the required-metrics-table guard after a valid properties table has been parsed.",
+              "original_freetype_behavior": "FreeType rejects a PCF whose table of contents omits PCF_METRICS; this is a public malformed-font rejection, not an unreachable internal invariant.",
+              "source_refs": [
+                "freetype/src/pcf/pcfread.c:372-407",
+                "freetype/src/pcf/pcfread.c:1409-1458"
+              ]
+            },
+            "coverage": ["batch309:pcf:missing-metrics-table"]
+          },
+          {
+            "id": "batch309-pcf-missing-accelerators-table",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/missing-accelerators-table.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/missing-accelerators-table.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "metadata": {
+              "expansion_reason": "Reach the required-accelerators-table guard with valid properties and metrics preceding it in the PCF directory.",
+              "original_freetype_behavior": "FreeType requires PCF_ACCELERATORS while loading a bitmap face and returns an unknown-format error when it is absent.",
+              "source_refs": [
+                "freetype/src/pcf/pcfread.c:372-407",
+                "freetype/src/pcf/pcfread.c:1409-1458"
+              ]
+            },
+            "coverage": ["batch309:pcf:missing-accelerators-table"]
+          },
+          {
+            "id": "batch309-pcf-missing-bitmaps-table",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/missing-bitmaps-table.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/missing-bitmaps-table.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "metadata": {
+              "expansion_reason": "Reach the required-bitmaps-table guard after valid properties, metrics, and accelerators have been loaded.",
+              "original_freetype_behavior": "FreeType rejects a PCF without PCF_BITMAPS because bitmap glyph data is mandatory for the PCF driver.",
+              "source_refs": [
+                "freetype/src/pcf/pcfread.c:372-407",
+                "freetype/src/pcf/pcfread.c:1409-1458"
+              ]
+            },
+            "coverage": ["batch309:pcf:missing-bitmaps-table"]
+          },
+          {
+            "id": "batch309-pcf-missing-encodings-table",
+            "assets": {
+              "font_bytes": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/missing-encodings-table.pcf"
+              },
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/pcf/missing-encodings-table.pcf"
+              }
+            },
+            "params": {"variants": [{"face_index": 0}]},
+            "metadata": {
+              "expansion_reason": "Reach the required-encoding-table guard after all preceding PCF metadata tables have passed validation.",
+              "original_freetype_behavior": "FreeType requires PCF_BDF_ENCODINGS to construct the public charmap and rejects the face when that table is missing.",
+              "source_refs": [
+                "freetype/src/pcf/pcfread.c:372-407",
+                "freetype/src/pcf/pcfread.c:1409-1458"
+              ]
+            },
+            "coverage": ["batch309:pcf:missing-encodings-table"]
+          },
+          {
             "id": "pcf-table-outside-stream",
             "assets": {
               "font_bytes": {
