@@ -13035,6 +13035,11 @@ pub fn FT_Set_Var_Design_Coordinates(
     let Ok(num_coords) = usize::try_from(num_coords) else {
         return FT_Err_Invalid_Argument as FT_Error;
     };
+    // Match `base/ftmm.c`: a zero-count reset on a non-variation face is a
+    // no-op, while a nonzero request must have a multiple-master service.
+    if num_coords == 0 && face.face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS == 0 {
+        return FT_Err_Ok;
+    }
     let Some(coords) = coords else {
         return if num_coords == 0 {
             let result = face.inner.borrow_mut().set_var_design_coordinates(&[]);
@@ -13057,6 +13062,14 @@ pub fn FT_Set_Var_Design_Coordinates(
             FT_Err_Invalid_Argument as FT_Error
         };
     };
+    // `ft_face_get_mm_service` in FreeType `base/ftmm.c` checks the public
+    // multiple-master flag before dispatching to the driver's setter.  An
+    // invalid optional or required `fvar` table therefore reports
+    // `Invalid_Argument` here rather than reaching the Rust coordinate
+    // rebuild, which has no variation state to update.
+    if face.face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS == 0 {
+        return FT_Err_Invalid_Argument as FT_Error;
+    }
     if coords.len() < num_coords {
         return FT_Err_Invalid_Argument as FT_Error;
     }

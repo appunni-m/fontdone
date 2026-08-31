@@ -37,7 +37,7 @@ impl AvarTable {
     }
 }
 
-/// Parse an OpenType version 1 `avar` table.
+/// Parse an OpenType version 1 or 2 `avar` table.
 ///
 /// The table is optional in FreeType. Callers should discard an error and
 /// continue without the map, matching the optional-table loading path.
@@ -46,7 +46,12 @@ pub fn parse_avar(data: &[u8], axis_count: usize) -> Result<AvarTable, FontError
         return Err(FontError::InvalidFont("avar table too short".into()));
     }
     let version = read_u32(data, 0)?;
-    if version != 0x0001_0000 {
+    // FreeType enables the OpenType 1.9 extensions in its normal build and
+    // accepts both versions before reading the shared segment maps.  The
+    // compact runtime does not currently consume the optional v2 item store
+    // or axis map, but the segment maps have the same layout and must remain
+    // active for v2 tables as they are in the pinned C path.
+    if !matches!(version, 0x0001_0000 | 0x0002_0000) {
         return Err(FontError::InvalidFont("unsupported avar version".into()));
     }
     let table_axis_count = usize::try_from(read_u32(data, 4)?)
