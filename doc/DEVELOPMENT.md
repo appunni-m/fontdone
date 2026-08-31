@@ -3529,7 +3529,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,222 tracked paths and no symlinks.
+The canonical input tree currently contains 1,226 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -4364,6 +4364,29 @@ before snapping (`afcjk.c:1489-1604`), so a public input cannot reach
 unit-only helper. The lower arm is recorded as defensive/unobservable rather
 than forcing a non-parity test or mutating the implementation.
 
+Batch310 added one public `FT_New_Memory_Face` row for an AVAR table whose
+version is `3.0`, using the generated `avar-version-3.ttf` fixture. Version 2
+is accepted by the current implementation, so version 3 is the next distinct
+unsupported-version control that reaches `src/tt/avar.rs:55` through the
+optional-table face-open path. Pinned FreeType 2.14.3 treats this malformed
+optional table as ignorable during `tt_face_load_avar` and still opens the
+variable face; the Rust result therefore remains a successful face open. The
+fixture metadata records the source references
+`freetype/src/truetype/ttload.c:tt_face_load_avar`,
+`freetype/src/sfnt/sfobjs.c:sfnt_open_font`, and `src/font.rs:4282-4287`.
+
+Focused parity passed the concrete row
+`freetype.FT_New_Memory_Face.success_malformed_optional_tables_ignored@batch310-avar-unsupported-version-3`
+across Rust, the C ABI, WASM, and the pinned oracle. Coverage MCP run
+`6ce24a6d-bc50-4ab7-8ca4-498df10b14af` used that exact argument-based selector
+against explicit full baseline snapshot
+`75ae7b04-0fc8-4c8c-ba7e-c74863a9df58` and ingested snapshot
+`7f1cdeda-0239-44e6-8205-89c0da5e5991`. Its supported incremental union adds
+two regions, one branch, and newly covers `src/tt/avar.rs:55`; this is selected
+incremental evidence and not a replacement full-denominator percentage. The
+MCP project source metadata still identifies an older commit, so exact source
+line interpretation is anchored to the local pushed checkout.
+
 Confirmed runtime divergences fixed during the coverage loop are documented
 next to their implementations and must remain separate from coverage-only
 adoption claims:
@@ -4589,7 +4612,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 100 | package, build, release, and facade contracts |
 | R03 | 1,754 | executable parity tests and public contracts |
-| R04 | 1,222 | licensed canonical fixture inputs |
+| R04 | 1,227 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 64 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -4597,7 +4620,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,215** | **all retained paths** |
+| **Total** | **3,220** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

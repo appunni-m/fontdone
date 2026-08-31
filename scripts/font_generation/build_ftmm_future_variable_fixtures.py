@@ -1202,6 +1202,12 @@ def write_avar_fixtures() -> None:
         BASE_FONT, "avar", "avar-version-2.ttf", bytes(unsupported)
     )
 
+    unsupported_v3 = bytearray(base)
+    put_u32(unsupported_v3, 0, 0x0003_0000)
+    write_table_payload(
+        BASE_FONT, "avar", "avar-version-3.ttf", bytes(unsupported_v3)
+    )
+
     axis_mismatch = bytearray(base)
     put_u16(axis_mismatch, 6, 1)
     write_table_payload(
