@@ -15,18 +15,18 @@ FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d0296
 LICENSE	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 Makefile	46925	file	a301f071f88f1de7c5716a0a018eb86ebd5768ab2eba227f5c2e7dbf72b9e6b1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 NOTICE.md	1275	file	b2a99b4906d6ff998690cfda4db4c23dff3e8351c6de65d5c9a8b1835a6ac623	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-README.md	24576	file	cd1904529aa2bab5c115b5767a3705e3918665d073dcab7155b9f93ca10c9735	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+README.md	24576	file	270a46c8c570ba27e7ccf14a5c94adee6c536d65bfd76a4219fd5e67f8c3fbd1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 SECURITY.md	1462	file	43c23f8239bc1536b688b89fac6bde6ad1420b467346f4d74ce5a2bc2cd38142	-	keep-community	R09	Public community or security contract.
 deny.toml	341	file	d4d516ffd41e0c8e3de633cc3d807b5e0b1a53ec7b5f56ad8ea95c73da0a2bf1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-doc/DEVELOPMENT.md	275470	file	5c15fae6fe7f39acedeca678b9d3969c4bc1969f9debff3a7cfba57ae65810c9	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/DEVELOPMENT.md	331819	file	56127e1ecfad59ca19d5ecfde846837b505fa550bf4f94d85286d80d38518d32	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/FILE_RETENTION_INVENTORY.tsv	0	generated	-	-	generated-audit	R11	Generated exhaustive inventory; refresh with scripts/audit_repository_files.py.
 doc/FREETYPE_SUPPORT.md	30950	file	6b6b13666ef8d7dd27a4dbc9546cca45565a6fd517476cbaecf02a0201ac2305	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/INTEGRATION.md	9545	file	8c78fa316efca6fd92ac012d8ef887ab51b2d71218aa5aef8b05f37704ecace2	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/README.md	4209	file	b9c0b5eaf91bcf59e9d456f6294d15ba056f5063be7586d116fdaa719b2ccc80	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/RELEASING.md	8673	file	314736a3a80b58d042f19c4596599cd109f90177e594f782ba26882bf21137e1	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/ROADMAP.md	203742	file	c6357af13b499762b0fc655995afb681f826e164131e0a9254e029fdd34f0c12	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
-doc/compatibility_snapshot.json	59005	file	579874c1062c62648dff40815e48deb0bfcfde5d91a442b05a71bcaa82f32487	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/runtime_parity_evidence.json	1380	file	11f3c05c9aefdd7fdb7654049751b28abb05e9194b0bfcd3097ab2e9c4fc8195	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/compatibility_snapshot.json	59005	file	4c2b4f683f555356823504787e14638bec04f311d2a9bfc43cc05f483ab0657a	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/runtime_parity_evidence.json	1380	file	dfb4f67da588ae16458e5ce842e3776e08327ad099932e85272b7f46cf7e9666	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 examples/bench_ops.rs	10086	file	a75d7bbf4e8e679ca393d8cffd68cc0824f7198bb5e85857ce4dd75d8e016a21	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/ffi_migration.rs	1806	file	3140c3cbf9182299f2ab8c98f6675dfd3d086c47177f7bf8783160a149eddda8	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/handle_error.rs	571	file	acbe9d9f2e838bb5ca27132dde73287fa123e3a069772a2b741ae6e010fae3b1	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
@@ -92,7 +92,7 @@ fontdone-c-abi/include/freetype/ttnameid.h	172	file	4e4ef18e2e50585c1949be746c40
 fontdone-c-abi/include/freetype/tttables.h	172	file	7b6d2097c223508906a9feef627b0b85386be1c34c9d8a1da326f9048df6ff5e	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-c-abi/include/freetype/tttags.h	168	file	c3c302456380fc2092dc5f903ad24ee53cdfa36a2b1c661e684fcd4e3087bcfa	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-c-abi/include/ft2build.h	3481	file	3a65238d1e7bfe1ec6e50ec068218c96497526a1cbc56b02331c839d0ce15df9	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
-fontdone-c-abi/src/implementation.rs	989768	file	abdf8618004b3562db42cb42da44d93cc3f213d2ddfb92276716fc6656b1ac10	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
+fontdone-c-abi/src/implementation.rs	990053	file	039fbdc2a34225e3f786240c937ee8770a32c36a901216ad70a6023c363c1354	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-c-abi/src/lib.rs	11982	file	9928a6a874c6c6a93213bf047f8afe947838494dd92f5eb368035fdc2f025d0d	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/Cargo.toml	1748	file	9bfe84bc9168bd9603839c21982a6375b775741d3b1306808b9a655f3a3a23f7	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
@@ -115,7 +115,7 @@ fontdone-wasm/npm/index.d.ts	2666	file	5bc4a7a22c47d402cd356bd488f698b7997c6a23c
 fontdone-wasm/npm/index.js	12102	file	108b4b98951702bf21a9b41a9e327cf7f8a49ae25c026cfa0700e8dd8b92b9b2	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/npm/package.json	1500	file	138e2e58bb83e74e62cae71f1cb1fd0262e693d24b1e1a12f0d74b079b192dab	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/npm/test.mjs	2317	file	163fa042244b5da7fd1e4ea46dce37b667048d732d075e4e0f1309cb180f6ffa	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
-fontdone-wasm/src/implementation.rs	349584	file	9129abaf609506e4fec7e2c638d40c4f1c8a7cd26d9a959bc4a5bfee91e05800	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
+fontdone-wasm/src/implementation.rs	350291	file	654b286a33ede98da78e4ed3ee774c280c148cccc4479355228e7eebf0c80329	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/src/lib.rs	15838	file	fdc6c32799b1938f1ca8576be0d0364d2303e72240a72447348ead7b7634ed5a	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 requirements-font-generation.txt	127	file	138e6ff04e827a0c8f2ac9f1ad40d46ebe02554f8ba8dce1e5c513007529dd1f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 rust-toolchain.toml	66	file	4d0674575b116a100c7d0ad754308dc6dea178b4808c760afc43136db967c7a6	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
@@ -161,7 +161,7 @@ scripts/font_generation/build_type1_fixtures.py	53261	file	7682cd3e320c7224af5e8
 scripts/font_generation/build_type42_fixtures.py	3713	file	f606d5072ce5afaf953b2e4eb528724ec2846fe03d969d3bd78d3f071bf48c15	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/font_generation/generate_malformed_bdf_fixtures.py	13068	file	aceda6a5b3afc187bed4a9a7c6703f3b06ce9c4528cefee5af3552ae212d55d1	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/font_generation/generate_winfnt_fixtures.py	6857	file	14099205cbb531e258de3aa7d65e9060f8fd3445ba8a545da0a101b4a81826ce	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
-scripts/gen_unified_oracle.c	1591523	file	01b4bba8eb6644478ad3c29d463c98c7e271cba91a027e199f055599e1856b1d	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
+scripts/gen_unified_oracle.c	1594538	file	74d330bcc12417571f564ba3eab8afe65dee6d6b2b2a26508d071434fcbda7a8	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/generate_c_contract_headers.py	3143	file	74c4a64476cae43283b2d71140388d0f7270a225fe79628910038b8cc45dbf67	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/generate_c_contract_macros.py	4118	file	b4674f200027fdc6f9334a871b32d7734a999351334a8faea01f34a130f6a7ed	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/generate_public_constants.py	7939	file	d87faab4074d1040ff0718839ec41ae9a7ba2084a01b9d5564401b0ca855aa39	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
@@ -193,7 +193,7 @@ src/error.rs	6832	file	380effd89d758f2a51991cbc54d84ec8c118f079a21a88ff19b4fcaa9
 src/ffi/constants.rs	6160	file	748c42c4e60ed735c233441bced646f8ef5eeaf9764e5e7b5de5e730a0435410	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/convert.rs	15395	file	88fe967984ef95d3e72ca4e3f9c0d355883ad794ee088a13d017f912c268c624	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/generated_constants.rs	48665	file	923d866b8f24e0ecb80dc841eb556b6f528532ddbfb585ee349f5d7354123a50	-	keep-generated-source	R10	Generated source required to build the runtime crate without the offline oracle.
-src/ffi/handles.rs	584550	file	7b1578042372cda0a3a08c4286ccdebb27cbb8ba3467cb72bd2d7b8b7fd8b6ae	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/ffi/handles.rs	585597	file	62add23858d6b76823f23f04218fd7b622bc212f91f47e7d7f95608a72e60988	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/mod.rs	12829	file	1704b589ba57d9d8032a6f91b98e98330435032674c630bde0e09e7a8f5d9b59	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/types.rs	40746	file	79a6eb634c309d4cca85e741ada479c80f53ef46bebb4952a3c94b9d9010c0ae	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/fixed.rs	16947	file	ad674a41af984b412c943159ce0363ec8856ee0cfc68b87ef6d460ca49f6ef86	-	keep-runtime	R01	Published pure-Rust runtime source.
@@ -205,7 +205,7 @@ src/pfr.rs	14061	file	269f7a3a7d2541749d5a417708e61c5b5fe0a9f455b705fec6393c1150
 src/render.rs	99403	file	4e94ae93c44d0c3a29f2671f5f08af2530cf48a37d2ebc3dc0bdeb211abff33e	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/scaler.rs	88216	file	74a9c3e32f6613ba23d4945fc8eab5f1b6b5f3694ba230c837350f190503c083	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tables.rs	15583	file	4128c32a0543eb39082d62d2bb98d26f46ed05b20e3d96022f4374420afb81e9	-	keep-runtime	R01	Published pure-Rust runtime source.
-src/tt/avar.rs	4552	file	6b906cb45b318fc4e2a92e5441a52f42b71c697501b38d1dccba892e57547f29	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/tt/avar.rs	4947	file	941bfcbd0fc2575a8c5c735f1815ee5e2619ec519590225b0d8a31ef4ec45c55	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/cff.rs	62944	file	71da27cef54e9c41ff8e6e8ca788b3c215e57398b38dba73050a4f16000a547a	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/cmap.rs	38266	file	af6ec13dd113ab5efa4009df09617440169917984296836c00726e05b68cac5e	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/fvar.rs	4897	file	965e7c2e18b040627a7e2015f3f72c10d7973a58b3af8f8830daa373d61aa1dc	-	keep-runtime	R01	Published pure-Rust runtime source.
@@ -1819,7 +1819,7 @@ tests/fixtures/inputs/public-api/ftbitmap.FT_Bitmap_Embolden.json	14029	file	200
 tests/fixtures/inputs/public-api/ftbitmap.FT_Bitmap_Init.json	3767	file	8a219daebfce0950ddd378dfd437190826c4ce941cc7dc25ec69d1a092361cbf	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftbitmap.FT_Bitmap_New.json	3719	file	19523a74c6594dea31c5c08953955c645f607f63d77c711927e0a53f9c3cbb4d	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftbitmap.FT_GlyphSlot_Own_Bitmap.json	6793	file	9b3f0d1d8e3128d94795dfbed77d2d7c8451acf4d6051eee88bcd4d4884ec3d4	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
-tests/fixtures/inputs/public-api/ftbzip2.FT_Stream_OpenBzip2.json	19088	file	1e0ead170c70dfb3b3fee0463e58d9fded33c60fcdd94bdebf9d9853e73695dc	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
+tests/fixtures/inputs/public-api/ftbzip2.FT_Stream_OpenBzip2.json	20857	file	52096308e9d9e50bddb74c4078539069e4f718cae27ff8548b5b22f403da30fc	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftcache.FTC_CMapCache.json	2364	file	207030481f6ac4b38edd05bef3b233fee4a00da7380770c54e8fb0c8f3ab3db3	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftcache.FTC_CMapCache_Lookup.json	84705	file	2168be890bd973880a90ed9e7cc7ab247bce78d9210de3f0a783906fb692209a	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftcache.FTC_CMapCache_New.json	10745	file	9a9e7006b23ff86a166ba2a01387271698374f4eb606b4192002bff85927f1ff	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
@@ -2121,9 +2121,9 @@ tests/fixtures/inputs/public-api/ftgxval.FT_VALIDATE_prop_INDEX.json	2552	file	3
 tests/fixtures/inputs/public-api/ftgxval.FT_VALIDATE_trak.json	3180	file	4467ef4255d2d816fd58829a240ffc344940a8f1664fbb99075a0d20fe97d2b3	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftgxval.FT_VALIDATE_trak_INDEX.json	2552	file	801d3e805f1552a622e75e8a2d3dc92b23e23a3b9c6876af6ace0ced0d76f33c	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftgzip.FT_Gzip_Uncompress.json	7817	file	dd7a8009a97f8868d2c02f2075138273bdf93e483d87205e3d2673c17374a995	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
-tests/fixtures/inputs/public-api/ftgzip.FT_Stream_OpenGzip.json	16742	file	ca2d8f181c7d52339dca1a86e9b031cbdeebcb791d1c85bb2cac04e5459383e2	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
+tests/fixtures/inputs/public-api/ftgzip.FT_Stream_OpenGzip.json	18447	file	23c1185ed7f15c62f4d18021463684e044765caf6733ab8a7c1d83404ffdf452	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftimage.FT_BBox.json	12055	file	fd04b1d4866788a9e83b5473ea60e32d0e12e0697383ab0f6c080c909a2a18a9	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
-tests/fixtures/inputs/public-api/ftimage.FT_Bitmap.json	37353	file	8bfb2f5a6f9f7d4d9342a3a24cb6aa51b04b15741d95a3db81ed0d79963a1521	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
+tests/fixtures/inputs/public-api/ftimage.FT_Bitmap.json	39095	file	a09ed876c276d45d4ca799ed02b12336e7aeb8766baa7d7c51c672ff9a42e925	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftimage.FT_CURVE_TAG.json	3161	file	bf14dbcb07d6a57809cd19e2dc1b55f414ec5f775920ff1e707ba310cd6bcaae	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftimage.FT_CURVE_TAG_CONIC.json	5701	file	e311cd5dd7938faf2a60496f64442534fcc79fac9e20fc62830564ad2156fb0e	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftimage.FT_CURVE_TAG_CUBIC.json	5885	file	58c19e289eb11941eebf6ecddece1ae193f7de6340b114e9a826ce12e30dc1b4	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
@@ -2213,7 +2213,7 @@ tests/fixtures/inputs/public-api/ftlogging.FT_Set_Default_Log_Handler.json	4386	
 tests/fixtures/inputs/public-api/ftlogging.FT_Set_Log_Handler.json	6173	file	ef473e0aa649a12b22b377de3b35dc2aa0d71d340a33873039d046f8748eda67	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftlogging.FT_Trace_Set_Default_Level.json	4547	file	c089290ef2749a78ef444bf30f2dd458374c6f5f1341cd5755cfaf82fa77cb04	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftlogging.FT_Trace_Set_Level.json	6090	file	2e0360ec25129fc4359d0629b56211f5df05b21eea7d488db9fca5a244ddb2ab	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
-tests/fixtures/inputs/public-api/ftlzw.FT_Stream_OpenLZW.json	14105	file	5e1be857ff45ea2e3eb6123dbf9e0d8ff7b7c408dd43c7bd7bbbc80b1132b0d8	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
+tests/fixtures/inputs/public-api/ftlzw.FT_Stream_OpenLZW.json	16037	file	5575c6b86d4a95a9df32b60f0cfd6db6e533426f989424c8018cc8153f332c0e	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftmm.FT_Done_MM_Var.json	5122	file	e804e882681b987531951972fe9c8fabcce0555155cf4922ba73d13c6718188e	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftmm.FT_Get_Default_Named_Instance.json	67312	file	3876e8bedb735f2b5593051f0a0a84b59a375706076ceb280e37244c0d7d77be	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftmm.FT_Get_MM_Blend_Coordinates.json	9093	file	146c3e33c259123bcbd2dc43819db964052689c3a7335653cb2e7b157ac41155	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
@@ -2231,7 +2231,7 @@ tests/fixtures/inputs/public-api/ftmm.FT_Set_MM_Design_Coordinates.json	30148	fi
 tests/fixtures/inputs/public-api/ftmm.FT_Set_MM_WeightVector.json	15355	file	5f90b99edfc66f918d099c9532a91c6339b7ef100f1fd8220655cd5bdcff57d2	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftmm.FT_Set_Named_Instance.json	9535	file	b779ff070e4ed5ad358b8c92645547376ee237e63316e774f39a5f76b35245a7	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftmm.FT_Set_Var_Blend_Coordinates.json	71701	file	a817415bc7d5f5c65675547489fb50eb0eef00e3836ab550bee4b0ea6cffebca	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
-tests/fixtures/inputs/public-api/ftmm.FT_Set_Var_Design_Coordinates.json	305401	file	72c6254a3e3abc97810aa0da9b0f17e2fc43f331be1c152508fb9a2991b9a15a	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
+tests/fixtures/inputs/public-api/ftmm.FT_Set_Var_Design_Coordinates.json	330911	file	22e71d0483e641023599dfdbff64c060790e54a5faf3b7461170043283b0bcb3	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftmm.FT_VAR_AXIS_FLAG_HIDDEN.json	3339	file	694ed4d1af6d3350fa11a6608946bb33ef110c21838cacb4af7d060cc551a902	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftmm.FT_Var_Axis.json	5466	file	54008dee34aa5b3af46b5a8a312355333b26e5b4d09ad64a9d763d4d72ec320d	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftmm.FT_Var_Named_Style.json	5526	file	51ed8f6bd921ef5e12d6638c0ce83423046869ad16b645b75b3a77b166dda028	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
@@ -3210,7 +3210,7 @@ tests/fixtures/outlines/synthetic/thin-diagonal-stems.json	435	file	09112abd4f0a
 tests/fixtures/outlines/transform/slant-rotate-points.json	224	file	d34f409cf6d4f1c40663715d8ca343966d49ee3cc0e8233e6a0447d4d95b9934	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/fixtures/outlines/translate/mixed-positive-negative-points.json	224	file	d34f409cf6d4f1c40663715d8ca343966d49ee3cc0e8233e6a0447d4d95b9934	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/fixtures/streams/gzip/valid-font-stream.gz	283990	file	767ab166fc9debf90755f6e747649aa04364b5f2b4a31011f1148dfa05fc0e7b	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
-tests/manifest.yaml	1574629	file	d1ad8d9f8cab75260b6d37b8721bdfececb9ec52a75a57194ff683f45c6b46b0	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
+tests/manifest.yaml	1575355	file	46d12530923965b391edc3bd387cac8bed5a3d0a71867224d46fff9f23f7b0a3	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/pipe_trace.rs	6378	file	0ba36fa504f5d40c6961a9a9170a1db4e19fb979bba140dde6c164b54f368d6e	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/support/generated_constant_lookup.rs	89931	file	3309eebd6fa4af72d165481e216c9a1dfcb574b3643a506e9221a8eec81f9d74	-	keep-generated-source	R10	Generated lookup required by the public constant parity test.
-tests/unified_fixture_parity.rs	3956248	file	2b01ccf2c825d44679ebe147b5273617ba1beac17514729bde1f3ee331a70080	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
+tests/unified_fixture_parity.rs	3961873	file	cfec89081ee4493a39885ad7d05f2774ea4f2dcf2057d8bcaa27775061b4affb	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
