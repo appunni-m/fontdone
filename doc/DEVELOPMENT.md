@@ -3213,6 +3213,45 @@ executed at pushed commit `7996eae2135d5489c51027478650afbf9b00470e`, so the
 source markers remain bounded reachability evidence rather than exact closure
 of current source lines.
 
+### Batch 304: CFF EOF subroutines and fixed-add arithmetic
+
+This batch exercised all 50 concrete IDs under
+`freetype.FT_Load_Glyph.batch219_cff_eof_and_fixed_add`: 25 valid CFF1
+global-subroutine witnesses whose INDEX object ends at EOF, followed by 25
+valid Type 2 fixed-real-plus-integer `add` programs. Each family spans five
+sizes and five public load modes. These are separate public inputs from
+Batch 303: they exercise CFF subroutine end-of-buffer synthesis and mixed
+fixed/integer arithmetic rather than fixed-operand `callgsubr` rejection.
+
+Pinned FreeType synthesizes a `return` when a CFF subroutine buffer reaches
+EOF, so the first family is accepted through
+`freetype/src/psaux/psintrp.c:640-667,979-1050`. The second family is accepted
+through the fixed arithmetic path at `psintrp.c:1560-1575`; the Rust source
+locations under test are `src/tt/cff.rs:1295-1300,1345-1351`. The fixture
+metadata records these as valid public CFF cases because the original
+FreeType accepts both shapes; the campaign is checking implementation parity,
+not manufacturing an error to inflate coverage.
+
+Focused parity passed 50/50 with the normal parallel workers and no unit test
+was used. Coverage MCP run `6aed8480-8422-442b-b794-ca951b81740d` ingested
+snapshot `ff9f30fc-6e84-4f0c-812a-3850041f3c9d` against explicit full baseline
+`e97404aa-fb4c-43b3-b057-49a0f79b7473`. The additive baseline union reported
+`covered_regions_delta=963` and 448 newly observed line identities; the
+conservative merged line/function/branch covered deltas remained zero. The
+selected diff reported 52 newly covered lines, 35 branch-state changes,
+4,297 hit-count-only observations, and zero regressions. The observed
+denominator increased by 8,853 regions, 126 lines, three functions, and 18
+branches because the run is a selected subset rather than a replacement full
+snapshot.
+
+The MCP result is explicitly `measurement_scope.kind=selected_subset` with
+`complete=false` and `merge.exact=false`; its selected-union percentage is not
+a strict project score. Source and measurement metadata still resolve to
+historical commit `4c982ce98572420a07922abf120b36ccf82f9061` while execution
+used pushed commit `5597837d5f25dbc5eb1264bdfb01042246c3eee2`, so source
+markers remain bounded reachability evidence rather than exact closure of
+current source lines.
+
 ## 5. Fixtures and generators
 
 The tracked input boundary is `tests/fixtures/input/`; maintained
