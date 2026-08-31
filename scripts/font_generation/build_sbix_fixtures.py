@@ -267,6 +267,22 @@ def write_malformed_optional_fixtures() -> None:
         "sbix-strike-count-overflow.ttf",
         sbix_header_payload(1, 1, 0x1_0000),
     )
+    # These tables pass the optional-table header checks in the Rust parser and
+    # then fail while reading the strike record.  Pinned FreeType accepts the
+    # surrounding face and discards the malformed optional sbix table, which
+    # makes the three parser fall-throughs observable through face opening.
+    save_sbix_payload(
+        "sbix-strike-offset-out-of-range.ttf",
+        sbix_header_payload(1, 1, 1) + struct.pack(">I", 0x1000),
+    )
+    save_sbix_payload(
+        "sbix-ppem-truncated.ttf",
+        sbix_header_payload(1, 1, 1) + struct.pack(">I", 12) + b"\0",
+    )
+    save_sbix_payload(
+        "sbix-ppi-truncated.ttf",
+        sbix_header_payload(1, 1, 1) + struct.pack(">I", 12) + b"\0\0\0",
+    )
 
 
 def main() -> None:

@@ -2118,6 +2118,60 @@
             "coverage": ["tt/sbix:strike-count-overflow-ignored-at-face-open"]
           },
           {
+            "id": "batch311-sbix-strike-offset-out-of-range",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/sbix/sbix-strike-offset-out-of-range.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/sbix/sbix-strike-offset-out-of-range.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "metadata": {
+              "expansion_reason": "Reach the accepted-sbix strike-record slice guard after the version, flags, strike count, and offset-array checks have passed; the offset deliberately points beyond the optional table.",
+              "original_freetype_behavior": "Pinned FreeType 2.14.3 rejects the malformed optional sbix load internally but ignores that optional-table failure and still opens the surrounding face successfully.",
+              "source_refs": [
+                "freetype/src/sfnt/ttsbit.c:tt_face_load_sbix",
+                "freetype/src/sfnt/sfobjs.c:sfnt_open_font",
+                "src/tt/sbix.rs:32-63"
+              ]
+            },
+            "coverage": ["batch311:sbix:strike-offset-out-of-range-ignored-at-face-open"]
+          },
+          {
+            "id": "batch311-sbix-ppem-truncated",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/sbix/sbix-ppem-truncated.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/sbix/sbix-ppem-truncated.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "metadata": {
+              "expansion_reason": "Reach the strike-record ppem short-read guard with a structurally valid sbix header and offset array, using a one-byte strike record.",
+              "original_freetype_behavior": "Pinned FreeType 2.14.3 rejects the malformed optional sbix load internally but ignores that optional-table failure and still opens the surrounding face successfully.",
+              "source_refs": [
+                "freetype/src/sfnt/ttsbit.c:tt_face_load_sbix",
+                "freetype/src/sfnt/sfobjs.c:sfnt_open_font",
+                "src/tt/sbix.rs:32-63"
+              ]
+            },
+            "coverage": ["batch311:sbix:ppem-short-read-ignored-at-face-open"]
+          },
+          {
+            "id": "batch311-sbix-ppi-truncated",
+            "assets": {
+              "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/sbix/sbix-ppi-truncated.ttf"},
+              "font": {"kind": "ref", "role": "font", "id": "input/fonts/sbix/sbix-ppi-truncated.ttf"}
+            },
+            "params": {"face_index": 0, "memory_source": "whole_file"},
+            "metadata": {
+              "expansion_reason": "Reach the strike-record ppi short-read guard after the ppem field is available, using a three-byte strike record.",
+              "original_freetype_behavior": "Pinned FreeType 2.14.3 rejects the malformed optional sbix load internally but ignores that optional-table failure and still opens the surrounding face successfully.",
+              "source_refs": [
+                "freetype/src/sfnt/ttsbit.c:tt_face_load_sbix",
+                "freetype/src/sfnt/sfobjs.c:sfnt_open_font",
+                "src/tt/sbix.rs:32-63"
+              ]
+            },
+            "coverage": ["batch311:sbix:ppi-short-read-ignored-at-face-open"]
+          },
+          {
             "id": "svg-short-table",
             "assets": {
               "font_bytes": {"kind": "ref", "role": "font", "id": "input/fonts/svg/svg-short-table.ttf"},

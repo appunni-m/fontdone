@@ -4387,6 +4387,30 @@ incremental evidence and not a replacement full-denominator percentage. The
 MCP project source metadata still identifies an older commit, so exact source
 line interpretation is anchored to the local pushed checkout.
 
+Batch311 added three public `FT_New_Memory_Face` rows for malformed optional
+`sbix` strike records. The records deliberately take three distinct parser
+shapes: an offset beyond the table, a one-byte record that cannot provide the
+ppem field, and a three-byte record that cannot provide the ppi field. These
+inputs target `src/tt/sbix.rs:50-51` while preserving the surrounding valid
+face. The pinned FreeType 2.14.3 loader rejects each malformed optional `sbix`
+record internally, ignores the optional-table failure during `sfnt_open_font`,
+and still opens the face; the Rust, C ABI, and WASM results therefore remain
+successful face opens. The fixture metadata records the corresponding pinned C
+references at `freetype/src/sfnt/ttsbit.c:tt_face_load_sbix` and
+`freetype/src/sfnt/sfobjs.c:sfnt_open_font`.
+
+Focused parity passed all three concrete rows across the pinned oracle, Rust
+FFI, C ABI, and WASM. Coverage MCP run
+`37338e02-91bd-43b5-b083-23b5efc0a849` used those comma-separated concrete
+case IDs against explicit full baseline snapshot
+`b7d3ee3f-9a0b-485f-bccd-921c1ac84063` and ingested snapshot
+`36d1450c-3865-4751-b45f-271b3da7bd54`. Its supported incremental union adds
+four regions, moving the baseline from 89,598/93,194 to 89,602/93,194
+(96.141382% to 96.145675%); line, branch, and function totals did not change.
+The selected-only profile is not a replacement full-denominator result. The
+MCP project source metadata still identifies an older commit, so exact source
+line interpretation is anchored to the local checkout and pushed commit.
+
 Confirmed runtime divergences fixed during the coverage loop are documented
 next to their implementations and must remain separate from coverage-only
 adoption claims:
