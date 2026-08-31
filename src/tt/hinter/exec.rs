@@ -373,14 +373,14 @@ impl ExecContext {
 
     /// Read one byte from the active code range and advance the instruction pointer.
     pub fn fetch_byte(&mut self) -> Result<u8, FontError> {
-        let data = if self.cur_range == 1 {
-            &self.font_program
-        } else {
-            &self.glyph_program
+        let data = match self.cur_range {
+            0 => &self.cvt_program,
+            1 => &self.font_program,
+            _ => &self.glyph_program,
         };
-        let byte = data.get(self.ip).copied().ok_or(FontError::InvalidOutline(
-            "bytecode: IP out of range".into(),
-        ))?;
+        // Pinned FreeType `SkipCode` and `TT_RunIns` report
+        // `FT_Err_Code_Overflow` when an opcode operand crosses codeSize.
+        let byte = data.get(self.ip).copied().ok_or(FontError::CodeOverflow)?;
         self.ip += 1;
         Ok(byte)
     }
@@ -1117,19 +1117,7 @@ impl ExecContext {
     /// Fetch a byte from the active program at current IP.
     /// Range 0 = CVT/prep program, 1 = font program (fpgm), 2 = glyph program.
     fn fetch_byte_glyph(&mut self) -> Result<u8, FontError> {
-        let program: &[u8] = match self.cur_range {
-            0 => &self.cvt_program,
-            1 => &self.font_program,
-            _ => &self.glyph_program,
-        };
-        if self.ip >= program.len() {
-            // Pinned FreeType `SkipCode` and `TT_RunIns` report
-            // `FT_Err_Code_Overflow` when any opcode operand crosses codeSize.
-            return Err(FontError::CodeOverflow);
-        }
-        let b = program[self.ip];
-        self.ip += 1;
-        Ok(b)
+        self.fetch_byte()
     }
 
     /// Main opcode dispatch loop for the glyph program.
@@ -1168,9 +1156,8 @@ impl ExecContext {
                 0xB8..=0xBF => {
                     let count = (opcode - 0xB8 + 1) as usize;
                     for _ in 0..count {
-                        let hi = self.fetch_byte_glyph()? as u16;
-                        let lo = self.fetch_byte_glyph()? as u16;
-                        self.push(i16::from_be_bytes([hi as u8, lo as u8]) as i32);
+                        let word = self.fetch_word()?;
+                        self.push(word as i32);
                     }
                 }
 
@@ -1187,9 +1174,8 @@ impl ExecContext {
                     // NPUSHW
                     let count = self.fetch_byte_glyph()? as usize;
                     for _ in 0..count {
-                        let hi = self.fetch_byte_glyph()?;
-                        let lo = self.fetch_byte_glyph()?;
-                        self.push(i16::from_be_bytes([hi, lo]) as i32);
+                        let word = self.fetch_word()?;
+                        self.push(word as i32);
                     }
                 }
 
