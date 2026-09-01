@@ -5242,3 +5242,50 @@ and `3,788/4,073` functions before the batch. Post-change full snapshot run
 and `3,788/4,073` functions. The full denominator remains below 100%; the
 incremental run is reachability evidence, not a replacement for this complete
 snapshot.
+
+### Batch 324: public WASM SVG callback-state guards
+
+This batch adds 50 concrete variants to
+`otsvg.FT_SVG_Document.mcp_wasm_argument_validation_batch`,
+`batch324-c120-svg-state-001` through `batch324-c120-svg-state-050`. The
+generated runtime IDs are the fully qualified concrete IDs
+`otsvg.FT_SVG_Document.mcp_wasm_argument_validation_batch@batch324-c120-svg-state-###`.
+The variants cycle four deliberately malformed public test-support states:
+`preset_slot` with a null callback state, `preset_slot` with a zero document
+pointer, `render_svg` with a null callback state, and `render_svg` with a zero
+document pointer. Each five-case group repeats the four-state cycle with a
+different public SVG face/glyph invocation record and records its reason and
+coverage intent in the fixture. No unit test was added or used for coverage.
+
+The expansion targets the WASM callback guards at
+`fontdone-wasm/src/implementation.rs:2722-2770`. The pinned public callback
+contract in `freetype/include/freetype/otsvg.h:100-124` permits a hook to
+return an error, while `freetype/src/svg/ftsvg.c:117-180` creates and passes a
+live callback state only during a real renderer invocation. Consequently,
+ordinary font bytes cannot produce these null-state or zero-document-pointer
+states; the public ABI test-support export makes the malformed pointer classes
+explicit without fabricating an invalid pointer in the normal font parser.
+The oracle and Rust/WASM parity adapters model the same defined safety
+extension and return `FT_Err_Invalid_Slot_Handle` for those four callback
+states; the pre-existing null output/file-base cases remain
+`FT_Err_Invalid_Argument`.
+
+The first Coverage MCP submission used only the batch suffixes and correctly
+matched no cases because the runtime selector is concrete-ID based. Its
+failure was a filter-selection error, not a parity failure. The corrected
+incremental run `711d6f69-873e-4d8c-bd58-4b3c5eb2a161` passed with the exact
+50 fully qualified IDs as ten repeatable `--migration-coverage-case-ids`
+arguments, each containing five comma-separated IDs, against explicit
+baseline snapshot `8776d8f9-1eac-4841-add1-2ccbe24beaaa`. It ingested snapshot
+`e6cb98f4-b46a-4c23-a8fd-8cc1e46243a4`, reported newly covered WASM lines
+`2727`, `2730`, `2766`, and `2769` plus the probe-helper lines, and reported
+zero regressions. This is selected-subset reachability evidence: Coverage
+MCP marked the additive merge `exact=false`, reported unobserved baseline
+hits, and did not treat the subset as a replacement full denominator.
+
+The post-change full Coverage MCP run
+`226ad934-0a00-4b47-8fd0-d36185d08a61` passed and ingested complete snapshot
+`6a25f702-4d14-413c-baea-46e7eb00ab60`. It measured 90,791/94,326 covered
+regions, 65,833/67,847 lines, 12,165/13,824 branches, and 3,789/4,074
+functions. The full denominator remains below 100%; the next campaign must
+continue from this complete snapshot.
