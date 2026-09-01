@@ -3223,6 +3223,1858 @@
           "freetype/src/base/ftoutln.c:614-640"
         ]
       }
+    },
+    {
+      "case_id": "ftoutln.FT_Outline_Render.batch322_direct_oversized_cbox",
+      "subject": "ftoutln.FT_Outline_Render",
+      "case": "batch322_direct_oversized_cbox",
+      "operation": "ftoutln.outline_render",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "batch322-c118-direct-001",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 1,
+                "rows": 1,
+                "pitch": 1,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public xMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 1x1 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4468"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-002",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 2,
+                "rows": 3,
+                "pitch": 3,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public yMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 2x3 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4469"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-003",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 3,
+                "rows": 5,
+                "pitch": 5,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public xMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 3x5 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4470"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-004",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 4,
+                "rows": 7,
+                "pitch": 4,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public yMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 4x7 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4471"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-005",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 5,
+                "rows": 9,
+                "pitch": 6,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public xMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 5x9 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4468"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-006",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 7,
+                "rows": 11,
+                "pitch": 9,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public yMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 7x11 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4469"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-007",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 8,
+                "rows": 13,
+                "pitch": 8,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public xMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 8x13 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4470"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-008",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 9,
+                "rows": 15,
+                "pitch": 10,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public yMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 9x15 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4471"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-009",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 16,
+                "rows": 17,
+                "pitch": 18,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public xMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 16x17 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4468"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-010",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 31,
+                "rows": 19,
+                "pitch": 31,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public yMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 31x19 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4469"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-011",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 1,
+                "rows": 1,
+                "pitch": 2,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public xMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 1x1 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4470"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-012",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 2,
+                "rows": 3,
+                "pitch": 4,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public yMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 2x3 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4471"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-013",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 3,
+                "rows": 5,
+                "pitch": 3,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public xMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 3x5 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4468"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-014",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 4,
+                "rows": 7,
+                "pitch": 5,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public yMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 4x7 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4469"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-015",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 5,
+                "rows": 9,
+                "pitch": 7,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public xMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 5x9 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4470"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-016",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 7,
+                "rows": 11,
+                "pitch": 7,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public yMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 7x11 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4471"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-017",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 8,
+                "rows": 13,
+                "pitch": 9,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public xMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 8x13 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4468"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-018",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 9,
+                "rows": 15,
+                "pitch": 11,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public yMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 9x15 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4469"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-019",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 16,
+                "rows": 17,
+                "pitch": 16,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public xMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 16x17 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4470"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-020",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 31,
+                "rows": 19,
+                "pitch": 32,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public yMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 31x19 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4471"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-021",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 1,
+                "rows": 1,
+                "pitch": 3,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public xMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 1x1 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4468"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-022",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 2,
+                "rows": 3,
+                "pitch": 2,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public yMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 2x3 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4469"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-023",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 3,
+                "rows": 5,
+                "pitch": 4,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public xMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 3x5 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4470"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-024",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 4,
+                "rows": 7,
+                "pitch": 6,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public yMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 4x7 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4471"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-025",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 5,
+                "rows": 9,
+                "pitch": 5,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public xMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 5x9 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4468"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-026",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 7,
+                "rows": 11,
+                "pitch": 8,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public yMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 7x11 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4469"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-027",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 8,
+                "rows": 13,
+                "pitch": 10,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public xMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 8x13 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4470"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-028",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 9,
+                "rows": 15,
+                "pitch": 9,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public yMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 9x15 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4471"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-029",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 16,
+                "rows": 17,
+                "pitch": 17,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public xMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 16x17 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4468"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-030",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 31,
+                "rows": 19,
+                "pitch": 33,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public yMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 31x19 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4469"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-031",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 1,
+                "rows": 1,
+                "pitch": 1,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public xMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 1x1 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4470"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-032",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 2,
+                "rows": 3,
+                "pitch": 3,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public yMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 2x3 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4471"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-033",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 3,
+                "rows": 5,
+                "pitch": 5,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public xMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 3x5 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4468"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-034",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 4,
+                "rows": 7,
+                "pitch": 4,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public yMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 4x7 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4469"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-035",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 5,
+                "rows": 9,
+                "pitch": 6,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public xMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 5x9 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4470"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-036",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 7,
+                "rows": 11,
+                "pitch": 9,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public yMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 7x11 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4471"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-037",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 8,
+                "rows": 13,
+                "pitch": 8,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public xMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 8x13 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4468"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-038",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 9,
+                "rows": 15,
+                "pitch": 10,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public yMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 9x15 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4469"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-039",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 16,
+                "rows": 17,
+                "pitch": 18,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public xMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 16x17 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4470"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-040",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 31,
+                "rows": 19,
+                "pitch": 31,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public yMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 31x19 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4471"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-041",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 1,
+                "rows": 1,
+                "pitch": 2,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public xMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 1x1 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4468"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-042",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 2,
+                "rows": 3,
+                "pitch": 4,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public yMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 2x3 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4469"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-043",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 3,
+                "rows": 5,
+                "pitch": 3,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public xMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 3x5 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4470"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-044",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 4,
+                "rows": 7,
+                "pitch": 5,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public yMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 4x7 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4471"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-045",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 5,
+                "rows": 9,
+                "pitch": 7,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public xMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 5x9 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4468"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-046",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 7,
+                "rows": 11,
+                "pitch": 7,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public yMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 7x11 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4469"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-047",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 8,
+                "rows": 13,
+                "pitch": 9,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public xMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 8x13 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4470"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-048",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-max-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 9,
+                "rows": 15,
+                "pitch": 11,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMax beyond 0x1000000 before setting params->source or dispatching a renderer; this public yMax witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 9x15 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4471"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-049",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-x-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 16,
+                "rows": 17,
+                "pitch": 16,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects xMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public xMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 16x17 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4468"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch322-c118-direct-050",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cbox-y-min-beyond-render-limit.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 31,
+                "rows": 19,
+                "pitch": 32,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel"
+              },
+              "library": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:625-640 guard rejects yMin beyond -0x1000000 before setting params->source or dispatching a renderer; this public yMin witness keeps AA|DIRECT and a recording callback so the WASM no-CLIP CBox guard reaches its false arm, while the 31x19 target descriptor verifies target-independent error handling.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4479",
+              "fontdone-wasm/src/implementation.rs:4469"
+            ],
+            "expect_error": true
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftoutln",
+        "surface:public-c-api",
+        "operation:direct-render",
+        "error:oversized-cbox",
+        "coverage:batch322"
+      ],
+      "metadata": {
+        "abi": {
+          "header": "freetype/ftoutln.h",
+          "symbol": "FT_Outline_Render",
+          "kind": "function",
+          "c_signature": "FT_Error FT_Outline_Render(FT_Library library, FT_Outline* outline, FT_Raster_Params* params)"
+        },
+        "source_behavior": "The public FreeType wrapper rejects any outline CBox outside +/-0x1000000 before it writes params->source or enters the renderer. These malformed public outlines isolate each short-circuit CBox predicate in the WASM no-CLIP wrapper and require exact Invalid_Outline parity."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "return"
+          ],
+          "compare_error_output": true
+        },
+        "error": [
+          "FT_Err_Invalid_Outline"
+        ],
+        "source_refs": [
+          "freetype/src/base/ftoutln.c:614-640",
+          "fontdone-wasm/src/implementation.rs:4448-4480"
+        ],
+        "fixture_requirements": [
+          "Fifty maintained public outline variants with one CBox bound beyond the pinned +/-0x1000000 limit, AA|DIRECT raster params, a recording gray_spans callback, and small bitmap descriptors."
+        ]
+      }
     }
   ]
 }

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "kind": "outline_model",
+  "description": "Outline whose yMax CBox bound is just beyond FT_Outline_Render's positive limit.",
+  "points": [
+    { "x": 0, "y": 0 },
+    { "x": 0, "y": 16777280 },
+    { "x": 64, "y": 16777280 },
+    { "x": 64, "y": 0 }
+  ],
+  "tags": [1, 1, 1, 1],
+  "contours": [3],
+  "flags": 0
+}

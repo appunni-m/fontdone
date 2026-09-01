@@ -16355,6 +16355,18 @@ static int emit_outline_render(int argc, char** argv) {
             batch321_c117_zero_contours = (int)value;
         }
     }
+    int batch322_c118_direct = 0;
+    const char* batch322_c118_direct_marker =
+        strstr(input_case_id, "@batch322-c118-direct-");
+    if (batch322_c118_direct_marker) {
+        const char* number =
+            batch322_c118_direct_marker + strlen("@batch322-c118-direct-");
+        char* end = NULL;
+        long value = strtol(number, &end, 10);
+        if (end != number && *end == '\0' && value >= 1 && value <= 50) {
+            batch322_c118_direct = (int)value;
+        }
+    }
     int batch2_mono = 0;
     int batch2_mono_error = 0;
     int batch4_mono_zero = 0;
@@ -16528,6 +16540,7 @@ static int emit_outline_render(int argc, char** argv) {
     }
     if (streq(mode, "error") &&
         !batch2_mono_error &&
+        !batch322_c118_direct &&
         !streq(case_id, "ftimage.FT_Raster_Render_Func.render_error_propagates") &&
         !streq(case_id, "ftimage.FT_Span.wide_outline_span_limit") &&
         !streq(case_id, "ftoutln.FT_Outline_Render.renderer_fallback_and_errors")) {
@@ -16605,6 +16618,28 @@ static int emit_outline_render(int argc, char** argv) {
         n_points = 0;
     } else if (batch321_c117_zero_contours) {
         n_contours = 0;
+        n_points = 4;
+    } else if (batch322_c118_direct) {
+        static const int batch322_points[4][4][2] = {
+            {
+                { -16777280, 0 }, { 0, 0 }, { 0, 64 }, { -16777280, 64 }
+            },
+            {
+                { 0, -16777280 }, { 0, 0 }, { 64, 0 }, { 64, -16777280 }
+            },
+            {
+                { 0, 0 }, { 0, 64 }, { 16777280, 64 }, { 16777280, 0 }
+            },
+            {
+                { 0, 0 }, { 0, 16777280 }, { 64, 16777280 }, { 64, 0 }
+            }
+        };
+        int batch322_axis = (batch322_c118_direct - 1) % 4;
+        for (int i = 0; i < 4; i++) {
+            points[i].x = batch322_points[batch322_axis][i][0];
+            points[i].y = batch322_points[batch322_axis][i][1];
+        }
+        n_contours = 1;
         n_points = 4;
     } else if (batch165_direct_zero_width || strstr(case_id, "@zero-width-target")) {
         bitmap_width = 0;
@@ -17400,6 +17435,7 @@ static int emit_outline_render(int argc, char** argv) {
         streq(case_id, "ftoutln.FT_Outline_Render.direct_render_without_target") ||
         streq(case_id, "ftimage.FT_RASTER_FLAG_CLIP.direct_clip_box_limits_spans") ||
         streq(case_id, "ftimage.FT_RASTER_FLAG_CLIP.direct_without_clip_presets_cbox") ||
+        batch322_c118_direct ||
         batch165_direct_zero_width ||
         batch178_direct_zero_height) {
         memset(buffer, 0xA5, sizeof(buffer));
@@ -17425,6 +17461,13 @@ static int emit_outline_render(int argc, char** argv) {
             params.gray_spans = record_outline_gray_spans;
         }
         err = FT_Outline_Render(library, &outline, &params);
+        if (batch322_c118_direct && err != FT_Err_Ok) {
+            printf("{");
+            print_status(err);
+            printf(",\"output\":null}\n");
+            FT_Done_FreeType(library);
+            return 0;
+        }
         int target_preserved = 1;
         for (size_t i = 0; i < sizeof(buffer); i++) {
             if (buffer[i] != 0xA5) {

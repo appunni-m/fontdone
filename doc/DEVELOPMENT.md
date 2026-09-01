@@ -5151,3 +5151,44 @@ functions; MCP marked the merge `exact=false` with conservative fallbacks
 and reported 50,093 baseline observations as `not_observed`. The selected
 run proves reachability of the target arm but is not a replacement complete
 snapshot or a 100% denominator claim.
+
+### Batch 322: single-axis oversized-CBox errors through the WASM wrapper
+
+This batch adds 50 concrete public `FT_Outline_Render` variants under
+`ftoutln.FT_Outline_Render.batch322_direct_oversized_cbox`:
+`batch322-c118-direct-001` through `batch322-c118-direct-050`. The variants
+cycle four maintained malformed outlines, each with exactly one of `xMin`,
+`yMin`, `xMax`, or `yMax` beyond the `FT_Outline_Render` CBox limit. Small
+bitmap descriptors vary the target shape while retaining `AA|DIRECT` and a
+non-null recording callback; every variant records its axis-specific reason
+and coverage intent.
+
+The expansion targets the false no-CLIP CBox arm at
+`fontdone-wasm/src/implementation.rs:4479-4480`, plus the short-circuit
+predicate branches at `:4468-4471`. The pinned
+`freetype/src/base/ftoutln.c:614-640` validates the library, outline, params,
+and CBox before writing `params->source` or entering a renderer, so each
+malformed outline is a defined public error input. The pinned implementation
+returns `FT_Err_Invalid_Outline` for every axis; no private callback or
+unit-test route is used.
+
+Focused parity passed all 50 c118 variants (`50/50`) across Rust FFI, C ABI,
+WASM, and the pinned oracle. Coverage MCP incremental run
+`1aef7793-af75-4ede-beef-422101121d47` used the exact 50 concrete IDs as ten
+repeatable `--migration-coverage-case-ids` arguments, each a comma-separated
+five-case chunk, against explicit full snapshot
+`5f52274b-a680-4472-acd6-71c07742d894`. It passed and ingested snapshot
+`2e4a81ed-3b90-4fdc-910a-3576adef9dd0`; the supported selected-subset review
+reported the new WASM line identity at `:4479` with zero regressions. As
+required for incremental evidence, its additive union retained the full
+denominator rather than treating the selected subset as a replacement
+snapshot; MCP reported `merge.exact=false` and `50,053` baseline observations
+as `not_observed`. The fresh complete baseline remains
+`90,759/94,300` regions, `65,811/67,830` lines, `12,144/13,824` branches,
+and `3,788/4,073` functions before the batch. Post-change full snapshot run
+`19275dda-414f-49ee-9d49-054129f820e8` ingested snapshot
+`4e0cc9be-14a2-47c9-835e-619ae8daaf43` and measured
+`90,760/94,300` regions, `65,811/67,830` lines, `12,160/13,824` branches,
+and `3,788/4,073` functions. The full denominator remains below 100%; the
+incremental run is reachability evidence, not a replacement for this complete
+snapshot.

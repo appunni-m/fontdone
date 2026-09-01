@@ -1694,6 +1694,7 @@ fn outline_render_runtime_supported(case: &InputCase) -> bool {
                 | "batch165_valid_direct_zero_width_clip"
                 | "batch178_valid_direct_zero_height_clip"
                 | "direct_validation_matrix"
+                | "batch322_direct_oversized_cbox"
         ))
 }
 

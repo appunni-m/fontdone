@@ -108,15 +108,15 @@ The latest full parity snapshot was recorded on **2026-09-01** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 19,933 |
-| Passed cases | 19,933 |
+| Runnable exact-comparison cases | 19,983 |
+| Passed cases | 19,983 |
 | Failed cases | 0 |
 | Explicitly pending cases | 4 |
-| Covered manifest cases | 4,410 |
+| Covered manifest cases | 4,411 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,565 |
-| Concrete expanded cases | 19,937 |
+| Logical declared cases | 4,566 |
+| Concrete expanded cases | 19,987 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
 `19,673 / 19,673` means every runnable case in that execution matched; the 4

@@ -10082,6 +10082,8 @@ subjects:
         description: Null library, null outline, null params, oversized cbox, invalid target, missing callbacks, and unsupported renderer modes return the same C error code.
       - id: direct_validation_matrix
         description: AA plus DIRECT rendering validates null library, null outline, missing DIRECT flags, and oversized outline CBoxes with the same C error codes.
+      - id: batch322_direct_oversized_cbox
+        description: Fifty public malformed AA plus DIRECT calls isolate each single-axis oversized outline CBox and return the exact Invalid_Outline error before source or renderer dispatch.
     # needs-input: operation=FT_Outline_Render; fixture_asset=outline glyphs from tests/fixtures/input/fonts/DejaVuSans.ttf plus synthetic clipped, empty, malformed, and oversized outlines; params={FT_Raster_Params flags, target bitmap, gray_spans callback, clip_box}; expected output shape={FT_Error, mutated params.source, clip_box, bitmap bytes/hash, span event log}; comparison=exact C oracle fields, byte output/spans, and error code.
 
   - id: ftoutln.FT_Outline_Reverse

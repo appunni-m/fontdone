@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "kind": "outline_model",
+  "description": "Outline whose yMin CBox bound is just beyond FT_Outline_Render's negative limit.",
+  "points": [
+    { "x": 0, "y": -16777280 },
+    { "x": 0, "y": 0 },
+    { "x": 64, "y": 0 },
+    { "x": 64, "y": -16777280 }
+  ],
+  "tags": [1, 1, 1, 1],
+  "contours": [3],
+  "flags": 0
+}
