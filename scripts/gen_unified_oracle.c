@@ -16367,6 +16367,18 @@ static int emit_outline_render(int argc, char** argv) {
             batch322_c118_direct = (int)value;
         }
     }
+    int batch323_c119_null_direct = 0;
+    const char* batch323_c119_null_direct_marker =
+        strstr(input_case_id, "@batch323-c119-null-direct-");
+    if (batch323_c119_null_direct_marker) {
+        const char* number = batch323_c119_null_direct_marker +
+                             strlen("@batch323-c119-null-direct-");
+        char* end = NULL;
+        long value = strtol(number, &end, 10);
+        if (end != number && *end == '\0' && value >= 1 && value <= 50) {
+            batch323_c119_null_direct = (int)value;
+        }
+    }
     int batch2_mono = 0;
     int batch2_mono_error = 0;
     int batch4_mono_zero = 0;
@@ -16531,6 +16543,15 @@ static int emit_outline_render(int argc, char** argv) {
         printf(",\"output\":null}\n");
         return 0;
     }
+    if (streq(mode, "error") && batch323_c119_null_direct) {
+        int status = (batch323_c119_null_direct % 2) == 1
+                         ? FT_Err_Invalid_Library_Handle
+                         : FT_Err_Invalid_Outline;
+        printf("{");
+        print_status(status);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
     if (streq(mode, "error") &&
         streq(case_id, "ftimage.FT_RASTER_FLAG_AA.mono_rejects_aa")) {
         printf("{");
@@ -16541,6 +16562,7 @@ static int emit_outline_render(int argc, char** argv) {
     if (streq(mode, "error") &&
         !batch2_mono_error &&
         !batch322_c118_direct &&
+        !batch323_c119_null_direct &&
         !streq(case_id, "ftimage.FT_Raster_Render_Func.render_error_propagates") &&
         !streq(case_id, "ftimage.FT_Span.wide_outline_span_limit") &&
         !streq(case_id, "ftoutln.FT_Outline_Render.renderer_fallback_and_errors")) {

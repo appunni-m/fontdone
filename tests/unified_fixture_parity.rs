@@ -1695,6 +1695,7 @@ fn outline_render_runtime_supported(case: &InputCase) -> bool {
                 | "batch178_valid_direct_zero_height_clip"
                 | "direct_validation_matrix"
                 | "batch322_direct_oversized_cbox"
+                | "batch323_null_direct_pointer_guard"
         ))
 }
 
@@ -92018,11 +92019,15 @@ fn rust_outline_render_once(
     include_error_output: bool,
 ) -> Result<RunOutput, String> {
     let library = FT_Init_FreeType();
+    let library_present = outline_render_library_present(&case.inputs.params);
     let mut outline_model = outline_render_outline(case)?;
     if let Some(flags) = outline_flags {
         outline_model.flags = flags;
     }
     let outline = outline_render_snapshot(&outline_model);
+    let outline_present = outline_render_outline_present(&case.inputs.params);
+    let library_arg = library_present.then_some(&library);
+    let outline_arg = outline_present.then_some(&outline);
     let (width, rows) = outline_render_target_box(case)?;
     let pitch = outline_render_target_pitch(case, width)?;
     let pixel_mode = outline_render_target_pixel_mode(&case.inputs.params)?;
@@ -92054,8 +92059,8 @@ fn rust_outline_render_once(
         let observed_clip_box =
             outline_render_observed_direct_clip_box(&outline_model, flags, Some(clip_box));
         return match FT_Outline_Render_Direct_Spans(
-            Some(&library),
-            Some(&outline),
+            library_arg,
+            outline_arg,
             target_present.then_some(&target),
             flags,
             Some(clip_box),
@@ -92074,8 +92079,8 @@ fn rust_outline_render_once(
         };
     }
     match FT_Outline_Render(
-        Some(&library),
-        Some(&outline),
+        library_arg,
+        outline_arg,
         // FreeType's smooth renderer returns success for an empty outline
         // before inspecting `params->target`; preserve that public
         // NULL-target contract in the Rust parity lane as well.
@@ -92105,7 +92110,7 @@ fn rust_outline_render_once(
             if outline_render_error_output_available(flags, pixel_mode) {
                 let output_buffer =
                     FT_Outline_Render_Error_Output(
-                        Some(&outline),
+                        outline_arg,
                         target_present.then_some(&target),
                         flags,
                     )
@@ -92264,6 +92269,18 @@ fn c_outline_render_once(
     }
     let mut outline = CRenderOutlineStorage::new(&outline_model);
     let outline_ptr = outline.as_ptr();
+    let library_present = outline_render_library_present(&case.inputs.params);
+    let outline_present = outline_render_outline_present(&case.inputs.params);
+    let library_arg = if library_present {
+        library
+    } else {
+        ptr::null_mut()
+    };
+    let outline_arg = if outline_present {
+        outline_ptr
+    } else {
+        ptr::null()
+    };
     let (width, rows) = outline_render_target_box(case)?;
     let pitch = outline_render_target_pitch(case, width)?;
     let pixel_mode = outline_render_target_pixel_mode(&case.inputs.params)?;
@@ -92316,8 +92333,8 @@ fn c_outline_render_once(
             }),
         );
         let (err, spans, user_seen) = c_abi::abi_support_outline_render_direct_spans(
-            library,
-            outline_ptr,
+            library_arg,
+            outline_arg,
             &mut params,
             outline_render_gray_spans_present(&case.inputs.params),
             OUTLINE_RENDER_USER_TOKEN as *mut c_void,
@@ -92333,7 +92350,7 @@ fn c_outline_render_once(
             Ok(error(err))
         };
     }
-    let err = c_abi::FT_Outline_Render(library, outline_ptr, &mut params);
+    let err = c_abi::FT_Outline_Render(library_arg, outline_arg, &mut params);
     c_done_library(library);
     if err == FT_Err_Ok {
         Ok(ok(outline_render_bitmap_payload(
@@ -92493,6 +92510,14 @@ fn wasm_outline_render_once(
     }
     let mut outline = WasmRenderOutlineStorage::new(&outline_model);
     let outline_ptr = outline.as_ptr();
+    let library_present = outline_render_library_present(&case.inputs.params);
+    let outline_present = outline_render_outline_present(&case.inputs.params);
+    let library_arg = i32::from(library_present);
+    let outline_arg = if outline_present {
+        outline_ptr
+    } else {
+        ptr::null()
+    };
     let (width, rows) = outline_render_target_box(case)?;
     let pitch = outline_render_target_pitch(case, width)?;
     let pixel_mode = outline_render_target_pixel_mode(&case.inputs.params)?;
@@ -92555,10 +92580,11 @@ fn wasm_outline_render_once(
         } else {
             ptr::null()
         };
-        let exported_err = wasm_abi::fontdone_wasm_outline_render(1, outline_ptr, &mut params);
+        let exported_err =
+            wasm_abi::fontdone_wasm_outline_render(library_arg, outline_arg, &mut params);
         let (err, spans, user_seen) = wasm_abi::abi_support_outline_render_direct_spans(
-            1,
-            outline_ptr,
+            library_arg,
+            outline_arg,
             &mut params,
             gray_spans_present,
             OUTLINE_RENDER_USER_TOKEN as *mut c_void,
@@ -92578,7 +92604,7 @@ fn wasm_outline_render_once(
             Ok(error(err))
         };
     }
-    let err = wasm_abi::fontdone_wasm_outline_render(1, outline_ptr, &mut params);
+    let err = wasm_abi::fontdone_wasm_outline_render(library_arg, outline_arg, &mut params);
     if err == FT_Err_Ok {
         Ok(ok(outline_render_bitmap_payload(
             width,
@@ -93183,6 +93209,30 @@ fn outline_render_gray_spans_present(params: &Value) -> bool {
             params
                 .get("raster_params")
                 .and_then(|raster_params| raster_params.get("gray_spans"))
+        })
+        .and_then(Value::as_str)
+        .is_none_or(|value| value != "NULL")
+}
+
+fn outline_render_library_present(params: &Value) -> bool {
+    params
+        .get("library")
+        .or_else(|| {
+            params
+                .get("raster_params")
+                .and_then(|raster_params| raster_params.get("library"))
+        })
+        .and_then(Value::as_str)
+        .is_none_or(|value| value != "NULL")
+}
+
+fn outline_render_outline_present(params: &Value) -> bool {
+    params
+        .get("outline")
+        .or_else(|| {
+            params
+                .get("raster_params")
+                .and_then(|raster_params| raster_params.get("outline"))
         })
         .and_then(Value::as_str)
         .is_none_or(|value| value != "NULL")

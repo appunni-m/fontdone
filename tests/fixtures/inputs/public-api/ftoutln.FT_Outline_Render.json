@@ -5075,6 +5075,2209 @@
           "Fifty maintained public outline variants with one CBox bound beyond the pinned +/-0x1000000 limit, AA|DIRECT raster params, a recording gray_spans callback, and small bitmap descriptors."
         ]
       }
+    },
+    {
+      "case_id": "ftoutln.FT_Outline_Render.batch323_null_direct_pointer_guard",
+      "subject": "ftoutln.FT_Outline_Render",
+      "case": "batch323_null_direct_pointer_guard",
+      "operation": "ftoutln.outline_render",
+      "schema": "api_result",
+      "expect_error": true,
+      "inputs": {
+        "variants": [
+          {
+            "id": "batch323-c119-null-direct-001",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/simple-filled-square.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 4,
+                "rows": 6,
+                "pitch": 5,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -31,
+                  "yMin": -23,
+                  "xMax": 33,
+                  "yMax": 25
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 4x6 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-002",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 7,
+                "rows": 11,
+                "pitch": 9,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -30,
+                  "yMin": -22,
+                  "xMax": 34,
+                  "yMax": 26
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 7x11 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-003",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/clipped-crossing-lines.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 10,
+                "rows": 3,
+                "pitch": 10,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -29,
+                  "yMin": -21,
+                  "xMax": 35,
+                  "yMax": 27
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 10x3 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-004",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/even-odd-overlap.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 2,
+                "rows": 8,
+                "pitch": 3,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -28,
+                  "yMin": -20,
+                  "xMax": 36,
+                  "yMax": 28
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 2x8 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-005",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cubic-closed-loop.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 5,
+                "rows": 13,
+                "pitch": 7,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -27,
+                  "yMin": -19,
+                  "xMax": 37,
+                  "yMax": 29
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 5x13 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-006",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/simple-filled-square.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 8,
+                "rows": 5,
+                "pitch": 8,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -26,
+                  "yMin": -18,
+                  "xMax": 38,
+                  "yMax": 30
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 8x5 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-007",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 11,
+                "rows": 10,
+                "pitch": 12,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -25,
+                  "yMin": -17,
+                  "xMax": 39,
+                  "yMax": 31
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 11x10 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-008",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/clipped-crossing-lines.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 3,
+                "rows": 2,
+                "pitch": 5,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -24,
+                  "yMin": -16,
+                  "xMax": 40,
+                  "yMax": 32
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 3x2 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-009",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/even-odd-overlap.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 6,
+                "rows": 7,
+                "pitch": 6,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -23,
+                  "yMin": -24,
+                  "xMax": 41,
+                  "yMax": 33
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 6x7 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-010",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cubic-closed-loop.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 9,
+                "rows": 12,
+                "pitch": 10,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -22,
+                  "yMin": -23,
+                  "xMax": 42,
+                  "yMax": 34
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 9x12 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-011",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/simple-filled-square.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 1,
+                "rows": 4,
+                "pitch": 3,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -21,
+                  "yMin": -22,
+                  "xMax": 43,
+                  "yMax": 24
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 1x4 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-012",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 4,
+                "rows": 9,
+                "pitch": 4,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -20,
+                  "yMin": -21,
+                  "xMax": 44,
+                  "yMax": 25
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 4x9 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-013",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/clipped-crossing-lines.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 7,
+                "rows": 1,
+                "pitch": 8,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -19,
+                  "yMin": -20,
+                  "xMax": 45,
+                  "yMax": 26
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 7x1 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-014",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/even-odd-overlap.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 10,
+                "rows": 6,
+                "pitch": 12,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -18,
+                  "yMin": -19,
+                  "xMax": 46,
+                  "yMax": 27
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 10x6 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-015",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cubic-closed-loop.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 2,
+                "rows": 11,
+                "pitch": 2,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -17,
+                  "yMin": -18,
+                  "xMax": 47,
+                  "yMax": 28
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 2x11 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-016",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/simple-filled-square.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 5,
+                "rows": 3,
+                "pitch": 6,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -16,
+                  "yMin": -17,
+                  "xMax": 48,
+                  "yMax": 29
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 5x3 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-017",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 8,
+                "rows": 8,
+                "pitch": 10,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -15,
+                  "yMin": -16,
+                  "xMax": 49,
+                  "yMax": 30
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 8x8 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-018",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/clipped-crossing-lines.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 11,
+                "rows": 13,
+                "pitch": 11,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -14,
+                  "yMin": -24,
+                  "xMax": 50,
+                  "yMax": 31
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 11x13 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-019",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/even-odd-overlap.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 3,
+                "rows": 5,
+                "pitch": 4,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -13,
+                  "yMin": -23,
+                  "xMax": 51,
+                  "yMax": 32
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 3x5 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-020",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cubic-closed-loop.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 6,
+                "rows": 10,
+                "pitch": 8,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -12,
+                  "yMin": -22,
+                  "xMax": 52,
+                  "yMax": 33
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 6x10 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-021",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/simple-filled-square.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 9,
+                "rows": 2,
+                "pitch": 9,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -11,
+                  "yMin": -21,
+                  "xMax": 53,
+                  "yMax": 34
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 9x2 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-022",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 1,
+                "rows": 7,
+                "pitch": 2,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -10,
+                  "yMin": -20,
+                  "xMax": 54,
+                  "yMax": 24
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 1x7 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-023",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/clipped-crossing-lines.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 4,
+                "rows": 12,
+                "pitch": 6,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -9,
+                  "yMin": -19,
+                  "xMax": 55,
+                  "yMax": 25
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 4x12 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-024",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/even-odd-overlap.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 7,
+                "rows": 4,
+                "pitch": 7,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -8,
+                  "yMin": -18,
+                  "xMax": 56,
+                  "yMax": 26
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 7x4 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-025",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cubic-closed-loop.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 10,
+                "rows": 9,
+                "pitch": 11,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -7,
+                  "yMin": -17,
+                  "xMax": 57,
+                  "yMax": 27
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 10x9 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-026",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/simple-filled-square.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 2,
+                "rows": 1,
+                "pitch": 4,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -6,
+                  "yMin": -16,
+                  "xMax": 58,
+                  "yMax": 28
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 2x1 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-027",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 5,
+                "rows": 6,
+                "pitch": 5,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -5,
+                  "yMin": -24,
+                  "xMax": 59,
+                  "yMax": 29
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 5x6 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-028",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/clipped-crossing-lines.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 8,
+                "rows": 11,
+                "pitch": 9,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -4,
+                  "yMin": -23,
+                  "xMax": 60,
+                  "yMax": 30
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 8x11 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-029",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/even-odd-overlap.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 11,
+                "rows": 3,
+                "pitch": 13,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -3,
+                  "yMin": -22,
+                  "xMax": 61,
+                  "yMax": 31
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 11x3 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-030",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cubic-closed-loop.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 3,
+                "rows": 8,
+                "pitch": 3,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -2,
+                  "yMin": -21,
+                  "xMax": 62,
+                  "yMax": 32
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 3x8 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-031",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/simple-filled-square.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 6,
+                "rows": 13,
+                "pitch": 7,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": -1,
+                  "yMin": -20,
+                  "xMax": 63,
+                  "yMax": 33
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 6x13 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-032",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 9,
+                "rows": 5,
+                "pitch": 11,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 0,
+                  "yMin": -19,
+                  "xMax": 64,
+                  "yMax": 34
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 9x5 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-033",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/clipped-crossing-lines.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 1,
+                "rows": 10,
+                "pitch": 1,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 1,
+                  "yMin": -18,
+                  "xMax": 65,
+                  "yMax": 24
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 1x10 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-034",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/even-odd-overlap.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 4,
+                "rows": 2,
+                "pitch": 5,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 2,
+                  "yMin": -17,
+                  "xMax": 66,
+                  "yMax": 25
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 4x2 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-035",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cubic-closed-loop.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 7,
+                "rows": 7,
+                "pitch": 9,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 3,
+                  "yMin": -16,
+                  "xMax": 67,
+                  "yMax": 26
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 7x7 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-036",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/simple-filled-square.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 10,
+                "rows": 12,
+                "pitch": 10,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 4,
+                  "yMin": -24,
+                  "xMax": 68,
+                  "yMax": 27
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 10x12 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-037",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 2,
+                "rows": 4,
+                "pitch": 3,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 5,
+                  "yMin": -23,
+                  "xMax": 69,
+                  "yMax": 28
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 2x4 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-038",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/clipped-crossing-lines.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 5,
+                "rows": 9,
+                "pitch": 7,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 6,
+                  "yMin": -22,
+                  "xMax": 70,
+                  "yMax": 29
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 5x9 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-039",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/even-odd-overlap.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 8,
+                "rows": 1,
+                "pitch": 8,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 7,
+                  "yMin": -21,
+                  "xMax": 71,
+                  "yMax": 30
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 8x1 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-040",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cubic-closed-loop.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 11,
+                "rows": 6,
+                "pitch": 12,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 8,
+                  "yMin": -20,
+                  "xMax": 72,
+                  "yMax": 31
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 11x6 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-041",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/simple-filled-square.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 3,
+                "rows": 11,
+                "pitch": 5,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 9,
+                  "yMin": -19,
+                  "xMax": 73,
+                  "yMax": 32
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 3x11 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-042",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 6,
+                "rows": 3,
+                "pitch": 6,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 10,
+                  "yMin": -18,
+                  "xMax": 74,
+                  "yMax": 33
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 6x3 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-043",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/clipped-crossing-lines.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 9,
+                "rows": 8,
+                "pitch": 10,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 11,
+                  "yMin": -17,
+                  "xMax": 75,
+                  "yMax": 34
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 9x8 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-044",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/even-odd-overlap.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 1,
+                "rows": 13,
+                "pitch": 3,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 12,
+                  "yMin": -16,
+                  "xMax": 76,
+                  "yMax": 24
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 1x13 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-045",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cubic-closed-loop.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 4,
+                "rows": 5,
+                "pitch": 4,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 13,
+                  "yMin": -24,
+                  "xMax": 77,
+                  "yMax": 25
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 4x5 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-046",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/simple-filled-square.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 7,
+                "rows": 10,
+                "pitch": 8,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 14,
+                  "yMin": -23,
+                  "xMax": 78,
+                  "yMax": 26
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 7x10 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-047",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/direct-spans-clipped.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 10,
+                "rows": 2,
+                "pitch": 12,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 15,
+                  "yMin": -22,
+                  "xMax": 79,
+                  "yMax": 27
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 10x2 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-048",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/clipped-crossing-lines.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 2,
+                "rows": 7,
+                "pitch": 2,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 16,
+                  "yMin": -21,
+                  "xMax": 80,
+                  "yMax": 28
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 2x7 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-049",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/even-odd-overlap.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 5,
+                "rows": 12,
+                "pitch": 6,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 17,
+                  "yMin": -20,
+                  "xMax": 81,
+                  "yMax": 29
+                }
+              },
+              "library": "NULL",
+              "outline": "valid"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the library handle before renderer dispatch; this public malformed library=NULL witness keeps the outline handle present, AA|DIRECT, a recording callback, and a 5x12 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Library_Handle error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          },
+          {
+            "id": "batch323-c119-null-direct-050",
+            "assets": {
+              "outline": {
+                "kind": "ref",
+                "id": "outlines/render/cubic-closed-loop.json",
+                "asset_kind": "outline_model"
+              },
+              "bitmap": {
+                "kind": "bitmap_target",
+                "width": 8,
+                "rows": 4,
+                "pitch": 10,
+                "pixel_mode": "FT_PIXEL_MODE_GRAY",
+                "num_grays": 256
+              }
+            },
+            "params": {
+              "raster_params": {
+                "flags": [
+                  "FT_RASTER_FLAG_AA",
+                  "FT_RASTER_FLAG_DIRECT"
+                ],
+                "gray_spans": "recording_callback",
+                "target": "bitmap",
+                "source": "ignored_sentinel",
+                "clip_box": {
+                  "xMin": 18,
+                  "yMin": -19,
+                  "xMax": 82,
+                  "yMax": 30
+                }
+              },
+              "library": "valid",
+              "outline": "NULL"
+            },
+            "reason": "The pinned FreeType ftoutln.c:614-628 validates the outline handle before renderer dispatch; this public malformed outline=NULL witness keeps the library handle present, AA|DIRECT, a recording callback, and a 8x4 bitmap descriptor. The exported WASM wrapper must take the no-CLIP path and execute the false outer if-let arm at implementation.rs:4464-4480 while returning the exact Invalid_Outline error.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:4480",
+              "fontdone-wasm/src/implementation.rs:4464"
+            ],
+            "expect_error": true
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftoutln",
+        "surface:public-c-api",
+        "operation:direct-render",
+        "error:null-handle",
+        "coverage:batch323"
+      ],
+      "metadata": {
+        "abi": {
+          "header": "freetype/ftoutln.h",
+          "symbol": "FT_Outline_Render",
+          "kind": "function",
+          "c_signature": "FT_Error FT_Outline_Render(FT_Library library, FT_Outline* outline, FT_Raster_Params* params)"
+        },
+        "source_behavior": "FreeType 2.14.3 validates the library, outline, and params handles in order and returns Invalid_Library_Handle or Invalid_Outline before the renderer. These public malformed variants isolate the exported WASM wrapper's direct no-CLIP outer if-let false arm by passing one null handle at a time."
+      },
+      "expectation": {
+        "status": "error",
+        "output_shape": {
+          "return": "FT_Error"
+        },
+        "compare": {
+          "mode": "exact_error",
+          "paths": [
+            "return"
+          ],
+          "compare_error_output": true
+        },
+        "error": [
+          "FT_Err_Invalid_Library_Handle",
+          "FT_Err_Invalid_Outline"
+        ],
+        "source_refs": [
+          "freetype/src/base/ftoutln.c:614-628",
+          "fontdone-wasm/src/implementation.rs:4462-4482"
+        ],
+        "fixture_requirements": [
+          "Fifty maintained public malformed variants split between null library and null outline, each with AA|DIRECT, a recording gray_spans callback, a small bitmap descriptor, and an explicit reason for the expanded input."
+        ]
+      }
     }
   ]
 }

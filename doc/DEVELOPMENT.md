@@ -3258,6 +3258,56 @@ denominator increased by 8,853 regions, 126 lines, three functions, and 18
 branches because the run is a selected subset rather than a replacement full
 snapshot.
 
+### Batch 323: null library and outline handles through direct rendering
+
+This batch adds 50 concrete public `FT_Outline_Render` variants under
+`ftoutln.FT_Outline_Render.batch323_null_direct_pointer_guard`
+(`batch323-c119-null-direct-001` through `batch323-c119-null-direct-050`).
+Odd-numbered cases pass `library == NULL` with a valid outline; even-numbered
+cases pass a valid library with `outline == NULL`. All cases retain
+`FT_RASTER_FLAG_AA | FT_RASTER_FLAG_DIRECT`, a recording callback, and a small
+bitmap descriptor, while rotating three maintained outline shapes and the
+descriptor dimensions. Each variant records its handle shape, expected error,
+and targeted source arm.
+
+The expansion targets the WASM direct no-CLIP validation arm at
+`fontdone-wasm/src/implementation.rs:4462-4482`, specifically the false
+`library`/`outline` tuple arm at `:4480`. The pinned FreeType implementation
+validates `library`, then `outline`, then `params` before calculating the CBox
+or entering the renderer (`freetype/src/base/ftoutln.c:614-640`). These are
+therefore defined public malformed handles with deterministic errors, not
+private callback fabrication: the odd cases must return
+`FT_Err_Invalid_Library_Handle`, and the even cases must return
+`FT_Err_Invalid_Outline`. The Rust FFI, C ABI, and WASM adapters now preserve
+the top-level NULL handle shape so all four parity endpoints observe that
+validation order.
+
+Focused parity passed all 50 c119 variants (`50/50`) across Rust FFI, C ABI,
+WASM, and the pinned oracle. The three maintained outline fixtures added for
+the batch are `outlines/render/clipped-crossing-lines.json`,
+`outlines/render/even-odd-overlap.json`, and
+`outlines/render/cubic-closed-loop.json`.
+
+Coverage MCP incremental run `96ced705-913c-40fe-8930-3bb74032b16c` used the
+registered source-matched command with the exact 50 IDs in ten repeatable
+`--migration-coverage-case-ids` arguments, each a comma-separated five-case
+chunk, against explicit baseline snapshot
+`4e0cc9be-14a2-47c9-835e-619ae8daaf43`. It passed and ingested snapshot
+`fa7d1351-e9b4-4b8d-8651-09fde9a8566f`; the supported selected-subset review
+reported newly covered WASM line `:4480` with zero regressions. Because the
+selected result has `measurement_scope.kind=selected_subset`,
+`merge.exact=false`, and 50,098 baseline observations marked
+`not_observed`, it is retained as reachability evidence rather than a new
+full-denominator percentage.
+
+The subsequent complete Coverage MCP run `db0a3327-44dc-4787-b0d8-0d8764c0697d`
+ingested snapshot `8776d8f9-1eac-4841-add1-2ccbe24beaaa` and measured
+`90,761/94,300` regions, `65,812/67,830` lines, `12,161/13,824` branches,
+and `3,788/4,073` functions. This is the authoritative post-c119 full
+snapshot; strict region coverage is still below 100%, so the next batch must
+start from this snapshot rather than treating the incremental subset as the
+denominator.
+
 The MCP result is explicitly `measurement_scope.kind=selected_subset` with
 `complete=false` and `merge.exact=false`; its selected-union percentage is not
 a strict project score. Source and measurement metadata still resolve to
