@@ -4990,3 +4990,57 @@ managed execution is anchored to commit `0607ab4`, while the ingested LLVM
 metadata retains the server's older `77805b...` commit label, so this run is
 kept as incremental evidence rather than changing the authoritative full
 snapshot.
+
+### Batch 319: callback seek and short-read error paths
+
+This batch adds 50 concrete public `FT_Stream_OpenGzip` variants under
+`ftgzip.FT_Stream_OpenGzip.callback_failure_matrix`
+(`c51-gzip-callback-failure-001` through `c51-gzip-callback-failure-050`).
+Cases 001-025 use `callback_failure: "seek"`, `source_size` 1 through 25,
+and an initial position of 3. Cases 026-050 use
+`callback_failure: "short_read"`, the same source-size range, and alternating
+initial positions of zero and three. Every case uses the maintained
+54-byte `small_stream` gzip fixture and expects `Invalid_Stream_Operation`.
+
+The expansion is justified by the pinned FreeType public stream contract, not
+by an undefined pointer shape. `FT_Stream_Seek` returns
+`Invalid_Stream_Operation` when a non-null `FT_Stream_IoFunc` reports a
+nonzero result for a zero-byte seek, and `FT_Stream_ReadAt` returns the same
+error when a callback returns fewer bytes than requested
+(`freetype/src/base/ftstream.c:55-160`). The gzip entry point accepts a source
+stream with a callback and rejects null target/source handles before header
+processing (`freetype/include/freetype/ftgzip.h:63-91`,
+`freetype/src/gzip/ftgzip.c:608-708`). The callback failures therefore model
+safe, defined public inputs that the original C implementation allows to
+reach its error return.
+
+The C ABI and WASM facades now materialize callback-backed gzip sources using
+the same zero-byte seek and short-read checks, covering
+`fontdone-c-abi/src/implementation.rs:1479-1481,1500-1502` and
+`fontdone-wasm/src/implementation.rs:3092-3094,3113-3115`. Focused parity
+passed 50/50, and the full parity gate passed 19,852/19,852 runnable cases
+with four pre-existing pending cases. `make test-fast`, `make lint`, and
+`make check-docs` passed. `make c-abi-contract` reached all static and
+contract checks but its external comparison retained the known 217/218
+function mismatch; all 1,256 selected cases and 13 probes in that audit
+matched.
+
+The source/fixture change was committed as `5fbd10b` and pushed to `main`;
+the recorded full-parity documentation checkpoint is `5553b56`, also pushed.
+Coverage MCP run `92fccc3d-2e94-4250-bc11-a750e433611d` used the registered
+argument-based command with the 50 exact case IDs in repeatable
+`--migration-coverage-case-ids` arguments and explicit baseline snapshot
+`9ff1d1a4-115f-4f8d-9ca5-81b23af2ba51`. It passed and ingested snapshot
+`f00bc190-4b12-48ee-b7b4-0224dd79a7a7`. The selected-subset additive union
+reported five newly covered line identities/ranges: C ABI lines 1480 and
+1501, and WASM lines 3057, 3093, and 3114. The union preserved the baseline
+full metrics (regions 90,344/93,894; lines 65,524/67,550; branches
+12,108/13,796; functions 3,787/4,072); the MCP result marked the merge
+`exact=false` with conservative fallbacks, reported 50,154 baseline
+observations as `not_observed`, and reported zero regressions. Because this
+was `measurement_scope.kind=selected_subset` with a limited replacement
+diff, it is reachability evidence only and is not a full-denominator coverage
+claim. The run execution was on the pushed `5553b56` tree, while the ingested
+LLVM metadata still exposes the server's stale `77805b...` commit label; the
+local source mapping and parity outputs are the authoritative line and
+behavior checks.
