@@ -36940,6 +36940,44 @@ static int emit_face_or_slot(int argc, char** argv) {
         return 0;
     }
 
+    if (streq(command, "--get-advance-after-variation")) {
+        FT_UInt glyph_index = (FT_UInt)strtoul(argv[7], NULL, 10);
+        FT_Int32 load_flags = (FT_Int32)strtol(argv[8], NULL, 10);
+        const char* prior_kind = argv[9];
+        FT_UInt prior_count = (FT_UInt)strtoul(argv[10], NULL, 10);
+        FT_Fixed prior_coords[16] = {0};
+
+        if (prior_count > 16) {
+            err = FT_Err_Invalid_Argument;
+        } else {
+            parse_fixed_coord_csv(argv[11], prior_coords, prior_count);
+            if (streq(prior_kind, "set_var_design")) {
+                err = FT_Set_Var_Design_Coordinates(face, prior_count, prior_coords);
+            } else if (streq(prior_kind, "set_var_blend")) {
+                err = FT_Set_Var_Blend_Coordinates(face, prior_count, prior_coords);
+            } else {
+                err = FT_Err_Invalid_Argument;
+            }
+        }
+
+        FT_Fixed advance = 0;
+        if (!err) {
+            err = FT_Get_Advance(face, glyph_index, load_flags, &advance);
+        }
+        print_status(err);
+        if (err) {
+            printf(",\"output\":null}\n");
+        } else {
+            printf(",");
+            print_advance(advance);
+            printf("}\n");
+        }
+        FT_Done_Face(face);
+        FT_Done_FreeType(library);
+        free(data);
+        return 0;
+    }
+
     if (streq(command, "--get-advance")) {
         FT_UInt glyph_index = (FT_UInt)strtoul(argv[7], NULL, 10);
         FT_Int32 load_flags = (FT_Int32)strtol(argv[8], NULL, 10);
@@ -42885,6 +42923,9 @@ static int dispatch(int argc, char** argv) {
         return emit_face_or_slot(argc, argv);
     }
     if ((argc == 9 || argc == 11) && streq(argv[1], "--get-advance")) {
+        return emit_face_or_slot(argc, argv);
+    }
+    if (argc == 12 && streq(argv[1], "--get-advance-after-variation")) {
         return emit_face_or_slot(argc, argv);
     }
     if ((argc == 10 || argc == 12) && streq(argv[1], "--get-advances")) {

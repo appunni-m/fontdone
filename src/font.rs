@@ -6689,6 +6689,22 @@ impl Font {
         )
     }
 
+    pub(crate) fn glyph_index_hori_advance_font_units_for_advance(
+        &self,
+        glyph_index: u16,
+    ) -> Result<i32, crate::error::FontError> {
+        if !self.data.has_active_variation() {
+            return Ok(self.glyph_index_hori_advance_font_units(glyph_index));
+        }
+        // `FT_Get_Advance` falls back to `ft_load_advances` when the driver
+        // fast service is not yet available.  That loader propagates a
+        // malformed active-variation glyph instead of applying the ordinary
+        // hmtx fallback (`freetype/src/base/ftadvanc.c:124-141`).
+        let outline = self.data.load_glyph_outline(glyph_index)?;
+        self.data
+            .hmtx_hori_advance_with_gvar_delta(glyph_index, outline.points.len())
+    }
+
     /// Return `FT_GlyphSlotRec::metrics` for a Unicode codepoint loaded with
     /// FreeType's default TrueType load path.
     ///

@@ -3580,7 +3580,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,231 tracked paths and no symlinks.
+The canonical input tree currently contains 1,235 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -4534,6 +4534,41 @@ Coverage MCP measurement is pending on the committed source revision; the
 four concrete IDs are retained here so the later incremental run can be tied
 to explicit full-snapshot provenance.
 
+### Batch 315: active-variation advance fallback errors
+
+This batch adds five public `FT_Get_Advance` variants for the remaining
+TrueType variation error edges. Each case first calls the public
+`FT_Set_Var_Design_Coordinates` or `FT_Set_Var_Blend_Coordinates` setter and
+then requests a `FT_LOAD_NO_SCALE` advance for glyph 1 in a maintained
+malformed composite. The three gvar cases use distinct design locations; the
+two fvar-only cases use distinct signed blend locations. The input reasons
+explain the expansion because these public calls are needed to activate the
+variation state before the advance fallback can load the malformed glyph.
+
+The pinned FreeType 2.14.3 review found that the variation setter succeeds for
+these inputs. `FT_Get_Advance` first offers the request to the TrueType fast
+advance service; with the fresh active variation state that service reports
+`Unimplemented_Feature`, so `ft_load_advances` loads the glyph instead
+(`freetype/src/base/ftadvanc.c:107-141`,
+`freetype/src/truetype/ttdriver.c:240-287`). The malformed composite then
+returns `FT_Err_Invalid_Table` (21) from glyph loading. Clean twins succeed,
+which confirms that the error is the deferred glyph-load guard rather than the
+variation setter. Rust now propagates that active-variation load error through
+`src/font.rs` and `src/ffi/handles.rs`; the non-variation path retains its
+ordinary hmtx fallback.
+
+Focused parity passed all five concrete rows across the pinned oracle, Rust
+FFI, C ABI, and WASM (`5/5`, `0` pending). No unit test was used to increase
+coverage. Coverage MCP run `70927958-92b5-46e0-8cab-bc59f04f136d` used the
+comma-separated `--migration-coverage-case-ids` argument against explicit
+full baseline snapshot `31e1c8f4-9949-4630-a3cf-c738e90ff8cd` and ingested
+snapshot `4831f115-bb80-405b-a10a-fe6fc2c54809`. Its supported selected
+incremental union reports `+476` newly covered regions and `+103` lines, with
+zero regressions. The selected subset is not a replacement full-denominator
+percentage. The separate WASM bitmap success/error branches at
+`fontdone-wasm/src/implementation.rs:1207`, `:1246`, `:1302`, and related
+accessors remain unclaimed targets for a later public parity batch.
+
 On 2026-09-01 the complete all-lane snapshot was rerun at pushed `main`
 commit `7d09933ad37b7f817cd8c42a0b0fcd4c62a99351` through Coverage MCP run
 `e61c4286-2693-4729-bfee-4fd2673fa37d`. The process passed all 6,577 runnable
@@ -4771,7 +4806,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 100 | package, build, release, and facade contracts |
 | R03 | 1,754 | executable parity tests and public contracts |
-| R04 | 1,231 | licensed canonical fixture inputs |
+| R04 | 1,235 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 64 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -4779,7 +4814,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,224** | **all retained paths** |
+| **Total** | **3,228** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

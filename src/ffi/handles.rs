@@ -15384,17 +15384,19 @@ pub fn FT_Get_Advance(
         && face.inner.borrow().font().is_sfnt()
     {
         // C `tt_get_advances`/`tt_face_get_metrics` returns the raw
-        // hmtx/HVAR font-unit advance for the NO_SCALE fast path
-        // (`truetype/ttdriver.c:274-289`, `sfnt/ttmtx.c:228-322`).  Loading
-        // the glyph instead derives a phantom advance and can differ for
-        // variable TrueType composites even though both values are valid
-        // glyph-slot metrics.
-        return Ok(FT_Fixed::from(
-            face.inner
-                .borrow()
-                .font()
-                .glyph_index_hori_advance_font_units(glyph_index),
-        ));
+        // hmtx/HVAR font-unit advance when its fast service is available
+        // (`truetype/ttdriver.c:274-289`, `sfnt/ttmtx.c:228-322`).  The
+        // fallback `ft_load_advances` path loads the glyph when that service
+        // is not available, so active-variation load errors must remain
+        // observable while the ordinary hmtx fallback is retained for the
+        // non-variation case.
+        let advance = face
+            .inner
+            .borrow()
+            .font()
+            .glyph_index_hori_advance_font_units_for_advance(glyph_index)
+            .map_err(error_to_ft)?;
+        return Ok(FT_Fixed::from(advance));
     }
     if use_fast_horizontal_advance(flags) {
         // C `tt_get_advances` returns raw hmtx advances; `ft_face_scale_advances_`

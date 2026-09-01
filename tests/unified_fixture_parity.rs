@@ -21199,7 +21199,39 @@ fn assert_font_getkerning_agrees(case: &InputCase, output: &RunOutput) -> Result
     Ok(())
 }
 
-fn rust_get_advance_with_face(face: &FT_Face, case: &InputCase) -> Result<RunOutput, String> {
+fn ftadvanc_variation_prior(params: &Value) -> Result<Option<FtmmPriorCall>, String> {
+    let prior = ftmm_prior_call(params)?;
+    match prior.kind.as_str() {
+        "none" => Ok(None),
+        "set_var_design" | "set_var_blend" => Ok(Some(prior)),
+        other => Err(format!(
+            "FT_Get_Advance variation prior does not support {other}"
+        )),
+    }
+}
+
+fn rust_apply_ftadvanc_variation_prior(
+    face: &mut FT_Face,
+    prior: &FtmmPriorCall,
+) -> FT_Error {
+    match prior.kind.as_str() {
+        "set_var_design" => {
+            FT_Set_Var_Design_Coordinates(Some(face), prior.count, Some(&prior.coords))
+        }
+        "set_var_blend" => {
+            FT_Set_Var_Blend_Coordinates(Some(face), prior.count, Some(&prior.coords))
+        }
+        _ => FT_Err_Invalid_Argument as FT_Error,
+    }
+}
+
+fn rust_get_advance_with_face(face: &mut FT_Face, case: &InputCase) -> Result<RunOutput, String> {
+    if let Some(prior) = ftadvanc_variation_prior(&case.inputs.params)? {
+        let status = rust_apply_ftadvanc_variation_prior(face, &prior);
+        if status != FT_Err_Ok {
+            return Ok(error(status));
+        }
+    }
     if get_advance_probe_labels(&case.inputs.params).is_ok() {
         return get_advance_probe_output(&case.inputs.params, |probe, advance| match probe {
             // The safe Rust FFI takes `&FT_Face` and returns the advance by
@@ -24877,6 +24909,25 @@ fn c_ftmm_set_var_blend_glyph_output(case: &InputCase) -> Result<RunOutput, Stri
     c_done_face(face);
     c_done_library(library);
     output
+}
+
+fn c_apply_ftadvanc_variation_prior(
+    face: c_abi::FT_Face,
+    prior: &FtmmPriorCall,
+) -> FT_Error {
+    match prior.kind.as_str() {
+        "set_var_design" => c_abi::FT_Set_Var_Design_Coordinates(
+            face,
+            prior.count,
+            prior.coords.as_ptr(),
+        ),
+        "set_var_blend" => c_abi::FT_Set_Var_Blend_Coordinates(
+            face,
+            prior.count,
+            prior.coords.as_ptr(),
+        ),
+        _ => FT_Err_Invalid_Argument as FT_Error,
+    }
 }
 
 fn c_ftmm_set_mm_blend_glyph_output(case: &InputCase) -> Result<RunOutput, String> {
@@ -51069,6 +51120,17 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             ])
         }
         "ftadvanc.get_advance" => {
+            if let Some(prior) = ftadvanc_variation_prior(params)? {
+                let mut args = vec!["--get-advance-after-variation".to_string()];
+                push_font_source(case, &mut args)?;
+                push_face_size(params, &mut args)?;
+                args.push(glyph_index_param(params)?.to_string());
+                args.push(load_flags_param(params)?.to_string());
+                args.push(prior.kind);
+                args.push(prior.count.to_string());
+                args.push(ftmm_coords_csv(&prior.coords));
+                return Ok(args);
+            }
             let mut args = vec!["--get-advance".to_string()];
             push_font_source(case, &mut args)?;
             push_face_size(params, &mut args)?;
@@ -52697,12 +52759,12 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         | "ftstroke.outline_get_outside_border"
         | "ftstroke.outline_border_orientation_pair" => rust_outline_border_runtime_output(case),
         "ftadvanc.get_advance" => {
-            let face = if advance_preserve_probe_face(case)? {
+            let mut face = if advance_preserve_probe_face(case)? {
                 rust_new_face_without_size(case)?
             } else {
                 open_face(case)?
             };
-            rust_get_advance_with_face(&face, case)
+            rust_get_advance_with_face(&mut face, case)
         }
         "ftadvanc.get_advances" => {
             let face = if advance_preserve_probe_face(case)? {
@@ -54497,6 +54559,14 @@ fn run_c_abi(case: &InputCase) -> Result<RunOutput, String> {
             } else {
                 c_open_face(case)?
             };
+            if let Some(prior) = ftadvanc_variation_prior(&case.inputs.params)? {
+                let status = c_apply_ftadvanc_variation_prior(face, &prior);
+                if status != FT_Err_Ok {
+                    c_done_face(face);
+                    c_done_library(library);
+                    return Ok(error(status));
+                }
+            }
             if get_advance_probe_labels(&case.inputs.params).is_ok() {
                 let glyph_index = glyph_index_param(&case.inputs.params)?;
                 let load_flags = load_flags_param(&case.inputs.params)?;
@@ -56023,6 +56093,25 @@ fn run_wasm_abi(case: &InputCase) -> Result<RunOutput, String> {
             } else {
                 wasm_open_face(case)?
             };
+            if let Some(prior) = ftadvanc_variation_prior(&case.inputs.params)? {
+                let status = match prior.kind.as_str() {
+                    "set_var_design" => wasm_abi::fontdone_wasm_set_var_design_coordinates(
+                        handle,
+                        prior.count,
+                        prior.coords.as_ptr(),
+                    ),
+                    "set_var_blend" => wasm_abi::fontdone_wasm_set_var_blend_coordinates(
+                        handle,
+                        prior.count,
+                        prior.coords.as_ptr(),
+                    ),
+                    _ => FT_Err_Invalid_Argument as FT_Error,
+                };
+                if status != FT_Err_Ok {
+                    wasm_done_face(handle);
+                    return Ok(error(status));
+                }
+            }
             if get_advance_probe_labels(&case.inputs.params).is_ok() {
                 let glyph_index = glyph_index_param(&case.inputs.params)?;
                 let load_flags = load_flags_param(&case.inputs.params)?;
