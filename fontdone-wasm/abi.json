@@ -562,6 +562,17 @@
       "supported_host_contract": false
     },
     {
+      "name": "fontdone_wasm_svg_renderer_callback_guard_probe",
+      "parameters": [
+        {
+          "name": "mode",
+          "type": "rust_ffi::FT_Int"
+        }
+      ],
+      "return": "rust_ffi::FT_Error",
+      "supported_host_contract": false
+    },
+    {
       "name": "fontdone_wasm_svg_renderer_capture",
       "parameters": [
         {

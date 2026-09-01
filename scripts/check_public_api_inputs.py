@@ -148,6 +148,7 @@ WASM_EXPORTS = {
     "fontdone_wasm_open_face_with_name_options",
     "fontdone_wasm_interpreter_version_open",
     "fontdone_wasm_svg_renderer_capture",
+    "fontdone_wasm_svg_renderer_callback_guard_probe",
     "fontdone_wasm_ps_hinting_engine_open",
     "fontdone_wasm_done_face",
     "fontdone_wasm_new_size",

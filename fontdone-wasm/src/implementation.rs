@@ -2792,6 +2792,40 @@ unsafe extern "C" fn wasm_svg_probe_render(
     rust_ffi::FT_Err_Ok
 }
 
+/// Exercises the callback guard states at the public WASM boundary.
+///
+/// The normal `ft_svg_render` dispatch always supplies a live callback state
+/// and document pointer.  This small safety extension keeps the two malformed
+/// state classes observable without fabricating an invalid pointer in a
+/// regular font-render call: modes 0/1 call `preset_slot`, and modes 2/3 call
+/// `render_svg`; even modes pass a null state or a zero document pointer,
+/// respectively.  The public callback contract in `freetype/otsvg.h` permits
+/// the hooks to return an error, while pinned `src/svg/ftsvg.c` owns only the
+/// valid synchronous state it creates for an actual renderer invocation.
+#[unsafe(no_mangle)]
+pub extern "C" fn fontdone_wasm_svg_renderer_callback_guard_probe(
+    mode: rust_ffi::FT_Int,
+) -> rust_ffi::FT_Error {
+    let mut state: rust_ffi::FT_Pointer = std::ptr::null_mut();
+    let mut probe = rust_ffi::SvgCallbackProbe {
+        glyph_index: 1,
+        document_ptr: 0,
+    };
+    let probe_ptr = std::ptr::from_mut(&mut probe).cast();
+    match mode.rem_euclid(4) {
+        0 => unsafe { wasm_svg_probe_preset(std::ptr::null_mut(), 1, &mut state) },
+        1 => {
+            state = probe_ptr;
+            unsafe { wasm_svg_probe_preset(std::ptr::null_mut(), 1, &mut state) }
+        }
+        2 => unsafe { wasm_svg_probe_render(std::ptr::null_mut(), &mut state) },
+        _ => {
+            state = probe_ptr;
+            unsafe { wasm_svg_probe_render(std::ptr::null_mut(), &mut state) }
+        }
+    }
+}
+
 /// Runs the pinned `ftsvg.c` hook flow over one SVG glyph and returns the
 /// document fields the renderer callback observed.
 #[unsafe(no_mangle)]

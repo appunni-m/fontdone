@@ -375,6 +375,7 @@ document_wasm_test_support!(
     abi_glyphslot_own_bitmap_copy_allocation_failure,
     abi_fvar_namedstyle_coords,
     fontdone_wasm_svg_renderer_capture,
+    fontdone_wasm_svg_renderer_callback_guard_probe,
 );
 
 #[cfg(all(test, feature = "abi-test-support"))]

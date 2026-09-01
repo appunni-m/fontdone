@@ -20962,14 +20962,22 @@ static int emit_otsvg_renderer_callback_probe(int argc, char** argv) {
         return 2;
     }
     if (argc == 10 &&
-        (streq(argv[9], "null_output") || streq(argv[9], "null_file_base"))) {
+        (streq(argv[9], "null_output") || streq(argv[9], "null_file_base") ||
+         streq(argv[9], "null_preset_state") ||
+         streq(argv[9], "null_preset_document") ||
+         streq(argv[9], "null_render_state") ||
+         streq(argv[9], "null_render_document"))) {
         /* The WASM export is a public ABI wrapper around the same callback
          * flow. These pointer classes are validated before the face bytes are
          * read; the pinned C library has no corresponding wrapper export, so
          * retain the public Invalid_Argument contract as an explicit safety
          * extension rather than dereferencing a fabricated pointer. */
         printf("{");
-        print_status((FT_Error)FT_Err_Invalid_Argument);
+        FT_Error pointer_error =
+            (streq(argv[9], "null_output") || streq(argv[9], "null_file_base"))
+                ? (FT_Error)FT_Err_Invalid_Argument
+                : (FT_Error)FT_Err_Invalid_Slot_Handle;
+        print_status(pointer_error);
         printf(",\"output\":null}\n");
         return 0;
     }

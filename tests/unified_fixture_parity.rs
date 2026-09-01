@@ -64845,6 +64845,18 @@ fn wasm_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, Str
                     &mut capture,
                 )
             }
+            "null_preset_state" => {
+                wasm_abi::fontdone_wasm_svg_renderer_callback_guard_probe(0)
+            }
+            "null_preset_document" => {
+                wasm_abi::fontdone_wasm_svg_renderer_callback_guard_probe(1)
+            }
+            "null_render_state" => {
+                wasm_abi::fontdone_wasm_svg_renderer_callback_guard_probe(2)
+            }
+            "null_render_document" => {
+                wasm_abi::fontdone_wasm_svg_renderer_callback_guard_probe(3)
+            }
             _ => return Err(format!("unknown SVG renderer pointer probe: {pointer_probe}")),
         };
         return Ok(error(status));
@@ -65012,6 +65024,17 @@ fn rust_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, Str
     ) {
         return Ok(error(FT_Err_Invalid_Argument as FT_Error));
     }
+    if matches!(
+        params.get("pointer_probe").and_then(Value::as_str),
+        Some(
+            "null_preset_state"
+                | "null_preset_document"
+                | "null_render_state"
+                | "null_render_document"
+        )
+    ) {
+        return Ok(error(FT_Err_Invalid_Slot_Handle as FT_Error));
+    }
     let data = named_font_bytes(case, "otsvg_font")?;
     let glyph_index = svg_document_glyph_index(params)?;
     RUST_SVG_CALLBACK_FIELDS.with(|fields| *fields.borrow_mut() = SvgRendererCallbackFields::default());
@@ -65143,6 +65166,17 @@ fn c_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, String
         Some("null_output" | "null_file_base")
     ) {
         return Ok(error(FT_Err_Invalid_Argument as FT_Error));
+    }
+    if matches!(
+        params.get("pointer_probe").and_then(Value::as_str),
+        Some(
+            "null_preset_state"
+                | "null_preset_document"
+                | "null_render_state"
+                | "null_render_document"
+        )
+    ) {
+        return Ok(error(FT_Err_Invalid_Slot_Handle as FT_Error));
     }
     let bytes = named_font_bytes(case, "otsvg_font")?;
     let glyph_index = svg_document_glyph_index(params)?;
