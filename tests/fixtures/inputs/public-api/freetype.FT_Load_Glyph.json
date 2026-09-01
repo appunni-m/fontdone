@@ -23702,6 +23702,63 @@
           "src/scaler.rs:2434-2452"
         ]
       }
+    },
+    {
+      "case_id": "freetype.FT_Load_Glyph.batch320_type1_pending_move_cleanup",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "default_load",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "b320-type1-rmoveto-endchar",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/type1/parser-rmoveto-endchar.pfb",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "size": 20,
+              "glyph_index": 1,
+              "load_flags": ["FT_LOAD_NO_SCALE"],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "The malformed public Type 1 charstring performs rmoveto and then endchar without drawing a contour. Pinned FreeType's CFF Type 1 interpreter accepts the empty move-only glyph, so Rust must take the pending-move cleanup in src/font.rs:2717-2718 rather than inventing an error.",
+            "coverage": ["batch320:type1:pending-move-cleanup:src/font.rs:2717-2718"]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:type1",
+        "area:glyph-load",
+        "coverage:real-parity",
+        "source-reviewed-expansion"
+      ],
+      "metadata": {
+        "coverage_intent": "Exercise the public Type 1 endchar path when a move-only contour leaves pending_move set.",
+        "freetype_review": "The pinned Adobe CFF interpreter permits a move-only glyph and completes it at endchar; no outline error is raised for the absent contour.",
+        "expansion_reason": "The strict full snapshot leaves the pending_move branch in type1_finish_contour red. Existing Type 1 fixtures either draw after rmoveto or fail before the finalizer, so this isolated program is the smallest public witness for the missing branch."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {"rows": "per-font glyph load status and slot snapshot"},
+        "compare": {"mode": "exact", "paths": ["rows[].status", "rows[].slot"]},
+        "sources_checked": [
+          "freetype/src/psaux/psintrp.c:2750-2830",
+          "freetype/src/psaux/psft.c:405-440",
+          "src/font.rs:2450-2465",
+          "src/font.rs:2707-2718"
+        ]
+      }
     }
   ]
 }

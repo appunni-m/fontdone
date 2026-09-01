@@ -986,6 +986,19 @@ def build_parser_edge_programs() -> None:
             ],
         ),
         (
+            "parser-rmoveto-endchar.pfb",
+            "Type1ParserRMoveToEndChar",
+            [
+                500,
+                0,
+                "hsbw",
+                20,
+                30,
+                "rmoveto",
+                "endchar",
+            ],
+        ),
+        (
             "parser-hmoveto.pfb",
             "Type1ParserHMoveTo",
             [
