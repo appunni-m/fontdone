@@ -343,6 +343,7 @@ document_wasm_test_support!(
     abi_support_new_library_observation,
     abi_support_null_library_lifecycle,
     abi_support_custom_memory_lifecycle,
+    abi_support_active_size_metrics_guard,
     abi_support_custom_glyph_lifecycle,
     abi_support_glyph_copy_failure_cleanup,
     abi_support_incremental_opaque_handle,

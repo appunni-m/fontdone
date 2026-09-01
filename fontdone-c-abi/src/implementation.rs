@@ -2440,11 +2440,15 @@ fn ftc_sbit_cache_lookup_impl(
     if error != rust_ffi::FT_Err_Ok {
         // `ftcsbits.c` suppresses every non-OOM glyph-load error and caches
         // it as an unavailable SBit sentinel with a successful lookup.
-        let record = FTC_SBitRec {
-            width: FT_Byte::MAX,
-            ..FTC_SBitRec::default()
-        };
-        return ftc_sbit_cache_store(cache, manager, key, record, Box::new([]), sbit, anode);
+        return ftc_sbit_cache_store(
+            cache,
+            manager,
+            key,
+            ftc_sbit_unavailable_record(),
+            Box::new([]),
+            sbit,
+            anode,
+        );
     }
     // `FT_Load_Glyph` has already validated `face->glyph` and a successful
     // load leaves that face-owned slot live (`ftobjs.c:1136-1138`). Keep the
@@ -2460,11 +2464,15 @@ fn ftc_sbit_cache_lookup_impl(
     // width=255 unavailable-SBit sentinel (`ftcsbits.c:121-137`).
     // SAFETY: slot is a live face-owned wrapper record.
     if unsafe { (*slot).format } != rust_ffi::FT_GLYPH_FORMAT_BITMAP {
-        let record = FTC_SBitRec {
-            width: FT_Byte::MAX,
-            ..FTC_SBitRec::default()
-        };
-        return ftc_sbit_cache_store(cache, manager, key, record, Box::new([]), sbit, anode);
+        return ftc_sbit_cache_store(
+            cache,
+            manager,
+            key,
+            ftc_sbit_unavailable_record(),
+            Box::new([]),
+            sbit,
+            anode,
+        );
     }
     // The public ABI adapter restores a Gray descriptor for an empty rendered
     // slot, but a successful SBIT lookup with no embedded glyph image keeps a
@@ -2482,30 +2490,56 @@ fn ftc_sbit_cache_lookup_impl(
         // successful empty-outline render, even though its buffer is null.
         && slot.bitmap.pixel_mode == rust_ffi::FT_PIXEL_MODE_GRAY as FT_Byte
         && !missing_bitmap;
-    let row_bytes = usize::try_from(slot.bitmap.pitch.unsigned_abs()).unwrap_or(0);
-    let rows = usize::try_from(slot.bitmap.rows).unwrap_or(0);
-    let len = row_bytes.saturating_mul(rows);
-    let mut buffer = if slot.bitmap.buffer.is_null() || len == 0 {
-        Box::new([])
-    } else {
-        // SAFETY: the live slot owns at least pitch*rows initialized bytes.
-        unsafe { slice::from_raw_parts(slot.bitmap.buffer, len) }
-            .to_vec()
-            .into_boxed_slice()
+    let (record, buffer) = ftc_sbit_slot_record(slot, rendered_empty_bitmap, missing_bitmap);
+    ftc_sbit_cache_store(cache, manager, key, record, buffer, sbit, anode)
+}
+
+fn ftc_sbit_unavailable_record() -> FTC_SBitRec {
+    FTC_SBitRec {
+        width: FT_Byte::MAX,
+        ..FTC_SBitRec::default()
+    }
+}
+
+/// Converts the loaded slot to the small-bitmap record used by `ftcsbits.c`.
+///
+/// FreeType checks every value that is narrowed into `FTC_SBitRec` and turns
+/// an overflow into its unavailable-glyph sentinel.  Saturating a field would
+/// expose a bitmap that the pinned cache rejects, so this helper validates the
+/// complete narrow-record contract before copying any slot-owned bitmap bytes.
+fn ftc_sbit_slot_record(
+    slot: &FT_GlyphSlotRec,
+    rendered_empty_bitmap: bool,
+    missing_bitmap: bool,
+) -> (FTC_SBitRec, Box<[FT_Byte]>) {
+    let Some(width) = FT_Byte::try_from(slot.bitmap.width).ok() else {
+        return (ftc_sbit_unavailable_record(), Box::new([]));
+    };
+    let Some(height) = FT_Byte::try_from(slot.bitmap.rows).ok() else {
+        return (ftc_sbit_unavailable_record(), Box::new([]));
+    };
+    let Some(pitch) = FT_Short::try_from(slot.bitmap.pitch).ok() else {
+        return (ftc_sbit_unavailable_record(), Box::new([]));
+    };
+    let Some(left) = FT_Char::try_from(slot.bitmap_left).ok() else {
+        return (ftc_sbit_unavailable_record(), Box::new([]));
+    };
+    let Some(top) = FT_Char::try_from(slot.bitmap_top).ok() else {
+        return (ftc_sbit_unavailable_record(), Box::new([]));
+    };
+    // Pinned FreeType `ftcsbits.c` adds half a pixel before converting the
+    // slot's 26.6 advances to FTC_SBit pixels and checks both narrow results.
+    let Some(xadvance) = FT_Char::try_from((slot.advance.x.saturating_add(32)) >> 6).ok() else {
+        return (ftc_sbit_unavailable_record(), Box::new([]));
+    };
+    let Some(yadvance) = FT_Char::try_from((slot.advance.y.saturating_add(32)) >> 6).ok() else {
+        return (ftc_sbit_unavailable_record(), Box::new([]));
     };
     let record = FTC_SBitRec {
-        width: FT_Byte::try_from(slot.bitmap.width).unwrap_or(FT_Byte::MAX),
-        height: FT_Byte::try_from(slot.bitmap.rows).unwrap_or(FT_Byte::MAX),
-        left: FT_Char::try_from(slot.bitmap_left).unwrap_or(if slot.bitmap_left < 0 {
-            FT_Char::MIN
-        } else {
-            FT_Char::MAX
-        }),
-        top: FT_Char::try_from(slot.bitmap_top).unwrap_or(if slot.bitmap_top < 0 {
-            FT_Char::MIN
-        } else {
-            FT_Char::MAX
-        }),
+        width,
+        height,
+        left,
+        top,
         // The public C ABI slot elides the empty buffer, while FreeType keeps
         // the zero-sized rendered descriptor's gray format observable.
         format: if rendered_empty_bitmap {
@@ -2513,27 +2547,30 @@ fn ftc_sbit_cache_lookup_impl(
         } else if missing_bitmap {
             rust_ffi::FT_PIXEL_MODE_MONO as FT_Byte
         } else {
-            FT_Byte::try_from(slot.bitmap.pixel_mode).unwrap_or(0)
+            slot.bitmap.pixel_mode
         },
         max_grays: if rendered_empty_bitmap || missing_bitmap {
             255
         } else {
-            FT_Byte::try_from(slot.bitmap.num_grays.saturating_sub(1)).unwrap_or(FT_Byte::MAX)
+            slot.bitmap.num_grays.wrapping_sub(1) as FT_Byte
         },
-        pitch: FT_Short::try_from(slot.bitmap.pitch).unwrap_or(if slot.bitmap.pitch < 0 {
-            FT_Short::MIN
-        } else {
-            FT_Short::MAX
-        }),
-        // Pinned FreeType `ftcsbits.c` adds half a pixel before converting
-        // the slot's 26.6 advances to FTC_SBit pixels.
-        xadvance: FT_Char::try_from((slot.advance.x.saturating_add(32)) >> 6)
-            .unwrap_or(FT_Char::MAX),
-        yadvance: FT_Char::try_from((slot.advance.y.saturating_add(32)) >> 6)
-            .unwrap_or(FT_Char::MAX),
-        buffer: buffer.as_mut_ptr(),
+        pitch,
+        xadvance,
+        yadvance,
+        buffer: ptr::null_mut(),
     };
-    ftc_sbit_cache_store(cache, manager, key, record, buffer, sbit, anode)
+    let row_bytes = usize::try_from(slot.bitmap.pitch.unsigned_abs()).unwrap_or(0);
+    let rows = usize::try_from(slot.bitmap.rows).unwrap_or(0);
+    let len = row_bytes.saturating_mul(rows);
+    let buffer = if slot.bitmap.buffer.is_null() || len == 0 {
+        Box::new([])
+    } else {
+        // SAFETY: the live slot owns at least pitch*rows initialized bytes.
+        unsafe { slice::from_raw_parts(slot.bitmap.buffer, len) }
+            .to_vec()
+            .into_boxed_slice()
+    };
+    (record, buffer)
 }
 
 fn ftc_sbit_cache_store(
@@ -2550,6 +2587,27 @@ fn ftc_sbit_cache_store(
     } else {
         buffer.as_mut_ptr()
     };
+    ftc_sbit_cache_store_payload(
+        cache,
+        manager,
+        key,
+        FtcNodePayload::SBit {
+            record,
+            _buffer: buffer,
+        },
+        sbit,
+        anode,
+    )
+}
+
+fn ftc_sbit_cache_store_payload(
+    cache: FTC_SBitCache,
+    manager: FTC_Manager,
+    key: FtcImageKey,
+    payload: FtcNodePayload,
+    sbit: *mut FTC_SBit,
+    anode: *mut FTC_Node,
+) -> FT_Error {
     let mut node = Box::new(FTC_NodeRec {
         mru_next: ptr::null_mut(),
         mru_prev: ptr::null_mut(),
@@ -2557,10 +2615,7 @@ fn ftc_sbit_cache_store(
         hash: 0,
         cache_index: 0,
         ref_count: FT_Short::from(!anode.is_null()),
-        payload: FtcNodePayload::SBit {
-            record,
-            _buffer: buffer,
-        },
+        payload,
     });
     let FtcNodePayload::SBit { record, .. } = &mut node.payload else {
         return rust_ffi::FT_Err_Invalid_Argument;
@@ -2785,6 +2840,59 @@ fn abi_coverage_node(payload: FtcNodePayload) -> FTC_Node {
         ref_count: 0,
         payload,
     }))
+}
+
+#[cfg(feature = "abi-test-support")]
+fn abi_c121_sbit_guard_probe(variant: u16) {
+    let selector = usize::from(variant.saturating_sub(2031)) % 9;
+    if selector == 0 {
+        // `ftc_sbit_cache_store` owns the SBit payload in production.  A
+        // mismatched cache payload is an internal invariant, so exercise the
+        // shared store guard directly without dereferencing the null handles.
+        let error = ftc_sbit_cache_store_payload(
+            ptr::null_mut(),
+            ptr::null_mut(),
+            abi_coverage_image_key(ptr::null_mut()),
+            FtcNodePayload::Glyph(ptr::null_mut()),
+            ptr::null_mut(),
+            ptr::null_mut(),
+        );
+        std::hint::black_box(error);
+        return;
+    }
+
+    // `ftcsbits.c` checks all seven values that are narrowed into
+    // `FTC_SBitRec`.  The maintained parity row supplies one malformed slot
+    // shape per selector so the Rust adapter follows the C unavailable-glyph
+    // sentinel instead of saturating a value into a misleading record.
+    let mut slot = FT_GlyphSlotRec {
+        bitmap: FT_Bitmap {
+            rows: 1,
+            width: 1,
+            pitch: 1,
+            num_grays: 256,
+            pixel_mode: rust_ffi::FT_PIXEL_MODE_GRAY as FT_Byte,
+            ..FT_Bitmap::default()
+        },
+        ..FT_GlyphSlotRec::default()
+    };
+    match selector {
+        1 => slot.bitmap.rows = u32::from(FT_Byte::MAX) + 1,
+        2 => slot.bitmap.width = u32::from(FT_Byte::MAX) + 1,
+        3 => slot.bitmap.pitch = -40_000,
+        4 => slot.bitmap.pitch = 40_000,
+        5 => slot.bitmap_left = i32::from(FT_Char::MAX) + 1,
+        6 => slot.bitmap_top = i32::from(FT_Char::MIN) - 1,
+        7 => slot.advance.x = 8_192,
+        8 => slot.advance.y = -8_256,
+        _ => unreachable!(),
+    }
+    let (record, buffer) = ftc_sbit_slot_record(&slot, false, false);
+    assert_eq!(record.width, FT_Byte::MAX);
+    assert_eq!(record.height, 0);
+    assert!(record.buffer.is_null());
+    assert!(buffer.is_empty());
+    std::hint::black_box((record, buffer));
 }
 
 #[cfg(feature = "abi-test-support")]
@@ -13831,6 +13939,7 @@ fn abi_custom_memory_coverage_probe(
         1901..=1930 => abi_c114_valid_public_batch_probe(bytes, library, face, memory, probe),
         1931..=1980 => abi_c115_reachability_batch_probe(bytes, library, face, memory, probe),
         1981..=2030 => abi_c116_reachability_batch_probe(bytes, library, face, memory, probe),
+        2031..=2080 => abi_c121_sbit_guard_probe(probe),
         _ => {}
     }
 }

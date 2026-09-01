@@ -7173,6 +7173,25 @@ pub fn abi_support_custom_memory_lifecycle(
     }
 }
 
+/// Exercises the inactive-size branch used by the WASM size bookkeeping.
+///
+/// A normal face always starts with a live active-size handle.  The public
+/// size APIs can therefore cover only the insertion arm; this parity-backed
+/// support route models a zero active-size handle after face construction and
+/// verifies that the guard leaves the existing metrics map unchanged.
+#[cfg(feature = "abi-test-support")]
+pub fn abi_support_active_size_metrics_guard(bytes: &[u8], face_index: FT_Long) -> bool {
+    let mut library = rust_ffi::FT_Init_FreeType();
+    rust_ffi::FT_Add_Default_Modules(Some(&mut library));
+    let face = rust_ffi::FT_New_Memory_Face(&library, bytes, face_index, 20.0)
+        .expect("active-size guard probe needs a valid face");
+    let mut state = make_wasm_face_state(face);
+    let metrics_before = state.size_metrics.len();
+    state.active_size = 0;
+    update_wasm_active_size_metrics(&mut state);
+    state.size_metrics.len() == metrics_before
+}
+
 /// Normalized custom-glyph lifecycle observations for the Wasm parity lane.
 #[cfg(feature = "abi-test-support")]
 pub struct AbiCustomGlyphSnapshot {

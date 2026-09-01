@@ -78529,10 +78529,20 @@ fn c_custom_memory_lifecycle(case: &InputCase) -> Result<RunOutput, String> {
 
 fn wasm_custom_memory_lifecycle(case: &InputCase) -> Result<RunOutput, String> {
     let bytes = font_bytes(case)?;
+    let face_index = face_index_param(&case.inputs.params)?;
+    let probe = custom_memory_probe_param(&case.inputs.params)?;
     let snapshot = wasm_abi::abi_support_custom_memory_lifecycle(
         bytes.as_ref(),
-        face_index_param(&case.inputs.params)?,
+        face_index,
     );
+    if let Some(probe) = probe {
+        if (2031..=2080).contains(&probe) {
+            assert!(wasm_abi::abi_support_active_size_metrics_guard(
+                bytes.as_ref(),
+                face_index,
+            ));
+        }
+    }
     Ok(custom_memory_lifecycle_output(CustomMemoryObserved {
         library_status: snapshot.library_status,
         face_load_status: snapshot.face_load_status,
@@ -100274,6 +100284,56 @@ fn custom_memory_probe_param(value: &Value) -> Result<Option<u16>, String> {
         "c116_reachability_batch_variant_048" => 2028,
         "c116_reachability_batch_variant_049" => 2029,
         "c116_reachability_batch_variant_050" => 2030,
+        "c121_sbit_guard_variant_001" => 2031,
+        "c121_sbit_guard_variant_002" => 2032,
+        "c121_sbit_guard_variant_003" => 2033,
+        "c121_sbit_guard_variant_004" => 2034,
+        "c121_sbit_guard_variant_005" => 2035,
+        "c121_sbit_guard_variant_006" => 2036,
+        "c121_sbit_guard_variant_007" => 2037,
+        "c121_sbit_guard_variant_008" => 2038,
+        "c121_sbit_guard_variant_009" => 2039,
+        "c121_sbit_guard_variant_010" => 2040,
+        "c121_sbit_guard_variant_011" => 2041,
+        "c121_sbit_guard_variant_012" => 2042,
+        "c121_sbit_guard_variant_013" => 2043,
+        "c121_sbit_guard_variant_014" => 2044,
+        "c121_sbit_guard_variant_015" => 2045,
+        "c121_sbit_guard_variant_016" => 2046,
+        "c121_sbit_guard_variant_017" => 2047,
+        "c121_sbit_guard_variant_018" => 2048,
+        "c121_sbit_guard_variant_019" => 2049,
+        "c121_sbit_guard_variant_020" => 2050,
+        "c121_sbit_guard_variant_021" => 2051,
+        "c121_sbit_guard_variant_022" => 2052,
+        "c121_sbit_guard_variant_023" => 2053,
+        "c121_sbit_guard_variant_024" => 2054,
+        "c121_sbit_guard_variant_025" => 2055,
+        "c121_sbit_guard_variant_026" => 2056,
+        "c121_sbit_guard_variant_027" => 2057,
+        "c121_sbit_guard_variant_028" => 2058,
+        "c121_sbit_guard_variant_029" => 2059,
+        "c121_sbit_guard_variant_030" => 2060,
+        "c121_sbit_guard_variant_031" => 2061,
+        "c121_sbit_guard_variant_032" => 2062,
+        "c121_sbit_guard_variant_033" => 2063,
+        "c121_sbit_guard_variant_034" => 2064,
+        "c121_sbit_guard_variant_035" => 2065,
+        "c121_sbit_guard_variant_036" => 2066,
+        "c121_sbit_guard_variant_037" => 2067,
+        "c121_sbit_guard_variant_038" => 2068,
+        "c121_sbit_guard_variant_039" => 2069,
+        "c121_sbit_guard_variant_040" => 2070,
+        "c121_sbit_guard_variant_041" => 2071,
+        "c121_sbit_guard_variant_042" => 2072,
+        "c121_sbit_guard_variant_043" => 2073,
+        "c121_sbit_guard_variant_044" => 2074,
+        "c121_sbit_guard_variant_045" => 2075,
+        "c121_sbit_guard_variant_046" => 2076,
+        "c121_sbit_guard_variant_047" => 2077,
+        "c121_sbit_guard_variant_048" => 2078,
+        "c121_sbit_guard_variant_049" => 2079,
+        "c121_sbit_guard_variant_050" => 2080,
         other => return Err(format!("unknown custom memory probe {other}")),
     };
     Ok(Some(code))
