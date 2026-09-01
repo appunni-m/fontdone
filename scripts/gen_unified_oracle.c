@@ -28056,6 +28056,67 @@ static int emit_get_name_index(int argc, char** argv) {
     return 0;
 }
 
+/*
+ * The WASM facade accepts a pointer plus an explicit byte length, so its
+ * public input domain is wider than Rust's UTF-8 `&str` helper.  Keep this
+ * oracle route byte-oriented to compare the facade with pinned FreeType's
+ * FT_String* lookup without silently replacing invalid bytes.
+ */
+static int emit_get_name_index_bytes(int argc, char** argv) {
+    if (argc != 8) {
+        return 1;
+    }
+    const char* source_kind = argv[2];
+    const char* source_value = argv[3];
+    FT_Long face_index = atol(argv[4]);
+    const char* encoded_name = argv[5];
+    int face_null = streq(argv[6], "null");
+    unsigned char* name_bytes = NULL;
+    long name_len = 0;
+
+    if (decode_hex(encoded_name, &name_bytes, &name_len) != 0) {
+        fprintf(stderr, "invalid glyph-name byte hex\n");
+        return 2;
+    }
+    if (memchr(name_bytes, 0, (size_t)name_len) != NULL) {
+        fprintf(stderr, "glyph-name byte hex contains an embedded NUL\n");
+        free(name_bytes);
+        return 2;
+    }
+    unsigned char* resized = (unsigned char*)realloc(
+        name_bytes,
+        (size_t)name_len + 1);
+    if (!resized) {
+        free(name_bytes);
+        return 2;
+    }
+    name_bytes = resized;
+    name_bytes[name_len] = 0;
+
+    OracleFace face = {0};
+    if (!face_null) {
+        int opened = open_oracle_face(source_kind, source_value, face_index, &face);
+        if (opened != 0) {
+            free(name_bytes);
+            return opened == 1 ? 0 : opened;
+        }
+    }
+
+    FT_Face call_face = face_null ? NULL : face.face;
+    FT_UInt glyph_index = FT_Get_Name_Index(call_face, (FT_String*)name_bytes);
+
+    printf("{");
+    print_status(0);
+    printf(",\"output\":{\"return\":%u,\"glyph_name_bytes\":\"",
+           (unsigned int)glyph_index);
+    print_hex_bytes(name_bytes, name_len);
+    printf("\"}}\n");
+
+    close_oracle_face(&face);
+    free(name_bytes);
+    return 0;
+}
+
 static int emit_set_charmap_null_face(int argc, char** argv) {
     (void)argc;
     (void)argv;
@@ -42580,6 +42641,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 8 && streq(argv[1], "--get-name-index")) {
         return emit_get_name_index(argc, argv);
+    }
+    if (argc == 8 && streq(argv[1], "--get-name-index-bytes")) {
+        return emit_get_name_index_bytes(argc, argv);
     }
     if (argc == 7 && streq(argv[1], "--get-sfnt-name-count")) {
         return emit_face_or_slot(argc, argv);

@@ -254,6 +254,103 @@
             "coverage": [
               "font:name-index-unsupported-post-format"
             ]
+          },
+          {
+            "id": "invalid-utf8-embedded-byte",
+            "reason": "The WASM ABI receives a byte pointer and explicit length, so this is a public byte-span input rather than a Rust string. Pinned ftobjs.c:4264-4283 forwards FT_String* to the glyph-name service, and sfdriver.c:211-240 compares bytes without UTF-8 validation; with DejaVuSans's ASCII glyph names this invalid sequence must return the zero sentinel.",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "glyph_name_bytes_hex": "41ff42"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:8710-8713:invalid-utf8-name-span",
+              "freetype/src/base/ftobjs.c:4264-4283",
+              "freetype/src/sfnt/sfdriver.c:211-240"
+            ]
+          },
+          {
+            "id": "invalid-utf8-truncated-two-byte",
+            "reason": "The explicit-length WASM byte span ends after a UTF-8 lead byte. FreeType's pinned FT_Get_Name_Index path treats it as an opaque NUL-terminated byte string and does not decode it, so the unknown-byte name returns zero.",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "glyph_name_bytes_hex": "41c2"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:8710-8713:invalid-utf8-truncated-two-byte",
+              "freetype/src/sfnt/sfdriver.c:211-240"
+            ]
+          },
+          {
+            "id": "invalid-utf8-overlong-sequence",
+            "reason": "The byte span uses an overlong UTF-8 encoding that the WASM facade must reject safely. The pinned C implementation performs byte comparison only, and no maintained glyph name contains these bytes, so both contracts return zero.",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "glyph_name_bytes_hex": "c0af"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:8710-8713:invalid-utf8-overlong",
+              "freetype/src/base/ftobjs.c:4264-4283"
+            ]
+          },
+          {
+            "id": "invalid-utf8-surrogate-sequence",
+            "reason": "The explicit byte input contains a UTF-8 surrogate encoding, which is invalid Unicode but still a bounded FT_String byte sequence. FreeType does not validate Unicode before lookup; the maintained face has no matching raw name and returns its zero sentinel.",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "glyph_name_bytes_hex": "eda080"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:8710-8713:invalid-utf8-surrogate",
+              "freetype/src/sfnt/sfdriver.c:211-240"
+            ]
+          },
+          {
+            "id": "invalid-utf8-out-of-range-sequence",
+            "reason": "The byte span encodes a code point above U+10FFFF. This intentionally malformed public byte input exercises the WASM from_utf8 error arm while pinned FreeType continues its raw FT_String comparison and returns zero for the unknown name.",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/DejaVuSans.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "glyph_name_bytes_hex": "f4908080"
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:8710-8713:invalid-utf8-out-of-range",
+              "freetype/src/base/ftobjs.c:4264-4283",
+              "freetype/src/sfnt/sfdriver.c:211-240"
+            ]
           }
         ]
       },

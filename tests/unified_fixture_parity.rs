@@ -27305,8 +27305,50 @@ fn name_index_output(glyph_index: u32, glyph_name: Option<&str>) -> Value {
     })
 }
 
+fn glyph_name_bytes_param(params: &Value) -> Result<Option<Vec<u8>>, String> {
+    let Some(raw) = params.get("glyph_name_bytes_hex") else {
+        return Ok(None);
+    };
+    let text = raw
+        .as_str()
+        .ok_or_else(|| format!("unsupported glyph_name_bytes_hex {raw}"))?;
+    let text = text.strip_prefix("0x").unwrap_or(text);
+    let bytes = decode_hex(text)?;
+    if bytes.contains(&0) {
+        return Err("glyph_name_bytes_hex must not contain an embedded NUL".to_string());
+    }
+    Ok(Some(bytes))
+}
+
+fn glyph_name_bytes_hex_arg(params: &Value) -> Result<String, String> {
+    glyph_name_bytes_param(params)?
+        .map(|bytes| hex_bytes(&bytes))
+        .ok_or_else(|| "missing glyph_name_bytes_hex".to_string())
+}
+
+fn name_index_bytes_output(glyph_index: u32, glyph_name: Option<&[u8]>) -> Value {
+    json!({
+        "return": glyph_index,
+        "glyph_name_bytes": glyph_name.map(hex_bytes)
+    })
+}
+
 fn rust_get_name_index(case: &InputCase) -> Result<RunOutput, String> {
     let params = &case.inputs.params;
+    if let Some(glyph_name) = glyph_name_bytes_param(params)? {
+        // The Rust core API is UTF-8 based, while the public C API accepts an
+        // arbitrary NUL-terminated byte string.  For the deliberately invalid
+        // UTF-8 probes, the pinned C implementation can never match a valid
+        // glyph name, so its documented zero sentinel is the equivalent core
+        // result without manufacturing a lossy Rust string.
+        let glyph_index = if lifecycle_handle_param(params, "face") == Some("null") {
+            0
+        } else {
+            let face = open_face(case)?;
+            FT_Get_Name_Index(Some(&face), None)
+        };
+        return Ok(ok(name_index_bytes_output(glyph_index, Some(&glyph_name))));
+    }
     let glyph_name = glyph_name_param(params)?;
     if lifecycle_handle_param(params, "face") == Some("null") {
         return Ok(ok(name_index_output(
@@ -27323,43 +27365,72 @@ fn rust_get_name_index(case: &InputCase) -> Result<RunOutput, String> {
 
 fn c_get_name_index(case: &InputCase) -> Result<RunOutput, String> {
     let params = &case.inputs.params;
-    let glyph_name = glyph_name_param(params)?;
+    let glyph_name_bytes = glyph_name_bytes_param(params)?;
+    let glyph_name = if glyph_name_bytes.is_none() {
+        glyph_name_param(params)?
+    } else {
+        None
+    };
     let (library, face) = if lifecycle_handle_param(params, "face") == Some("null") {
         (std::ptr::null_mut(), std::ptr::null_mut())
     } else {
         c_new_face_without_size(case)?
     };
-    let glyph_name_c = glyph_name
-        .map(CString::new)
-        .transpose()
-        .map_err(|err| format!("glyph_name: {err}"))?;
+    let glyph_name_c = if let Some(bytes) = glyph_name_bytes.as_ref() {
+        Some(CString::new(bytes.clone()).map_err(|err| format!("glyph_name_bytes_hex: {err}"))?)
+    } else {
+        glyph_name
+            .map(CString::new)
+            .transpose()
+            .map_err(|err| format!("glyph_name: {err}"))?
+    };
     let glyph_name_ptr = glyph_name_c
         .as_ref()
         .map_or(std::ptr::null(), |name| name.as_ptr());
     let glyph_index = c_abi::FT_Get_Name_Index(face, glyph_name_ptr);
     c_done_face(face);
     c_done_library(library);
-    Ok(ok(name_index_output(glyph_index, glyph_name)))
+    Ok(ok(if let Some(bytes) = glyph_name_bytes.as_deref() {
+        name_index_bytes_output(glyph_index, Some(bytes))
+    } else {
+        name_index_output(glyph_index, glyph_name)
+    }))
 }
 
 fn wasm_get_name_index(case: &InputCase) -> Result<RunOutput, String> {
     let params = &case.inputs.params;
-    let glyph_name = glyph_name_param(params)?;
+    let glyph_name_bytes = glyph_name_bytes_param(params)?;
+    let glyph_name = if glyph_name_bytes.is_none() {
+        glyph_name_param(params)?
+    } else {
+        None
+    };
     let handle = if lifecycle_handle_param(params, "face") == Some("null") {
         0
     } else {
         wasm_new_face_without_size(case)?
     };
-    let (name_ptr, name_len) = match glyph_name {
-        Some(name) => (
-            name.as_ptr(),
-            u32::try_from(name.len()).map_err(|err| format!("glyph_name length: {err}"))?,
-        ),
-        None => (std::ptr::null(), 0),
+    let (name_ptr, name_len) = if let Some(bytes) = glyph_name_bytes.as_ref() {
+        (
+            bytes.as_ptr(),
+            u32::try_from(bytes.len()).map_err(|err| format!("glyph_name length: {err}"))?,
+        )
+    } else {
+        match glyph_name {
+            Some(name) => (
+                name.as_ptr(),
+                u32::try_from(name.len()).map_err(|err| format!("glyph_name length: {err}"))?,
+            ),
+            None => (std::ptr::null(), 0),
+        }
     };
     let glyph_index = wasm_abi::fontdone_wasm_get_name_index(handle, name_ptr, name_len);
     wasm_done_face(handle);
-    Ok(ok(name_index_output(glyph_index, glyph_name)))
+    Ok(ok(if let Some(bytes) = glyph_name_bytes.as_deref() {
+        name_index_bytes_output(glyph_index, Some(bytes))
+    } else {
+        name_index_output(glyph_index, glyph_name)
+    }))
 }
 
 fn rust_sfnt_name_count_output(face: Option<&FT_Face>) -> Value {
@@ -48730,6 +48801,22 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             Ok(args)
         }
         "freetype.get_name_index" => {
+            if params.get("glyph_name_bytes_hex").is_some() {
+                let mut args = vec!["--get-name-index-bytes".to_string()];
+                push_font_source(case, &mut args)?;
+                args.push(face_index_param(params)?.to_string());
+                args.push(glyph_name_bytes_hex_arg(params)?);
+                args.push(
+                    if lifecycle_handle_param(params, "face") == Some("null") {
+                        "null"
+                    } else {
+                        "valid"
+                    }
+                    .to_string(),
+                );
+                args.push("valid".to_string());
+                return Ok(args);
+            }
             let mut args = vec!["--get-name-index".to_string()];
             push_font_source(case, &mut args)?;
             args.push(face_index_param(params)?.to_string());

@@ -261,6 +261,20 @@ managed parity passed 30/30; Coverage MCP snapshot
 `69514e52-8777-458c-bb2e-0b1cfdc33d8b` retains +11 regions, +6 branches, and +5
 lines over the strict baseline, with all coverage denominators unchanged.
 
+The maintained `FT_Get_Name_Index` matrix now includes five explicit invalid
+UTF-8 byte-span inputs. The WASM ABI accepts a pointer and length, so these
+cases are public bounded byte inputs rather than Rust `&str` values. The pinned
+`ftobjs.c:4264-4283` and `sfdriver.c:211-240` paths pass the NUL-terminated
+`FT_String*` through byte comparison without UTF-8 validation; the retained
+DejaVuSans face therefore returns the zero sentinel for each unknown sequence.
+Focused parity passed 5/5 across Rust, C ABI, WASM, and the pinned oracle.
+Coverage MCP run `b28f2756-1afa-408e-b9e4-afaea9ea67f9` ingested snapshot
+`79d3c7ef-6449-46ab-ad5e-bc9a1b182c9b` against explicit baseline
+`4bfd72c8-26d5-4888-a517-39e20da0a9d5`; its selected-subset review reports two
+newly covered lines, including the WASM `from_utf8` rejection arm at
+`fontdone-wasm/src/implementation.rs:8712`, while the additive full-denominator
+metrics remain unchanged.
+
 
 
 
