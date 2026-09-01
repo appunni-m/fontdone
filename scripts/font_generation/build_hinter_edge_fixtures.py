@@ -86,6 +86,28 @@ def write_invalid_composite_attachment_points() -> None:
         save_font(name, font)
 
 
+def write_use_my_metrics_child_instruction_overflow() -> None:
+    font = TTFont(BASE_FONT, recalcTimestamp=False, recalcBBoxes=False)
+    # `offsetRounded` already marks its component with USE_MY_METRICS. Point
+    # that component at a composite child whose final WE_HAVE_INSTRUCTIONS
+    # length is larger than the remaining glyph record.  FreeType's
+    # auto-hinter first reloads the complete tree with NO_HINTING, so the
+    # child's deferred composite instruction read is not performed and the
+    # public load succeeds.  The Rust effective-phantom helper must use that
+    # same no-hinting child load; this fixture exposes the old eager-read
+    # mismatch through a real FT_Load_Glyph call.
+    font["glyf"]["offsetRounded"].components[0].glyphName = "withInstructions"
+    child = bytearray(font["glyf"]["withInstructions"].compile(font["glyf"]))
+    if len(child) < 3:
+        raise ValueError("withInstructions composite record is unexpectedly short")
+    # The source child ends with a two-byte instruction length and one-byte
+    # program. Keep the record bytes intact and only make the declared length
+    # exceed the available payload.
+    child[-3:-1] = b"\x00\x40"
+    font["glyf"]["withInstructions"] = Glyph(bytes(child))
+    save_font("hinter-use-my-metrics-child-instruction-overflow.ttf", font)
+
+
 def write_composite_depth_overflow() -> None:
     font = TTFont(BASE_FONT, recalcTimestamp=False, recalcBBoxes=False)
     previous = "base"
@@ -759,6 +781,7 @@ def main() -> None:
     write_empty_glyph_iup()
     write_invalid_contour_endpoints()
     write_invalid_composite_attachment_points()
+    write_use_my_metrics_child_instruction_overflow()
     write_composite_depth_overflow()
     write_prep_definitions()
     write_prep_idef()

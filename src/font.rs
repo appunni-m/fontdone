@@ -1089,11 +1089,7 @@ fn parse_bdf_signed_decimal_prefix(raw_value: &str) -> i64 {
             break;
         }
     }
-    if negative {
-        -value
-    } else {
-        value
-    }
+    if negative { -value } else { value }
 }
 
 // This mirrors `bdflib.c:bdf_atoul_`, including its zero result for a token
@@ -1138,12 +1134,12 @@ fn parse_bdf_property_line(line: &str) -> Option<BdfPropertyEntry> {
     let format = bdf_property_format(name);
     let value = match format {
         BdfPropertyFormat::Atom => BdfPropertyValue::Atom(parse_bdf_atom(raw_value)),
-        BdfPropertyFormat::Integer => BdfPropertyValue::Integer(
-            parse_bdf_signed_decimal_prefix(raw_value) as i32,
-        ),
-        BdfPropertyFormat::Cardinal => BdfPropertyValue::Cardinal(
-            parse_bdf_unsigned_decimal_prefix(raw_value) as u32,
-        ),
+        BdfPropertyFormat::Integer => {
+            BdfPropertyValue::Integer(parse_bdf_signed_decimal_prefix(raw_value) as i32)
+        }
+        BdfPropertyFormat::Cardinal => {
+            BdfPropertyValue::Cardinal(parse_bdf_unsigned_decimal_prefix(raw_value) as u32)
+        }
     };
     let atom_c_string = match &value {
         // `bdflib.c:bdf_add_property_` leaves an empty atom's pointer NULL;
@@ -1373,9 +1369,7 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
         )
     };
     let metric_size = if compressed { 5 } else { 12 };
-    if original_glyph_count == 0
-        || original_glyph_count > metrics.len() / metric_size
-    {
+    if original_glyph_count == 0 || original_glyph_count > metrics.len() / metric_size {
         return Err(pcf_unknown_file_format("metric count out of range"));
     }
     // FreeType accepts a larger declared metric array but only loads 65534
@@ -1744,10 +1738,7 @@ fn bdf_size_bits_per_pixel(line: &str) -> u32 {
     let _ = parts.next();
     let _ = parts.next();
     let _ = parts.next();
-    let raw = parts
-        .next()
-        .map(parse_bdf_unsigned_decimal_prefix)
-        .unwrap_or(0);
+    let raw = parts.next().map_or(0, parse_bdf_unsigned_decimal_prefix);
     if raw > 4 {
         8
     } else if raw > 2 {
@@ -2919,7 +2910,9 @@ fn parse_type1_multi_master(cleartext: &[u8]) -> Result<Option<Type1MultiMaster>
     // incomplete blend to be discarded (freetype/src/type1/t1load.c:1027-1036).
     if design_maps.is_empty()
         || design_maps.len() > 4
-        || design_maps.iter().any(|map| map.is_empty() || map.len() > 20)
+        || design_maps
+            .iter()
+            .any(|map| map.is_empty() || map.len() > 20)
     {
         return Err(FontError::InvalidFileFormat(
             "Type 1 MM design map has an invalid point count".into(),
@@ -3132,9 +3125,7 @@ fn type1_value_tail<'a>(text: &'a str, key: &str) -> Option<&'a str> {
 
 fn type1_bracket_value<'a>(text: &'a str, key: &str) -> Option<&'a str> {
     let tail = type1_value_tail(text, key)?;
-    let start = tail
-        .bytes()
-        .position(|byte| matches!(byte, b'[' | b'{'))?;
+    let start = tail.bytes().position(|byte| matches!(byte, b'[' | b'{'))?;
     let end = type1_delimited_end(tail, start)?;
     Some(&tail[start..end])
 }
@@ -3235,7 +3226,7 @@ fn type1_delimited_end(value: &str, start: usize) -> Option<usize> {
     None
 }
 
-fn type1_array_elements<'a>(value: &'a str) -> Option<Vec<&'a str>> {
+fn type1_array_elements(value: &str) -> Option<Vec<&str>> {
     let bytes = value.as_bytes();
     let (open, close) = match (bytes.first().copied(), bytes.last().copied()) {
         (Some(b'['), Some(b']')) => (b'[', b']'),
@@ -5355,7 +5346,7 @@ impl Font {
                     parse_bdf_unsigned_decimal_prefix(values.next().unwrap_or("")),
                 )
             })
-            .last()
+            .next_back()
             .unwrap_or((0, 0, 0));
 
         let fallback_ascent = i32::from(self.data.head.y_max);

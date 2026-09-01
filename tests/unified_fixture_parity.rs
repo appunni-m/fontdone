@@ -62057,7 +62057,7 @@ fn glyph_to_bitmap_malformed_outline_tag_kind(params: &Value) -> Result<u8, Stri
     }
 }
 
-fn glyph_outline_support_probe<'a>(params: &'a Value) -> Result<&'a str, String> {
+fn glyph_outline_support_probe(params: &Value) -> Result<&str, String> {
     let probe = string_param(params, "support_probe")?;
     match probe {
         "render_failure_null_glyph_handle"
@@ -62112,14 +62112,14 @@ fn rust_glyph_outline_support_guards(case: &InputCase) -> Result<RunOutput, Stri
             {
                 glyph.outline.contours.last().is_some()
             } else if probe == "stroke_parse_empty_tags" {
-                glyph.outline.tags.first().is_some()
+                !glyph.outline.tags.is_empty()
             } else {
-                glyph.outline.points.first().is_some()
+                !glyph.outline.points.is_empty()
             }
         }
         _ => unreachable!(),
     };
-    Ok(glyph_outline_support_output(&probe, supported))
+    Ok(glyph_outline_support_output(probe, supported))
 }
 
 fn c_glyph_outline_support_guards(case: &InputCase) -> Result<RunOutput, String> {
@@ -62224,7 +62224,7 @@ fn c_glyph_outline_support_guards(case: &InputCase) -> Result<RunOutput, String>
         }
         _ => unreachable!(),
     };
-    Ok(glyph_outline_support_output(&probe, supported))
+    Ok(glyph_outline_support_output(probe, supported))
 }
 
 fn wasm_glyph_outline_support_guards(case: &InputCase) -> Result<RunOutput, String> {
@@ -62325,7 +62325,7 @@ fn wasm_glyph_outline_support_guards(case: &InputCase) -> Result<RunOutput, Stri
         }
         _ => unreachable!(),
     };
-    Ok(glyph_outline_support_output(&probe, supported))
+    Ok(glyph_outline_support_output(probe, supported))
 }
 
 fn glyph_to_bitmap_malformed_outline_tags_output(

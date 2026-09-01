@@ -2107,7 +2107,7 @@ pub extern "C" fn FTC_CMapCache_Lookup(
     // zero, its value is always representable by the public `FT_UInt` type;
     // keep this conversion total so the defensive conversion-failure arm does
     // not become an unreachably counted region for valid ABI inputs.
-    let normalized_cmap_index = cmap_index.max(0) as FT_UInt;
+    let normalized_cmap_index = cmap_index.max(0).cast_unsigned() as FT_UInt;
     let key = FtcCMapKey {
         face_id,
         cmap_index: normalized_cmap_index,

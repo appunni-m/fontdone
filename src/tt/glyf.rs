@@ -644,8 +644,7 @@ fn load_glyph_inner<'a>(
                         "glyf: composite instruction length overflow".into(),
                     ));
                 }
-                let instruction_length =
-                    u16::from_be_bytes([bytes[pos], bytes[pos + 1]]) as usize;
+                let instruction_length = u16::from_be_bytes([bytes[pos], bytes[pos + 1]]) as usize;
                 let instruction_start = pos + 2;
                 if instruction_start + instruction_length > bytes.len() {
                     return Err(FontError::InvalidOutline(
@@ -942,10 +941,7 @@ fn outline_flags_from_simple_tags(flags: &[u8]) -> u32 {
     }
 }
 
-fn parse_composite_components(
-    data: &[u8],
-    mut pos: usize,
-) -> Result<CompositeGlyph, FontError> {
+fn parse_composite_components(data: &[u8], mut pos: usize) -> Result<CompositeGlyph, FontError> {
     let mut components = Vec::new();
     loop {
         if pos + 4 > data.len() {

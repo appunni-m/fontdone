@@ -915,9 +915,7 @@ fn scale_glyph_impl_with_scale(
     // `FT_LOAD_DEFAULT` on faces without a usable native program as well as
     // for explicit force-autohint loads.
     let use_auto_hinter_outline = latin_metrics.is_some()
-        || (allow_bytecode
-            && !round_component_offsets
-            && should_use_default_autohint(data));
+        || (allow_bytecode && !round_component_offsets && should_use_default_autohint(data));
 
     let outline_raw: std::rc::Rc<crate::tt::glyf::GlyphOutline> = if round_component_offsets {
         if data.has_cff_outlines() {
@@ -2445,7 +2443,11 @@ fn effective_composite_pp1x_fu(
     let mut effective = parent_pp1;
     for component in &outline.components {
         if component.use_my_metrics {
-            let child = data.load_glyph_outline(component.glyph_index)?;
+            // The auto-hinter's reload is `NO_SCALE | NO_HINTING`; FreeType
+            // therefore defers the selected composite child's instruction
+            // bytes until native hinting, rather than rejecting a truncated
+            // instruction tail while calculating USE_MY_METRICS phantoms.
+            let child = data.load_glyph_outline_no_hinting(component.glyph_index)?;
             effective = effective_composite_pp1x_fu(data, component.glyph_index, &child)?;
         }
     }

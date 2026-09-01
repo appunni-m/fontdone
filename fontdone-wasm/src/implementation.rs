@@ -10175,7 +10175,10 @@ fn wasm_bitmap_to_rust(bitmap: &FontdoneWasmBitmap) -> rust_ffi::FT_Bitmap_C {
 fn wasm_bitmap_copy_array_too_large(bitmap: &FontdoneWasmBitmap) -> bool {
     let pitch = bitmap.pitch.unsigned_abs() as usize;
     let rows = bitmap.rows as usize;
-    pitch > 0 && rows > (i32::MAX as usize) / pitch
+    pitch > 0
+        && rows
+            .checked_mul(pitch)
+            .is_none_or(|bytes| bytes > i32::MAX as usize)
 }
 
 fn copy_rust_bitmap_record_to_wasm(

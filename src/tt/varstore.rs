@@ -133,7 +133,7 @@ impl ItemVariationStore {
             let delta_len = item_count
                 .checked_mul(per_region_size)
                 .and_then(|len| (len <= i32::MAX as usize).then_some(len))
-                .ok_or_else(|| FontError::ArrayTooLarge)?;
+                .ok_or(FontError::ArrayTooLarge)?;
             let delta_set = data
                 .get(delta_start..delta_start + delta_len)
                 .ok_or_else(|| FontError::InvalidFont("item variation delta set truncated".into()))?

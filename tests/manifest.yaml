@@ -1847,6 +1847,8 @@ subjects:
         description: Five valid CJK glyph loads exercise the empty-standard fallback and strong monochrome vertical/horizontal stem-width guards at both sides of the 64-unit threshold.
       - id: batch276_cjk_strong_snap_width_branch
         description: Ten source-reviewed valid CJK glyph loads activate MONO or LCD_V snapping and vary below/above-reference stem geometry, ppem, and target mode to reach both sides of the af_cjk_snap_width comparison.
+      - id: batch317_use_my_metrics_child_instruction_overflow
+        description: A public forced-auto-hint load uses a USE_MY_METRICS composite whose selected child has a truncated instruction payload, checking FreeType's deferred child-instruction boundary.
       # needs-input: operation FT_Load_Glyph; fixture asset input/fonts/DejaVuSans.ttf plus fonts with composite glyphs, vertical metrics, embedded bitmaps, and malformed/out-of-range controls; params glyph indices 0, 36, composite glyph, out-of-range glyph, sizes 10/20, and load_flags default/no_hinting/force_autohint/no_scale/no_recurse/render/target modes/vertical/linear_design/sbits_only; expected output shape FT_Error plus full FT_GlyphSlotRec public fields, outline/subglyph/bitmap data, and slot mutation; comparison rule exact C error, metrics, advance, linear advances, lsb/rsb deltas, format, outline points/tags, bitmap fields/bytes, and subglyph fields when applicable.
       - id: render_and_target_modes
         description: FT_LOAD_RENDER and FT_LOAD_TARGET_* combinations produce the same bitmap pixel mode, dimensions, bearings, pitch, and bytes as C.

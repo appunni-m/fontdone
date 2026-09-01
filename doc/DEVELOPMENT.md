@@ -4692,6 +4692,42 @@ through public paint APIs and applies equivalent invalid cursor offsets; the
 result remains compared exactly with the pinned oracle, while the runtime
 contract is still exercised through `FT_Get_Paint_Layers`.
 
+### Batch 317: deferred composite child instruction boundary
+
+This batch adds one malformed public `FT_Load_Glyph` input. It preserves the
+`USE_MY_METRICS` flag on `offsetRounded`, redirects that component to the
+maintained composite `withInstructions`, and changes only the child's final
+instruction length from one available byte to 64 declared bytes. The expansion
+reason is to test the exact error boundary behind `src/scaler.rs:1075`: the
+auto-hinter's selected child reload must be `NO_SCALE | NO_HINTING`, so a
+truncated deferred instruction tail is not read before native hinting is
+chosen.
+
+The pinned FreeType review covered `TT_Load_Composite_Glyph` and
+`TT_Process_Composite_Glyph` in `freetype/src/truetype/ttgload.c:1178-1234`
+and `:1790-1914`. Composite instruction processing is gated by `IS_HINTED`;
+the auto-hinter no-scale reload therefore accepts this child record. The
+first focused parity run proved the implementation mismatch: C returned `OK`
+while Rust returned `Invalid_Outline` (20), because
+`effective_composite_pp1x_fu` called the eager hinted outline loader. The fix
+uses `load_glyph_outline_no_hinting` for the selected child, matching the
+pinned reload boundary. The focused rerun passed the concrete case across
+Rust FFI, C ABI, and WASM. No unit test was used to increase coverage.
+
+Coverage MCP run `2668299b-25ee-4eab-9ead-45ea9b30a2a2` used the registered
+all-lane command with the exact argument
+`--migration-coverage-case-ids freetype.FT_Load_Glyph.batch317_use_my_metrics_child_instruction_overflow@b317-umm-child-instruction-overflow`
+against explicit baseline snapshot `0b9d9797-3d18-4434-ac14-694ed9739a62`.
+It passed and ingested snapshot `aa81a697-b401-4305-bfb6-fd1772213fd0`.
+The incremental review is a supported selected-subset union, not a complete
+denominator claim; its source review still marks the `?` error region at
+`src/scaler.rs:1075` red because this success-parity input does not force the
+error arm. The ingested source metadata is anchored to an older commit, so
+the run is retained as experimental parity evidence and does not change the
+authoritative full-snapshot percentage. A future malformed input must make
+the pinned oracle take the same error return before that region can be
+claimed.
+
 Third-party material must have redistribution permission and exact provenance.
 The three retained compact control fonts whose exact upstream transformation
 was not recoverable may remain unchanged, but must not be used as new generator

@@ -955,7 +955,7 @@ fn sbit_glyph_slot_with_bitmap(
     } else {
         (metrics.hori_bearing_x / 64, metrics.hori_bearing_y / 64)
     };
-    let bitmap = (include_bitmap && sbit.bitmap_present).then(|| RenderedBitmap {
+    let bitmap = (include_bitmap && sbit.bitmap_present).then_some(RenderedBitmap {
         width: sbit.bitmap.width,
         rows: sbit.bitmap.rows,
         pitch: sbit.bitmap.pitch,

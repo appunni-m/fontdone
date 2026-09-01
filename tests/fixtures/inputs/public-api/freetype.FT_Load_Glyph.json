@@ -50,6 +50,7 @@
     "batch263_cjk_smooth_width_quantization",
     "batch264_cjk_mode_guards",
     "batch276_cjk_strong_snap_width_branch",
+    "batch317_use_my_metrics_child_instruction_overflow",
     "render_and_target_modes",
     "no_scale_no_hinting_and_vertical_flags",
     "error_out_of_range_null_face_or_invalid_flags",
@@ -23641,6 +23642,64 @@
           "freetype/src/autofit/afcjk.c:1391-1421",
           "freetype/src/autofit/afcjk.c:1442-1481",
           "src/autohint/cjk.rs:720-821"
+        ]
+      }
+    },
+    {
+      "case_id": "freetype.FT_Load_Glyph.batch317_use_my_metrics_child_instruction_overflow",
+      "subject": "freetype.FT_Load_Glyph",
+      "case": "batch317_use_my_metrics_child_instruction_overflow",
+      "operation": "load_glyph",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "variants": [
+          {
+            "id": "b317-umm-child-instruction-overflow",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "id": "input/fonts/glyf/hinter-use-my-metrics-child-instruction-overflow.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": {"x": 0, "y": 20},
+              "glyph_index": 9,
+              "load_flags": ["FT_LOAD_FORCE_AUTOHINT", "FT_LOAD_TARGET_NORMAL"],
+              "assert_api_load_glyph_agrees": true
+            },
+            "expect_error": false,
+            "reason": "The selected USE_MY_METRICS component is a composite child whose declared instruction length exceeds its glyph record. Pinned FreeType accepts this public forced-auto-hint load because its no-scale auto-hinter reload defers TT_Process_Composite_Glyph instruction reads; the case checks src/scaler.rs:1075 against freetype/src/truetype/ttgload.c:1790-1914.",
+            "coverage": ["batch317:scaler:use-my-metrics:deferred-child-instruction-read:src/scaler.rs:1075"]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:freetype",
+        "area:glyph-load",
+        "area:scaler",
+        "coverage:real-parity",
+        "font_variability:input/fonts",
+        "source-reviewed-expansion"
+      ],
+      "metadata": {
+        "coverage_intent": "One public malformed composite load isolates the USE_MY_METRICS phantom-selection helper from FreeType's deferred composite-instruction boundary.",
+        "freetype_review": "The pinned loader accepts the malformed child instruction tail during the auto-hinter no-scale reload because TT_Process_Composite_Glyph is gated by IS_HINTED; it would read the instruction length only on a hinted native path (freetype/src/truetype/ttgload.c:1178-1234,1790-1914).",
+        "expansion_reason": "The strict full snapshot leaves src/scaler.rs:1075 red. Existing USE_MY_METRICS cases use valid simple children, so this case changes only the child record's deferred instruction boundary to determine whether Rust incorrectly performs a hinted reload while computing the effective phantom."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {"rows": "per-font glyph load status and slot snapshot"},
+        "compare": {"mode": "exact", "paths": ["rows[].status", "rows[].slot"]},
+        "sources_checked": [
+          "freetype/src/truetype/ttgload.c:1178-1234",
+          "freetype/src/truetype/ttgload.c:1790-1914",
+          "src/scaler.rs:1069-1077",
+          "src/scaler.rs:2434-2452"
         ]
       }
     }
