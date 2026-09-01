@@ -3580,7 +3580,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,236 tracked paths and no symlinks.
+The canonical input tree currently contains 1,237 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -5044,3 +5044,63 @@ claim. The run execution was on the pushed `5553b56` tree, while the ingested
 LLVM metadata still exposes the server's stale `77805b...` commit label; the
 local source mapping and parity outputs are the authoritative line and
 behavior checks.
+
+### Batch 320: cache-manager requester and public lifecycle reachability
+
+This batch adds 50 concrete public parity variants under
+`ftsystem.FT_Memory.mcp_cabi_wrapper_edges_batch` (`batch320-c116-reach-001`
+through `batch320-c116-reach-050`). The cases remain input-driven parity
+cases: the public custom-memory lifecycle operation dispatches a bounded
+probe, and every row runs through Rust FFI, C ABI, WASM, and the pinned C
+oracle. No unit test was added or used for coverage.
+
+The case IDs are grouped into ten five-case families, with a reason recorded
+on every fixture variant. Cases 001-005 exercise the requester callback's
+non-null `FT_Face` output storage and the safe null-face result. Cases 006-010
+use a real requester-created memory face and vary pixel versus char-size
+scaling, targeting the face-owned size restoration in
+`fontdone-c-abi/src/implementation.rs:1927-1942`. Cases 011-020 use the public
+image and SBit cache argument shapes (null cache, descriptor, scaler, and
+required output pointers). Cases 021-025 store valid small-bitmap records
+with distinct buffer and node-lock shapes. Cases 026-030 use a real
+requester-backed image-cache miss with distinct dimensions and glyphs.
+Cases 031-035 use the public CMap cache with negative, zero, positive, and
+signed-boundary cmap selectors. Cases 036-040 vary public size-record
+activation and ownership ordering. Cases 041-045 return five documented
+requester errors and verify manager propagation. Cases 046-050 use real
+requester-backed SBit lookups with distinct glyph, target-mode, and optional
+node-output shapes.
+
+The source review compared these inputs with the pinned FreeType cache
+implementation. `freetype/src/cache/ftcmanag.c:214-240` passes writable
+output storage to a requester and removes the requester's initial size;
+`ftcmanag.c:291-320` clears the public output before returning a manager
+error. `freetype/src/cache/ftcbasic.c:287-344` defines the image-cache
+descriptor/output checks, while `freetype/src/cache/ftcsbits.c:140-180`
+defines the small-record bounds and `ftcsbits.c:350-410` defines unavailable
+bitmap sentinels and node locking. The null-face requester is a deliberately
+malformed callback result: pinned C would dereference the null face after a
+successful callback, so the facade's `Invalid_Face_Handle` hardening is
+tested as a defined safety boundary rather than presented as C-equivalent
+behavior.
+
+Focused parity passed all 50 c116 variants (`50/50`) across the four parity
+backends. Coverage MCP run `d4c06222-da21-442f-bb2a-caa569668ad8` used the
+registered source-matched command with the exact 50 case IDs as repeated
+`--migration-coverage-case-ids` arguments, each value a comma-separated
+five-case chunk because the MCP argument-value limit is 512 bytes. It used
+explicit baseline snapshot
+`c6dbb7af-d9c9-4f8f-9c34-dc80ee701cdf`, passed, and ingested
+`9cbf5c8a-54f6-471d-b711-b4da75b49af3`. The incremental source review
+confirmed the requester output assignment is covered at
+`fontdone-c-abi/src/implementation.rs:2737-2738`; the SBit pitch fallback
+at `:2524` and the impossible SBit payload guard at `:2566` remain
+uncovered. Those two regions are retained as follow-up implementation
+questions, not masked by extra duplicate cases.
+
+The MCP measurement is a selected-subset incremental result with
+`measurement_scope.kind=selected_subset` and `merge.exact=false`; its
+unobserved baseline hits therefore do not support a full-denominator
+percentage or regression claim. The authoritative complete snapshot remains
+`c6dbb7af-d9c9-4f8f-9c34-dc80ee701cdf` at 90,350/93,894 covered regions
+(96.22553091784352%).

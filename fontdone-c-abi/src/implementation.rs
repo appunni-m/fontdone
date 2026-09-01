@@ -9586,6 +9586,373 @@ fn abi_c115_reachability_batch_probe(
 }
 
 #[cfg(feature = "abi-test-support")]
+fn abi_c116_reachability_batch_probe(
+    bytes: &[FT_Byte],
+    library: FT_Library,
+    face: FT_Face,
+    _memory: FT_Memory,
+    probe: u16,
+) {
+    // c116 is ten five-case families.  Each row changes a public pointer,
+    // scaler, glyph, error, or lifecycle shape; the families are source
+    // witnesses for the cache-manager paths that ordinary font loading does
+    // not distinguish.
+    let index = usize::from(probe.saturating_sub(1981));
+    let family = index / 5;
+    let repeat = index % 5;
+
+    if family == 0 {
+        // `ftcmanag.c:226-234` invokes the requester with non-null output
+        // storage.  The public lookup observes the hardened null-face result;
+        // the direct callback call keeps the non-null assignment explicit.
+        let mut manager = abi_coverage_manager_record(
+            library,
+            Some(abi_coverage_cache_requester_null_face),
+            ptr::null_mut(),
+        );
+        let mut token = repeat as u8;
+        let face_id = ptr::from_mut(&mut token).cast::<c_void>();
+        let mut output = ptr::null_mut();
+        let status = FTC_Manager_LookupFace(ptr::from_mut(&mut manager), face_id, &mut output);
+        assert_eq!(status, rust_ffi::FT_Err_Invalid_Face_Handle as FT_Error);
+        let callback_output = if repeat == 0 {
+            ptr::null_mut()
+        } else {
+            ptr::from_mut(&mut output)
+        };
+        let callback_status = unsafe {
+            abi_coverage_cache_requester_null_face(
+                face_id,
+                library,
+                ptr::null_mut(),
+                callback_output,
+            )
+        };
+        assert_eq!(callback_status, rust_ffi::FT_Err_Ok);
+        assert!(output.is_null());
+    }
+
+    if family == 1 {
+        // A real requester-created memory face has one face-owned size record.
+        // `ftc_apply_scaler` clears that public pointer when caching the face
+        // and must restore it before applying either scaler convention.
+        let mut harness = AbiSBitCacheHarness::new_manager_only(bytes, 0)
+            .expect("requester-backed cache manager should initialize");
+        let face_id = harness.face_id();
+        let scaler = FTC_ScalerRec {
+            face_id,
+            width: 8 + repeat as FT_UInt,
+            height: 12 + repeat as FT_UInt,
+            pixel: if repeat == 4 { 0 } else { 1 },
+            x_res: 72,
+            y_res: 72,
+        };
+        let mut size = ptr::null_mut();
+        let status = FTC_Manager_LookupSize(
+            harness.manager_handle(),
+            ptr::from_ref(&scaler).cast_mut(),
+            &mut size,
+        );
+        assert_eq!(status, rust_ffi::FT_Err_Ok);
+        assert!(!size.is_null());
+        std::hint::black_box((size, harness.requester_calls()));
+    }
+
+    if family == 2 {
+        // The public image-cache entry point validates its descriptor, cache,
+        // and output shapes in separate stages, as documented by
+        // `ftcbasic.c:299-305` and the subsequent generic lookup.
+        let mut cache = FTC_ImageCacheRec {
+            manager: ptr::null_mut(),
+            entries: BTreeMap::new(),
+        };
+        let mut type_ = FTC_ImageTypeRec {
+            face_id: ptr::null_mut(),
+            width: 8 + repeat as FT_UInt,
+            height: 12 + repeat as FT_UInt,
+            flags: rust_ffi::FT_LOAD_DEFAULT,
+        };
+        let mut glyph = ptr::null_mut();
+        let mut node = ptr::null_mut();
+        let status = match repeat {
+            0 => FTC_ImageCache_Lookup(
+                ptr::null_mut(),
+                ptr::from_mut(&mut type_),
+                0,
+                &mut glyph,
+                &mut node,
+            ),
+            1 => FTC_ImageCache_Lookup(
+                ptr::from_mut(&mut cache),
+                ptr::from_mut(&mut type_),
+                1,
+                ptr::null_mut(),
+                &mut node,
+            ),
+            2 => FTC_ImageCache_Lookup(
+                ptr::from_mut(&mut cache),
+                ptr::null_mut(),
+                2,
+                &mut glyph,
+                &mut node,
+            ),
+            3 => FTC_ImageCache_LookupScaler(
+                ptr::from_mut(&mut cache),
+                ptr::null_mut(),
+                rust_ffi::FT_LOAD_DEFAULT as FT_ULong,
+                3,
+                &mut glyph,
+                &mut node,
+            ),
+            _ => FTC_ImageCache_Lookup(
+                ptr::from_mut(&mut cache),
+                ptr::from_mut(&mut type_),
+                repeat as FT_UInt,
+                &mut glyph,
+                ptr::null_mut(),
+            ),
+        };
+        std::hint::black_box((status, glyph, node));
+    }
+
+    if family == 3 {
+        // SBit lookup has the same public descriptor/output contract, but its
+        // manager path also classifies missing bitmap glyphs as cacheable
+        // sentinels (`ftcsbits.c:350-410`).
+        let mut cache = FTC_SBitCacheRec {
+            manager: ptr::null_mut(),
+            entries: BTreeMap::new(),
+        };
+        let mut type_ = FTC_ImageTypeRec {
+            face_id: ptr::null_mut(),
+            width: 8 + repeat as FT_UInt,
+            height: 12 + repeat as FT_UInt,
+            flags: rust_ffi::FT_LOAD_DEFAULT,
+        };
+        let mut sbit = ptr::null_mut();
+        let mut node = ptr::null_mut();
+        let status = match repeat {
+            0 => FTC_SBitCache_Lookup(
+                ptr::null_mut(),
+                ptr::from_mut(&mut type_),
+                0,
+                &mut sbit,
+                &mut node,
+            ),
+            1 => FTC_SBitCache_Lookup(
+                ptr::from_mut(&mut cache),
+                ptr::from_mut(&mut type_),
+                1,
+                ptr::null_mut(),
+                &mut node,
+            ),
+            2 => FTC_SBitCache_Lookup(
+                ptr::from_mut(&mut cache),
+                ptr::null_mut(),
+                2,
+                &mut sbit,
+                &mut node,
+            ),
+            3 => FTC_SBitCache_LookupScaler(
+                ptr::from_mut(&mut cache),
+                ptr::null_mut(),
+                rust_ffi::FT_LOAD_DEFAULT as FT_ULong,
+                3,
+                &mut sbit,
+                &mut node,
+            ),
+            _ => FTC_SBitCache_Lookup(
+                ptr::from_mut(&mut cache),
+                ptr::from_mut(&mut type_),
+                repeat as FT_UInt,
+                &mut sbit,
+                ptr::null_mut(),
+            ),
+        };
+        std::hint::black_box((status, sbit, node));
+    }
+
+    if family == 4 {
+        // Store five distinct small-bitmap records through the cache-owned
+        // node path.  These are valid public record values and exercise the
+        // buffer/no-buffer and locked/unlocked output shapes around the
+        // `ftcsbits.c` small-record conversion.
+        let mut manager = abi_coverage_manager_record(library, None, ptr::null_mut());
+        let manager_ptr = ptr::from_mut(&mut manager);
+        let mut cache = FTC_SBitCacheRec {
+            manager: manager_ptr,
+            entries: BTreeMap::new(),
+        };
+        let mut token = (repeat + 21) as u8;
+        let face_id = ptr::from_mut(&mut token).cast::<c_void>();
+        let key = abi_coverage_image_key(face_id);
+        let mut sbit = ptr::null_mut();
+        let mut node = ptr::null_mut();
+        let anode = if repeat < 3 {
+            ptr::from_mut(&mut node)
+        } else {
+            ptr::null_mut()
+        };
+        let record = FTC_SBitRec {
+            width: 1 + repeat as FT_Byte,
+            height: 1,
+            format: rust_ffi::FT_PIXEL_MODE_GRAY as FT_Byte,
+            max_grays: 255,
+            pitch: 1,
+            xadvance: repeat as FT_Char,
+            yadvance: 0,
+            ..FTC_SBitRec::default()
+        };
+        let buffer = if repeat == 0 {
+            vec![0x7f].into_boxed_slice()
+        } else {
+            Box::new([])
+        };
+        let status = ftc_sbit_cache_store(
+            ptr::from_mut(&mut cache),
+            manager_ptr,
+            key,
+            record,
+            buffer,
+            &mut sbit,
+            anode,
+        );
+        assert_eq!(status, rust_ffi::FT_Err_Ok);
+        let stored = cache
+            .entries
+            .remove(&key)
+            .expect("stored SBit node should be indexed");
+        manager.nodes.clear();
+        ftc_destroy_node(stored);
+        std::hint::black_box((sbit, node));
+    }
+
+    if family == 5 {
+        // The image-cache wrapper is a public peer of the SBit cache and uses
+        // the same requester-backed face lifecycle.  Varying the scaler and
+        // node-release choice keeps miss and ownership outcomes distinct.
+        let mut harness = AbiSBitCacheHarness::new_manager_only(bytes, 0)
+            .expect("requester-backed cache manager should initialize");
+        harness
+            .ensure_image_cache()
+            .expect("image cache should register on a live manager");
+        let face_id = harness.face_id();
+        let scaler = FTC_ScalerRec {
+            face_id,
+            width: 8 + repeat as FT_UInt,
+            height: 12 + repeat as FT_UInt,
+            pixel: 1,
+            x_res: 0,
+            y_res: 0,
+        };
+        let result = harness.image_lookup(scaler, repeat as FT_UInt, repeat % 2 == 0);
+        std::hint::black_box(result);
+    }
+
+    if family == 6 {
+        // CMap lookup keeps negative and oversized public indices defined by
+        // the cache key normalization before it reaches the face charmap.
+        let mut manager = abi_coverage_manager_record(library, None, ptr::null_mut());
+        let mut token = (repeat + 31) as u8;
+        let face_id = ptr::from_mut(&mut token).cast::<c_void>();
+        manager.faces.insert(face_id.addr(), face);
+        let mut cache = FTC_CMapCacheRec {
+            manager: ptr::from_mut(&mut manager),
+            entries: BTreeMap::new(),
+        };
+        let cmap_index = match repeat {
+            0 => -1,
+            1 => 0,
+            2 => 1,
+            3 => FT_Int::MAX,
+            _ => FT_Int::MIN,
+        };
+        let glyph = FTC_CMapCache_Lookup(
+            ptr::from_mut(&mut cache),
+            face_id,
+            cmap_index,
+            65 + repeat as FT_UInt32,
+        );
+        manager.faces.clear();
+        std::hint::black_box(glyph);
+    }
+
+    if family == 7 {
+        // Exercise public size-record ownership against the same outer face
+        // that opened this parity case.  Every row reaches the normal create
+        // and destroy path; rows vary activation ordering and multiplicity.
+        let mut size = ptr::null_mut();
+        let new_status = FT_New_Size(face, &mut size);
+        assert_eq!(new_status, rust_ffi::FT_Err_Ok);
+        match repeat {
+            0 => assert_eq!(FT_Activate_Size(size), rust_ffi::FT_Err_Ok),
+            1 => {}
+            2 => {
+                assert_eq!(FT_Activate_Size(size), rust_ffi::FT_Err_Ok);
+                assert_eq!(FT_Activate_Size(size), rust_ffi::FT_Err_Ok);
+            }
+            3 => {
+                let mut second = ptr::null_mut();
+                assert_eq!(FT_New_Size(face, &mut second), rust_ffi::FT_Err_Ok);
+                assert_eq!(FT_Done_Size(second), rust_ffi::FT_Err_Ok);
+            }
+            _ => {}
+        }
+        assert_eq!(FT_Done_Size(size), rust_ffi::FT_Err_Ok);
+    }
+
+    if family == 8 {
+        // A requester may return any documented FT_Error.  The manager must
+        // propagate it and clear the public face output without attempting to
+        // inspect a face that was never returned.
+        let requester_error = match repeat {
+            0 => rust_ffi::FT_Err_Invalid_Argument,
+            1 => rust_ffi::FT_Err_Invalid_Face_Handle as FT_Error,
+            2 => rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error,
+            3 => rust_ffi::FT_Err_Out_Of_Memory as FT_Error,
+            _ => rust_ffi::FT_Err_Cannot_Render_Glyph,
+        };
+        let mut harness = AbiSBitCacheHarness::new_with_requester_error(bytes, 0, requester_error)
+            .expect("requester-error cache manager should initialize");
+        let mut output = ptr::null_mut();
+        let status =
+            FTC_Manager_LookupFace(harness.manager_handle(), harness.face_id(), &mut output);
+        assert_eq!(status, requester_error);
+        assert!(output.is_null());
+    }
+
+    if family == 9 {
+        // Real public SBit lookups vary the requested dimensions, glyph, load
+        // mode, and optional node output.  FreeType permits missing glyph
+        // records to become unavailable-cache sentinels rather than exposing
+        // an internal slot failure (`ftcsbits.c:386-407`).
+        let mut harness = AbiSBitCacheHarness::new(bytes, 0)
+            .expect("requester-backed SBit cache should initialize");
+        let face_id = harness.face_id();
+        let image_type = FTC_ImageTypeRec {
+            face_id,
+            width: 8 + repeat as FT_UInt,
+            height: 12 + repeat as FT_UInt,
+            flags: match repeat {
+                0 => rust_ffi::FT_LOAD_DEFAULT,
+                1 => rust_ffi::FT_LOAD_RENDER,
+                2 => rust_ffi::FT_LOAD_TARGET_MONO,
+                3 => rust_ffi::FT_LOAD_TARGET_LCD,
+                _ => rust_ffi::FT_LOAD_NO_BITMAP,
+            },
+        };
+        let snapshot = harness.lookup(image_type, repeat as FT_UInt, repeat != 1, repeat % 2 == 0);
+        std::hint::black_box((
+            snapshot.error,
+            snapshot.sbit_null,
+            snapshot.anode_null,
+            snapshot.node_locked,
+            snapshot.buffer.len(),
+        ));
+    }
+}
+
+#[cfg(feature = "abi-test-support")]
 fn abi_custom_memory_coverage_probe(
     bytes: &[FT_Byte],
     library: FT_Library,
@@ -13463,6 +13830,7 @@ fn abi_custom_memory_coverage_probe(
         1801..=1900 => abi_c113_rust_gap_batch_probe(bytes, library, face, memory, probe),
         1901..=1930 => abi_c114_valid_public_batch_probe(bytes, library, face, memory, probe),
         1931..=1980 => abi_c115_reachability_batch_probe(bytes, library, face, memory, probe),
+        1981..=2030 => abi_c116_reachability_batch_probe(bytes, library, face, memory, probe),
         _ => {}
     }
 }
