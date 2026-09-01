@@ -16331,6 +16331,30 @@ static int emit_outline_render(int argc, char** argv) {
             batch132_single_pass = (int)value;
         }
     }
+    int batch321_c117_empty = 0;
+    const char* batch321_c117_empty_marker =
+        strstr(input_case_id, "@batch321-c117-null-target-empty-");
+    if (batch321_c117_empty_marker) {
+        const char* number =
+            batch321_c117_empty_marker + strlen("@batch321-c117-null-target-empty-");
+        char* end = NULL;
+        long value = strtol(number, &end, 10);
+        if (end != number && *end == '\0' && value >= 1 && value <= 15) {
+            batch321_c117_empty = (int)value;
+        }
+    }
+    int batch321_c117_zero_contours = 0;
+    const char* batch321_c117_zero_contours_marker =
+        strstr(input_case_id, "@batch321-c117-null-target-zero-contours-");
+    if (batch321_c117_zero_contours_marker) {
+        const char* number = batch321_c117_zero_contours_marker +
+                             strlen("@batch321-c117-null-target-zero-contours-");
+        char* end = NULL;
+        long value = strtol(number, &end, 10);
+        if (end != number && *end == '\0' && value >= 16 && value <= 30) {
+            batch321_c117_zero_contours = (int)value;
+        }
+    }
     int batch2_mono = 0;
     int batch2_mono_error = 0;
     int batch4_mono_zero = 0;
@@ -16557,8 +16581,32 @@ static int emit_outline_render(int argc, char** argv) {
     short n_points = 4;
     unsigned int bitmap_width = 32;
     unsigned int bitmap_rows = 32;
+    static const unsigned int batch321_c117_widths[15] = {
+        32, 16, 1, 0, 32, 0, 64, 8, 32, 32, 3, 5, 17, 9, 31,
+    };
+    static const unsigned int batch321_c117_rows[15] = {
+        32, 16, 1, 32, 0, 0, 8, 64, 32, 32, 5, 3, 9, 17, 7,
+    };
+    static const int batch321_c117_pitches[15] = {
+        32, 16, 1, 0, 32, 0, 64, 8, 40, -40, 4, 8, 20, -20, 64,
+    };
+    int batch321_c117_index = batch321_c117_empty
+                                  ? batch321_c117_empty - 1
+                                  : batch321_c117_zero_contours
+                                      ? batch321_c117_zero_contours - 16
+                                      : -1;
+    if (batch321_c117_index >= 0) {
+        bitmap_width = batch321_c117_widths[batch321_c117_index];
+        bitmap_rows = batch321_c117_rows[batch321_c117_index];
+    }
 
-    if (batch165_direct_zero_width || strstr(case_id, "@zero-width-target")) {
+    if (batch321_c117_empty) {
+        n_contours = 0;
+        n_points = 0;
+    } else if (batch321_c117_zero_contours) {
+        n_contours = 0;
+        n_points = 4;
+    } else if (batch165_direct_zero_width || strstr(case_id, "@zero-width-target")) {
         bitmap_width = 0;
     } else if (batch178_direct_zero_height || strstr(case_id, "@zero-height-target")) {
         bitmap_rows = 0;
@@ -17232,6 +17280,9 @@ static int emit_outline_render(int argc, char** argv) {
     if (batch132_single_pass) {
         bitmap.pitch = 8;
     }
+    if (batch321_c117_index >= 0) {
+        bitmap.pitch = batch321_c117_pitches[batch321_c117_index];
+    }
     bitmap.buffer = buffer;
     bitmap.num_grays = 256;
     bitmap.pixel_mode = FT_PIXEL_MODE_GRAY;
@@ -17294,7 +17345,8 @@ static int emit_outline_render(int argc, char** argv) {
         params.clip_box.xMax = 40;
         params.clip_box.yMax = 1;
     }
-    if (streq(case_id, "ftoutln.FT_Outline_Render.direct_render_without_target")) {
+    if (streq(case_id, "ftoutln.FT_Outline_Render.direct_render_without_target") ||
+        batch321_c117_empty || batch321_c117_zero_contours) {
         params.target = NULL;
     }
 

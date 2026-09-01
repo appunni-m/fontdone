@@ -5104,3 +5104,50 @@ unobserved baseline hits therefore do not support a full-denominator
 percentage or regression claim. The authoritative complete snapshot remains
 `c6dbb7af-d9c9-4f8f-9c34-dc80ee701cdf` at 90,350/93,894 covered regions
 (96.22553091784352%).
+
+### Batch 321: NULL-target success for empty and zero-contour outlines
+
+This batch adds 30 concrete public `FT_Outline_Render` variants under
+`ftoutln.FT_Outline_Render.bitmap_render_matches_c`:
+`batch321-c117-null-target-empty-001` through
+`batch321-c117-null-target-empty-015`, and
+`batch321-c117-null-target-zero-contours-016` through
+`batch321-c117-null-target-zero-contours-030`. Every variant sets the public
+smooth-raster `target` to `NULL` and varies the caller-owned descriptor's
+width, rows, and signed pitch. Cases 001-015 use an empty outline; cases
+016-030 keep four points but set `n_contours` to zero. The per-variant
+`reason` fields record the exact descriptor shape and why the input targets
+the early-return contract.
+
+The expansion targets the WASM success arm at
+`fontdone-wasm/src/implementation.rs:4501-4510`. The pinned source assigns
+`params->source` before dispatching (`freetype/src/base/ftoutln.c:633`), then
+the smooth rasterizer returns `FT_Err_Ok` for zero points or zero contours
+before inspecting `params->target` (`freetype/src/smooth/ftgrays.c:1984-1986`).
+This is therefore a defined public input shape, not an invalid pointer
+deref: NULL target is accepted for an empty outline, while the descriptor
+fields are intentionally left untouched. The Rust parity adapter now passes
+the optional target through to `FT_Outline_Render` and reports its untouched
+probe buffer for the NULL-target success result, matching the C harness and
+WASM facade. The oracle generator was also updated to model the same 30
+descriptor shapes and NULL-target contract after the first focused attempt
+correctly exposed that it had been hard-coding a target; that failed attempt
+was not counted as parity evidence.
+
+Focused parity passed all 30 c117 variants (`30/30`) across Rust FFI, C ABI,
+and WASM. Coverage MCP incremental run
+`f3be793f-756b-4612-b362-9b053df79c25` used the registered source-matched
+command with the exact 30 IDs as six repeatable
+`--migration-coverage-case-ids` arguments, each containing five comma-
+separated IDs, against explicit baseline snapshot
+`b83f4c5e-ae5e-4c06-985b-2cb2bff379fc`. It passed and ingested snapshot
+`2a598882-e768-4bdb-9e75-85b1a345af66`. The supported selected-subset result
+reported newly covered line identities at
+`fontdone-c-abi/src/implementation.rs:23353` and
+`fontdone-wasm/src/implementation.rs:4510`, with zero regressions. Its
+canonical union preserved the baseline full metrics of 90,757/94,300
+regions, 65,809/67,830 lines, 12,142/13,824 branches, and 3,788/4,073
+functions; MCP marked the merge `exact=false` with conservative fallbacks
+and reported 50,093 baseline observations as `not_observed`. The selected
+run proves reachability of the target arm but is not a replacement complete
+snapshot or a 100% denominator claim.

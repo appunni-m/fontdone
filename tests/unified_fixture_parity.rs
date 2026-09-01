@@ -92075,22 +92075,39 @@ fn rust_outline_render_once(
     match FT_Outline_Render(
         Some(&library),
         Some(&outline),
-        Some(&target),
+        // FreeType's smooth renderer returns success for an empty outline
+        // before inspecting `params->target`; preserve that public
+        // NULL-target contract in the Rust parity lane as well.
+        target_present.then_some(&target),
         flags,
         clip_box,
     ) {
-        Ok(rendered) => Ok(ok(outline_render_bitmap_payload(
-            width,
-            rows,
-            pitch,
-            pixel_mode,
-            &rendered.buffer,
-            true,
-        ))),
+        Ok(rendered) => {
+            // The C harness reports the caller-owned descriptor even when its
+            // target pointer is NULL. In that case the backing probe buffer
+            // remains unchanged because the renderer returns before writing.
+            let output_buffer = if target_present {
+                &rendered.buffer
+            } else {
+                &buffer
+            };
+            Ok(ok(outline_render_bitmap_payload(
+                width,
+                rows,
+                pitch,
+                pixel_mode,
+                output_buffer,
+                true,
+            )))
+        }
         Err(err) if include_error_output || case.expectation.compare.compare_error_output => {
             if outline_render_error_output_available(flags, pixel_mode) {
                 let output_buffer =
-                    FT_Outline_Render_Error_Output(Some(&outline), Some(&target), flags)
+                    FT_Outline_Render_Error_Output(
+                        Some(&outline),
+                        target_present.then_some(&target),
+                        flags,
+                    )
                         .map_or_else(|| buffer.clone(), |rendered| rendered.buffer);
                 Ok(error_with_output(
                     err,
