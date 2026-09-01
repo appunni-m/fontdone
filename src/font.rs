@@ -2869,7 +2869,9 @@ fn parse_type1_multi_master(cleartext: &[u8]) -> Result<Option<Type1MultiMaster>
         return Ok(None);
     };
     let Some(axes) = type1_name_array(text, "BlendAxisTypes") else {
-        return Ok(None);
+        return Err(FontError::InvalidFileFormat(
+            "Type 1 MM axis array is malformed".into(),
+        ));
     };
     if axes.is_empty() || axes.len() > 4 || axes.iter().any(String::is_empty) {
         return Err(FontError::InvalidFileFormat(
@@ -2934,10 +2936,7 @@ fn parse_type1_multi_master(cleartext: &[u8]) -> Result<Option<Type1MultiMaster>
     let weight_vector = weight_vector
         .into_iter()
         .map(type1_weight_to_fixed)
-        .collect::<Option<Vec<_>>>()
-        .ok_or_else(|| {
-            FontError::InvalidFileFormat("Type 1 MM weight vector is malformed".into())
-        })?;
+        .collect::<Vec<_>>();
     // The upper-bound check above makes this shift infallible under the
     // FreeType T1_MAX_MM_AXIS contract.
     let num_designs = 1usize << axes.len();
@@ -3398,11 +3397,17 @@ fn type1_real_to_fixed(value: f64) -> Option<i32> {
     i32::try_from((value * 65_536.0).round() as i64).ok()
 }
 
-fn type1_weight_to_fixed(value: f64) -> Option<i32> {
+fn type1_weight_to_fixed(value: f64) -> i32 {
     // C parity: freetype/src/psaux/psconv.c:PS_Conv_ToFixed rounds every
     // parsed decimal to 16.16; valid Type 1 MM maps are not restricted to
     // values that happen to be exactly representable in fixed point.
-    type1_real_to_fixed(value)
+    type1_real_to_fixed(value).unwrap_or_else(|| {
+        if value.is_sign_negative() {
+            -i32::MAX
+        } else {
+            i32::MAX
+        }
+    })
 }
 
 fn type1_fixed_value(text: &str, key: &str) -> Option<i32> {

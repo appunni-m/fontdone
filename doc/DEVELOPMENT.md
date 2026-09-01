@@ -4500,6 +4500,40 @@ replacement full-snapshot percentage. The MCP source metadata still identifies
 the older baseline commit; source interpretation is anchored to this local
 checkout.
 
+### Batch 314: Type 1 MM inner-delimiter and finite-overflow parity
+
+This batch adds four distinct malformed public `FT_New_Memory_Face` variants
+to the existing Type 1 Multiple Master parser case. Each variant changes one
+dictionary token shape and records its reason in the fixture input itself:
+`batch313-mm-axis-inner-invalid-delimiter` uses `}` inside a delimited axis
+array, `batch313-mm-map-inner-invalid-delimiter` uses it inside a map point,
+`batch313-mm-weight-inner-invalid-delimiter` uses it inside `WeightVector`,
+and `batch313-mm-weight-finite-overflow` supplies the finite PostScript number
+`1e100`. These are public face-construction inputs, not private helper calls.
+
+The pinned FreeType comparison was read before changing Rust. In
+`freetype/src/psaux/psobjs.c`, `ps_parser_to_token_array` reports zero tokens
+when the inner `}` causes a parser error; the corresponding Type 1 callbacks
+then return `Invalid_File_Format` at `freetype/src/type1/t1load.c:785-790`,
+`:1032-1036`, or `:1109-1115`. `PS_Conv_ToFixed` in
+`freetype/src/psaux/psconv.c` deliberately saturates finite numeric overflow
+to `0x7fffffff` without setting a parser error. The first focused parity run
+therefore failed only the axis-delimiter case (C error versus Rust success) and
+the finite-overflow case (C success versus Rust error); the map and weight
+delimiter cases already matched.
+
+The Rust fix now propagates a malformed, present axis array as
+`Invalid_File_Format`, and converts finite MM weight overflow to the same
+positive/negative fixed-point saturation used by `PS_Conv_ToFixed`. The
+weight-vector error closure was removed because the public parser has already
+filtered non-finite tokens and the pinned conversion does not return an error.
+The focused parity rerun passed all four concrete variants across the pinned
+oracle, Rust FFI, C ABI, and WASM. No unit test was used to increase coverage.
+
+Coverage MCP measurement is pending on the committed source revision; the
+four concrete IDs are retained here so the later incremental run can be tied
+to explicit full-snapshot provenance.
+
 On 2026-09-01 the complete all-lane snapshot was rerun at pushed `main`
 commit `7d09933ad37b7f817cd8c42a0b0fcd4c62a99351` through Coverage MCP run
 `e61c4286-2693-4729-bfee-4fd2673fa37d`. The process passed all 6,577 runnable

@@ -715,6 +715,35 @@ def build_malformed_mm_fixtures() -> None:
             b"/BlendDesignPositions [[0] [1]] def\n"
             b"/BlendDesignMap [[[0 0] [1 1]]] def\n",
         ),
+        (
+            "batch313-mm-axis-inner-invalid-delimiter.pfb",
+            "Type1MMAxisInnerInvalidDelimiter",
+            b"/BlendAxisTypes [}] def\n",
+        ),
+        (
+            "batch313-mm-map-inner-invalid-delimiter.pfb",
+            "Type1MMMapInnerInvalidDelimiter",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[}]]] def\n"
+            b"/WeightVector [0 1] def\n",
+        ),
+        (
+            "batch313-mm-weight-inner-invalid-delimiter.pfb",
+            "Type1MMWeightInnerInvalidDelimiter",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[0 0] [1 1]]] def\n"
+            b"/WeightVector [}] def\n",
+        ),
+        (
+            "batch313-mm-weight-finite-overflow.pfb",
+            "Type1MMWeightFiniteOverflow",
+            b"/BlendAxisTypes [/A] def\n"
+            b"/BlendDesignPositions [[0] [1]] def\n"
+            b"/BlendDesignMap [[[0 0] [1 1]]] def\n"
+            b"/WeightVector [1e100 0] def\n",
+        ),
     ]
     for filename, font_name, fields in variants:
         build_simple_type1(
