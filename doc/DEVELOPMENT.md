@@ -4636,6 +4636,36 @@ Before changing a fixture:
    classification when the fixture exercises a new public behavior;
 7. run the focused parity lane and `make check-font-fixtures`.
 
+### Batch 316: non-Unicode active-charmap variation-index guard
+
+This batch adds five public `FT_Face_GetCharVariantIndex` variants that first
+select a maintained non-Unicode charmap through the public `FT_Set_Charmap`
+route. The cases use a mapped Mac Roman value, a missing supplementary value,
+the lower charcode/selector boundary, a platform-3 encoding-0 charmap, and a
+non-Unicode-only face without a Format 14 table. The distinct inputs establish
+that the target is the non-Unicode active-charmap guard, not merely the
+no-active-charmap fallback or a missing variation record.
+
+The pinned FreeType 2.14.3 review confirms the reason for each expansion:
+`FT_Face_GetCharVariantIndex` calls the variation callback only when
+`face->charmap` is non-null and has `FT_ENCODING_UNICODE`; otherwise it returns
+zero (`freetype/src/base/ftobjs.c:4079-4118`). `FT_Set_Charmap` accepts the
+maintained non-Unicode charmaps (`freetype/src/base/ftobjs.c:3718-3749`), so
+these are public, oracle-backed inputs that reach the guard. The Rust, C ABI,
+and WASM parity routes now perform the same explicit public charmap selection
+before querying the variant index.
+
+Focused parity passed all five concrete rows across the pinned oracle, Rust
+FFI, C ABI, and WASM (`5/5`, `0` pending). No unit test was used to increase
+coverage. Coverage MCP run `aa489252-72e0-4ed6-be0b-d5c31326e93b` used the
+comma-separated `--migration-coverage-case-ids` argument against explicit full
+baseline snapshot `8561d6be-1bd8-4557-bdf8-a4d14b62118e` and ingested snapshot
+`c1607074-3342-426d-99a5-8f650d07fe5d`. Its supported selected incremental
+union reports one newly covered region and one newly covered branch, at
+`src/tt/cmap.rs:219`, with zero regressions. The selected subset is not a
+replacement full-denominator percentage; a complete snapshot is required for
+the strict project metric.
+
 Maintained public-API inputs also pin raw argument behavior.  For example,
 the `FT_Load_Char` input for unassigned load-flag bits keeps the numeric bit
 `0x02000000` and compares the complete slot result with C; the Rust boundary

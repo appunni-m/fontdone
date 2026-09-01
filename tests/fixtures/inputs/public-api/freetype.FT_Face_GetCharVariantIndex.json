@@ -169,7 +169,117 @@
             }
           },
           {"id":"c118-cmap-001","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/charmap/cmap-platform3-nonunicode-variation.ttf"}},"params":{"face_index":0,"charcode":"U+0042","variant_selector":"U+FE0F"},"coverage":["c118:cmap:platform3-encoding0"]},
-          {"id":"c118-cmap-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cmap/cmap-format-language-matrix.ttf"}},"params":{"face_index":0,"charcode":"U+0041","variant_selector":"U+FE01"},"coverage":["c118:cmap:missing-selector"]}
+          {"id":"c118-cmap-002","assets":{"font":{"kind":"ref","role":"font","id":"input/fonts/cmap/cmap-format-language-matrix.ttf"}},"params":{"face_index":0,"charcode":"U+0041","variant_selector":"U+FE01"},"coverage":["c118:cmap:missing-selector"]},
+          {
+            "id": "batch316-cmap-nonunicode-selected-macroman-mapped",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "preselect_charmap_index": 1,
+              "charcode": "U+0042",
+              "variant_selector": "U+FE0F"
+            },
+            "reason": "Select the valid platform-1/encoding-0 charmap before querying a format-14 selector. Pinned FreeType's FT_Face_GetCharVariantIndex rejects the non-Unicode current charmap at freetype/src/base/ftobjs.c:4086-4089, so this reaches the public non-Unicode guard rather than the no-active-charmap guard.",
+            "coverage": ["batch316:cmap:nonunicode-selected:macroman-mapped"],
+            "source_refs": [
+              "freetype/src/base/ftobjs.c:4079-4118",
+              "freetype/src/base/ftobjs.c:3718-3749"
+            ]
+          },
+          {
+            "id": "batch316-cmap-nonunicode-selected-macroman-missing",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "preselect_charmap_index": 1,
+              "charcode": "U+10FFFF",
+              "variant_selector": "U+E0100"
+            },
+            "reason": "Use an undefined supplementary code point and an ideographic selector after explicitly selecting the same valid non-Unicode charmap. The pinned C condition is evaluated before variant-subtable lookup, proving the guard does not depend on an ordinary glyph or selector match.",
+            "coverage": ["batch316:cmap:nonunicode-selected:macroman-missing"],
+            "source_refs": [
+              "freetype/src/base/ftobjs.c:4079-4118",
+              "freetype/src/base/ftobjs.c:3718-3749"
+            ]
+          },
+          {
+            "id": "batch316-cmap-nonunicode-selected-macroman-boundary",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/cmap/cmap-format-language-matrix.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "preselect_charmap_index": 1,
+              "charcode": "U+0000",
+              "variant_selector": "U+FE00"
+            },
+            "reason": "Probe the lower code-point boundary with an explicitly selected platform-1/encoding-0 map. FreeType still takes the current-CharMap-not-Unicode return path before it can inspect the format-14 data, so this is a distinct boundary input for the same documented public guard.",
+            "coverage": ["batch316:cmap:nonunicode-selected:macroman-boundary"],
+            "source_refs": [
+              "freetype/src/base/ftobjs.c:4079-4118",
+              "freetype/src/base/ftobjs.c:3718-3749"
+            ]
+          },
+          {
+            "id": "batch316-cmap-nonunicode-selected-platform3-encoding0",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/charmap/cmap-platform3-nonunicode-variation.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "preselect_charmap_index": 1,
+              "charcode": "U+0042",
+              "variant_selector": "U+FE0F"
+            },
+            "reason": "Select the fixture's valid Microsoft platform-3/encoding-0 non-Unicode map while a format-14 map is also present. This distinguishes the encoding classification from the platform-1 control and mirrors FreeType's encoding comparison at freetype/src/base/ftobjs.c:4086-4089.",
+            "coverage": ["batch316:cmap:nonunicode-selected:platform3-encoding0"],
+            "source_refs": [
+              "freetype/src/base/ftobjs.c:4079-4118",
+              "freetype/src/base/ftobjs.c:3718-3749"
+            ]
+          },
+          {
+            "id": "batch316-cmap-nonunicode-selected-no-format14",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/charmap/cmap-nonunicode-format6.ttf"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "preselect_charmap_index": 0,
+              "charcode": "U+0041",
+              "variant_selector": "U+FE0F"
+            },
+            "reason": "Explicitly select the only valid non-Unicode format-6 map on a face without format 14. The public guard must return zero before the missing-variation-subtable case, complementing the matrix fixtures that contain format 14 data.",
+            "coverage": ["batch316:cmap:nonunicode-selected:no-format14"],
+            "source_refs": [
+              "freetype/src/base/ftobjs.c:4079-4118",
+              "freetype/src/base/ftobjs.c:3718-3749"
+            ]
+          }
         ]
       },
       "classifiers": [

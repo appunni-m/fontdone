@@ -35466,6 +35466,23 @@ static int emit_face_or_slot(int argc, char** argv) {
     if (streq(command, "--face-get-char-variant-index")) {
         FT_ULong charcode = strtoul(argv[7], NULL, 10);
         FT_ULong variant_selector = strtoul(argv[8], NULL, 10);
+        if (argc > 9) {
+            FT_Long charmap_index = strtol(argv[9], NULL, 10);
+            if (charmap_index < 0 || charmap_index >= face->num_charmaps ||
+                !face->charmaps) {
+                err = FT_Err_Invalid_Argument;
+            } else {
+                err = FT_Set_Charmap(face, face->charmaps[charmap_index]);
+            }
+        }
+        if (err) {
+            print_status(err);
+            printf(",\"output\":null}\n");
+            FT_Done_Face(face);
+            FT_Done_FreeType(library);
+            free(data);
+            return 0;
+        }
         print_status(0);
         printf(",\"output\":");
         print_char_variant_index_output(
@@ -42169,7 +42186,7 @@ static int dispatch(int argc, char** argv) {
     if (argc == 4 && streq(argv[1], "--face-get-char-variant-index-null")) {
         return emit_face_get_char_variant_index_null(argc, argv);
     }
-    if (argc == 9 && streq(argv[1], "--face-get-char-variant-index")) {
+    if ((argc == 9 || argc == 10) && streq(argv[1], "--face-get-char-variant-index")) {
         return emit_face_or_slot(argc, argv);
     }
     if (argc == 4 && streq(argv[1], "--face-get-char-variant-is-default-null")) {
