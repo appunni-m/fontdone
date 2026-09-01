@@ -3413,6 +3413,7 @@ impl BackendComparisonWorker {
             && classify_null_operation(&case.operation).is_ok()
             && !is_stroker_simple_line_counts_case(case)
             && !is_empty_stream_without_base_case(case)
+            && !is_gzip_callback_source_case(case)
         {
             let op = case.operation.as_str();
             if op == "sfnt.load_sfnt_table" {
@@ -3567,6 +3568,7 @@ impl BackendComparisonWorker {
                         | "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base"
                         | "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix"
                         | "ftgzip.FT_Stream_OpenGzip.mcp_read_close_gap_matrix"
+                        | "ftgzip.FT_Stream_OpenGzip.callback_source_null_base_matrix"
                 ) =>
             {
                 gzip_stream_open_output(case, GzipStreamBackend::Rust)
@@ -4151,6 +4153,7 @@ impl BackendComparisonWorker {
                         | "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base"
                         | "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix"
                         | "ftgzip.FT_Stream_OpenGzip.mcp_read_close_gap_matrix"
+                        | "ftgzip.FT_Stream_OpenGzip.callback_source_null_base_matrix"
                 ) =>
             {
                 gzip_stream_open_output(case, GzipStreamBackend::CAbi)
@@ -4748,6 +4751,7 @@ impl BackendComparisonWorker {
                         | "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base"
                         | "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix"
                         | "ftgzip.FT_Stream_OpenGzip.mcp_read_close_gap_matrix"
+                        | "ftgzip.FT_Stream_OpenGzip.callback_source_null_base_matrix"
                 ) =>
             {
                 gzip_stream_open_output(case, GzipStreamBackend::Wasm)
@@ -46645,12 +46649,41 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
     {
         return Ok(vec!["--gzip-stream-empty-null-base".to_string()]);
     }
+    if case_id_base(&case.case_id)
+        == "ftgzip.FT_Stream_OpenGzip.callback_source_null_base_matrix"
+    {
+        let manifest = gzip_stream_manifest(case)?;
+        let payload_id = string_param(&case.inputs.params, "payload_id")?;
+        let payload = manifest
+            .payloads
+            .iter()
+            .find(|payload| payload.id == payload_id)
+            .ok_or_else(|| format!("unknown gzip payload {payload_id}"))?;
+        return Ok(vec![
+            "--gzip-stream-callback-source".to_string(),
+            case.case_id
+                .rsplit_once('@')
+                .map_or(case.case_id.as_str(), |(_, variant)| variant)
+                .to_string(),
+            fixture_dir()
+                .join(payload.raw.as_str())
+                .to_string_lossy()
+                .into_owned(),
+            fixture_dir()
+                .join(payload.gzip.as_str())
+                .to_string_lossy()
+                .into_owned(),
+            u64_param(&case.inputs.params, "source_size")?.to_string(),
+            u64_param(&case.inputs.params, "initial_pos")?.to_string(),
+        ]);
+    }
     if matches!(
         case_id_base(&case.case_id),
         "ftgzip.FT_Stream_OpenGzip.opens_valid_gzip_stream"
             | "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base"
             | "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix"
             | "ftgzip.FT_Stream_OpenGzip.mcp_read_close_gap_matrix"
+            | "ftgzip.FT_Stream_OpenGzip.callback_source_null_base_matrix"
     ) {
         let manifest = gzip_stream_manifest(case)?;
         let command = match case_id_base(&case.case_id) {
@@ -51464,6 +51497,11 @@ fn is_gzip_stream_invalid_handle_case(case: &InputCase) -> bool {
     case_id_base(&case.case_id) == "ftgzip.FT_Stream_OpenGzip.rejects_invalid_stream_handles"
 }
 
+fn is_gzip_callback_source_case(case: &InputCase) -> bool {
+    case_id_base(&case.case_id)
+        == "ftgzip.FT_Stream_OpenGzip.callback_source_null_base_matrix"
+}
+
 fn is_empty_stream_without_base_case(case: &InputCase) -> bool {
     matches!(
         case_id_base(&case.case_id),
@@ -51604,6 +51642,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             | "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base"
             | "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix"
             | "ftgzip.FT_Stream_OpenGzip.mcp_read_close_gap_matrix"
+            | "ftgzip.FT_Stream_OpenGzip.callback_source_null_base_matrix"
     ) {
         return gzip_stream_open_output(case, GzipStreamBackend::Rust);
     }
@@ -51625,6 +51664,7 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
         && case.expect_error
         && classify_null_operation(&case.operation).is_ok()
         && !is_stroker_simple_line_counts_case(case)
+        && !is_gzip_callback_source_case(case)
     {
         // Only intercept if the operation does NOT have an explicit handler below
         let op = case.operation.as_str();
@@ -86033,6 +86073,56 @@ fn lzw_source_read_pointer() -> FT_Pointer {
     lzw_source_read as *const () as FT_Pointer
 }
 
+#[repr(C)]
+struct GzipCallbackSource {
+    bytes: *const FT_Byte,
+    len: usize,
+}
+
+extern "C" fn gzip_source_read(
+    stream: *mut FT_StreamRec,
+    offset: FT_ULong,
+    buffer: *mut FT_Byte,
+    count: FT_ULong,
+) -> FT_ULong {
+    let Some(stream) = (unsafe { stream.as_ref() }) else {
+        return 0;
+    };
+    let state = unsafe {
+        stream
+            .descriptor
+            .pointer
+            .cast::<GzipCallbackSource>()
+            .as_ref()
+    };
+    let Some(state) = state else {
+        return 0;
+    };
+    if count == 0 {
+        return 0;
+    }
+    let Ok(offset) = usize::try_from(offset) else {
+        return 0;
+    };
+    let Ok(count) = usize::try_from(count) else {
+        return 0;
+    };
+    if offset >= state.len || state.bytes.is_null() || buffer.is_null() {
+        return 0;
+    }
+    let available = (state.len - offset).min(count);
+    // SAFETY: the callback state points at the maintained compressed fixture,
+    // and the caller supplies `count` writable bytes for this read.
+    unsafe {
+        ptr::copy_nonoverlapping(state.bytes.add(offset), buffer, available);
+    }
+    FT_ULong::try_from(available).unwrap_or(FT_ULong::MAX)
+}
+
+fn gzip_source_read_pointer() -> FT_Pointer {
+    gzip_source_read as *const () as FT_Pointer
+}
+
 #[derive(Debug, Clone, Copy)]
 enum LzwStreamBackend {
     Rust,
@@ -87295,6 +87385,11 @@ fn gzip_stream_open_output(
     backend: GzipStreamBackend,
 ) -> Result<RunOutput, String> {
     if case_id_base(&case.case_id)
+        == "ftgzip.FT_Stream_OpenGzip.callback_source_null_base_matrix"
+    {
+        return gzip_stream_callback_output(case, backend);
+    }
+    if case_id_base(&case.case_id)
         == "ftgzip.FT_Stream_OpenGzip.error_empty_source_without_base"
     {
         return Ok(gzip_stream_empty_null_base_output(backend));
@@ -87324,6 +87419,105 @@ fn gzip_stream_open_output(
         }
     }
     Ok(ok(json!({ "rows": rows })))
+}
+
+fn gzip_stream_callback_output(
+    case: &InputCase,
+    backend: GzipStreamBackend,
+) -> Result<RunOutput, String> {
+    let manifest = gzip_stream_manifest(case)?;
+    let payload_id = string_param(&case.inputs.params, "payload_id")?;
+    let payload = manifest
+        .payloads
+        .iter()
+        .find(|payload| payload.id == payload_id)
+        .ok_or_else(|| format!("unknown gzip payload {payload_id}"))?;
+    let gzip = cached_file_bytes(&payload.gzip)?;
+    let raw = cached_file_bytes(&payload.raw)?;
+    let source_size = usize::try_from(u64_param(&case.inputs.params, "source_size")?)
+        .map_err(|err| format!("source_size does not fit usize: {err}"))?;
+    if source_size > gzip.len() {
+        return Err(format!(
+            "source_size {source_size} exceeds gzip payload length {}",
+            gzip.len()
+        ));
+    }
+    let initial_pos = FT_ULong::try_from(u64_param(&case.inputs.params, "initial_pos")?)
+        .map_err(|err| format!("initial_pos does not fit FT_ULong: {err}"))?;
+    let variant = case
+        .case_id
+        .rsplit_once('@')
+        .map_or(case.case_id.as_str(), |(_, variant)| variant);
+    let mut callback_state = GzipCallbackSource {
+        bytes: gzip.as_ptr(),
+        len: source_size,
+    };
+    let mut source = FT_StreamRec {
+        base: ptr::null_mut(),
+        size: FT_ULong::try_from(source_size).map_err(|err| err.to_string())?,
+        pos: initial_pos,
+        descriptor: FT_StreamDesc {
+            pointer: ptr::from_mut(&mut callback_state).cast(),
+        },
+        read: gzip_source_read_pointer(),
+        ..FT_StreamRec::default()
+    };
+    let mut memory = FT_MemoryRec::default();
+    source.memory = (&mut memory) as *mut FT_MemoryRec;
+    let mut stream = lzw_stream_sentinel();
+    let status = match backend {
+        GzipStreamBackend::Rust => FT_Stream_OpenGzip(
+            Some(&mut stream),
+            Some(&source),
+            Some(&gzip[..source_size]),
+        ),
+        GzipStreamBackend::CAbi => c_abi::FT_Stream_OpenGzip(&mut stream, &mut source),
+        GzipStreamBackend::Wasm => {
+            wasm_abi::fontdone_wasm_stream_open_gzip(&mut stream, &source)
+        }
+    };
+    let read_ranges = if status == FT_Err_Ok {
+        gzip_stream_read_ranges(backend, &stream, raw.as_ref())?
+    } else {
+        Vec::new()
+    };
+    let row = json!({
+        "payload": payload.id,
+        "source_position": variant,
+        "status": status,
+        "stream": {
+            "size": if status == FT_Err_Ok { stream.size } else { 0 },
+            "base_class": if status == FT_Err_Ok {
+                pointer_class(stream.base.cast_const())
+            } else {
+                "null"
+            },
+            "read_class": if status == FT_Err_Ok {
+                pointer_class(stream.read.cast_const())
+            } else {
+                "null"
+            },
+            "close_class": if status == FT_Err_Ok {
+                pointer_class(stream.close.cast_const())
+            } else {
+                "null"
+            },
+        },
+        "read_ranges": read_ranges,
+    });
+    if status == FT_Err_Ok {
+        match backend {
+            GzipStreamBackend::Rust => FT_Gzip_Stream_Close(Some(&mut stream)),
+            GzipStreamBackend::CAbi => c_stream_callback_close(&mut stream)?,
+            GzipStreamBackend::Wasm => wasm_abi::abi_support_gzip_stream_close(&mut stream),
+        }
+    }
+    let output = json!({ "rows": [row] });
+    if status == FT_Err_Ok {
+        Ok(ok(output))
+    } else {
+        Ok(error_with_output(status, output))
+    }
 }
 
 fn gzip_stream_empty_null_base_output(backend: GzipStreamBackend) -> RunOutput {

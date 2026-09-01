@@ -845,6 +845,89 @@ static int emit_gzip_stream_open(int argc, char** argv) {
     return 0;
 }
 
+typedef struct GzipMemorySource_ {
+    const unsigned char* bytes;
+    unsigned long length;
+} GzipMemorySource;
+
+static unsigned long gzip_memory_source_read(
+    FT_Stream stream,
+    unsigned long offset,
+    unsigned char* buffer,
+    unsigned long count) {
+    GzipMemorySource* source = stream
+        ? (GzipMemorySource*)stream->descriptor.pointer
+        : NULL;
+    if (!source || count == 0 || !buffer || offset >= source->length) {
+        return 0;
+    }
+    unsigned long available = source->length - offset;
+    if (available > count) {
+        available = count;
+    }
+    memcpy(buffer, source->bytes + offset, (size_t)available);
+    return available;
+}
+
+static int emit_gzip_stream_callback_source(int argc, char** argv) {
+    if (argc != 7) {
+        fprintf(stderr,
+                "--gzip-stream-callback-source requires VARIANT RAW GZIP SOURCE_SIZE INITIAL_POS\n");
+        return 2;
+    }
+    const char* variant = argv[2];
+    unsigned long source_size = strtoul(argv[5], NULL, 10);
+    unsigned long initial_pos = strtoul(argv[6], NULL, 10);
+    FT_Library library = NULL;
+    FT_Error init_error = FT_Init_FreeType(&library);
+    if (init_error) {
+        printf("{");
+        print_status(init_error);
+        printf(",\"output\":null}\n");
+        return 0;
+    }
+
+    unsigned char* raw = NULL;
+    unsigned char* gzip_bytes = NULL;
+    long raw_len = 0;
+    long gzip_len = 0;
+    if (load_file(argv[3], &raw, &raw_len) != 0 ||
+        load_file(argv[4], &gzip_bytes, &gzip_len) != 0 ||
+        source_size > (unsigned long)gzip_len) {
+        free(raw);
+        free(gzip_bytes);
+        FT_Done_FreeType(library);
+        return 2;
+    }
+
+    GzipMemorySource callback_source = {gzip_bytes, source_size};
+    FT_StreamRec source;
+    FT_StreamRec stream;
+    memset(&source, 0, sizeof(source));
+    memset(&stream, 0xA5, sizeof(stream));
+    source.base = NULL;
+    source.size = (FT_ULong)source_size;
+    source.pos = (FT_ULong)initial_pos;
+    source.descriptor.pointer = &callback_source;
+    source.read = gzip_memory_source_read;
+    source.memory = library->memory;
+    FT_Error status = FT_Stream_OpenGzip(&stream, &source);
+
+    printf("{");
+    print_status(status);
+    printf(",\"output\":{\"rows\":[");
+    print_gzip_stream_row(
+        "small_stream", variant, status, &stream, raw, raw_len, 0);
+    printf("]}}\n");
+    if (!status && stream.close) {
+        stream.close(&stream);
+    }
+    free(raw);
+    free(gzip_bytes);
+    FT_Done_FreeType(library);
+    return 0;
+}
+
 static int emit_gzip_stream_open_errors(void) {
     FT_Library library = NULL;
     FT_Error init_error = FT_Init_FreeType(&library);
@@ -42914,6 +42997,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc >= 5 && streq(argv[1], "--gzip-stream-open")) {
         return emit_gzip_stream_open(argc, argv);
+    }
+    if (argc == 7 && streq(argv[1], "--gzip-stream-callback-source")) {
+        return emit_gzip_stream_callback_source(argc, argv);
     }
     if (argc >= 5 && streq(argv[1], "--gzip-stream-open-read-close-gap")) {
         return emit_gzip_stream_open_gap(argc, argv);

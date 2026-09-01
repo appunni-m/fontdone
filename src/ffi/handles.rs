@@ -8113,9 +8113,17 @@ pub fn FT_Stream_OpenGzip(
     {
         return FT_Err_Invalid_File_Format;
     }
+    let callback_source = !source.read.is_null();
     let mut header_end = 10usize;
     if source_bytes.len() < header_end {
-        return FT_Err_Invalid_Stream_Operation as FT_Error;
+        // FreeType's public callback contract permits a seek beyond the
+        // advertised source size when the callback reports success for a
+        // zero-byte seek.  The fixed gzip header only needs the first four
+        // bytes here; preserve that callback-backed behavior and let the
+        // first data read report a short-stream error later.
+        if !callback_source || source_bytes[3] & 0x1C != 0 {
+            return FT_Err_Invalid_Stream_Operation as FT_Error;
+        }
     }
     if source_bytes[3] & 0x04 != 0 {
         let Some(extra_len) = source_bytes
@@ -8125,15 +8133,15 @@ pub fn FT_Stream_OpenGzip(
             return FT_Err_Invalid_Stream_Operation as FT_Error;
         };
         header_end = header_end.saturating_add(2).saturating_add(extra_len);
-        if header_end > source_bytes.len() {
+        if header_end > source_bytes.len() && !callback_source {
             return FT_Err_Invalid_Stream_Operation as FT_Error;
         }
     }
     for flag in [0x08u8, 0x10u8] {
         if source_bytes[3] & flag != 0 {
-            let Some(relative_end) = source_bytes[header_end..]
-                .iter()
-                .position(|byte| *byte == 0)
+            let Some(relative_end) = source_bytes
+                .get(header_end..)
+                .and_then(|bytes| bytes.iter().position(|byte| *byte == 0))
             else {
                 return FT_Err_Invalid_Stream_Operation as FT_Error;
             };
@@ -8143,17 +8151,59 @@ pub fn FT_Stream_OpenGzip(
     if source_bytes[3] & 0x02 != 0 {
         header_end = header_end.saturating_add(2);
     }
-    if header_end > source_bytes.len() {
+    if header_end > source_bytes.len() && !callback_source {
         return FT_Err_Invalid_Stream_Operation as FT_Error;
     }
 
     let mut decoded = Vec::new();
     // FreeType checks the gzip header during open, but `ft_gzip_file_init`
     // and the small-stream optimization defer body/checksum failures to the
-    // stream callback.  Keep any prefix decoded before that failure and
-    // return an opened callback-backed stream instead of exposing zlib's
-    // body error from FT_Stream_OpenGzip.
-    let _decode_result = flate2::read::GzDecoder::new(source_bytes).read_to_end(&mut decoded);
+    // stream callback.  A failed `inflate` fill resets its output limit to
+    // the cursor, so an incomplete callback-backed body exposes no partial
+    // prefix.  The in-memory path keeps the existing decoder behavior.
+    if callback_source {
+        let mut decoder = flate2::Decompress::new(false);
+        let compressed_body = source_bytes.get(header_end..).unwrap_or(&[]);
+        let mut input_offset = 0usize;
+        let mut decode_complete = false;
+        loop {
+            // `decompress_vec` writes only into spare capacity.  Grow in
+            // bounded chunks so a large callback-backed stream can continue
+            // past one output buffer without treating capacity exhaustion as
+            // an incomplete deflate body.
+            decoded.reserve(32 * 1024);
+            let input_before = decoder.total_in();
+            let output_before = decoder.total_out();
+            let status = decoder.decompress_vec(
+                &compressed_body[input_offset..],
+                &mut decoded,
+                flate2::FlushDecompress::Finish,
+            );
+            let input_consumed = usize::try_from(decoder.total_in().saturating_sub(input_before))
+                .unwrap_or(usize::MAX);
+            let output_produced = decoder.total_out().saturating_sub(output_before);
+            input_offset = input_offset
+                .saturating_add(input_consumed)
+                .min(compressed_body.len());
+            match status {
+                Ok(flate2::Status::StreamEnd) => {
+                    decode_complete = true;
+                    break;
+                }
+                Ok(flate2::Status::Ok | flate2::Status::BufError) => {
+                    if input_consumed == 0 && output_produced == 0 {
+                        break;
+                    }
+                }
+                Err(_) => break,
+            }
+        }
+        if !decode_complete {
+            decoded.clear();
+        }
+    } else {
+        let _ = flate2::read::GzDecoder::new(source_bytes).read_to_end(&mut decoded);
+    }
     let trailer_size = source_bytes
         .get(source_bytes.len().saturating_sub(4)..)
         .filter(|trailer| trailer.len() == 4)

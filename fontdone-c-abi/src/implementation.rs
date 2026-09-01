@@ -1451,6 +1451,58 @@ pub extern "C" fn FT_Gzip_Uncompress(
     )
 }
 
+fn gzip_source_bytes(
+    source: FT_Stream,
+    source_base: *mut FT_Byte,
+    source_read: FT_Pointer,
+    source_len: usize,
+) -> Result<Vec<FT_Byte>, FT_Error> {
+    if source_len == 0 {
+        return Ok(Vec::new());
+    }
+    if !source_base.is_null() {
+        // SAFETY: the caller supplied a memory-backed source whose base is
+        // readable for the advertised non-zero size.
+        return Ok(unsafe { slice::from_raw_parts(source_base.cast_const(), source_len) }.to_vec());
+    }
+    if source_read.is_null() {
+        return Err(rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error);
+    }
+    // SAFETY: public FT_StreamRec.read has FreeType's FT_Stream_IoFunc ABI;
+    // the caller retains the source stream for this synchronous materialization.
+    let stream_io = unsafe {
+        std::mem::transmute::<
+            FT_Pointer,
+            extern "C" fn(FT_Stream, FT_ULong, *mut FT_Byte, FT_ULong) -> FT_ULong,
+        >(source_read)
+    };
+    if stream_io(source, 0, ptr::null_mut(), 0) != 0 {
+        return Err(rust_ffi::FT_Err_Invalid_Stream_Operation as FT_Error);
+    }
+    // FT_Stream_Seek commits the zero position only after the callback
+    // reports success; preserve that state before the header read.
+    unsafe {
+        (*source).pos = 0;
+    }
+    let requested = FT_ULong::try_from(source_len)
+        .map_err(|_| rust_ffi::FT_Err_Invalid_Argument as FT_Error)?;
+    let mut bytes = Vec::new();
+    bytes
+        .try_reserve_exact(source_len)
+        .map_err(|_| rust_ffi::FT_Err_Out_Of_Memory as FT_Error)?;
+    bytes.resize(source_len, 0);
+    let read_count = stream_io(source, 0, bytes.as_mut_ptr(), requested);
+    // FreeType advances a callback-backed stream by the number of bytes the
+    // callback returned, including a short read that becomes an error.
+    unsafe {
+        (*source).pos = read_count;
+    }
+    if read_count != requested {
+        return Err(rust_ffi::FT_Err_Invalid_Stream_Operation as FT_Error);
+    }
+    Ok(bytes)
+}
+
 #[cfg_attr(not(feature = "bzip2"), allow(dead_code))]
 fn bzip2_source_bytes(
     source: FT_Stream,
@@ -15902,20 +15954,14 @@ pub extern "C" fn FT_Stream_OpenGzip(stream: FT_Stream, source: FT_Stream) -> FT
     let Some(source_ref) = (unsafe { source.as_ref() }) else {
         return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
     };
-    if source_ref.base.is_null() && source_ref.size != 0 {
-        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
-    }
     let source_len = source_ref.size as usize;
-    // SAFETY: non-zero memory-backed sources promise `size` readable bytes.
-    // Keep the zero-length path separate because Rust slices require a
-    // non-null pointer even when their length is zero.
-    let source_bytes = if source_len == 0 {
-        &[][..]
-    } else {
-        unsafe { slice::from_raw_parts(source_ref.base.cast_const(), source_len) }
+    let source_bytes = match gzip_source_bytes(source, source_ref.base, source_ref.read, source_len)
+    {
+        Ok(bytes) => bytes,
+        Err(error) => return error,
     };
     let error =
-        rust_ffi::FT_Stream_OpenGzip(Some(stream_ref), Some(source_ref), Some(source_bytes));
+        rust_ffi::FT_Stream_OpenGzip(Some(stream_ref), Some(source_ref), Some(&source_bytes));
     if error == rust_ffi::FT_Err_Ok {
         stream_ref.close = c_gzip_stream_close as *const () as FT_Pointer;
         if stream_ref.base.is_null() {

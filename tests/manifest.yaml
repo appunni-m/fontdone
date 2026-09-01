@@ -7204,6 +7204,8 @@ subjects:
         description: Batch parity inputs exercise gzip invalid-header, decode-error, empty-stream, and threshold branches selected from the current coverage snapshot.
       - id: mcp_read_close_gap_matrix
         description: Batch parity inputs exercise an out-of-range decompressed read and the null-close guard selected from the current coverage snapshot.
+      - id: callback_source_null_base_matrix
+        description: A 50-case callback-backed source matrix varies the advertised prefix length while keeping base null; pinned FreeType reads through the public source callback, exposing the facade guard mismatch and short-read behavior.
       - id: reports_unimplemented_without_zlib
         description: Builds without zlib support return Unimplemented_Feature for the same call surface.
     # needs-input: operation=FT_Stream_OpenGzip then stream read/close; fixture_asset=small gzip font/PCF payload under the in-memory threshold, large gzip payload over the streaming threshold, malformed gzip header, and plain uncompressed bytes; params source stream positions 0/nonzero and read ranges at beginning/middle/end; expected output shape=FT_Error plus opened stream fields and read bytes; comparison=exact C oracle error code, stream size/base/read/close presence class, decompressed read bytes/hash, source stream lifetime behavior, and close behavior.
