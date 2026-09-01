@@ -3135,9 +3135,9 @@ fn lzw_source_bytes(
             slice::from_raw_parts(source_ref.base.cast_const(), source_len).to_vec()
         });
     }
-    if source_ref.read.is_null() {
-        return Err(rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error);
-    }
+    // The public opener rejects a non-empty stream with both a null base and
+    // null read callback before calling this helper.  The remaining path has
+    // a callback by invariant, matching the public FreeType stream contract.
     // SAFETY: FT_StreamRec.read has FreeType's public FT_Stream_IoFunc ABI;
     // the host retains the source stream for this synchronous materialization.
     let stream_io = unsafe {
