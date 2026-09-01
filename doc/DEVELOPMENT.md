@@ -4666,6 +4666,14 @@ union reports one newly covered region and one newly covered branch, at
 replacement full-denominator percentage; a complete snapshot is required for
 the strict project metric.
 
+After commit `9e39150880a5f968d7e880ac5eca12de97c52355` was pushed to `main`,
+Coverage MCP full run `7d17ff3b-f8ff-4ec6-a2de-a8dd4b216ba5` passed and ingested
+complete snapshot `c99c3d60-a98d-4cd7-8766-ada4dfdbf382`. The authoritative
+full denominator is now 90,195/93,730 regions (96.228529%), 65,420/67,436
+lines (97.010499%), 12,091/13,772 branches (87.794075%), and 3,784/4,065
+functions (93.087331%). This is complete all-lane evidence, not a selected-
+subset estimate.
+
 Maintained public-API inputs also pin raw argument behavior.  For example,
 the `FT_Load_Char` input for unassigned load-flag bits keeps the numeric bit
 `0x02000000` and compares the complete slot result with C; the Rust boundary
