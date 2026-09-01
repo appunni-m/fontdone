@@ -4935,3 +4935,58 @@ The behavioral authority is checksum-pinned FreeType 2.14.3 source and public
 headers fetched by `make oracle-fetch`. External format specifications explain
 intent; exact tests record the source function or specification section when a
 non-obvious rule becomes durable.
+
+### Batch 318: callback-backed gzip source with a null base pointer
+
+This batch adds 50 concrete public `FT_Stream_OpenGzip` variants under
+`ftgzip.FT_Stream_OpenGzip.callback_source_null_base_matrix` (`c50-gzip-001`
+through `c50-gzip-050`). Each source has `base == NULL`, a non-null public
+`read` callback, and an advertised prefix of 1 through 49 bytes or the full
+54-byte fixture; initial stream position alternates between zero and three.
+The first three prefixes intentionally stop inside the four-byte gzip magic
+read and expect `Invalid_Stream_Operation`. The remaining prefixes reach the
+callback-backed open path, including deliberately truncated compressed bodies,
+without ever allowing the callback to read past its capped byte array.
+
+The expansion targets the red null-base guards at
+`fontdone-wasm/src/implementation.rs:3050-3051` and
+`fontdone-c-abi/src/implementation.rs:15909-15910`. The pinned public contract
+allows a source stream to provide bytes through `FT_Stream_IoFunc` rather than
+`base` (`freetype/include/freetype/ftgzip.h:63-92`); `FT_Stream_OpenGzip`
+rejects only null target/source streams before calling
+`ft_gzip_check_header` (`freetype/src/gzip/ftgzip.c:608-705`), and the stream
+helpers route callback-backed reads and zero-byte seeks through `read`
+(`freetype/src/base/ftstream.c:55-160`). A nonzero-size source with both
+`base == NULL` and `read == NULL` remains excluded because the pinned C path
+would dereference an invalid memory-backed source; these cases exercise the
+safe public callback shape instead.
+
+The first focused run exposed two implementation mismatches: C ABI and WASM
+returned `Invalid_Stream_Handle` (40) for every nonzero null-base source,
+whereas C returned `Invalid_Stream_Operation` (85) for prefix sizes 1-3 and
+opened successfully for sizes 4-54; the Rust core also exposed partial decoded
+prefixes for truncated callback bodies where C returned zero bytes. The fix
+materializes callback bytes in both facades while retaining the callback
+marker, permits FreeType's deferred callback-backed header/body behavior, and
+uses raw-deflate completion status so an incomplete `inflate` fill discards
+its partial output. The oracle command and exact parity harness now exercise
+the same callback shape. Focused parity passed 50/50 across Rust FFI, C ABI,
+and WASM; the subsequent full parity gate passed 19,802/19,802 runnable cases
+with four pre-existing pending safety-extension cases. No unit test was used
+to increase coverage.
+
+Coverage MCP incremental run `a8c9508c-edc9-448a-8703-d1703815c2e9` used the
+registered command with the exact comma-separated case-ID arguments (split
+into repeatable arguments only because the MCP value limit is 512 bytes)
+against explicit baseline snapshot
+`ec4d9fbe-b345-4974-a63b-9ecfb064158d`; it passed and ingested snapshot
+`ed92abf4-4f42-4e9b-acc5-1fb3084047b4`. The supported selected-subset union
+reported 74 newly covered lines, 183 additional covered regions in its
+canonical union, and zero regressions; its detail merge is explicitly
+`exact=false` with conservative fallbacks and 50,577 baseline observations
+were `not_observed`. This is not a replacement full-denominator percentage;
+the next complete coverage snapshot must measure the committed tree. The
+managed execution is anchored to commit `0607ab4`, while the ingested LLVM
+metadata retains the server's older `77805b...` commit label, so this run is
+kept as incremental evidence rather than changing the authoritative full
+snapshot.
