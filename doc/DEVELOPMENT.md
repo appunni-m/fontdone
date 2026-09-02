@@ -5465,3 +5465,57 @@ snapshot `6e397a43-632a-42ef-9105-d9da5f445b29`: 90,979/94,489 regions
 12,200/13,848 branches (88.09936457137388%), and 3,807/4,084 functions
 (93.21743388834476%). Strict region coverage remains below 100%; this is a
 verified parity-preserving increment, not completion of the campaign.
+
+### Batch 327: embedded bitmap slots for C ABI outline-format errors
+
+This batch adds 50 concrete `FT_Memory` variants under
+`ftsystem.FT_Memory.mcp_cabi_wrapper_edges_batch`,
+`batch327-c100-outline-001` through `batch327-c100-outline-050`. Their exact
+generated runtime IDs are
+`ftsystem.FT_Memory.mcp_cabi_wrapper_edges_batch@batch327-c100-outline-###`.
+The two exact witnesses are IDs `001` and `026`; both use the maintained
+`input/fonts/bitmap/embedded-strikes.ttf` asset. The remaining 48 BDF/PCF rows
+are retained as public malformed/bitmap-loader candidates and negative
+controls; they are not claimed as the witness for the outline-format error.
+No unit test was added or used for coverage.
+
+The witness font has one EBLC strike at 20x20 ppem, bitmap glyph 1 in the
+EBLC glyph range, and a cmap entry mapping U+E000 to glyph 1. This matters
+because the pinned `FT_Match_Size` implementation only accepts a nominal
+request whose ppem matches a fixed strike (`freetype/src/base/ftobjs.c:3087-3138`),
+then the TrueType driver selects that strike
+(`freetype/src/truetype/ttdriver.c:358-370`). With `FT_LOAD_NO_BITMAP` absent,
+`TT_Load_Glyph` tries the sbit image (`freetype/src/truetype/ttgload.c:2397-2406`)
+and marks a successful image as `FT_GLYPH_FORMAT_BITMAP`
+(`freetype/src/truetype/ttgload.c:2100-2121`). The probe therefore requests
+20x20 for variants 402 and 403 and uses U+E000 for the charmap variant. The
+Rust compatibility route maps a bitmap/non-outline slot to
+`FT_Err_Invalid_Glyph_Format` at `src/ffi/handles.rs:2203-2212`, so the C ABI
+probe's `FT_Get_Outline_Glyph` error returns at
+`fontdone-c-abi/src/implementation.rs:3182-3183` and `:3263-3264` are defined
+public parity behavior rather than fabricated private state.
+
+The first managed submission used only the batch suffixes and correctly failed
+with no matching runtime cases (`50662578-ee00-4660-ae5b-ccf5533b3049`); it
+produced no coverage snapshot. The corrected submission used the 50 fully
+qualified IDs as ten repeatable `--migration-coverage-case-ids` arguments,
+each containing five comma-separated IDs. Coverage MCP run
+`9cab0139-f97d-450e-a8a1-360a79453fe5` passed at pushed commit `b4e919b` and
+ingested snapshot `0195c635-5f1b-4eb6-903c-9d2fe752d6e3` against explicit full
+baseline `6e397a43-632a-42ef-9105-d9da5f445b29`. Focused parity passed all 50
+variants (`50/50`) across the pinned oracle, Rust FFI, C ABI, and WASM. The
+supported selected-subset review reports 243 newly covered line identities,
+including both targeted `FT_Get_Outline_Glyph` return lines, with zero
+observed regressions. It is `complete=false`, `merge.exact=false`, and marks
+47,131 baseline observations `not_observed`; it is reachability evidence, not
+a replacement full denominator.
+
+The source projection of that incremental snapshot marks both target ranges
+green. The subsequent no-filter full Coverage MCP run
+`77bf02c0-ff76-4774-a7ae-085da2991bf1` passed and ingested complete snapshot
+`ce3ce82a-3b80-4c39-b294-4c7465573d50`: 90,979/94,487 regions (96.28731994877602%),
+66,010/68,003 lines (97.06924694498772%), 12,202/13,848 branches
+(88.11380704794917%), and 3,807/4,084 functions (93.21743388834476%). The
+full source projection confirms `fontdone-c-abi/src/implementation.rs:3182-3183`
+and `:3263-3264` are green. Strict region coverage remains below 100%, so the
+campaign continues from this complete snapshot and the next ranked gaps.
