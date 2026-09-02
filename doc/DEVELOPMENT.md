@@ -3630,7 +3630,7 @@ non-generated contracts live in `tests/data/`. Generated matrices and raw
 oracle outputs remain ignored under `tests/fixtures/*.json` and
 `tests/fixtures/outputs/`.
 
-The canonical input tree currently contains 1,237 tracked paths and no symlinks.
+The canonical input tree currently contains 1,288 tracked paths and no symlinks.
 The Makefile exposes 26 named font-generation targets plus the deterministic
 compressed-payload target, collected by `make font-fixtures`.
 
@@ -4930,7 +4930,7 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 100 | package, build, release, and facade contracts |
 | R03 | 1,761 | executable parity tests and public contracts |
-| R04 | 1,287 | licensed canonical fixture inputs |
+| R04 | 1,288 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 64 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -4938,7 +4938,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,287** | **all retained paths** |
+| **Total** | **3,288** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
@@ -5537,5 +5537,31 @@ original C implementation safely accepts them. The Rust FFI, C ABI, and WASM
 surfaces reject them as `FT_Err_Invalid_Stream_Handle` before materialization;
 the pinned oracle uses an explicit safety-boundary mode for the same result and
 does not call FreeType on the unsafe shape. Focused parity passed 2/2 across
-all endpoints. No unit test was added or used to increase coverage. Coverage
-MCP incremental measurement is recorded below after the pushed checkpoint.
+all endpoints. The first focused attempt was intercepted by the generic
+no-asset null-operation fallback and returned `Invalid_Face_Handle` for the
+Rust endpoint; excluding these dedicated stream boundary cases from that
+fallback exposed the intended public route, after which parity passed 2/2. No
+unit test was added or used to increase coverage.
+
+Coverage MCP incremental run `670ed263-ffe0-4091-9b33-cb72c927eab2` used the
+single comma-separated `--migration-coverage-case-ids` argument against
+explicit baseline snapshot `6e397a43-632a-42ef-9105-d9da5f445b29` at pushed
+commit `aa4582827a3314e85705a7df0659be7edfcb9428`. It passed and ingested
+snapshot `162bbcaa-70bc-4b09-98ab-60f7f5a8fb33`. The supported selected-subset
+review reported 21 newly covered line identities, including the gzip and LZW
+WASM guard regions, and zero observed regressions; named test attribution was
+unavailable, and the merge was `exact=false` with 50,954 baseline identities
+`not_observed`. This is additive reachability evidence, not a full-denominator
+coverage claim.
+
+The subsequent no-filter authoritative full run
+`7fd3b52b-0296-4918-900e-2662a18a0ade` passed and ingested complete snapshot
+`0c3fbdf9-76de-4aff-a575-5dbb942f2495`: 90,972/94,473 regions
+(96.29417928932076%), 66,011/67,997 lines (97.07928290954012%),
+12,195/13,836 branches (88.13963573287077%), and 3,807/4,084 functions
+(93.21743388834476%). Relative to the preceding complete snapshot, this is
+`+2` covered regions, `+2` covered lines, and `+2` covered branches with the
+same reported totals; function coverage is unchanged. The full source
+projection marks `fontdone-wasm/src/implementation.rs:3168-3169` and
+`:3402-3403` green, as well as the C ABI guard lines. Strict region coverage
+remains below 100%, so the campaign continues from this complete snapshot.
