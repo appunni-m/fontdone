@@ -279,9 +279,46 @@
       "inputs": {
         "assets": {},
         "params": null,
-      "variants": [
-          {"id":"c48-gzip-001","assets":{"gzip_streams":{"kind":"ref","id":"compressed/gzip/small-text-and-empty-payloads.json","asset_kind":"manifest"}},"params":{"stream_plan":"invalid_header_decode_error_empty_threshold","case_variant":1},"coverage":["src/ffi/handles.rs:7994-8003","src/ffi/handles.rs:8019-8019"]}
-      ]
+        "variants": [
+          {
+            "id": "c48-gzip-001",
+            "assets": {
+              "gzip_streams": {
+                "kind": "ref",
+                "id": "compressed/gzip/small-text-and-empty-payloads.json",
+                "asset_kind": "manifest"
+              }
+            },
+            "params": {
+              "stream_plan": "invalid_header_decode_error_empty_threshold",
+              "case_variant": 1
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7994-8003",
+              "src/ffi/handles.rs:8019-8019"
+            ]
+          },
+          {
+            "id": "batch329-c100-wasm-gzip-null-read-001",
+            "assets": {},
+            "params": {
+              "source_shape": "nonempty_null_base_null_read",
+              "source_size": 1,
+              "initial_pos": 3
+            },
+            "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
+            "reason": "The public FT_StreamRec shape advertises one byte while both base and read are null. Pinned ftgzip.c does not reject this record before its header check reaches FT_Stream_ReadAt, whose native C memory-backed path would dereference a null base; the maintained C oracle therefore records the safe boundary Invalid_Stream_Handle result without invoking undefined behavior, while Rust, C ABI, and WASM must reject before materialization.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3168-3169",
+              "fontdone-c-abi/src/implementation.rs:1468-1469"
+            ]
+          }
+        ]
       },
       "classifiers": [
         "kind:function",

@@ -667,9 +667,45 @@
       "inputs": {
         "assets": {},
         "params": null,
-      "variants": [
-          {"id":"c48-lzw-001","assets":{"lzw_streams":{"kind":"ref","id":"compressed/lzw/small-streams.json","asset_kind":"manifest"}},"params":{"read_plan":"null_close_after_open","case_variant":1},"coverage":["src/ffi/handles.rs:7973-7981"]}
-      ]
+        "variants": [
+          {
+            "id": "c48-lzw-001",
+            "assets": {
+              "lzw_streams": {
+                "kind": "ref",
+                "id": "compressed/lzw/small-streams.json",
+                "asset_kind": "manifest"
+              }
+            },
+            "params": {
+              "read_plan": "null_close_after_open",
+              "case_variant": 1
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7973-7981"
+            ]
+          },
+          {
+            "id": "batch329-c100-wasm-lzw-null-read-001",
+            "assets": {},
+            "params": {
+              "source_shape": "nonempty_null_base_null_read",
+              "source_size": 1,
+              "initial_pos": 3
+            },
+            "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
+            "reason": "The public FT_StreamRec shape advertises one byte while both base and read are null. Pinned ftlzw.c does not reject this record before its header check reaches FT_Stream_ReadAt, whose native C memory-backed path would dereference a null base; the maintained C oracle therefore records the safe boundary Invalid_Stream_Handle result without invoking undefined behavior, while Rust, C ABI, and WASM must reject before materialization.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3402-3403",
+              "fontdone-c-abi/src/implementation.rs:1721-1722"
+            ]
+          }
+        ]
       },
       "classifiers": [
         "kind:function",

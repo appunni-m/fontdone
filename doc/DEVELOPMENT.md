@@ -5519,3 +5519,23 @@ green. The subsequent no-filter full Coverage MCP run
 full source projection confirms `fontdone-c-abi/src/implementation.rs:3182-3183`
 and `:3263-3264` are green. Strict region coverage remains below 100%, so the
 campaign continues from this complete snapshot and the next ranked gaps.
+
+### Batch 329: non-empty null-source boundaries for gzip and LZW
+
+This two-case public parity batch targets the next two uncovered WASM regions
+from the complete Coverage MCP snapshot `4ba6ff2c-b80e-4170-88de-0e91c1fd5655`:
+`fontdone-wasm/src/implementation.rs:3168-3169` and `:3402-3403`. The exact
+runtime IDs are:
+
+| Public case ID | Input expansion reason | Pinned FreeType review |
+|---|---|---|
+| `ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix@batch329-c100-wasm-gzip-null-read-001` | Supply a public `FT_StreamRec` advertising one byte with both `base` and `read` null, so the WASM gzip materializer must take its non-empty null-read rejection rather than the already-covered empty-source path. | `freetype/src/gzip/ftgzip.c:194-216` seeks and reads the four-byte header without validating this record shape. With `read == NULL`, `freetype/src/base/ftstream.c:127-146` reaches the non-empty memory copy and would dereference `base == NULL`; the oracle records the safe boundary result without executing undefined C. |
+| `ftlzw.FT_Stream_OpenLZW.mcp_stream_gap_matrix@batch329-c100-wasm-lzw-null-read-001` | Supply the same one-byte, null-base/null-read public record to select the LZW WASM opener's explicit non-empty validation guard at `:3402-3403`, distinct from the empty-source case. | `freetype/src/lzw/ftlzw.c:82-95` seeks and reads the two-byte header without validating the record shape. The same `FT_Stream_ReadAt` memory-backed path would dereference the null base, so the C oracle records the safe boundary result instead of invoking undefined C. |
+
+These inputs are deliberately malformed public records, not claims that the
+original C implementation safely accepts them. The Rust FFI, C ABI, and WASM
+surfaces reject them as `FT_Err_Invalid_Stream_Handle` before materialization;
+the pinned oracle uses an explicit safety-boundary mode for the same result and
+does not call FreeType on the unsafe shape. Focused parity passed 2/2 across
+all endpoints. No unit test was added or used to increase coverage. Coverage
+MCP incremental measurement is recorded below after the pushed checkpoint.

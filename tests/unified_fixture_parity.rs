@@ -3416,6 +3416,8 @@ impl BackendComparisonWorker {
             && !is_stroker_simple_line_counts_case(case)
             && !is_empty_stream_without_base_case(case)
             && !is_gzip_callback_source_case(case)
+            && !is_gzip_nonempty_null_callback_case(case)
+            && !is_lzw_nonempty_null_callback_case(case)
         {
             let op = case.operation.as_str();
             if op == "sfnt.load_sfnt_table" {
@@ -46654,6 +46656,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
     {
         return Ok(vec!["--gzip-stream-empty-null-base".to_string()]);
     }
+    if is_gzip_nonempty_null_callback_case(case) {
+        return Ok(vec!["--gzip-stream-null-source-boundary".to_string()]);
+    }
     if is_gzip_callback_source_case(case) {
         let manifest = gzip_stream_manifest(case)?;
         let payload_id = string_param(&case.inputs.params, "payload_id")?;
@@ -46720,6 +46725,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         return Ok(args);
     }
     if is_lzw_stream_case(case) {
+        if is_lzw_nonempty_null_callback_case(case) {
+            return Ok(vec!["--lzw-stream-null-source-boundary".to_string()]);
+        }
         if case_id_base(&case.case_id)
             == "ftlzw.FT_Stream_OpenLZW.error_empty_source_without_base"
         {
@@ -51514,6 +51522,12 @@ fn is_gzip_callback_source_case(case: &InputCase) -> bool {
         "ftgzip.FT_Stream_OpenGzip.callback_source_null_base_matrix"
             | "ftgzip.FT_Stream_OpenGzip.callback_failure_matrix"
     )
+}
+
+fn is_gzip_nonempty_null_callback_case(case: &InputCase) -> bool {
+    case_id_base(&case.case_id) == "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix"
+        && case.inputs.params.get("source_shape").and_then(Value::as_str)
+            == Some("nonempty_null_base_null_read")
 }
 
 fn gzip_callback_failure(params: &Value) -> Result<u8, String> {
@@ -86897,7 +86911,16 @@ fn is_lzw_stream_case(case: &InputCase) -> bool {
     )
 }
 
+fn is_lzw_nonempty_null_callback_case(case: &InputCase) -> bool {
+    case_id_base(&case.case_id) == "ftlzw.FT_Stream_OpenLZW.mcp_stream_gap_matrix"
+        && case.inputs.params.get("source_shape").and_then(Value::as_str)
+            == Some("nonempty_null_base_null_read")
+}
+
 fn lzw_stream_output(case: &InputCase, backend: LzwStreamBackend) -> Result<RunOutput, String> {
+    if is_lzw_nonempty_null_callback_case(case) {
+        return Ok(lzw_stream_nonempty_null_base_output(backend));
+    }
     match case_id_base(&case.case_id) {
         "ftlzw.FT_Stream_OpenLZW.opens_valid_lzw_stream" => {
             lzw_stream_success_output(case, backend)
@@ -87385,6 +87408,34 @@ fn lzw_stream_empty_null_base_output(backend: LzwStreamBackend) -> RunOutput {
     )
 }
 
+fn lzw_stream_nonempty_null_base_output(backend: LzwStreamBackend) -> RunOutput {
+    let mut source = FT_StreamRec {
+        base: ptr::null_mut(),
+        size: 1,
+        pos: 3,
+        read: ptr::null_mut(),
+        ..FT_StreamRec::default()
+    };
+    let mut target = lzw_stream_sentinel();
+    let target_before = lzw_stream_fields(&target);
+    let status = lzw_stream_open(backend, Some(&mut target), Some(&mut source), None);
+    error_with_output(
+        status,
+        json!({
+            "variant": "nonempty_null_base_null_read",
+            "source_pos_before": 3,
+            "source_pos_after_open": source.pos,
+            "target_before": target_before,
+            "target_after": lzw_stream_fields(&target),
+            "source": {
+                "base_class": "null",
+                "read_class": "null",
+                "size": source.size,
+            },
+        }),
+    )
+}
+
 fn lzw_stream_open(
     backend: LzwStreamBackend,
     stream: Option<&mut FT_StreamRec>,
@@ -87589,6 +87640,9 @@ fn gzip_stream_open_output(
     case: &InputCase,
     backend: GzipStreamBackend,
 ) -> Result<RunOutput, String> {
+    if is_gzip_nonempty_null_callback_case(case) {
+        return Ok(gzip_stream_nonempty_null_base_output(backend));
+    }
     if is_gzip_callback_source_case(case) {
         return gzip_stream_callback_output(case, backend);
     }
@@ -87757,6 +87811,40 @@ fn gzip_stream_empty_null_base_output(backend: GzipStreamBackend) -> RunOutput {
             "source": {
                 "base_class": pointer_class(source.base.cast_const()),
                 "read_class": pointer_class(source.read.cast_const()),
+                "size": source.size,
+            },
+        }),
+    )
+}
+
+fn gzip_stream_nonempty_null_base_output(backend: GzipStreamBackend) -> RunOutput {
+    let mut source = FT_StreamRec {
+        base: ptr::null_mut(),
+        size: 1,
+        pos: 3,
+        read: ptr::null_mut(),
+        ..FT_StreamRec::default()
+    };
+    let mut target = lzw_stream_sentinel();
+    let target_before = lzw_stream_fields(&target);
+    let status = match backend {
+        GzipStreamBackend::Rust => FT_Stream_OpenGzip(Some(&mut target), Some(&source), None),
+        GzipStreamBackend::CAbi => c_abi::FT_Stream_OpenGzip(&mut target, &mut source),
+        GzipStreamBackend::Wasm => {
+            wasm_abi::fontdone_wasm_stream_open_gzip(&mut target, &source)
+        }
+    };
+    error_with_output(
+        status,
+        json!({
+            "variant": "nonempty_null_base_null_read",
+            "source_pos_before": 3,
+            "source_pos_after_open": source.pos,
+            "target_before": target_before,
+            "target_after": lzw_stream_fields(&target),
+            "source": {
+                "base_class": "null",
+                "read_class": "null",
                 "size": source.size,
             },
         }),

@@ -4830,18 +4830,34 @@ def stream_subsystem_pending_reason(row: ConcreteInput) -> str | None:
 
 
 def stream_null_validation_reason(row: ConcreteInput) -> str | None:
-    if (
-        row.operation == "ftbzip2.stream_open_bzip2"
-        and row.case_id == "ftbzip2.FT_Stream_OpenBzip2.mcp_read_gap_matrix"
-        and row.params.get("source_shape") == "nonempty_null_base_null_read"
-    ):
+    if row.params.get("source_shape") != "nonempty_null_base_null_read":
+        return None
+    stream_contract = {
+        (
+            "ftbzip2.stream_open_bzip2",
+            "ftbzip2.FT_Stream_OpenBzip2.mcp_read_gap_matrix",
+        ): ("FT_Stream_OpenBzip2", "ftbzip2.c"),
+        (
+            "ftgzip.stream_open_gzip",
+            "ftgzip.FT_Stream_OpenGzip.mcp_stream_gap_matrix",
+        ): ("FT_Stream_OpenGzip", "ftgzip.c"),
+        (
+            "ftlzw.stream_open_lzw",
+            "ftlzw.FT_Stream_OpenLZW.mcp_stream_gap_matrix",
+        ): ("FT_Stream_OpenLZW", "ftlzw.c"),
+    }
+    contract = stream_contract.get((row.operation, row.case_id))
+    if contract:
+        operation, source_file = contract
         return (
-            "FT_Stream_OpenBzip2 non-empty source with both base and read null "
+            f"{operation} non-empty source with both base and read null "
             "validates the pure-Rust/C-ABI/WASM public boundary as "
-            "Invalid_Stream_Handle; pinned FreeType ftbzip2.c passes this "
-            "record to FT_Stream_ReadAt, whose native C path would dereference "
-            "a null base, so the C oracle records the safe boundary result "
-            "without invoking undefined behavior"
+            "Invalid_Stream_Handle; pinned FreeType "
+            f"{source_file} does not reject this FT_StreamRec shape before "
+            "its header check reaches FT_Stream_ReadAt, whose native C "
+            "memory-backed path would dereference a null base. The C oracle "
+            "therefore records the safe boundary result without invoking "
+            "undefined behavior."
         )
     return None
 

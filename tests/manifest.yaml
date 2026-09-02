@@ -7205,7 +7205,7 @@ subjects:
       - id: error_empty_source_without_base
         description: An empty source with null base and read callback is rejected by FT_Stream_ReadAt as Invalid_Stream_Operation before any base dereference, matching the pinned C stream contract.
       - id: mcp_stream_gap_matrix
-        description: Batch parity inputs exercise gzip invalid-header, decode-error, empty-stream, and threshold branches selected from the current coverage snapshot.
+        description: Batch parity inputs exercise gzip invalid-header, decode-error, empty-stream, threshold, and non-empty null-base/null-read boundary branches selected from the current coverage snapshot.
       - id: mcp_read_close_gap_matrix
         description: Batch parity inputs exercise an out-of-range decompressed read and the null-close guard selected from the current coverage snapshot.
       - id: callback_source_null_base_matrix
@@ -8533,7 +8533,7 @@ subjects:
       - id: error_callback_short_header_read
         description: A callback that returns fewer than two bytes for the initial LZW header read returns FT_Err_Invalid_Stream_Operation and preserves the observed short source position.
       - id: mcp_stream_gap_matrix
-        description: Batch parity inputs exercise the null LZW close guard selected from the current coverage snapshot.
+        description: Batch parity inputs exercise the null LZW close guard and the non-empty null-base/null-read validation boundary selected from the current coverage snapshot.
       - id: unsupported_build_error
         description: Without FT_CONFIG_OPTION_USE_LZW, the exported function returns FT_Err_Unimplemented_Feature for all arguments.
     # needs-input: operation=FT_Stream_OpenLZW then stream read/seek/close; fixture_asset=small valid .pcf.Z or synthetic .Z binary, dictionary/width/CLEAR/non-block streams, valid-magic malformed .Z binaries, invalid-header binary, and FT_Stream memory wrapper records; params={lzw_enabled:false/true, target_stream:null/valid, source_stream:null/valid, read_offsets:[0,forward,forward,backward], read_counts:[0,64,64,full], null_buffer_zero_count:true}; output shape={FT_Error, target stream field snapshot, decoded byte chunks/hash, close side effects, source stream ownership class}; comparison=exact C oracle error code, stream field mutation, decoded bytes, forward dictionary/CLEAR/malformed decoding, reset-to-zero behavior, and unsupported-build classification.

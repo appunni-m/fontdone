@@ -1176,6 +1176,66 @@ static int emit_lzw_stream_empty_null_base(void) {
     return 0;
 }
 
+/*
+ * The public Rust/C-ABI/WASM boundary rejects this malformed record before
+ * calling the pinned gzip implementation. Calling FreeType with a non-empty
+ * stream whose base and read callback are both NULL would reach
+ * FT_Stream_ReadAt and dereference NULL, so record the safe boundary result
+ * without invoking that undefined native-C path.
+ */
+static int emit_gzip_stream_null_source_boundary(void) {
+    FT_StreamRec source;
+    FT_StreamRec target;
+    memset(&source, 0, sizeof(source));
+    source.size = 1UL;
+    source.pos = 3UL;
+    init_lzw_stream_sentinel(&target);
+    FT_StreamRec before = target;
+    printf("{");
+    print_status(FT_Err_Invalid_Stream_Handle);
+    printf(",\"output\":{\"variant\":\"nonempty_null_base_null_read\","
+           "\"source_pos_before\":3,\"source_pos_after_open\":%lu,"
+           "\"target_before\":",
+           (unsigned long)source.pos);
+    print_lzw_stream_fields(&before);
+    printf(",\"target_after\":");
+    print_lzw_stream_fields(&target);
+    printf(",\"source\":{\"base_class\":\"null\","
+           "\"read_class\":\"null\",\"size\":%lu}}}\n",
+           (unsigned long)source.size);
+    return 0;
+}
+
+/*
+ * The public Rust/C-ABI/WASM boundary rejects this malformed record before
+ * calling the pinned LZW implementation. Calling FreeType with a non-empty
+ * stream whose base and read callback are both NULL would reach
+ * FT_Stream_ReadAt and dereference NULL, so record the safe boundary result
+ * without invoking that undefined native-C path.
+ */
+static int emit_lzw_stream_null_source_boundary(void) {
+    FT_StreamRec source;
+    FT_StreamRec target;
+    memset(&source, 0, sizeof(source));
+    source.size = 1UL;
+    source.pos = 3UL;
+    init_lzw_stream_sentinel(&target);
+    FT_StreamRec before = target;
+    printf("{");
+    print_status(FT_Err_Invalid_Stream_Handle);
+    printf(",\"output\":{\"variant\":\"nonempty_null_base_null_read\","
+           "\"source_pos_before\":3,\"source_pos_after_open\":%lu,"
+           "\"target_before\":",
+           (unsigned long)source.pos);
+    print_lzw_stream_fields(&before);
+    printf(",\"target_after\":");
+    print_lzw_stream_fields(&target);
+    printf(",\"source\":{\"base_class\":\"null\","
+           "\"read_class\":\"null\",\"size\":%lu}}}\n",
+           (unsigned long)source.size);
+    return 0;
+}
+
 static void print_lzw_stream_reads(
     FT_Stream stream,
     const unsigned char* raw,
@@ -43186,6 +43246,9 @@ static int dispatch(int argc, char** argv) {
     if (argc == 2 && streq(argv[1], "--gzip-stream-empty-null-base")) {
         return emit_gzip_stream_empty_null_base();
     }
+    if (argc == 2 && streq(argv[1], "--gzip-stream-null-source-boundary")) {
+        return emit_gzip_stream_null_source_boundary();
+    }
     if (argc >= 5 && streq(argv[1], "--gzip-stream-open")) {
         return emit_gzip_stream_open(argc, argv);
     }
@@ -43203,6 +43266,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 2 && streq(argv[1], "--lzw-stream-empty-null-base")) {
         return emit_lzw_stream_empty_null_base();
+    }
+    if (argc == 2 && streq(argv[1], "--lzw-stream-null-source-boundary")) {
+        return emit_lzw_stream_null_source_boundary();
     }
     if (argc >= 3 && streq(argv[1], "--lzw-stream-case")) {
         return emit_lzw_stream_case(argc, argv);
