@@ -3174,7 +3174,7 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
             let Ok(slot) = rust_ffi::FT_Load_Glyph(
                 &core_face,
                 glyph,
-                rust_ffi::FT_LOAD_NO_HINTING | rust_ffi::FT_LOAD_NO_BITMAP,
+                rust_ffi::FT_LOAD_NO_HINTING, // BDF/PCF ignore NO_BITMAP.
             ) else {
                 return;
             };
@@ -3255,7 +3255,7 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
             let Ok(slot) = rust_ffi::FT_Load_Glyph(
                 &core_face,
                 glyph,
-                rust_ffi::FT_LOAD_NO_HINTING | rust_ffi::FT_LOAD_NO_BITMAP,
+                rust_ffi::FT_LOAD_NO_HINTING, // BDF/PCF ignore NO_BITMAP.
             ) else {
                 return;
             };
