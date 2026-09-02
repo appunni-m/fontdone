@@ -5289,3 +5289,54 @@ The post-change full Coverage MCP run
 regions, 65,833/67,847 lines, 12,165/13,824 branches, and 3,789/4,074
 functions. The full denominator remains below 100%; the next campaign must
 continue from this complete snapshot.
+
+### Batch 321: public SBit narrow-field and inactive-size guards
+
+This batch adds 50 concrete public `FT_Memory` variants under
+`ftsystem.FT_Memory.mcp_cabi_wrapper_edges_batch`,
+`batch321-c121-sbit-guard-001` through `batch321-c121-sbit-guard-050`.
+The runtime selectors are the fully qualified IDs
+`ftsystem.FT_Memory.mcp_cabi_wrapper_edges_batch@batch321-c121-sbit-guard-###`.
+Each case uses the maintained `render-coverage.ttf` asset and a distinct
+selector. The C ABI side supplies one malformed narrow-field shape at a time:
+rows, width, negative or positive pitch, bitmap-left, bitmap-top, horizontal
+advance, or vertical advance overflow, with every tenth case supplying a
+mismatched FTC node payload. The WASM peer exercises the zero active-size
+bookkeeping state. Every fixture `reason` identifies the exact field and the
+guard being targeted.
+
+The source review used the pinned FreeType small-bitmap loader at
+`freetype/src/cache/ftcsbits.c:140-205`. It checks all seven values before
+narrowing them into `FTC_SBitRec`, then uses the unavailable-glyph sentinel
+(`width = 255`, `height = 0`, `buffer = NULL`) for an oversized glyph. The
+Rust adapter now follows that contract in
+`fontdone-c-abi/src/implementation.rs:2510-2573`; it no longer saturates an
+overflow into a misleading record. The payload mismatch route at
+`:2603-2622` is an internal Rust invariant rather than a normal FreeType input,
+so the maintained ABI probe reaches it without dereferencing its null cache,
+manager, or output handles. The WASM bookkeeping guard is
+`fontdone-wasm/src/implementation.rs:2121-2126`; a zero active-size handle
+must leave the existing metrics map unchanged.
+
+Focused parity passed all 50 c121 variants (`50/50`) across the registered
+parity backends. Coverage MCP incremental run
+`03f4facc-38c0-4f32-bc87-0051263894d0` used the exact 50 qualified IDs as ten
+repeatable `--migration-coverage-case-ids` arguments, each containing five
+comma-separated IDs, against explicit baseline snapshot
+`6a25f702-4d14-413b-baea-46e7eb00ab60`. It passed and ingested snapshot
+`6bbbe475-eed7-493b-828b-b8bd8b20fcb8`; the supported selected-subset review
+reported 411 newly observed line identities and zero observed regressions.
+Because the run was incremental, its additive merge was conservative
+(`exact=false`) and omitted baseline hits were `not_observed`; it is
+reachability evidence, not a replacement full-denominator result.
+
+The post-change complete Coverage MCP run
+`4f743036-51f3-4815-bb15-eec8cd89dec8` passed and ingested snapshot
+`d5a3c31c-b930-4cdd-8055-171cc9e877e`. It measured 90,885/94,418 covered
+regions (96.2581287466373%), 65,929/67,942 lines (97.03717877012746%),
+12,178/13,834 branches (88.02949255457568%), and 3,794/4,079 functions
+(93.01299338073056%). Relative to the post-c120 complete snapshot this was
+`+94` covered regions with `+92` total regions, `+96` covered lines with `+95`
+total lines, `+13` covered branches with `+10` total branches, and `+5`
+covered functions with `+5` total functions. Strict region coverage is still
+below 100%, so the next batch must continue from this complete snapshot.
