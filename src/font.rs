@@ -523,6 +523,14 @@ fn pcf_unknown_file_format(reason: &str) -> FontError {
     FontError::UnknownFileFormat(format!("invalid PCF: {reason}"))
 }
 
+fn pcf_properties_error(last_table: bool, reason: &str) -> FontError {
+    if last_table {
+        pcf_unknown_file_format(reason)
+    } else {
+        pcf_stream_operation(reason)
+    }
+}
+
 fn pcf_u16(data: &[u8], offset: usize, msb: bool) -> Option<u16> {
     let bytes: [u8; 2] = data.get(offset..offset + 2)?.try_into().ok()?;
     Some(if msb {
@@ -643,11 +651,21 @@ fn pcf_c_string(data: &[u8], offset: usize) -> Option<&str> {
     std::str::from_utf8(&tail[..length]).ok()
 }
 
-fn parse_pcf_properties(data: &[u8], table: PcfTable) -> Result<Vec<BdfPropertyEntry>, FontError> {
+fn parse_pcf_properties(
+    data: &[u8],
+    table: PcfTable,
+    last_table: bool,
+) -> Result<Vec<BdfPropertyEntry>, FontError> {
+    // Once `pcf_read_TOC` succeeds, a failure from a PCF table reader is
+    // retried by `PCF_Face_Init` through the optional compressed-stream
+    // drivers.  For the raw memory inputs in the pinned build those retries
+    // settle on `FT_Err_Unknown_File_Format`; only TOC/probe failures retain
+    // the stream-operation classification from `pcf_tables`.
     let bytes = data
         .get(table.offset..table.offset + table.size)
-        .ok_or_else(|| pcf_stream_operation("properties range"))?;
-    let format = read_u32_le(bytes, 0).ok_or_else(|| pcf_stream_operation("properties format"))?;
+        .ok_or_else(|| pcf_properties_error(last_table, "properties range"))?;
+    let format = read_u32_le(bytes, 0)
+        .ok_or_else(|| pcf_properties_error(last_table, "properties format"))?;
     if format & PCF_FORMAT_MASK != 0 {
         // `pcf_get_properties` leaves its local error unset on an
         // unsupported format and face construction continues with no
@@ -657,53 +675,53 @@ fn parse_pcf_properties(data: &[u8], table: PcfTable) -> Result<Vec<BdfPropertyE
     let msb = format & PCF_BYTE_MASK != 0;
     let original_count = pcf_u32(bytes, 4, msb)
         .and_then(|value| usize::try_from(value).ok())
-        .ok_or_else(|| pcf_stream_operation("property count"))?;
+        .ok_or_else(|| pcf_properties_error(last_table, "property count"))?;
     let record_bytes = original_count
         .checked_mul(9)
-        .ok_or_else(|| pcf_stream_operation("property records overflow"))?;
+        .ok_or_else(|| pcf_properties_error(last_table, "property records overflow"))?;
     // FreeType first applies a rough table-size check against the original
     // count, then loads at most 256 records as a defensive allocation cap.
     // The skipped records and padding still belong to the on-disk layout, so
     // later offsets must be based on `original_count`, not the loaded count.
     if original_count > bytes.len() / 9 {
-        return Err(pcf_stream_operation("property count"));
+        return Err(pcf_properties_error(last_table, "property count"));
     }
     let count = original_count.min(256);
     let records_end = 8usize
         .checked_add(record_bytes)
-        .ok_or_else(|| pcf_stream_operation("property records overflow"))?;
+        .ok_or_else(|| pcf_properties_error(last_table, "property records overflow"))?;
     let string_size_offset = records_end
         .checked_add((4 - original_count % 4) % 4)
-        .ok_or_else(|| pcf_stream_operation("property padding overflow"))?;
+        .ok_or_else(|| pcf_properties_error(last_table, "property padding overflow"))?;
     let string_size = pcf_u32(bytes, string_size_offset, msb)
         .and_then(|value| usize::try_from(value).ok())
-        .ok_or_else(|| pcf_stream_operation("property string size"))?;
+        .ok_or_else(|| pcf_properties_error(last_table, "property string size"))?;
     let strings_offset = string_size_offset + 4;
     let strings = bytes
         .get(strings_offset..strings_offset + string_size)
-        .ok_or_else(|| pcf_stream_operation("property string table"))?;
+        .ok_or_else(|| pcf_properties_error(last_table, "property string table"))?;
 
     let mut properties = Vec::with_capacity(count);
     for index in 0..count {
         let base = 8 + index * 9;
         let name_offset = pcf_i32(bytes, base, msb)
             .and_then(|value| usize::try_from(value).ok())
-            .ok_or_else(|| pcf_stream_operation("property name offset"))?;
+            .ok_or_else(|| pcf_properties_error(last_table, "property name offset"))?;
         let name = pcf_c_string(strings, name_offset)
-            .ok_or_else(|| pcf_stream_operation("property name string"))?
+            .ok_or_else(|| pcf_properties_error(last_table, "property name string"))?
             .to_string();
         let is_string = *bytes
             .get(base + 4)
-            .ok_or_else(|| pcf_stream_operation("property type"))?
+            .ok_or_else(|| pcf_properties_error(last_table, "property type"))?
             != 0;
-        let raw_value =
-            pcf_i32(bytes, base + 5, msb).ok_or_else(|| pcf_stream_operation("property value"))?;
+        let raw_value = pcf_i32(bytes, base + 5, msb)
+            .ok_or_else(|| pcf_properties_error(last_table, "property value"))?;
         let value = if is_string {
             let value_offset = usize::try_from(raw_value)
-                .map_err(|_| pcf_stream_operation("property atom offset"))?;
+                .map_err(|_| pcf_properties_error(last_table, "property atom offset"))?;
             BdfPropertyValue::Atom(
                 pcf_c_string(strings, value_offset)
-                    .ok_or_else(|| pcf_stream_operation("property atom string"))?
+                    .ok_or_else(|| pcf_properties_error(last_table, "property atom string"))?
                     .to_string(),
             )
         } else {
@@ -1339,7 +1357,13 @@ fn parse_bdf_metadata(text: &str) -> Result<BdfMetadata, FontError> {
 
 fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
     let tables = pcf_tables(data)?;
-    let properties = parse_pcf_properties(data, pcf_table(&tables, PCF_PROPERTIES)?)?;
+    let properties_table = pcf_table(&tables, PCF_PROPERTIES)?;
+    let properties_last_table = tables.last().is_some_and(|(_, table)| {
+        table.offset == properties_table.offset
+            && table.size == properties_table.size
+            && table.format == properties_table.format
+    });
+    let properties = parse_pcf_properties(data, properties_table, properties_last_table)?;
 
     let metrics_table = pcf_table(&tables, PCF_METRICS)?;
     let metrics = data

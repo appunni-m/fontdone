@@ -177,6 +177,69 @@ def encodings_table(*, msb: bool = False) -> bytes:
     )
 
 
+def truncated_reader_payload(kind: str, ordinal: int) -> tuple[int, int, bytes]:
+    """Return a distinct, bounded PCF payload for one reader-boundary probe.
+
+    Each payload is deliberately shorter than the next field that the pinned
+    PCF driver reads.  The table remains inside a structurally valid TOC, so
+    the C oracle reaches a defined stream/table error rather than an invalid
+    pointer or an allocation-dependent path.
+    """
+    msb = ordinal % 2 == 1
+    endian = ">" if msb else "<"
+    byte_order = PCF_BYTE_MASK if msb else 0
+
+    if kind == "properties":
+        lengths = (4, 5, 6, 7, 5, 6, 7, 4, 5, 6)
+        length = lengths[ordinal]
+        payload = struct.pack("<I", byte_order)
+        payload += struct.pack(f"{endian}I", ordinal + 1)[: length - 4]
+        return PCF_PROPERTIES, byte_order, payload
+
+    if kind == "compressed-metrics":
+        lengths = (4, 5, 4, 5, 6, 7, 8, 9, 10, 7)
+        length = lengths[ordinal]
+        payload = struct.pack("<I", PCF_COMPRESSED_METRICS | byte_order)
+        if length >= 6:
+            payload += struct.pack(f"{endian}H", 1)
+            payload += bytes((0x80 + ordinal, 0x88, 0x88, 0x88, 0x82))[: length - 6]
+        else:
+            payload += struct.pack(f"{endian}H", 1)[: length - 4]
+        return PCF_METRICS, PCF_COMPRESSED_METRICS | byte_order, payload
+
+    if kind == "uncompressed-metrics":
+        lengths = (4, 5, 6, 7, 8, 9, 10, 11, 12, 13)
+        length = lengths[ordinal]
+        payload = struct.pack("<I", byte_order)
+        payload += struct.pack(f"{endian}I", 1)
+        payload += struct.pack("<hhhhhh", 0, 8, 8, 8, 2, 0)[: max(0, length - 8)]
+        return PCF_METRICS, byte_order, payload[:length]
+
+    if kind == "accelerators":
+        lengths = (4, 8, 12, 13, 14, 15, 16, 17, 18, 19)
+        length = lengths[ordinal]
+        payload = struct.pack("<I", byte_order)
+        payload += bytes((1, 1, 1, 1, 1, 0, ordinal, 0))
+        payload += struct.pack(f"{endian}ii", 8, 2)[: max(0, length - 12)]
+        return PCF_ACCELERATORS, byte_order, payload[:length]
+
+    if kind == "bitmaps":
+        lengths = (4, 5, 6, 7, 4, 5, 6, 7, 5, 6)
+        length = lengths[ordinal]
+        payload = struct.pack("<I", byte_order)
+        payload += struct.pack(f"{endian}I", 1)[: length - 4]
+        return PCF_BITMAPS, byte_order, payload
+
+    if kind == "encodings":
+        lengths = (4, 5, 6, 7, 8, 9, 4, 5, 6, 7)
+        length = lengths[ordinal]
+        payload = struct.pack("<I", byte_order)
+        payload += struct.pack(f"{endian}HHHHHH", 65, 65, 0, 0, 65, 0)[: max(0, length - 4)]
+        return PCF_BDF_ENCODINGS, byte_order, payload[:length]
+
+    raise ValueError(f"unknown truncated PCF reader kind: {kind}")
+
+
 def build_pcf(tables: list[tuple[int, int, bytes]]) -> bytes:
     toc_size = 8 + len(tables) * 16
     offset = toc_size
@@ -210,6 +273,16 @@ def replace_table(
         else:
             replaced.append((current_type, current_format, current_data))
     return replaced
+
+
+def move_table_last(
+    tables: list[tuple[int, int, bytes]], table_type: int
+) -> list[tuple[int, int, bytes]]:
+    """Place one table at EOF so its bounded reader sees a real short stream."""
+    selected = [table for table in tables if table[0] == table_type]
+    if len(selected) != 1:
+        raise ValueError(f"expected one table of type {table_type:#x}")
+    return [table for table in tables if table[0] != table_type] + selected
 
 
 def write_fixture(name: str, data: bytes) -> None:
@@ -488,8 +561,30 @@ def main() -> None:
             bytes(out_of_range_encoding_glyph_payload),
         )
     )
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
+    # Keep these as separate maintained inputs: each case varies the exact
+    # field boundary, byte order, or partial value while preserving all
+    # preceding PCF tables.  They exercise the defined FreeType stream-read
+    # errors for properties, metrics, accelerators, bitmaps, and encodings.
+    for kind, count in (
+        ("properties", 8),
+        ("compressed-metrics", 8),
+        ("uncompressed-metrics", 8),
+        ("accelerators", 8),
+        ("bitmaps", 8),
+        ("encodings", 10),
+    ):
+        for ordinal in range(count):
+            table_type, table_format, payload = truncated_reader_payload(kind, ordinal)
+            reader_tables = move_table_last(
+                replace_table(tables, table_type, table_format, payload), table_type
+            )
+            write_fixture(
+                f"batch326-pcf-reader-{kind}-{ordinal + 1:03d}.pcf",
+                build_pcf(reader_tables),
+            )
     output = OUT_DIR / "properties-signed-only.pcf"
     if output.exists() or output.is_symlink():
         output.unlink()

@@ -1933,6 +1933,8 @@ subjects:
         description: Null library or required output face pointer errors match FT_Open_Face behavior.
       - id: error_bad_size_or_unknown_format
         description: Negative/too-small sizes, malformed bytes including zero-table, truncated-directory, and missing-properties PCF headers plus malformed WinFNT headers, unsupported formats, and out-of-range face indexes return the exact C error classification.
+      - id: error_pcf_reader_truncated_fields
+        description: Publicly supplied PCF tables whose bounded scalar fields end mid-read return the exact pinned C error classification during memory-face construction.
       - id: error_malformed_type1_mm_dictionary
         description: Malformed Adobe Type 1 Multiple Master dictionary arrays return the exact FreeType Invalid_File_Format result during memory-face construction.
       - id: batch280_type1_mm_parser_permissiveness
