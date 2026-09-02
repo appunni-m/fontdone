@@ -3100,7 +3100,8 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
     let sizes = [(0, 12), (8, 8), (12, 16), (20, 24), (32, 32)];
     let (pixel_width, pixel_height) = sizes[index % sizes.len()];
     let size_status = rust_ffi::FT_Set_Pixel_Sizes(&mut core_face, pixel_width, pixel_height);
-    let char_codes = [0, 32, 65, 0x391, 0x4E00, 0x20AC, 0xFFFF];
+    // The maintained embedded-strike witness maps U+E000 to bitmap glyph 1.
+    let char_codes = [0, 32, 0xE000, 0x391, 0x4E00, 0x20AC, 0xFFFF];
     let char_code = char_codes[index % char_codes.len()];
     let glyph_index = rust_ffi::FT_Get_Char_Index(&core_face, char_code);
     let glyphs = [0, 1, glyph_index, 3, 36, 65, FT_UInt::MAX];
