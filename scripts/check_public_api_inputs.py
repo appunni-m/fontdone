@@ -4829,6 +4829,23 @@ def stream_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     return None
 
 
+def stream_null_validation_reason(row: ConcreteInput) -> str | None:
+    if (
+        row.operation == "ftbzip2.stream_open_bzip2"
+        and row.case_id == "ftbzip2.FT_Stream_OpenBzip2.mcp_read_gap_matrix"
+        and row.params.get("source_shape") == "nonempty_null_base_null_read"
+    ):
+        return (
+            "FT_Stream_OpenBzip2 non-empty source with both base and read null "
+            "validates the pure-Rust/C-ABI/WASM public boundary as "
+            "Invalid_Stream_Handle; pinned FreeType ftbzip2.c passes this "
+            "record to FT_Stream_ReadAt, whose native C path would dereference "
+            "a null base, so the C oracle records the safe boundary result "
+            "without invoking undefined behavior"
+        )
+    return None
+
+
 def callback_provider_subsystem_pending_reason(row: ConcreteInput) -> str | None:
     """Rows for callback/provider ABI behavior without a maintained route."""
     if row.case_id == "ftrender.FT_Renderer_Class.render_mode_acceptance_matches_callbacks":
@@ -9188,6 +9205,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     future_batch_pending = future_batch_unresolved_asset_pending_reason(row)
     if future_batch_pending:
         return ("pending-route", future_batch_pending)
+    stream_null_validation = stream_null_validation_reason(row)
+    if stream_null_validation:
+        return ("real-null-validation", stream_null_validation)
     future_batch_real_reason = future_batch_real_parity_reason(row)
     if future_batch_real_reason:
         return ("real-parity", future_batch_real_reason)
@@ -9254,6 +9274,9 @@ def route_category(row: ConcreteInput) -> tuple[str, str]:
     future_batch_pending = future_batch_unresolved_asset_pending_reason(row)
     if future_batch_pending:
         return ("pending-route", future_batch_pending)
+    stream_null_validation = stream_null_validation_reason(row)
+    if stream_null_validation:
+        return ("real-null-validation", stream_null_validation)
     future_batch_real_reason = future_batch_real_parity_reason(row)
     if future_batch_real_reason:
         return ("real-parity", future_batch_real_reason)

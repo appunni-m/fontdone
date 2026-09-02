@@ -435,6 +435,29 @@ def build_format14_only_font() -> None:
     font.save(out, reorderTables=True)
 
 
+def build_large_format14_selector_font() -> None:
+    """Build a valid format-14 table whose selector list exceeds ABI probes."""
+    font = TTFont(BASE_FONT, recalcTimestamp=False)
+    selectors = [
+        (0x0E0000 + index, 0, 0)
+        for index in range(4097)
+    ]
+    font["cmap"] = raw_cmap_table(
+        pack_raw_cmap(
+            [
+                (3, 1, format6_subtable()),
+                (0, 5, raw_format14_subtable(selectors)),
+            ]
+        )
+    )
+
+    CHARMAP_OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = CHARMAP_OUT_DIR / "cmap-format14-large-selector-list.ttf"
+    if out.exists() or out.is_symlink():
+        out.unlink()
+    font.save(out, reorderTables=True)
+
+
 def build_codepoint_zero_mapped_font() -> None:
     """Build a format-12 cmap whose first character is U+0000 at glyph 1."""
     font = TTFont(BASE_FONT, recalcTimestamp=False)
@@ -568,6 +591,7 @@ def main() -> None:
     build_non_unicode_format6_font()
     build_default_charmap_order_fonts()
     build_format14_only_font()
+    build_large_format14_selector_font()
     build_codepoint_zero_mapped_font()
     build_platform0_variation_font()
     build_platform3_nonunicode_variation_font()

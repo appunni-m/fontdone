@@ -1406,6 +1406,8 @@ subjects:
         description: Faces without a valid variation selector cmap table and null face handles return NULL like the C oracle.
       - id: result_buffer_lifetime
         description: Returned face-owned arrays remain valid only until the next FreeType call according to the C oracle lifetime rule.
+      - id: large_selector_list_preserves_zero_terminated_values
+        description: A valid format 14 table with more than 4096 selectors preserves every selector through the C ABI and WASM zero-terminated list boundaries.
 
   - id: freetype.FT_Face_GetVariantsOfChar
     kind: function

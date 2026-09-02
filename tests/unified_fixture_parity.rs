@@ -46804,6 +46804,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
     }
     if is_bzip2_enabled_stream_case(case) {
         let base_case = case_id_base(&case.case_id);
+        if is_bzip2_nonempty_null_callback_case(case) {
+            return Ok(vec!["--bzip2-stream-null-source-boundary".to_string()]);
+        }
         // Preserve a concrete callback-error ID for the external oracle; the
         // ordinary cases have no suffix, so this remains backward-compatible.
         let oracle_case_id = if bzip2_callback_failure(&case.case_id).is_some() {
@@ -86367,6 +86370,12 @@ fn is_bzip2_enabled_stream_case(case: &InputCase) -> bool {
     )
 }
 
+fn is_bzip2_nonempty_null_callback_case(case: &InputCase) -> bool {
+    case_id_base(&case.case_id) == "ftbzip2.FT_Stream_OpenBzip2.mcp_read_gap_matrix"
+        && case.inputs.params.get("source_shape").and_then(Value::as_str)
+            == Some("nonempty_null_base_null_read")
+}
+
 fn bzip2_callback_failure(case_id: &str) -> Option<(&'static str, u8)> {
     match case_id {
         "ftbzip2.FT_Stream_OpenBzip2.error_callback_seek_failure" => Some((
@@ -86383,6 +86392,9 @@ fn bzip2_callback_failure(case_id: &str) -> Option<(&'static str, u8)> {
 
 fn bzip2_stream_output(case: &InputCase, backend: Bzip2StreamBackend) -> Result<RunOutput, String> {
     let base_case = case_id_base(&case.case_id);
+    if is_bzip2_nonempty_null_callback_case(case) {
+        return Ok(bzip2_stream_nonempty_null_base_output(backend));
+    }
     if let Some((variant, failure)) = bzip2_callback_failure(&case.case_id) {
         let compressed = case
             .inputs
@@ -86451,6 +86463,36 @@ fn bzip2_stream_output(case: &InputCase, backend: Bzip2StreamBackend) -> Result<
         }
         other => Err(format!("unsupported active bzip2 stream case {other}")),
     }
+}
+
+fn bzip2_stream_nonempty_null_base_output(backend: Bzip2StreamBackend) -> RunOutput {
+    let mut memory = FT_MemoryRec::default();
+    let mut source = FT_StreamRec {
+        base: ptr::null_mut(),
+        size: 1,
+        pos: 3,
+        read: ptr::null_mut(),
+        memory: (&mut memory) as *mut FT_MemoryRec,
+        ..FT_StreamRec::default()
+    };
+    let mut target = lzw_stream_sentinel();
+    let target_before = lzw_stream_fields(&target);
+    let status = bzip2_stream_open(backend, Some(&mut target), Some(&mut source), None);
+    error_with_output(
+        status,
+        json!({
+            "variant": "nonempty_null_base_null_read",
+            "source_pos_before": 3,
+            "source_pos_after_open": source.pos,
+            "target_before": target_before,
+            "target_after": lzw_stream_fields(&target),
+            "source": {
+                "base_class": "null",
+                "read_class": "null",
+                "size": source.size,
+            },
+        }),
+    )
 }
 
 fn bzip2_stream_success_output(

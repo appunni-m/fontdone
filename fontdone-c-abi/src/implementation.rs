@@ -1632,9 +1632,6 @@ fn open_bzip2_stream(stream: FT_Stream, source: FT_Stream) -> FT_Error {
         let source_ref = &*source;
         (source_ref.base, source_ref.read, source_ref.size as usize)
     };
-    if source_base.is_null() && source_len != 0 && source_read.is_null() {
-        return rust_ffi::FT_Err_Invalid_Stream_Handle as FT_Error;
-    }
     let source_bytes = match bzip2_source_bytes(source, source_base, source_read, source_len) {
         Ok(bytes) => bytes,
         Err(error) => return error,
@@ -18514,15 +18511,18 @@ pub fn abi_uint32_list(ptr: *const FT_UInt32) -> Option<Vec<FT_UInt32>> {
         return None;
     }
     let mut values = Vec::new();
-    for index in 0..4096 {
+    let mut index = 0usize;
+    loop {
+        // FreeType's format-14 selector count is not capped at 4096; consume
+        // the caller-owned terminator so valid large lists are not truncated.
         // SAFETY: test callers pass live FreeType-shaped zero-terminated lists.
         let value = unsafe { *ptr.add(index) };
         if value == 0 {
             return Some(values);
         }
         values.push(value);
+        index += 1;
     }
-    Some(values)
 }
 
 #[cfg(feature = "abi-test-support")]

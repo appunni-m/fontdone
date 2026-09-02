@@ -1549,6 +1549,36 @@ static void print_bzip2_target_fields(const FT_StreamRec* stream) {
     print_lzw_stream_fields(stream);
 }
 
+/*
+ * The public Rust/C-ABI/WASM boundary rejects this malformed record before
+ * calling the pinned bzip2 implementation.  Calling FreeType with a
+ * non-empty stream whose base and read callback are both NULL would reach
+ * FT_Stream_ReadAt and dereference NULL, so this oracle mode records the safe
+ * boundary contract without executing that undefined native-C path.
+ */
+static int emit_bzip2_stream_null_source_boundary(void) {
+    FT_StreamRec source;
+    FT_StreamRec target;
+    memset(&source, 0, sizeof(source));
+    source.size = 1UL;
+    source.pos = 3UL;
+    init_lzw_stream_sentinel(&target);
+    FT_StreamRec before = target;
+    printf("{");
+    print_status(FT_Err_Invalid_Stream_Handle);
+    printf(",\"output\":{\"variant\":\"nonempty_null_base_null_read\","
+           "\"source_pos_before\":3,\"source_pos_after_open\":%lu,"
+           "\"target_before\":",
+           (unsigned long)source.pos);
+    print_bzip2_target_fields(&before);
+    printf(",\"target_after\":");
+    print_bzip2_target_fields(&target);
+    printf(",\"source\":{\"base_class\":\"null\","
+           "\"read_class\":\"null\",\"size\":%lu}}}\n",
+           (unsigned long)source.size);
+    return 0;
+}
+
 typedef struct Bzip2MemorySource_ {
     const unsigned char* bytes;
     long length;
@@ -43182,6 +43212,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 2 && streq(argv[1], "--bzip2-stream-disabled-policy")) {
         return emit_bzip2_stream_disabled_policy(argc, argv);
+    }
+    if (argc == 2 && streq(argv[1], "--bzip2-stream-null-source-boundary")) {
+        return emit_bzip2_stream_null_source_boundary();
     }
     if (argc == 8 && streq(argv[1], "--load-glyph-num-glyphs")) {
         return emit_face_or_slot(argc, argv);

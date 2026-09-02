@@ -698,6 +698,27 @@
               "src/ffi/handles.rs:7727-7734",
               "src/ffi/handles.rs:7738-7739"
             ]
+          },
+          {
+            "id": "batch328-c100-wasm-bzip2-null-read-001",
+            "assets": {},
+            "params": {
+              "source_shape": "nonempty_null_base_null_read",
+              "source_size": 1,
+              "initial_pos": 3
+            },
+            "expect_error": true,
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
+            "reason": "The public FT_StreamRec shape advertises one byte while both base and read are null. Pinned ftbzip2.c would pass this unsafe record into FT_Stream_ReadAt and dereference null; the maintained C oracle therefore records the safe wrapper-boundary Invalid_Stream_Handle result without invoking undefined behavior, while Rust, C ABI, and WASM must reject before materialization.",
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:3223-3224",
+              "fontdone-c-abi/src/implementation.rs:1521-1522",
+              "src/ffi/handles.rs:7690-7692"
+            ]
           }
         ]
       },
