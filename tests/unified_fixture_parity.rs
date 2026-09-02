@@ -64861,6 +64861,33 @@ fn wasm_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, Str
         };
         return Ok(error(status));
     }
+    if let Some(missing_callback) = svg_invalid_hook_index(params) {
+        let capture = wasm_abi::abi_support_svg_renderer_capture_invalid_hook(
+            &bytes,
+            glyph_index,
+            i32::from(missing_callback),
+        );
+        let fields = SvgRendererCallbackFields {
+            glyph_index: capture.glyph_index,
+            svg_document_length: capture.svg_document_length,
+            units_per_em: capture.units_per_EM,
+            start_glyph_id: capture.start_glyph_id,
+            end_glyph_id: capture.end_glyph_id,
+            transform: (
+                capture.transform_xx,
+                capture.transform_xy,
+                capture.transform_yx,
+                capture.transform_yy,
+            ),
+            delta: (capture.delta_x, capture.delta_y),
+        };
+        return Ok(svg_callback_output(
+            capture.render_status,
+            fields,
+            capture.hooks_status,
+            capture.hooks_status != FT_Err_Ok,
+        ));
+    }
     let mut capture = wasm_abi::WasmSvgRendererCallbackCapture::default();
     let capture_status = wasm_abi::fontdone_wasm_svg_renderer_capture(
         bytes.as_ptr(),
@@ -65016,6 +65043,38 @@ fn svg_callback_output(
     }))
 }
 
+fn svg_invalid_hook_index(params: &Value) -> Option<u8> {
+    match params.get("hooks").and_then(Value::as_str) {
+        Some("null_init") => Some(0),
+        Some("null_free") => Some(1),
+        Some("null_render") => Some(2),
+        Some("null_preset") => Some(3),
+        _ => None,
+    }
+}
+
+fn rust_svg_renderer_hooks(missing_callback: Option<u8>) -> SVG_RendererHooks {
+    let mut hooks = SVG_RendererHooks {
+        init_svg: Some(rust_svg_probe_init),
+        free_svg: Some(rust_svg_probe_free),
+        render_svg: Some(rust_svg_probe_render),
+        preset_slot: Some(rust_svg_probe_preset),
+    };
+    if missing_callback == Some(0) {
+        hooks.init_svg = None;
+    }
+    if missing_callback == Some(1) {
+        hooks.free_svg = None;
+    }
+    if missing_callback == Some(2) {
+        hooks.render_svg = None;
+    }
+    if missing_callback == Some(3) {
+        hooks.preset_slot = None;
+    }
+    hooks
+}
+
 fn rust_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, String> {
     let params = &case.inputs.params;
     if matches!(
@@ -65039,16 +65098,13 @@ fn rust_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, Str
     let glyph_index = svg_document_glyph_index(params)?;
     RUST_SVG_CALLBACK_FIELDS.with(|fields| *fields.borrow_mut() = SvgRendererCallbackFields::default());
     let mut library = FT_Init_FreeType();
-    let hooks = SVG_RendererHooks {
-        init_svg: Some(rust_svg_probe_init),
-        free_svg: Some(rust_svg_probe_free),
-        render_svg: Some(rust_svg_probe_render),
-        preset_slot: Some(rust_svg_probe_preset),
-    };
     let hooks_status = if params.get("hooks").and_then(Value::as_str) == Some("missing") {
         FT_Err_Missing_SVG_Hooks as FT_Error
     } else {
-        FT_Set_SVG_Renderer_Hooks(Some(&mut library), Some(hooks))
+        FT_Set_SVG_Renderer_Hooks(
+            Some(&mut library),
+            Some(rust_svg_renderer_hooks(svg_invalid_hook_index(params))),
+        )
     };
     let face = FT_New_Memory_Face(&library, &data, 0, 20.0)
         .map_err(|err| format!("FT_New_Memory_Face returned {err}"))?;
@@ -65159,6 +65215,28 @@ unsafe extern "C" fn c_svg_probe_render(
     }
 }
 
+fn c_svg_renderer_hooks(missing_callback: Option<u8>) -> c_abi::SVG_RendererHooks {
+    let mut hooks = c_abi::SVG_RendererHooks {
+        init_svg: Some(c_svg_probe_init),
+        free_svg: Some(c_svg_probe_free),
+        render_svg: Some(c_svg_probe_render),
+        preset_slot: Some(c_svg_probe_preset),
+    };
+    if missing_callback == Some(0) {
+        hooks.init_svg = None;
+    }
+    if missing_callback == Some(1) {
+        hooks.free_svg = None;
+    }
+    if missing_callback == Some(2) {
+        hooks.render_svg = None;
+    }
+    if missing_callback == Some(3) {
+        hooks.preset_slot = None;
+    }
+    hooks
+}
+
 fn c_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, String> {
     let params = &case.inputs.params;
     if matches!(
@@ -65186,12 +65264,7 @@ fn c_otsvg_renderer_callback_probe(case: &InputCase) -> Result<RunOutput, String
     if init_error != FT_Err_Ok {
         return Err(format!("FT_Init_FreeType returned {init_error}"));
     }
-    let hooks = c_abi::SVG_RendererHooks {
-        init_svg: Some(c_svg_probe_init),
-        free_svg: Some(c_svg_probe_free),
-        render_svg: Some(c_svg_probe_render),
-        preset_slot: Some(c_svg_probe_preset),
-    };
+    let hooks = c_svg_renderer_hooks(svg_invalid_hook_index(params));
     let hooks_status = if params.get("hooks").and_then(Value::as_str) == Some("missing") {
         FT_Err_Missing_SVG_Hooks as FT_Error
     } else {

@@ -377,6 +377,7 @@ document_wasm_test_support!(
     abi_fvar_namedstyle_coords,
     fontdone_wasm_svg_renderer_capture,
     fontdone_wasm_svg_renderer_callback_guard_probe,
+    abi_support_svg_renderer_capture_invalid_hook,
 );
 
 #[cfg(all(test, feature = "abi-test-support"))]

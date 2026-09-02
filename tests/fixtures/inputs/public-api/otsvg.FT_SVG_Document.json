@@ -7,7 +7,8 @@
     "renderer_callback_observes_document",
     "mcp_invalid_font_open_batch",
     "mcp_renderer_error_batch",
-    "mcp_wasm_argument_validation_batch"
+    "mcp_wasm_argument_validation_batch",
+    "mcp_svg_hook_validation_batch"
   ],
   "cases": [
     {
@@ -655,6 +656,1112 @@
         ],
         "fixture_requirements": [
           "The tracked OT-SVG font is retained on every row so the cases stay on the public renderer-capture operation; pointer probes return before ordinary font rendering. The four c120 state modes are explicit WASM safety-extension inputs, while pinned FreeType source review confirms that a normal renderer invocation supplies valid state and document pointers."
+        ]
+      }
+    },
+    {
+      "case_id": "otsvg.FT_SVG_Document.mcp_svg_hook_validation_batch",
+      "subject": "otsvg.FT_SVG_Document",
+      "case": "mcp_svg_hook_validation_batch",
+      "operation": "otsvg.svg_renderer_callback_capture",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "batch325-c122-svg-hooks-001",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the init_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 12 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 12,
+              "glyph_index": 1,
+              "hooks": "null_init"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:init_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-002",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the free_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 13 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 13,
+              "glyph_index": 1,
+              "hooks": "null_free"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:free_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-003",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the render_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 14 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 14,
+              "glyph_index": 1,
+              "hooks": "null_render"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:render_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-004",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the preset_slot callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 15 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 15,
+              "glyph_index": 1,
+              "hooks": "null_preset"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:preset_slot:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-005",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the init_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 16 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 16,
+              "glyph_index": 1,
+              "hooks": "null_init"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:init_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-006",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the free_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 17 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 17,
+              "glyph_index": 1,
+              "hooks": "null_free"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:free_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-007",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the render_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 18 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 18,
+              "glyph_index": 1,
+              "hooks": "null_render"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:render_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-008",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the preset_slot callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 19 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 19,
+              "glyph_index": 1,
+              "hooks": "null_preset"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:preset_slot:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-009",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the init_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 20 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 20,
+              "glyph_index": 1,
+              "hooks": "null_init"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:init_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-010",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the free_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 21 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 21,
+              "glyph_index": 1,
+              "hooks": "null_free"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:free_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-011",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the render_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 22 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 22,
+              "glyph_index": 1,
+              "hooks": "null_render"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:render_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-012",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the preset_slot callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 23 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 23,
+              "glyph_index": 1,
+              "hooks": "null_preset"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:preset_slot:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-013",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the init_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 24 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 24,
+              "glyph_index": 1,
+              "hooks": "null_init"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:init_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-014",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the free_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 25 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 25,
+              "glyph_index": 1,
+              "hooks": "null_free"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:free_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-015",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the render_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 26 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 26,
+              "glyph_index": 1,
+              "hooks": "null_render"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:render_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-016",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the preset_slot callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 27 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 27,
+              "glyph_index": 1,
+              "hooks": "null_preset"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:preset_slot:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-017",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the init_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 28 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 28,
+              "glyph_index": 1,
+              "hooks": "null_init"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:init_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-018",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the free_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 29 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 29,
+              "glyph_index": 1,
+              "hooks": "null_free"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:free_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-019",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the render_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 30 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 30,
+              "glyph_index": 1,
+              "hooks": "null_render"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:render_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-020",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the preset_slot callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 31 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 31,
+              "glyph_index": 1,
+              "hooks": "null_preset"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:preset_slot:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-021",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the init_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 32 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 32,
+              "glyph_index": 1,
+              "hooks": "null_init"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:init_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-022",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the free_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 33 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 33,
+              "glyph_index": 1,
+              "hooks": "null_free"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:free_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-023",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the render_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 34 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 34,
+              "glyph_index": 1,
+              "hooks": "null_render"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:render_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-024",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the preset_slot callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 35 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 35,
+              "glyph_index": 1,
+              "hooks": "null_preset"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:preset_slot:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-025",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the init_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 36 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 36,
+              "glyph_index": 1,
+              "hooks": "null_init"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:init_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-026",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the free_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 37 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 37,
+              "glyph_index": 1,
+              "hooks": "null_free"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:free_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-027",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the render_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 38 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 38,
+              "glyph_index": 1,
+              "hooks": "null_render"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:render_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-028",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the preset_slot callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 39 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 39,
+              "glyph_index": 1,
+              "hooks": "null_preset"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:preset_slot:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-029",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the init_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 40 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 40,
+              "glyph_index": 1,
+              "hooks": "null_init"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:init_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-030",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the free_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 41 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 41,
+              "glyph_index": 1,
+              "hooks": "null_free"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:free_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-031",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the render_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 42 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 42,
+              "glyph_index": 1,
+              "hooks": "null_render"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:render_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-032",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the preset_slot callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 43 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 43,
+              "glyph_index": 1,
+              "hooks": "null_preset"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:preset_slot:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-033",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the init_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 44 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 44,
+              "glyph_index": 1,
+              "hooks": "null_init"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:init_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-034",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the free_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 45 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 45,
+              "glyph_index": 1,
+              "hooks": "null_free"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:free_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-035",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the render_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 46 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 46,
+              "glyph_index": 1,
+              "hooks": "null_render"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:render_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-036",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the preset_slot callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 47 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 47,
+              "glyph_index": 1,
+              "hooks": "null_preset"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:preset_slot:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-037",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the init_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 48 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 48,
+              "glyph_index": 1,
+              "hooks": "null_init"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:init_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-038",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the free_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 49 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 49,
+              "glyph_index": 1,
+              "hooks": "null_free"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:free_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-039",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the render_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 50 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 50,
+              "glyph_index": 1,
+              "hooks": "null_render"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:render_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-040",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the preset_slot callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 51 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 51,
+              "glyph_index": 1,
+              "hooks": "null_preset"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:preset_slot:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-041",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the init_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 52 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 52,
+              "glyph_index": 1,
+              "hooks": "null_init"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:init_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-042",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the free_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 53 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 53,
+              "glyph_index": 1,
+              "hooks": "null_free"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:free_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-043",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the render_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 54 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 54,
+              "glyph_index": 1,
+              "hooks": "null_render"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:render_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-044",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the preset_slot callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 55 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 55,
+              "glyph_index": 1,
+              "hooks": "null_preset"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:preset_slot:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-045",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the init_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 56 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 56,
+              "glyph_index": 1,
+              "hooks": "null_init"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:init_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-046",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the free_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 57 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 57,
+              "glyph_index": 1,
+              "hooks": "null_free"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:free_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-047",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the render_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 58 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 58,
+              "glyph_index": 1,
+              "hooks": "null_render"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:render_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-048",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the preset_slot callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 59 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 59,
+              "glyph_index": 1,
+              "hooks": "null_preset"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:preset_slot:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-049",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the init_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 60 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 60,
+              "glyph_index": 1,
+              "hooks": "null_init"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:init_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          },
+          {
+            "id": "batch325-c122-svg-hooks-050",
+            "reason": "Pinned FreeType ftsvg.c rejects a public SVG_RendererHooks record when the free_svg callback pointer is NULL. This case supplies that malformed hook table through FT_Property_Set, verifies FT_Err_Invalid_Argument before hook installation, and targets the WASM post-validation error arm at fontdone-wasm/src/implementation.rs:2870-2878; pixel size 61 keeps the surrounding face setup a distinct public input.",
+            "assets": {
+              "otsvg_font": {
+                "kind": "ref",
+                "id": "input/fonts/svg/otsvg-glyph.ttf",
+                "asset_kind": "font"
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "pixel_size": 61,
+              "glyph_index": 1,
+              "hooks": "null_free"
+            },
+            "coverage": [
+              "batch325:wasm-svg-hook-validation:free_svg:null",
+              "fontdone-wasm/src/implementation.rs:2870-2878"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:type",
+        "header:otsvg",
+        "format:otsvg",
+        "area:coverage",
+        "input:malformed-hooks"
+      ],
+      "metadata": {
+        "coverage_intent": "These 50 public variants supply one missing callback pointer at a time in the documented ot-svg:svg-hooks property record. Pinned FreeType validates all four callback pointers and returns FT_Err_Invalid_Argument without installing the table; the WASM capture implementation must preserve that post-validation error and output record."
+      },
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "status": "FT_Error nested in callback capture",
+          "callback_document_fields": "zeroed when hook validation fails",
+          "hooks_status": "FT_Error",
+          "unsupported_status": "explicit unsupported SVG module classification"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "status",
+            "callback_document_fields.svg_document_length",
+            "callback_document_fields.units_per_EM",
+            "callback_document_fields.start_glyph_id",
+            "callback_document_fields.end_glyph_id",
+            "callback_document_fields.transform",
+            "callback_document_fields.delta",
+            "callback_glyph_index",
+            "hooks_status",
+            "unsupported_status"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/svg/ftsvg.c:168-203",
+          "freetype/include/freetype/ftdriver.h:896-925",
+          "fontdone-wasm/src/implementation.rs:2869-2878"
+        ],
+        "fixture_requirements": [
+          "The maintained OT-SVG font is retained on every row so the case remains on the public renderer-callback operation. The malformed hook table is defined public input: the pinned C property setter checks each callback pointer and returns FT_Err_Invalid_Argument before attempting glyph rendering."
         ]
       }
     }

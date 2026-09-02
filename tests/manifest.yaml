@@ -12254,6 +12254,8 @@ subjects:
         description: Five public glyph/render inputs use the maintained large-coordinate CFF witness to make FT_Render_Glyph return the exact pinned Raster_Overflow result after glyph loading succeeds.
       - id: mcp_wasm_argument_validation_batch
         description: Fifty-two public ABI pointer-class inputs reach the WASM SVG renderer-capture Invalid_Argument guards or callback-state Invalid_Slot_Handle guards before unsafe callback data is dereferenced.
+      - id: mcp_svg_hook_validation_batch
+        description: Fifty public SVG renderer hook records each omit one documented callback pointer and compare FreeType's Invalid_Argument validation and post-call output across all parity frontends.
     # needs-input: operation=SVG renderer hook capture during FT_Render_Glyph or FT_Glyph_To_Bitmap; fixture_asset=OpenType SVG font plus test SVG hooks; params={font, glyph_index, hook_behavior}; expected output shape={pointer_size, pointer_alignment, callback_document_fields, FT_Error}; comparison=exact C oracle callback-visible fields and status, with unsupported SVG module reported explicitly.
 
   - id: t1tables.T1_Blend_Flags

@@ -21002,11 +21002,22 @@ static int emit_otsvg_renderer_callback_probe(int argc, char** argv) {
     }
     SVG_RendererHooks hooks = {0};
     FT_Error hook_error = FT_Err_Ok;
-    if (streq(argv[8], "installed")) {
+    if (streq(argv[8], "installed") ||
+        streq(argv[8], "null_init") || streq(argv[8], "null_free") ||
+        streq(argv[8], "null_render") || streq(argv[8], "null_preset")) {
         hooks.init_svg = svg_probe_init_hook;
         hooks.free_svg = svg_probe_free_hook;
         hooks.render_svg = svg_probe_render_hook;
         hooks.preset_slot = svg_probe_preset_hook;
+        if (streq(argv[8], "null_init")) {
+            hooks.init_svg = NULL;
+        } else if (streq(argv[8], "null_free")) {
+            hooks.free_svg = NULL;
+        } else if (streq(argv[8], "null_render")) {
+            hooks.render_svg = NULL;
+        } else if (streq(argv[8], "null_preset")) {
+            hooks.preset_slot = NULL;
+        }
         hook_error = FT_Property_Set(face.library, "ot-svg", "svg-hooks", &hooks);
     } else if (streq(argv[8], "missing")) {
         /* Pinned `ftsvg.c` without application hooks reports

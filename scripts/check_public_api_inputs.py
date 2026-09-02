@@ -4643,6 +4643,7 @@ def otsvg_document_real_parity_reason(row: ConcreteInput) -> str | None:
             "otsvg.FT_SVG_Document.renderer_callback_zeroes_after_invalid_glyph",
             "otsvg.FT_SVG_Document.mcp_invalid_font_open_batch",
             "otsvg.FT_SVG_Document.mcp_renderer_error_batch",
+            "otsvg.FT_SVG_Document.mcp_svg_hook_validation_batch",
         }
         and row.operation
         in {
@@ -4665,6 +4666,14 @@ def otsvg_document_real_parity_reason(row: ConcreteInput) -> str | None:
                 "large-coordinate CFF witness through FT_Render_Glyph and "
                 "compares the nested Raster_Overflow result and zero callback "
                 "fields across pinned C, Rust FFI, C ABI, and WASM"
+            )
+        if row.case_id == "otsvg.FT_SVG_Document.mcp_svg_hook_validation_batch":
+            return (
+                "FT_SVG_Document callback parity supplies the same public "
+                "SVG_RendererHooks record with one callback pointer missing "
+                "and compares FreeType's Invalid_Argument hook validation "
+                "and post-call output across pinned C, Rust FFI, C ABI, and "
+                "WASM"
             )
         return (
             "FT_SVG_DocumentRec compares the same-input pinned C, Rust FFI, "

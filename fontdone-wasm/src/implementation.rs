@@ -2826,14 +2826,36 @@ pub extern "C" fn fontdone_wasm_svg_renderer_callback_guard_probe(
     }
 }
 
+fn wasm_svg_probe_hooks(missing_callback: Option<u8>) -> rust_ffi::SVG_RendererHooks {
+    let mut hooks = rust_ffi::SVG_RendererHooks {
+        init_svg: Some(wasm_svg_probe_init),
+        free_svg: Some(wasm_svg_probe_free),
+        render_svg: Some(wasm_svg_probe_render),
+        preset_slot: Some(wasm_svg_probe_preset),
+    };
+    if missing_callback == Some(0) {
+        hooks.init_svg = None;
+    }
+    if missing_callback == Some(1) {
+        hooks.free_svg = None;
+    }
+    if missing_callback == Some(2) {
+        hooks.render_svg = None;
+    }
+    if missing_callback == Some(3) {
+        hooks.preset_slot = None;
+    }
+    hooks
+}
+
 /// Runs the pinned `ftsvg.c` hook flow over one SVG glyph and returns the
 /// document fields the renderer callback observed.
-#[unsafe(no_mangle)]
-pub extern "C" fn fontdone_wasm_svg_renderer_capture(
+fn wasm_svg_renderer_capture_impl(
     file_base: *const c_uchar,
     file_size: usize,
     glyph_index: rust_ffi::FT_UInt,
     out_capture: *mut WasmSvgRendererCallbackCapture,
+    hooks: rust_ffi::SVG_RendererHooks,
 ) -> rust_ffi::FT_Error {
     if out_capture.is_null() {
         return rust_ffi::FT_Err_Invalid_Argument;
@@ -2843,12 +2865,6 @@ pub extern "C" fn fontdone_wasm_svg_renderer_capture(
     }
     // SAFETY: the caller promises `file_size` readable bytes at `file_base`.
     let data = unsafe { slice::from_raw_parts(file_base, file_size) };
-    let hooks = rust_ffi::SVG_RendererHooks {
-        init_svg: Some(wasm_svg_probe_init),
-        free_svg: Some(wasm_svg_probe_free),
-        render_svg: Some(wasm_svg_probe_render),
-        preset_slot: Some(wasm_svg_probe_preset),
-    };
     let mut library = rust_ffi::FT_Init_FreeType();
     let set_error = rust_ffi::FT_Set_SVG_Renderer_Hooks(Some(&mut library), Some(hooks));
     if set_error != rust_ffi::FT_Err_Ok {
@@ -2884,6 +2900,45 @@ pub extern "C" fn fontdone_wasm_svg_renderer_capture(
     // capture record in exported linear memory.
     unsafe { *out_capture = capture };
     capture.render_status
+}
+
+/// Runs the pinned `ftsvg.c` hook flow over one SVG glyph and returns the
+/// document fields the renderer callback observed.
+#[unsafe(no_mangle)]
+pub extern "C" fn fontdone_wasm_svg_renderer_capture(
+    file_base: *const c_uchar,
+    file_size: usize,
+    glyph_index: rust_ffi::FT_UInt,
+    out_capture: *mut WasmSvgRendererCallbackCapture,
+) -> rust_ffi::FT_Error {
+    wasm_svg_renderer_capture_impl(
+        file_base,
+        file_size,
+        glyph_index,
+        out_capture,
+        wasm_svg_probe_hooks(None),
+    )
+}
+
+/// Captures the post-validation result for one malformed public SVG hooks
+/// record.  Pinned `ftsvg.c` rejects a record with any one of the four callback
+/// pointers missing; the parity harness uses this support route to exercise
+/// that same public property input through the WASM capture implementation.
+#[cfg(feature = "abi-test-support")]
+pub fn abi_support_svg_renderer_capture_invalid_hook(
+    bytes: &[u8],
+    glyph_index: FT_UInt,
+    missing_callback: FT_Int,
+) -> WasmSvgRendererCallbackCapture {
+    let mut capture = WasmSvgRendererCallbackCapture::default();
+    let _ = wasm_svg_renderer_capture_impl(
+        bytes.as_ptr(),
+        bytes.len(),
+        glyph_index,
+        &mut capture,
+        wasm_svg_probe_hooks(Some(missing_callback.rem_euclid(4) as u8)),
+    );
+    capture
 }
 
 #[cfg(feature = "abi-test-support")]
