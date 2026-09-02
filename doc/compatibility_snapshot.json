@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "snapshot_kind": "committed_measured_evidence",
-  "snapshot_date": "2026-09-01",
+  "snapshot_date": "2026-09-02",
   "freetype_version": "2.14.3",
   "package_version": "2.14.3-alpha.1",
   "public_function_adoption": {
@@ -27,15 +27,15 @@
     "fontdone_pub_enums": 19
   },
   "runtime_parity": {
-    "runnable": 19983,
-    "passed": 19983,
+    "runnable": 20183,
+    "passed": 20183,
     "failed": 0,
     "pending": 4,
-    "covered_manifest": 4411,
+    "covered_manifest": 4413,
     "validated_input_subjects": 1543,
     "validated_input_files": 1537,
-    "logical_input_cases": 4566,
-    "concrete_input_cases": 19987,
+    "logical_input_cases": 4568,
+    "concrete_input_cases": 20187,
     "function_route_evidence": 218,
     "function_total": 218
   },
@@ -1358,9 +1358,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "73d275ae275aa2e9708dc400243e672f76e7efa8fb7b672259f4e8d55bef4848",
-    "parity_tree_sha256": "90f2345cafbe64e0958f0827b9b6c18ff9ca0cdf77643c69095e971bed8c035e",
-    "log_sha256": "7945cdfb0c767c7845b6b296521ec11610c401d47b70d213afd4eb400b4d25fa",
+    "sha256": "02cad63d67b54f329e311d0306ab0c2087f0adc2fc195202ba1b5909c04dc5e4",
+    "parity_tree_sha256": "1dafb8750112049481209e3dbea69df84dd264db177e6d6fc9277e66183fab4a",
+    "log_sha256": "f06d706e573226400f5945888ccf43c817c34ae4dbf5d9071d2a090456c8d294",
     "command": "make test-parity"
   }
 }

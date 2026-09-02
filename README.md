@@ -104,19 +104,19 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The latest full parity snapshot was recorded on **2026-09-01** (UTC):
+The latest full parity snapshot was recorded on **2026-09-02** (UTC):
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 19,983 |
-| Passed cases | 19,983 |
+| Runnable exact-comparison cases | 20,183 |
+| Passed cases | 20,183 |
 | Failed cases | 0 |
 | Explicitly pending cases | 4 |
-| Covered manifest cases | 4,411 |
+| Covered manifest cases | 4,413 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,566 |
-| Concrete expanded cases | 19,987 |
+| Logical declared cases | 4,568 |
+| Concrete expanded cases | 20,187 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
 `19,673 / 19,673` means every runnable case in that execution matched; the 4

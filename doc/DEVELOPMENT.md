@@ -4929,8 +4929,8 @@ or reason is stale.
 |---|---:|---|
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 100 | package, build, release, and facade contracts |
-| R03 | 1,754 | executable parity tests and public contracts |
-| R04 | 1,236 | licensed canonical fixture inputs |
+| R03 | 1,761 | executable parity tests and public contracts |
+| R04 | 1,237 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
 | R06 | 64 | maintained tooling, examples, and benchmarks |
 | R07 | 7 | durable project documentation |
@@ -4938,7 +4938,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,229** | **all retained paths** |
+| **Total** | **3,237** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
@@ -5340,3 +5340,57 @@ regions (96.2581287466373%), 65,929/67,942 lines (97.03717877012746%),
 total lines, `+13` covered branches with `+10` total branches, and `+5`
 covered functions with `+5` total functions. Strict region coverage is still
 below 100%, so the next batch must continue from this complete snapshot.
+
+### Batch 325: public SVG hook-record validation
+
+This batch adds 50 concrete public `FT_SVG_Document` variants under
+`otsvg.FT_SVG_Document.mcp_svg_hook_validation_batch`. The fully qualified
+runtime IDs are
+`otsvg.FT_SVG_Document.mcp_svg_hook_validation_batch@batch325-c122-svg-hooks-001`
+through
+`otsvg.FT_SVG_Document.mcp_svg_hook_validation_batch@batch325-c122-svg-hooks-050`.
+Each variant uses the maintained `input/fonts/svg/otsvg-glyph.ttf` asset,
+cycles one of four public hook-record shapes (`null_init`, `null_free`,
+`null_render`, and `null_preset`), and uses a distinct pixel size from 12
+through 61. The fixture records the concrete case ID, the omitted callback,
+and the targeted implementation lines for every variant.
+
+The input is a real malformed public `SVG_RendererHooks` record, not a
+fabricated pointer or a private-only safety extension. The public property is
+documented at
+`freetype/include/freetype/ftdriver.h:896-925`. The pinned implementation at
+`freetype/src/svg/ftsvg.c:168-203` checks `init_svg`, `free_svg`, `render_svg`,
+and `preset_slot` at lines 181-184, then returns
+`FT_Err_Invalid_Argument` at lines 191-192 before installing the record. The
+Rust FFI route already has the same callback validation in
+`src/ffi/handles.rs:11693-11714`; the C ABI adapter reaches its post-call
+error handling at `fontdone-c-abi/src/implementation.rs:20579`. The WASM
+capture implementation now accepts the same public record through its
+test-support parity route and records the rejected status in
+`fontdone-wasm/src/implementation.rs:2869-2878`, including the previously
+uncovered error side of `if set_error != FT_Err_Ok`.
+
+Focused parity passed all 50 c122 variants (`50/50`) against the pinned
+oracle, Rust FFI, C ABI, and WASM routes. The API route audit classifies all
+50 concrete IDs as `real-parity`; no unit test was added or used for coverage.
+Coverage MCP incremental run `77a43bbf-c120-4ccf-8460-090a1f155de3` used the
+exact 50 qualified IDs as ten repeatable `--migration-coverage-case-ids`
+arguments, each containing five comma-separated IDs, against explicit
+baseline snapshot `d5a3c31c-b930-4cdd-8055-171cc9fe877e`. It passed and
+ingested snapshot `98cb834a-8633-432f-924b-c8c2f5b2c599`. The supported
+selected-subset review reported 17 newly covered line identities, including
+the WASM validation arm and setup/helper lines, plus the C ABI and Rust FFI
+validation lines; it reported zero observed regressions. Its canonical union
+reported one newly covered region with `merge.exact=false`, because an
+incremental selected subset does not observe the rest of the baseline.
+
+The post-change complete Coverage MCP run
+`db84391b-e875-4b8f-8552-9cb70491716c` passed and ingested snapshot
+`e9fe7adb-37a5-46f6-a255-2515af581e11`. It measured 90,928/94,456 covered
+regions (96.26492758533074%), 65,983/67,986 lines (97.05380519518724%),
+12,195/13,842 branches (88.10143042912874%), and 3,797/4,082 functions
+(93.01812836844684%). Relative to the preceding complete snapshot, the
+covered-region count increased by 43 while the denominator increased by 38.
+Strict region coverage remains below 100%, so this batch is a verified
+reachable-region increment and the next campaign must continue from this
+complete snapshot.
