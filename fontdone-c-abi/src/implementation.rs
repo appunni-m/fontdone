@@ -3097,10 +3097,7 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
         return;
     };
     let index = usize::from(variant.saturating_sub(401));
-    // The embedded-strike witness has one 20x20 EBLC strike. Keep the
-    // existing probe variants but align the two outline-error variants with
-    // that strike so FT_Load_Glyph produces a bitmap slot.
-    let sizes = [(0, 12), (20, 20), (20, 20), (20, 24), (32, 32)];
+    let sizes = [(0, 12), (20, 20), (20, 20), (20, 24), (32, 32)]; // variants 402/403 match the 20x20 EBLC strike.
     let (pixel_width, pixel_height) = sizes[index % sizes.len()];
     let size_status = rust_ffi::FT_Set_Pixel_Sizes(&mut core_face, pixel_width, pixel_height);
     // The maintained embedded-strike witness maps U+E000 to bitmap glyph 1.
