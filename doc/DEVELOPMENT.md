@@ -5565,3 +5565,87 @@ same reported totals; function coverage is unchanged. The full source
 projection marks `fontdone-wasm/src/implementation.rs:3168-3169` and
 `:3402-3403` green, as well as the C ABI guard lines. Strict region coverage
 remains below 100%, so the campaign continues from this complete snapshot.
+### Batch 330: exact uncovered-region queue and five-agent strategy window
+
+The complete Coverage MCP refresh after restoring the optional-feature oracle
+is run `cf9e435f-65ed-4385-9264-facf85fcd1c0`, with snapshot
+`f435e2c3-5b75-43bc-b3fe-e52c9bc9d9c6`. It reproduces 90,972 / 94,473 covered
+regions (96.29417928932076%), 66,011 / 67,997 lines (97.07928290954012%),
+12,195 / 13,836 branches (88.13963573287077%), and 3,807 / 4,084 functions
+(93.21743388834476%). The refresh was needed once because the preceding run
+failed before ingestion when `gen_unified_oracle_color_layers_disabled` was
+absent; `make optional-feature-contract` restored that generated prerequisite.
+
+The 3,501 region gap is therefore not 3,501 independent semantic behaviors.
+The report has 1,986 uncovered executable source lines and 1,641 uncovered
+branches. LLVM records multiple regions on the same line, and inlined function
+records repeat source coordinates. Deduplicating by the source coordinate
+`(file, start line, start column, end line, end column)` gives exactly 3,501
+zero-hit queue targets. The family split is:
+
+| Family | Missing regions | Missing lines | Missing branches | Missing functions |
+|---|---:|---:|---:|---:|
+| C ABI implementation | 872 | 660 | 548 | 20 |
+| FFI handle adapters | 739 | 369 | 332 | 54 |
+| WASM implementation | 397 | 334 | 389 | 17 |
+| Core rendering/autohinting | 699 | 384 | 274 | 80 |
+| Tables and format loaders | 794 | 239 | 98 | 106 |
+| Total | 3,501 | 1,986 | 1,641 | 277 |
+
+Not every row deserves a new input. Reachable parser, format, flag, and public
+record branches usually need a small deterministic malformed or boundary
+fixture. Thin C-ABI/WASM validation branches may need one public null, size, or
+lifecycle case. Allocation-failure branches need a controllable public
+allocator, and impossible internal-invariant arms need source proof and a
+denominator refactor; fabricating a stale handle or private state is not a
+valid parity input. This is why the effort is uneven rather than one unit of
+reasoning per missing region.
+
+The ignored derived queue is
+`target/coverage/region_campaign.duckdb`. It is built from the raw LLVM report
+with `scripts/build_coverage_region_queue.py`:
+
+```sh
+PYTHONPATH=target/coverage-campaign-deps python3 \
+  scripts/build_coverage_region_queue.py seed \
+  --coverage-json target/coverage/unified-runtime-all-lanes.json \
+  --db target/coverage/region_campaign.duckdb \
+  --snapshot-id f435e2c3-5b75-43bc-b3fe-e52c9bc9d9c6 \
+  --baseline-snapshot-id 0c3fbdf9-76de-4aff-a575-5dbb942f2495 \
+  --batch-id batch330 --batch-size 100
+```
+
+The database keeps `region_queue` (all 3,501 exact coordinates with a
+per-target reason, input approach, source context, difficulty, status, and
+try count), `case_plan` (the proposed public inputs),
+`case_region_plan` (many-to-many case-to-region links), `batch_plan`, and
+append-only `queue_history`. The first strategy window has 100 case
+specifications, 20 from each of five read-only source-family agents:
+Beauvoir (FFI handles), Hegel (C ABI), Copernicus (WASM), Helmholtz
+(font/render/autohint), and Hume (TT/scaler/tables). It contains 88 planned
+cases, 11 oracle/source-proven exclusions, and one no-gap/unmapped proposal;
+all proposal links map to 342 distinct uncovered coordinates, of which 278
+belong to executable planned cases. The queue records
+why the 11 exclusions cannot honestly be reached, including ambient OOM and
+private-handle cases, rather than treating them as failed parity tests.
+
+Coverage MCP remains the authority for verification. A selected incremental
+run may record `hit_pending_full`; it never establishes a strict denominator
+claim. Reconcile a complete, no-filter snapshot as follows:
+
+```sh
+PYTHONPATH=target/coverage-campaign-deps python3 \
+  scripts/build_coverage_region_queue.py reconcile \
+  --coverage-json target/coverage/unified-runtime-all-lanes.json \
+  --db target/coverage/region_campaign.duckdb \
+  --snapshot-id <complete-verification-snapshot> \
+  --run-id <coverage-mcp-run> --batch-id batch330 \
+  --verification-kind complete
+```
+
+A positive coordinate count moves the region to `done`. A miss moves it to
+`pending`, increments `tries`, and appends a searchable history event. A
+Coverage MCP preparation or execution failure can be recorded with
+`--run-status failed`; it moves the affected queue row to `failed` with the
+same increment and preserves the run ID. No region is marked `done` from a
+selected-subset metric alone.

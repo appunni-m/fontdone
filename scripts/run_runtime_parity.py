@@ -55,6 +55,7 @@ NON_PARITY_SCRIPTS = {
     "scripts/bench_ft_ops.c",
     "scripts/check_documentation.py",
     "scripts/check_rustdoc_contracts.py",
+    "scripts/build_coverage_region_queue.py",
     "scripts/publish_release.py",
     "scripts/test_rust_consumer.py",
     "scripts/verify_release.py",

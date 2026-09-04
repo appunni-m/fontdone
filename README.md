@@ -104,7 +104,7 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The latest full parity snapshot was recorded on **2026-09-02** (UTC):
+The latest full parity snapshot was recorded on **2026-09-04** (UTC):
 
 | Measurement | Count |
 |---|---:|
@@ -119,7 +119,7 @@ The latest full parity snapshot was recorded on **2026-09-02** (UTC):
 | Concrete expanded cases | 20,291 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`19,673 / 19,673` means every runnable case in that execution matched; the 4
+`20,287 / 20,287` means every runnable case in that execution matched; the 4
 explicitly pending concrete cases are safety-extension or undefined-input exclusions and the route audit still
 reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
@@ -127,9 +127,9 @@ equivalent to complete behavior for every input, state, or platform.
 
 The latest worktree verification is the full parity snapshot recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-19,491 / 19,491 runnable comparisons with 0 failures and 4 explicitly pending
+20,287 / 20,287 runnable comparisons with 0 failures and 4 explicitly pending
 concrete cases. Its source-bound parity-tree digest is
-`c68de1467450c94e4e58603da50007b8e7e37be90eca49097ffeab801da7aca3`.
+`38e317ef2ca8a6af07ef1286bfc62c3709752f56ff0583fd3e7dfce1867815e0`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
