@@ -3040,7 +3040,9 @@ pub fn abi_uint32_list(ptr: *const FT_UInt32) -> Option<Vec<FT_UInt32>> {
             return Some(values);
         }
         values.push(value);
-        index += 1;
+        // A readable allocation cannot span usize::MAX elements; the live
+        // zero-terminated-list precondition rules out index wraparound.
+        index = index.wrapping_add(1);
     }
 }
 
@@ -7238,8 +7240,9 @@ pub fn abi_support_custom_memory_lifecycle(
 pub fn abi_support_active_size_metrics_guard(bytes: &[u8], face_index: FT_Long) -> bool {
     let mut library = rust_ffi::FT_Init_FreeType();
     rust_ffi::FT_Add_Default_Modules(Some(&mut library));
-    let face = rust_ffi::FT_New_Memory_Face(&library, bytes, face_index, 20.0)
-        .expect("active-size guard probe needs a valid face");
+    let Ok(face) = rust_ffi::FT_New_Memory_Face(&library, bytes, face_index, 20.0) else {
+        return false;
+    };
     let mut state = make_wasm_face_state(face);
     let metrics_before = state.size_metrics.len();
     state.active_size = 0;

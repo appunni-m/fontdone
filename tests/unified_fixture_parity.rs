@@ -45802,9 +45802,10 @@ fn audit_external_c_contract(
         "selection": {
             "rule": concat!(
                 "deterministically prefer real parity and non-error rows, deduplicate ",
-                "argv, and retain a documented maximum per function"
+                "argv, retain the preferred budget per function, and add a representative ",
+                "from every remaining logical case"
             ),
-            "maximum_cases_per_function": external_cases_per_function(),
+            "preferred_cases_per_function": external_cases_per_function(),
             "selected_cases": selected_cases.len(),
             "unique_argv_cases": oracle_batch.unique_cases.len(),
         },
@@ -46085,14 +46086,20 @@ fn external_function_audit_cases<'a>(
                 .then_with(|| left_args.cmp(right_args))
         });
         let mut seen_argv = BTreeSet::new();
+        let mut seen_logical_cases = BTreeSet::new();
         let mut kept = 0usize;
         for (case, argv) in candidates {
             if !seen_argv.insert(argv) {
                 continue;
             }
-            if limit > 0 && kept >= limit {
-                break;
+            // A single logical case can have hundreds of variants whose
+            // helper route never enters the subject symbol. Keep the original
+            // preferred selection, then also represent other logical cases so
+            // those variants cannot starve the symbol's real lifecycle route.
+            if limit > 0 && kept >= limit && seen_logical_cases.contains(&case.case) {
+                continue;
             }
+            seen_logical_cases.insert(case.case.clone());
             selected.push(case);
             kept = kept.saturating_add(1);
         }

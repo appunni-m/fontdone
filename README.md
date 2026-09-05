@@ -104,7 +104,7 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The latest full parity snapshot was recorded on **2026-09-04** (UTC):
+The last committed full parity snapshot was recorded on **2026-09-05**:
 
 | Measurement | Count |
 |---|---:|
@@ -315,7 +315,7 @@ The latest committed scorecard has **8 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 12,972 / 17,235 pinned-C runtime contract rows exact; 4,263 pending |
+| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 13,405 / 18,031 pinned-C runtime contract rows exact; 4,626 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | Complete under the current scorecard measurements |
 | State, modules, headers | Complete under their blocking scorecard measurements |

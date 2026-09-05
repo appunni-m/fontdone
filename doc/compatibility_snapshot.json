@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "snapshot_kind": "committed_measured_evidence",
-  "snapshot_date": "2026-09-04",
+  "snapshot_date": "2026-09-05",
   "freetype_version": "2.14.3",
   "package_version": "2.14.3-alpha.1",
   "public_function_adoption": {
@@ -43,9 +43,9 @@
     "categories_complete": 8,
     "categories_total": 12,
     "is_complete": false,
-    "runtime_contract_rows_complete": 12972,
-    "runtime_contract_rows_total": 17235,
-    "runtime_contract_rows_pending": 4263,
+    "runtime_contract_rows_complete": 13405,
+    "runtime_contract_rows_total": 18031,
+    "runtime_contract_rows_pending": 4626,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
     "platform_lanes_complete": 1,
@@ -1358,9 +1358,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "47cdf3b2e4d0b8aa5b116d96f14812c4c91029551cbffdb493d70f6b5880b6d9",
-    "parity_tree_sha256": "38e317ef2ca8a6af07ef1286bfc62c3709752f56ff0583fd3e7dfce1867815e0",
-    "log_sha256": "c6f1d3d057ba16fce67137d3e17df8ff6588df2864482af79c1a3d5113234251",
+    "sha256": "7735b21a2fa2a784bfd2ab51926e560d319f2078c50172fdf9c14ea608d96222",
+    "parity_tree_sha256": "0d6d98a9e4ec58ef7fe66c2a3f60726d8c37bd784e0a0322a21c9d009be10197",
+    "log_sha256": "41302ebbbd346d4d38dc634d5f092de0043a0640e2133c956604864c9cd116f7",
     "command": "make test-parity"
   }
 }

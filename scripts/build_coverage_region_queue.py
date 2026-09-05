@@ -379,6 +379,10 @@ def schema(connection: Any) -> None:
             PRIMARY KEY (case_id, region_id)
         )"""
     )
+    # Add planning evidence to existing campaign databases without reseeding
+    # or losing their append-only execution history.
+    for column in ("family_id", "source_context", "risks", "stop_condition"):
+        connection.execute(f"ALTER TABLE case_plan ADD COLUMN IF NOT EXISTS {column} VARCHAR DEFAULT ''")
     connection.execute(
         """CREATE TABLE IF NOT EXISTS batch_plan (
             batch_id VARCHAR NOT NULL,
@@ -528,32 +532,45 @@ def reconcile(args: argparse.Namespace) -> None:
     connection = duckdb.connect(str(args.db))
     try:
         schema(connection)
+        selected = getattr(args, "case_id", None)
+        if args.verification_kind == "complete" and selected:
+            die("complete verification cannot select case IDs")
+        if selected:
+            known = {row[0] for row in connection.execute(
+                "SELECT case_id FROM case_plan WHERE batch_id=?", [args.batch_id]
+            ).fetchall()}
+            if set(selected) - known:
+                die(f"unknown cases for {args.batch_id}: {sorted(set(selected) - known)}")
+        connection.execute("CREATE TEMP TABLE selected_cases(case_id VARCHAR PRIMARY KEY)")
+        if selected:
+            connection.executemany("INSERT INTO selected_cases VALUES (?)", [(item,) for item in sorted(set(selected))])
         timestamp = now_text()
         metadata(connection, f"verification.{args.run_id or args.snapshot_id}.kind", args.verification_kind)
         metadata(connection, f"verification.{args.run_id or args.snapshot_id}.snapshot_id", args.snapshot_id)
         rows = connection.execute(
             """WITH mapped AS (
-                SELECT crp.region_id, min(cp.case_id) AS case_id
+                SELECT crp.region_id, list(DISTINCT cp.case_id ORDER BY cp.case_id) AS case_ids
                 FROM case_region_plan crp
                 JOIN case_plan cp ON cp.case_id=crp.case_id
                 WHERE crp.batch_id=? AND cp.status IN ('planned', 'candidate')
+                  AND (? OR cp.case_id IN (SELECT case_id FROM selected_cases))
                 GROUP BY crp.region_id
             ), fallback AS (
-                SELECT bp.region_id, bp.candidate_case_id AS case_id
+                SELECT bp.region_id, [bp.candidate_case_id] AS case_ids
                 FROM batch_plan bp
-                WHERE bp.batch_id=? AND NOT EXISTS (
+                WHERE bp.batch_id=? AND ? AND NOT EXISTS (
                     SELECT 1 FROM case_region_plan crp WHERE crp.batch_id=?
                 )
             )
-            SELECT q.region_id, q.tries, coalesce(m.case_id, f.case_id) AS case_id
+            SELECT q.region_id, q.tries, coalesce(m.case_ids, f.case_ids) AS case_ids, q.status
             FROM region_queue q
             LEFT JOIN mapped m ON m.region_id=q.region_id
             LEFT JOIN fallback f ON f.region_id=q.region_id
             WHERE m.region_id IS NOT NULL OR f.region_id IS NOT NULL
             ORDER BY q.family, q.start_line, q.start_column""",
-            [args.batch_id, args.batch_id, args.batch_id],
+            [args.batch_id, not selected, args.batch_id, not selected, args.batch_id],
         ).fetchall()
-        for region_id, tries, case_id in rows:
+        for region_id, tries, case_ids, previous_status in rows:
             if args.run_status == "failed":
                 status = "failed"
                 next_tries = int(tries) + 1
@@ -569,6 +586,10 @@ def reconcile(args: argparse.Namespace) -> None:
                 next_tries = int(tries) + 1
                 event = "pending"
                 details = "selected batch produced no positive count for this coordinate; retain for next strategy pass"
+            if args.verification_kind == "incremental" and previous_status in {"done", "hit_pending_full"}:
+                # A selected slice cannot invalidate an earlier witnessed hit.
+                # Keep the failed/missed attempt in history without downgrading it.
+                status = previous_status
             connection.execute(
                 "UPDATE batch_plan SET status=?, tries=?, last_run_id=?, last_snapshot_id=?, updated_at=? WHERE batch_id=? AND region_id=?",
                 [status, next_tries, args.run_id, args.snapshot_id, timestamp, args.batch_id, region_id],
@@ -577,10 +598,12 @@ def reconcile(args: argparse.Namespace) -> None:
                 "UPDATE region_queue SET status=?, tries=?, last_run_id=?, last_snapshot_id=?, updated_at=? WHERE region_id=?",
                 [status, next_tries, args.run_id, args.snapshot_id, timestamp, region_id],
             )
-            connection.execute(
-                "INSERT INTO queue_history(region_id, batch_id, try_no, event, case_id, run_id, snapshot_id, details, observed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                [region_id, args.batch_id, next_tries, event, case_id, args.run_id, args.snapshot_id, details, timestamp],
-            )
+            for case_id in case_ids:
+                connection.execute(
+                    "INSERT INTO queue_history(region_id, batch_id, try_no, event, case_id, run_id, snapshot_id, details, observed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    [region_id, args.batch_id, next_tries, event, case_id, args.run_id, args.snapshot_id,
+                     details + "; attribution=batch; selected_cases=" + json.dumps(selected), timestamp],
+                )
         connection.commit()
         summary = connection.execute(
             "SELECT status, count(*) FROM batch_plan WHERE batch_id=? GROUP BY status ORDER BY status",
@@ -634,6 +657,7 @@ def import_packets(args: argparse.Namespace) -> None:
     connection = duckdb.connect(str(args.db))
     try:
         schema(connection)
+        connection.execute("BEGIN TRANSACTION")
         queue_rows = connection.execute(
             "SELECT region_id, file_path, start_line, end_line FROM region_queue"
         ).fetchall()
@@ -678,6 +702,16 @@ def import_packets(args: argparse.Namespace) -> None:
                         if region_start <= end and region_end >= start:
                             matched.append(region_id)
                 matched = sorted(set(matched))
+                explicit_ids = case.get("target_region_ids")
+                if explicit_ids is not None:
+                    if not isinstance(explicit_ids, list) or not all(isinstance(item, str) for item in explicit_ids):
+                        die(f"{case_id}: target_region_ids must be a list of region IDs")
+                    unknown = set(explicit_ids) - {row[0] for row in queue_rows}
+                    if unknown:
+                        die(f"{case_id}: unknown target region IDs: {sorted(unknown)}")
+                    if ranges and not set(explicit_ids).issubset(matched):
+                        die(f"{case_id}: target region IDs do not match the supplied source ranges")
+                    matched = sorted(set(explicit_ids))
                 if not matched and status == "planned":
                     status = "no_gap_or_unmapped"
                 if status == "excluded":
@@ -704,6 +738,17 @@ def import_packets(args: argparse.Namespace) -> None:
                         ",".join(matched), target, entrypoint, route,
                         json.dumps(input_spec, sort_keys=True) if not isinstance(input_spec, str) else input_spec,
                         reachable, pinned, leverage, classification, status, timestamp, timestamp,
+                    ],
+                )
+                connection.execute("DELETE FROM case_region_plan WHERE case_id=?", [case_id])
+                connection.execute(
+                    "UPDATE case_plan SET family_id=?,source_context=?,risks=?,stop_condition=? WHERE case_id=?",
+                    [
+                        str(case.get("family_id", case.get("family", ""))),
+                        json.dumps(case.get("source_context", case.get("source_ranges", "")), sort_keys=True),
+                        json.dumps(case.get("risks", case.get("risk", [])), sort_keys=True),
+                        str(case.get("stop_condition", "")),
+                        case_id,
                     ],
                 )
                 for region_id in matched:
@@ -752,6 +797,7 @@ def main() -> int:
     reconcile_parser.add_argument("--batch-id", required=True)
     reconcile_parser.add_argument("--verification-kind", choices=("incremental", "complete"), required=True)
     reconcile_parser.add_argument("--run-status", choices=("passed", "failed"), default="passed")
+    reconcile_parser.add_argument("--case-id", action="append", help="exact executed case ID for incremental family/slice reconciliation (repeatable)")
     reconcile_parser.set_defaults(handler=reconcile)
     import_parser = subparsers.add_parser("import-packets", help="import read-only strategy packets into the case plan")
     import_parser.add_argument("--db", required=True)

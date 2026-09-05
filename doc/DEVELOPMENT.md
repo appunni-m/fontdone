@@ -5649,3 +5649,27 @@ Coverage MCP preparation or execution failure can be recorded with
 `--run-status failed`; it moves the affected queue row to `failed` with the
 same increment and preserves the run ID. No region is marked `done` from a
 selected-subset metric alone.
+
+For a narrowed incremental run, repeat `--case-id <exact-runtime-case-id>` for
+only the cases executed by that run. Unselected cases receive no miss or try
+increment. All selected cases mapped to a region remain searchable in history;
+these are batch observations, not proof of individual case attribution. A
+selected miss or failed run preserves a previously witnessed `hit_pending_full`
+or `done` state while recording the unsuccessful attempt. Only a complete
+snapshot can invalidate that coverage evidence.
+
+Strategy packets can supply `target_region_ids` to select exact coordinates
+within their source ranges. The importer validates these IDs, replaces a
+revised case's current links, and retains prior history. Invalid packets roll
+back the entire import. Run the isolated bookkeeping regression checks with:
+
+```sh
+PYTHONPATH=target/coverage-campaign-deps python3 scripts/test_coverage_region_queue.py
+```
+
+The external C function audit retains its preferred per-function candidate
+budget, then adds the first distinct-argv representative of every remaining
+logical case. A large variant family must not displace all cases that actually
+enter the subject symbol. The ledger reports `preferred_cases_per_function`;
+all selected outputs must still match and every required symbol must still be
+entered. This broadens the prior selection without removing its cases.
