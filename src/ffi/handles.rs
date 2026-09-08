@@ -7754,9 +7754,10 @@ pub fn FT_Stream_OpenBzip2(
         // the observed byte position, and a complete invalid header leaves
         // the source at four.
         if source_bytes.len() < 4 {
-            if source_bytes.is_empty() {
-                source.pos = 0;
-            }
+            // FT_Stream_ReadAt advances a memory stream by the bytes actually
+            // copied even when the four-byte header read fails. Callback
+            // materialization already records the same partial-read position.
+            source.pos = source_bytes.len() as FT_ULong;
             return FT_Err_Invalid_Stream_Operation as FT_Error;
         }
         source.pos = 4;

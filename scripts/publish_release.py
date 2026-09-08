@@ -63,12 +63,14 @@ def main() -> int:
         run(["python3", "scripts/verify_release.py"])
         if args.publish:
             status = subprocess.run(
-                ["git", "diff", "--quiet", "HEAD", "--"],
+                ["git", "status", "--porcelain=v1", "--untracked-files=all"],
                 cwd=ROOT,
                 check=False,
+                capture_output=True,
+                text=True,
             )
-            if status.returncode != 0:
-                raise ValueError("publishing requires a clean tracked worktree")
+            if status.stdout:
+                raise ValueError("publishing requires a clean tracked and untracked worktree")
         for index, package in enumerate(PACKAGES):
             command = [
                 "cargo",

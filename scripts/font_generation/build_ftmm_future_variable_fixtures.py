@@ -1168,6 +1168,18 @@ def write_gvar_fixtures() -> None:
         private_point_byte_short_gvar_payload(),
         remove_hvar=True,
     )
+    # Even-length records prevent SFNT padding from supplying the missing
+    # point or delta byte. Each active tuple reaches one bounded read failure.
+    for name, tuple_data in (
+        ("point-word", b"\x01\x80"),
+        ("delta-word", b"\x01\x00\x00\x40"),
+        ("delta-byte", b"\x01\x00\x00\x00"),
+    ):
+        write_gvar_payload(
+            f"gvar-private-{name}-short-runtime.ttf",
+            embedded_private_point_gvar_payload(tuple_data),
+            remove_hvar=True,
+        )
     write_gvar_payload(
         "gvar-private-point-index-invalid-runtime.ttf",
         private_point_index_invalid_gvar_payload(),

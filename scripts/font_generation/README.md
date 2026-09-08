@@ -480,3 +480,15 @@ FontTools bounding-box recalculation is disabled because it cannot interpret
 the intentionally non-geometric operator. The pinned FreeType interpreter
 accepts the glyph, and the reviewed output is 896 bytes with SHA-256
 `b57328622e52cae06895e2ea4bb408a80859e0a3f25fad0e92212b8f492fe1e7`.
+
+The `post` generator includes format-2.0 index-array and format-2.5 delta-array
+truncations. The variable-font generator includes even-length active private
+`gvar` tuples with missing point-word, delta-word, and delta-byte values. The
+SBIT generator independently truncates selected index records, metrics, and
+packed image data after preserving strike selection. These are malformed
+public font inputs, retained for exact oracle-backed error and output checks.
+
+`scripts/build_compressed_fixtures.py` also writes the maintained
+`input/streams/gzip/malformed-deflate.json` payload family. Its reserved block
+control changes the first DEFLATE byte while preserving the gzip header and
+trailer, so the callback-stream opener reaches deferred body decoding.

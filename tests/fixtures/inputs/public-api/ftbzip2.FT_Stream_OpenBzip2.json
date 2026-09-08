@@ -719,6 +719,334 @@
               "fontdone-c-abi/src/implementation.rs:1521-1522",
               "src/ffi/handles.rs:7690-7692"
             ]
+          },
+          {
+            "id": "b331-bzip-memory-01",
+            "assets": {
+              "compressed": {
+                "kind": "ref",
+                "id": "input/streams/bzip2/b331-bzip-memory-01.bz2",
+                "asset_kind": "binary"
+              },
+              "raw": {
+                "kind": "ref",
+                "id": "compressed/bzip2/valid-pcf-header.raw",
+                "asset_kind": "binary"
+              }
+            },
+            "params": {
+              "read_plan": "mcp_out_of_range_then_null_guard",
+              "case_variant": 1,
+              "source_bytes_mode": "record",
+              "read_decompressed_bytes": true
+            },
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7682-7689",
+              "src/ffi/handles.rs:7747"
+            ]
+          },
+          {
+            "id": "b331-bzip-memory-02",
+            "assets": {
+              "compressed": {
+                "kind": "ref",
+                "id": "input/streams/bzip2/b331-bzip-memory-02.bz2",
+                "asset_kind": "binary"
+              },
+              "raw": {
+                "kind": "ref",
+                "id": "compressed/bzip2/valid-pcf-header.raw",
+                "asset_kind": "binary"
+              }
+            },
+            "params": {
+              "read_plan": "mcp_out_of_range_then_null_guard",
+              "case_variant": 1,
+              "source_bytes_mode": "record",
+              "read_decompressed_bytes": false
+            },
+            "expectation": {
+              "compare": {
+                "compare_error_output": true,
+                "mode": "exact_error"
+              },
+              "status": "error"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7682-7689",
+              "src/ffi/handles.rs:7747"
+            ],
+            "expect_error": true,
+            "reason": "Pinned ftbzip2_check_header rejects a short header with Invalid_Stream_Operation or a complete non-BZh header with Invalid_File_Format; compare the exact error and all stream fields."
+          },
+          {
+            "id": "b331-bzip-memory-03",
+            "assets": {
+              "compressed": {
+                "kind": "ref",
+                "id": "input/streams/bzip2/b331-bzip-memory-03.bz2",
+                "asset_kind": "binary"
+              },
+              "raw": {
+                "kind": "ref",
+                "id": "compressed/bzip2/valid-pcf-header.raw",
+                "asset_kind": "binary"
+              }
+            },
+            "params": {
+              "read_plan": "mcp_out_of_range_then_null_guard",
+              "case_variant": 1,
+              "source_bytes_mode": "record",
+              "read_decompressed_bytes": false
+            },
+            "expectation": {
+              "compare": {
+                "compare_error_output": true,
+                "mode": "exact_error"
+              },
+              "status": "error"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7682-7689",
+              "src/ffi/handles.rs:7747"
+            ],
+            "expect_error": true,
+            "reason": "Pinned ftbzip2_check_header rejects a short header with Invalid_Stream_Operation or a complete non-BZh header with Invalid_File_Format; compare the exact error and all stream fields."
+          },
+          {
+            "id": "b331-bzip-memory-04",
+            "assets": {
+              "compressed": {
+                "kind": "ref",
+                "id": "input/streams/bzip2/b331-bzip-memory-04.bz2",
+                "asset_kind": "binary"
+              },
+              "raw": {
+                "kind": "ref",
+                "id": "compressed/bzip2/valid-pcf-header.raw",
+                "asset_kind": "binary"
+              }
+            },
+            "params": {
+              "read_plan": "mcp_out_of_range_then_null_guard",
+              "case_variant": 1,
+              "source_bytes_mode": "record",
+              "read_decompressed_bytes": false
+            },
+            "expectation": {
+              "compare": {
+                "compare_error_output": true,
+                "mode": "exact_error"
+              },
+              "status": "error"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7682-7689",
+              "src/ffi/handles.rs:7747"
+            ],
+            "expect_error": true,
+            "reason": "Pinned ftbzip2_check_header rejects a short header with Invalid_Stream_Operation or a complete non-BZh header with Invalid_File_Format; compare the exact error and all stream fields."
+          },
+          {
+            "id": "b331-bzip-memory-05",
+            "assets": {
+              "compressed": {
+                "kind": "ref",
+                "id": "input/streams/bzip2/b331-bzip-memory-05.bz2",
+                "asset_kind": "binary"
+              },
+              "raw": {
+                "kind": "ref",
+                "id": "compressed/bzip2/valid-pcf-header.raw",
+                "asset_kind": "binary"
+              }
+            },
+            "params": {
+              "read_plan": "mcp_out_of_range_then_null_guard",
+              "case_variant": 1,
+              "source_bytes_mode": "record",
+              "read_decompressed_bytes": false
+            },
+            "expectation": {
+              "compare": {
+                "compare_error_output": true,
+                "mode": "exact_error"
+              },
+              "status": "error"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7682-7689",
+              "src/ffi/handles.rs:7747"
+            ],
+            "expect_error": true,
+            "reason": "Pinned ftbzip2_check_header rejects a short header with Invalid_Stream_Operation or a complete non-BZh header with Invalid_File_Format; compare the exact error and all stream fields."
+          },
+          {
+            "id": "b331-bzip-memory-06",
+            "assets": {
+              "compressed": {
+                "kind": "ref",
+                "id": "input/streams/bzip2/b331-bzip-memory-06.bz2",
+                "asset_kind": "binary"
+              },
+              "raw": {
+                "kind": "ref",
+                "id": "compressed/bzip2/valid-pcf-header.raw",
+                "asset_kind": "binary"
+              }
+            },
+            "params": {
+              "read_plan": "mcp_out_of_range_then_null_guard",
+              "case_variant": 1,
+              "source_bytes_mode": "record",
+              "read_decompressed_bytes": false
+            },
+            "expectation": {
+              "compare": {
+                "compare_error_output": true,
+                "mode": "exact_error"
+              },
+              "status": "error"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7682-7689",
+              "src/ffi/handles.rs:7747"
+            ],
+            "expect_error": true,
+            "reason": "Pinned ftbzip2_check_header rejects a short header with Invalid_Stream_Operation or a complete non-BZh header with Invalid_File_Format; compare the exact error and all stream fields."
+          },
+          {
+            "id": "b331-bzip-memory-07",
+            "assets": {
+              "compressed": {
+                "kind": "ref",
+                "id": "input/streams/bzip2/b331-bzip-memory-07.bz2",
+                "asset_kind": "binary"
+              },
+              "raw": {
+                "kind": "ref",
+                "id": "compressed/bzip2/valid-pcf-header.raw",
+                "asset_kind": "binary"
+              }
+            },
+            "params": {
+              "read_plan": "mcp_out_of_range_then_null_guard",
+              "case_variant": 1,
+              "source_bytes_mode": "record",
+              "read_decompressed_bytes": false
+            },
+            "expectation": {
+              "compare": {
+                "compare_error_output": true,
+                "mode": "exact_error"
+              },
+              "status": "error"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7682-7689",
+              "src/ffi/handles.rs:7747"
+            ],
+            "expect_error": true,
+            "reason": "Pinned ftbzip2_check_header rejects a short header with Invalid_Stream_Operation or a complete non-BZh header with Invalid_File_Format; compare the exact error and all stream fields."
+          },
+          {
+            "id": "b331-bzip-memory-08",
+            "assets": {
+              "compressed": {
+                "kind": "ref",
+                "id": "input/streams/bzip2/b331-bzip-memory-08.bz2",
+                "asset_kind": "binary"
+              },
+              "raw": {
+                "kind": "ref",
+                "id": "compressed/bzip2/valid-pcf-header.raw",
+                "asset_kind": "binary"
+              }
+            },
+            "params": {
+              "read_plan": "mcp_out_of_range_then_null_guard",
+              "case_variant": 1,
+              "source_bytes_mode": "record",
+              "read_decompressed_bytes": false
+            },
+            "expectation": {
+              "compare": {
+                "compare_error_output": true,
+                "mode": "exact_error"
+              },
+              "status": "error"
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7682-7689",
+              "src/ffi/handles.rs:7747"
+            ],
+            "expect_error": true,
+            "reason": "Pinned ftbzip2_check_header rejects a short header with Invalid_Stream_Operation or a complete non-BZh header with Invalid_File_Format; compare the exact error and all stream fields."
+          },
+          {
+            "id": "b331-bzip-memory-09",
+            "assets": {
+              "compressed": {
+                "kind": "ref",
+                "id": "input/streams/bzip2/b331-bzip-memory-09.bz2",
+                "asset_kind": "binary"
+              },
+              "raw": {
+                "kind": "ref",
+                "id": "compressed/bzip2/valid-pcf-header.raw",
+                "asset_kind": "binary"
+              }
+            },
+            "params": {
+              "read_plan": "mcp_out_of_range_then_null_guard",
+              "case_variant": 1,
+              "source_bytes_mode": "record",
+              "read_decompressed_bytes": false
+            },
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7682-7689",
+              "src/ffi/handles.rs:7747"
+            ]
+          },
+          {
+            "id": "b331-bzip-memory-10",
+            "assets": {
+              "compressed": {
+                "kind": "ref",
+                "id": "input/streams/bzip2/b331-bzip-memory-10.bz2",
+                "asset_kind": "binary"
+              },
+              "raw": {
+                "kind": "ref",
+                "id": "compressed/bzip2/valid-pcf-header.raw",
+                "asset_kind": "binary"
+              }
+            },
+            "params": {
+              "read_plan": "mcp_out_of_range_then_null_guard",
+              "case_variant": 1,
+              "source_bytes_mode": "record",
+              "read_decompressed_bytes": true
+            },
+            "expectation": {
+              "compare": {
+                "compare_error_output": true
+              }
+            },
+            "coverage": [
+              "src/ffi/handles.rs:7682-7689",
+              "src/ffi/handles.rs:7747"
+            ]
           }
         ]
       },
@@ -758,6 +1086,84 @@
           "src/ffi/handles.rs:7718-7719",
           "src/ffi/handles.rs:7727-7734",
           "src/ffi/handles.rs:7738-7739"
+        ]
+      }
+    },
+    {
+      "case_id": "ftbzip2.FT_Stream_OpenBzip2.success_open_callback_bzip2_stream",
+      "subject": "ftbzip2.FT_Stream_OpenBzip2",
+      "case": "success_open_callback_bzip2_stream",
+      "operation": "ftbzip2.stream_open_bzip2",
+      "schema": "stream_wrapper",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "b331-bzip-callback-record",
+            "assets": {
+              "compressed": {
+                "kind": "ref",
+                "id": "compressed/bzip2/valid-pcf-header.pcf.bz2",
+                "asset_kind": "binary"
+              },
+              "raw": {
+                "kind": "ref",
+                "id": "compressed/bzip2/valid-pcf-header.raw",
+                "asset_kind": "binary"
+              }
+            },
+            "params": {
+              "target_stream": "empty",
+              "source_stream": "read_callback",
+              "source_base": null,
+              "source_size": "compressed_length",
+              "source_bytes_mode": "record",
+              "read_decompressed_bytes": true
+            },
+            "reason": "Read the existing callback-backed compressed source through its public stream record, including callback materialization and decoded byte checks.",
+            "coverage": [
+              "src/ffi/handles.rs:7721-7722",
+              "src/ffi/handles.rs:7747"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftbzip2",
+        "area:bzip2-stream",
+        "area:callbacks"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "return": "FT_Error",
+          "stream_fields": [
+            "memory",
+            "base",
+            "size",
+            "pos",
+            "read",
+            "close",
+            "descriptor"
+          ],
+          "source_ownership": "not_closed",
+          "source_read": "callback"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "error",
+            "stream.field_classes",
+            "source.close_count",
+            "source.read_class",
+            "decoded_reads[*].bytes"
+          ]
+        },
+        "fixture_requirements": [
+          "Valid bzip2-compressed byte fixture with a caller-owned FT_Stream_IoFunc and known decompressed bytes"
         ]
       }
     }

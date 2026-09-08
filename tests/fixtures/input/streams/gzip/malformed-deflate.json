@@ -1,0 +1,12 @@
+{
+  "payloads": [
+    {
+      "gzip": "input/streams/gzip/reserved-block.gz",
+      "id": "reserved_block",
+      "raw": "input/streams/gzip/reserved-block.raw"
+    }
+  ],
+  "small_stream_threshold": 40960,
+  "source": "scripts/build_compressed_fixtures.py",
+  "version": 1
+}

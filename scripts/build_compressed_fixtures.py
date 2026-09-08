@@ -540,10 +540,35 @@ def build_lzw() -> None:
     write_if_changed(LZW_OUT / "malformed-streams.json", encoded)
 
 
+def build_invalid_deflate_stream() -> None:
+    """Keep a valid gzip header while rejecting a reserved DEFLATE block type."""
+    output = FIXTURES / "input" / "streams" / "gzip"
+    raw = STREAM_PAYLOADS["small_stream"]
+    compressed = bytearray(deterministic_gzip(raw))
+    compressed[10] = 0x07  # BFINAL=1, BTYPE=3 (reserved).
+    write_if_changed(output / "reserved-block.raw", raw)
+    write_if_changed(output / "reserved-block.gz", bytes(compressed))
+    manifest = {
+        "version": 1,
+        "source": "scripts/build_compressed_fixtures.py",
+        "small_stream_threshold": 40960,
+        "payloads": [{
+            "id": "reserved_block",
+            "raw": "input/streams/gzip/reserved-block.raw",
+            "gzip": "input/streams/gzip/reserved-block.gz",
+        }],
+    }
+    write_if_changed(
+        output / "malformed-deflate.json",
+        (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode(),
+    )
+
+
 def main() -> None:
     build_gzip()
     build_bzip2()
     build_lzw()
+    build_invalid_deflate_stream()
 
 
 if __name__ == "__main__":

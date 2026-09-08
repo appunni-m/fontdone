@@ -86,6 +86,7 @@ def write_malformed_controls() -> None:
     )
     write_post_payload("post-format-20-short.ttf", 0x0002_0000, b"", table_len=32)
     write_post_payload("post-format-20-zero.ttf", 0x0002_0000, (0).to_bytes(2, "big"))
+    write_post_payload("post-format-20-indices-short.ttf", 0x0002_0000, b"\x00\x02\x00\x00")
     write_post_payload(
         "post-format-20-custom-truncated.ttf",
         0x0002_0000,
@@ -93,6 +94,7 @@ def write_malformed_controls() -> None:
     )
     write_post_payload("post-format-25-short.ttf", 0x0002_5000, b"", table_len=32)
     write_post_payload("post-format-25-zero.ttf", 0x0002_5000, (0).to_bytes(2, "big"))
+    write_post_payload("post-format-25-deltas-short.ttf", 0x0002_5000, b"\x00\x02\x00")
     write_post_payload("post-format-25-too-many.ttf", 0x0002_5000, (387).to_bytes(2, "big"))
 
 

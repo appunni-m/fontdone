@@ -12,6 +12,7 @@ which package to choose, and the current compatibility boundary.
 | Integrate in a browser | [`fontdone` npm package](../fontdone-wasm/npm/README.md) |
 | Integrate through the raw WebAssembly ABI | [`fontdone-wasm`](../fontdone-wasm/README.md) |
 | Build, test, debug, or add fixtures | [Development guide](DEVELOPMENT.md) |
+| Execute the strict region coverage campaign | [Coverage campaign goal](COVERAGE_CAMPAIGN_GOAL.md) |
 | Prepare or publish a release | [Release guide](RELEASING.md) |
 
 ## 2. Compatibility evidence
@@ -60,6 +61,7 @@ Every file directly under `doc/` has one declared lifecycle:
 | authoritative | [Documentation index](README.md) | Keep every public documentation surface reachable |
 | authoritative | [Integration](INTEGRATION.md) | Update when a consumer contract changes |
 | authoritative | [Development](DEVELOPMENT.md) | Update when build, test, CI, fixture, or benchmark behavior changes |
+| authoritative | [Coverage campaign goal](COVERAGE_CAMPAIGN_GOAL.md) | Update when the managed coverage queue, campaign protocol, or completion gates change |
 | authoritative | [Releasing](RELEASING.md) | Update when packaging or publication changes |
 | active-plan | [Parity, coverage, and performance roadmap](ROADMAP.md) | Delete after every ledger goal is complete and durable results have moved into authoritative docs |
 | generated | [Function adoption map](FREETYPE_SUPPORT.md) | Generate from `tests/data/interface_map.json` |

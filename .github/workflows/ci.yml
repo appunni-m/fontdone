@@ -22,6 +22,8 @@ env:
   RUST_TOOLCHAIN: "1.96.1"
   RUST_MSRV: "1.87.0"
   RUST_COVERAGE_TOOLCHAIN: "nightly-2026-07-16"
+  NODE_VERSION: "22.14.0"
+  NPM_VERSION: "11.5.1"
   CARGO_LLVM_COV_VERSION: "0.8.7"
   CARGO_DENY_VERSION: "0.20.2"
   CARGO_AUDIT_VERSION: "0.22.2"
@@ -137,10 +139,12 @@ jobs:
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
           rustup override set "$RUST_TOOLCHAIN"
           rustup target add wasm32-unknown-unknown
-      - name: Install Node 20
+      - name: Install pinned Node and npm
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: "20"
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install pinned npm
+        run: npm install --global "npm@$NPM_VERSION"
       - name: Record host tools
         run: |
           cc --version
@@ -409,10 +413,12 @@ jobs:
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
           rustup override set "$RUST_TOOLCHAIN"
           rustup target add wasm32-unknown-unknown
-      - name: Install Node 20
+      - name: Install pinned Node and npm
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: "20"
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install pinned npm
+        run: npm install --global "npm@$NPM_VERSION"
       - run: make package-verify npm-package-verify
       - name: Retain inspected packages
         if: always()

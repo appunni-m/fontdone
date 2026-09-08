@@ -1122,9 +1122,12 @@ fn write_span(buf: &mut [u8], off: usize, s: i32, count: i32, step: usize) {
 }
 
 fn record_gray_span(spans: &mut Vec<GraySpan>, y: i32, x: i32, len: i32, coverage: i32) {
-    if len <= 0 || coverage == 0 {
+    if len <= 0 {
         return;
     }
+    // FreeType's gray_sweep_direct tests the accumulated area before applying
+    // the fill rule. Even-odd overlap can produce a zero-coverage byte from
+    // nonzero area; the callback must still receive that span in order.
     spans.push(GraySpan {
         y,
         // FreeType exposes direct smooth spans through `FT_Span.x` as an

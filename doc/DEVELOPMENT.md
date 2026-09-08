@@ -4930,15 +4930,15 @@ or reason is stale.
 | R01 | 58 | published pure-Rust runtime |
 | R02 | 100 | package, build, release, and facade contracts |
 | R03 | 1,761 | executable parity tests and public contracts |
-| R04 | 1,288 | licensed canonical fixture inputs |
+| R04 | 1,336 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
-| R06 | 64 | maintained tooling, examples, and benchmarks |
-| R07 | 7 | durable project documentation |
+| R06 | 66 | maintained tooling, examples, and benchmarks |
+| R07 | 8 | durable project documentation |
 | R08 | 1 | active self-cleaning roadmap |
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,288** | **all retained paths** |
+| **Total** | **3,339** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
@@ -5673,3 +5673,60 @@ logical case. A large variant family must not displace all cases that actually
 enter the subject symbol. The ledger reports `preferred_cases_per_function`;
 all selected outputs must still match and every required symbol must still be
 entered. This broadens the prior selection without removing its cases.
+
+AFM attachment inputs `b331-afm-01` through `b331-afm-10` exercise the Type1
+`KPY` vertical kerning form and the `KP` two-component form, including its
+optional final component. Each changes one pair in the maintained Type1 AFM
+asset. The existing attachment route compares both kerning vector components
+at 25 ppem in default, unfitted, and unscaled modes across the pinned oracle,
+Rust, C ABI, and WASM. These inputs test FreeType's AFM parsing and kerning
+behavior through normal face attachment.
+
+### Malformed stream and table fixtures
+
+BZip2 record-source fixtures select `source_bytes_mode: "record"` to read
+through the caller-owned memory or callback stream instead of supplying a
+separate Rust byte slice. `read_decompressed_bytes: false` compares opening,
+stream fields, and closing without attempting body reads. The offline
+`--bzip2-stream-case` adapter accepts `--open-only` after its compressed/raw paths.
+One-, two-, and three-byte headers must return the pinned stream error and
+leave the source position at the number of bytes read. Empty headers leave
+position zero. All malformed variants retain exact error-output comparison.
+
+The gzip callback oracle accepts
+`VARIANT RAW GZIP SOURCE_SIZE INITIAL_POS [CALLBACK_FAILURE [PAYLOAD_ID]]`.
+The optional payload name preserves fixture identity in its output; omitted
+names retain the original `small_stream` identity. The maintained reserved
+DEFLATE-block fixture retains a valid gzip header and trailer and changes the
+first body byte to BFINAL=1/BTYPE=3, exercising deferred decoder failure.
+
+PostScript name-table controls declare two format-2.0 name indices or two
+format-2.5 deltas and provide only one. Variable-font controls use active
+embedded tuples that truncate a word point index, word delta, or byte delta.
+Their even record lengths prevent padding bytes from completing the missing
+value. These fixtures retain the normal glyph-name or varied glyph rendering
+comparisons against the pinned C oracle.
+
+The scalar property fixture adapter accepts library/module/property selectors
+and an initial output sentinel. It forwards the same names to C, Rust, C ABI,
+and WASM, including CFF/Type1/CID hinting-engine names and unsupported-name
+errors. The TrueType engine fixtures compare the exported WASM selector for
+null and initialized libraries while retaining module/service observations.
+
+SBIT truncation fixtures keep strike selection valid while independently
+shortening index-format 1–5 records, small metrics, or packed bitmap payloads.
+The public glyph-load route compares exact errors, metrics, and bitmap bytes.
+
+Origin-based direct-render fixtures can request the public
+`rasterize_direct_spans_in_box` helper. The Rust lane first requires identical
+span coordinates, lengths, and coverage to the normal direct-render result;
+that result still undergoes the existing C/C-ABI/WASM parity comparisons.
+
+The offline `--outline-render-model MODEL WIDTH HEIGHT` adapter serializes the
+fixture's actual outline and explicit origin-based clip. It uses the existing
+`flags|x:y:tag,...|contour,...` model encoding, records every callback span,
+checks target preservation, and fails if its span recorder overflows. Current
+model inputs use dimensions at most 32; the adapter rejects dimensions above
+4096 before allocation. Even-odd overlap can emit zero-coverage spans from
+nonzero accumulated area. Their order and presence are part of direct-render
+parity and must be preserved even though they do not darken bitmap pixels.

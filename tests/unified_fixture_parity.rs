@@ -1676,7 +1676,7 @@ fn outline_render_runtime_supported(case: &InputCase) -> bool {
         return false;
     }
     matches!(
-        case.case_id.as_str(),
+        case_id_base(&case.case_id),
         "ftimage.FT_CURVE_TAG_HAS_SCANMODE.monochrome_scanmode_affects_dropout"
             | "ftimage.FT_OUTLINE_EVEN_ODD_FILL.smooth_raster_fill_rule_changes_spans"
             | "ftimage.FT_OUTLINE_IGNORE_DROPOUTS.smooth_raster_ignored"
@@ -28560,10 +28560,14 @@ fn c_truetype_engine_output(params: &Value) -> Result<Value, String> {
 }
 
 fn wasm_truetype_engine_output(params: &Value) -> Result<Value, String> {
-    let (engine_type, module_present, service_present) =
-        wasm_abi::abi_support_truetype_engine_observation(truetype_engine_library_present_arg(
-            params,
-        )?);
+    let kind = truetype_engine_library_present_arg(params)?;
+    let (helper_engine_type, module_present, service_present) =
+        wasm_abi::abi_support_truetype_engine_observation(kind);
+    let engine_type = if kind == 2 {
+        helper_engine_type
+    } else {
+        wasm_abi::fontdone_wasm_get_truetype_engine_type(kind)
+    };
     Ok(json!({
         "engine_type": engine_type,
         "module_present": module_present,
@@ -28581,10 +28585,29 @@ enum PropertyBackend {
     Wasm,
 }
 
+fn property_get_selector_args(params: &Value) -> Result<[u32; 4], String> {
+    let mut args = [0; 4];
+    for (index, name) in ["library_present", "module_selector", "property_selector", "value_initial"].into_iter().enumerate() {
+        args[index] = params.get(name).and_then(Value::as_u64)
+            .and_then(|v| u32::try_from(v).ok())
+            .ok_or_else(|| format!("{name} must be a u32"))?;
+    }
+    if args[0] > 1 || args[1] > 8 || !matches!(args[2], 0..=5 | 7) {
+        return Err("unsupported scalar property selector".to_string());
+    }
+    Ok(args)
+}
+
 fn property_get_case_output(
     case: &InputCase,
     backend: PropertyBackend,
 ) -> Result<RunOutput, String> {
+    if case.inputs.params.get("module_selector").is_some() {
+        let [library, module, property, initial] = property_get_selector_args(&case.inputs.params)?;
+        let mut value = initial;
+        let error = property_get_call(backend, library as i32, module as i32, property as i32, Some(&mut value));
+        return Ok(ok(json!({"status": error, "value": value, "module_service": error == FT_Err_Ok})));
+    }
     match case.case_id.as_str() {
         "ftmodapi.FT_Property_Get.gets_supported_property"
         | "ftdriver.TT_INTERPRETER_VERSION_40.default_interpreter_version" => {
@@ -46420,6 +46443,9 @@ fn property_service_route_pending(operation: &str) -> bool {
 }
 
 fn property_scalar_route_supported(case: &InputCase) -> bool {
+    if case.operation == "ftmodapi.property_get" && case.inputs.params.get("module_selector").is_some() {
+        return property_get_selector_args(&case.inputs.params).is_ok();
+    }
     let case_id = case
         .case_id
         .split_once('@')
@@ -46691,9 +46717,8 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
             u64_param(&case.inputs.params, "source_size")?.to_string(),
             u64_param(&case.inputs.params, "initial_pos")?.to_string(),
         ];
-        if let Some(failure) = gzip_callback_failure_name(&case.inputs.params)? {
-            args.push(failure.to_string());
-        }
+        args.push(gzip_callback_failure_name(&case.inputs.params)?.unwrap_or("none").to_string());
+        args.push(payload_id.to_string());
         return Ok(args);
     }
     if matches!(
@@ -46845,6 +46870,9 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                     let path = asset_file_path(asset)
                         .ok_or_else(|| format!("unresolved {}", asset_label(asset)))?;
                     args.push(fixture_dir().join(path).to_string_lossy().into_owned());
+                }
+                if case.inputs.params.get("read_decompressed_bytes").and_then(Value::as_bool) == Some(false) {
+                    args.push("--open-only".to_string());
                 }
             }
             "ftbzip2.FT_Stream_OpenBzip2.error_callback_seek_failure"
@@ -47251,6 +47279,11 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         }
         "ftdriver.property_set_get" if autofitter_script_property_case(case) => {
             Ok(vec!["--property-case".to_string(), case.case_id.clone()])
+        }
+        "ftmodapi.property_get" if params.get("module_selector").is_some() => {
+            let mut args = vec!["--property-get-selectors".to_string()];
+            args.extend(property_get_selector_args(params)?.map(|value| value.to_string()));
+            Ok(args)
         }
         "ftmodapi.property_get"
         | "ftmodapi.property_set"
@@ -51123,6 +51156,24 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
         | "ftstroke.outline_get_outside_border"
         | "ftstroke.outline_border_orientation_pair" => {
             Ok(vec!["--outline-border".to_string(), case.case_id.clone()])
+        }
+        "ftoutln.outline_render" if params.get("supplemental_public_helper").is_some() => {
+            let (width, height) = outline_render_target_box(case)?;
+            let flags = outline_render_flags(params)?;
+            let required_flags = (FT_RASTER_FLAG_AA | FT_RASTER_FLAG_DIRECT | FT_RASTER_FLAG_CLIP) as i32;
+            if width > 4096 || height > 4096 || flags != required_flags
+                || !outline_render_gray_spans_present(params)
+                || outline_render_ffi_clip_box(params)? != (FT_BBox { xMin: 0, yMin: 0, xMax: width as i64, yMax: height as i64 }) {
+                return Err("direct model requires a bounded origin-based clip and recording callback".to_string());
+            }
+            let outline = outline_render_outline(case)?;
+            let points = outline.points.iter().zip(&outline.tags)
+                .map(|(point, tag)| format!("{}:{}:{tag}", point.x, point.y))
+                .collect::<Vec<_>>().join(",");
+            let contours = outline.contours.iter().map(i16::to_string)
+                .collect::<Vec<_>>().join(",");
+            Ok(vec!["--outline-render-model".to_string(),
+                format!("{}|{points}|{contours}", outline.flags), width.to_string(), height.to_string()])
         }
         "ftoutln.outline_render" | "ftoutln.outline_render_direct" => Ok(vec![
             "--outline-render".to_string(),
@@ -86453,6 +86504,8 @@ fn bzip2_stream_output(case: &InputCase, backend: Bzip2StreamBackend) -> Result<
                 backend,
                 compressed.as_ref(),
                 raw.as_ref(),
+                case.inputs.params.get("source_bytes_mode").and_then(Value::as_str) == Some("record"),
+                case.inputs.params.get("read_decompressed_bytes").and_then(Value::as_bool).unwrap_or(true),
             )
         }
         "ftbzip2.FT_Stream_OpenBzip2.error_null_stream_or_source" => {
@@ -86521,6 +86574,8 @@ fn bzip2_stream_success_output(
     backend: Bzip2StreamBackend,
     compressed: &[u8],
     raw: &[u8],
+    record_source: bool,
+    read_decompressed_bytes: bool,
 ) -> Result<RunOutput, String> {
     let coverage_gap_case = case_id == "ftbzip2.FT_Stream_OpenBzip2.mcp_read_gap_matrix";
     let callback_source =
@@ -86532,7 +86587,7 @@ fn bzip2_stream_success_output(
     };
     let mut memory = FT_MemoryRec::default();
     let mut source = FT_StreamRec {
-        base: if callback_source {
+        base: if callback_source || compressed.is_empty() {
             ptr::null_mut()
         } else {
             compressed.as_ptr().cast_mut()
@@ -86559,11 +86614,11 @@ fn bzip2_stream_success_output(
         backend,
         Some(&mut stream),
         Some(&mut source),
-        Some(compressed),
+        if record_source { None } else { Some(compressed) },
     );
     let source_pos_after_open = source.pos;
     let target_stream = lzw_stream_fields(&stream);
-    let decoded_reads = if status == FT_Err_Ok {
+    let decoded_reads = if status == FT_Err_Ok && read_decompressed_bytes {
         bzip2_stream_read_ranges(backend, &stream, raw, coverage_gap_case)?
     } else {
         Vec::new()
@@ -92321,6 +92376,25 @@ fn rust_outline_render_once(
             outline_render_gray_spans_present(&case.inputs.params),
         ) {
             Ok(spans) => {
+                if let Some(helper) = case.inputs.params.get("supplemental_public_helper") {
+                    if helper.as_str() != Some("rasterize_direct_spans_in_box") {
+                        return Err("unsupported direct-span helper".to_string());
+                    }
+                    if clip_box != (FT_BBox { xMin: 0, yMin: 0, xMax: width as i64, yMax: rows as i64 }) {
+                        return Err("box helper requires an origin-based target clip".to_string());
+                    }
+                    let helper_spans = fontdone::grays::rasterize_direct_spans_in_box(
+                        &outline_model, width, rows,
+                    ).map_err(|error| error.to_string())?;
+                    let helper_rows: Vec<_> = helper_spans.iter()
+                        .map(|span| (span.y, i32::from(span.x), span.len, span.coverage)).collect();
+                    let direct_rows: Vec<_> = spans.iter()
+                        .map(|(y, span)| (*y, i32::from(span.x), span.len, span.coverage)).collect();
+                    if helper_rows != direct_rows {
+                        return Err(format!("box-helper spans differ from direct output: helper={helper_rows:?} direct={direct_rows:?}"));
+                    }
+                }
+
                 let user_seen =
                     outline_render_gray_spans_present(&case.inputs.params) && !spans.is_empty();
                 Ok(ok(outline_render_direct_payload(
@@ -106529,6 +106603,13 @@ fn lcd_library_present_arg(params: &Value) -> i32 {
 }
 
 fn truetype_engine_library_present_arg(params: &Value) -> Result<i32, String> {
+    if let Some(value) = params.get("library_present") {
+        return match value.as_i64() {
+            Some(0) => Ok(0),
+            Some(1) => Ok(1),
+            _ => Err("library_present must be 0 or 1".to_string()),
+        };
+    }
     match params
         .get("library")
         .and_then(Value::as_str)

@@ -1416,6 +1416,49 @@ def build_composite_missing_subglyphs() -> None:
     )
 
 
+def build_truncated_index_and_image_records() -> None:
+    """Keep strike selection valid while truncating one selected SBIT field."""
+    pack = struct.pack
+    big_metrics = bytes([2, 8, 0, 2, 8, 0, 0, 2])
+    index_cases = [
+        ("i1-first", 1, 1, bytes(3)),
+        ("i1-end", 1, 1, bytes(7)),
+        ("i2-size", 2, 5, bytes(3)),
+        ("i3-first", 3, 1, bytes(1)),
+        ("i3-end", 3, 1, bytes(3)),
+        ("i4-count", 4, 1, bytes(3)),
+        ("i4-pairs", 4, 1, pack(">I", 1) + bytes(6)),
+        ("i5-size", 5, 5, bytes(3)),
+        ("i5-count", 5, 5, pack(">I", 2) + big_metrics + bytes(3)),
+        ("i5-codes", 5, 5, pack(">I", 2) + big_metrics + pack(">IH", 2, 1)),
+    ]
+    index_array = pack(">HHI", 1, 1, 8)
+    for name, index_format, image_format, tail in index_cases:
+        subtable = pack(">HHI", index_format, image_format, 4) + tail
+        save_sbit_font(
+            f"b331-tables-{name}.ttf",
+            eblc_with_index_tables(index_array, subtable),
+            pack(">I", 0x00020000),
+        )
+
+    images = [
+        ("metrics-2", bytes([2, 8])),
+        ("metrics-3", bytes([2, 8, 0])),
+        ("metrics-4", bytes([2, 8, 0, 2])),
+    ]
+    for width, height in [(1, 2), (7, 3), (8, 2), (9, 2), (15, 3), (16, 2), (17, 2)]:
+        metrics = bytes([height, width, 0, height, width])
+        size = ((width + 7) // 8) * height
+        images.append((f"payload-w{width}-h{height}", metrics + bytes(size - 1)))
+    for name, image in images:
+        subtable = pack(">HHI", 1, 1, 4) + pack(">II", 0, len(image))
+        save_sbit_font(
+            f"b331-tables-{name}.ttf",
+            eblc_with_index_tables(index_array, subtable),
+            pack(">I", 0x00020000) + image,
+        )
+
+
 def main() -> None:
     build_missing_bitmap()
     build_gray_format1_bitmap()
@@ -1446,6 +1489,7 @@ def main() -> None:
     build_sbit_table_tag_and_strike_probes()
     build_sbit_error_branch_fixtures()
     build_composite_missing_subglyphs()
+    build_truncated_index_and_image_records()
 
 
 if __name__ == "__main__":

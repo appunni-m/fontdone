@@ -307,7 +307,7 @@ static int load_file(const char* path, unsigned char** out, long* out_len) {
         fclose(fp);
         return 1;
     }
-    unsigned char* data = (unsigned char*)malloc((size_t)len);
+    unsigned char* data = (unsigned char*)malloc(len ? (size_t)len : 1);
     if (!data) {
         fclose(fp);
         return 1;
@@ -884,16 +884,16 @@ static unsigned long gzip_memory_source_read(
 }
 
 static int emit_gzip_stream_callback_source(int argc, char** argv) {
-    if (argc != 7 && argc != 8) {
+    if (argc < 7 || argc > 9) {
         fprintf(stderr,
-                "--gzip-stream-callback-source requires VARIANT RAW GZIP SOURCE_SIZE INITIAL_POS [CALLBACK_FAILURE]\n");
+                "--gzip-stream-callback-source requires VARIANT RAW GZIP SOURCE_SIZE INITIAL_POS [CALLBACK_FAILURE [PAYLOAD_ID]]\n");
         return 2;
     }
     const char* variant = argv[2];
     unsigned long source_size = strtoul(argv[5], NULL, 10);
     unsigned long initial_pos = strtoul(argv[6], NULL, 10);
     int callback_failure = GZIP_CALLBACK_FAILURE_NONE;
-    if (argc == 8) {
+    if (argc >= 8) {
         if (streq(argv[7], "seek")) {
             callback_failure = GZIP_CALLBACK_FAILURE_SEEK;
         } else if (streq(argv[7], "short_read")) {
@@ -942,7 +942,7 @@ static int emit_gzip_stream_callback_source(int argc, char** argv) {
     print_status(status);
     printf(",\"output\":{\"rows\":[");
     print_gzip_stream_row(
-        "small_stream", variant, status, &stream, raw, raw_len, 0);
+        argc == 9 ? argv[8] : "small_stream", variant, status, &stream, raw, raw_len, 0);
     printf("]}}\n");
     if (!status && stream.close) {
         stream.close(&stream);
@@ -1763,8 +1763,8 @@ static int emit_bzip2_stream_case(int argc, char** argv) {
         streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.success_read_decompressed_bytes") ||
         streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.lifecycle_close_does_not_close_source") ||
         streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.mcp_read_gap_matrix")) {
-        if (argc != 5) {
-            fprintf(stderr, "bzip2 success case requires COMPRESSED RAW\n");
+        if (argc != 5 && !(argc == 6 && streq(argv[5], "--open-only"))) {
+            fprintf(stderr, "bzip2 success case requires COMPRESSED RAW [--open-only]\n");
             FT_Done_FreeType(library);
             return 2;
         }
@@ -1788,7 +1788,7 @@ static int emit_bzip2_stream_case(int argc, char** argv) {
             streq(case_id, "ftbzip2.FT_Stream_OpenBzip2.mcp_read_gap_matrix");
         memset(&source, 0, sizeof(source));
         init_lzw_stream_sentinel(&stream);
-        source.base = callback_source_case ? NULL : compressed;
+        source.base = callback_source_case || !compressed_len ? NULL : compressed;
         source.size = (FT_ULong)compressed_len;
         source.pos = 3;
         if (callback_source_case) {
@@ -1811,7 +1811,7 @@ static int emit_bzip2_stream_case(int argc, char** argv) {
         }
         printf(",\"source_pos_after_open\":%lu,\"decoded_reads\":",
                (unsigned long)source_pos_after_open);
-        if (status) {
+        if (status || argc == 6) {
             printf("[]");
         } else {
             print_bzip2_stream_reads(&stream, raw, raw_len, coverage_gap_case);
@@ -19447,6 +19447,82 @@ static int parse_outline_copy_model(
     return 1;
 }
 
+static int model_outline_span_overflow = 0;
+
+static void record_model_outline_spans(int y, int count, const FT_Span* spans, void* user) {
+    if (count > MAX_RECORDED_OUTLINE_SPANS - recorded_outline_span_count) {
+        model_outline_span_overflow = 1;
+        return;
+    }
+    record_outline_gray_spans(y, count, spans, user);
+}
+
+static int emit_outline_render_model(char** argv) {
+    char* end = NULL;
+    unsigned long width = strtoul(argv[3], &end, 10);
+    if (!*argv[3] || *end || width > 4096) return 2;
+    unsigned long height = strtoul(argv[4], &end, 10);
+    if (!*argv[4] || *end || height > 4096) return 2;
+    FT_Outline outline;
+    FT_Vector* points = NULL;
+    unsigned char* tags = NULL;
+    unsigned short* contours = NULL;
+    if (!parse_outline_copy_model(argv[2], &outline, &points, &tags, &contours)) return 2;
+    size_t size = (size_t)width * (size_t)height;
+    unsigned char* buffer = (unsigned char*)malloc(size ? size : 1);
+    FT_Library library = NULL;
+    if (!buffer || FT_Init_FreeType(&library)) {
+        free(points); free(tags); free(contours); free(buffer);
+        return 2;
+    }
+    memset(buffer, 0xA5, size);
+    FT_Bitmap bitmap = {0};
+    bitmap.width = (unsigned int)width;
+    bitmap.rows = (unsigned int)height;
+    bitmap.pitch = (int)width;
+    bitmap.buffer = buffer;
+    bitmap.pixel_mode = FT_PIXEL_MODE_GRAY;
+    bitmap.num_grays = 256;
+    FT_Raster_Params params = {0};
+    params.target = &bitmap;
+    params.flags = FT_RASTER_FLAG_AA | FT_RASTER_FLAG_DIRECT | FT_RASTER_FLAG_CLIP;
+    params.clip_box = (FT_BBox){0, 0, (FT_Pos)width, (FT_Pos)height};
+    params.gray_spans = record_model_outline_spans;
+    int user_sentinel = 0;
+    void* previous_token = recorded_outline_user_token;
+    recorded_outline_user_token = &user_sentinel;
+    params.user = &user_sentinel;
+    reset_recorded_outline_spans();
+    model_outline_span_overflow = 0;
+    FT_Error error = FT_Outline_Render(library, &outline, &params);
+    recorded_outline_user_token = previous_token;
+    int preserved = 1;
+    for (size_t i = 0; i < size; i++) {
+        if (buffer[i] != 0xA5) preserved = 0;
+    }
+    if (!model_outline_span_overflow) {
+        printf("{");
+        print_status(error);
+        if (error) {
+            printf(",\"output\":null}\n");
+        } else {
+            printf(",\"output\":{\"status\":0,");
+            print_recorded_outline_spans();
+            printf(",");
+            print_bbox_named("clip_box", params.clip_box);
+            printf(",\"user_seen\":%s,\"target_preserved\":%s}}\n",
+                   recorded_outline_user_seen ? "true" : "false", preserved ? "true" : "false");
+        }
+    }
+    FT_Done_FreeType(library);
+    free(points); free(tags); free(contours); free(buffer);
+    if (model_outline_span_overflow) {
+        fprintf(stderr, "outline model span recorder overflow\n");
+        return 2;
+    }
+    return 0;
+}
+
 static int emit_outline_copy_model(int argc, char** argv) {
     if (argc != 4) {
         return 1;
@@ -32903,6 +32979,9 @@ static const char* property_module_name(int selector) {
         return "fixture_missing";
     case 4:
         return "autofitter";
+    case 5: return "cff";
+    case 6: return "type1";
+    case 7: return "t1cid";
     default:
         return "fixture_missing";
     }
@@ -32920,6 +32999,7 @@ static const char* property_name_value(int selector) {
         return "default-script";
     case 4:
         return "fallback-script";
+    case 5: return "hinting-engine";
     default:
         return "fixture-missing-property";
     }
@@ -32942,6 +33022,16 @@ static FT_Error oracle_property_get(int library_present,
         FT_Done_FreeType(library);
     }
     return error;
+}
+
+static int emit_property_get_selectors(char** argv) {
+    FT_UInt value = (FT_UInt)strtoul(argv[5], NULL, 10);
+    FT_Error error = oracle_property_get(atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), &value);
+    printf("{");
+    print_status(FT_Err_Ok);
+    printf(",\"output\":{\"status\":%d,\"value\":%u,\"module_service\":%s}}\n",
+           error, value, error == FT_Err_Ok ? "true" : "false");
+    return 0;
 }
 
 static FT_Error oracle_property_set(int library_present,
@@ -42219,6 +42309,9 @@ static int dispatch(int argc, char** argv) {
     if (argc == 4 && streq(argv[1], "--outline-render")) {
         return emit_outline_render(argc, argv);
     }
+    if (argc == 5 && streq(argv[1], "--outline-render-model")) {
+        return emit_outline_render_model(argv);
+    }
     if (argc == 17 && streq(argv[1], "--coordinate-endpoints")) {
         return emit_coordinate_endpoints(argc, argv);
     }
@@ -42829,6 +42922,9 @@ static int dispatch(int argc, char** argv) {
     if (argc == 3 && streq(argv[1], "--library-lifecycle")) {
         return emit_library_lifecycle(argc, argv);
     }
+    if (argc == 6 && streq(argv[1], "--property-get-selectors")) {
+        return emit_property_get_selectors(argv);
+    }
     if ((argc == 3 || argc == 6 || argc == 9) && streq(argv[1], "--property-case")) {
         return emit_property_case(argc, argv);
     }
@@ -43252,7 +43348,7 @@ static int dispatch(int argc, char** argv) {
     if (argc >= 5 && streq(argv[1], "--gzip-stream-open")) {
         return emit_gzip_stream_open(argc, argv);
     }
-    if ((argc == 7 || argc == 8) && streq(argv[1], "--gzip-stream-callback-source")) {
+    if ((argc >= 7 && argc <= 9) && streq(argv[1], "--gzip-stream-callback-source")) {
         return emit_gzip_stream_callback_source(argc, argv);
     }
     if (argc >= 5 && streq(argv[1], "--gzip-stream-open-read-close-gap")) {

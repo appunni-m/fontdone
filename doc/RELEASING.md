@@ -17,20 +17,22 @@ After publication, a registry consumer such as `pillow-rs` must use
 `fontdone = { version = "=2.14.3-alpha.1" }`. A path-only declaration is valid
 for a local build but Cargo rejects it when packaging the downstream crate.
 
-Only the protected GitHub release workflow publishes Cargo crates. Local
-commands validate and assemble evidence but do not authorize publication. The
-npm package is published separately from its verified tarball only after the
-repository owner explicitly approves that registry write.
+The first synchronized release is bootstrapped locally from the exact clean
+commit. After the registry versions exist, the protected tag-driven GitHub
+workflow publishes the three Cargo crates and the browser npm package. Local
+commands validate and assemble evidence; they do not create tags or releases.
 
 Publication is paused during active parity, coverage, and performance work.
-Do not dispatch the release workflow, publish a crate, create a tag, or create
-a GitHub release until the repository owner explicitly approves publication.
+Do not push a release tag, publish a crate, or create a GitHub release until
+the repository owner explicitly approves publication.
 
 ## 1. Release prerequisites
 
 - At least two current crates.io owners exist for each package.
 - The GitHub `crates-io` environment requires reviewer approval.
-- `CARGO_REGISTRY_TOKEN` exists only as a protected secret.
+- crates.io and npm trusted publishers are configured for the protected
+  `crates-io` and `npm` environments; no long-lived registry token is stored in
+  the workflow.
 - The release commit is clean, pushed, and has a successful CI run.
 - The exact version has not previously been published or tagged.
 - The `fontdone` npm name is still available to the publishing account, the
@@ -91,11 +93,35 @@ audit is requested. The final release step reruns `make check-docs` after the
 complete scorecard is generated, so a stale committed compatibility snapshot
 blocks publication.
 
-## 4. Trigger and publication order
+## 4. First local bootstrap
 
-Dispatch `.github/workflows/release.yml` with the exact synchronized version.
-The workflow verifies that input against Cargo metadata, repeats release
-preflight, then pauses at the protected `crates-io` environment.
+After `make release-verify` passes on a clean, reviewed commit, publish the
+Cargo crates one at a time through the maintained dependency-order script:
+
+```bash
+cargo login
+RELEASE_APPROVED=1 RELEASE_CI_SHA="$(git rev-parse HEAD)" \
+  python3 scripts/publish_release.py --publish
+cargo logout
+```
+
+The script publishes `fontdone`, waits for crates.io visibility, then publishes
+`fontdone-c-abi` and `fontdone-wasm`. Build and publish the exact npm artifact
+from `make npm-package-verify` separately under the `next` dist-tag:
+
+```bash
+npm publish target/npm-package/fontdone-2.14.3-alpha.1.tgz \
+  --access public --tag next --provenance
+```
+
+Do not place either credential in a command, file, or log. Configure the
+protected trusted publishers before using the automated path.
+
+## 5. Trigger and publication order
+
+Push an annotated `v<version>` tag for the exact synchronized commit. The
+`.github/workflows/release.yml` workflow verifies the tag, waits for successful
+CI on that commit, and publishes from the verified bundle.
 
 After approval, `scripts/publish_release.py --publish` performs:
 
@@ -119,7 +145,7 @@ Before publication, `make package-verify` is the reproducible archive-level
 equivalent; a facade registry dry-run cannot resolve an unpublished exact root
 dependency.
 
-## 5. Browser npm publication
+## 6. Browser npm publication
 
 The verified browser artifact is:
 
@@ -155,7 +181,7 @@ Never place an npm token in a command, repository file, npm URL, or captured
 log. A registry name check is time-sensitive; rerun it immediately before the
 approved publish.
 
-## 6. Tags and release assets
+## 7. Tags and release assets
 
 Only after all three Cargo publications succeed, the workflow:
 
@@ -168,7 +194,7 @@ Only after all three Cargo publications succeed, the workflow:
 Never move or recreate a published tag. Attached checksums must describe the
 same archives inspected during preflight.
 
-## 7. Failure, retry, and registry recovery
+## 8. Failure, retry, and registry recovery
 
 Stop at the first failed publication. Do not skip a package or publish a facade
 against a missing root version.
@@ -192,7 +218,7 @@ Example:
 cargo yank --version 2.14.3-alpha.1 fontdone-wasm
 ```
 
-## 8. Alpha policy and current evidence
+## 9. Alpha policy and current evidence
 
 Any Rust API, JavaScript API, C ABI, WASM ABI, layout, ownership, error, or
 behavioral change may occur only in a new prerelease. A public change in one

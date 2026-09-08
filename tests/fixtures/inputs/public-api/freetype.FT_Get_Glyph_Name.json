@@ -2484,6 +2484,50 @@
             "coverage": [
               "post:format-25-too-many-default-name"
             ]
+          },
+          {
+            "id": "b331-post-indices-short",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/metadata/post-format-20-indices-short.ttf",
+                "requires": "Format 2.0 declares two name indices but contains only one."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 64,
+              "glyph_index": "gid:1",
+              "expected_name": ".notdef"
+            },
+            "coverage": [
+              "src/tt/post.rs:99"
+            ],
+            "reason": "Format 2.0 declares two name indices but contains only one. Pinned ttpost.c safely falls back to the initialized glyph name."
+          },
+          {
+            "id": "b331-post-deltas-short",
+            "assets": {
+              "font": {
+                "kind": "ref",
+                "role": "font",
+                "path": "input/fonts/metadata/post-format-25-deltas-short.ttf",
+                "requires": "Format 2.5 declares two signed offsets but contains only one."
+              }
+            },
+            "params": {
+              "face_index": 0,
+              "buffer_initial": "0xAA",
+              "buffer_max": 64,
+              "glyph_index": "gid:1",
+              "expected_name": ".notdef"
+            },
+            "coverage": [
+              "src/tt/post.rs:134"
+            ],
+            "reason": "Format 2.5 declares two signed offsets but contains only one. Pinned ttpost.c safely falls back to the initialized glyph name."
           }
         ]
       },

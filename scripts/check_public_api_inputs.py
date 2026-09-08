@@ -7758,6 +7758,19 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
         return "FT_Gzip_Uncompress no-zlib unimplemented errors validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
     if (
         row.operation == "ftgzip.stream_open_gzip"
+        and row.case in {"callback_source_null_base_matrix", "callback_failure_matrix"}
+        and "gzip_streams" in row.assets
+        and unresolved_assets_reason(row) is None
+        and isinstance(row.params.get("payload_id"), str)
+        and isinstance(row.params.get("source_size"), int)
+        and row.params["source_size"] >= 0
+        and isinstance(row.params.get("initial_pos"), int)
+        and row.params["initial_pos"] >= 0
+        and row.params.get("callback_failure", "none") in {"none", "seek", "short_read"}
+    ):
+        return "FT_Stream_OpenGzip fixture-described callback sources compare opening, deferred reads, descriptor fields, and exact errors through the pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "ftgzip.stream_open_gzip"
         and row.case_id
         in {
             "ftgzip.FT_Stream_OpenGzip.opens_valid_gzip_stream",
@@ -8294,6 +8307,18 @@ def lifecycle_null_real_parity_reason(row: ConcreteInput) -> str | None:
         and row.case_id == "ftmodapi.FT_FACE_DRIVER_NAME.driver_name_not_font_format"
     ):
         return "FT_FACE_DRIVER_NAME non-TrueType CFF driver module name and FT_Get_Font_Format service string validate through pinned C oracle, Rust FFI, C ABI, and WASM ABI"
+    if (
+        row.operation == "ftmodapi.property_get"
+        and row.subject == "ftmodapi.FT_Property_Get"
+        and all(
+            isinstance(row.params.get(name), int) and 0 <= row.params[name] <= 0xFFFFFFFF
+            for name in ("library_present", "module_selector", "property_selector", "value_initial")
+        )
+        and row.params["library_present"] <= 1
+        and row.params["module_selector"] <= 8
+        and row.params["property_selector"] in {0, 1, 2, 3, 4, 5, 7}
+    ):
+        return "FT_Property_Get scalar module/property selectors compare exact errors and output values through the pinned C oracle, Rust FFI, C ABI, and WASM ABI"
     if (
         row.operation == "ftmodapi.property_get"
         and row.case_id == "ftmodapi.FT_Property_Get.rejects_null_arguments"

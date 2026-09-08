@@ -122,6 +122,67 @@
           "freetype/src/base/ftobjs.c:FT_Get_TrueType_Engine_Type"
         ]
       }
+    },
+    {
+      "case_id": "ftmodapi.FT_Get_TrueType_Engine_Type.batch331",
+      "subject": "ftmodapi.FT_Get_TrueType_Engine_Type",
+      "case": "truetype_service_value",
+      "operation": "ftmodapi.get_truetype_engine_type",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": null,
+        "variants": [
+          {
+            "id": "wasm-19",
+            "assets": {},
+            "params": {
+              "library_present": 1
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:6282-6282"
+            ]
+          },
+          {
+            "id": "wasm-20",
+            "assets": {},
+            "params": {
+              "library_present": 0
+            },
+            "coverage": [
+              "fontdone-wasm/src/implementation.rs:6281-6281"
+            ]
+          }
+        ]
+      },
+      "classifiers": [
+        "kind:function",
+        "header:ftmodapi",
+        "area:truetype",
+        "area:null"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "engine_type": "FT_TrueTypeEngineType"
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "engine_type",
+            "module_present",
+            "service_present"
+          ]
+        },
+        "source_refs": [
+          "freetype/src/base/ftobjs.c:FT_Get_TrueType_Engine_Type"
+        ]
+      },
+      "covers_manifest_cases": [
+        "null_library_returns_none",
+        "truetype_service_value"
+      ]
     }
   ]
 }
