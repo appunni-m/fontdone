@@ -15,7 +15,7 @@ root. Use `make help` as the command index.
 | Windows Server 2025 x86-64 MSVC | native C, LLP64 layout, DLL/import library, exports, and install tree |
 | Linux i686 | cross-built and QEMU-executed C consumer/layout contract |
 | Linux powerpc64 | cross-built and QEMU-executed big-endian C consumer/layout contract |
-| `wasm32-unknown-unknown` on Node 20 | raw WASM consumer plus packed and installed `fontdone` npm consumer |
+| `wasm32-unknown-unknown` on Node 22.14.0 | raw WASM consumer plus packed and installed `fontdone` npm consumer |
 
 Only Ubuntu and macOS are normal pinned-oracle development hosts. Windows and
 the cross targets are claimed only to the extent recorded above.
@@ -37,7 +37,7 @@ when browser behavior or asset loading changes.
 | CMake | 3.20 or newer | offline FreeType oracle |
 | Clang/GCC/MSVC | C11-capable | oracle and C consumers |
 | Git, curl, tar, XZ | maintained OS versions | source and archive handling |
-| Node.js and npm | Node 20 or newer | raw Wasm, browser-wrapper, and npm archive verification |
+| Node.js and npm | Node 22.14.0 / npm 11.5.1 | raw Wasm, browser-wrapper, and npm archive verification |
 
 Install the pinned supply-chain tools with `make setup-tools` and the coverage
 frontend with `make setup-coverage-tools`. Font generators use one pinned
@@ -4832,7 +4832,7 @@ The manual run first repeats the fast commit gate, then adds:
 | Job | Evidence |
 |---|---|
 | Exact parity | every currently runnable C/Rust/C-ABI/WASM comparison and retained diagnostics |
-| Integrations | downstream Rust, native C, exact exports, and `wasm32-unknown-unknown` under pinned Node 20 |
+| Integrations | downstream Rust, native C, exact exports, and `wasm32-unknown-unknown` under pinned Node 22.14.0 |
 | Coverage | all-lane line, branch, function, and region totals |
 | Performance | ten raw latency/throughput samples, complete-process peak RSS, and exact release-artifact bytes for pinned FreeType versus Fontdone |
 | Native C | Linux x86-64, macOS aarch64, and Windows x86-64 |
