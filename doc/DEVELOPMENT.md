@@ -4910,6 +4910,17 @@ WASM bytes. `make release-verify` includes the strict target; requested
 thorough CI continues to collect ten-sample evidence while the baseline is
 being established.
 
+This protocol follows the measurement principles in the [Rust Performance
+Book](https://nnethercote.github.io/perf-book/benchmarking.html) and
+[Criterion's analysis guide](https://bheisler.github.io/criterion.rs/book/analysis.html):
+use representative fixed workloads, warm the process before sampling, retain
+repeated samples, and interpret outliers and confidence intervals instead of
+promoting one timing to a general claim. GitHub-hosted jobs run on fresh
+virtual machines, so comparative performance runs belong on a stable labeled
+runner; ordinary CI remains a correctness gate. See GitHub's
+[runner-selection reference](https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job)
+for the runner model.
+
 ## 8. Repository retention
 
 `doc/FILE_RETENTION_INVENTORY.tsv` assigns every tracked or proposed untracked
