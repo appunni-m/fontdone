@@ -138,9 +138,9 @@ After approval, `scripts/publish_release.py --publish-if-missing` performs:
 5. publish `fontdone-wasm` when that exact version is not already visible.
 
 The script names every package, preserves immutable versions already visible,
-stops at the first failure, requires a clean tracked worktree, and waits up to
-ten minutes for each dependency to become visible. Never run an unqualified
-`cargo publish` from the workspace root.
+stops at the first failure, requires a clean tracked and untracked worktree,
+and waits up to ten minutes for each dependency to become visible. Never run
+an unqualified `cargo publish` from the workspace root.
 
 For registry-resolution rehearsal after the root version is visible:
 
