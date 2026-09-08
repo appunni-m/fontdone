@@ -61,15 +61,26 @@ jobs:
           python3 -m venv target/font-generation-venv
           target/font-generation-venv/bin/python -m pip install \
             --requirement requirements-font-generation.txt
-      - name: Require successful CI for this commit
+      - name: Locate successful thorough CI for this commit
+        id: ci-run
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           run_id="$(gh api \
-            "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${GITHUB_SHA}&status=success" \
-            --jq '.workflow_runs[0].id // empty')"
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${GITHUB_SHA}&status=success&per_page=20" \
+            --jq '[.workflow_runs[] | select(.event == "workflow_dispatch")][0].id // empty')"
           test -n "$run_id"
+          echo "run-id=$run_id" >> "$GITHUB_OUTPUT"
+      - name: Download exact platform-contract artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.ci-run.outputs.run-id }}
+          pattern: platform-contract-*
+          path: target/api-abi-audit/platform-contract
+          merge-multiple: true
       - name: Run the complete release gate
         run: make release-verify PYTHON=target/font-generation-venv/bin/python
       - name: Assemble immutable release bundle

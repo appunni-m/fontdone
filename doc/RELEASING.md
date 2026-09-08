@@ -85,8 +85,11 @@ all five hash-bound C platform bundles and validates the assembled evidence.
 Release preflight additionally runs `make c-abi-contract-complete`; unfinished
 contract debt therefore cannot be released.
 
-The release preflight locates the successful CI run for the exact commit,
-downloads those same platform artifacts, and runs `make release-verify`.
+The release preflight locates the successful **thorough `workflow_dispatch`**
+CI run for the exact tag commit, downloads its five platform-contract artifacts,
+and runs `make release-verify`. A push-triggered fast CI run is intentionally
+not sufficient because it does not produce the cross-platform contract
+bundles.
 Without assembled bundles, a local `make release-verify` correctly fails the
 complete C contract. Use `make ci` and `make c-abi-contract` for ordinary
 single-host development, and `make ci-thorough` only when a local exhaustive
