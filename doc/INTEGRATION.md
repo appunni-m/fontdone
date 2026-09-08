@@ -12,10 +12,11 @@ hosts should use the [`fontdone-wasm` guide](../fontdone-wasm/README.md).
 
 ## 1. Select and install the exact alpha
 
-All workspace packages use `2.14.3-alpha.1`. They have not been published to
-crates.io, so evaluate a checkout through a versioned path dependency. Keeping
-the version requirement is important: Cargo rejects a path-only dependency
-when the downstream crate is packaged or published.
+All workspace packages use `2.14.3-alpha.1`. The Cargo crates have not been
+published to crates.io, so evaluate Rust through a versioned path dependency.
+The browser `fontdone` package is already available on npm at that exact
+version. Keeping the version requirement is important: Cargo rejects a
+path-only dependency when the downstream crate is packaged or published.
 
 ```toml
 [dependencies]

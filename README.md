@@ -10,9 +10,10 @@
 
 </div>
 
-> **Release:** `2.14.3-alpha.1`, not yet published. The project is suitable for
-> compatibility development and controlled evaluation, not as an unqualified
-> drop-in FreeType replacement.
+> **Release:** `2.14.3-alpha.1`. The browser package is already visible on npm;
+> the Cargo crates remain unpublished. The project is suitable for compatibility
+> development and controlled evaluation, not as an unqualified drop-in FreeType
+> replacement.
 
 `fontdone` implements font loading, metrics, hinting, outlines, and
 rasterization in Rust. Runtime packages do not build, link, or load FreeType C.
@@ -28,9 +29,10 @@ Pinned FreeType source is used only by ignored offline test tooling.
 | Browser application | `fontdone` on npm | Prebuilt Wasm with a typed ESM lifecycle wrapper | [Browser package guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/npm/README.md) |
 | Raw JavaScript host | `fontdone-wasm` | Low-level wasm32 linear-memory ABI | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
 
-The crates are not on crates.io yet, and the browser package is not on npm yet.
-Evaluate Rust from a local checkout while
-keeping the version requirement that a publishable downstream package needs:
+The crates are not on crates.io yet. The browser package is available as the
+exact `fontdone@2.14.3-alpha.1` npm version. Evaluate Rust from a local
+checkout while keeping the version requirement that a publishable downstream
+package needs:
 
 ```toml
 [dependencies]

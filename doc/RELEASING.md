@@ -18,9 +18,11 @@ After publication, a registry consumer such as `pillow-rs` must use
 for a local build but Cargo rejects it when packaging the downstream crate.
 
 The first synchronized release is bootstrapped locally from the exact clean
-commit. After the registry versions exist, the protected tag-driven GitHub
-workflow publishes the three Cargo crates and the browser npm package. Local
-commands validate and assemble evidence; they do not create tags or releases.
+commit. The `fontdone@2.14.3-alpha.1` npm version is already visible, while the
+three Cargo versions remain unpublished. The protected tag-driven GitHub
+workflow preserves that existing npm artifact and publishes the Cargo crates.
+Local commands validate and assemble evidence; they do not create tags or
+releases.
 
 Publication is paused during active parity, coverage, and performance work.
 Do not push a release tag, publish a crate, or create a GitHub release until
@@ -34,10 +36,9 @@ the repository owner explicitly approves publication.
   `crates-io` and `npm` environments; no long-lived registry token is stored in
   the workflow.
 - The release commit is clean, pushed, and has a successful CI run.
-- The exact version has not previously been published or tagged.
-- The `fontdone` npm name is still available to the publishing account, the
-  account requires two-factor authentication, and the exact npm version has
-  not previously been published.
+- The exact Cargo versions have not previously been published or tagged.
+- The `fontdone` npm version is checked immediately before release; if it is
+  already visible, the workflow preserves that immutable artifact.
 
 Tokens must never appear in command arguments, repository files, logs, or
 generated evidence.
@@ -106,8 +107,10 @@ cargo logout
 ```
 
 The script publishes `fontdone`, waits for crates.io visibility, then publishes
-`fontdone-c-abi` and `fontdone-wasm`. Build and publish the exact npm artifact
-from `make npm-package-verify` separately under the `next` dist-tag:
+`fontdone-c-abi` and `fontdone-wasm`. Build the exact npm artifact from
+`make npm-package-verify` and compare it with the already visible version. The
+tag workflow skips that immutable version when it is present; publish it only
+if the registry check confirms it is missing:
 
 ```bash
 npm publish target/npm-package/fontdone-2.14.3-alpha.1.tgz \
@@ -168,8 +171,8 @@ npm publish --dry-run \
   --access public --tag next
 ```
 
-After explicit owner approval, authenticate with npm and publish that exact
-tarball, not the mutable source directory:
+If the version is missing after explicit owner approval, authenticate with npm
+and publish that exact tarball, not the mutable source directory:
 
 ```bash
 npm publish target/npm-package/fontdone-2.14.3-alpha.1.tgz \
