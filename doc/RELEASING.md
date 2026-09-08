@@ -114,6 +114,12 @@ npm publish target/npm-package/fontdone-2.14.3-alpha.1.tgz \
   --access public --tag next --provenance
 ```
 
+The local bootstrap intentionally uses `--publish` because these are new
+registry versions. The tag workflow uses `--publish-if-missing` and checks the
+npm version first, so retrying the immutable bootstrap tag after a successful
+local upload preserves the existing registry artifacts instead of attempting a
+second publication.
+
 Do not place either credential in a command, file, or log. Configure the
 protected trusted publishers before using the automated path.
 
@@ -123,17 +129,18 @@ Push an annotated `v<version>` tag for the exact synchronized commit. The
 `.github/workflows/release.yml` workflow verifies the tag, waits for successful
 CI on that commit, and publishes from the verified bundle.
 
-After approval, `scripts/publish_release.py --publish` performs:
+After approval, `scripts/publish_release.py --publish-if-missing` performs:
 
-1. publish `fontdone`;
+1. publish `fontdone` when that exact version is not already visible;
 2. wait until crates.io serves the exact version;
-3. publish `fontdone-c-abi`;
+3. publish `fontdone-c-abi` when that exact version is not already visible;
 4. wait until crates.io serves the exact version;
-5. publish `fontdone-wasm`.
+5. publish `fontdone-wasm` when that exact version is not already visible.
 
-The script names every package, stops at the first failure, requires a clean
-tracked worktree, and waits up to ten minutes for each dependency to become
-visible. Never run an unqualified `cargo publish` from the workspace root.
+The script names every package, preserves immutable versions already visible,
+stops at the first failure, requires a clean tracked worktree, and waits up to
+ten minutes for each dependency to become visible. Never run an unqualified
+`cargo publish` from the workspace root.
 
 For registry-resolution rehearsal after the root version is visible:
 
@@ -169,6 +176,10 @@ npm publish target/npm-package/fontdone-2.14.3-alpha.1.tgz \
   --access public --tag next
 ```
 
+The tag workflow queries `npm view fontdone@<version>` first and skips an
+already visible immutable version, which makes a tag retry safe after the
+local bootstrap.
+
 The `next` dist-tag prevents this alpha from silently becoming the stable
 `latest` release. Immediately verify the immutable version and tag:
 
@@ -183,12 +194,12 @@ approved publish.
 
 ## 7. Tags and release assets
 
-Only after all three Cargo publications succeed, the workflow:
+After the maintainer pushes annotated tag `v2.14.3-alpha.1` at the approved
+commit and all three Cargo publications succeed, the workflow:
 
-1. creates annotated tag `v2.14.3-alpha.1` at the approved commit;
-2. pushes the tag over the configured repository connection;
-3. creates the GitHub release from generated notes;
-4. attaches all three exact `.crate` archives, the verified npm `.tgz`, and
+1. verifies the immutable tag and successful CI result;
+2. creates the GitHub release from generated notes;
+3. attaches all three exact `.crate` archives, the verified npm `.tgz`, and
    `SHA256SUMS`.
 
 Never move or recreate a published tag. Attached checksums must describe the

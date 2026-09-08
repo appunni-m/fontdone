@@ -110,7 +110,7 @@ jobs:
       - name: Publish synchronized crates in dependency order
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.crates-io-auth.outputs.token }}
-        run: python3 scripts/publish_release.py --publish
+        run: python3 scripts/publish_release.py --publish-if-missing
 
   publish-npm:
     name: Publish fontdone npm package
@@ -140,8 +140,12 @@ jobs:
       - name: Publish exact npm artifact with provenance
         run: |
           version="${GITHUB_REF_NAME#v}"
-          npm publish "release-bundle/fontdone-${version}.tgz" \
-            --access public --tag next --provenance
+          if npm view "fontdone@${version}" version --registry=https://registry.npmjs.org >/dev/null 2>&1; then
+            echo "fontdone@${version} is already visible; keeping the immutable artifact"
+          else
+            npm publish "release-bundle/fontdone-${version}.tgz" \
+              --access public --tag next --provenance
+          fi
 
   github-release:
     name: Create immutable GitHub Release

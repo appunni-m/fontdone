@@ -46,6 +46,21 @@ def wait_for_registry(package: str, expected_version: str, timeout: int) -> None
     )
 
 
+def registry_has(package: str, expected_version: str) -> bool:
+    """Return whether crates.io already serves this exact immutable version."""
+
+    url = f"https://crates.io/api/v1/crates/{package}/{expected_version}"
+    try:
+        request = urllib.request.Request(
+            url, headers={"User-Agent": "fontdone-release-verifier/1"}
+        )
+        with urllib.request.urlopen(request, timeout=15) as response:
+            payload = json.load(response)
+        return payload.get("version", {}).get("num") == expected_version
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError):
+        return False
+
+
 def run(command: list[str]) -> None:
     print("+", " ".join(command), flush=True)
     subprocess.run(command, cwd=ROOT, check=True)
@@ -56,12 +71,17 @@ def main() -> int:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--publish", action="store_true")
+    mode.add_argument(
+        "--publish-if-missing",
+        action="store_true",
+        help="skip immutable versions already visible on crates.io",
+    )
     parser.add_argument("--registry-timeout", type=int, default=600)
     args = parser.parse_args()
     release_version = version()
     try:
         run(["python3", "scripts/verify_release.py"])
-        if args.publish:
+        if args.publish or args.publish_if_missing:
             status = subprocess.run(
                 ["git", "status", "--porcelain=v1", "--untracked-files=all"],
                 cwd=ROOT,
@@ -81,8 +101,17 @@ def main() -> int:
             ]
             if args.dry_run:
                 command.extend(["--dry-run", "--allow-dirty"])
-            run(command)
-            if args.publish and index + 1 < len(PACKAGES):
+            already_visible = args.publish_if_missing and registry_has(
+                package, release_version
+            )
+            if already_visible:
+                print(
+                    f"registry: {package} {release_version} is already visible; "
+                    "keeping the immutable artifact"
+                )
+            else:
+                run(command)
+            if (args.publish or args.publish_if_missing) and index + 1 < len(PACKAGES):
                 wait_for_registry(package, release_version, args.registry_timeout)
     except (OSError, ValueError, TimeoutError, subprocess.CalledProcessError) as exc:
         print(f"release stopped: {exc}", file=sys.stderr)
