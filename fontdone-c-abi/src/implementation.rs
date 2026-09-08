@@ -52,6 +52,31 @@ thread_local! {
 #[cfg(feature = "abi-test-support")]
 const INCREMENTAL_CLIENT_OBJECT_MAGIC: u64 = 0x46_54_49_4E_43_4C_49_46;
 
+// The ABI reachability probes need tiny valid compressed streams even when
+// Cargo is checking the published crate without the repository's test tree.
+// Keep these bytes beside the optional probes so the public package remains
+// self-contained while the fixture files stay excluded from the archive.
+#[cfg(feature = "abi-test-support")]
+const ABI_BZIP2_BYTES: &[u8] = &[
+    0x42, 0x5a, 0x68, 0x39, 0x31, 0x41, 0x59, 0x26, 0x53, 0x59, 0x59, 0xf3, 0x33, 0x60, 0x00, 0x00,
+    0x01, 0xc1, 0x80, 0x64, 0x00, 0x09, 0x00, 0x40, 0x00, 0x20, 0x00, 0x22, 0x18, 0x68, 0x30, 0x06,
+    0xbc, 0x29, 0x85, 0xdc, 0x91, 0x4e, 0x14, 0x24, 0x16, 0x7c, 0xcc, 0xd8, 0x00,
+];
+
+#[cfg(feature = "abi-test-support")]
+const ABI_LZW_BYTES: &[u8] = &[
+    0x1f, 0x9d, 0x90, 0x01, 0xcc, 0x8c, 0x81, 0x43, 0x00, 0x00, 0x00, 0x00,
+];
+
+#[cfg(feature = "abi-test-support")]
+const ABI_GZIP_BYTES: &[u8] = &[
+    0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x4b, 0xcb, 0xcf, 0x2b, 0x49, 0xc9,
+    0xcf, 0x4b, 0x55, 0x48, 0xaf, 0xca, 0x2c, 0x50, 0x28, 0x48, 0x2c, 0xca, 0x2c, 0xa9, 0x54, 0x48,
+    0xcb, 0xac, 0x28, 0x29, 0x2d, 0x4a, 0xe5, 0x2a, 0xce, 0x4d, 0xcc, 0xc9, 0x51, 0x28, 0x49, 0xad,
+    0x28, 0x01, 0xca, 0x54, 0xe6, 0xe4, 0x27, 0xa6, 0x70, 0x01, 0x00, 0xe7, 0xfb, 0x2a, 0x3f, 0x30,
+    0x00, 0x00, 0x00,
+];
+
 #[cfg(feature = "abi-test-support")]
 thread_local! {
     static ABI_INCREMENTAL_OPAQUE_TRACE: RefCell<Option<AbiIncrementalOpaqueTrace>> =
@@ -4362,17 +4387,11 @@ fn abi_c103_wrapper_probe(
     memory: FT_Memory,
     variant: u16,
 ) {
-    const BZIP2_BYTES: &[u8] =
-        include_bytes!("../../tests/fixtures/compressed/bzip2/valid-pcf-header.pcf.bz2");
-    const LZW_BYTES: &[u8] =
-        include_bytes!("../../tests/fixtures/compressed/lzw/small-valid-pcf.Z");
-    const GZIP_BYTES: &[u8] = include_bytes!("../../tests/fixtures/compressed/gzip/small-text.gz");
-
     match usize::from(variant.saturating_sub(701)) % 10 {
         0 => {
             let mut bzip_source = FT_StreamRec {
-                base: BZIP2_BYTES.as_ptr().cast_mut(),
-                size: FT_ULong::try_from(BZIP2_BYTES.len()).unwrap_or(FT_ULong::MAX),
+                base: ABI_BZIP2_BYTES.as_ptr().cast_mut(),
+                size: FT_ULong::try_from(ABI_BZIP2_BYTES.len()).unwrap_or(FT_ULong::MAX),
                 ..FT_StreamRec::default()
             };
             let mut bzip_target = FT_StreamRec::default();
@@ -4397,8 +4416,8 @@ fn abi_c103_wrapper_probe(
             c_bzip2_stream_close(&mut bzip_target);
 
             let mut lzw_source = FT_StreamRec {
-                base: LZW_BYTES.as_ptr().cast_mut(),
-                size: FT_ULong::try_from(LZW_BYTES.len()).unwrap_or(FT_ULong::MAX),
+                base: ABI_LZW_BYTES.as_ptr().cast_mut(),
+                size: FT_ULong::try_from(ABI_LZW_BYTES.len()).unwrap_or(FT_ULong::MAX),
                 ..FT_StreamRec::default()
             };
             let mut lzw_target = FT_StreamRec::default();
@@ -4417,8 +4436,8 @@ fn abi_c103_wrapper_probe(
             abi_support_lzw_stream_close(&mut lzw_target);
 
             let mut gzip_source = FT_StreamRec {
-                base: GZIP_BYTES.as_ptr().cast_mut(),
-                size: FT_ULong::try_from(GZIP_BYTES.len()).unwrap_or(FT_ULong::MAX),
+                base: ABI_GZIP_BYTES.as_ptr().cast_mut(),
+                size: FT_ULong::try_from(ABI_GZIP_BYTES.len()).unwrap_or(FT_ULong::MAX),
                 ..FT_StreamRec::default()
             };
             let mut gzip_target = FT_StreamRec::default();
@@ -9268,8 +9287,6 @@ fn abi_c115_reachability_batch_probe(
             // header read.  The callback case is a behavioral witness for the
             // source materialization fix, while the other rows keep the
             // short-read and invalid-header errors distinct.
-            const LZW_BYTES: &[u8] =
-                include_bytes!("../../tests/fixtures/compressed/lzw/small-valid-pcf.Z");
             let callback_lzw = |callback_bytes: &[u8], advertised_len: usize| {
                 let mut state = Box::new(AbiCallbackStreamState {
                     bytes: callback_bytes.to_vec().into_boxed_slice(),
@@ -9309,15 +9326,15 @@ fn abi_c115_reachability_batch_probe(
             match repeat {
                 0 => {
                     let (error, read, source_pos, callback_identity) =
-                        callback_lzw(LZW_BYTES, LZW_BYTES.len());
+                        callback_lzw(ABI_LZW_BYTES, ABI_LZW_BYTES.len());
                     assert_eq!(error, rust_ffi::FT_Err_Ok);
                     assert_eq!(source_pos, 2);
                     std::hint::black_box((read, callback_identity));
                 }
                 1 => {
                     let (error, read, source_pos, callback_identity) = callback_lzw(
-                        &LZW_BYTES[..LZW_BYTES.len().saturating_sub(1)],
-                        LZW_BYTES.len(),
+                        &ABI_LZW_BYTES[..ABI_LZW_BYTES.len().saturating_sub(1)],
+                        ABI_LZW_BYTES.len(),
                     );
                     assert_eq!(i64::from(error), rust_ffi::FT_Err_Invalid_Stream_Operation);
                     std::hint::black_box((read, source_pos, callback_identity));
