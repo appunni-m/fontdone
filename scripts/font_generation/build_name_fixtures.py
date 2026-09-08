@@ -12,6 +12,7 @@ from fontTools.ttLib import TTFont
 ROOT = Path(__file__).resolve().parents[2]
 BASE_STATIC = ROOT / "tests" / "fixtures" / "input" / "fonts" / "glyf" / "hinter-control-matrix.ttf"
 BASE_VARIABLE = ROOT / "tests" / "fixtures" / "input" / "fonts" / "variable" / "compact-variable.ttf"
+VARIABLE_NAME_FIXTURE_HEAD_MODIFIED = 0xE6BB3124
 NAME_OUT_DIR = ROOT / "tests" / "fixtures" / "input" / "fonts" / "names"
 LEGACY_ASSET_FONT_OUT_DIR = (
     ROOT / "tests" / "fixtures" / "input" / "fixtures" / "assets" / "fonts"
@@ -696,7 +697,12 @@ def write_variable_long_postscript_name() -> None:
 
 def write_variable_without_explicit_default_instance() -> None:
     """Keep valid fvar/name data while forcing the synthesized-default path."""
-    font = TTFont(BASE_VARIABLE)
+    # Keep the fixture byte-stable across runs.  TTFont's default save path
+    # refreshes ``head.modified`` with the current clock, which also changes
+    # the checksum adjustment and makes the release fixture gate fail on a
+    # clean checkout.  Preserve the timestamp used by the tracked fixtures.
+    font = TTFont(BASE_VARIABLE, recalcTimestamp=False)
+    font["head"].modified = VARIABLE_NAME_FIXTURE_HEAD_MODIFIED
     axes = font["fvar"].axes
     defaults = {axis.axisTag: axis.defaultValue for axis in axes}
     font["fvar"].instances = [
@@ -709,7 +715,8 @@ def write_variable_without_explicit_default_instance() -> None:
 
 def write_variable_apple_only_without_explicit_default_instance() -> None:
     """Use Apple Roman names to exercise the alternate SFNT name predicate."""
-    font = TTFont(BASE_VARIABLE)
+    font = TTFont(BASE_VARIABLE, recalcTimestamp=False)
+    font["head"].modified = VARIABLE_NAME_FIXTURE_HEAD_MODIFIED
     axes = font["fvar"].axes
     defaults = {axis.axisTag: axis.defaultValue for axis in axes}
     font["fvar"].instances = [
