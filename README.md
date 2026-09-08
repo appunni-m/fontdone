@@ -344,19 +344,19 @@ bytes against pinned FreeType. Correctness mismatches fail before a
 measurement can qualify.
 
 <!-- performance-baseline:start -->
-The committed ledger contains **5 / 5 clean runs**
+The committed ledger contains **6 / 5 clean runs**
 for its most-sampled current environment. Five runs from the same environment
 are required before regression thresholds can be reviewed.
 
 | Latest clean measurement | Value |
 |---|---:|
-| Source commit | `38bba241c1d3df4cb9bfcadc681caf6fb1308476` |
+| Source commit | `20a6b02e7132e4eba56df0369eff77d50a2c6bf2` |
 | Samples | 10 |
-| Weighted latency speedup versus C | 0.324x |
-| Total throughput ratio versus C | 0.428x |
-| Median peak-RSS ratio versus C | 3.415x |
-| Shared-library byte-size ratio versus C | 2.396x |
-| Fontdone WASM size | 1,245,397 bytes |
+| Weighted latency speedup versus C | 0.299x |
+| Total throughput ratio versus C | 0.382x |
+| Median peak-RSS ratio versus C | 3.794x |
+| Shared-library byte-size ratio versus C | 2.487x |
+| Fontdone WASM size | 1,281,884 bytes |
 
 The regression policy is `collecting_baseline`. `make bench-regression`
 therefore fails closed until reviewed thresholds become active.
