@@ -57,8 +57,16 @@ def registry_has(package: str, expected_version: str) -> bool:
         with urllib.request.urlopen(request, timeout=15) as response:
             payload = json.load(response)
         return payload.get("version", {}).get("num") == expected_version
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError):
-        return False
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            return False
+        raise TimeoutError(
+            f"crates.io lookup for {package} {expected_version} failed: HTTP {error.code}"
+        ) from error
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as error:
+        raise TimeoutError(
+            f"crates.io lookup for {package} {expected_version} did not complete"
+        ) from error
 
 
 def run(command: list[str]) -> None:
