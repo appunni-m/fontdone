@@ -104,6 +104,20 @@ def verify_metadata() -> str:
     if len(set(versions.values())) != 1:
         raise ValueError(f"package version drift: {versions}")
     version = versions["fontdone"]
+    public_packages: list[str] = []
+    for name, manifest in WORKSPACE_PACKAGES:
+        manifest_text = manifest.read_text(encoding="utf-8")
+        if re.search(r"(?m)^publish\s*=\s*\[\"crates-io\"\]$", manifest_text):
+            public_packages.append(name)
+        elif re.search(r"(?m)^publish\s*=\s*false$", manifest_text) is None:
+            raise ValueError(
+                f"{manifest}: {name} must explicitly declare a private or crates.io release"
+            )
+    if public_packages != ["fontdone"]:
+        raise ValueError(
+            "workspace must expose exactly one public Cargo crate: "
+            f"{public_packages!r}"
+        )
     root_manifest = (ROOT / "Cargo.toml").read_text(encoding="utf-8")
     root_package = root_manifest.split("[package]", 1)[1]
     if not re.search(r'(?m)^name\s*=\s*"fontdone"$', root_package):
