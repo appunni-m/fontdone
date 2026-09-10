@@ -19,13 +19,14 @@ After publication, a registry consumer such as `pillow-rs` must use
 for a local build but Cargo rejects it when packaging the downstream crate.
 
 The first synchronized release is bootstrapped locally from the exact clean
-commit. The public Cargo crate is still unpublished from this checkout, while
-`fontdone@2.14.3-alpha.2` is already visible on npm from an earlier artifact.
-Because npm versions are immutable, the current source must use a new
-synchronized prerelease; a retry may skip an existing npm version only after
-the registry package contents match the reviewed local archive. Local commands
-validate and assemble the Cargo, C SDK, and npm artifacts; they do not create
-tags or releases.
+commit. The public Cargo crate and synchronized `fontdone@2.14.3-alpha.2` npm
+package are still unpublished from this checkout. The older alpha.1 npm
+artifact is already visible, but its immutable contents predate the current
+source. Because npm versions are immutable, the alpha.2 archive must be
+published as a new synchronized prerelease; a retry may skip an existing npm
+version only after the registry package contents match the reviewed local
+archive. Local commands validate and assemble the Cargo, C SDK, and npm
+artifacts; they do not create tags or releases.
 
 Publication is paused during active parity, coverage, and performance work.
 Do not push a release tag, publish a crate, or create a GitHub release until
@@ -135,8 +136,8 @@ new. The tag workflow uses `--publish-if-missing` for Cargo and performs an
 immutable npm content check before deciding whether to publish. Retrying a tag
 after a successful upload therefore preserves an identical registry artifact;
 it fails loudly if the visible version came from different source bytes. The
-current `2.14.3-alpha.2` npm version is such an earlier artifact and cannot be
-reused by this checkout.
+older `2.14.3-alpha.1` npm version remains immutable historical evidence and
+is not reused by this checkout.
 
 Do not place either credential in a command, file, or log. Configure the
 protected trusted publishers before using the automated path.
