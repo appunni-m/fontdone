@@ -151,7 +151,7 @@ def verify_metadata() -> str:
         if version not in path.read_text(encoding="utf-8"):
             raise ValueError(f"{path}: release version {version} is absent")
     print(
-        "release metadata: 1 public Cargo crate, 2 internal facade crates, "
+        "release metadata: 1 public Cargo crate, 2 internal workspace packages, "
         f"and browser npm package at {version}"
     )
     return version

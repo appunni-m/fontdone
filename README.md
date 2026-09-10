@@ -13,8 +13,9 @@
 > **Release:** `2.14.3-alpha.1`. The browser package and the public
 > `fontdone` Cargo crate are prepared for their first release; neither has been
 > published from this checkout. The C SDK is distributed as a native release
-> archive, while the raw WASM and C facade crates remain internal workspace build
-> targets. The project is suitable for compatibility
+> archive, while the raw WASM and C Cargo packages remain internal workspace build
+> targets. Only the root `fontdone` package is published to crates.io. The
+> project is suitable for compatibility
 > development and controlled evaluation, not as an unqualified drop-in FreeType
 > replacement.
 
