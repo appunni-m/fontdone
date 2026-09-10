@@ -59,7 +59,7 @@ constants.
 | Command | Purpose | Persistent output |
 |---|---|---|
 | `make build` | Build the root runtime | `target/` |
-| `cargo build --workspace --locked` | Build all three packages | `target/` |
+| `cargo build --workspace --locked` | Build the one public crate and two internal facade targets | `target/` |
 | `make setup` | Fetch/build the pinned oracle and constants | ignored `freetype/`, `target/`; generated constants |
 | `make generate-contracts` | Regenerate support, C header, WASM, and legal derivatives | tracked generated files |
 | `make check-generated` | Reject generated drift | no intended writes |
