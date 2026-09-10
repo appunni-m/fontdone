@@ -577,21 +577,21 @@ comparisons, 0 failed, and 4 explicitly pending safety-extension cases. The
 route audit reports **20,358 concrete cases, 0 pending routes and 4,273
 generic-fallback rows**, with 218 / 218 function routes present in each ABI
 surface. The source-digest attestation is bound to the current parity tree
-`e2cd44d65eb0f998e693dd26776fd19e09bac16e18251ae93170a5437f7194be`.
+`d799e97cec200b443eb726bf515ff001d37d8adc03f4704fcc4a269a1b32822b`.
 The generated C-ABI scorecard is **6 / 12 categories complete**; C01.1 is
-175 / 218, C01.7 is 13,572 / 18,098, C06.1 is 22 / 23, C07.1 is 19 / 20,
-C08.2 is 2,552 / 3,745, C08.3 is 15,829 / 20,355, C11.3 is 7 / 8, and
+176 / 218, C01.7 is 13,572 / 18,098, C06.1 is 22 / 23, C07.1 is 19 / 20,
+C08.2 is 2,652 / 3,745, C08.3 is 15,829 / 20,355, C11.3 is 7 / 8, and
 C12.3 is 1 / 5. The Windows import-library item and four fresh target bundles
 remain.
 
-The three pending cases are deliberately excluded from the pinned-C parity
+The four pending cases are deliberately excluded from the pinned-C parity
 numerator and denominator because their inputs are undefined or
-memory-unsafe for FreeType 2.14.3:
-`freetype.FT_Done_FreeType.error_invalid_or_foreign_library_handle`,
-`freetype.FT_Face_Properties.error_null_face`, and
-`ftimage.FT_Outline.null_internal_pointer_safety_extension`. Fontdone still
-rejects each input without dereferencing it, and the safety behavior remains
-covered by the facade/package checks; none is a missing runtime route.
+memory-unsafe for FreeType 2.14.3, or omit a required parameter:
+`freetype.done_freetype`, `freetype.face_properties`,
+`ftcache.image_cache_lookup`, and `ftoutln.outline_decompose`. Fontdone still
+rejects the unsafe inputs without dereferencing them, and the missing-parameter
+case remains explicitly classified; all four are excluded from pinned-C
+numerators and denominators.
 
 The current pushed-head all-lane run `47bb1b34-53a2-41a4-9198-a04a14515423`
 completed in 13.605 seconds with snapshot

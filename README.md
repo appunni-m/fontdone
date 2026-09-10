@@ -128,17 +128,18 @@ The last committed full parity snapshot was recorded on **2026-09-10**:
 | Concrete expanded cases | 20,358 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`20,287 / 20,287` means every runnable case in that execution matched; the 4
-explicitly pending concrete cases are safety-extension or undefined-input exclusions and the route audit still
-reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
+`20,354 / 20,354` means every runnable case in that execution matched; the 4
+explicitly pending concrete cases are safety-extension, undefined-input, or
+missing-parameter scenarios and the route audit still reports **0 pending parity
+routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest worktree verification is the full parity snapshot recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-20,287 / 20,287 runnable comparisons with 0 failures and 4 explicitly pending
+20,354 / 20,354 runnable comparisons with 0 failures and 4 explicitly pending
 concrete cases. Its source-bound parity-tree digest is
-`38e317ef2ca8a6af07ef1286bfc62c3709752f56ff0583fd3e7dfce1867815e0`.
+`d799e97cec200b443eb726bf515ff001d37d8adc03f4704fcc4a269a1b32822b`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -321,15 +322,15 @@ measurement provenance is retained in the compatibility snapshot.
 ### 3.4 C ABI completion contract
 
 The latest generated scorecard from `make c-abi-contract` at source commit
-`17e6b8818a0e63e6192c38dad576ca5581b3d3b5` has **6 / 12 categories complete**:
+`b591ca6a9db99175a980525e0668c6fa6afa6948` has **6 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 175 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 13,572 / 18,098 pinned-C runtime contract rows exact; 4,526 pending |
+| Functions | 176 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 13,572 / 18,098 pinned-C runtime contract rows exact; 4,526 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | 22 / 23 ownership rules have exact runtime evidence; 1 pending |
 | State, modules, headers | 19 / 20 state transitions have exact evidence; modules and headers are complete |
-| Errors | 2,552 / 3,745 expected-error routes compare exact error and output results; 15,829 / 20,355 routes have no generic fallback evidence |
+| Errors | 2,652 / 3,745 expected-error routes compare exact error and output results; 15,829 / 20,355 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 
