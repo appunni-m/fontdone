@@ -15,7 +15,7 @@ FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d0296
 LICENSE	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 Makefile	47562	file	7c1c3af78f7baacbebf1f41f9da0e1e9e911cbffb4af9bff231762814805041d	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 NOTICE.md	1275	file	b2a99b4906d6ff998690cfda4db4c23dff3e8351c6de65d5c9a8b1835a6ac623	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-README.md	25662	file	cc2b566331c90d471b3a85913ac352d56320859693510b12610dc416b26b04b3	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+README.md	25642	file	85c9fb91e2825c1e30dbf82bdc76a32751bf4cc004e666a85bf6a1d09e8546ef	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 SECURITY.md	1567	file	e4df9aebe37604b9a8bf9f7ea2fc541c761a50e72c35f5a24c78c93dc13352f3	-	keep-community	R09	Public community or security contract.
 deny.toml	341	file	d4d516ffd41e0c8e3de633cc3d807b5e0b1a53ec7b5f56ad8ea95c73da0a2bf1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 doc/COVERAGE_CAMPAIGN_GOAL.md	4975	file	8b92946e39c9761a958a9bc8d5770c1657f646d3c74b27d139054593a8cbe9fd	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
@@ -25,9 +25,9 @@ doc/FREETYPE_SUPPORT.md	30950	file	6b6b13666ef8d7dd27a4dbc9546cca45565a6fd517476
 doc/INTEGRATION.md	9722	file	d1e1cf7f275bf81603ab1c7acac7d185686b757489cb142ceee3332d06645b63	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/README.md	4529	file	f7217e1295955e219428d7fcdaa7165afc427154c36343b81022dbd348fc3452	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/RELEASING.md	12130	file	4389f4e46789c00f84aedd609e28b76edf9a0f8382a9ba8b45c8f5ecd649c6ff	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/ROADMAP.md	203733	file	b68aab473ec9007ecebda36ec12723cb3f1e3934585387938470151bd5702ee6	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
-doc/compatibility_snapshot.json	80767	file	55781edfa58a42079e76999efe6faac959337e8fcefc0fb2cda4a97167a61ba9	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/runtime_parity_evidence.json	1380	file	ce8719bfdc7ef50eb26c1afad49d08766efafe815a89777e94d67a566ce584c8	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/ROADMAP.md	204327	file	c240d8ccf96b0070857f0cb06a5c12fd5b155f5abfc9f1ae8288ffc05af9df56	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
+doc/compatibility_snapshot.json	80767	file	5f07717b2122270085dd3c440bbf0854efee8156cb4c9386b570021087012cf0	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/runtime_parity_evidence.json	1381	file	c28cbbde9fda2ea52c2dbe99b94e6cf2c9eab71f60f201c6a1d0371f9bcc6d38	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 examples/bench_ops.rs	10086	file	a75d7bbf4e8e679ca393d8cffd68cc0824f7198bb5e85857ce4dd75d8e016a21	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/ffi_migration.rs	1806	file	3140c3cbf9182299f2ab8c98f6675dfd3d086c47177f7bf8783160a149eddda8	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/handle_error.rs	571	file	acbe9d9f2e838bb5ca27132dde73287fa123e3a069772a2b741ae6e010fae3b1	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
@@ -1945,7 +1945,7 @@ tests/fixtures/inputs/public-api/ftcache.FTC_CMapCache_New.json	10745	file	9a9e7
 tests/fixtures/inputs/public-api/ftcache.FTC_FaceID.json	2545	file	241e8b79fb3ef2544ea93194d5b8a700e1a60e95d743ccfedc6aa16dba5c4117	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftcache.FTC_IMAGE_TYPE_COMPARE.json	3253	file	f84b10875d95bf2f6609a7bcd3ca46e4f29a983598953928ffa7a3295c0fd318	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftcache.FTC_ImageCache.json	2370	file	146fd5f5475389cec44d350e84b72a7191edfb859766e89a95c2c10c824df358	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
-tests/fixtures/inputs/public-api/ftcache.FTC_ImageCache_Lookup.json	58946	file	bcf88aa4578bfc70eaaa4266e42e45c2d5e28d5c2ca3f3ede1accc35b7d38fe4	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
+tests/fixtures/inputs/public-api/ftcache.FTC_ImageCache_Lookup.json	60175	file	81e349f21119bd48584cccced30fbbfe8ada98472b462963f809d947dc396b38	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftcache.FTC_ImageCache_LookupScaler.json	97915	file	e903c13c3ad94e57e484963aa2f0447d34c2a71cfbea68019d5cec47389c39ec	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftcache.FTC_ImageCache_New.json	10761	file	ee59a860df4b44668e29898f4557bff89d688e7233e57bd347d14f3aef975cc4	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
 tests/fixtures/inputs/public-api/ftcache.FTC_ImageType.json	2482	file	d0e812748eb2d952d2863c94b667effe3b7dead855a0cb145bb483a05df74816	-	keep-public-contract	R03	Executable public API parity input validated against tests/manifest.yaml.
