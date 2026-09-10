@@ -89,6 +89,8 @@ jobs:
           version="${GITHUB_REF_NAME#v}"
           mkdir -p release-bundle
           cp "target/package/fontdone-${version}.crate" release-bundle/
+          cp "target/package/fontdone-c-abi-${version}.crate" release-bundle/
+          cp "target/package/fontdone-wasm-${version}.crate" release-bundle/
           cp "target/npm-package/fontdone-${version}.tgz" release-bundle/
           cp target/release-evidence/SHA256SUMS release-bundle/
           (cd release-bundle && sha256sum --check SHA256SUMS)
