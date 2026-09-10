@@ -170,7 +170,7 @@ scripts/generate_public_constants.py	7939	file	d87faab4074d1040ff0718839ec41ae9a
 scripts/generate_support_matrix.py	7645	file	c0f00644ccd1a13d2d828baf5135ffb9296b7ed398c713d29d68ff217856d761	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/generate_wasm_contract.py	14999	file	c23dddc853d9c71db21c0c5590167aa3ab94e4d7b1b10839941d1ebc035d2cf1	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/oracle_validator_modules.cmake	2128	file	ccb2061afce64054e1d8e4bfc750d95a150682d9548ba238f088e19d0d2272d5	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
-scripts/package_c_sdk.py	5193	file	8caa539d544685c5877af38634ede30740f0ee40a4e68bafd2adf2bd97303b3c	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
+scripts/package_c_sdk.py	5331	file	1525a6d63d0b2f6f229deab41b71ec9332cd301c5f2f88d86f06d6021bc57c76	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/publish_release.py	4962	file	a2b423c5dd867d86d8db962be52ed105044222486144a68fd8d173f35fd6cc31	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/report_pending_route_buckets.py	3500	file	260eb78039a0c7d3b4dc9adf69eeced1a8071ede066d7b60c6ec65501e4aaa5e	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/run_coverage_command.py	6362	file	fe70b98b19ab9645ffbeb8e68b6b7c93a830a9c11fb8f7f02d671f05afb0fedf	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
