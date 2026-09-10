@@ -6,7 +6,7 @@ path	bytes	kind	sha256	symlink_target	retention_class	reason_code	reason
 .gitignore	445	file	e1360e2d31b4f9c1ac59023d6402cf788f8b1be1ff055ac5657a6f7936eb817e	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 AGENT.md	9	symlink	-	AGENTS.md	keep-alias	R05	Repository tooling alias whose path identity is an explicit contract.
 AGENTS.md	2364	file	a1699d5479e2727bbb81983689284821091f5d0db244d8eddd60df94c20ca889	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-CHANGELOG.md	2916	file	8377c6940a0048ba721f8f15d116c3a2c31b78fb8b1e2f55682a98eec808fe92	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+CHANGELOG.md	2980	file	5be7c00b9a06c8c060abb5321dad93ff8127e53a1cae70d2c053fb1f194abd16	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 CODE_OF_CONDUCT.md	834	file	fc5d9bcf71a578c1a1b80f10d3741125184c34b01841ead7209bc7fbd55d5b50	-	keep-community	R09	Public community or security contract.
 CONTRIBUTING.md	3011	file	e076524a90c599171729b9c20e7724d514e42ef8d60df687a25b311dc943cf82	-	keep-community	R09	Public community or security contract.
 Cargo.lock	13761	file	39452d9a25e3f8c8c2202eed93be7d9cb93e326add959f4c2f85b16c2fc6606d	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
@@ -15,7 +15,7 @@ FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d0296
 LICENSE	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 Makefile	47168	file	578e333107658098a822cedde22adefe48a6b520e98a9e00244bf04e34f723d0	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 NOTICE.md	1275	file	b2a99b4906d6ff998690cfda4db4c23dff3e8351c6de65d5c9a8b1835a6ac623	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-README.md	24866	file	f6dd0378e7f65b1f87168ac83b4a384a12fa0be856e1a42aa64c3160b869718c	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+README.md	24965	file	9e7c264a7b48dc6054985f7091c7d73da30db19123ce1ebb3f447e16074a6e4d	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 SECURITY.md	1567	file	e4df9aebe37604b9a8bf9f7ea2fc541c761a50e72c35f5a24c78c93dc13352f3	-	keep-community	R09	Public community or security contract.
 deny.toml	341	file	d4d516ffd41e0c8e3de633cc3d807b5e0b1a53ec7b5f56ad8ea95c73da0a2bf1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 doc/COVERAGE_CAMPAIGN_GOAL.md	4975	file	8b92946e39c9761a958a9bc8d5770c1657f646d3c74b27d139054593a8cbe9fd	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.

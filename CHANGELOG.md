@@ -14,12 +14,13 @@ First standalone alpha targeting FreeType 2.14.3.
 - Pure-Rust font loading, table parsing, scaling, TrueType bytecode hinting,
   multi-script auto-hinting, outlines, metrics, and rasterization.
 - Compact Rust masks/metrics API and a safe FreeType-shaped Rust facade.
-- Native `fontdone-c-abi` package with C/C++ headers, shared/static artifacts,
-  `pkg-config` metadata, install layout, and maintained external-C consumers.
+- Native C SDK archive built from the internal `fontdone-c-abi` target, with
+  C/C++ headers, shared/static artifacts, `pkg-config` metadata, install
+  layout, and maintained external-C consumers.
 - Browser npm package `fontdone` with a prebuilt Wasm asset, typed ESM
   lifecycle wrapper, package-level tests, and browser and Node examples.
-- Low-level `fontdone-wasm` crate with a generated ABI schema, TypeScript
-  declarations, and a Node 20 raw consumer.
+- Raw `fontdone-wasm` build target with a generated ABI schema, TypeScript
+  declarations, and a Node 20 consumer for the public npm package.
 - Exact C-oracle parity harness spanning Rust, native C, external C, and WASM,
   with runnable, failed, pending, manifest, and route measurements kept
   separate and committed snapshots bound to the exact tested source digest.

@@ -27,9 +27,9 @@ Pinned FreeType source is used only by ignored offline test tooling.
 |---|---|---|---|
 | Rust application | `fontdone` | Compact masks/metrics API | [Rust integration](https://github.com/appunni-m/fontdone/blob/main/doc/INTEGRATION.md#2-compact-rust-api) |
 | Rust FreeType migration | `fontdone` | Safe Rust API preserving measured `FT_*` concepts | [Safe migration](https://github.com/appunni-m/fontdone/blob/main/doc/INTEGRATION.md#3-freetype-shaped-safe-rust) |
-| C or C-compatible host | `fontdone-c-abi` | Raw pointers, shipped headers, shared/static libraries | [C ABI guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-c-abi/README.md) |
+| C or C-compatible host | Native C SDK archive | Raw pointers, shipped headers, shared/static libraries; built from the internal `fontdone-c-abi` target | [C ABI guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-c-abi/README.md) |
 | Browser application | `fontdone` on npm | Prebuilt Wasm with a typed ESM lifecycle wrapper | [Browser package guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/npm/README.md) |
-| Raw JavaScript host | `fontdone-wasm` | Low-level wasm32 linear-memory ABI | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
+| Raw JavaScript host | Internal `fontdone-wasm` build target | Low-level wasm32 linear-memory ABI used by the npm package | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
 
 The `fontdone` crate is not on crates.io yet. The browser package is available
 as the exact `fontdone@2.14.3-alpha.1` npm version. Evaluate Rust from a local
