@@ -55,7 +55,19 @@ jobs:
           target/font-generation-venv/bin/python -m pip install \
             --requirement requirements-font-generation.txt
       - name: Run the exact per-commit gate
-        run: make ci-fast PYTHON=target/font-generation-venv/bin/python
+        shell: bash
+        run: |
+          set -o pipefail
+          log_file="$RUNNER_TEMP/fontdone-ci-fast.log"
+          make ci-fast PYTHON=target/font-generation-venv/bin/python 2>&1 | tee "$log_file"
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            summary="$(tail -n 40 "$log_file" | tr '\n' ' ')"
+            summary="${summary//'%'/'%25'}"
+            summary="${summary//$'\r'/'%0D'}"
+            echo "::error title=ci-fast failure::$summary"
+            exit "$status"
+          fi
       - name: Retain smoke diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -86,7 +98,21 @@ jobs:
           rustup toolchain install "$RUST_MSRV" --profile minimal
           rustup override set "$RUST_MSRV"
       - name: Check the public crate on its MSRV
-        run: make test-msrv
+        shell: bash
+        env:
+          RUSTUP_TOOLCHAIN: ${{ env.RUST_MSRV }}
+        run: |
+          set -o pipefail
+          log_file="$RUNNER_TEMP/fontdone-msrv.log"
+          make test-msrv 2>&1 | tee "$log_file"
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            summary="$(tail -n 40 "$log_file" | tr '\n' ' ')"
+            summary="${summary//'%'/'%25'}"
+            summary="${summary//$'\r'/'%0D'}"
+            echo "::error title=public MSRV failure::$summary"
+            exit "$status"
+          fi
 
   parity:
     name: Thorough / Exact parity
