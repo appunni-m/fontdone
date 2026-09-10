@@ -19,7 +19,7 @@ from pathlib import Path, PurePosixPath
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-# All three packages are built and inspected because the C and raw-WASM
+# All three workspace packages are built and inspected because the C and raw-WASM
 # facades are part of the workspace contract.  Only the root package is a
 # public Cargo registry release; the facades ship through the C SDK archive
 # and browser npm package respectively.
