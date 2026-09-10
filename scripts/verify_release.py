@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify synchronized versions and the contents of all publishable archives."""
+"""Verify synchronized versions and public/internal release archives."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish the synchronized crates in dependency order with registry waits."""
+"""Publish the single public Cargo crate with registry verification."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 # The C ABI and raw-WASM packages remain workspace build targets.  Their public
 # distribution is the native C SDK archive and the browser npm package; only
 # the safe Rust API is published to crates.io.
-PACKAGES = ("fontdone",)
+PUBLISHED_PACKAGES = ("fontdone",)
 
 
 def version() -> str:
@@ -102,7 +102,7 @@ def main() -> int:
             )
             if status.stdout:
                 raise ValueError("publishing requires a clean tracked and untracked worktree")
-        for index, package in enumerate(PACKAGES):
+        for index, package in enumerate(PUBLISHED_PACKAGES):
             command = [
                 "cargo",
                 "publish",
@@ -122,7 +122,10 @@ def main() -> int:
                 )
             else:
                 run(command)
-            if (args.publish or args.publish_if_missing) and index + 1 < len(PACKAGES):
+            if (
+                (args.publish or args.publish_if_missing)
+                and index + 1 < len(PUBLISHED_PACKAGES)
+            ):
                 wait_for_registry(package, release_version, args.registry_timeout)
     except (OSError, ValueError, TimeoutError, subprocess.CalledProcessError) as exc:
         print(f"release stopped: {exc}", file=sys.stderr)
