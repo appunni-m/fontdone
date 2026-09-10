@@ -24,7 +24,7 @@ doc/FILE_RETENTION_INVENTORY.tsv	0	generated	-	-	generated-audit	R11	Generated e
 doc/FREETYPE_SUPPORT.md	30950	file	6b6b13666ef8d7dd27a4dbc9546cca45565a6fd517476cbaecf02a0201ac2305	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/INTEGRATION.md	9722	file	adc44f4b0cf1751d2b3b9c124829b453d26406ca1cd0accd972ff228a42bbb69	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/README.md	4471	file	ae5768ee87cf2fc8d63b08564334cc502a92371dc01e0044c62dfc1ae889f863	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/RELEASING.md	11756	file	b59357352d2f72504b2f8fec8b85fa6caf809658cc7b5e709266527078d0cf3e	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/RELEASING.md	11843	file	65cce55802a547691d13daca8c5ca0d4c56206df33994c24d671f3673ba5edd4	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/ROADMAP.md	203742	file	f3031666eee5ec2f1e2dd56a294f556b0e2a5052ef222d0926ad8901df7bf2d7	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
 doc/compatibility_snapshot.json	80767	file	ba0275e4716537344e2639114258502c6d931ae758f66aa132fa1684b36c2a29	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/runtime_parity_evidence.json	1381	file	853b5f1ad231e5fea8ec707eaee144f49a96861cc59ec2e7032b0f11537d3d72	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
