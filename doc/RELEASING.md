@@ -19,9 +19,13 @@ After publication, a registry consumer such as `pillow-rs` must use
 for a local build but Cargo rejects it when packaging the downstream crate.
 
 The first synchronized release is bootstrapped locally from the exact clean
-commit. The public Cargo crate and `fontdone@2.14.3-alpha.1` npm version are
-still unpublished from this checkout. Local commands validate and assemble the
-Cargo, C SDK, and npm artifacts; they do not create tags or releases.
+commit. The public Cargo crate is still unpublished from this checkout, while
+`fontdone@2.14.3-alpha.1` is already visible on npm from an earlier artifact.
+Because npm versions are immutable, the current source must use a new
+synchronized prerelease; a retry may skip an existing npm version only after
+the registry package contents match the reviewed local archive. Local commands
+validate and assemble the Cargo, C SDK, and npm artifacts; they do not create
+tags or releases.
 
 Publication is paused during active parity, coverage, and performance work.
 Do not push a release tag, publish a crate, or create a GitHub release until
@@ -36,8 +40,10 @@ the repository owner explicitly approves publication.
   the workflow.
 - The release commit is clean, pushed, and has a successful CI run.
 - The exact Cargo versions have not previously been published or tagged.
-- The `fontdone` npm version is checked immediately before release; if it is
-  already visible, the workflow preserves that immutable artifact.
+- The `fontdone` npm version is checked immediately before release. If it is
+  visible, the workflow compares its extracted package contents with the
+  reviewed archive and skips only an exact match; a mismatch stops the release
+  and requires a new version.
 
 Tokens must never appear in command arguments, repository files, logs, or
 generated evidence.
@@ -115,18 +121,22 @@ cargo logout
 The script publishes `fontdone`. Build the exact C SDK archive from
 `make c-abi-package` and the npm artifact from `make npm-package-verify`; the
 tag workflow attaches the C archive and publishes the npm artifact only after
-the registry check confirms that the immutable version is missing:
+the registry check confirms that the immutable version is missing. For a new
+version, publish the exact verified archive:
 
 ```bash
-npm publish target/npm-package/fontdone-2.14.3-alpha.1.tgz \
+version=2.14.3-alpha.2
+npm publish "target/npm-package/fontdone-${version}.tgz" \
   --access public --tag next --provenance
 ```
 
 The local bootstrap intentionally uses `--publish` because the Cargo version is
-new. The tag workflow uses `--publish-if-missing` and checks the npm version
-first, so retrying the immutable bootstrap tag after a successful local upload
-preserves the existing registry artifacts instead of attempting a second
-publication.
+new. The tag workflow uses `--publish-if-missing` for Cargo and performs an
+immutable npm content check before deciding whether to publish. Retrying a tag
+after a successful upload therefore preserves an identical registry artifact;
+it fails loudly if the visible version came from different source bytes. The
+current `2.14.3-alpha.1` npm version is such an earlier artifact and cannot be
+reused by this checkout.
 
 Do not place either credential in a command, file, or log. Configure the
 protected trusted publishers before using the automated path.
@@ -172,17 +182,22 @@ npm publish --dry-run \
   --access public --tag next
 ```
 
-If the version is missing after explicit owner approval, authenticate with npm
-and publish that exact tarball, not the mutable source directory:
+After bumping all synchronized manifests to a new version, and once that
+version is missing after explicit owner approval, authenticate with npm and
+publish that exact tarball, not the mutable source directory:
 
 ```bash
-npm publish target/npm-package/fontdone-2.14.3-alpha.1.tgz \
+VERSION=2.14.3-alpha.2
+npm publish "target/npm-package/fontdone-${VERSION}.tgz" \
   --access public --tag next
 ```
 
-The tag workflow queries `npm view fontdone@<version>` first and skips an
-already visible immutable version, which makes a tag retry safe after the
-local bootstrap.
+Before publication, the tag workflow queries npm's immutable `dist.integrity`
+for the exact version and compares it with the SHA-512 digest of the tarball in
+the release bundle. A missing version is published; an exact archive match is
+skipped; any mismatch fails the job and requires a new prerelease. A registry
+name check alone is insufficient because it can silently preserve an artifact
+built from a different commit.
 
 The `next` dist-tag prevents this alpha from silently becoming the stable
 `latest` release. Immediately verify the immutable version and tag:

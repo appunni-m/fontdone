@@ -10,11 +10,13 @@
 
 </div>
 
-> **Release:** `2.14.3-alpha.1`. The browser package and the public
-> `fontdone` Cargo crate are prepared for their first release; neither has been
-> published from this checkout. The C SDK is distributed as a native release
-> archive, while the raw WASM and C Cargo packages remain internal workspace build
-> targets. Only the root `fontdone` package is published to crates.io. The
+> **Release:** `2.14.3-alpha.1`. The public `fontdone` Cargo crate is prepared
+> for its first release from this checkout. `fontdone@2.14.3-alpha.1` is
+> already visible on npm from an earlier artifact; the current source is not
+> allowed to reuse that immutable version and needs a new synchronized
+> prerelease before publication. The C SDK is distributed as a native release
+> archive, while the raw WASM and C Cargo packages remain internal workspace
+> build targets. Only the root `fontdone` package is published to crates.io. The
 > project is suitable for compatibility
 > development and controlled evaluation, not as an unqualified drop-in FreeType
 > replacement.
@@ -33,9 +35,11 @@ Pinned FreeType source is used only by ignored offline test tooling.
 | Browser application | `fontdone` on npm | Prebuilt Wasm with a typed ESM lifecycle wrapper | [Browser package guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/npm/README.md) |
 | Raw JavaScript host | Internal `fontdone-wasm` build target | Low-level wasm32 linear-memory ABI used by the npm package | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
 
-The `fontdone` crate and browser package are not published from this checkout
-yet. Evaluate Rust from a local checkout while keeping the version requirement
-that a publishable downstream package needs:
+The `fontdone` crate is not published from this checkout yet. The matching npm
+version is already public, but its immutable contents predate the current
+source and cannot be treated as this release. Evaluate Rust from a local
+checkout while keeping the version requirement that a publishable downstream
+package needs:
 
 ```toml
 [dependencies]

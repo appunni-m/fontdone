@@ -151,15 +151,50 @@ jobs:
           path: release-bundle
       - name: Verify release bundle
         run: (cd release-bundle && sha256sum --check SHA256SUMS)
-      - name: Publish exact npm artifact with provenance
+      - name: Check immutable npm version and artifact
+        id: npm-check
+        shell: bash
         run: |
           version="${GITHUB_REF_NAME#v}"
-          if npm view "fontdone@${version}" version --registry=https://registry.npmjs.org >/dev/null 2>&1; then
-            echo "fontdone@${version} is already visible; keeping the immutable artifact"
-          else
-            npm publish "release-bundle/fontdone-${version}.tgz" \
-              --access public --tag next --provenance
+          archive="release-bundle/fontdone-${version}.tgz"
+          set +e
+          response="$(curl --silent --show-error --location \
+            --header 'Accept: application/json' \
+            --write-out '\n__STATUS__%{http_code}' \
+            "https://registry.npmjs.org/fontdone/${version}")"
+          lookup_status=$?
+          set -e
+          if [ "$lookup_status" -ne 0 ]; then
+            echo "npm registry lookup failed" >&2
+            exit "$lookup_status"
           fi
+          http_status="${response##*__STATUS__}"
+          metadata="${response%__STATUS__*}"
+          metadata="${metadata%$'\n'}"
+          if [ "$http_status" = "404" ]; then
+            echo "fontdone@${version} is not visible"
+            echo "missing=true" >> "$GITHUB_OUTPUT"
+          elif [ "$http_status" != "200" ]; then
+            echo "npm registry lookup returned HTTP ${http_status}" >&2
+            exit 1
+          else
+            registry_integrity="$(printf '%s' "$metadata" | node --input-type=module -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).dist?.integrity ?? ""))')"
+            test -n "$registry_integrity"
+            local_integrity="sha512-$(sha512sum "$archive" | cut -d' ' -f1 | xxd -r -p | base64 -w0)"
+            if [ "$local_integrity" != "$registry_integrity" ]; then
+              echo "npm registry artifact mismatch for fontdone@${version}" >&2
+              echo "local=${local_integrity} registry=${registry_integrity}" >&2
+              exit 1
+            fi
+            echo "fontdone@${version} is visible and matches the immutable archive"
+            echo "missing=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Publish exact npm artifact with provenance
+        if: steps.npm-check.outputs.missing == 'true'
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          npm publish "release-bundle/fontdone-${version}.tgz" \
+            --access public --tag next --provenance
 
   github-release:
     name: Create immutable GitHub Release
