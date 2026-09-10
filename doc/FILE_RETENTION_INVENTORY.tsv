@@ -10,7 +10,7 @@ CHANGELOG.md	2980	file	5be7c00b9a06c8c060abb5321dad93ff8127e53a1cae70d2c053fb1f1
 CODE_OF_CONDUCT.md	834	file	fc5d9bcf71a578c1a1b80f10d3741125184c34b01841ead7209bc7fbd55d5b50	-	keep-community	R09	Public community or security contract.
 CONTRIBUTING.md	3011	file	e076524a90c599171729b9c20e7724d514e42ef8d60df687a25b311dc943cf82	-	keep-community	R09	Public community or security contract.
 Cargo.lock	13761	file	39452d9a25e3f8c8c2202eed93be7d9cb93e326add959f4c2f85b16c2fc6606d	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-Cargo.toml	2423	file	4bfc1e2d358fc3696685a72b9c8fdee311b303deb421df64be5e4f20693f7ea6	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+Cargo.toml	2421	file	cfd09095885d8bd692acee3a6dd823f55dbef5e7d11cb13c470720cd40aef3b7	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 LICENSE	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 Makefile	47168	file	578e333107658098a822cedde22adefe48a6b520e98a9e00244bf04e34f723d0	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
@@ -26,8 +26,8 @@ doc/INTEGRATION.md	9722	file	adc44f4b0cf1751d2b3b9c124829b453d26406ca1cd0accd972
 doc/README.md	4471	file	ae5768ee87cf2fc8d63b08564334cc502a92371dc01e0044c62dfc1ae889f863	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/RELEASING.md	10902	file	564a9e241e0e96aa3fafd3d4e7f99d9cf1d1bda1f757586712eb251793b2dffe	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/ROADMAP.md	203742	file	f3031666eee5ec2f1e2dd56a294f556b0e2a5052ef222d0926ad8901df7bf2d7	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
-doc/compatibility_snapshot.json	80767	file	ad656d532b8127d5725570e792007ee4d4ae8c2b7f0ac73b1995025099a0811f	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/runtime_parity_evidence.json	1381	file	5ef371bf8063b92af99245625faaa6ee0bf3aee6f57246a522d11c6dfca2dee2	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/compatibility_snapshot.json	80767	file	ba0275e4716537344e2639114258502c6d931ae758f66aa132fa1684b36c2a29	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/runtime_parity_evidence.json	1381	file	853b5f1ad231e5fea8ec707eaee144f49a96861cc59ec2e7032b0f11537d3d72	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 examples/bench_ops.rs	10086	file	a75d7bbf4e8e679ca393d8cffd68cc0824f7198bb5e85857ce4dd75d8e016a21	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/ffi_migration.rs	1806	file	3140c3cbf9182299f2ab8c98f6675dfd3d086c47177f7bf8783160a149eddda8	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/handle_error.rs	571	file	acbe9d9f2e838bb5ca27132dde73287fa123e3a069772a2b741ae6e010fae3b1	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
