@@ -1,3 +1,13 @@
+/*
+ * The oracle uses POSIX tokenization and environment helpers.  glibc hides
+ * their declarations when strict C11 mode is selected unless the feature
+ * level is requested before any system header is included.  Keep the source
+ * directly compilable by the hosted Linux gate as well as macOS.
+ */
+#if !defined(_POSIX_C_SOURCE)
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
