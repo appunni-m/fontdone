@@ -320,15 +320,16 @@ measurement provenance is retained in the compatibility snapshot.
 
 ### 3.4 C ABI completion contract
 
-The latest committed scorecard has **8 / 12 categories complete**:
+The latest generated scorecard from `make c-abi-contract` at source commit
+`17e6b8818a0e63e6192c38dad576ca5581b3d3b5` has **6 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 218 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 13,572 / 18,098 pinned-C runtime contract rows exact; 4,526 pending |
+| Functions | 175 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 13,572 / 18,098 pinned-C runtime contract rows exact; 4,526 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
-| Ownership | Complete under the current scorecard measurements |
-| State, modules, headers | Complete under their blocking scorecard measurements |
-| Errors | 2,263 / 3,125 expected-error routes compare exact error and output results; 14,509 / 18,803 routes have no generic fallback evidence |
+| Ownership | 22 / 23 ownership rules have exact runtime evidence; 1 pending |
+| State, modules, headers | 19 / 20 state transitions have exact evidence; modules and headers are complete |
+| Errors | 2,552 / 3,745 expected-error routes compare exact error and output results; 15,829 / 20,355 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 
@@ -340,8 +341,10 @@ routes remain even when every bare function name has some traced route. The self
 
 The committed machine-readable snapshot is
 [`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
-The latest scorecard run is Coverage MCP run
-`50a57027-4581-402d-82ca-b32b10ebe3b4`.
+The scorecard is generated from the pinned C headers, current route audit,
+contract inventory, and available platform artifacts. Incomplete categories
+remain release blockers; the generated report under `target/api-abi-audit/`
+is the detailed authority for the current worktree.
 
 ### 3.5 Performance baseline
 

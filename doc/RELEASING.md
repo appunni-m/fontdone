@@ -56,7 +56,10 @@ generated evidence.
 2. Update the root README release banner.
 3. Run `make test-parity`, then `make record-parity-snapshot`; the second
    command refuses evidence whose source digest does not match the worktree.
-4. Replace the C-contract values with evidence from the complete scorecard.
+4. Run `make c-abi-contract`, then run `make record-c-contract-snapshot` to
+   promote the generated C-contract measurements into the committed snapshot.
+   This records incomplete debt as well; `make c-abi-contract-complete` is
+   still required before publication.
 5. Review the generated function map, C headers, WASM schema/declarations, and
    synchronized legal files.
 6. Move the changelog entry from “Unreleased” to the release date.

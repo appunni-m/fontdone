@@ -58,6 +58,7 @@ NON_PARITY_SCRIPTS = {
     "scripts/build_coverage_region_queue.py",
     "scripts/publish_release.py",
     "scripts/package_c_sdk.py",
+    "scripts/record_c_contract_snapshot.py",
     "scripts/test_rust_consumer.py",
     "scripts/verify_release.py",
 }

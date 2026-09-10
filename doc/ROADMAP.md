@@ -571,18 +571,18 @@ worktree at that point:
 | 174 | `0fdc628` (CBLC missing-glyph fallback coverage route) | The existing `freetype.FT_Select_Size.success_select_bitmap_strike` coverage-only probe now also opens the maintained CBLC/CBDT gray-format-1 input and loads missing glyph 0 with `FT_LOAD_SBITS_ONLY`, exercising the Cblc empty-bitmap fallback and validating its zero dimensions and empty storage without changing normal parity outputs. Pushed-head parity run `015a4a36-9fb7-41af-85bc-5289941605c7`, recorded in `doc/runtime_parity_evidence.json`, passed 7,841 / 7,841 runnable comparisons with 0 failures and 3 pending safety-extension cases. All-lane Coverage MCP run `8c71cb2b-4195-4c87-8d95-2c6f7f799efd`, snapshot `9ce54c70-4d60-405f-9da6-279d55a6d7bd`, completed in 71.430 seconds and measured 51,814 / 54,801 lines, 10,368 / 12,592 branches, 3,516 / 3,847 functions, and 71,437 / 75,909 regions; relative to entry 173, covered lines rose by 43, branches by 4, functions by 3, and regions by 42. The C-ABI scorecard remains 10 / 12 categories complete; the Windows import-library item and four fresh target-lane bundles remain. |
 | 175 | `4acb99b` (coverage cache reuse for harness edits) | Changed the all-lane coverage and preparation state markers to ignore the integration harness, which is excluded from the LLVM report denominator, so harness-only probe edits reuse unchanged instrumented runtime libraries and coverage maps. Pushed-head parity run `56fa5043-ef86-4d96-b390-4d7f40009ccd`, recorded in `doc/runtime_parity_evidence.json`, passed 7,841 / 7,841 runnable comparisons with 0 failures and 3 pending safety-extension cases. Warm all-lane Coverage MCP run `47bb1b34-53a2-41a4-9198-a04a14515423`, snapshot `d8291137-95a9-4e6e-841c-bcca41f7f8f1`, completed in 13.605 seconds with a 0.03-second instrumented build; the one-time marker migration run `fe269459-78fa-40cd-a389-1adb9ab32772` took 71.954 seconds with 51.33 seconds of compilation. Coverage remained 51,814 / 54,801 lines, 10,368 / 12,592 branches, 3,516 / 3,847 functions, and 71,437 / 75,909 regions. The C-ABI scorecard remains 10 / 12 categories complete; the Windows import-library item and four fresh target-lane bundles remain. |
 
-The current pushed-head parity verification is Coverage MCP parity run
-`56fa5043-ef86-4d96-b390-4d7f40009ccd`, recorded in
-`doc/runtime_parity_evidence.json`: it passed 7,841 / 7,841 runnable
-comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
-route audit reports **7,844 concrete cases, 0 pending routes and 0 generic-fallback rows**, with
-218 / 218 function routes present in each ABI surface. The source-digest
-attestation was refreshed in `doc/runtime_parity_evidence.json`; its current
-parity-tree digest is
-`03a7126cbbeaf72b5cab839e168365a42887f9f1f68c3b390b61e790d055d1b5`.
-The tracked C-ABI scorecard is **10 / 12 categories complete**; C01.7 is
-5,389 / 5,389, C08.3 is 7,841 / 7,841, C11.3 is 7 / 8, and C12.3 is 1 / 5.
-The Windows import-library item and four fresh target-lane bundles remain.
+The current pushed-head parity verification is the source-bound run recorded in
+`doc/runtime_parity_evidence.json`: it passed 20,354 / 20,354 runnable
+comparisons, 0 failed, and 4 explicitly pending safety-extension cases. The
+route audit reports **20,358 concrete cases, 0 pending routes and 4,273
+generic-fallback rows**, with 218 / 218 function routes present in each ABI
+surface. The source-digest attestation is bound to the current parity tree
+`e2cd44d65eb0f998e693dd26776fd19e09bac16e18251ae93170a5437f7194be`.
+The generated C-ABI scorecard is **6 / 12 categories complete**; C01.1 is
+175 / 218, C01.7 is 13,572 / 18,098, C06.1 is 22 / 23, C07.1 is 19 / 20,
+C08.2 is 2,552 / 3,745, C08.3 is 15,829 / 20,355, C11.3 is 7 / 8, and
+C12.3 is 1 / 5. The Windows import-library item and four fresh target bundles
+remain.
 
 The three pending cases are deliberately excluded from the pinned-C parity
 numerator and denominator because their inputs are undefined or

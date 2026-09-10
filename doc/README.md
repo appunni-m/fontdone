@@ -65,7 +65,7 @@ Every file directly under `doc/` has one declared lifecycle:
 | authoritative | [Releasing](RELEASING.md) | Update when packaging or publication changes |
 | active-plan | [Parity, coverage, and performance roadmap](ROADMAP.md) | Delete after every ledger goal is complete and durable results have moved into authoritative docs |
 | generated | [Function adoption map](FREETYPE_SUPPORT.md) | Generate from `tests/data/interface_map.json` |
-| generated | [Compatibility snapshot](compatibility_snapshot.json) | Refresh with the parity or clean-performance evidence record commands |
+| generated | [Compatibility snapshot](compatibility_snapshot.json) | Refresh with `make record-parity-snapshot`, `make record-c-contract-snapshot`, or the clean-performance evidence record command |
 | generated | [Runtime parity evidence](runtime_parity_evidence.json) | Record with `make record-parity-snapshot` after a complete full-parity run |
 | generated | [Retention inventory](FILE_RETENTION_INVENTORY.tsv) | Generate with `make repository-inventory` |
 

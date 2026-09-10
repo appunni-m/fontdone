@@ -199,6 +199,7 @@ help:
 	@printf "  make doc                  Build strict workspace API documentation\n"
 	@printf "  make doc-test             Compile every public Rust example\n"
 	@printf "  make record-parity-snapshot  Commit-ready snapshot from the latest source-matched full run\n"
+	@printf "  make record-c-contract-snapshot  Commit-ready snapshot from the latest generated C-ABI scorecard\n"
 	@printf "\nRelease:\n"
 	@printf "  make release-verify       Run the complete local release gate\n"
 	@printf "  make release-dry-run      Verify the public Cargo, C SDK, and npm archives\n"
@@ -274,6 +275,10 @@ test-parity-smoke: unified-oracle api-abi-check test-ffi
 .PHONY: record-parity-snapshot
 record-parity-snapshot:
 	$(PYTHON) scripts/run_runtime_parity.py --record
+
+.PHONY: record-c-contract-snapshot
+record-c-contract-snapshot:
+	$(PYTHON) scripts/record_c_contract_snapshot.py
 
 .PHONY: unified-oracle
 unified-oracle: oracle-fetch

@@ -85,6 +85,7 @@ Run the smallest useful gate first:
 | One case | `make test-case CASE=freetype.FT_Load_Glyph.no_scale` | Exact selected case comparison |
 | Full parity | `make test-parity` | Every runnable exact case, route audit, facades, and purity guard |
 | Record parity evidence | `make record-parity-snapshot` | Promote the latest passing, source-matched report into committed evidence |
+| Record C-ABI evidence | `make record-c-contract-snapshot` | Promote the latest generated C-ABI scorecard into the committed compatibility snapshot |
 | Performance smoke | `make bench-quick` | Run two C/Rust samples without qualifying them as baseline evidence |
 | Performance evidence | `make bench` | Run ten release-mode samples with latency, throughput, peak RSS, and artifact sizes |
 | Record performance | `make record-performance-baseline` | Append a qualifying clean report to committed measured evidence |
@@ -4943,13 +4944,13 @@ or reason is stale.
 | R03 | 1,761 | executable parity tests and public contracts |
 | R04 | 1,336 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
-| R06 | 67 | maintained tooling, examples, and benchmarks |
+| R06 | 68 | maintained tooling, examples, and benchmarks |
 | R07 | 8 | durable project documentation |
 | R08 | 1 | active self-cleaning roadmap |
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,340** | **all retained paths** |
+| **Total** | **3,341** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

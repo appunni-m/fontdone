@@ -40,7 +40,7 @@
     "function_total": 218
   },
   "c_contract": {
-    "categories_complete": 8,
+    "categories_complete": 6,
     "categories_total": 12,
     "is_complete": false,
     "runtime_contract_rows_complete": 13572,
@@ -1854,9 +1854,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "49b1edc03a91e2cb1f0a3cb1606be366c59d447b39f37b147afdcc25ffbdc7fb",
-    "parity_tree_sha256": "e2cd44d65eb0f998e693dd26776fd19e09bac16e18251ae93170a5437f7194be",
-    "log_sha256": "9cbcb0ccb64ecd6e816c68c6e45d59ef798a56a1e273e2fa9f91a9f849db4497",
+    "sha256": "60cf95d9f79a3e2c4abcd813f708cb17a465e7677c4694bb3d222330691128ef",
+    "parity_tree_sha256": "bdb73fd90ddc593a875fa0b2c92e7a6e507630068582f0b061f13f11ab258dca",
+    "log_sha256": "26648f6f358a91700b89ec51e43b237edad9580b57c4613ec43b592e5350062e",
     "command": "make test-parity"
   }
 }
