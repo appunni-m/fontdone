@@ -260,7 +260,7 @@ test-parity: unified-oracle bzip2-enabled-oracle api-abi-check test-ffi test-fil
 	$(PYTHON) scripts/run_runtime_parity.py
 
 .PHONY: test-parity-smoke
-test-parity-smoke: unified-oracle api-abi-audit test-ffi
+test-parity-smoke: unified-oracle api-abi-check test-ffi
 	FONTDONE_UNIFIED_OPERATION_FILTER=load_char \
 	FONTDONE_UNIFIED_CASE_LIMIT=8 \
 	FONTDONE_UNIFIED_ORACLE_REFRESH=1 \

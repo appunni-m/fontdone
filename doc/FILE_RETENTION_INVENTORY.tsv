@@ -13,7 +13,7 @@ Cargo.lock	13761	file	39452d9a25e3f8c8c2202eed93be7d9cb93e326add959f4c2f85b16c2f
 Cargo.toml	2421	file	cfd09095885d8bd692acee3a6dd823f55dbef5e7d11cb13c470720cd40aef3b7	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 LICENSE	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-Makefile	47168	file	578e333107658098a822cedde22adefe48a6b520e98a9e00244bf04e34f723d0	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+Makefile	47168	file	de2c5d51e2cbaff9a637d5d4919ada6c5b54d1a51b871610b1ab7e354d2bfd6e	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 NOTICE.md	1275	file	b2a99b4906d6ff998690cfda4db4c23dff3e8351c6de65d5c9a8b1835a6ac623	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 README.md	25278	file	9addba3d640b732195b8dc7f64c395cc15f871ecf898a1b3fdf2124f6e6d94bb	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 SECURITY.md	1567	file	e4df9aebe37604b9a8bf9f7ea2fc541c761a50e72c35f5a24c78c93dc13352f3	-	keep-community	R09	Public community or security contract.
