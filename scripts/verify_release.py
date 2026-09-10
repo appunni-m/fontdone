@@ -19,11 +19,16 @@ from pathlib import Path, PurePosixPath
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGES = (
+# All three packages are built and inspected because the C and raw-WASM
+# facades are part of the workspace contract.  Only the root package is a
+# public Cargo registry release; the facades ship through the C SDK archive
+# and browser npm package respectively.
+WORKSPACE_PACKAGES = (
     ("fontdone", ROOT / "Cargo.toml"),
     ("fontdone-c-abi", ROOT / "fontdone-c-abi" / "Cargo.toml"),
     ("fontdone-wasm", ROOT / "fontdone-wasm" / "Cargo.toml"),
 )
+PUBLISHED_PACKAGES = (WORKSPACE_PACKAGES[0],)
 NPM_MANIFEST = ROOT / "fontdone-wasm" / "npm" / "package.json"
 REQUIRED = {
     "fontdone": {
@@ -95,7 +100,7 @@ def package_version(manifest: Path) -> str:
 
 
 def verify_metadata() -> str:
-    versions = {name: package_version(manifest) for name, manifest in PACKAGES}
+    versions = {name: package_version(manifest) for name, manifest in WORKSPACE_PACKAGES}
     if len(set(versions.values())) != 1:
         raise ValueError(f"package version drift: {versions}")
     version = versions["fontdone"]
@@ -110,9 +115,12 @@ def verify_metadata() -> str:
             "Cargo.toml: workspace must retain both synchronized facade members"
         )
     exact = f'version = "={version}"'
-    for name, manifest in PACKAGES[1:]:
+    for name, manifest in WORKSPACE_PACKAGES[1:]:
         if exact not in manifest.read_text(encoding="utf-8"):
             raise ValueError(f"{manifest}: {name} must require fontdone exactly at {version}")
+    for name, manifest in WORKSPACE_PACKAGES[1:]:
+        if re.search(r"(?m)^publish\s*=\s*false$", manifest.read_text(encoding="utf-8")) is None:
+            raise ValueError(f"{manifest}: {name} must remain an internal workspace package")
     for name in ("fontdone-c-abi", "fontdone-wasm"):
         pattern = rf'{re.escape(name)}\s*=\s*\{{[^}}]*path\s*=\s*"{re.escape(name)}"'
         if re.search(pattern, root_manifest) is None:
@@ -142,7 +150,10 @@ def verify_metadata() -> str:
     for path in (ROOT / "README.md", ROOT / "CHANGELOG.md"):
         if version not in path.read_text(encoding="utf-8"):
             raise ValueError(f"{path}: release version {version} is absent")
-    print(f"release metadata: 3 Cargo crates and browser npm package at {version}")
+    print(
+        "release metadata: 1 public Cargo crate, 2 internal facade crates, "
+        f"and browser npm package at {version}"
+    )
     return version
 
 
@@ -157,6 +168,15 @@ def safe_extract(archive: Path, destination: Path) -> None:
             ):
                 raise ValueError(f"{archive}: unsafe member {member.name}")
         package.extractall(destination)
+
+
+def report_path(path: Path) -> str:
+    """Keep release reports readable for both in-tree and isolated targets."""
+
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
 
 
 def inspect_archive(
@@ -221,23 +241,24 @@ def inspect_archive(
     return {
         "package": package_name,
         "version": version,
-        "archive": str(archive.relative_to(ROOT)),
+        "archive": report_path(archive),
         "sha256": digest,
         "file_count": len(relative),
-        "inventory": str(inventory.relative_to(ROOT)),
+        "inventory": report_path(inventory),
     }
 
 
 def package_and_inspect(version: str) -> list[dict[str, object]]:
-    output = ROOT / "target" / "release-evidence"
+    target_dir = Path(os.environ.get("CARGO_TARGET_DIR", ROOT / "target"))
+    output = target_dir / "release-evidence"
     output.mkdir(parents=True, exist_ok=True)
     extracted = Path(tempfile.mkdtemp(prefix="fontdone-release-archives-"))
     atexit.register(shutil.rmtree, extracted, ignore_errors=True)
 
     env = os.environ.copy()
-    env["CARGO_TARGET_DIR"] = str(ROOT / "target")
+    env["CARGO_TARGET_DIR"] = str(target_dir)
     reports: list[dict[str, object]] = []
-    for package_name, _manifest in PACKAGES:
+    for package_name, _manifest in WORKSPACE_PACKAGES:
         local_root_patch = []
         if package_name != "fontdone":
             local_root_patch = [
@@ -257,7 +278,7 @@ def package_and_inspect(version: str) -> list[dict[str, object]]:
             ],
             env=env,
         )
-        archive = ROOT / "target" / "package" / f"{package_name}-{version}.crate"
+        archive = target_dir / "package" / f"{package_name}-{version}.crate"
         if not archive.is_file():
             raise ValueError(f"cargo did not create {archive}")
         reports.append(inspect_archive(package_name, version, archive, output))
@@ -267,7 +288,7 @@ def package_and_inspect(version: str) -> list[dict[str, object]]:
     # to the other exact packaged sources. This is the local pre-publication
     # equivalent of registry verification for mutually version-pinned crates.
     patches = []
-    for package_name, _manifest in PACKAGES:
+    for package_name, _manifest in WORKSPACE_PACKAGES:
         package_path = extracted / f"{package_name}-{version}"
         patches.extend(
             [
@@ -275,7 +296,7 @@ def package_and_inspect(version: str) -> list[dict[str, object]]:
                 f'patch.crates-io.{package_name}.path="{package_path}"',
             ]
         )
-    for package_name, _manifest in PACKAGES:
+    for package_name, _manifest in WORKSPACE_PACKAGES:
         manifest = extracted / f"{package_name}-{version}" / "Cargo.toml"
         run(
             [
@@ -293,7 +314,8 @@ def package_and_inspect(version: str) -> list[dict[str, object]]:
     report = {
         "schema_version": 1,
         "version": version,
-        "publication_order": [name for name, _ in PACKAGES],
+        "publication_order": [name for name, _ in PUBLISHED_PACKAGES],
+        "workspace_archives": [name for name, _ in WORKSPACE_PACKAGES],
         "archives": reports,
     }
     (output / "package-report.json").write_text(
@@ -302,7 +324,7 @@ def package_and_inspect(version: str) -> list[dict[str, object]]:
     checksums = "\n".join(
         f"{item['sha256']}  {Path(str(item['archive'])).name}" for item in reports
     )
-    npm_archive = ROOT / "target" / "npm-package" / f"fontdone-{version}.tgz"
+    npm_archive = target_dir / "npm-package" / f"fontdone-{version}.tgz"
     if npm_archive.is_file():
         npm_digest = hashlib.sha256(npm_archive.read_bytes()).hexdigest()
         checksums += f"\n{npm_digest}  {npm_archive.name}"
@@ -340,14 +362,19 @@ def package_and_inspect(version: str) -> list[dict[str, object]]:
         f"{contract['binary_artifact_items_total']}, platforms "
         f"{contract['platform_lanes_complete']}/"
         f"{contract['platform_lanes_total']})\n\n"
-        "Cargo publication order: `fontdone`, `fontdone-c-abi`, "
-        "`fontdone-wasm`. The synchronized browser npm artifact is also named "
-        "`fontdone` and publishes separately under the `next` dist-tag. Route "
+        "Cargo publication: public `fontdone` only. The C ABI is distributed "
+        "as a native SDK archive, and the synchronized browser npm artifact is "
+        "also named `fontdone` and publishes separately under the `next` "
+        "dist-tag. Route "
         "evidence is not a claim that every success path is complete; see the "
         "repository adoption map and C-contract scorecard.\n"
     )
     (output / "release-notes.md").write_text(notes, encoding="utf-8")
-    print(f"release packages: {len(reports)} archives inspected and compiled")
+    print(
+        "release packages: "
+        f"{len(reports)} workspace archives inspected and compiled; "
+        f"{len(PUBLISHED_PACKAGES)} public Cargo package"
+    )
     return reports
 
 

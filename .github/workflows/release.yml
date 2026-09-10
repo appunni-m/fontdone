@@ -83,16 +83,17 @@ jobs:
           merge-multiple: true
       - name: Run the complete release gate
         run: make release-verify PYTHON=target/font-generation-venv/bin/python
+      - name: Build the native C SDK archive
+        run: make c-abi-package
       - name: Assemble immutable release bundle
         shell: bash
         run: |
           version="${GITHUB_REF_NAME#v}"
           mkdir -p release-bundle
           cp "target/package/fontdone-${version}.crate" release-bundle/
-          cp "target/package/fontdone-c-abi-${version}.crate" release-bundle/
-          cp "target/package/fontdone-wasm-${version}.crate" release-bundle/
+          cp target/c-sdk/fontdone-c-abi-"${version}"-*.tar.gz release-bundle/
           cp "target/npm-package/fontdone-${version}.tgz" release-bundle/
-          cp target/release-evidence/SHA256SUMS release-bundle/
+          (cd release-bundle && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)
           (cd release-bundle && sha256sum --check SHA256SUMS)
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -102,7 +103,7 @@ jobs:
           retention-days: 90
 
   publish-crates:
-    name: Publish fontdone crates to crates.io
+    name: Publish fontdone crate to crates.io
     needs: preflight
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -182,6 +183,7 @@ jobs:
         with:
           subject-path: |
             release-bundle/*.crate
+            release-bundle/*.tar.gz
             release-bundle/*.tgz
             release-bundle/SHA256SUMS
       - name: Create GitHub Release
@@ -192,4 +194,4 @@ jobs:
             --verify-tag \
             --title "fontdone ${GITHUB_REF_NAME#v}" \
             --generate-notes \
-            release-bundle/*.crate release-bundle/*.tgz release-bundle/SHA256SUMS
+            release-bundle/*.crate release-bundle/*.tar.gz release-bundle/*.tgz release-bundle/SHA256SUMS

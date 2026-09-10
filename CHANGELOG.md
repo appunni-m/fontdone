@@ -1,8 +1,9 @@
 # Changelog
 
 All notable user-visible changes are recorded here. This project uses one
-synchronized version for the `fontdone`, `fontdone-c-abi`, and `fontdone-wasm`
-Cargo crates and the `fontdone` browser npm package.
+synchronized version for the public `fontdone` Cargo crate, the native C SDK,
+and the `fontdone` browser npm package. The C and raw-WASM Cargo packages are
+internal workspace build targets.
 
 ## 2.14.3-alpha.1 (Unreleased)
 

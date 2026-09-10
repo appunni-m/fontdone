@@ -200,8 +200,9 @@ help:
 	@printf "  make record-parity-snapshot  Commit-ready snapshot from the latest source-matched full run\n"
 	@printf "\nRelease:\n"
 	@printf "  make release-verify       Run the complete local release gate\n"
-	@printf "  make release-dry-run      Verify publishable archives\n"
+	@printf "  make release-dry-run      Verify the public Cargo, C SDK, and npm archives\n"
 	@printf "  make release              Publish after protected approval\n"
+	@printf "  make c-abi-package        Build the native C SDK archive\n"
 	@printf "  make c-abi-install        Install C headers, libraries, and pkg-config metadata under PREFIX\n"
 	@printf "  make c-abi-install-check  Stage and verify the complete C installation layout\n"
 	@printf "\nMaintenance:\n"
@@ -960,6 +961,11 @@ c-abi-install:
 	install -m 0644 fontdone-c-abi/fontdone2.pc \
 		"$(DESTDIR)$(PREFIX)/lib/pkgconfig/fontdone2.pc"
 
+.PHONY: c-abi-package
+c-abi-package:
+	$(CARGO) build --release -p fontdone-c-abi --locked
+	$(PYTHON) scripts/package_c_sdk.py
+
 .PHONY: c-abi-install-check
 c-abi-install-check: test-c-consumer
 
@@ -1014,8 +1020,8 @@ release-verify: ci-thorough c-abi-contract-complete bench-regression
 	$(MAKE) check-docs
 
 .PHONY: release-dry-run
-release-dry-run: package-verify npm-package-verify
-	@echo "local ordered 3-crate and browser npm archive verification complete"
+release-dry-run: package-verify npm-package-verify c-abi-package
+	@echo "local one-crate, native C SDK, and browser npm archive verification complete"
 	@echo "after the exact root version is on crates.io, run: python3 scripts/publish_release.py --dry-run"
 
 .PHONY: release

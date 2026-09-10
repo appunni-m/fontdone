@@ -1,9 +1,10 @@
 # Release guide
 
-The `fontdone`, `fontdone-c-abi`, and `fontdone-wasm` Cargo crates plus the
-browser npm package `fontdone` form one synchronized release unit. All four
-artifacts currently use `2.14.3-alpha.1`; Cargo facade dependencies require
-that exact root-crate version.
+The public release unit has one Cargo crate (`fontdone`), one native C SDK
+archive, and one browser npm package (`fontdone`). The `fontdone-c-abi` and
+`fontdone-wasm` Cargo packages stay in the workspace as internal build targets;
+their exact version requirements keep the SDK and npm output synchronized with
+the root crate.
 
 The root manifest is the publishable `fontdone` crate. A downstream crate may
 use a sibling checkout during development, but its dependency must retain the
@@ -19,10 +20,8 @@ for a local build but Cargo rejects it when packaging the downstream crate.
 
 The first synchronized release is bootstrapped locally from the exact clean
 commit. The `fontdone@2.14.3-alpha.1` npm version is already visible, while the
-three Cargo versions remain unpublished. The protected tag-driven GitHub
-workflow preserves that existing npm artifact and publishes the Cargo crates.
-Local commands validate and assemble evidence; they do not create tags or
-releases.
+public Cargo crate remains unpublished. Local commands validate and assemble
+the Cargo, C SDK, and npm artifacts; they do not create tags or releases.
 
 Publication is paused during active parity, coverage, and performance work.
 Do not push a release tag, publish a crate, or create a GitHub release until
@@ -30,7 +29,7 @@ the repository owner explicitly approves publication.
 
 ## 1. Release prerequisites
 
-- At least two current crates.io owners exist for each package.
+- At least two current crates.io owners exist for the `fontdone` package.
 - The GitHub `crates-io` environment requires reviewer approval.
 - crates.io and npm trusted publishers are configured for the protected
   `crates-io` and `npm` environments; no long-lived registry token is stored in
@@ -45,7 +44,7 @@ generated evidence.
 
 ## 2. Prepare the release commit
 
-1. Update all three Cargo crate versions, the npm package version, and both
+1. Update the public Cargo crate version, the npm package version, and both
    exact internal Cargo requirements.
 2. Update the root README release banner.
 3. Run `make test-parity`, then `make record-parity-snapshot`; the second
@@ -65,16 +64,20 @@ generated evidence.
    make npm-package-verify
    ```
 
-`make package-verify` creates all three `.crate` archives, rejects fixture,
-font, oracle, test, and tooling leakage, compiles the extracted packages with
-exact local dependency substitutions, and writes inventories and SHA-256
-digests under `target/release-evidence/`. `make npm-package-verify` builds the
-Wasm asset, runs wrapper tests, creates and inspects the exact `.tgz`, installs
-it into a temporary dependency consumer, reruns its shipped self-test, and
-renders a glyph through the installed package. `make check-versions` also
-verifies the root package identity, synchronized workspace members, exact
-facade requirements, npm name/version/publish tag, and the versioned path
-dependency used by the external Rust consumer.
+`make package-verify` creates and inspects all three workspace `.crate`
+archives so the internal facades remain reproducible, but only the root
+`fontdone` archive is a public Cargo artifact. It rejects fixture, font,
+oracle, test, and tooling leakage, compiles the extracted packages with exact
+local dependency substitutions, and writes inventories and SHA-256 digests
+under `target/release-evidence/`. `make c-abi-package` assembles the native C
+SDK archive from the built library, headers, pkg-config metadata, examples,
+and legal files. `make npm-package-verify` builds the Wasm asset, runs wrapper
+tests, creates and inspects the exact `.tgz`, installs it into a temporary
+dependency consumer, reruns its shipped self-test, and renders a glyph through
+the installed package. `make check-versions` also verifies the root package
+identity, synchronized workspace members, private facade markers, exact facade
+requirements, npm name/version/publish tag, and the versioned path dependency
+used by the external Rust consumer.
 
 ## 3. Required CI evidence
 
@@ -100,7 +103,7 @@ blocks publication.
 ## 4. First local bootstrap
 
 After `make release-verify` passes on a clean, reviewed commit, publish the
-Cargo crates one at a time through the maintained dependency-order script:
+single public Cargo crate through the maintained script:
 
 ```bash
 cargo login
@@ -109,22 +112,22 @@ RELEASE_APPROVED=1 RELEASE_CI_SHA="$(git rev-parse HEAD)" \
 cargo logout
 ```
 
-The script publishes `fontdone`, waits for crates.io visibility, then publishes
-`fontdone-c-abi` and `fontdone-wasm`. Build the exact npm artifact from
-`make npm-package-verify` and compare it with the already visible version. The
-tag workflow skips that immutable version when it is present; publish it only
-if the registry check confirms it is missing:
+The script publishes `fontdone`. Build the exact C SDK archive from
+`make c-abi-package` and the npm artifact from `make npm-package-verify`; the
+tag workflow attaches the C archive and preserves the already visible npm
+version. Publish the npm artifact only if the registry check confirms it is
+missing:
 
 ```bash
 npm publish target/npm-package/fontdone-2.14.3-alpha.1.tgz \
   --access public --tag next --provenance
 ```
 
-The local bootstrap intentionally uses `--publish` because these are new
-registry versions. The tag workflow uses `--publish-if-missing` and checks the
-npm version first, so retrying the immutable bootstrap tag after a successful
-local upload preserves the existing registry artifacts instead of attempting a
-second publication.
+The local bootstrap intentionally uses `--publish` because the Cargo version is
+new. The tag workflow uses `--publish-if-missing` and checks the npm version
+first, so retrying the immutable bootstrap tag after a successful local upload
+preserves the existing registry artifacts instead of attempting a second
+publication.
 
 Do not place either credential in a command, file, or log. Configure the
 protected trusted publishers before using the automated path.
@@ -135,18 +138,14 @@ Push an annotated `v<version>` tag for the exact synchronized commit. The
 `.github/workflows/release.yml` workflow verifies the tag, waits for successful
 CI on that commit, and publishes from the verified bundle.
 
-After approval, `scripts/publish_release.py --publish-if-missing` performs:
+After approval, `scripts/publish_release.py --publish-if-missing` publishes
+`fontdone` when that exact version is not already visible. The C SDK archive is
+distributed as a GitHub release asset, and the browser package is published to
+npm by the separate workflow job.
 
-1. publish `fontdone` when that exact version is not already visible;
-2. wait until crates.io serves the exact version;
-3. publish `fontdone-c-abi` when that exact version is not already visible;
-4. wait until crates.io serves the exact version;
-5. publish `fontdone-wasm` when that exact version is not already visible.
-
-The script names every package, preserves immutable versions already visible,
-stops at the first failure, requires a clean tracked and untracked worktree,
-and waits up to ten minutes for each dependency to become visible. Never run
-an unqualified `cargo publish` from the workspace root.
+The script names the public package, preserves an immutable version already
+visible, stops at the first failure, and requires a clean tracked and untracked
+worktree. Never run an unqualified `cargo publish` from the workspace root.
 
 For registry-resolution rehearsal after the root version is visible:
 
@@ -201,26 +200,27 @@ approved publish.
 ## 7. Tags and release assets
 
 After the maintainer pushes annotated tag `v2.14.3-alpha.1` at the approved
-commit and all three Cargo publications succeed, the workflow:
+commit and the Cargo and npm publications succeed, the workflow:
 
 1. verifies the immutable tag and successful CI result;
 2. creates the GitHub release from generated notes;
-3. attaches all three exact `.crate` archives, the verified npm `.tgz`, and
-   `SHA256SUMS`.
+3. attaches the exact public `.crate`, native C SDK archive, verified npm
+   `.tgz`, and `SHA256SUMS`.
 
 Never move or recreate a published tag. Attached checksums must describe the
 same archives inspected during preflight.
 
 ## 8. Failure, retry, and registry recovery
 
-Stop at the first failed publication. Do not skip a package or publish a facade
-against a missing root version.
+Stop at the first failed publication. Do not distribute a C SDK or npm
+artifact that was built against a different root version.
 
 - Retry the same unpublished package after a transient local or network error.
 - Published crate contents are immutable.
 - If published contents are wrong, explicitly yank the affected version; do
   not delete its tag or reuse its version.
-- Normally yank the synchronized facades when yanking their root version.
+- Rebuild the synchronized C SDK and npm artifacts when yanking their root
+  version; the internal facade packages are not registry releases.
 - Fix the issue and publish a new synchronized prerelease.
 
 For npm, do not reuse a published version. If package contents are wrong,
@@ -232,14 +232,14 @@ exception that genuinely requires removal.
 Example:
 
 ```bash
-cargo yank --version 2.14.3-alpha.1 fontdone-wasm
+cargo yank --version 2.14.3-alpha.1 fontdone
 ```
 
 ## 9. Alpha policy and current evidence
 
 Any Rust API, JavaScript API, C ABI, WASM ABI, layout, ownership, error, or
 behavioral change may occur only in a new prerelease. A public change in one
-surface increments all three Cargo crates and the npm artifact. The `2.14.3`
+surface increments the public Cargo crate, C SDK, and npm artifact. The `2.14.3`
 prefix identifies the pinned FreeType target; it does not claim complete
 replacement.
 
@@ -248,7 +248,9 @@ replacement.
 | Version | `2.14.3-alpha.1` |
 | FreeType target | `2.14.3` |
 | Last committed evidence | `2026-07-30` |
-| Cargo crates | `fontdone`, `fontdone-c-abi`, `fontdone-wasm` |
+| Public Cargo crate | `fontdone` |
+| Internal Cargo build targets | `fontdone-c-abi`, `fontdone-wasm` |
+| Native C SDK archive | `fontdone-c-abi-<version>-<target>.tar.gz` |
 | Browser npm package | `fontdone` |
 
 The machine-readable denominators are in

@@ -5,8 +5,10 @@ It exports a measured FreeType-shaped subset from a library named
 `fontdone_c_abi`; it never links, loads, or builds C FreeType at runtime.
 
 Version `2.14.3-alpha.1` requires exactly `fontdone = 2.14.3-alpha.1`.
-The crates are not published yet; build this package from the workspace. The
-alpha is not ABI-stable.
+This is an internal Cargo workspace package, not a second crates.io release.
+The public C distribution is the native SDK archive attached to the tagged
+release; build this package from the workspace when developing or packaging
+that SDK. The alpha is not ABI-stable.
 
 Commands beginning with `make` or `python3 scripts/` are repository verification
 commands. They require a complete `fontdone` checkout and are not installed by
@@ -209,7 +211,8 @@ headers in the same translation unit and assume record identity.
 
 ## 7. Alpha ABI and version policy
 
-- All three packages always carry the same version.
+- The public Cargo crate, native C SDK, and browser npm package always carry
+  the same version; this internal workspace package carries that version too.
 - Every internal package dependency uses that exact version.
 - No ABI compatibility is promised between different `alpha.N` releases.
 - An exported symbol removal, signature change, record layout change,

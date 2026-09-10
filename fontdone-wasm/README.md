@@ -1,16 +1,17 @@
 # fontdone WebAssembly
 
-This directory owns two synchronized WebAssembly surfaces for the pure-Rust
-`fontdone` engine:
+This directory owns the browser WebAssembly surface for the pure-Rust
+`fontdone` engine and its internal raw build target:
 
 - the browser npm package named `fontdone`, with a prebuilt Wasm module and a
   typed ESM lifecycle wrapper;
-- the `fontdone-wasm` Rust crate, which builds the raw linear-memory ABI used by
-  that wrapper and by the repository parity harness.
+- the internal `fontdone-wasm` Rust workspace package, which builds the raw
+  linear-memory ABI used by that wrapper and by the repository parity harness.
 
 Version `2.14.3-alpha.1` requires exactly `fontdone = 2.14.3-alpha.1`. Different
-alpha releases are not API- or ABI-compatible by promise. Neither surface is a
-text-shaping or layout engine.
+alpha releases are not API- or ABI-compatible by promise. The npm package is
+the public JavaScript release; the raw Cargo target is internal. Neither
+surface is a text-shaping or layout engine.
 
 ## 1. Browser npm package
 
@@ -219,7 +220,7 @@ signed 16.16. Bitmap length is `abs(pitch) * rows`.
 
 ## 8. Packaging and license
 
-The Cargo archive contains source, this README, the generated raw contracts,
+The internal Cargo archive contains source, this README, the generated raw contracts,
 the Node example, and `LICENSE`, `FTL.TXT`, and `NOTICE.md`. It excludes test
 fonts, generated fixture outputs, C oracle source, the compiled Wasm binary,
 and local tooling.
@@ -229,7 +230,7 @@ ABI inventory, browser and Node examples, verification scripts, and the same
 legal files. It excludes Rust/C source, fixture fonts, oracle material, and
 repository tooling.
 
-Inspect both artifact forms with:
+Inspect the internal raw archive and public npm artifact with:
 
 ```bash
 cargo package -p fontdone-wasm --list

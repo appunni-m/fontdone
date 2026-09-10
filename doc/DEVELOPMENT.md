@@ -4838,7 +4838,7 @@ The manual run first repeats the fast commit gate, then adds:
 | Native C | Linux x86-64, macOS aarch64, and Windows x86-64 |
 | Cross C | Linux i686 and powerpc64 executed under QEMU |
 | C scorecard | five fresh platform bundles plus current 12-category debt |
-| Packages | all three inspected crate archives |
+| Packages | public `fontdone` crate, native C SDK archive, browser npm archive; internal facade archives inspected |
 | Supply chain | advisories, dependency, source, and license policy |
 
 The stable `Thorough gate` succeeds only when every requested job produces
@@ -4943,13 +4943,13 @@ or reason is stale.
 | R03 | 1,761 | executable parity tests and public contracts |
 | R04 | 1,336 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
-| R06 | 66 | maintained tooling, examples, and benchmarks |
+| R06 | 67 | maintained tooling, examples, and benchmarks |
 | R07 | 8 | durable project documentation |
 | R08 | 1 | active self-cleaning roadmap |
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,339** | **all retained paths** |
+| **Total** | **3,340** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

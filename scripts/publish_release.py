@@ -14,7 +14,10 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGES = ("fontdone", "fontdone-c-abi", "fontdone-wasm")
+# The C ABI and raw-WASM packages remain workspace build targets.  Their public
+# distribution is the native C SDK archive and the browser npm package; only
+# the safe Rust API is published to crates.io.
+PACKAGES = ("fontdone",)
 
 
 def version() -> str:

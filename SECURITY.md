@@ -31,4 +31,6 @@ operations. No runtime package may call FreeType C. Do not bypass those
 boundaries as a fix.
 
 Only the current prerelease is supported. Security fixes are released as a new
-synchronized version of all three Cargo crates and the browser npm package.
+synchronized version of the public `fontdone` Cargo crate, the native C SDK,
+and the browser npm package. The C and raw-WASM Cargo packages remain internal
+workspace build targets.
