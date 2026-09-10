@@ -128,18 +128,17 @@ The last committed full parity snapshot was recorded on **2026-09-10**:
 | Concrete expanded cases | 20,358 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`20,354 / 20,354` means every runnable case in that execution matched; the 4
-explicitly pending concrete cases are safety-extension, undefined-input, or
-missing-parameter scenarios and the route audit still reports **0 pending parity
-routes**. Likewise, 218/218 function-route evidence
+`20,355 / 20,355` means every runnable case in that execution matched; the 3
+explicitly pending concrete cases are safety-extension or undefined-input
+scenarios and the route audit still reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
 equivalent to complete behavior for every input, state, or platform.
 
 The latest worktree verification is the full parity snapshot recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-20,354 / 20,354 runnable comparisons with 0 failures and 4 explicitly pending
+20,355 / 20,355 runnable comparisons with 0 failures and 3 explicitly pending
 concrete cases. Its source-bound parity-tree digest is
-`d799e97cec200b443eb726bf515ff001d37d8adc03f4704fcc4a269a1b32822b`.
+`1f494dc8224563f7a7ba6ad9a0ccb2eb9d1a84c43612f5379ee933adf6f04cbe`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -234,7 +233,7 @@ reuses those artifacts instead of rerunning the phony preparation targets;
 `make coverage-clean` removes both the build and preparation markers.
 
 This is an LLVM branch-coverage measurement across the Rust core, native C
-ABI, and host-compiled WASM facade. The 4 explicitly pending cases remain
+ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
 pending. The maintained `make test-coverage-all` command keeps all workspace
 packages in the report but executes only the `unified_fixture_parity`
 integration target, whose exact default test name is

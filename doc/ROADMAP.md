@@ -571,27 +571,28 @@ worktree at that point:
 | 174 | `0fdc628` (CBLC missing-glyph fallback coverage route) | The existing `freetype.FT_Select_Size.success_select_bitmap_strike` coverage-only probe now also opens the maintained CBLC/CBDT gray-format-1 input and loads missing glyph 0 with `FT_LOAD_SBITS_ONLY`, exercising the Cblc empty-bitmap fallback and validating its zero dimensions and empty storage without changing normal parity outputs. Pushed-head parity run `015a4a36-9fb7-41af-85bc-5289941605c7`, recorded in `doc/runtime_parity_evidence.json`, passed 7,841 / 7,841 runnable comparisons with 0 failures and 3 pending safety-extension cases. All-lane Coverage MCP run `8c71cb2b-4195-4c87-8d95-2c6f7f799efd`, snapshot `9ce54c70-4d60-405f-9da6-279d55a6d7bd`, completed in 71.430 seconds and measured 51,814 / 54,801 lines, 10,368 / 12,592 branches, 3,516 / 3,847 functions, and 71,437 / 75,909 regions; relative to entry 173, covered lines rose by 43, branches by 4, functions by 3, and regions by 42. The C-ABI scorecard remains 10 / 12 categories complete; the Windows import-library item and four fresh target-lane bundles remain. |
 | 175 | `4acb99b` (coverage cache reuse for harness edits) | Changed the all-lane coverage and preparation state markers to ignore the integration harness, which is excluded from the LLVM report denominator, so harness-only probe edits reuse unchanged instrumented runtime libraries and coverage maps. Pushed-head parity run `56fa5043-ef86-4d96-b390-4d7f40009ccd`, recorded in `doc/runtime_parity_evidence.json`, passed 7,841 / 7,841 runnable comparisons with 0 failures and 3 pending safety-extension cases. Warm all-lane Coverage MCP run `47bb1b34-53a2-41a4-9198-a04a14515423`, snapshot `d8291137-95a9-4e6e-841c-bcca41f7f8f1`, completed in 13.605 seconds with a 0.03-second instrumented build; the one-time marker migration run `fe269459-78fa-40cd-a389-1adb9ab32772` took 71.954 seconds with 51.33 seconds of compilation. Coverage remained 51,814 / 54,801 lines, 10,368 / 12,592 branches, 3,516 / 3,847 functions, and 71,437 / 75,909 regions. The C-ABI scorecard remains 10 / 12 categories complete; the Windows import-library item and four fresh target-lane bundles remain. |
 
+| 176 | `d63b3ce` (image-cache planned-case input completion) | Replaced the empty `FTC_ImageCache_Lookup.planned_cache_subsystem_not_out_of_scope` input with the explicit DejaVuSans requester, image type, glyph index, repeat-lookup, and non-null-anode contract already exercised by the maintained cache route. The focused parity run passed 1 / 1; the clean source-bound full parity run passed 20,355 / 20,355 runnable comparisons with 0 failures and 3 pending safety-extension cases. The route audit remains at 20,358 concrete cases, 0 pending routes, 0 generic-fallback rows, and 218 / 218 function evidence in each ABI surface. No implementation or expected output was changed. |
+
 The current pushed-head parity verification is the source-bound run recorded in
-`doc/runtime_parity_evidence.json`: it passed 20,354 / 20,354 runnable
-comparisons, 0 failed, and 4 explicitly pending safety-extension cases. The
+`doc/runtime_parity_evidence.json`: it passed 20,355 / 20,355 runnable
+comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **20,358 concrete cases, 0 pending routes and 4,273
 generic-fallback rows**, with 218 / 218 function routes present in each ABI
 surface. The source-digest attestation is bound to the current parity tree
-`d799e97cec200b443eb726bf515ff001d37d8adc03f4704fcc4a269a1b32822b`.
+`1f494dc8224563f7a7ba6ad9a0ccb2eb9d1a84c43612f5379ee933adf6f04cbe`.
 The generated C-ABI scorecard is **6 / 12 categories complete**; C01.1 is
 176 / 218, C01.7 is 13,572 / 18,098, C06.1 is 22 / 23, C07.1 is 19 / 20,
 C08.2 is 2,652 / 3,745, C08.3 is 15,829 / 20,355, C11.3 is 7 / 8, and
 C12.3 is 1 / 5. The Windows import-library item and four fresh target bundles
 remain.
 
-The four pending cases are deliberately excluded from the pinned-C parity
+The three pending cases are deliberately excluded from the pinned-C parity
 numerator and denominator because their inputs are undefined or
 memory-unsafe for FreeType 2.14.3, or omit a required parameter:
-`freetype.done_freetype`, `freetype.face_properties`,
-`ftcache.image_cache_lookup`, and `ftoutln.outline_decompose`. Fontdone still
-rejects the unsafe inputs without dereferencing them, and the missing-parameter
-case remains explicitly classified; all four are excluded from pinned-C
-numerators and denominators.
+`freetype.done_freetype`, `freetype.face_properties`, and
+`ftoutln.outline_decompose`. Fontdone still rejects the unsafe inputs without
+dereferencing them; all three are excluded from pinned-C numerators and
+denominators.
 
 The current pushed-head all-lane run `47bb1b34-53a2-41a4-9198-a04a14515423`
 completed in 13.605 seconds with snapshot
