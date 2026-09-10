@@ -12564,6 +12564,11 @@ pub fn FT_Select_Size(face: Option<&mut FT_Face>, strike_index: FT_Int) -> FT_Er
     let Ok(strike_index) = usize::try_from(strike_index) else {
         return FT_Err_Invalid_Argument as FT_Error;
     };
+    let uses_sbix = {
+        let inner = face.inner.borrow();
+        let font = inner.font();
+        !font.ignore_sbix && font.data.sbix.is_some()
+    };
     let result = face.inner.borrow_mut().select_size(strike_index);
     match result {
         Ok(()) => {
@@ -12572,6 +12577,15 @@ pub fn FT_Select_Size(face: Option<&mut FT_Face>, strike_index: FT_Int) -> FT_Er
         }
         Err(SelectSizeError::NoFixedSizes) => FT_Err_Invalid_Face_Handle as FT_Error,
         Err(SelectSizeError::InvalidArgument) => FT_Err_Invalid_Argument as FT_Error,
+        Err(SelectSizeError::InvalidPixelSize) if uses_sbix => {
+            // FreeType's `tt_size_select` reaches the SFNT driver's `sbix`
+            // strike callback with a zero ppem and reports
+            // `Invalid_Face_Handle` (35), rather than the base-layer
+            // `Invalid_Pixel_Size` (23).  Preserve the distinction at the
+            // FFI boundary while the core error remains the useful generic
+            // invalid-pixel-size variant for other fixed-size drivers.
+            FT_Err_Invalid_Face_Handle as FT_Error
+        }
         Err(SelectSizeError::InvalidPixelSize) => FT_Err_Invalid_Pixel_Size,
     }
 }
