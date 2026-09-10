@@ -58,9 +58,12 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          log_file="$RUNNER_TEMP/fontdone-ci-fast.log"
+          log_file="target/ci-diagnostics/fontdone-ci-fast.log"
+          mkdir -p "$(dirname "$log_file")"
+          set +e
           make ci-fast PYTHON=target/font-generation-venv/bin/python 2>&1 | tee "$log_file"
           status=${PIPESTATUS[0]}
+          set -e
           if [ "$status" -ne 0 ]; then
             summary="$(tail -n 40 "$log_file" | tr '\n' ' ')"
             summary="${summary//'%'/'%25'}"
@@ -75,6 +78,7 @@ jobs:
           name: parity-smoke-diagnostics
           path: |
             target/api-abi-audit/
+            target/ci-diagnostics/
             target/external-consumers/c/
             tests/fixtures/outputs/
           if-no-files-found: ignore
@@ -103,9 +107,12 @@ jobs:
           RUSTUP_TOOLCHAIN: ${{ env.RUST_MSRV }}
         run: |
           set -o pipefail
-          log_file="$RUNNER_TEMP/fontdone-msrv.log"
+          log_file="target/ci-diagnostics/fontdone-msrv.log"
+          mkdir -p "$(dirname "$log_file")"
+          set +e
           make test-msrv 2>&1 | tee "$log_file"
           status=${PIPESTATUS[0]}
+          set -e
           if [ "$status" -ne 0 ]; then
             summary="$(tail -n 40 "$log_file" | tr '\n' ' ')"
             summary="${summary//'%'/'%25'}"
@@ -113,6 +120,14 @@ jobs:
             echo "::error title=public MSRV failure::$summary"
             exit "$status"
           fi
+      - name: Retain MSRV diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: msrv-diagnostics
+          path: target/ci-diagnostics/
+          if-no-files-found: ignore
+          retention-days: 7
 
   parity:
     name: Thorough / Exact parity
