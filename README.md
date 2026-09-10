@@ -10,10 +10,11 @@
 
 </div>
 
-> **Release:** `2.14.3-alpha.1`. The browser package is already visible on npm;
-> the public `fontdone` Cargo crate is prepared for its first release. The C
-> SDK is distributed as a native release archive, while the raw WASM and C
-> facade crates remain internal workspace build targets. The project is suitable for compatibility
+> **Release:** `2.14.3-alpha.1`. The browser package and the public
+> `fontdone` Cargo crate are prepared for their first release; neither has been
+> published from this checkout. The C SDK is distributed as a native release
+> archive, while the raw WASM and C facade crates remain internal workspace build
+> targets. The project is suitable for compatibility
 > development and controlled evaluation, not as an unqualified drop-in FreeType
 > replacement.
 
@@ -31,10 +32,9 @@ Pinned FreeType source is used only by ignored offline test tooling.
 | Browser application | `fontdone` on npm | Prebuilt Wasm with a typed ESM lifecycle wrapper | [Browser package guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/npm/README.md) |
 | Raw JavaScript host | Internal `fontdone-wasm` build target | Low-level wasm32 linear-memory ABI used by the npm package | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
 
-The `fontdone` crate is not on crates.io yet. The browser package is available
-as the exact `fontdone@2.14.3-alpha.1` npm version. Evaluate Rust from a local
-checkout while keeping the version requirement that a publishable downstream
-package needs:
+The `fontdone` crate and browser package are not published from this checkout
+yet. Evaluate Rust from a local checkout while keeping the version requirement
+that a publishable downstream package needs:
 
 ```toml
 [dependencies]

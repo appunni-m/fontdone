@@ -19,9 +19,9 @@ After publication, a registry consumer such as `pillow-rs` must use
 for a local build but Cargo rejects it when packaging the downstream crate.
 
 The first synchronized release is bootstrapped locally from the exact clean
-commit. The `fontdone@2.14.3-alpha.1` npm version is already visible, while the
-public Cargo crate remains unpublished. Local commands validate and assemble
-the Cargo, C SDK, and npm artifacts; they do not create tags or releases.
+commit. The public Cargo crate and `fontdone@2.14.3-alpha.1` npm version are
+still unpublished from this checkout. Local commands validate and assemble the
+Cargo, C SDK, and npm artifacts; they do not create tags or releases.
 
 Publication is paused during active parity, coverage, and performance work.
 Do not push a release tag, publish a crate, or create a GitHub release until
@@ -114,9 +114,8 @@ cargo logout
 
 The script publishes `fontdone`. Build the exact C SDK archive from
 `make c-abi-package` and the npm artifact from `make npm-package-verify`; the
-tag workflow attaches the C archive and preserves the already visible npm
-version. Publish the npm artifact only if the registry check confirms it is
-missing:
+tag workflow attaches the C archive and publishes the npm artifact only after
+the registry check confirms that the immutable version is missing:
 
 ```bash
 npm publish target/npm-package/fontdone-2.14.3-alpha.1.tgz \
