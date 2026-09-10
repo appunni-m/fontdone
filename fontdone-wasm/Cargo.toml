@@ -1,6 +1,6 @@
 [package]
 name = "fontdone-wasm"
-version = "2.14.3-alpha.1"
+version = "2.14.3-alpha.2"
 edition = "2024"
 rust-version = "1.87"
 license = "FTL"
@@ -30,7 +30,7 @@ name = "fontdone_wasm"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.1", path = "..", default-features = false, features = ["wasm-wide-internals"] }
+fontdone = { version = "=2.14.3-alpha.2", path = "..", default-features = false, features = ["wasm-wide-internals"] }
 
 [features]
 default = ["bzip2", "color-layers", "lzw"]

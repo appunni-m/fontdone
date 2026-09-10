@@ -6,28 +6,28 @@ path	bytes	kind	sha256	symlink_target	retention_class	reason_code	reason
 .gitignore	445	file	e1360e2d31b4f9c1ac59023d6402cf788f8b1be1ff055ac5657a6f7936eb817e	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 AGENT.md	9	symlink	-	AGENTS.md	keep-alias	R05	Repository tooling alias whose path identity is an explicit contract.
 AGENTS.md	2364	file	a1699d5479e2727bbb81983689284821091f5d0db244d8eddd60df94c20ca889	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-CHANGELOG.md	2980	file	5be7c00b9a06c8c060abb5321dad93ff8127e53a1cae70d2c053fb1f194abd16	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+CHANGELOG.md	2980	file	bcf57a8f6c21a911bda63faab0db310bbe29eeb97e649517e34c6b2769d40594	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 CODE_OF_CONDUCT.md	834	file	fc5d9bcf71a578c1a1b80f10d3741125184c34b01841ead7209bc7fbd55d5b50	-	keep-community	R09	Public community or security contract.
 CONTRIBUTING.md	3011	file	e076524a90c599171729b9c20e7724d514e42ef8d60df687a25b311dc943cf82	-	keep-community	R09	Public community or security contract.
-Cargo.lock	13761	file	39452d9a25e3f8c8c2202eed93be7d9cb93e326add959f4c2f85b16c2fc6606d	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-Cargo.toml	2421	file	cfd09095885d8bd692acee3a6dd823f55dbef5e7d11cb13c470720cd40aef3b7	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+Cargo.lock	13761	file	0b6f6e018458d1718ca191f9441364d28dbf418938c1665bb6418aca151712c0	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+Cargo.toml	2421	file	72113513fb8fbb636a4ad28aa3ff240be96f3e3d82165282671d5e52fa5c08e8	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 LICENSE	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 Makefile	47168	file	de2c5d51e2cbaff9a637d5d4919ada6c5b54d1a51b871610b1ab7e354d2bfd6e	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 NOTICE.md	1275	file	b2a99b4906d6ff998690cfda4db4c23dff3e8351c6de65d5c9a8b1835a6ac623	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-README.md	25278	file	9addba3d640b732195b8dc7f64c395cc15f871ecf898a1b3fdf2124f6e6d94bb	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+README.md	25278	file	ae3d26f725959f05e594ce4706164bf8c5ac3105154dcc4920944e792fad5d90	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 SECURITY.md	1567	file	e4df9aebe37604b9a8bf9f7ea2fc541c761a50e72c35f5a24c78c93dc13352f3	-	keep-community	R09	Public community or security contract.
 deny.toml	341	file	d4d516ffd41e0c8e3de633cc3d807b5e0b1a53ec7b5f56ad8ea95c73da0a2bf1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 doc/COVERAGE_CAMPAIGN_GOAL.md	4975	file	8b92946e39c9761a958a9bc8d5770c1657f646d3c74b27d139054593a8cbe9fd	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/DEVELOPMENT.md	401582	file	1006ba700286f344f5afa32aa1c54dca2284ac005e244d9322e84e28397380ec	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/FILE_RETENTION_INVENTORY.tsv	0	generated	-	-	generated-audit	R11	Generated exhaustive inventory; refresh with scripts/audit_repository_files.py.
 doc/FREETYPE_SUPPORT.md	30950	file	6b6b13666ef8d7dd27a4dbc9546cca45565a6fd517476cbaecf02a0201ac2305	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/INTEGRATION.md	9722	file	adc44f4b0cf1751d2b3b9c124829b453d26406ca1cd0accd972ff228a42bbb69	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/INTEGRATION.md	9722	file	d1e1cf7f275bf81603ab1c7acac7d185686b757489cb142ceee3332d06645b63	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/README.md	4471	file	ae5768ee87cf2fc8d63b08564334cc502a92371dc01e0044c62dfc1ae889f863	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/RELEASING.md	11843	file	65cce55802a547691d13daca8c5ca0d4c56206df33994c24d671f3673ba5edd4	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/RELEASING.md	11843	file	17a89bd13d8c3a2874f144e4f67b68db2ff7da4757ac5d1b13a77ba731ff0d92	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/ROADMAP.md	203742	file	f3031666eee5ec2f1e2dd56a294f556b0e2a5052ef222d0926ad8901df7bf2d7	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
-doc/compatibility_snapshot.json	80767	file	bd0e6fbe67d18baaef56059d70c7e0c00ac735ae62d181d02cff8ba683c7d625	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/runtime_parity_evidence.json	1381	file	84d19022c1138da5e2c7421d0d5571f5f235c1f9740a1be2180c812e643edbd8	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/compatibility_snapshot.json	80767	file	6a71c697a983ce85716d645cabe27986d3638f461b8c88a5375c417bf6df9788	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/runtime_parity_evidence.json	1380	file	5d508d2b62841a4e8ac67447ba5aff62516e91c229119e3b878afe8f6ca5647e	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 examples/bench_ops.rs	10086	file	a75d7bbf4e8e679ca393d8cffd68cc0824f7198bb5e85857ce4dd75d8e016a21	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/ffi_migration.rs	1806	file	3140c3cbf9182299f2ab8c98f6675dfd3d086c47177f7bf8783160a149eddda8	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/handle_error.rs	571	file	acbe9d9f2e838bb5ca27132dde73287fa123e3a069772a2b741ae6e010fae3b1	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
@@ -35,15 +35,15 @@ examples/load_glyph.rs	1023	file	c8fdfb860d494f5d7d71e079c245b6207fe1151763c38d3
 examples/render_mask.rs	773	file	12d1701b41fec042e176ba9a174e353dfa7527932b1eb876dbdc800d9f9fb5c0	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/trace_glyph.rs	12899	file	2ec07bf5345b79b9c4031ac1167295db99aa6ab8bb70f02d19dd2e5e60d0f958	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 fontdone-c-abi/API_SUPPORT.md	30950	file	6b6b13666ef8d7dd27a4dbc9546cca45565a6fd517476cbaecf02a0201ac2305	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
-fontdone-c-abi/Cargo.toml	2183	file	14ff2a3a54a82f74d46d82ec5ca91360acd809fbba2fdcae4613420d9d94eb43	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
+fontdone-c-abi/Cargo.toml	2183	file	0c0fd3ac5f4c23a774d51f1b069591a0aaf9f2e2564b8d03f043ca3b33899134	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-c-abi/FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-c-abi/LICENSE	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-c-abi/NOTICE.md	1275	file	b2a99b4906d6ff998690cfda4db4c23dff3e8351c6de65d5c9a8b1835a6ac623	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
-fontdone-c-abi/README.md	10212	file	4f0af6eca5fdf813ca70aeb44670936a9d9532f64d8c5193c29abb9e1548ffc4	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
+fontdone-c-abi/README.md	10212	file	21ea72d14c04b5ecd3ca30fd60a57ea49d0efe3e587f6a579d431a5dde60c23e	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-c-abi/build.rs	467	file	c3729370427b4cba3ec3bd6df4bfc877615ecd43fafd4a0c5df97e67f486824f	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-c-abi/examples/optional_feature_probe.rs	27911	file	9e8cc3b15c1200f94216070e98afb4e6fdf250fe472977048af211c085f0cb90	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-c-abi/examples/render_glyph.c	3420	file	42197b944cebe3c34782876b67d4a55cbdef2b84218bdeebc064d6cd27fd5035	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
-fontdone-c-abi/fontdone2.pc	277	file	b29260d083c33b3e584d50685a3efab914861ee3197d9b4f75c165f4a5f5ecb6	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
+fontdone-c-abi/fontdone2.pc	277	file	6320342d2c352907647d8beb49aef95d24f0332bc66b660a58b2bf9364a3f42a	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-c-abi/include/fontdone_ffi.h	51062	file	b27601c5e0ef82efe09450a3ccf3b10e8a3a4eec4af6820d60a26d98915a680c	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-c-abi/include/fontdone_macros.h	83410	file	d23ac8f4977124dc6b95fd6554cbb5381550f1f6bcfa3450ff96aed76c87dcc6	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-c-abi/include/freetype/freetype.h	172	file	44f0737e85a5dce13271742dba7d8ff348f1f667d597e9207c54b22ae54d614f	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
@@ -95,33 +95,33 @@ fontdone-c-abi/include/freetype/tttags.h	168	file	c3c302456380fc2092dc5f903ad24e
 fontdone-c-abi/include/ft2build.h	3481	file	3a65238d1e7bfe1ec6e50ec068218c96497526a1cbc56b02331c839d0ce15df9	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-c-abi/src/implementation.rs	1031574	file	e31468f5fd2bad6b9993515bae8e7116f235c02ff2f52ca63320acca2ec27958	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-c-abi/src/lib.rs	11982	file	9928a6a874c6c6a93213bf047f8afe947838494dd92f5eb368035fdc2f025d0d	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
-fontdone-wasm/Cargo.toml	1950	file	e7f8e4999a6608e4f4c624c60bdf884bb577620acdba260d7e4c1d20c9a47423	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
+fontdone-wasm/Cargo.toml	1950	file	a74fbdc15e6c47df2e8a7a8706db5b91f5e02c75a882c3839c8511596f08491b	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/LICENSE	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/NOTICE.md	1275	file	b2a99b4906d6ff998690cfda4db4c23dff3e8351c6de65d5c9a8b1835a6ac623	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
-fontdone-wasm/README.md	9247	file	284edefe7a2eae2894dc495f0575b7c6fef20a0e38c91dea50e5890ce1deac3d	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
-fontdone-wasm/abi.json	147955	file	39e9ea3fe4c9d6900d1c2a95226a3adcdefeca62b0b8556d9baf9f5e2850efc4	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
+fontdone-wasm/README.md	9247	file	65b2c4e3b8ad3a0d0cfc78fae7b0c68574c165ec5077dcd257b8315ce825beef	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
+fontdone-wasm/abi.json	147955	file	bf804466faed007221058fc5b955d42e0d15d2f3c2caf1c54e5c66fc6adcfc7a	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/examples/check_exports.mjs	1231	file	3f83c636cbb9951915246cb8f93e8f67b055b6f790858ef4c98347a043a64365	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/examples/node.mjs	3541	file	f10b0fccf090488379df225f0d7eb0e809329c02033ff9daecc4a469cba1976c	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/fontdone_wasm.d.ts	1254	file	42f605344c1648e6782a9c8befa8056fd21e2c865a450fbf50008e9aa88ab82c	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/npm/FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/npm/LICENSE	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/npm/NOTICE.md	1275	file	b2a99b4906d6ff998690cfda4db4c23dff3e8351c6de65d5c9a8b1835a6ac623	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
-fontdone-wasm/npm/README.md	4077	file	222d6750de3af797f3e0b1b1a15b81ad1d6e976a06f1798f61dd991eb92565b3	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
+fontdone-wasm/npm/README.md	4077	file	cc21d4efd219fbdba215742cf75dc5152561280dacf6e945c4f4b7e731a75025	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/npm/build.mjs	3254	file	45b09db6760479ccb8dbc1e4ea4f2a43da674a1211a2f2e7c07eddffe5b5a5fa	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/npm/examples/browser.html	1026	file	dd5108f161d7fc3eb0f003d5e2231e2822c9092c93e2fef53cec1065ac337c65	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/npm/examples/browser.mjs	2539	file	194f4f1e5787e70ed4cc2869e1276858cfbeabc69f75198f227622b19da7893c	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/npm/examples/node.mjs	867	file	f68d63f384fb99e2ce091874395cec0da22a88d98d2e289d924ee0ff96a0ee08	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/npm/index.d.ts	2666	file	5bc4a7a22c47d402cd356bd488f698b7997c6a23cfe99ddd3caeac296a2e3065	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/npm/index.js	12102	file	108b4b98951702bf21a9b41a9e327cf7f8a49ae25c026cfa0700e8dd8b92b9b2	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
-fontdone-wasm/npm/package.json	1500	file	138e2e58bb83e74e62cae71f1cb1fd0262e693d24b1e1a12f0d74b079b192dab	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
+fontdone-wasm/npm/package.json	1500	file	2915b6df9e2607017388d781740c544d81dfd4aea5cdd3edd4e09c07999be466	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/npm/test.mjs	2317	file	163fa042244b5da7fd1e4ea46dce37b667048d732d075e4e0f1309cb180f6ffa	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/src/implementation.rs	358447	file	8aaec1b5b09a434fab9597a875b0e4f6bb1ed19d2128d075a47ad8b7d7004f5d	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 fontdone-wasm/src/lib.rs	15985	file	05a8c892588685a18853c00d0b5eca18ff710f347403a9d9fd8041c7c849f1d7	-	keep-verification-facade	R02	Maintained ABI verification facade and workspace gate.
 requirements-font-generation.txt	127	file	138e6ff04e827a0c8f2ac9f1ad40d46ebe02554f8ba8dce1e5c513007529dd1f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 rust-toolchain.toml	66	file	4d0674575b116a100c7d0ad754308dc6dea178b4808c760afc43136db967c7a6	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 rustfmt.toml	453	file	74ac84621f9feff709eaf99e80251d4228a1b6c777c554a828c09e7acae25f1c	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-scripts/audit_api_abi.py	128041	file	0a32b8067789d3a0fb68850e5d2532d7bc18701385dc0ad535c16f0a06d7e500	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
+scripts/audit_api_abi.py	128041	file	752305eb0606efef5ec236509c83fe310e663eb884dadb32770c88516ae0d8bc	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/audit_repository_files.py	9290	file	0c1cf2c5521ad12eb1150121b5626f29849827223f3bd7f22cb33ed6f24598ab	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/bench_freetype.py	81265	file	0fdd8b264a167418858bab84a88f217188f514eea292efe6b3d28d3747e49f80	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/bench_ft_ops.c	11861	file	ae49f9ccc35df5eb7c79add7359138b7ae1313e3efdb34f6c88f59a93d9ddfef	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
@@ -168,7 +168,7 @@ scripts/generate_c_contract_headers.py	3143	file	74c4a64476cae43283b2d71140388d0
 scripts/generate_c_contract_macros.py	4118	file	b4674f200027fdc6f9334a871b32d7734a999351334a8faea01f34a130f6a7ed	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/generate_public_constants.py	7939	file	d87faab4074d1040ff0718839ec41ae9a7ba2084a01b9d5564401b0ca855aa39	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/generate_support_matrix.py	7645	file	c0f00644ccd1a13d2d828baf5135ffb9296b7ed398c713d29d68ff217856d761	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
-scripts/generate_wasm_contract.py	14999	file	c23dddc853d9c71db21c0c5590167aa3ab94e4d7b1b10839941d1ebc035d2cf1	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
+scripts/generate_wasm_contract.py	14999	file	cac0a0a5ff9ba6bb3f2513ee253c99d2a04114bd54ab2e17f88357c8638cab43	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/oracle_validator_modules.cmake	2128	file	ccb2061afce64054e1d8e4bfc750d95a150682d9548ba238f088e19d0d2272d5	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/package_c_sdk.py	5331	file	1525a6d63d0b2f6f229deab41b71ec9332cd301c5f2f88d86f06d6021bc57c76	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/publish_release.py	5033	file	7a4b39f5bc2edeef0fe887b128e82815e8bf49db5ceed697405a62e9ac644f99	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
@@ -176,7 +176,7 @@ scripts/report_pending_route_buckets.py	3500	file	260eb78039a0c7d3b4dc9adf69eece
 scripts/run_coverage_command.py	6362	file	fe70b98b19ab9645ffbeb8e68b6b7c93a830a9c11fb8f7f02d671f05afb0fedf	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/run_runtime_parity.py	14508	file	04c0aea14caf48bdad9d64deb0becb7c32b91606a0b49641f0b327892085c527	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/sync_package_licenses.py	1247	file	24f7ddab7863c698d7afc5be05f3fbfdbc6d6d3c10fcea87d76d6dd5fd661a28	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
-scripts/test_c_consumer.py	18969	file	f4474241ff512edab88d824d6c4e79f91c54a6541723d78a26336f6b1d8e8d65	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
+scripts/test_c_consumer.py	18969	file	8467e4a1a2cdd07128ded17cd3fbbb5bc716a8e4c548316279227d6f202cbf76	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_coverage_region_queue.py	5553	file	bcad4dd21e07653ff6c1881f69382b998747dc7350cb6faedeb1f83f34c6750f	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_npm_consumer.py	6542	file	246efc5e285d296f7c9c0e70c91a9198f12b41c909dca55187b1c4e365bc32c2	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_rust_consumer.py	1680	file	2c22fc0571546f0a724dcbc874a01ca2409ca97e15b9cb70684ff0cb9a934812	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.

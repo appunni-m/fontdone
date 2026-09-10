@@ -10,8 +10,8 @@
 
 </div>
 
-> **Release:** `2.14.3-alpha.1`. The public `fontdone` Cargo crate is prepared
-> for its first release from this checkout. `fontdone@2.14.3-alpha.1` is
+> **Release:** `2.14.3-alpha.2`. The public `fontdone` Cargo crate is prepared
+> for its first release from this checkout. `fontdone@2.14.3-alpha.2` is
 > already visible on npm from an earlier artifact; the current source is not
 > allowed to reuse that immutable version and needs a new synchronized
 > prerelease before publication. The C SDK is distributed as a native release
@@ -43,7 +43,7 @@ package needs:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.1", path = "../fontdone" }
+fontdone = { version = "=2.14.3-alpha.2", path = "../fontdone" }
 ```
 
 After `fontdone` is published, a registry consumer should request the exact
@@ -51,7 +51,7 @@ prerelease:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.1" }
+fontdone = { version = "=2.14.3-alpha.2" }
 ```
 
 Cargo requires a version requirement on dependencies of a crate that will be
@@ -60,7 +60,7 @@ release tag is public:
 
 ```toml
 [dependencies]
-fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.1" }
+fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.2" }
 ```
 
 ## 2. Rust quick start

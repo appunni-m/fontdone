@@ -5,7 +5,7 @@ synchronized version for the public `fontdone` Cargo crate, the native C SDK,
 and the `fontdone` browser npm package. The C and raw-WASM Cargo packages are
 internal workspace build targets.
 
-## 2.14.3-alpha.1 (Unreleased)
+## 2.14.3-alpha.2 (Unreleased)
 
 First standalone alpha targeting FreeType 2.14.3.
 

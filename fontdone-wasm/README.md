@@ -8,7 +8,7 @@ This directory owns the browser WebAssembly surface for the pure-Rust
 - the internal `fontdone-wasm` Rust workspace package, which builds the raw
   linear-memory ABI used by that wrapper and by the repository parity harness.
 
-Version `2.14.3-alpha.1` requires exactly `fontdone = 2.14.3-alpha.1`. Different
+Version `2.14.3-alpha.2` requires exactly `fontdone = 2.14.3-alpha.2`. Different
 alpha releases are not API- or ABI-compatible by promise. The npm package is
 the public JavaScript release; the raw Cargo target is internal. Neither
 surface is a text-shaping or layout engine.
@@ -18,7 +18,7 @@ surface is a text-shaping or layout engine.
 Install the public package:
 
 ```bash
-npm install fontdone@2.14.3-alpha.1
+npm install fontdone@2.14.3-alpha.2
 ```
 
 Then initialize the packaged Wasm asset and render one glyph:
@@ -67,7 +67,7 @@ make npm-package-verify
 The verified archive is written to:
 
 ```text
-target/npm-package/fontdone-2.14.3-alpha.1.tgz
+target/npm-package/fontdone-2.14.3-alpha.2.tgz
 ```
 
 `npm pack` runs the same Rust build, raw-export check, and wrapper tests through

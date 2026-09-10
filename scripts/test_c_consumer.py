@@ -489,7 +489,7 @@ def main() -> None:
         pc_text = installed_pc.read_text(encoding="utf-8")
         required_pc_rows = (
             "Name: fontdone",
-            "Version: 2.14.3-alpha.1",
+            "Version: 2.14.3-alpha.2",
             "Libs: -L${libdir} -lfontdone_c_abi",
             "Cflags: -I${includedir}",
         )

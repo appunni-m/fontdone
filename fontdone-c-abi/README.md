@@ -4,7 +4,7 @@
 It exports a measured FreeType-shaped subset from a library named
 `fontdone_c_abi`; it never links, loads, or builds C FreeType at runtime.
 
-Version `2.14.3-alpha.1` requires exactly `fontdone = 2.14.3-alpha.1`.
+Version `2.14.3-alpha.2` requires exactly `fontdone = 2.14.3-alpha.2`.
 This is an internal Cargo workspace package, not a second crates.io release.
 The public C distribution is the native SDK archive attached to the tagged
 release; build this package from the workspace when developing or packaging

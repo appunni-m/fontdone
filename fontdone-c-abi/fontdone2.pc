@@ -5,6 +5,6 @@ includedir=${prefix}/include/fontdone2
 
 Name: fontdone
 Description: Pure-Rust FreeType 2.14.3 C-contract implementation
-Version: 2.14.3-alpha.1
+Version: 2.14.3-alpha.2
 Libs: -L${libdir} -lfontdone_c_abi
 Cflags: -I${includedir}

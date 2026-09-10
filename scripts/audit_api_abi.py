@@ -1973,7 +1973,7 @@ def artifact_inventory_measurement(items: list[dict]) -> dict:
         row in pkg_config_text
         for row in (
             "Name: fontdone",
-            "Version: 2.14.3-alpha.1",
+            "Version: 2.14.3-alpha.2",
             "Libs: -L${libdir} -lfontdone_c_abi",
             "Cflags: -I${includedir}",
         )
