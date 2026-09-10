@@ -191,21 +191,21 @@ pub struct FT_Matrix {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_Data {
     pub pointer: FT_Bytes,
     pub length: FT_UInt,
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 pub struct FT_Generic {
     pub data: FT_Pointer,
     pub finalizer: FT_Generic_Finalizer,
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_ListNodeRec {
     pub prev: FT_ListNode,
     pub next: FT_ListNode,
@@ -213,7 +213,7 @@ pub struct FT_ListNodeRec {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_ListRec {
     pub head: FT_ListNode,
     pub tail: FT_ListNode,
@@ -245,7 +245,7 @@ impl Default for FT_StreamDesc {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy)]
 pub struct FT_StreamRec {
     pub base: *mut FT_Byte,
     pub size: FT_ULong,
@@ -275,7 +275,7 @@ pub type FT_List_Iterator =
     Option<unsafe extern "C" fn(node: FT_ListNode, user: FT_Pointer) -> FT_Error>;
 
 #[repr(C)]
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy)]
 pub struct FT_MemoryRec {
     pub user: FT_Pointer,
     pub alloc: FT_Alloc_Func,
@@ -349,7 +349,7 @@ pub struct FTC_SBitCacheRec {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FTC_ScalerRec {
     pub face_id: FTC_FaceID,
     pub width: FT_UInt,
@@ -360,7 +360,7 @@ pub struct FTC_ScalerRec {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FTC_ImageTypeRec {
     pub face_id: FTC_FaceID,
     pub width: FT_UInt,
@@ -369,7 +369,7 @@ pub struct FTC_ImageTypeRec {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FTC_SBitRec {
     pub width: FT_Byte,
     pub height: FT_Byte,
@@ -423,7 +423,7 @@ pub struct FT_Bitmap_Size {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_CharMapRecPublic {
     pub face: FT_Pointer,
     pub encoding: FT_Encoding,
@@ -432,7 +432,7 @@ pub struct FT_CharMapRecPublic {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_Parameter {
     pub tag: FT_ULong,
     pub data: FT_Pointer,
@@ -466,7 +466,7 @@ pub struct BDF_PropertyRec {
 pub type BDF_Property = *mut BDF_PropertyRec;
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_Open_Args {
     pub flags: FT_UInt,
     pub memory_base: *const FT_Byte,
@@ -575,7 +575,7 @@ impl Default for FT_WinFNT_HeaderRec {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 pub struct FT_SizeRecPublic {
     pub face: FT_Pointer,
     pub generic: FT_Generic,
@@ -584,7 +584,7 @@ pub struct FT_SizeRecPublic {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 pub struct FT_FaceRecPublic {
     pub num_faces: FT_Long,
     pub face_index: FT_Long,
@@ -620,7 +620,7 @@ pub struct FT_FaceRecPublic {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PS_FontInfoRec {
     pub version: *mut FT_String,
     pub notice: *mut FT_String,
@@ -692,7 +692,7 @@ pub struct TT_Header {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TT_HoriHeader {
     pub Version: FT_Fixed,
     pub Ascender: FT_Short,
@@ -713,7 +713,7 @@ pub struct TT_HoriHeader {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TT_VertHeader {
     pub Version: FT_Fixed,
     pub Ascender: FT_Short,
@@ -874,7 +874,7 @@ pub struct FT_Size_Metrics {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_Bitmap_C {
     pub rows: c_uint,
     pub width: c_uint,
@@ -887,7 +887,7 @@ pub struct FT_Bitmap_C {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_Outline {
     pub n_contours: FT_UShort,
     pub n_points: FT_UShort,
@@ -919,7 +919,7 @@ pub struct FT_Glyph_Class {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_GlyphRec {
     pub library: FT_Pointer,
     pub clazz: *const FT_Glyph_Class,
@@ -1033,7 +1033,7 @@ pub struct FT_OutlineGlyphRec {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_SvgGlyphRec {
     pub root: FT_GlyphRec,
     pub svg_document: *mut FT_Byte,
@@ -1048,7 +1048,7 @@ pub struct FT_SvgGlyphRec {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 pub struct FT_GlyphSlotRecPublic {
     pub library: FT_Pointer,
     pub face: FT_Pointer,
@@ -1094,7 +1094,7 @@ pub struct FT_Span {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 pub struct FT_Raster_Params {
     pub target: *const FT_Bitmap_C,
     pub source: *const c_void,
@@ -1128,7 +1128,7 @@ pub struct FT_Color {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_Palette_Data {
     pub num_palettes: FT_UShort,
     pub palette_name_ids: *const FT_UShort,
@@ -1138,7 +1138,7 @@ pub struct FT_Palette_Data {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_LayerIterator {
     pub num_layers: FT_UInt,
     pub layer: FT_UInt,
@@ -1146,14 +1146,14 @@ pub struct FT_LayerIterator {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_OpaquePaint {
     pub p: *mut FT_Byte,
     pub insert_root_transform: FT_Bool,
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_ColorStopIterator {
     pub num_color_stops: FT_UInt,
     pub current_color_stop: FT_UInt,
@@ -1341,7 +1341,7 @@ pub struct FT_ClipBox {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_MM_Axis {
     pub name: *mut FT_String,
     pub minimum: FT_Long,
@@ -1357,7 +1357,7 @@ pub struct FT_Multi_Master {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_Var_Axis {
     pub name: *mut FT_String,
     pub minimum: FT_Fixed,
@@ -1368,7 +1368,7 @@ pub struct FT_Var_Axis {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_Var_Named_Style {
     pub coords: *mut FT_Fixed,
     pub strid: FT_UInt,
@@ -1376,7 +1376,7 @@ pub struct FT_Var_Named_Style {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_MM_Var {
     pub num_axis: FT_UInt,
     pub num_designs: FT_UInt,
@@ -1386,14 +1386,14 @@ pub struct FT_MM_Var {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_Prop_GlyphToScriptMap {
     pub face: FT_Pointer,
     pub map: *mut FT_UShort,
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_Prop_IncreaseXHeight {
     pub face: FT_Pointer,
     pub limit: FT_UInt,
@@ -1417,14 +1417,14 @@ pub struct FT_Incremental_FuncsRec {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_Incremental_InterfaceRec {
     pub funcs: *const FT_Incremental_FuncsRec,
     pub object: FT_Incremental,
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 pub struct FT_Module_Class {
     pub module_flags: FT_ULong,
     pub module_size: FT_Long,
@@ -1438,7 +1438,7 @@ pub struct FT_Module_Class {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 pub struct FT_Renderer_Class {
     pub root: FT_Module_Class,
     pub glyph_format: FT_Glyph_Format,
@@ -1450,7 +1450,7 @@ pub struct FT_Renderer_Class {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_SfntName {
     pub platform_id: FT_UShort,
     pub encoding_id: FT_UShort,
@@ -1461,7 +1461,7 @@ pub struct FT_SfntName {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FT_SfntLangTag {
     pub string: *mut FT_Byte,
     pub string_len: FT_UInt,
@@ -1476,4 +1476,527 @@ pub struct FT_Bitmap {
     pub buffer: Vec<u8>,
     pub num_grays: FT_UShort,
     pub pixel_mode: FT_Pixel_Mode,
+}
+
+// Raw-pointer records use explicit null defaults for Rust 1.87 compatibility.
+// These records mirror C ABI layouts; derive(Default) cannot be used on the
+// public Rust 1.87 surface because raw pointers do not implement Default there.
+
+impl Default for FT_Data {
+    fn default() -> Self {
+        Self {
+            pointer: std::ptr::null(),
+            length: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_Generic {
+    fn default() -> Self {
+        Self {
+            data: std::ptr::null_mut(),
+            finalizer: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_ListNodeRec {
+    fn default() -> Self {
+        Self {
+            prev: std::ptr::null_mut(),
+            next: std::ptr::null_mut(),
+            data: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for FT_ListRec {
+    fn default() -> Self {
+        Self {
+            head: std::ptr::null_mut(),
+            tail: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for FT_StreamRec {
+    fn default() -> Self {
+        Self {
+            base: std::ptr::null_mut(),
+            size: Default::default(),
+            pos: Default::default(),
+            descriptor: Default::default(),
+            pathname: Default::default(),
+            read: std::ptr::null_mut(),
+            close: std::ptr::null_mut(),
+            memory: std::ptr::null_mut(),
+            cursor: std::ptr::null_mut(),
+            limit: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for FT_MemoryRec {
+    fn default() -> Self {
+        Self {
+            user: std::ptr::null_mut(),
+            alloc: Default::default(),
+            free: Default::default(),
+            realloc: Default::default(),
+        }
+    }
+}
+
+impl Default for FTC_ScalerRec {
+    fn default() -> Self {
+        Self {
+            face_id: std::ptr::null_mut(),
+            width: Default::default(),
+            height: Default::default(),
+            pixel: Default::default(),
+            x_res: Default::default(),
+            y_res: Default::default(),
+        }
+    }
+}
+
+impl Default for FTC_ImageTypeRec {
+    fn default() -> Self {
+        Self {
+            face_id: std::ptr::null_mut(),
+            width: Default::default(),
+            height: Default::default(),
+            flags: Default::default(),
+        }
+    }
+}
+
+impl Default for FTC_SBitRec {
+    fn default() -> Self {
+        Self {
+            width: Default::default(),
+            height: Default::default(),
+            left: Default::default(),
+            top: Default::default(),
+            format: Default::default(),
+            max_grays: Default::default(),
+            pitch: Default::default(),
+            xadvance: Default::default(),
+            yadvance: Default::default(),
+            buffer: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for FT_CharMapRecPublic {
+    fn default() -> Self {
+        Self {
+            face: std::ptr::null_mut(),
+            encoding: Default::default(),
+            platform_id: Default::default(),
+            encoding_id: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_Parameter {
+    fn default() -> Self {
+        Self {
+            tag: Default::default(),
+            data: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for FT_Open_Args {
+    fn default() -> Self {
+        Self {
+            flags: Default::default(),
+            memory_base: std::ptr::null(),
+            memory_size: Default::default(),
+            pathname: std::ptr::null_mut(),
+            stream: std::ptr::null_mut(),
+            driver: std::ptr::null_mut(),
+            num_params: Default::default(),
+            params: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for FT_SizeRecPublic {
+    fn default() -> Self {
+        Self {
+            face: std::ptr::null_mut(),
+            generic: Default::default(),
+            metrics: Default::default(),
+            internal: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for FT_FaceRecPublic {
+    fn default() -> Self {
+        Self {
+            num_faces: Default::default(),
+            face_index: Default::default(),
+            face_flags: Default::default(),
+            style_flags: Default::default(),
+            num_glyphs: Default::default(),
+            family_name: std::ptr::null_mut(),
+            style_name: std::ptr::null_mut(),
+            num_fixed_sizes: Default::default(),
+            available_sizes: std::ptr::null_mut(),
+            num_charmaps: Default::default(),
+            charmaps: std::ptr::null_mut(),
+            generic: Default::default(),
+            bbox: Default::default(),
+            units_per_EM: Default::default(),
+            ascender: Default::default(),
+            descender: Default::default(),
+            height: Default::default(),
+            max_advance_width: Default::default(),
+            max_advance_height: Default::default(),
+            underline_position: Default::default(),
+            underline_thickness: Default::default(),
+            glyph: std::ptr::null_mut(),
+            size: std::ptr::null_mut(),
+            charmap: std::ptr::null_mut(),
+            driver: std::ptr::null_mut(),
+            memory: std::ptr::null_mut(),
+            stream: std::ptr::null_mut(),
+            sizes_list: Default::default(),
+            autohint: Default::default(),
+            extensions: std::ptr::null_mut(),
+            internal: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for PS_FontInfoRec {
+    fn default() -> Self {
+        Self {
+            version: std::ptr::null_mut(),
+            notice: std::ptr::null_mut(),
+            full_name: std::ptr::null_mut(),
+            family_name: std::ptr::null_mut(),
+            weight: std::ptr::null_mut(),
+            italic_angle: Default::default(),
+            is_fixed_pitch: Default::default(),
+            underline_position: Default::default(),
+            underline_thickness: Default::default(),
+        }
+    }
+}
+
+impl Default for TT_HoriHeader {
+    fn default() -> Self {
+        Self {
+            Version: Default::default(),
+            Ascender: Default::default(),
+            Descender: Default::default(),
+            Line_Gap: Default::default(),
+            advance_Width_Max: Default::default(),
+            min_Left_Side_Bearing: Default::default(),
+            min_Right_Side_Bearing: Default::default(),
+            xMax_Extent: Default::default(),
+            caret_Slope_Rise: Default::default(),
+            caret_Slope_Run: Default::default(),
+            caret_Offset: Default::default(),
+            Reserved: Default::default(),
+            metric_Data_Format: Default::default(),
+            number_Of_HMetrics: Default::default(),
+            long_metrics: std::ptr::null_mut(),
+            short_metrics: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for TT_VertHeader {
+    fn default() -> Self {
+        Self {
+            Version: Default::default(),
+            Ascender: Default::default(),
+            Descender: Default::default(),
+            Line_Gap: Default::default(),
+            advance_Height_Max: Default::default(),
+            min_Top_Side_Bearing: Default::default(),
+            min_Bottom_Side_Bearing: Default::default(),
+            yMax_Extent: Default::default(),
+            caret_Slope_Rise: Default::default(),
+            caret_Slope_Run: Default::default(),
+            caret_Offset: Default::default(),
+            Reserved: Default::default(),
+            metric_Data_Format: Default::default(),
+            number_Of_VMetrics: Default::default(),
+            long_metrics: std::ptr::null_mut(),
+            short_metrics: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for FT_Bitmap_C {
+    fn default() -> Self {
+        Self {
+            rows: Default::default(),
+            width: Default::default(),
+            pitch: Default::default(),
+            buffer: std::ptr::null_mut(),
+            num_grays: Default::default(),
+            pixel_mode: Default::default(),
+            palette_mode: Default::default(),
+            palette: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for FT_Outline {
+    fn default() -> Self {
+        Self {
+            n_contours: Default::default(),
+            n_points: Default::default(),
+            points: std::ptr::null_mut(),
+            tags: std::ptr::null_mut(),
+            contours: std::ptr::null_mut(),
+            flags: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_GlyphRec {
+    fn default() -> Self {
+        Self {
+            library: std::ptr::null_mut(),
+            clazz: std::ptr::null(),
+            format: Default::default(),
+            advance: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_SvgGlyphRec {
+    fn default() -> Self {
+        Self {
+            root: Default::default(),
+            svg_document: std::ptr::null_mut(),
+            svg_document_length: Default::default(),
+            glyph_index: Default::default(),
+            metrics: Default::default(),
+            units_per_EM: Default::default(),
+            start_glyph_id: Default::default(),
+            end_glyph_id: Default::default(),
+            transform: Default::default(),
+            delta: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_GlyphSlotRecPublic {
+    fn default() -> Self {
+        Self {
+            library: std::ptr::null_mut(),
+            face: std::ptr::null_mut(),
+            next: std::ptr::null_mut(),
+            glyph_index: Default::default(),
+            generic: Default::default(),
+            metrics: Default::default(),
+            linearHoriAdvance: Default::default(),
+            linearVertAdvance: Default::default(),
+            advance: Default::default(),
+            format: Default::default(),
+            bitmap: Default::default(),
+            bitmap_left: Default::default(),
+            bitmap_top: Default::default(),
+            outline: Default::default(),
+            num_subglyphs: Default::default(),
+            subglyphs: std::ptr::null_mut(),
+            control_data: std::ptr::null_mut(),
+            control_len: Default::default(),
+            lsb_delta: Default::default(),
+            rsb_delta: Default::default(),
+            other: std::ptr::null_mut(),
+            internal: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for FT_Raster_Params {
+    fn default() -> Self {
+        Self {
+            target: std::ptr::null(),
+            source: std::ptr::null(),
+            flags: Default::default(),
+            gray_spans: Default::default(),
+            black_spans: Default::default(),
+            bit_test: Default::default(),
+            bit_set: Default::default(),
+            user: std::ptr::null_mut(),
+            clip_box: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_Palette_Data {
+    fn default() -> Self {
+        Self {
+            num_palettes: Default::default(),
+            palette_name_ids: std::ptr::null(),
+            palette_flags: std::ptr::null(),
+            num_palette_entries: Default::default(),
+            palette_entry_name_ids: std::ptr::null(),
+        }
+    }
+}
+
+impl Default for FT_LayerIterator {
+    fn default() -> Self {
+        Self {
+            num_layers: Default::default(),
+            layer: Default::default(),
+            p: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for FT_OpaquePaint {
+    fn default() -> Self {
+        Self {
+            p: std::ptr::null_mut(),
+            insert_root_transform: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_ColorStopIterator {
+    fn default() -> Self {
+        Self {
+            num_color_stops: Default::default(),
+            current_color_stop: Default::default(),
+            p: std::ptr::null_mut(),
+            read_variable: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_MM_Axis {
+    fn default() -> Self {
+        Self {
+            name: std::ptr::null_mut(),
+            minimum: Default::default(),
+            maximum: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_Var_Axis {
+    fn default() -> Self {
+        Self {
+            name: std::ptr::null_mut(),
+            minimum: Default::default(),
+            def: Default::default(),
+            maximum: Default::default(),
+            tag: Default::default(),
+            strid: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_Var_Named_Style {
+    fn default() -> Self {
+        Self {
+            coords: std::ptr::null_mut(),
+            strid: Default::default(),
+            psid: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_MM_Var {
+    fn default() -> Self {
+        Self {
+            num_axis: Default::default(),
+            num_designs: Default::default(),
+            num_namedstyles: Default::default(),
+            axis: std::ptr::null_mut(),
+            namedstyle: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for FT_Prop_GlyphToScriptMap {
+    fn default() -> Self {
+        Self {
+            face: std::ptr::null_mut(),
+            map: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for FT_Prop_IncreaseXHeight {
+    fn default() -> Self {
+        Self {
+            face: std::ptr::null_mut(),
+            limit: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_Incremental_InterfaceRec {
+    fn default() -> Self {
+        Self {
+            funcs: std::ptr::null(),
+            object: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl Default for FT_Module_Class {
+    fn default() -> Self {
+        Self {
+            module_flags: Default::default(),
+            module_size: Default::default(),
+            module_name: std::ptr::null(),
+            module_version: Default::default(),
+            module_requires: Default::default(),
+            module_interface: std::ptr::null(),
+            module_init: Default::default(),
+            module_done: Default::default(),
+            get_interface: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_Renderer_Class {
+    fn default() -> Self {
+        Self {
+            root: Default::default(),
+            glyph_format: Default::default(),
+            render_glyph: Default::default(),
+            transform_glyph: Default::default(),
+            get_glyph_cbox: Default::default(),
+            set_mode: Default::default(),
+            raster_class: std::ptr::null(),
+        }
+    }
+}
+
+impl Default for FT_SfntName {
+    fn default() -> Self {
+        Self {
+            platform_id: Default::default(),
+            encoding_id: Default::default(),
+            language_id: Default::default(),
+            name_id: Default::default(),
+            string: std::ptr::null_mut(),
+            string_len: Default::default(),
+        }
+    }
+}
+
+impl Default for FT_SfntLangTag {
+    fn default() -> Self {
+        Self {
+            string: std::ptr::null_mut(),
+            string_len: Default::default(),
+        }
+    }
 }

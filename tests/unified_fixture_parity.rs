@@ -908,11 +908,11 @@ fn assert_unified_fixture_cases_match_runtime_c_oracle(all_cases: &[InputCase]) 
                 ));
                 continue;
             }
-            if case_requires_asset_validation(case)
-                && let Err(err) = validate_assets(case)
-            {
-                failures.push(format!("{} asset validation failed: {err}", case.case_id));
-                continue;
+            if case_requires_asset_validation(case) {
+                if let Err(err) = validate_assets(case) {
+                    failures.push(format!("{} asset validation failed: {err}", case.case_id));
+                    continue;
+                }
             }
             valid_cases.push(case);
         }
@@ -43888,21 +43888,23 @@ fn load_all_case_files() -> Vec<InputCase> {
     let source_count = sources.len();
     let source_digest = input_case_source_digest(&sources);
     let cache_path = input_case_cache_path();
-    if let Ok(bytes) = fs::read(&cache_path)
-        && let Ok(cache) = serde_json::from_slice::<InputCaseCache>(&bytes)
-        && cache.schema_version == INPUT_CASE_CACHE_SCHEMA_VERSION
-        && cache.source_digest == source_digest
-    {
-        let mut cases = cache.cases;
-        assert_unique_runtime_case_ids(&cases);
-        apply_route_evidence(&mut cases);
-        eprintln!(
-            "input_case_cache: hit cases={} files={} path={}",
-            cases.len(),
-            sources.len(),
-            cache_path.display()
-        );
-        return cases;
+    if let Ok(bytes) = fs::read(&cache_path) {
+        if let Ok(cache) = serde_json::from_slice::<InputCaseCache>(&bytes) {
+            if cache.schema_version == INPUT_CASE_CACHE_SCHEMA_VERSION
+                && cache.source_digest == source_digest
+            {
+                let mut cases = cache.cases;
+                assert_unique_runtime_case_ids(&cases);
+                apply_route_evidence(&mut cases);
+                eprintln!(
+                    "input_case_cache: hit cases={} files={} path={}",
+                    cases.len(),
+                    sources.len(),
+                    cache_path.display()
+                );
+                return cases;
+            }
+        }
     }
 
     let mut cases = Vec::new();
@@ -43929,13 +43931,13 @@ fn load_all_case_files() -> Vec<InputCase> {
         source_digest,
         cases: cases.clone(),
     };
-    if let Some(parent) = cache_path.parent()
-        && let Err(err) = fs::create_dir_all(parent)
-    {
-        eprintln!(
-            "input_case_cache: create_failed path={} error={err}",
-            cache_path.display()
-        );
+    if let Some(parent) = cache_path.parent() {
+        if let Err(err) = fs::create_dir_all(parent) {
+            eprintln!(
+                "input_case_cache: create_failed path={} error={err}",
+                cache_path.display()
+            );
+        }
     } else if let Ok(bytes) = serde_json::to_vec(&cache) {
         let tmp = cache_path.with_extension(format!("json.tmp.{}", std::process::id()));
         if fs::write(&tmp, bytes)
@@ -44932,16 +44934,19 @@ fn ensure_oracle_cache(cases: &[&InputCase]) -> Result<PathBuf, String> {
                     true
                 }
             };
-            if needs_seed && let Ok(_lock) = acquire_oracle_case_cache_lock() {
-                let still_needs_seed = match load_or_reset_oracle_case_cache(&case_cache_path) {
-                    Ok(entries) => entries.len() < cases.len(),
-                    Err(err) => return Err(err),
-                };
-                if still_needs_seed
-                    && let Err(err) =
-                        seed_oracle_case_cache_from_full(cases, &cache_path, &case_cache_path)
-                {
-                    eprintln!("unified_oracle_case_cache: seed_failed error={err}");
+            if needs_seed {
+                if let Ok(_lock) = acquire_oracle_case_cache_lock() {
+                    let still_needs_seed = match load_or_reset_oracle_case_cache(&case_cache_path) {
+                        Ok(entries) => entries.len() < cases.len(),
+                        Err(err) => return Err(err),
+                    };
+                    if still_needs_seed {
+                        if let Err(err) =
+                            seed_oracle_case_cache_from_full(cases, &cache_path, &case_cache_path)
+                        {
+                            eprintln!("unified_oracle_case_cache: seed_failed error={err}");
+                        }
+                    }
                 }
             }
         } else {
@@ -82098,10 +82103,10 @@ fn ps_hinting_invalid_module_selector(case: &InputCase) -> Result<Option<i32>, S
 
 fn ps_hinting_output(modules: Vec<Value>, invalid_module_error: Option<FT_Error>) -> Value {
     let mut output = json!({"modules": modules});
-    if let Some(error) = invalid_module_error
-        && let Some(output) = output.as_object_mut()
-    {
-        output.insert("invalid_module_error".to_string(), json!(error));
+    if let Some(error) = invalid_module_error {
+        if let Some(output) = output.as_object_mut() {
+            output.insert("invalid_module_error".to_string(), json!(error));
+        }
     }
     output
 }
@@ -82283,15 +82288,15 @@ fn rust_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             Some("hinting-engine"),
             Some(value),
         );
-        if module == "cff"
-            && let Some(seed) = random_seed
-        {
-            let _ = FT_Property_Set(
-                Some(&mut library),
-                Some(module),
-                Some("random-seed"),
-                Some(seed),
-            );
+        if module == "cff" {
+            if let Some(seed) = random_seed {
+                let _ = FT_Property_Set(
+                    Some(&mut library),
+                    Some(module),
+                    Some("random-seed"),
+                    Some(seed),
+                );
+            }
         }
         let mut readback = 0;
         let get_error = FT_Property_Get(
@@ -82430,16 +82435,16 @@ fn c_ps_hinting_engine_case(case: &InputCase) -> Result<RunOutput, String> {
             property_cstr,
             (&value_storage as *const FT_UInt).cast(),
         );
-        if module == "cff"
-            && let Some(seed) = random_seed
-        {
-            let seed_storage = seed;
-            let _ = c_abi::FT_Property_Set(
-                library,
-                module_cstr,
-                property_name_cstr(6),
-                (&seed_storage as *const FT_UInt).cast(),
-            );
+        if module == "cff" {
+            if let Some(seed) = random_seed {
+                let seed_storage = seed;
+                let _ = c_abi::FT_Property_Set(
+                    library,
+                    module_cstr,
+                    property_name_cstr(6),
+                    (&seed_storage as *const FT_UInt).cast(),
+                );
+            }
         }
         let mut readback = PROPERTY_SENTINEL;
         let get_error = c_abi::FT_Property_Get(

@@ -157,6 +157,7 @@ help:
 	@printf "  make setup            Build the pinned C oracle and public constants\n"
 	@printf "  make build            Build fontdone\n"
 	@printf "  make test-fast        Run tests that do not need the C oracle\n"
+	@printf "  make test-msrv        Check the public fontdone crate on its MSRV\n"
 	@printf "  make test-parity-smoke Run a small exact C/Rust/C-ABI/WASM runtime smoke matrix\n"
 	@printf "  make test-parity      Run the complete exact parity gate\n"
 	@printf "  make lint             Check formatting and Clippy\n"
@@ -239,6 +240,10 @@ doc-test:
 test-fast:
 	$(CARGO) test --workspace --all-features --locked -- --skip unified_fixture_parity --skip pipe_trace
 	$(CARGO) check --workspace --all-targets --all-features --locked
+
+.PHONY: test-msrv
+test-msrv:
+	$(CARGO) check -p fontdone --lib --all-features --locked
 
 .PHONY: fresh-checkout-check
 fresh-checkout-check:

@@ -330,10 +330,10 @@ fn name_string_from_records(records: &[SfntNameRecord], name_id: u16) -> Option<
     }
 
     let found_apple = found_apple_english.or(found_apple_roman);
-    if let Some(index) = found_win
-        && (found_apple.is_none() || win_is_english)
-    {
-        return Some(decode_utf16be_bytes(&records[index].string));
+    if let Some(index) = found_win {
+        if found_apple.is_none() || win_is_english {
+            return Some(decode_utf16be_bytes(&records[index].string));
+        }
     }
     if let Some(index) = found_apple {
         return Some(decode_mac_roman_bytes(&records[index].string));
@@ -380,10 +380,10 @@ fn postscript_prefix_string(table: &NameTable, name_id: u16) -> Option<String> {
         }
     }
 
-    if let Some(index) = found_win
-        && let Some(name) = postscript_prefix_win_string(&table.records[index].string)
-    {
-        return Some(name);
+    if let Some(index) = found_win {
+        if let Some(name) = postscript_prefix_win_string(&table.records[index].string) {
+            return Some(name);
+        }
     }
     if let Some(index) = found_apple {
         return postscript_prefix_apple_string(&table.records[index].string);
@@ -436,15 +436,15 @@ fn find_postscript_name(records: &[SfntNameRecord]) -> Option<String> {
             apple = Some(index);
         }
     }
-    if let Some(index) = win
-        && let Some(name) = decode_win_postscript(&records[index].string)
-    {
-        return Some(name);
+    if let Some(index) = win {
+        if let Some(name) = decode_win_postscript(&records[index].string) {
+            return Some(name);
+        }
     }
-    if let Some(index) = apple
-        && let Some(name) = decode_apple_postscript(&records[index].string)
-    {
-        return Some(name);
+    if let Some(index) = apple {
+        if let Some(name) = decode_apple_postscript(&records[index].string) {
+            return Some(name);
+        }
     }
     None
 }

@@ -13,8 +13,9 @@ make setup
 make test-fast
 ```
 
-Rust 1.87 is the MSRV. `rust-toolchain.toml` pins the repository toolchain used
-by primary CI.
+The public `fontdone` crate supports Rust 1.87 and is the MSRV-checked surface.
+The private C and raw-WASM facade targets require Rust 1.90.
+`rust-toolchain.toml` pins the repository toolchain used by primary CI.
 
 ## 2. Runtime boundary
 

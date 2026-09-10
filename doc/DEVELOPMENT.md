@@ -28,7 +28,7 @@ when browser behavior or asset loading changes.
 
 | Tool | Version | Used for |
 |---|---:|---|
-| Rust | MSRV 1.87; repository toolchain 1.96.1 | runtime and packages |
+| Rust | public crate MSRV 1.87; private C/WASM facade floor 1.90; repository toolchain 1.96.1 | runtime and packages |
 | Rust nightly | 2026-07-16 in CI | LLVM branch and region coverage |
 | cargo-llvm-cov | 0.8.7 | combined coverage report |
 | cargo-deny / cargo-audit | 0.20.2 / 0.22.2 | supply-chain policy |
@@ -4810,7 +4810,7 @@ check:
 | Job | Evidence |
 |---|---|
 | Fast gate | The exact `make ci-fast PYTHON=target/font-generation-venv/bin/python` command used by CI: generated contracts, reproducible fixtures, docs, versions, format, Clippy, strict rustdoc, examples, fast workspace tests, external Rust and C consumers, FFI purity, eight-case parity smoke, and benchmark-harness self-test |
-| MSRV | the same fast workspace contract on Rust 1.87.0 |
+| MSRV | the public `fontdone` library check on Rust 1.87.0; the stable fast gate covers private C/WASM facades |
 
 The stable `Commit gate` succeeds only when both jobs succeed. It is the single
 check suitable for ordinary branch protection and merge-queue checks. After

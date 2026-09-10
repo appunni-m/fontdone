@@ -2,7 +2,9 @@
 name = "fontdone-wasm"
 version = "2.14.3-alpha.2"
 edition = "2024"
-rust-version = "1.87"
+# The private raw-WASM facade uses the workspace compiler floor; the public
+# `fontdone` crate remains compatible with Rust 1.87.
+rust-version = "1.90"
 license = "FTL"
 # This is the internal raw-WASM build target for the browser npm package.  The
 # npm tarball is the public JavaScript surface; the workspace crate remains

@@ -9173,10 +9173,10 @@ fn named_instance_postscript_name(
     // room for `-`, a 128-bit checksum, and `...` within MAX_PS_NAME_LEN.
     let mut prefix = tt::name::variations_postscript_prefix(name)?;
     prefix.truncate(VARIATION_PS_PREFIX_MAX_LEN);
-    if let Some(name_id) = instance.postscript_name_id
-        && let Some(name) = tt::name::name_string(name, name_id)
-    {
-        return Some(limit_variation_postscript_name(&prefix, name));
+    if let Some(name_id) = instance.postscript_name_id {
+        if let Some(name) = tt::name::name_string(name, name_id) {
+            return Some(limit_variation_postscript_name(&prefix, name));
+        }
     }
     let Some(subfamily) = tt::name::name_string(name, instance.subfamily_name_id) else {
         // FreeType `sfnt_get_var_ps_name` in `src/sfnt/sfdriver.c` falls through

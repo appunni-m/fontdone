@@ -3747,10 +3747,10 @@ pub extern "C" fn fontdone_wasm_new_size_out(handle: usize, out: *mut usize) -> 
 pub extern "C" fn fontdone_wasm_activate_size(size_handle: usize) -> FT_Error {
     let size = ptr::with_exposed_provenance_mut::<rust_ffi::FT_SizeRec>(size_handle);
     let error = rust_ffi::FT_Activate_Size(size);
-    if error == rust_ffi::FT_Err_Ok {
-        if let Some(owner) = wasm_size_owner(size_handle).and_then(face_mut) {
-            owner.active_size = size_handle;
-        }
+    if error == rust_ffi::FT_Err_Ok
+        && let Some(owner) = wasm_size_owner(size_handle).and_then(face_mut)
+    {
+        owner.active_size = size_handle;
     }
     error
 }
@@ -4551,23 +4551,22 @@ pub extern "C" fn fontdone_wasm_outline_render(
         params.source = outline.cast();
     }
     if params.flags & rust_ffi::FT_RASTER_FLAG_DIRECT as FT_Int != 0 {
-        if params.flags & rust_ffi::FT_RASTER_FLAG_CLIP as FT_Int == 0 {
-            if let (Some(_library), Some(outline_snapshot)) = (library.as_ref(), snapshot.as_ref())
+        if params.flags & rust_ffi::FT_RASTER_FLAG_CLIP as FT_Int == 0
+            && let (Some(_library), Some(outline_snapshot)) = (library.as_ref(), snapshot.as_ref())
+        {
+            let mut cbox = rust_ffi::FT_BBox::default();
+            rust_ffi::FT_Outline_Get_CBox(Some(outline_snapshot), Some(&mut cbox));
+            if cbox.xMin >= -0x1000000
+                && cbox.yMin >= -0x1000000
+                && cbox.xMax <= 0x1000000
+                && cbox.yMax <= 0x1000000
             {
-                let mut cbox = rust_ffi::FT_BBox::default();
-                rust_ffi::FT_Outline_Get_CBox(Some(outline_snapshot), Some(&mut cbox));
-                if cbox.xMin >= -0x1000000
-                    && cbox.yMin >= -0x1000000
-                    && cbox.xMax <= 0x1000000
-                    && cbox.yMax <= 0x1000000
-                {
-                    // FreeType 2.14.3 ftoutln.c:635-640 presets direct-mode
-                    // no-CLIP bounds from the outline CBox in integer pixels.
-                    params.clip_box.xMin = cbox.xMin >> 6;
-                    params.clip_box.yMin = cbox.yMin >> 6;
-                    params.clip_box.xMax = cbox.xMax.checked_add(63).unwrap_or(cbox.xMax) >> 6;
-                    params.clip_box.yMax = cbox.yMax.checked_add(63).unwrap_or(cbox.yMax) >> 6;
-                }
+                // FreeType 2.14.3 ftoutln.c:635-640 presets direct-mode
+                // no-CLIP bounds from the outline CBox in integer pixels.
+                params.clip_box.xMin = cbox.xMin >> 6;
+                params.clip_box.yMin = cbox.yMin >> 6;
+                params.clip_box.xMax = cbox.xMax.checked_add(63).unwrap_or(cbox.xMax) >> 6;
+                params.clip_box.yMax = cbox.yMax.checked_add(63).unwrap_or(cbox.yMax) >> 6;
             }
         }
         return match rust_ffi::FT_Outline_Render_Direct_Spans(
@@ -4602,17 +4601,17 @@ pub extern "C" fn fontdone_wasm_outline_render(
             rust_ffi::FT_Err_Ok
         }
         Err(err) => {
-            if !params.target.is_null() {
-                if let Some(rendered) = rust_ffi::FT_Outline_Render_Error_Output(
+            if !params.target.is_null()
+                && let Some(rendered) = rust_ffi::FT_Outline_Render_Error_Output(
                     snapshot.as_ref(),
                     bitmap_view.as_ref(),
                     params.flags,
-                ) {
-                    // SAFETY: the WASM descriptor points at writable linear-memory
-                    // bitmap storage for this synchronous call.
-                    let target = unsafe { &mut *params.target };
-                    copy_rendered_bitmap_to_wasm(target, &rendered);
-                }
+                )
+            {
+                // SAFETY: the WASM descriptor points at writable linear-memory
+                // bitmap storage for this synchronous call.
+                let target = unsafe { &mut *params.target };
+                copy_rendered_bitmap_to_wasm(target, &rendered);
             }
             err
         }
@@ -4653,22 +4652,22 @@ pub fn abi_support_outline_render_direct_spans(
     let snapshot = outline_snapshot_from_wasm(outline);
     let target = unsafe { params.target.as_ref() };
     let bitmap_view = target.map(wasm_bitmap_to_rust);
-    if params.flags & rust_ffi::FT_RASTER_FLAG_CLIP as FT_Int == 0 {
-        if let (Some(_library), Some(outline_snapshot)) = (library.as_ref(), snapshot.as_ref()) {
-            let mut cbox = rust_ffi::FT_BBox::default();
-            rust_ffi::FT_Outline_Get_CBox(Some(outline_snapshot), Some(&mut cbox));
-            if cbox.xMin >= -0x1000000
-                && cbox.yMin >= -0x1000000
-                && cbox.xMax <= 0x1000000
-                && cbox.yMax <= 0x1000000
-            {
-                // FreeType 2.14.3 ftoutln.c:635-640 presets direct-mode
-                // no-CLIP bounds from the outline CBox in integer pixels.
-                params.clip_box.xMin = cbox.xMin >> 6;
-                params.clip_box.yMin = cbox.yMin >> 6;
-                params.clip_box.xMax = cbox.xMax.checked_add(63).unwrap_or(cbox.xMax) >> 6;
-                params.clip_box.yMax = cbox.yMax.checked_add(63).unwrap_or(cbox.yMax) >> 6;
-            }
+    if params.flags & rust_ffi::FT_RASTER_FLAG_CLIP as FT_Int == 0
+        && let (Some(_library), Some(outline_snapshot)) = (library.as_ref(), snapshot.as_ref())
+    {
+        let mut cbox = rust_ffi::FT_BBox::default();
+        rust_ffi::FT_Outline_Get_CBox(Some(outline_snapshot), Some(&mut cbox));
+        if cbox.xMin >= -0x1000000
+            && cbox.yMin >= -0x1000000
+            && cbox.xMax <= 0x1000000
+            && cbox.yMax <= 0x1000000
+        {
+            // FreeType 2.14.3 ftoutln.c:635-640 presets direct-mode
+            // no-CLIP bounds from the outline CBox in integer pixels.
+            params.clip_box.xMin = cbox.xMin >> 6;
+            params.clip_box.yMin = cbox.yMin >> 6;
+            params.clip_box.xMax = cbox.xMax.checked_add(63).unwrap_or(cbox.xMax) >> 6;
+            params.clip_box.yMax = cbox.yMax.checked_add(63).unwrap_or(cbox.yMax) >> 6;
         }
     }
     match rust_ffi::FT_Outline_Render_Direct_Spans(
@@ -8823,11 +8822,11 @@ pub extern "C" fn fontdone_wasm_get_track_kerning(
         degree,
         output.map(|_| &mut kerning),
     );
-    if error == rust_ffi::FT_Err_Ok {
-        if let Some(output) = output {
-            // SAFETY: `akerning` was checked for null and points to writable linear memory.
-            unsafe { *output.as_ptr() = kerning };
-        }
+    if error == rust_ffi::FT_Err_Ok
+        && let Some(output) = output
+    {
+        // SAFETY: `akerning` was checked for null and points to writable linear memory.
+        unsafe { *output.as_ptr() = kerning };
     }
     error
 }

@@ -2,7 +2,9 @@
 name = "fontdone-c-abi"
 version = "2.14.3-alpha.2"
 edition = "2024"
-rust-version = "1.87"
+# The private C ABI facade uses the workspace compiler floor; the public
+# `fontdone` crate remains compatible with Rust 1.87.
+rust-version = "1.90"
 license = "FTL"
 # The C ABI is shipped as a native SDK archive from the tagged release.  Keep
 # this Cargo package in the workspace so the SDK and its contract tests are

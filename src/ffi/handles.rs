@@ -3294,10 +3294,10 @@ pub fn FTC_SBitCache_Lookup<'a>(
         flags: image_type.flags,
         glyph_index,
     };
-    if !cache.entries.contains_key(&key)
-        && let Err(error) = ftc_sbit_cache_fill(cache, key)
-    {
-        return error;
+    if !cache.entries.contains_key(&key) {
+        if let Err(error) = ftc_sbit_cache_fill(cache, key) {
+            return error;
+        }
     }
     let Some(entry) = cache.entries.get_mut(&key) else {
         return FT_Err_Invalid_Argument;
@@ -6325,15 +6325,15 @@ pub fn FT_Stroker_LineTo(stroker: FT_Stroker, to: Option<&FT_Vector>) -> FT_Erro
             // before changing the current center or emitting border points.
             return FT_Err_Ok;
         }
-        if let Some(path) = entry.state.pending_conic.take()
-            && !entry.state.replay_pending_conic(path)
-        {
-            return FT_Err_Unimplemented_Feature;
+        if let Some(path) = entry.state.pending_conic.take() {
+            if !entry.state.replay_pending_conic(path) {
+                return FT_Err_Unimplemented_Feature;
+            }
         }
-        if let Some(path) = entry.state.pending_cubic.take()
-            && !entry.state.replay_pending_cubic(path)
-        {
-            return FT_Err_Unimplemented_Feature;
+        if let Some(path) = entry.state.pending_cubic.take() {
+            if !entry.state.replay_pending_cubic(path) {
+                return FT_Err_Unimplemented_Feature;
+            }
         }
         if entry.state.first_point {
             // FreeType 2.14.3 `src/base/ftstroke.c:1289-1300` starts the
@@ -6387,15 +6387,15 @@ pub fn FT_Stroker_ConicTo(
             entry.state.center = *to;
             return FT_Err_Ok;
         }
-        if let Some(path) = entry.state.pending_conic.take()
-            && !entry.state.replay_pending_conic(path)
-        {
-            return FT_Err_Unimplemented_Feature;
+        if let Some(path) = entry.state.pending_conic.take() {
+            if !entry.state.replay_pending_conic(path) {
+                return FT_Err_Unimplemented_Feature;
+            }
         }
-        if let Some(path) = entry.state.pending_cubic.take()
-            && !entry.state.replay_pending_cubic(path)
-        {
-            return FT_Err_Unimplemented_Feature;
+        if let Some(path) = entry.state.pending_cubic.take() {
+            if !entry.state.replay_pending_cubic(path) {
+                return FT_Err_Unimplemented_Feature;
+            }
         }
         if entry.state.first_point
             && !entry.state.subpath_open
@@ -6463,15 +6463,15 @@ pub fn FT_Stroker_CubicTo(
             entry.state.center = *to;
             return FT_Err_Ok;
         }
-        if let Some(path) = entry.state.pending_conic.take()
-            && !entry.state.replay_pending_conic(path)
-        {
-            return FT_Err_Unimplemented_Feature;
+        if let Some(path) = entry.state.pending_conic.take() {
+            if !entry.state.replay_pending_conic(path) {
+                return FT_Err_Unimplemented_Feature;
+            }
         }
-        if let Some(path) = entry.state.pending_cubic.take()
-            && !entry.state.replay_pending_cubic(path)
-        {
-            return FT_Err_Unimplemented_Feature;
+        if let Some(path) = entry.state.pending_cubic.take() {
+            if !entry.state.replay_pending_cubic(path) {
+                return FT_Err_Unimplemented_Feature;
+            }
         }
         if entry.state.first_point
             && !entry.state.subpath_open
@@ -7485,10 +7485,10 @@ pub fn FT_OpenType_Validate(
     // MATH order after all selected tables have been loaded.  Keep that order
     // so a later failure has the same all-table cleanup obligation.
     for index in [0, 2, 3, 1, 4, 5] {
-        if let Some(bytes) = selected[index].as_deref()
-            && !valid_open_type_layout_table(TABLES[index].0, bytes)
-        {
-            return FT_Err_Invalid_Table;
+        if let Some(bytes) = selected[index].as_deref() {
+            if !valid_open_type_layout_table(TABLES[index].0, bytes) {
+                return FT_Err_Invalid_Table;
+            }
         }
     }
 
@@ -8343,10 +8343,10 @@ pub fn FT_TrueTypeGX_Validate(
     // `src/gxvalid/gxvmod.c` validates in load order, which differs from the
     // public output-index order fixed by `ftgxval.h`.
     for index in [0, 3, 7, 4, 1, 2, 5, 6, 8, 9] {
-        if let Some(bytes) = selected[index].as_deref()
-            && !valid_gx_validation_table(GX_TABLES[index].0, bytes)
-        {
-            return FT_Err_Invalid_Table;
+        if let Some(bytes) = selected[index].as_deref() {
+            if !valid_gx_validation_table(GX_TABLES[index].0, bytes) {
+                return FT_Err_Invalid_Table;
+            }
         }
     }
     for (index, bytes) in selected.into_iter().enumerate().take(tables.len()) {
@@ -12090,9 +12090,10 @@ pub fn FT_Set_Debug_Hook(
     // only when all three public preconditions hold: library, hook, index < 4.
     if let (Some(library), Some(debug_hook), Ok(index)) =
         (library, debug_hook, usize::try_from(hook_index))
-        && let Some(slot) = library.debug_hooks.get_mut(index)
     {
-        *slot = Some(debug_hook);
+        if let Some(slot) = library.debug_hooks.get_mut(index) {
+            *slot = Some(debug_hook);
+        }
     }
 }
 
@@ -12331,15 +12332,17 @@ pub fn FT_Library_Renderer_Class(
     format: FT_Glyph_Format,
 ) -> Option<(&'static str, FT_Glyph_Format, bool, bool)> {
     let library = library?;
-    if format == FT_GLYPH_FORMAT_OUTLINE
-        && let Some(module) = library
+    if format == FT_GLYPH_FORMAT_OUTLINE {
+        if let Some(module) = library
             .synthetic_modules
             .iter()
             .flatten()
             .find(|module| module.module_name == library.current_outline_renderer)
-        && module.module_flags & FT_MODULE_RENDERER as FT_ULong != 0
-    {
-        return Some((module.module_name, FT_GLYPH_FORMAT_OUTLINE, true, false));
+        {
+            if module.module_flags & FT_MODULE_RENDERER as FT_ULong != 0 {
+                return Some((module.module_name, FT_GLYPH_FORMAT_OUTLINE, true, false));
+            }
+        }
     }
     // FreeType 2.14.3 `FT_Get_Renderer` (`src/base/ftrender.c`) returns the
     // first registered renderer whose `glyph_format` matches the requested
@@ -12402,9 +12405,12 @@ pub fn FT_Library_Set_Renderer_By_Format(
                     .iter()
                     .flatten()
                     .find(|module| module.module_name == module_name)
-                    && module.module_flags & FT_MODULE_RENDERER as FT_ULong != 0
                 {
-                    module.module_name
+                    if module.module_flags & FT_MODULE_RENDERER as FT_ULong != 0 {
+                        module.module_name
+                    } else {
+                        return FT_Err_Invalid_Argument;
+                    }
                 } else {
                     return FT_Err_Invalid_Argument;
                 }
@@ -14417,54 +14423,54 @@ fn available_sizes_to_ffi(font: &crate::font::Font) -> Box<[FT_Bitmap_Size]> {
             .into_boxed_slice();
     }
 
-    if !font.ignore_sbix
-        && let Some(sbix) = font.data.sbix.as_ref()
-    {
-        // `sfnt/sfobjs.c` builds FT_Bitmap_Size records from every valid
-        // `sbix` strike using the same average-width formula as EBLC/CBLC.
-        let (mut avg_width, mut units_per_em) =
-            font.data.os2.as_ref().map_or((1_i32, 1_i32), |os2| {
-                (
-                    i32::from(os2.x_avg_char_width),
-                    i32::from(font.data.head.units_per_em),
-                )
-            });
-        if units_per_em == 0
-            || font
-                .data
-                .os2
-                .as_ref()
-                .is_some_and(|os2| os2.version == 0xFFFF)
-        {
-            avg_width = 1;
-            units_per_em = 1;
-        }
-        return (0..sbix.strike_count())
-            .filter_map(|index| {
-                let metrics = sbix.strike_metrics(
-                    index,
-                    font.data.hhea.ascent,
-                    font.data.hhea.descent,
-                    font.data.hhea.line_gap,
-                    font.data.head.units_per_em,
-                )?;
-                if metrics.x_ppem == 0 || metrics.y_ppem == 0 {
-                    return None;
-                }
-                let width = (i64::from(avg_width) * i64::from(metrics.x_ppem)
-                    + i64::from(units_per_em) / 2)
-                    / i64::from(units_per_em);
-                let width = i32_from_i64(width);
-                Some(FT_Bitmap_Size {
-                    height: metrics.height,
-                    width: i16_from_i32(width),
-                    size: FT_Pos::from(i32::from(metrics.y_ppem) << 6),
-                    x_ppem: FT_Pos::from(i32::from(metrics.x_ppem) << 6),
-                    y_ppem: FT_Pos::from(i32::from(metrics.y_ppem) << 6),
+    if !font.ignore_sbix {
+        if let Some(sbix) = font.data.sbix.as_ref() {
+            // `sfnt/sfobjs.c` builds FT_Bitmap_Size records from every valid
+            // `sbix` strike using the same average-width formula as EBLC/CBLC.
+            let (mut avg_width, mut units_per_em) =
+                font.data.os2.as_ref().map_or((1_i32, 1_i32), |os2| {
+                    (
+                        i32::from(os2.x_avg_char_width),
+                        i32::from(font.data.head.units_per_em),
+                    )
+                });
+            if units_per_em == 0
+                || font
+                    .data
+                    .os2
+                    .as_ref()
+                    .is_some_and(|os2| os2.version == 0xFFFF)
+            {
+                avg_width = 1;
+                units_per_em = 1;
+            }
+            return (0..sbix.strike_count())
+                .filter_map(|index| {
+                    let metrics = sbix.strike_metrics(
+                        index,
+                        font.data.hhea.ascent,
+                        font.data.hhea.descent,
+                        font.data.hhea.line_gap,
+                        font.data.head.units_per_em,
+                    )?;
+                    if metrics.x_ppem == 0 || metrics.y_ppem == 0 {
+                        return None;
+                    }
+                    let width = (i64::from(avg_width) * i64::from(metrics.x_ppem)
+                        + i64::from(units_per_em) / 2)
+                        / i64::from(units_per_em);
+                    let width = i32_from_i64(width);
+                    Some(FT_Bitmap_Size {
+                        height: metrics.height,
+                        width: i16_from_i32(width),
+                        size: FT_Pos::from(i32::from(metrics.y_ppem) << 6),
+                        x_ppem: FT_Pos::from(i32::from(metrics.x_ppem) << 6),
+                        y_ppem: FT_Pos::from(i32::from(metrics.y_ppem) << 6),
+                    })
                 })
-            })
-            .collect::<Vec<_>>()
-            .into_boxed_slice();
+                .collect::<Vec<_>>()
+                .into_boxed_slice();
+        }
     }
 
     let Some(size) = font.winfnt_bitmap_size() else {
@@ -15291,14 +15297,15 @@ fn ft_load_glyph_core(
     // `sbix` faces are not marked scalable by default, that error is returned
     // directly (`src/truetype/ttgload.c:2395-2411`).
     let inner = face.inner.borrow();
-    if let Some(load_result) = inner
+    if let Some(Err(error)) = inner
         .font()
         .sbix_active_strike_load_error(glyph_index, face.size_metrics.y_ppem)
-        && let Err(error) = load_result
-        && !matches!(error, crate::error::FontError::MissingBitmap)
-        && face.face_flags & FT_FACE_FLAG_SCALABLE == 0
     {
-        return Err(error_to_ft(error));
+        if !matches!(error, crate::error::FontError::MissingBitmap)
+            && face.face_flags & FT_FACE_FLAG_SCALABLE == 0
+        {
+            return Err(error_to_ft(error));
+        }
     }
     let flags = load_flags_to_core(load_flags)?;
     let transform = if load_flags & FT_LOAD_IGNORE_TRANSFORM != 0 {

@@ -85,7 +85,8 @@ jobs:
         run: |
           rustup toolchain install "$RUST_MSRV" --profile minimal
           rustup override set "$RUST_MSRV"
-      - run: make test-fast
+      - name: Check the public crate on its MSRV
+        run: make test-msrv
 
   parity:
     name: Thorough / Exact parity
