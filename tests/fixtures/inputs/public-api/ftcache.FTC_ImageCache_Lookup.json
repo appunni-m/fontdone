@@ -17,7 +17,54 @@
       "operation": "ftcache.image_cache_lookup",
       "schema": "cache_operation",
       "expect_error": false,
-      "inputs": {},
+      "inputs": {
+        "assets": {
+          "font": {
+            "kind": "ref",
+            "id": "input/fonts/DejaVuSans.ttf",
+            "asset_kind": "font"
+          },
+          "alt_font": {
+            "kind": "ref",
+            "id": "input/fonts/LiberationSerif-Regular.ttf",
+            "asset_kind": "font"
+          },
+          "multi_charmap_font": {
+            "kind": "ref",
+            "id": "input/fonts/generated/sfnt-name-records.ttf",
+            "asset_kind": "font"
+          }
+        },
+        "params": {
+          "manager_limits": {
+            "max_faces": 0,
+            "max_sizes": 0,
+            "max_bytes": 0
+          },
+          "face_ids": [
+            "face-A",
+            "face-B"
+          ],
+          "requester": "path_face_requester_with_log",
+          "scenario": "planned_cache_subsystem_not_out_of_scope",
+          "image_type": {
+            "width": 20,
+            "height": 20,
+            "flags": [
+              "DEFAULT",
+              "RENDER",
+              "NO_HINTING"
+            ]
+          },
+          "glyph_indexes": [
+            0,
+            36,
+            99999
+          ],
+          "anode_output": "non_null",
+          "repeat_lookup": true
+        }
+      },
       "classifiers": [
         "kind:function",
         "header:ftcache",
