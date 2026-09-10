@@ -63,6 +63,10 @@ def archive(source: Path, destination: Path) -> str:
                     relative = path.relative_to(source.parent).as_posix()
                     info = tar.gettarinfo(str(path), arcname=relative)
                     info.mtime = 0
+                    info.uid = 0
+                    info.gid = 0
+                    info.uname = ""
+                    info.gname = ""
                     if path.is_file():
                         with path.open("rb") as file_stream:
                             tar.addfile(info, file_stream)
