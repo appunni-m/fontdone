@@ -276,7 +276,7 @@ The machine-readable denominators are in
 package reports, release notes, inventories, archives, and checksums are local
 outputs under `target/release-evidence/`.
 
-The current local dry-run on `main` commit `857e96d05e32f6756a4322f02c089f501b6a913e`
+The current local dry-run on `main` commit `df160cf279a228ce4394dd1e5d8a039003c1a555`
 (2026-09-12) verifies one public Cargo package, two private workspace build
 packages, the `fontdone@2.14.3-alpha.3` npm archive, and the native C SDK
 archive. The complete release gate still requires the unresolved C-ABI route
