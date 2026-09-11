@@ -27,10 +27,10 @@ There are three distinct boundaries:
    or runtime probe alone is not complete behavior.
 3. **Replacement contract:** `make c-abi-contract` measures functions,
    constants, types, layouts, callbacks, ownership, state, errors, modules,
-   headers, artifacts, and platforms. The committed snapshot is 9/12
-   categories complete: 4,964/5,047 pinned-C runtime contract rows are exact
-   with 83 pending, binary artifacts are 7/8, and fresh platform bundles are
-   1/5.
+   headers, artifacts, and platforms. The committed snapshot is 6/12
+   categories complete: 13,572/18,098 pinned-C runtime contract rows are exact
+   with 4,526 pending, binary artifacts are 7/8, and fresh platform bundles
+   are 1/5.
 
 The package is not link-name-compatible with `libfreetype`: the artifact is
 deliberately named `fontdone_c_abi`. Exported compatible functions retain

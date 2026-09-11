@@ -44,17 +44,17 @@ First standalone alpha targeting FreeType 2.14.3.
 - The maintained application adoption map classifies 52 of 218 pinned public
   functions complete, 5 implemented with incomplete mapping, 29 partial, 69
   planned, and 63 intentionally excluded.
-- The last committed full runtime evidence passes 7,212 of 7,212 runnable
-  comparisons with 0 failures and 95 explicitly pending cases.
-- The last measured combined core, C-ABI, and host-compiled WASM run reports
-  45,547/50,898 lines (89.49%), 8,986/11,915 branches (75.42%),
-  3,112/3,585 functions (86.81%), and 63,052/71,420 regions (88.28%) on
-  commit `e554aca48fb3168fa852dd79267f50d06201e1e4`.
+- The latest committed full runtime evidence passes 20,355 of 20,355 runnable
+  comparisons with 0 failures and 3 explicitly pending safety-extension cases.
+- The last committed combined core, C-ABI, and host-compiled WASM coverage
+  snapshot reports 63,740/65,887 lines (96.74%), 11,580/13,412 branches
+  (86.34%), 3,689/3,976 functions (92.78%), and 87,946/91,700 regions
+  (95.91%) on source commit `e8c51cb6dba42fd524d94940673fe6b380411d46`.
 - Every pinned function has at least one runtime route, but route evidence does
   not imply every success path or lifecycle is complete.
-- The C contract is 9 of 12 categories complete. Its function category is
-  blocked by 83 pending runtime contract rows; Windows import-library evidence
-  and four of five assembled platform bundles also remain pending.
+- The C contract is 6 of 12 categories complete. Its runtime contract has
+  13,572 of 18,098 rows complete; the Windows import-library evidence and four
+  of five assembled platform bundles also remain pending.
 
 This prerelease is for compatibility development and controlled evaluation.
 It is not an unqualified drop-in FreeType replacement, and no compatibility is

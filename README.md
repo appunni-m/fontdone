@@ -138,7 +138,7 @@ The latest worktree verification is the full parity snapshot recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
 20,355 / 20,355 runnable comparisons with 0 failures and 3 explicitly pending
 concrete cases. Its source-bound parity-tree digest is
-`1f494dc8224563f7a7ba6ad9a0ccb2eb9d1a84c43612f5379ee933adf6f04cbe`.
+`eda2a8f1111866abcbdeb893f85b20d54ba0043e66e5d58e04ce097c05f0fed3`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -320,8 +320,8 @@ measurement provenance is retained in the compatibility snapshot.
 
 ### 3.4 C ABI completion contract
 
-The latest generated scorecard from `make c-abi-contract` at source commit
-`b591ca6a9db99175a980525e0668c6fa6afa6948` has **6 / 12 categories complete**:
+The latest generated scorecard from `make c-abi-contract` at the parity-fix
+source commit `894f162bd27df83bdea9430d0b604bf1020b04e5` has **6 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
@@ -329,7 +329,7 @@ The latest generated scorecard from `make c-abi-contract` at source commit
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | 22 / 23 ownership rules have exact runtime evidence; 1 pending |
 | State, modules, headers | 19 / 20 state transitions have exact evidence; modules and headers are complete |
-| Errors | 2,652 / 3,745 expected-error routes compare exact error and output results; 15,829 / 20,355 routes have no generic fallback evidence |
+| Errors | 2,654 / 3,745 expected-error routes compare exact error and output results; 15,829 / 20,355 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
 | Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
 

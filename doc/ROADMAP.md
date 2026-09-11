@@ -579,10 +579,10 @@ comparisons, 0 failed, and 3 explicitly pending safety-extension cases. The
 route audit reports **20,358 concrete cases, 0 pending routes and 4,273
 generic-fallback rows**, with 218 / 218 function routes present in each ABI
 surface. The source-digest attestation is bound to the current parity tree
-`1f494dc8224563f7a7ba6ad9a0ccb2eb9d1a84c43612f5379ee933adf6f04cbe`.
+`eda2a8f1111866abcbdeb893f85b20d54ba0043e66e5d58e04ce097c05f0fed3`.
 The generated C-ABI scorecard is **6 / 12 categories complete**; C01.1 is
 176 / 218, C01.7 is 13,572 / 18,098, C06.1 is 22 / 23, C07.1 is 19 / 20,
-C08.2 is 2,652 / 3,745, C08.3 is 15,829 / 20,355, C11.3 is 7 / 8, and
+C08.2 is 2,654 / 3,745, C08.3 is 15,829 / 20,355, C11.3 is 7 / 8, and
 C12.3 is 1 / 5. The Windows import-library item and four fresh target bundles
 remain.
 
