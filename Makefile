@@ -241,6 +241,7 @@ doc-test:
 test-fast:
 	$(CARGO) test --workspace --all-features --locked -- --skip unified_fixture_parity --skip pipe_trace
 	$(CARGO) check --workspace --all-targets --all-features --locked
+	$(PYTHON) scripts/test_publish_release.py
 
 .PHONY: test-msrv
 test-msrv:

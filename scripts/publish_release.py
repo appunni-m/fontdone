@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -49,8 +50,8 @@ def wait_for_registry(package: str, expected_version: str, timeout: int) -> None
     )
 
 
-def registry_has(package: str, expected_version: str) -> bool:
-    """Return whether crates.io already serves this exact immutable version."""
+def registry_checksum(package: str, expected_version: str) -> str | None:
+    """Return the crates.io checksum for an exact version, if visible."""
 
     url = f"https://crates.io/api/v1/crates/{package}/{expected_version}"
     try:
@@ -59,10 +60,20 @@ def registry_has(package: str, expected_version: str) -> bool:
         )
         with urllib.request.urlopen(request, timeout=15) as response:
             payload = json.load(response)
-        return payload.get("version", {}).get("num") == expected_version
+        version = payload.get("version", {})
+        if version.get("num") != expected_version:
+            raise TimeoutError(
+                f"crates.io returned unexpected metadata for {package} {expected_version}"
+            )
+        checksum = version.get("checksum")
+        if not isinstance(checksum, str) or len(checksum) != 64:
+            raise TimeoutError(
+                f"crates.io metadata for {package} {expected_version} has no checksum"
+            )
+        return checksum
     except urllib.error.HTTPError as error:
         if error.code == 404:
-            return False
+            return None
         raise TimeoutError(
             f"crates.io lookup for {package} {expected_version} failed: HTTP {error.code}"
         ) from error
@@ -70,6 +81,16 @@ def registry_has(package: str, expected_version: str) -> bool:
         raise TimeoutError(
             f"crates.io lookup for {package} {expected_version} did not complete"
         ) from error
+
+
+def sha256(path: Path) -> str:
+    """Return the lowercase SHA-256 digest of a release archive."""
+
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        while chunk := source.read(128 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def run(command: list[str]) -> None:
@@ -112,9 +133,20 @@ def main() -> int:
             ]
             if args.dry_run:
                 command.extend(["--dry-run", "--allow-dirty"])
-            already_visible = args.publish_if_missing and registry_has(
-                package, release_version
-            )
+            already_visible = False
+            if args.publish_if_missing:
+                archive = ROOT / "target" / "package" / f"{package}-{release_version}.crate"
+                if not archive.is_file():
+                    raise ValueError(f"verified Cargo archive is missing: {archive}")
+                checksum = registry_checksum(package, release_version)
+                if checksum is not None:
+                    local_checksum = sha256(archive)
+                    if local_checksum != checksum:
+                        raise ValueError(
+                            f"crates.io artifact mismatch for {package} {release_version}: "
+                            f"local={local_checksum} registry={checksum}"
+                        )
+                    already_visible = True
             if already_visible:
                 print(
                     f"registry: {package} {release_version} is already visible; "

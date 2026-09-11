@@ -60,6 +60,7 @@ NON_PARITY_SCRIPTS = {
     "scripts/package_c_sdk.py",
     "scripts/record_c_contract_snapshot.py",
     "scripts/test_rust_consumer.py",
+    "scripts/test_publish_release.py",
     "scripts/verify_release.py",
 }
 NON_PARITY_SUFFIXES = {".md", ".txt"}
