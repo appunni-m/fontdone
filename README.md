@@ -320,18 +320,18 @@ measurement provenance is retained in the compatibility snapshot.
 
 ### 3.4 C ABI completion contract
 
-The latest generated scorecard from `make c-abi-contract` at the parity-fix
-source commit `894f162bd27df83bdea9430d0b604bf1020b04e5` has **6 / 12 categories complete**:
+The latest generated scorecard from `make c-abi-contract` in the current
+worktree (regenerated 2026-09-11) has **5 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 176 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 13,572 / 18,098 pinned-C runtime contract rows exact; 4,526 pending |
+| Functions | 85 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 13,572 / 18,098 pinned-C runtime contract rows exact; 4,526 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
-| Ownership | 22 / 23 ownership rules have exact runtime evidence; 1 pending |
-| State, modules, headers | 19 / 20 state transitions have exact evidence; modules and headers are complete |
-| Errors | 2,654 / 3,745 expected-error routes compare exact error and output results; 15,829 / 20,355 routes have no generic fallback evidence |
+| Ownership | 20 / 23 ownership rules have exact runtime evidence; 3 pending |
+| State, modules, headers | 16 / 20 state transitions have exact evidence; 5 / 7 optional public components have exact enabled/disabled evidence; headers are complete |
+| Errors | The exact-error ledger is rejected because its `test_executable` identity is stale, so 0 / 3,745 expected-error routes are accepted; 15,829 / 20,355 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
-| Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 pending |
+| Platform behavior | 0 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 remain pending, while the Darwin host run is recorded locally |
 
 Only `make c-abi-contract-complete` is the full-contract pass condition. The
 ordinary `make c-abi-contract` command intentionally succeeds while reporting
