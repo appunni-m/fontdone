@@ -371,6 +371,7 @@ document_wasm_test_support!(
     abi_open_face_non_driver_diagnostic,
     abi_truetype_context_allocation_failure_diagnostic,
     abi_set_unsupported_glyph_slot,
+    abi_set_empty_glyph_slot,
     abi_set_malformed_get_glyph_slot,
     abi_set_outline_glyph_slot_advance,
     abi_glyphslot_own_bitmap_copy_allocation_failure,

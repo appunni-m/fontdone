@@ -19681,6 +19681,18 @@ pub fn abi_set_unsupported_glyph_slot(face: FT_Face) -> FT_Error {
 }
 
 #[cfg(feature = "abi-test-support")]
+pub fn abi_set_empty_glyph_slot(face: FT_Face) -> FT_Error {
+    let Some(state) = face_state(face) else {
+        return rust_ffi::FT_Err_Invalid_Argument;
+    };
+    store_slot(
+        face,
+        rust_ffi::FT_Empty_GlyphSlot(&state.inner),
+        rust_ffi::FT_LOAD_DEFAULT,
+    )
+}
+
+#[cfg(feature = "abi-test-support")]
 pub fn abi_set_malformed_get_glyph_slot(face: FT_Face, variant: FT_UInt) -> FT_Error {
     let Some(state) = face_state(face) else {
         return rust_ffi::FT_Err_Invalid_Argument;

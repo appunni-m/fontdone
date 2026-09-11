@@ -350,6 +350,7 @@ document_abi_test_support!(
     abi_truetype_context_allocation_failure_diagnostic,
     abi_get_glyph_from_face,
     abi_get_glyph_from_external_malformed_slot,
+    abi_set_empty_glyph_slot,
     abi_set_unsupported_glyph_slot,
     abi_set_malformed_get_glyph_slot,
     abi_set_outline_glyph_slot_advance,

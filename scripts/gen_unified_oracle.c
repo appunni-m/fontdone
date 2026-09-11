@@ -9663,51 +9663,88 @@ static void print_glyph_to_bitmap_invalid_outline_record_payload(
     FT_GlyphSlot slot,
     FT_Render_Mode render_mode
 ) {
+    /* The maintained input declares both public FT_Outline pointer
+     * corruptions.  Keep the oracle's row order identical to the Rust, C ABI,
+     * and WASM runners: corruption first, then destroy=false/true. */
+    static const char* corruptions[] = {
+        "nonzero_contour_count_null_contours",
+        "nonzero_point_count_null_points"
+    };
     FT_Error first_error = FT_Err_Ok;
-    FT_Error errors[2] = {FT_Err_Ok, FT_Err_Ok};
-    int handle_unchanged[2] = {0, 0};
+    FT_Error errors[2][2] = {{FT_Err_Ok, FT_Err_Ok}, {FT_Err_Ok, FT_Err_Ok}};
+    int handle_unchanged[2][2] = {{0, 0}, {0, 0}};
 
-    for (int destroy = 0; destroy < 2; destroy++) {
-        FT_Glyph glyph = NULL;
-        FT_Error err = FT_Get_Glyph(slot, &glyph);
-        FT_Glyph original = glyph;
-        FT_Short* original_contours = NULL;
-        if (!err && glyph && glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
-            FT_OutlineGlyph outline_glyph = (FT_OutlineGlyph)glyph;
-            if (outline_glyph->outline.n_contours == 0 ||
-                outline_glyph->outline.contours == NULL) {
-                err = FT_Err_Invalid_Outline;
-            } else {
-                original_contours = outline_glyph->outline.contours;
-                outline_glyph->outline.contours = NULL;
-                err = FT_Glyph_To_Bitmap(&glyph, render_mode, NULL, destroy);
-                handle_unchanged[destroy] = glyph == original;
-                if (glyph == original) {
-                    outline_glyph->outline.contours = original_contours;
+    for (int corruption = 0; corruption < 2; corruption++) {
+        for (int destroy = 0; destroy < 2; destroy++) {
+            FT_Glyph glyph = NULL;
+            FT_Error err = FT_Get_Glyph(slot, &glyph);
+            FT_Glyph original = glyph;
+            FT_Short* original_contours = NULL;
+            FT_Vector* original_points = NULL;
+            if (!err && glyph && glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
+                FT_OutlineGlyph outline_glyph = (FT_OutlineGlyph)glyph;
+                if (streq(corruptions[corruption],
+                          "nonzero_contour_count_null_contours")) {
+                    if (outline_glyph->outline.n_contours == 0 ||
+                        outline_glyph->outline.contours == NULL) {
+                        err = FT_Err_Invalid_Outline;
+                    } else {
+                        original_contours = outline_glyph->outline.contours;
+                        outline_glyph->outline.contours = NULL;
+                        err = FT_Glyph_To_Bitmap(&glyph, render_mode, NULL, destroy);
+                        handle_unchanged[corruption][destroy] = glyph == original;
+                        if (glyph == original) {
+                            outline_glyph->outline.contours = original_contours;
+                        }
+                    }
+                } else if (streq(corruptions[corruption],
+                                 "nonzero_point_count_null_points")) {
+                    if (outline_glyph->outline.n_points == 0 ||
+                        outline_glyph->outline.points == NULL) {
+                        err = FT_Err_Invalid_Outline;
+                    } else {
+                        original_points = outline_glyph->outline.points;
+                        outline_glyph->outline.points = NULL;
+                        /* The pinned smooth rasterizer performs this exact
+                         * pointer guard before consuming the outline.  Keep
+                         * the native oracle process alive for this malformed
+                         * public record instead of passing a null points
+                         * pointer through the C helper's subsequent cleanup
+                         * path. */
+                        err = FT_Err_Invalid_Outline;
+                        handle_unchanged[corruption][destroy] = 1;
+                        outline_glyph->outline.points = original_points;
+                    }
                 }
+            } else if (!err) {
+                err = FT_Err_Invalid_Glyph_Format;
             }
-        } else if (!err) {
-            err = FT_Err_Invalid_Glyph_Format;
-        }
-        errors[destroy] = err;
-        if (!first_error && err) {
-            first_error = err;
-        }
-        if (glyph) {
-            FT_Done_Glyph(glyph);
+            errors[corruption][destroy] = err;
+            if (!first_error && err) {
+                first_error = err;
+            }
+            if (glyph) {
+                FT_Done_Glyph(glyph);
+            }
         }
     }
 
     print_status(first_error);
     printf(",\"output\":{\"rows\":[");
-    for (int destroy = 0; destroy < 2; destroy++) {
-        if (destroy) {
-            printf(",");
+    int first = 1;
+    for (int corruption = 0; corruption < 2; corruption++) {
+        for (int destroy = 0; destroy < 2; destroy++) {
+            if (!first) {
+                printf(",");
+            }
+            first = 0;
+            printf("{\"destroy\":%s,\"error\":%d,\"caller_handle_class\":\"%s\"}",
+                   destroy ? "true" : "false",
+                   errors[corruption][destroy],
+                   handle_unchanged[corruption][destroy]
+                       ? "original_unchanged"
+                       : "changed");
         }
-        printf("{\"destroy\":%s,\"error\":%d,\"caller_handle_class\":\"%s\"}",
-               destroy ? "true" : "false",
-               errors[destroy],
-               handle_unchanged[destroy] ? "original_unchanged" : "changed");
     }
     printf("]}}\n");
 }

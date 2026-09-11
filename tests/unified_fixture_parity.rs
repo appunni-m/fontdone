@@ -56687,11 +56687,15 @@ fn rust_render_glyph_slot_states(face: &FT_Face, params: &Value) -> Result<RunOu
 fn c_render_glyph_slot_states(face: c_abi::FT_Face, params: &Value) -> Result<RunOutput, String> {
     let render_mode = render_mode_param(params)?;
     render_glyph_slot_state_rows(params, |variant| {
-        if variant == "unsupported_synthetic_format" {
-            let err = c_abi::abi_set_unsupported_glyph_slot(face);
-            if err != FT_Err_Ok {
-                return Ok((err, c_slot_json(face)?));
-            }
+        let err = if variant == "new_unloaded_slot" {
+            c_abi::abi_set_empty_glyph_slot(face)
+        } else if variant == "unsupported_synthetic_format" {
+            c_abi::abi_set_unsupported_glyph_slot(face)
+        } else {
+            FT_Err_Invalid_Argument
+        };
+        if err != FT_Err_Ok {
+            return Ok((err, c_slot_json(face)?));
         }
         let status = c_abi::abi_render_glyph_from_face(face, render_mode);
         Ok((status, c_slot_json(face)?))
@@ -56701,11 +56705,15 @@ fn c_render_glyph_slot_states(face: c_abi::FT_Face, params: &Value) -> Result<Ru
 fn wasm_render_glyph_slot_states(handle: usize, params: &Value) -> Result<RunOutput, String> {
     let render_mode = render_mode_param(params)?;
     render_glyph_slot_state_rows(params, |variant| {
-        if variant == "unsupported_synthetic_format" {
-            let err = wasm_abi::abi_set_unsupported_glyph_slot(handle);
-            if err != FT_Err_Ok {
-                return Ok((err, wasm_slot_json(handle)?));
-            }
+        let err = if variant == "new_unloaded_slot" {
+            wasm_abi::abi_set_empty_glyph_slot(handle)
+        } else if variant == "unsupported_synthetic_format" {
+            wasm_abi::abi_set_unsupported_glyph_slot(handle)
+        } else {
+            FT_Err_Invalid_Argument
+        };
+        if err != FT_Err_Ok {
+            return Ok((err, wasm_slot_json(handle)?));
         }
         let status = wasm_abi::fontdone_wasm_render_glyph(handle, render_mode);
         Ok((status, wasm_slot_json(handle)?))
