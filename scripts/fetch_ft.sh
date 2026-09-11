@@ -18,7 +18,12 @@ fi
 
 mkdir -p "${CACHE_DIR}"
 if [ ! -f "${ARCHIVE_PATH}" ]; then
-  curl -L --fail --show-error "${URL}" -o "${ARCHIVE_PATH}"
+  temporary_archive="$(mktemp "${CACHE_DIR}/download.XXXXXX")"
+  trap 'rm -f "${temporary_archive}"' EXIT
+  curl --location --fail --show-error --retry 5 --retry-delay 2 \
+    --retry-all-errors "${URL}" -o "${temporary_archive}"
+  mv "${temporary_archive}" "${ARCHIVE_PATH}"
+  trap - EXIT
 fi
 
 if command -v sha256sum >/dev/null 2>&1; then
@@ -35,6 +40,7 @@ if [ "${actual}" != "${SHA256}" ]; then
   echo "checksum mismatch for ${ARCHIVE}" >&2
   echo "expected ${SHA256}" >&2
   echo "actual   ${actual}" >&2
+  rm -f "${ARCHIVE_PATH}"
   exit 1
 fi
 
