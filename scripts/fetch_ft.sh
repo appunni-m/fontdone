@@ -5,7 +5,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VERSION="2.14.3"
 ARCHIVE="freetype-${VERSION}.tar.xz"
-URL="https://download.savannah.gnu.org/releases/freetype/${ARCHIVE}"
+URLS=(
+  "https://download.savannah.gnu.org/releases/freetype/${ARCHIVE}"
+  "https://sourceforge.net/projects/freetype/files/freetype2/${VERSION}/${ARCHIVE}/download"
+)
 SHA256="36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f"
 CACHE_DIR="${ROOT}/target/oracle-cache"
 ARCHIVE_PATH="${CACHE_DIR}/${ARCHIVE}"
@@ -20,8 +23,20 @@ mkdir -p "${CACHE_DIR}"
 if [ ! -f "${ARCHIVE_PATH}" ]; then
   temporary_archive="$(mktemp "${CACHE_DIR}/download.XXXXXX")"
   trap 'rm -f "${temporary_archive}"' EXIT
-  curl --location --fail --show-error --retry 5 --retry-delay 2 \
-    --retry-all-errors "${URL}" -o "${temporary_archive}"
+  downloaded=0
+  for url in "${URLS[@]}"; do
+    if curl --location --fail --show-error --retry 5 --retry-delay 2 \
+      --retry-all-errors "${url}" -o "${temporary_archive}"; then
+      downloaded=1
+      break
+    fi
+    rm -f "${temporary_archive}"
+    temporary_archive="$(mktemp "${CACHE_DIR}/download.XXXXXX")"
+  done
+  if [ "${downloaded}" -ne 1 ]; then
+    echo "unable to download ${ARCHIVE} from any configured source" >&2
+    exit 1
+  fi
   mv "${temporary_archive}" "${ARCHIVE_PATH}"
   trap - EXIT
 fi
