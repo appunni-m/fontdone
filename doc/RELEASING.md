@@ -275,3 +275,11 @@ The machine-readable denominators are in
 [`compatibility_snapshot.json`](compatibility_snapshot.json). Generated
 package reports, release notes, inventories, archives, and checksums are local
 outputs under `target/release-evidence/`.
+
+The current local dry-run on `main` commit `8526f7fbb4ef96cc6d2d1cb9aba1ddef46acc121`
+(2026-09-11) verifies one public Cargo package, two private workspace build
+packages, the `fontdone@2.14.3-alpha.3` npm archive, and the native C SDK
+archive. The complete release gate still requires the unresolved C-ABI route
+and exact-error debt plus fresh cross-platform bundles, including the Windows
+import library; these checks remain visible in the generated contract
+scorecard and are not bypassed by the dry-run.
