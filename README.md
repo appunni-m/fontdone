@@ -321,17 +321,17 @@ measurement provenance is retained in the compatibility snapshot.
 ### 3.4 C ABI completion contract
 
 The latest generated scorecard from `make c-abi-contract` in the current
-worktree (regenerated 2026-09-11) has **5 / 12 categories complete**:
+worktree (regenerated 2026-09-11) has **8 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 85 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 13,572 / 18,098 pinned-C runtime contract rows exact; 4,526 pending |
+| Functions | 176 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 13,572 / 18,098 pinned-C runtime contract rows exact; 4,526 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
-| Ownership | 20 / 23 ownership rules have exact runtime evidence; 3 pending |
-| State, modules, headers | 16 / 20 state transitions have exact evidence; 5 / 7 optional public components have exact enabled/disabled evidence; headers are complete |
-| Errors | The exact-error ledger is rejected because its `test_executable` identity is stale, so 0 / 3,745 expected-error routes are accepted; 15,829 / 20,355 routes have no generic fallback evidence |
+| Ownership | 23 / 23 ownership rules have exact runtime evidence |
+| State, modules, headers | 20 / 20 state transitions and 7 / 7 optional public components have exact evidence; headers are complete |
+| Errors | 2,654 / 3,745 expected-error routes compare exact error and output results; the regenerated ledger records 102 strict mismatches and 1,091 unresolved routes; 15,829 / 20,355 routes have no generic fallback evidence |
 | Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
-| Platform behavior | 0 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 remain pending, while the Darwin host run is recorded locally |
+| Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 remain pending |
 
 Only `make c-abi-contract-complete` is the full-contract pass condition. The
 ordinary `make c-abi-contract` command intentionally succeeds while reporting

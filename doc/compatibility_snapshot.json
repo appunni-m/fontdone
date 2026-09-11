@@ -40,7 +40,7 @@
     "function_total": 218
   },
   "c_contract": {
-    "categories_complete": 5,
+    "categories_complete": 8,
     "categories_total": 12,
     "is_complete": false,
     "runtime_contract_rows_complete": 13572,
@@ -48,7 +48,7 @@
     "runtime_contract_rows_pending": 4526,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
-    "platform_lanes_complete": 0,
+    "platform_lanes_complete": 1,
     "platform_lanes_total": 5
   },
   "coverage": {
