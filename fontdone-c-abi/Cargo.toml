@@ -1,6 +1,6 @@
 [package]
 name = "fontdone-c-abi"
-version = "2.14.3-alpha.2"
+version = "2.14.3-alpha.3"
 edition = "2024"
 # The private C ABI facade uses the workspace compiler floor; the public
 # `fontdone` crate remains compatible with Rust 1.87.
@@ -34,7 +34,7 @@ name = "fontdone_c_abi"
 crate-type = ["cdylib", "staticlib", "rlib"]
 
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.2", path = "..", default-features = false }
+fontdone = { version = "=2.14.3-alpha.3", path = "..", default-features = false }
 
 [dev-dependencies]
 fontdone-wasm = { path = "../fontdone-wasm", default-features = false }

@@ -1,9 +1,9 @@
 {
   "schema_version": 3,
   "snapshot_kind": "committed_measured_evidence",
-  "snapshot_date": "2026-09-10",
+  "snapshot_date": "2026-09-11",
   "freetype_version": "2.14.3",
-  "package_version": "2.14.3-alpha.2",
+  "package_version": "2.14.3-alpha.3",
   "public_function_adoption": {
     "complete": 52,
     "implemented_mapping_incomplete": 5,
@@ -1854,9 +1854,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "c28cbbde9fda2ea52c2dbe99b94e6cf2c9eab71f60f201c6a1d0371f9bcc6d38",
-    "parity_tree_sha256": "1f494dc8224563f7a7ba6ad9a0ccb2eb9d1a84c43612f5379ee933adf6f04cbe",
-    "log_sha256": "7bd066366c9ac968ed36e32c6338d799273c6fc492e426aa0786b1a5a6b1ac94",
+    "sha256": "187c838b02dbf2f8b7e8105491561c920a732eddac278dcb8d6db1bcac8f390b",
+    "parity_tree_sha256": "8e10ecd3cc2da643659ba84643f717d27f176175284cee9f94f1ba6deb083125",
+    "log_sha256": "113db1dfa197d820c833afbf3de26328dc05c16de1317c5eb66bfb7eec8a16c0",
     "command": "make test-parity"
   }
 }

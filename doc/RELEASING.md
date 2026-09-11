@@ -11,18 +11,18 @@ use a sibling checkout during development, but its dependency must retain the
 exact version requirement:
 
 ```toml
-fontdone = { version = "=2.14.3-alpha.2", path = "../fontdone" }
+fontdone = { version = "=2.14.3-alpha.3", path = "../fontdone" }
 ```
 
 After publication, a registry consumer such as `pillow-rs` must use
-`fontdone = { version = "=2.14.3-alpha.2" }`. A path-only declaration is valid
+`fontdone = { version = "=2.14.3-alpha.3" }`. A path-only declaration is valid
 for a local build but Cargo rejects it when packaging the downstream crate.
 
 The first synchronized release is bootstrapped locally from the exact clean
-commit. The public Cargo crate and synchronized `fontdone@2.14.3-alpha.2` npm
+commit. The public Cargo crate and synchronized `fontdone@2.14.3-alpha.3` npm
 package are still unpublished from this checkout. The older alpha.1 npm
 artifact is already visible, but its immutable contents predate the current
-source. Because npm versions are immutable, the alpha.2 archive must be
+source. Because npm versions are immutable, the alpha.3 archive must be
 published as a new synchronized prerelease; a retry may skip an existing npm
 version only after the registry package contents match the reviewed local
 archive. Local commands validate and assemble the Cargo, C SDK, and npm
@@ -129,7 +129,7 @@ the registry check confirms that the immutable version is missing. For a new
 version, publish the exact verified archive:
 
 ```bash
-version=2.14.3-alpha.2
+version=2.14.3-alpha.3
 npm publish "target/npm-package/fontdone-${version}.tgz" \
   --access public --tag next --provenance
 ```
@@ -175,14 +175,14 @@ dependency.
 The verified browser artifact is:
 
 ```text
-target/npm-package/fontdone-2.14.3-alpha.2.tgz
+target/npm-package/fontdone-2.14.3-alpha.3.tgz
 ```
 
 Rehearse the registry command without publishing:
 
 ```bash
 npm publish --dry-run \
-  target/npm-package/fontdone-2.14.3-alpha.2.tgz \
+  target/npm-package/fontdone-2.14.3-alpha.3.tgz \
   --access public --tag next
 ```
 
@@ -191,7 +191,7 @@ version is missing after explicit owner approval, authenticate with npm and
 publish that exact tarball, not the mutable source directory:
 
 ```bash
-VERSION=2.14.3-alpha.2
+VERSION=2.14.3-alpha.3
 npm publish "target/npm-package/fontdone-${VERSION}.tgz" \
   --access public --tag next
 ```
@@ -207,7 +207,7 @@ The `next` dist-tag prevents this alpha from silently becoming the stable
 `latest` release. Immediately verify the immutable version and tag:
 
 ```bash
-npm view fontdone@2.14.3-alpha.2 version dist.tarball --json
+npm view fontdone@2.14.3-alpha.3 version dist.tarball --json
 npm view fontdone dist-tags --json
 ```
 
@@ -217,7 +217,7 @@ approved publish.
 
 ## 7. Tags and release assets
 
-After the maintainer pushes annotated tag `v2.14.3-alpha.2` at the approved
+After the maintainer pushes annotated tag `v2.14.3-alpha.3` at the approved
 commit and the Cargo and npm publications succeed, the workflow:
 
 1. verifies the immutable tag and successful CI result;
@@ -250,7 +250,7 @@ exception that genuinely requires removal.
 Example:
 
 ```bash
-cargo yank --version 2.14.3-alpha.2 fontdone
+cargo yank --version 2.14.3-alpha.3 fontdone
 ```
 
 ## 9. Alpha policy and current evidence
@@ -263,7 +263,7 @@ replacement.
 
 | Field | Value |
 |---|---|
-| Version | `2.14.3-alpha.2` |
+| Version | `2.14.3-alpha.3` |
 | FreeType target | `2.14.3` |
 | Last committed evidence | `2026-07-30` |
 | Public Cargo crate | `fontdone` |

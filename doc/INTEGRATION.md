@@ -12,16 +12,17 @@ hosts should use the [`fontdone-wasm` guide](../fontdone-wasm/README.md).
 
 ## 1. Select and install the exact alpha
 
-All workspace packages use `2.14.3-alpha.2`. The public `fontdone` Cargo crate
+All workspace packages use `2.14.3-alpha.3`. The public `fontdone` Cargo crate
 has not been published to crates.io yet, while the C and raw-WASM facade
 packages remain internal build targets. Evaluate Rust through a versioned path
-dependency. The browser `fontdone` package is already available on npm at that
-exact version. Keeping the version requirement is important: Cargo rejects a
-path-only dependency when the downstream crate is packaged or published.
+dependency. The browser `fontdone` package is built from the same candidate at
+that exact version and remains unpublished until the release is approved.
+Keeping the version requirement is important: Cargo rejects a path-only
+dependency when the downstream crate is packaged or published.
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.2", path = "../fontdone" }
+fontdone = { version = "=2.14.3-alpha.3", path = "../fontdone" }
 ```
 
 Once the root package is published, registry consumers should use the exact
@@ -29,7 +30,7 @@ prerelease:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.2" }
+fontdone = { version = "=2.14.3-alpha.3" }
 ```
 
 After the repository and matching tag are public, a Git consumer may pin the
@@ -37,7 +38,7 @@ exact tag or an immutable 40-character revision:
 
 ```toml
 [dependencies]
-fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.2" }
+fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.3" }
 ```
 
 This alpha requires Rust 1.87 or newer. Different `alpha.N` releases are not

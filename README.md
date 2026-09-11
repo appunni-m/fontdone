@@ -10,9 +10,9 @@
 
 </div>
 
-> **Release:** `2.14.3-alpha.2`. The public `fontdone` Cargo crate is prepared
+> **Release:** `2.14.3-alpha.3`. The public `fontdone` Cargo crate is prepared
 > for its first release from this checkout. The earlier `fontdone@2.14.3-alpha.1`
-> npm artifact is immutable and predates this source; `fontdone@2.14.3-alpha.2`
+> npm artifact is immutable and predates this source; `fontdone@2.14.3-alpha.3`
 > is the synchronized local candidate and has not been published yet. The C SDK is distributed as a native release
 > archive, while the raw WASM and C Cargo packages remain internal workspace
 > build targets. Only the root `fontdone` package is published to crates.io. The
@@ -34,7 +34,7 @@ Pinned FreeType source is used only by ignored offline test tooling.
 | Browser application | `fontdone` on npm | Prebuilt Wasm with a typed ESM lifecycle wrapper | [Browser package guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/npm/README.md) |
 | Raw JavaScript host | Internal `fontdone-wasm` build target | Low-level wasm32 linear-memory ABI used by the npm package | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
 
-The `fontdone` crate and the synchronized `fontdone@2.14.3-alpha.2` npm
+The `fontdone` crate and the synchronized `fontdone@2.14.3-alpha.3` npm
 package are not published from this checkout yet. The older alpha.1 npm
 artifact is already public, but its immutable contents predate the current
 source and cannot be treated as this release. Evaluate Rust from a local
@@ -43,7 +43,7 @@ package needs:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.2", path = "../fontdone" }
+fontdone = { version = "=2.14.3-alpha.3", path = "../fontdone" }
 ```
 
 After `fontdone` is published, a registry consumer should request the exact
@@ -51,7 +51,7 @@ prerelease:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.2" }
+fontdone = { version = "=2.14.3-alpha.3" }
 ```
 
 Cargo requires a version requirement on dependencies of a crate that will be
@@ -60,7 +60,7 @@ release tag is public:
 
 ```toml
 [dependencies]
-fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.2" }
+fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.3" }
 ```
 
 ## 2. Rust quick start
@@ -113,7 +113,7 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The last committed full parity snapshot was recorded on **2026-09-10**:
+The last committed full parity snapshot was recorded on **2026-09-11**:
 
 | Measurement | Count |
 |---|---:|
