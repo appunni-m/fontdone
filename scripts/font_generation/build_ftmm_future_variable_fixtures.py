@@ -811,13 +811,19 @@ def intermediate_end_short_gvar_payload() -> bytes:
 
 
 def tuple_header_exceeds_data_offset_gvar_payload() -> bytes:
-    """Build a complete tuple header whose coordinates exceed data offset."""
+    """Build an overlapping tuple header with a truncated intermediate region.
+
+    The embedded peak deliberately extends past ``offsetToData``.  FreeType
+    permits that overlap, so add the intermediate-region bit without supplying
+    its coordinate block; the pinned loader then reaches its real tuple-header
+    bounds error instead of accepting the record as a no-op.
+    """
 
     glyph_data = bytearray(12)
     put_u16(glyph_data, 0, 1)
     put_u16(glyph_data, 2, 8)
     put_u16(glyph_data, 4, 0)
-    put_u16(glyph_data, 6, GVAR_EMBEDDED_PEAK_TUPLE)
+    put_u16(glyph_data, 6, GVAR_EMBEDDED_PEAK_TUPLE | GVAR_INTERMEDIATE_REGION)
     put_u16(glyph_data, 8, 0)
     put_u16(glyph_data, 10, 0)
     return short_glyph_record_gvar_payload(bytes(glyph_data))

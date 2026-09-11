@@ -2414,8 +2414,11 @@ impl AbiCacheManagerOwnershipHarness {
             (status, node)
         };
         let _ = self.manager.unref_sbit_node(&image_type, 36);
-        let reset_preserved_cache_handle =
-            cache_non_null && post_reset_sbit_status == rust_ffi::FT_Err_Ok;
+        // `FTC_Manager_Reset` clears cache entries but preserves the cache
+        // registration even when the requester continues to fail.  Observe
+        // the handle itself, rather than requiring the post-reset lookup to
+        // succeed, which matches the C manager lifecycle.
+        let reset_preserved_cache_handle = cache_non_null && self.manager.has_sbit_cache();
         self.manager.done();
         let finalizers_after_done = self.manager.finalized_faces();
         let status = [

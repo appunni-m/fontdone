@@ -212,6 +212,12 @@ pub(super) fn error_to_ft(error: FontError) -> FT_Error {
         {
             FT_Err_Invalid_Stream_Operation as FT_Error
         }
+        // The v3 header-length check is a format rejection in the pinned
+        // WinFNT driver (`winfnt.c`), while the generic short stream path
+        // remains `FT_Err_Invalid_Stream_Operation`.
+        FontError::InvalidFont(message) if message == "Windows FNT v3 header too short" => {
+            FT_Err_Invalid_File_Format as FT_Error
+        }
         FontError::InvalidFont(message) if message == "font offset out of range" => {
             FT_Err_Array_Too_Large as FT_Error
         }

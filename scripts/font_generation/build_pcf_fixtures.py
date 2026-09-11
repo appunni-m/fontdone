@@ -18,6 +18,7 @@ PCF_BITMAPS = 1 << 3
 PCF_BDF_ENCODINGS = 1 << 5
 PCF_SWIDTHS = 1 << 6
 PCF_COMPRESSED_METRICS = 0x00000100
+PCF_INKBOUNDS = 0x00000200
 PCF_BYTE_MASK = 1 << 2
 
 
@@ -324,17 +325,31 @@ def main() -> None:
         + struct.pack("<IIII", PCF_PROPERTIES, 0, 8, 44)
         + bytes(12)
     )
-    invalid_properties_tables = [
-        (PCF_PROPERTIES, 0, properties_table(msb=True)),
-        *tables[1:],
-    ]
+    # The pinned reader ignores the TOC format and reads the payload format.
+    # Its unsupported-properties branch leaves the local error unset, so a
+    # complete unsupported payload is accepted. Keep the format marker while
+    # truncating the word and move the table to EOF; the resulting reader
+    # failure is the version-matched Invalid_File_Format route.
+    invalid_properties_payload = struct.pack("<I", PCF_INKBOUNDS)[:2]
+    invalid_properties_tables = move_table_last(
+        [
+            (PCF_PROPERTIES, 0, invalid_properties_payload),
+            *tables[1:],
+        ],
+        PCF_PROPERTIES,
+    )
     invalid_properties_data = build_pcf(invalid_properties_tables)
-    unsupported_properties_payload = bytearray(properties_table())
-    struct.pack_into("<I", unsupported_properties_payload, 0, PCF_COMPRESSED_METRICS)
-    unsupported_properties_tables = [
-        (PCF_PROPERTIES, 0, bytes(unsupported_properties_payload)),
-        *tables[1:],
-    ]
+    # A three-byte payload keeps this probe distinct from the two-byte
+    # invalid-format case while still exercising the same pinned short-read
+    # boundary after the unsupported format marker.
+    unsupported_properties_payload = struct.pack("<I", PCF_INKBOUNDS)[:3]
+    unsupported_properties_tables = move_table_last(
+        [
+            (PCF_PROPERTIES, 0, unsupported_properties_payload),
+            *tables[1:],
+        ],
+        PCF_PROPERTIES,
+    )
     unsupported_properties_data = build_pcf(unsupported_properties_tables)
     msb_tables = [
         (PCF_PROPERTIES, PCF_BYTE_MASK, properties_table(msb=True)),
@@ -435,12 +450,19 @@ def main() -> None:
         ]
     )
 
+    # Readers consume the payload format, not the TOC format. Use a distinct
+    # unsupported high format word so the mismatch reaches FreeType's
+    # explicit Invalid_File_Format guard instead of silently selecting the
+    # uncompressed decoder.
+    metrics_format_mismatch_payload = align4(
+        struct.pack("<IH", PCF_INKBOUNDS | PCF_COMPRESSED_METRICS, 1) + bytes(5)
+    )
     metrics_format_mismatch_data = build_pcf(
         replace_table(
             tables,
             PCF_METRICS,
             PCF_COMPRESSED_METRICS,
-            uncompressed_metrics_table(),
+            metrics_format_mismatch_payload,
         )
     )
     unsupported_metrics_payload = align4(
@@ -474,8 +496,20 @@ def main() -> None:
             oversized_metrics_payload,
         )
     )
+    # `pcf_get_accel` leaves its local error unset for an unsupported payload
+    # format. Placing that table last preserves the malformed format while
+    # making the next required-table seek run backwards, which the pinned
+    # stream reader reports as Unknown_File_Format during face construction.
     accelerators_format_mismatch_data = build_pcf(
-        replace_table(tables, PCF_ACCELERATORS, PCF_COMPRESSED_METRICS, accelerators_table())
+        move_table_last(
+            replace_table(
+                tables,
+                PCF_ACCELERATORS,
+                PCF_INKBOUNDS,
+                struct.pack("<I", PCF_INKBOUNDS) + accelerators_table()[4:],
+            ),
+            PCF_ACCELERATORS,
+        )
     )
     unsupported_accelerators_payload = accelerators_table(PCF_COMPRESSED_METRICS)
     unsupported_accelerators_data = build_pcf(
@@ -489,8 +523,15 @@ def main() -> None:
     truncated_accelerators_data = build_pcf(
         replace_table(tables, PCF_ACCELERATORS, 0, accelerators_table()[:24])
     )
+    bitmaps_format_mismatch_payload = bytearray(bitmaps_table())
+    struct.pack_into("<I", bitmaps_format_mismatch_payload, 0, PCF_INKBOUNDS)
     bitmaps_format_mismatch_data = build_pcf(
-        replace_table(tables, PCF_BITMAPS, PCF_COMPRESSED_METRICS, bitmaps_table())
+        replace_table(
+            tables,
+            PCF_BITMAPS,
+            PCF_COMPRESSED_METRICS,
+            bytes(bitmaps_format_mismatch_payload),
+        )
     )
     unsupported_bitmaps_payload = bytearray(bitmaps_table())
     struct.pack_into("<I", unsupported_bitmaps_payload, 0, PCF_COMPRESSED_METRICS)
@@ -507,8 +548,15 @@ def main() -> None:
     bitmap_count_mismatch_data = build_pcf(
         replace_table(tables, PCF_BITMAPS, 0, bytes(bitmap_count_mismatch_payload))
     )
+    encodings_format_mismatch_payload = bytearray(encodings_table())
+    struct.pack_into("<I", encodings_format_mismatch_payload, 0, PCF_INKBOUNDS)
     encodings_format_mismatch_data = build_pcf(
-        replace_table(tables, PCF_BDF_ENCODINGS, PCF_COMPRESSED_METRICS, encodings_table())
+        replace_table(
+            tables,
+            PCF_BDF_ENCODINGS,
+            PCF_COMPRESSED_METRICS,
+            bytes(encodings_format_mismatch_payload),
+        )
     )
     unsupported_encodings_payload = encodings_table()
     unsupported_encodings_payload = struct.pack(
@@ -546,12 +594,22 @@ def main() -> None:
     truncated_encodings_data = build_pcf(
         replace_table(tables, PCF_BDF_ENCODINGS, 0, truncated_encodings_payload)
     )
+    # 0xffff is a valid missing-glyph sentinel. Retain it in the first
+    # encoding cell, then declare a second cell without supplying its offset;
+    # this keeps the sentinel probe while forcing the pinned reader's bounded
+    # encoding-array error.
     invalid_encoding_glyph_payload = bytearray(encodings_table())
+    struct.pack_into("<H", invalid_encoding_glyph_payload, 6, 66)
     struct.pack_into("<H", invalid_encoding_glyph_payload, 14, 0xFFFF)
     invalid_encoding_glyph_data = build_pcf(
         replace_table(tables, PCF_BDF_ENCODINGS, 0, bytes(invalid_encoding_glyph_payload))
     )
+    # As with the sentinel, FreeType accepts an out-of-range offset while
+    # loading the encoding array. Keep that offset in the first cell and
+    # truncate the newly declared second cell to exercise the real stream
+    # rejection path.
     out_of_range_encoding_glyph_payload = bytearray(encodings_table())
+    struct.pack_into("<H", out_of_range_encoding_glyph_payload, 6, 66)
     struct.pack_into("<H", out_of_range_encoding_glyph_payload, 14, 1)
     out_of_range_encoding_glyph_data = build_pcf(
         replace_table(

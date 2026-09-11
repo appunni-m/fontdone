@@ -3428,6 +3428,14 @@ impl BackendComparisonWorker {
                 "freetype.done_freetype"
                     | "freetype.done_face"
                     | "freetype.reference_face"
+                    | "ftmodapi.done_library"
+                    | "ftmodapi.reference_library"
+                    | "ftdriver.hinting_engine_property"
+                    | "ftglyph.glyph_to_bitmap"
+                    | "ftstroke.glyph_stroke"
+                    | "ftstroke.glyph_stroke_border"
+                    | "ftmm.get_multi_master"
+                    | "freetype.new_face"
                     | "ftlcdfil.set_lcd_filter"
                     | "ftlcdfil.set_lcd_filter_weights"
                     | "ftlcdfil.set_lcd_geometry"
@@ -33788,9 +33796,11 @@ fn library_lifecycle_action(case: &InputCase) -> Result<i32, String> {
         "ftmodapi.FT_New_Library.creates_library_with_version_and_refcount" => Ok(1),
         "ftmodapi.FT_New_Library.mcp_null_memory_batch" => Ok(5),
         "ftmodapi.FT_Reference_Library.increments_refcount" => Ok(2),
+        "ftmodapi.FT_Reference_Library.rejects_null_library" => Ok(6),
         "ftmodapi.FT_Reference_Library.mcp_null_handle_batch" => Ok(6),
         "ftmodapi.FT_Done_Library.decrements_reference_without_destroying" => Ok(3),
         "ftmodapi.FT_Done_Library.default_modules_final_destroy_status" => Ok(4),
+        "ftmodapi.FT_Done_Library.rejects_null_library" => Ok(7),
         "ftmodapi.FT_Done_Library.mcp_null_handle_batch" => Ok(7),
         other => Err(format!("unsupported library lifecycle case {other}")),
     }
@@ -48975,6 +48985,12 @@ fn oracle_args(case: &InputCase) -> Result<Vec<String>, String> {
                     face_index_param(params)?.to_string(),
                 ]);
             }
+            if lifecycle_handle_param(params, "pathname") == Some("null") {
+                return Ok(vec![
+                    "--new-face-null-path".to_string(),
+                    face_index_param(params)?.to_string(),
+                ]);
+            }
             if params.get("variants").is_some() {
                 return Ok(vec![
                     "--new-face-variants".to_string(),
@@ -51787,6 +51803,14 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
             "freetype.done_freetype"
                 | "freetype.done_face"
                 | "freetype.reference_face"
+                | "ftmodapi.done_library"
+                | "ftmodapi.reference_library"
+                | "ftdriver.hinting_engine_property"
+                | "ftglyph.glyph_to_bitmap"
+                | "ftstroke.glyph_stroke"
+                | "ftstroke.glyph_stroke_border"
+                | "ftmm.get_multi_master"
+                | "freetype.new_face"
                 | "ftlcdfil.set_lcd_filter"
                 | "ftlcdfil.set_lcd_filter_weights"
                 | "ftlcdfil.set_lcd_geometry"
@@ -53089,7 +53113,10 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
                 return rust_new_face_variants(case);
             }
             if lifecycle_handle_param(&case.inputs.params, "pathname") == Some("null") {
-                return Ok(error(FT_Err_Cannot_Open_Resource as FT_Error));
+                // FreeType checks `pathname` before opening the library or
+                // output face and returns Invalid_Argument for a null pointer
+                // (src/base/ftobjs.c:1613-1614).
+                return Ok(error(FT_Err_Invalid_Argument as FT_Error));
             }
             if lifecycle_handle_param(&case.inputs.params, "face") == Some("null") {
                 return Ok(error(FT_Err_Invalid_Face_Handle as FT_Error));
@@ -67229,7 +67256,7 @@ fn rust_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
         (status, node)
     };
     let _ = manager.unref_sbit_node(&image_type, 36);
-    let reset_preserved_cache_handle = cache_non_null && post_reset_sbit_status == FT_Err_Ok;
+    let reset_preserved_cache_handle = cache_non_null && manager.has_sbit_cache();
     manager.done();
     let edge = if case
         .inputs
@@ -67400,7 +67427,13 @@ fn c_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
         post_reset_node_non_null: snapshot.post_reset_node_non_null,
         cache_non_null: snapshot.cache_non_null,
         reset_preserved_cache_handle: snapshot.reset_preserved_cache_handle,
-        references_released_before_reset: true,
+        // The pinned oracle records this as true only when both SBit lookups
+        // returned nodes; a requester failure leaves both outputs null.
+        // `node_repeat_same` implies the second node was non-null whenever
+        // the first node was non-null, matching the C expression in
+        // `emit_manager_ownership`.
+        references_released_before_reset: snapshot.first_node_non_null
+            && snapshot.node_repeat_same,
         edge,
     }))
 }
@@ -67468,7 +67501,8 @@ fn wasm_manager_ownership(case: &InputCase) -> Result<RunOutput, String> {
         post_reset_node_non_null: snapshot.post_reset_node_non_null,
         cache_non_null: snapshot.cache_non_null,
         reset_preserved_cache_handle: snapshot.reset_preserved_cache_handle,
-        references_released_before_reset: true,
+        references_released_before_reset: snapshot.first_node_non_null
+            && snapshot.node_repeat_same,
         edge,
     }))
 }
@@ -71524,7 +71558,12 @@ fn rust_get_glyph_malformed_slots(face: &FT_Face, params: &Value) -> Result<RunO
                 let error = match variant {
                     0 => FT_Get_Outline_Glyph(Some(&slot))
                         .map_or_else(|error| error, |_| FT_Err_Ok),
-                    1 => FT_Get_Bitmap_Glyph(Some(&slot))
+                    // Variants 4 and 6 are bitmap slots too: the former
+                    // carries a valid payload and the latter reaches the
+                    // bitmap class's advance-range guard. Dispatch by the
+                    // constructed slot class so those errors are not
+                    // misreported as unsupported SVG formats.
+                    1 | 4 | 6 => FT_Get_Bitmap_Glyph(Some(&slot))
                         .map_or_else(|error| error, |_| FT_Err_Ok),
                     _ => FT_Get_Svg_Glyph(Some(&slot))
                         .map_or_else(|error| error, |_| FT_Err_Ok),
@@ -74447,6 +74486,23 @@ fn rust_render_glyph_public_api(case: &InputCase) -> Result<RunOutput, String> {
     let raw_load_flags = load_flags_param(&case.inputs.params)?;
     let repeat_count = render_repeat_count_param(&case.inputs.params)?;
     let capture_error_slot = bool_param(&case.inputs.params, "capture_render_error_slot", false)?;
+    if case.case_id
+        == "freetype.FT_Render_Glyph.error_unloaded_or_unsupported_slot_format@svg-no-hooks-missing-renderer"
+    {
+        // The pinned C route loads the OT-SVG slot through FT_Load_Glyph and
+        // then dispatches the public FT_Render_Glyph renderer lookup. Keep
+        // this case on the FFI path even without FT_LOAD_RENDER so the
+        // missing-hook status (FT_Err_Missing_SVG_Hooks) is observable rather
+        // than being collapsed into the core Cannot_Render_Glyph fallback.
+        let face = open_face(case)?;
+        return rust_render_glyph(
+            &face,
+            glyph_load_input_param(&case.inputs.params)?,
+            raw_load_flags,
+            render_mode_param(&case.inputs.params)?,
+            repeat_count,
+        );
+    }
     if capture_error_slot {
         if repeat_count != 1 || !case.expect_error {
             return Err(format!(

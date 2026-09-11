@@ -35478,6 +35478,27 @@ static int emit_new_face_missing_path(int argc, char** argv) {
     return 0;
 }
 
+static int emit_new_face_null_path(int argc, char** argv) {
+    (void)argc;
+    FT_Library library = NULL;
+    FT_Error err = FT_Init_FreeType(&library);
+    if (!err) {
+        FT_Face face = (FT_Face)0x1;
+        // FreeType checks `pathname` before `library` and `aface` in
+        // FT_New_Face (src/base/ftobjs.c), so a null pathname is
+        // Invalid_Argument while the output handle remains untouched.
+        err = FT_New_Face(library, NULL, atol(argv[2]), &face);
+        if (!err && face) {
+            FT_Done_Face(face);
+        }
+        FT_Done_FreeType(library);
+    }
+    printf("{");
+    print_status(err);
+    printf(",\"output\":null}\n");
+    return 0;
+}
+
 typedef struct TrackKerningErrorResult_ {
     int source_index;
     FT_Fixed point_size;
@@ -42205,7 +42226,12 @@ static int dispatch(int argc, char** argv) {
     // Check only the first few args that represent handles: argv[2]..argv[min(6, argc-1)].
     // The dedicated null-face SFNT route uses `null` as its task-level
     // buffer-kind argument; let that route observe the untouched length slot.
-    if (argc >= 3 && !streq(argv[1], "--load-sfnt-table-null-face")) {
+    if (argc >= 3
+        && !streq(argv[1], "--load-sfnt-table-null-face")
+        // FTMM's explicit null-face route records the caller-owned descriptor
+        // after FreeType rejects the handle; do not collapse that observation
+        // into the generic null-face error result.
+        && !streq(argv[1], "--ftmm-get-multi-master")) {
         int check_end = (argc < 7) ? argc : 6;
         for (int i = 2; i < check_end; i++) {
             if (streq(argv[i], "null")) {
@@ -42770,6 +42796,9 @@ static int dispatch(int argc, char** argv) {
     }
     if (argc == 4 && streq(argv[1], "--new-face-missing-path")) {
         return emit_new_face_missing_path(argc, argv);
+    }
+    if (argc == 3 && streq(argv[1], "--new-face-null-path")) {
+        return emit_new_face_null_path(argc, argv);
     }
     if (argc == 7 && streq(argv[1], "--select-charmaps")) {
         return emit_select_charmaps(argc, argv);

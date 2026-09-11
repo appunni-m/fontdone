@@ -19560,7 +19560,7 @@ pub fn abi_get_glyph_from_face(face: FT_Face, aglyph: *mut FT_Glyph) -> FT_Error
 }
 
 #[cfg(feature = "abi-test-support")]
-fn abi_get_glyph_external_allocation_failure(variant: FT_UInt) -> FT_Error {
+fn abi_get_glyph_external_allocation_failure(variant: FT_UInt, aglyph: *mut FT_Glyph) -> FT_Error {
     let mut data = Box::new(AbiCustomMemoryData {
         expected_memory: 0,
         phase: AbiCustomMemoryPhase::NewLibrary,
@@ -19604,10 +19604,18 @@ fn abi_get_glyph_external_allocation_failure(variant: FT_UInt) -> FT_Error {
         }
         _ => slot.format = rust_ffi::FT_GLYPH_FORMAT_BITMAP,
     }
-    let mut glyph = 1usize as FT_Glyph;
-    let error = FT_Get_Glyph(ptr::from_mut(&mut slot), &mut glyph);
-    if error == rust_ffi::FT_Err_Ok && !glyph.is_null() {
-        FT_Done_Glyph(glyph);
+    let error = FT_Get_Glyph(ptr::from_mut(&mut slot), aglyph);
+    if error == rust_ffi::FT_Err_Ok {
+        // The allocation-failure variants are expected to return an error;
+        // retain this cleanup for completeness if allocator behavior changes
+        // and a test-support call unexpectedly succeeds.
+        let glyph = unsafe { aglyph.as_mut().copied().unwrap_or(ptr::null_mut()) };
+        if !glyph.is_null() {
+            FT_Done_Glyph(glyph);
+            // SAFETY: `aglyph` is the caller-provided output storage for the
+            // complete call.
+            unsafe { *aglyph = ptr::null_mut() };
+        }
     }
     let _ = FT_Done_Library(library);
     error
@@ -19620,7 +19628,7 @@ pub fn abi_get_glyph_from_external_malformed_slot(
     aglyph: *mut FT_Glyph,
 ) -> FT_Error {
     if variant >= 8 {
-        return abi_get_glyph_external_allocation_failure(variant);
+        return abi_get_glyph_external_allocation_failure(variant, aglyph);
     }
     let Some(state) = face_state(face) else {
         return rust_ffi::FT_Err_Invalid_Argument;

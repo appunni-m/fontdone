@@ -3008,6 +3008,11 @@ impl FTCCacheManagerState {
     pub fn new_with_requester_error(requester_face: FT_Face, requester_error: FT_Error) -> Self {
         let mut manager = Self::new(requester_face);
         manager.requester_error = Some(requester_error);
+        // `FTC_SBitCache_New` registers the cache handle before any requester
+        // callback runs. A failed face requester therefore leaves a live
+        // cache handle that survives `FTC_Manager_Reset`, even though every
+        // lookup through it propagates the requester error.
+        manager.sbit_cache = Some(FTCSBitCacheState::new(manager.requester_face.clone()));
         manager
     }
 
@@ -3099,7 +3104,14 @@ impl FTCCacheManagerState {
         if self.done {
             return;
         }
-        self.sbit_cache = None;
+        // FreeType resets cache contents but keeps registered cache handles
+        // attached to the manager. Rebind the safe cache owner to the
+        // requester's source face so a post-reset lookup uses the same face
+        // identity that the next requester call will publish.
+        if let Some(cache) = self.sbit_cache.as_mut() {
+            cache.entries.clear();
+            cache.face = self.requester_face.clone();
+        }
         if self.face.take().is_some() {
             self.finalized_faces = self.finalized_faces.saturating_add(1);
         }

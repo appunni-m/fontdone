@@ -645,6 +645,13 @@ fn pcf_table(tables: &[(u32, PcfTable)], table_type: u32) -> Result<PcfTable, Fo
         .ok_or_else(|| pcf_stream_operation("required table missing"))
 }
 
+fn pcf_required_table(tables: &[(u32, PcfTable)], table_type: u32) -> Result<PcfTable, FontError> {
+    tables
+        .iter()
+        .find_map(|(candidate, table)| (*candidate == table_type).then_some(*table))
+        .ok_or_else(|| pcf_unknown_file_format("required table missing"))
+}
+
 fn pcf_c_string(data: &[u8], offset: usize) -> Option<&str> {
     let tail = data.get(offset..)?;
     let length = tail.iter().position(|byte| *byte == 0)?;
@@ -763,7 +770,12 @@ fn parse_winfnt_header(data: &[u8]) -> Result<WinFntHeader, FontError> {
     };
     if data.len() < required_size {
         return Err(FontError::InvalidFont(
-            "Windows FNT header too short".into(),
+            if version == 0x0300 {
+                "Windows FNT v3 header too short"
+            } else {
+                "Windows FNT header too short"
+            }
+            .into(),
         ));
     }
     let file_size = read_u32_le(data, 2)
@@ -1365,7 +1377,12 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
     });
     let properties = parse_pcf_properties(data, properties_table, properties_last_table)?;
 
-    let metrics_table = pcf_table(&tables, PCF_METRICS)?;
+    // `pcf_get_properties` reports a missing properties table as a stream
+    // operation, while the later required-table lookups in
+    // `pcf_face_init` normalize missing metrics/accelerators/bitmaps/encoding
+    // tables to `FT_Err_Unknown_File_Format` (pinned FreeType
+    // `pcfread.c:372-407,1409-1458`). Keep those error classes distinct.
+    let metrics_table = pcf_required_table(&tables, PCF_METRICS)?;
     let metrics = data
         .get(metrics_table.offset..metrics_table.offset + metrics_table.size)
         .ok_or_else(|| pcf_unknown_file_format("metrics range"))?;
@@ -1432,7 +1449,7 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
         )
     };
 
-    let accel_table = pcf_table(&tables, PCF_ACCELERATORS)?;
+    let accel_table = pcf_required_table(&tables, PCF_ACCELERATORS)?;
     let accel = data
         .get(accel_table.offset..accel_table.offset + accel_table.size)
         .ok_or_else(|| pcf_unknown_file_format("accelerators range"))?;
@@ -1452,7 +1469,7 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
         return Err(pcf_unknown_file_format("truncated accelerators"));
     }
 
-    let bitmaps_table = pcf_table(&tables, PCF_BITMAPS)?;
+    let bitmaps_table = pcf_required_table(&tables, PCF_BITMAPS)?;
     let bitmaps = data
         .get(bitmaps_table.offset..bitmaps_table.offset + bitmaps_table.size)
         .ok_or_else(|| pcf_unknown_file_format("bitmaps range"))?;
@@ -1470,7 +1487,7 @@ fn parse_pcf_metadata(data: &[u8]) -> Result<BdfMetadata, FontError> {
         return Err(pcf_unknown_file_format("bitmap and metric counts differ"));
     }
 
-    let encodings_table = pcf_table(&tables, PCF_BDF_ENCODINGS)?;
+    let encodings_table = pcf_required_table(&tables, PCF_BDF_ENCODINGS)?;
     let encodings = data
         .get(encodings_table.offset..encodings_table.offset + encodings_table.size)
         .ok_or_else(|| pcf_unknown_file_format("encodings range"))?;

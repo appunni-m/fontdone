@@ -7,7 +7,10 @@ face flags and strike metrics but returns `Unimplemented_Feature` from
 `TT_Load_Glyph`.  The fixture glyphs therefore carry a minimal project-authored
 PNG signature payload that the oracle never decodes; this keeps the fixture
 fully synthetic and deterministic while preserving the exact public
-`FT_Open_Face` parameter behavior under test.
+`FT_Open_Face` parameter behavior under test.  The overlay fixture puts that
+record on its first twenty glyphs so the maintained error matrix reaches the
+sbix driver for every probe; the ordinary outline fixture keeps a single bitmap
+record for fallback tests.
 """
 
 from __future__ import annotations
@@ -26,6 +29,7 @@ OUT_DIR = ROOT / "tests" / "fixtures" / "input" / "fonts" / "sbix"
 # One byte for each sfnt table checksum/type record.
 STRIKE_PPEM = 24
 STRIKE_PPI = 72
+OVERLAY_ERROR_GLYPHS = 20
 
 
 def raw_table(tag: str, data: bytes) -> DefaultTable:
@@ -194,6 +198,16 @@ def reference_record(graphic_type: bytes, glyph_index: int) -> bytes:
     return graphic_record(graphic_type, struct.pack(">H", glyph_index))
 
 
+def overlay_error_records(num_glyphs: int) -> dict[int, bytes]:
+    """Give the overlay probes a bitmap record for each selected glyph."""
+
+    payload = b"\x89PNG\r\n\x1a\n"
+    return {
+        glyph_index: graphic_record(b"png ", payload)
+        for glyph_index in range(min(OVERLAY_ERROR_GLYPHS, num_glyphs))
+    }
+
+
 def write_error_fixtures() -> None:
     num_glyphs = TTFont(BASE_FONT, recalcTimestamp=False)["maxp"].numGlyphs
     records = {
@@ -287,7 +301,12 @@ def write_malformed_optional_fixtures() -> None:
 
 def main() -> None:
     save_sbix_font("sbix-with-outlines.ttf", flags=1)
-    save_sbix_font("sbix-overlay.ttf", flags=3)
+    overlay_num_glyphs = TTFont(BASE_FONT, recalcTimestamp=False)["maxp"].numGlyphs
+    save_sbix_font(
+        "sbix-overlay.ttf",
+        flags=3,
+        records=overlay_error_records(overlay_num_glyphs),
+    )
     save_sbix_font("sbix-zero-ppem.ttf", flags=1, strike_ppem=0)
     save_sbix_font("sbix-bitmap-only.ttf", flags=1, drop_outlines=True)
     save_sbix_font(

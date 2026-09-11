@@ -194,11 +194,15 @@ impl GvarTable {
                 intermediate,
             });
         }
-        if header_pos > data_offset {
-            return Err(FontError::InvalidTable(
-                "gvar tuple header exceeds data offset".into(),
-            ));
-        }
+        // FreeType's `TT_Vary_Apply_Glyph_Deltas` only performs the rough
+        // tuple-count/data-size check above.  It permits embedded peak
+        // coordinates to overlap the declared `offsetToData` and then reads
+        // tuple data from that declared offset; a separate header/data
+        // separation check would reject C-compatible records such as the
+        // pinned tuple-header-exceeds-data-offset fixture.  Keep the bounds
+        // checks on each actual read, which still rejects a truncated later
+        // tuple header or coordinate block (see `ttgxvar.c:4334-4343,
+        // 4407-4455`).
 
         let mut shared_points = None;
         let mut tuple_data_pos = data_offset;
