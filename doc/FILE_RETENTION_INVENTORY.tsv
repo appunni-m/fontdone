@@ -2,7 +2,7 @@ path	bytes	kind	sha256	symlink_target	retention_class	reason_code	reason
 .cargo/config.toml	360	file	1432363e60b718fa7de9a08091192c01a64a711f9ee6afa60a0f1ba882cbab15	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 .codex/environments/environment.toml	130	file	309d8854d0285ddd220243c3a3dc1c28d696e9148dd306a02b0a27c70c90873e	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 .github/workflows/ci.yml	20364	file	fa8b08e47aa04e6027f7993597c0bcf3d1ced980c25354415f879f19a40ee5da	-	keep-ci	R09	Public continuous-integration contract.
-.github/workflows/release.yml	9383	file	5c75c573e01d0eb25dcd93bb9cba5a3e91865d86cfde23403c336b13064b0891	-	keep-ci	R09	Public continuous-integration contract.
+.github/workflows/release.yml	9599	file	136fc39ca004b22f80a77f7f0aad48af676baaf6fa29047586bb126e6b299ab9	-	keep-ci	R09	Public continuous-integration contract.
 .gitignore	445	file	e1360e2d31b4f9c1ac59023d6402cf788f8b1be1ff055ac5657a6f7936eb817e	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 AGENT.md	9	symlink	-	AGENTS.md	keep-alias	R05	Repository tooling alias whose path identity is an explicit contract.
 AGENTS.md	2364	file	a1699d5479e2727bbb81983689284821091f5d0db244d8eddd60df94c20ca889	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.

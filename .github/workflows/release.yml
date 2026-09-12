@@ -52,6 +52,9 @@ jobs:
       - name: Verify tag and synchronized versions
         shell: bash
         run: |
+          test "$(git cat-file -t "refs/tags/${GITHUB_REF_NAME}")" = tag
+          release_commit="$(git rev-parse "refs/tags/${GITHUB_REF_NAME}^{commit}")"
+          test "$release_commit" = "$(git rev-parse HEAD)"
           version="${GITHUB_REF_NAME#v}"
           test "v${version}" = "$GITHUB_REF_NAME"
           cargo_version="$(cargo metadata --locked --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "fontdone") | .version')"
