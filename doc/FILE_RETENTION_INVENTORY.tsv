@@ -26,8 +26,8 @@ doc/INTEGRATION.md	9781	file	b5f89570cc6d5ea340b5bc7aa5046a5ed98c72ee2efc328bf3e
 doc/README.md	4529	file	f7217e1295955e219428d7fcdaa7165afc427154c36343b81022dbd348fc3452	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/RELEASING.md	12639	file	978eaf6f4cd39fb7e4ce217219bb296e2fa004fd8eec0f4ad1b5d326b58ebb97	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/ROADMAP.md	204547	file	b41329dbd2e74b916e8633a1a3153035ec527501157ea06a0211d1b2468b9d3a	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
-doc/compatibility_snapshot.json	80767	file	981cf717a95f2433cf50e136c6f2567c7edc9a626878e39da1f02ddc628a3f18	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/runtime_parity_evidence.json	1380	file	a999fdc930e2bab02acda77ae8a248d668667ca5de391a2fd2120d9af5c57ef4	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/compatibility_snapshot.json	80767	file	04e9207be765aeb887266750a4633aa4cd789a29d509648a02eff07f7cf83296	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/runtime_parity_evidence.json	1381	file	26a4ae510b7581282aec9b2174be8d790c81e15618f9ac125916c8b8c656080d	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 examples/bench_ops.rs	10086	file	a75d7bbf4e8e679ca393d8cffd68cc0824f7198bb5e85857ce4dd75d8e016a21	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/ffi_migration.rs	1806	file	3140c3cbf9182299f2ab8c98f6675dfd3d086c47177f7bf8783160a149eddda8	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/handle_error.rs	571	file	acbe9d9f2e838bb5ca27132dde73287fa123e3a069772a2b741ae6e010fae3b1	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
