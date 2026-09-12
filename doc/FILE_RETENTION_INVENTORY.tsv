@@ -183,7 +183,7 @@ scripts/test_npm_consumer.py	6542	file	246efc5e285d296f7c9c0e70c91a9198f12b41c90
 scripts/test_publish_release.py	2473	file	14e8152f1cd46598fd1e357e6617bdcd394c0b9f670cb8df1f8932f205dc941d	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_rust_consumer.py	1680	file	2c22fc0571546f0a724dcbc874a01ca2409ca97e15b9cb70684ff0cb9a934812	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_wasm_consumer.py	1995	file	5bc99613afeb0e3b8e6af09a3e8ff1356a284add969bbe0106b002965f2cef60	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
-scripts/verify_release.py	16237	file	6c3298091ea9ae191a26d7a4452cf388d1f1e0bc4d5151d7cc68cb28baa3bc1d	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
+scripts/verify_release.py	17010	file	1885bd5a68bb51e2eef58a8b4a4d223ca42be94fd185cb3fd4db49e86f1218e2	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 src/api.rs	73255	file	7cc2d750ac8fd940ebd6d6a250f600a589aabd6b8ebe0029b930cf5d0f965a27	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/autohint/blue_strings.rs	54107	file	bf3bb9470d2cb549c05231b05c6c0b54b5f74297ab3dd827a81c4c9cc66c7fbc	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/autohint/cjk.rs	40498	file	a3098f70f15dcdaa97361f106bd2bfac91d74597021879e89aa6eec2ba3592a0	-	keep-runtime	R01	Published pure-Rust runtime source.

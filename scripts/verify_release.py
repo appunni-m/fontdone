@@ -99,7 +99,29 @@ def package_version(manifest: Path) -> str:
     return match.group(1)
 
 
+def verify_release_workflow() -> None:
+    """Require the tag workflow to publish only an immutable checked-out tag."""
+
+    workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(
+        encoding="utf-8"
+    )
+    required_fragments = (
+        'tags: ["v*"]',
+        'git cat-file -t "refs/tags/${GITHUB_REF_NAME}"',
+        'refs/tags/${GITHUB_REF_NAME}^{commit}',
+        'test "$release_commit" = "$(git rev-parse HEAD)"',
+        "Publish the public fontdone crate",
+    )
+    missing = [fragment for fragment in required_fragments if fragment not in workflow]
+    if missing:
+        raise ValueError(
+            "release workflow is missing immutable-tag/public-crate guards: "
+            f"{missing!r}"
+        )
+
+
 def verify_metadata() -> str:
+    verify_release_workflow()
     versions = {name: package_version(manifest) for name, manifest in WORKSPACE_PACKAGES}
     if len(set(versions.values())) != 1:
         raise ValueError(f"package version drift: {versions}")
