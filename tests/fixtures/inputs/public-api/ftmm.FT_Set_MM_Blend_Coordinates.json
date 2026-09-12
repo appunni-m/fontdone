@@ -1,7 +1,7 @@
 {
   "version": 1,
   "subject": "ftmm.FT_Set_MM_Blend_Coordinates",
-  "manifest_cases": ["success_set_normalized_coordinates", "success_partial_and_extra_coordinates", "success_reset_to_default", "error_null_coords_with_nonzero_count", "output_changes_for_active_blend", "success_type1_mm_glyph_output_after_blend"],
+  "manifest_cases": ["success_set_normalized_coordinates", "success_accepts_native_wide_coordinates", "success_partial_and_extra_coordinates", "success_reset_to_default", "error_null_coords_with_nonzero_count", "output_changes_for_active_blend", "success_type1_mm_glyph_output_after_blend"],
   "cases": [
     {
       "case_id": "ftmm.FT_Set_MM_Blend_Coordinates.success_set_normalized_coordinates",
@@ -171,17 +171,16 @@
     {
       "case_id": "ftmm.FT_Set_MM_Blend_Coordinates.c182_coordinate_conversion_overflow",
       "subject": "ftmm.FT_Set_MM_Blend_Coordinates",
-      "case": "error_null_coords_with_nonzero_count",
-      "covers_manifest_cases": ["error_null_coords_with_nonzero_count"],
+      "case": "success_accepts_native_wide_coordinates",
+      "covers_manifest_cases": ["success_accepts_native_wide_coordinates"],
       "operation": "ftmm.set_mm_blend_coordinates",
       "schema": "api_result",
-      "expect_error": true,
+      "expect_error": false,
       "expectation": {
-        "status": "error",
-        "output_shape": {"return": "FT_Error"},
-        "compare": {"mode": "exact_error", "paths": ["return"]},
-        "error": "FT_Err_Invalid_Argument",
-        "source_refs": ["src/ffi/handles.rs:13102-13108"]
+        "status": "ok",
+        "output_shape": {"return": "FT_Error", "active_blend_coords": ["FT_Fixed"], "face_flags": "FT_Long"},
+        "compare": {"mode": "exact", "paths": ["return", "active_blend_coords", "face_flags.FT_FACE_FLAG_VARIATION"]},
+        "source_refs": ["freetype/src/type1/t1load.c", "src/ffi/handles.rs:13332-13363"]
       },
       "inputs": {
         "variants": [

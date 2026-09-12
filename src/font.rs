@@ -3450,27 +3450,27 @@ fn type1_fixed_1000_value(text: &str, key: &str) -> Option<i32> {
     type1_real_to_fixed(type1_number_token(text, key)?.parse::<f64>().ok()? * 1000.0)
 }
 
-fn type1_mm_design_to_blend(map: &[Type1DesignMapPoint], design: i32) -> i32 {
+fn type1_mm_design_to_blend(map: &[Type1DesignMapPoint], design: i64) -> i64 {
     let Some(first) = map.first() else {
         return 0;
     };
     let mut before: Option<&Type1DesignMapPoint> = None;
     for point in map {
-        if design == point.design {
-            return point.blend;
+        if design == i64::from(point.design) {
+            return i64::from(point.blend);
         }
-        if design < point.design {
-            return before.map_or(point.blend, |prev| {
-                crate::fixed::ft_mul_div(
-                    design - prev.design,
-                    point.blend - prev.blend,
-                    point.design - prev.design,
+        if design < i64::from(point.design) {
+            return before.map_or(i64::from(point.blend), |prev| {
+                crate::fixed::ft_mul_div_long(
+                    design - i64::from(prev.design),
+                    i64::from(point.blend) - i64::from(prev.blend),
+                    i64::from(point.design) - i64::from(prev.design),
                 )
             });
         }
         before = Some(point);
     }
-    before.map_or(first.blend, |point| point.blend)
+    before.map_or(i64::from(first.blend), |point| i64::from(point.blend))
 }
 
 fn type1_mm_axis_unmap(map: &[Type1DesignMapPoint], ncv: i32) -> i32 {
@@ -3497,11 +3497,14 @@ fn type1_mm_axis_unmap(map: &[Type1DesignMapPoint], ncv: i32) -> i32 {
         .saturating_mul(65_536)
 }
 
-fn type1_mm_weights_from_blends(blends: &[i32], active_axis_count: usize) -> Vec<i32> {
+fn type1_mm_weights_from_blends(blends: &[i64], active_axis_count: usize) -> Vec<i32> {
     let num_designs = 1usize.checked_shl(blends.len() as u32).unwrap_or(0);
     (0..num_designs)
         .map(|design_index| {
-            let mut result = 65_536;
+            // `FT_Fixed` is a native signed long.  Keep the Type 1 service's
+            // factor arithmetic in that wider domain on LP64 hosts; narrowing
+            // before taking `0x10000 - factor` changes out-of-range inputs.
+            let mut result = 65_536_i64;
             for (axis_index, mut factor) in blends.iter().copied().enumerate() {
                 if axis_index >= active_axis_count {
                     result >>= 1;
@@ -3514,10 +3517,14 @@ fn type1_mm_weights_from_blends(blends: &[i32], active_axis_count: usize) -> Vec
                     return 0;
                 }
                 if factor < 65_536 {
-                    result = crate::fixed::ft_mul_fix(result, factor);
+                    result = crate::fixed::ft_mul_fix_long(result, factor);
                 }
             }
-            result
+            match i32::try_from(result) {
+                Ok(value) => value,
+                Err(_) if result < 0 => i32::MIN,
+                Err(_) => i32::MAX,
+            }
         })
         .collect()
 }
@@ -5150,6 +5157,23 @@ impl Font {
         coords: &[i32],
         variation_active: bool,
     ) -> Result<(), FontError> {
+        let coords_long = coords
+            .iter()
+            .map(|&coord| i64::from(coord))
+            .collect::<Vec<_>>();
+        self.set_type1_mm_design_coordinates_long(&coords_long, variation_active)
+    }
+
+    /// Set Adobe MM design coordinates in the native `FT_Long` domain.
+    ///
+    /// FreeType declares `FT_Long` as a signed native long.  The public C
+    /// setter therefore accepts values wider than an `i32` on LP64 targets;
+    /// keep that width until the design map clamps or interpolates it.
+    pub(crate) fn set_type1_mm_design_coordinates_long(
+        &mut self,
+        coords: &[i64],
+        variation_active: bool,
+    ) -> Result<(), FontError> {
         let Some(master) = self.type1_multi_master.as_ref() else {
             return Err(FontError::InvalidArgument(
                 "face has no Type 1 MM design coordinates".into(),
@@ -5165,7 +5189,7 @@ impl Font {
                     let last = axis.design_map.last().map_or(first, |point| point.design);
                     // C parity: src/type1/t1load.c:T1_Set_MM_Design uses
                     // `(last - first) / 2` as the missing-coordinate default.
-                    (last - first) / 2
+                    i64::from((last - first) / 2)
                 });
                 type1_mm_design_to_blend(&axis.design_map, design)
             })
@@ -5208,6 +5232,19 @@ impl Font {
         coords_16_16: &[i32],
         variation_active: bool,
     ) -> Result<(), FontError> {
+        let coords_long = coords_16_16
+            .iter()
+            .map(|&coord| i64::from(coord))
+            .collect::<Vec<_>>();
+        self.set_type1_mm_blend_coordinates_long(&coords_long, variation_active)
+    }
+
+    /// Set Adobe MM blend coordinates in the native `FT_Fixed` domain.
+    pub(crate) fn set_type1_mm_blend_coordinates_long(
+        &mut self,
+        coords_16_16: &[i64],
+        variation_active: bool,
+    ) -> Result<(), FontError> {
         let Some(master) = self.type1_multi_master.as_ref() else {
             return Err(FontError::InvalidArgument(
                 "face has no Type 1 MM blend coordinates".into(),
@@ -5231,6 +5268,19 @@ impl Font {
         &mut self,
         coords_16_16: &[i32],
     ) -> Result<(), FontError> {
+        let coords_long = coords_16_16
+            .iter()
+            .map(|&coord| i64::from(coord))
+            .collect::<Vec<_>>();
+        self.set_var_blend_coordinates_long(&coords_long)
+    }
+
+    /// Set normalized blend coordinates while preserving the public
+    /// `FT_Fixed` width at the FFI boundary.
+    pub(crate) fn set_var_blend_coordinates_long(
+        &mut self,
+        coords_16_16: &[i64],
+    ) -> Result<(), FontError> {
         if self.type1_multi_master.is_some() {
             // C parity: FT_Set_Var_Blend_Coordinates is an alias of
             // FT_Set_MM_Blend_Coordinates for Type 1 MM faces; the public
@@ -5239,8 +5289,21 @@ impl Font {
             // FT_Set_Var_Blend_Coordinates clears FT_FACE_FLAG_VARIATION on a
             // normal Type 1 MM service success; FT_Set_MM_Blend_Coordinates
             // applies the nonzero-count flag rule in its separate wrapper.
-            return self.set_type1_mm_blend_coordinates(coords_16_16, false);
+            return self.set_type1_mm_blend_coordinates_long(coords_16_16, false);
         }
+        // TrueType normalized coordinates are constrained to [-1, 1] and
+        // consequently fit the Rust core's i32 representation.  Reject any
+        // wider value before entering the rebuild path, matching C's
+        // `TT_Set_MM_Blend` Invalid_Argument result.
+        let coords_16_16_i32 = coords_16_16
+            .iter()
+            .copied()
+            .map(i32::try_from)
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|_| {
+                FontError::InvalidArgument("variation blend coordinate out of range".into())
+            })?;
+        let coords_16_16 = coords_16_16_i32.as_slice();
         let Some(fvar) = &self.data.fvar else {
             return Err(FontError::InvalidArgument(
                 "face has no variation blend coordinates".into(),

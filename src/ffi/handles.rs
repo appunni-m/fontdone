@@ -9103,7 +9103,18 @@ fn parse_colr_v1_paint(
         14 => {
             let paint =
                 parse_colr_v1_child_paint(data, offset, depth, layer_list_offset, layer_offsets)?;
-            let dx = colr_i16_to_fixed(read_i16_be(data, offset + 4)?);
+            let Some(dx_raw) = read_i16_be(data, offset + 4) else {
+                // FreeType reads the child opaque paint before its first
+                // translate coordinate.  If that coordinate reaches the
+                // table boundary, `FT_Get_Paint` returns false after writing
+                // the format and composite-shaped child prefix.
+                return Some(ColrV1Paint::MalformedPayload {
+                    format: FT_Int::from(format),
+                    paint,
+                    composite_mode: 0,
+                });
+            };
+            let dx = colr_i16_to_fixed(dx_raw);
             let Some(dy) = read_i16_be(data, offset + 6) else {
                 return Some(ColrV1Paint::MalformedPayload {
                     format: FT_Int::from(format),
@@ -13066,20 +13077,16 @@ pub fn FT_Set_MM_Design_Coordinates(
     let Ok(num_coords) = usize::try_from(num_coords) else {
         return FT_Err_Invalid_Argument as FT_Error;
     };
-    let coords_i32 = match coords {
+    let coords_long = match coords {
         Some(coords) => {
             if coords.len() < num_coords {
                 return FT_Err_Invalid_Argument as FT_Error;
             }
-            let converted = coords[..num_coords]
+            coords[..num_coords]
                 .iter()
                 .copied()
-                .map(i32::try_from)
-                .collect::<Result<Vec<_>, _>>();
-            let Ok(converted) = converted else {
-                return FT_Err_Invalid_Argument as FT_Error;
-            };
-            converted
+                .map(ft_long_to_i64)
+                .collect::<Vec<_>>()
         }
         None => Vec::new(),
     };
@@ -13087,7 +13094,7 @@ pub fn FT_Set_MM_Design_Coordinates(
         .inner
         .borrow_mut()
         .font_mut()
-        .set_type1_mm_design_coordinates(&coords_i32, num_coords != 0);
+        .set_type1_mm_design_coordinates_long(&coords_long, num_coords != 0);
     match result {
         Ok(()) => {
             let transform_matrix = face.transform_matrix;
@@ -13284,18 +13291,16 @@ pub fn FT_Set_Var_Blend_Coordinates(
         None if num_coords == 0 => &[],
         None => return FT_Err_Invalid_Argument as FT_Error,
     };
-    let coords_i32 = coords
+    let coords_long = coords
         .iter()
         .copied()
-        .map(i32::try_from)
-        .collect::<Result<Vec<_>, _>>();
-    let Ok(coords_i32) = coords_i32 else {
-        return FT_Err_Invalid_Argument as FT_Error;
-    };
+        .map(ft_long_to_i64)
+        .collect::<Vec<_>>();
     let result = face
         .inner
         .borrow_mut()
-        .set_var_blend_coordinates(&coords_i32);
+        .font_mut()
+        .set_var_blend_coordinates_long(&coords_long);
     match result {
         Ok(()) => {
             let transform_matrix = face.transform_matrix;
@@ -13331,18 +13336,16 @@ pub fn FT_Set_MM_Blend_Coordinates(
         None => return FT_Err_Invalid_Argument as FT_Error,
     };
     if face.inner.borrow().font().type1_multi_master().is_some() {
-        let coords_i32 = coords
+        let coords_long = coords
             .iter()
             .copied()
-            .map(i32::try_from)
-            .collect::<Result<Vec<_>, _>>();
-        let Ok(coords_i32) = coords_i32 else {
-            return FT_Err_Invalid_Argument as FT_Error;
-        };
+            .map(ft_long_to_i64)
+            .collect::<Vec<_>>();
         let result = face
             .inner
             .borrow_mut()
-            .set_type1_mm_blend_coordinates(&coords_i32, num_coords_usize != 0);
+            .font_mut()
+            .set_type1_mm_blend_coordinates_long(&coords_long, num_coords_usize != 0);
         return match result {
             Ok(()) => {
                 let transform_matrix = face.transform_matrix;

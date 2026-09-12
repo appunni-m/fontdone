@@ -1,7 +1,7 @@
 {
   "version": 1,
   "subject": "ftmm.FT_Set_MM_Design_Coordinates",
-  "manifest_cases": ["success_adobe_mm_design_coordinates", "success_partial_extra_and_reset", "error_null_coords_with_nonzero_count", "error_non_adobe_variation_face", "output_changes_for_mm_design", "batch75_one_axis_mm_design_coordinates"],
+  "manifest_cases": ["success_adobe_mm_design_coordinates", "success_accepts_native_wide_coordinates", "success_partial_extra_and_reset", "error_null_coords_with_nonzero_count", "error_non_adobe_variation_face", "output_changes_for_mm_design", "batch75_one_axis_mm_design_coordinates"],
   "cases": [
     {
       "case_id": "ftmm.FT_Set_MM_Design_Coordinates.success_adobe_mm_design_coordinates",
@@ -79,17 +79,16 @@
     {
       "case_id": "ftmm.FT_Set_MM_Design_Coordinates.c182_coordinate_conversion_overflow",
       "subject": "ftmm.FT_Set_MM_Design_Coordinates",
-      "case": "error_null_coords_with_nonzero_count",
-      "covers_manifest_cases": ["error_null_coords_with_nonzero_count"],
+      "case": "success_accepts_native_wide_coordinates",
+      "covers_manifest_cases": ["success_accepts_native_wide_coordinates"],
       "operation": "ftmm.set_mm_design_coordinates",
       "schema": "api_result",
-      "expect_error": true,
+      "expect_error": false,
       "expectation": {
-        "status": "error",
-        "output_shape": {"return": "FT_Error"},
-        "compare": {"mode": "exact_error", "paths": ["return"]},
-        "error": "FT_Err_Invalid_Argument",
-        "source_refs": ["src/ffi/handles.rs:12850-12861"]
+        "status": "ok",
+        "output_shape": {"return": "FT_Error", "design_coords": ["FT_Long"], "blend_coords": ["FT_Fixed"], "face_flags": "FT_Long"},
+        "compare": {"mode": "exact", "paths": ["return", "design_coords", "blend_coords", "face_flags.FT_FACE_FLAG_VARIATION"]},
+        "source_refs": ["freetype/src/type1/t1load.c", "src/ffi/handles.rs:13060-13100"]
       },
       "inputs": {
         "variants": [

@@ -464,6 +464,8 @@ struct InputCase {
     expect_error: bool,
     #[serde(default)]
     expectation: CaseExpectation,
+    #[serde(default)]
+    explicit_compare_error_output: bool,
     inputs: Inputs,
     #[serde(skip)]
     route_evidence: RouteEvidence,
@@ -478,7 +480,7 @@ struct InputCaseCache {
     cases: Vec<InputCase>,
 }
 
-const INPUT_CASE_CACHE_SCHEMA_VERSION: u32 = 3;
+const INPUT_CASE_CACHE_SCHEMA_VERSION: u32 = 4;
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq)]
 enum RouteEvidence {
@@ -3470,8 +3472,13 @@ impl BackendComparisonWorker {
                     | "ftmodapi.property_set_then_get"
                     | "ftmodapi.set_default_properties"
                     | "ftdriver.interpreter_version_default"
+                    // These no-asset probes have dedicated handlers below;
+                    // their null-file/open-face status is part of the public
+                    // parity contract and must not use the generic classifier.
+                    | "ftdriver.interpreter_version_glyph_output"
                     | "FT_Property_Get"
                     | "FT_Property_Set_or_Get"
+                    | "freetype.open_face_stream"
                     | "freetype.get_kerning"
                     | "freetype.get_subglyph_info"
                     | "ftotval.open_type_validate"
@@ -44105,6 +44112,8 @@ fn assert_no_implicit_inputs(path: &Path, raw: &Value) {
 
 fn append_concrete_input_cases(path: &Path, case: InputCase, cases: &mut Vec<InputCase>) {
     if case.inputs.variants.is_empty() {
+        let mut case = case;
+        case.explicit_compare_error_output = case.expectation.compare.compare_error_output;
         cases.push(with_public_family_exact_error(case));
         return;
     }
@@ -44148,6 +44157,7 @@ fn append_concrete_input_cases(path: &Path, case: InputCase, cases: &mut Vec<Inp
         if let Some(value) = variant.expectation.compare.compare_error_output {
             concrete.expectation.compare.compare_error_output = value;
         }
+        concrete.explicit_compare_error_output = concrete.expectation.compare.compare_error_output;
         concrete.inputs = Inputs {
             assets: variant.assets.clone(),
             params: variant.params.clone(),
@@ -51850,8 +51860,12 @@ fn run_rust_ffi(case: &InputCase) -> Result<RunOutput, String> {
                 | "ftmodapi.set_default_properties"
                 | "ftdriver.interpreter_version_property"
                 | "ftdriver.interpreter_version_default"
+                // These no-asset probes have dedicated handlers below;
+                // preserve their operation-specific null/open status.
+                | "ftdriver.interpreter_version_glyph_output"
                 | "FT_Property_Get"
                 | "FT_Property_Set_or_Get"
+                | "freetype.open_face_stream"
                 | "freetype.get_kerning"
                 | "freetype.get_subglyph_info"
                 | "ftotval.open_type_validate"
@@ -92504,14 +92518,7 @@ fn rust_outline_render_once(
             )))
         }
         Err(err) if include_error_output || case.expectation.compare.compare_error_output => {
-            if outline_render_error_output_available(flags, pixel_mode) {
-                let output_buffer =
-                    FT_Outline_Render_Error_Output(
-                        outline_arg,
-                        target_present.then_some(&target),
-                        flags,
-                    )
-                        .map_or_else(|| buffer.clone(), |rendered| rendered.buffer);
+            if outline_render_error_output_available(case, pixel_mode) {
                 Ok(error_with_output(
                     err,
                     outline_render_bitmap_payload(
@@ -92519,7 +92526,7 @@ fn rust_outline_render_once(
                         rows,
                         pitch,
                         pixel_mode,
-                        &output_buffer,
+                        &buffer,
                         true,
                     ),
                 ))
@@ -92759,7 +92766,7 @@ fn c_outline_render_once(
             params.source == outline_ptr.cast(),
         )))
     } else if include_error_output || case.expectation.compare.compare_error_output {
-        if outline_render_error_output_available(flags, pixel_mode) {
+        if outline_render_error_output_available(case, pixel_mode) {
             Ok(error_with_output(
                 err,
                 outline_render_bitmap_payload(
@@ -93012,7 +93019,7 @@ fn wasm_outline_render_once(
             params.source == outline_ptr.cast(),
         )))
     } else if include_error_output || case.expectation.compare.compare_error_output {
-        if outline_render_error_output_available(flags, pixel_mode) {
+        if outline_render_error_output_available(case, pixel_mode) {
             Ok(error_with_output(
                 err,
                 outline_render_bitmap_payload(
@@ -93101,8 +93108,9 @@ fn wasm_outline_render_pointer_probe(case: &InputCase) -> Result<(), String> {
     invalid_argument("null bitmap buffer", status)
 }
 
-fn outline_render_error_output_available(_flags: i32, pixel_mode: i32) -> bool {
-    pixel_mode == FT_PIXEL_MODE_GRAY
+fn outline_render_error_output_available(case: &InputCase, pixel_mode: i32) -> bool {
+    case.explicit_compare_error_output
+        && (pixel_mode == FT_PIXEL_MODE_GRAY || pixel_mode == FT_PIXEL_MODE_MONO)
 }
 
 fn rust_outline_render_clip_box_cases(case: &InputCase) -> Result<RunOutput, String> {
@@ -98310,6 +98318,7 @@ fn unified_fixture_parity_exact_error_guard_rejects_non_error_results() {
                 compare_error_output: true,
             },
         },
+        explicit_compare_error_output: true,
         inputs: Inputs {
             assets: BTreeMap::new(),
             params: Value::Null,

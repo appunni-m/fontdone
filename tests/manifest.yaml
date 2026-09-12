@@ -8751,6 +8751,8 @@ subjects:
     cases:
       - id: success_set_normalized_coordinates
         description: Sets normalized 16.16 coordinates and updates the face variation flag exactly as C does for supported variation services.
+      - id: success_accepts_native_wide_coordinates
+        description: Adobe Type 1 MM accepts FT_Fixed coordinates outside the i32 range on LP64 targets and preserves C's clamped/interpolated state.
       - id: success_partial_and_extra_coordinates
         description: Fewer coordinates use defaults for remaining axes, while excess coordinates are ignored by the C service.
       - id: success_reset_to_default
@@ -8771,6 +8773,8 @@ subjects:
     cases:
       - id: success_adobe_mm_design_coordinates
         description: On an Adobe MM face, sets FT_Long design coordinates and marks the face as variation when num_coords is nonzero.
+      - id: success_accepts_native_wide_coordinates
+        description: Adobe MM accepts FT_Long design coordinates outside the i32 range on LP64 targets and preserves C's design-map clamping behavior.
       - id: success_partial_extra_and_reset
         description: Fewer coordinates use defaults, extra coordinates are ignored, and num_coords zero with null coords resets C variation state.
       - id: error_null_coords_with_nonzero_count

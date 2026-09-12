@@ -113,7 +113,7 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The last committed full parity snapshot was recorded on **2026-09-11**:
+The last committed full parity snapshot was recorded on **2026-09-12**:
 
 | Measurement | Count |
 |---|---:|
@@ -121,7 +121,7 @@ The last committed full parity snapshot was recorded on **2026-09-11**:
 | Passed cases | 20,355 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
-| Covered manifest cases | 4,416 |
+| Covered manifest cases | 4,418 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
 | Logical declared cases | 4,572 |
@@ -321,7 +321,7 @@ measurement provenance is retained in the compatibility snapshot.
 ### 3.4 C ABI completion contract
 
 The latest generated scorecard from `make c-abi-contract` in the current
-worktree (regenerated 2026-09-11) has **8 / 12 categories complete**:
+worktree (regenerated 2026-09-12) has **5 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
