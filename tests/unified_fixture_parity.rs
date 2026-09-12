@@ -44194,6 +44194,7 @@ fn with_public_family_exact_error(mut case: InputCase) -> InputCase {
     if glyph_name_case_declares_error(&case) {
         case.expect_error = true;
         case.expectation.compare.compare_error_output = true;
+        case.explicit_compare_error_output = true;
     }
     if case.expect_error && strict_expected_errors() {
         case.expectation.compare.compare_error_output = true;
@@ -44628,6 +44629,7 @@ fn with_public_family_exact_error(mut case: InputCase) -> InputCase {
                 && lifecycle_handle_param(&case.inputs.params, "library") == Some("null")))
     {
         case.expectation.compare.compare_error_output = true;
+        case.explicit_compare_error_output = true;
     }
     case
 }
@@ -93109,8 +93111,20 @@ fn wasm_outline_render_pointer_probe(case: &InputCase) -> Result<(), String> {
 }
 
 fn outline_render_error_output_available(case: &InputCase, pixel_mode: i32) -> bool {
-    case.explicit_compare_error_output
+    (case.explicit_compare_error_output || outline_render_target_bitmap_declared(case))
         && (pixel_mode == FT_PIXEL_MODE_GRAY || pixel_mode == FT_PIXEL_MODE_MONO)
+}
+
+fn outline_render_target_bitmap_declared(case: &InputCase) -> bool {
+    // The mono error batch carries an explicit target_bitmap parameter even
+    // though its comparison metadata predates the error-output provenance
+    // field. That parameter is the input contract for retaining the caller's
+    // bitmap sentinel on an outline-render error; unrelated CBox rejection
+    // cases only provide a bitmap asset and must continue to report no
+    // output.
+    case.operation == "ftoutln.outline_render"
+        && case.expect_error
+        && case.inputs.params.get("target_bitmap").is_some()
 }
 
 fn rust_outline_render_clip_box_cases(case: &InputCase) -> Result<RunOutput, String> {
