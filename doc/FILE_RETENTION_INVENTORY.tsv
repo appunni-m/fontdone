@@ -26,8 +26,8 @@ doc/INTEGRATION.md	9781	file	b5f89570cc6d5ea340b5bc7aa5046a5ed98c72ee2efc328bf3e
 doc/README.md	4529	file	f7217e1295955e219428d7fcdaa7165afc427154c36343b81022dbd348fc3452	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/RELEASING.md	12639	file	978eaf6f4cd39fb7e4ce217219bb296e2fa004fd8eec0f4ad1b5d326b58ebb97	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/ROADMAP.md	204547	file	b41329dbd2e74b916e8633a1a3153035ec527501157ea06a0211d1b2468b9d3a	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
-doc/compatibility_snapshot.json	80767	file	0ae6844a7c8d20a3f4332541fc57d2683bc1598ee0298ee891637507171b60e9	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/runtime_parity_evidence.json	1380	file	3c332b91815505231181acfc2812bce418249f0fa1b0afaccca5dde2ba195a17	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/compatibility_snapshot.json	80767	file	981cf717a95f2433cf50e136c6f2567c7edc9a626878e39da1f02ddc628a3f18	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/runtime_parity_evidence.json	1380	file	a999fdc930e2bab02acda77ae8a248d668667ca5de391a2fd2120d9af5c57ef4	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 examples/bench_ops.rs	10086	file	a75d7bbf4e8e679ca393d8cffd68cc0824f7198bb5e85857ce4dd75d8e016a21	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/ffi_migration.rs	1806	file	3140c3cbf9182299f2ab8c98f6675dfd3d086c47177f7bf8783160a149eddda8	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/handle_error.rs	571	file	acbe9d9f2e838bb5ca27132dde73287fa123e3a069772a2b741ae6e010fae3b1	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
@@ -3340,4 +3340,4 @@ tests/fixtures/streams/gzip/valid-font-stream.gz	283990	file	767ab166fc9debf9075
 tests/manifest.yaml	1578611	file	dae4914f91f2a68424bf31676bdd0aa785feb02449eb48c126f58e1983a5588f	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/pipe_trace.rs	6378	file	0ba36fa504f5d40c6961a9a9170a1db4e19fb979bba140dde6c164b54f368d6e	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
 tests/support/generated_constant_lookup.rs	89931	file	3309eebd6fa4af72d165481e216c9a1dfcb574b3643a506e9221a8eec81f9d74	-	keep-generated-source	R10	Generated lookup required by the public constant parity test.
-tests/unified_fixture_parity.rs	4015339	file	cab9cf4e37d42cdccd3c788828e87f5cd4ba3eee69596a8c2749bbb2c4ca4429	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
+tests/unified_fixture_parity.rs	4016092	file	b279f95f923703deeb11dcaeab88577732259069c6dc3400b06efd36819689f2	-	keep-test-contract	R03	Maintained parity test, contract, focused fixture, source, or support file.
