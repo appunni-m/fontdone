@@ -7,6 +7,8 @@ VERSION="2.14.3"
 ARCHIVE="freetype-${VERSION}.tar.xz"
 URLS=(
   "https://download.savannah.gnu.org/releases/freetype/${ARCHIVE}"
+  # Independent Savannah mirror; the archive is checked against SHA256 below.
+  "https://nongnu.uib.no/freetype/${ARCHIVE}"
   "https://sourceforge.net/projects/freetype/files/freetype2/${VERSION}/${ARCHIVE}/download"
 )
 SHA256="36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f"
