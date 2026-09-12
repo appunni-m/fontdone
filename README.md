@@ -321,11 +321,11 @@ measurement provenance is retained in the compatibility snapshot.
 ### 3.4 C ABI completion contract
 
 The latest generated scorecard from `make c-abi-contract` in the current
-worktree (regenerated 2026-09-12) has **5 / 12 categories complete**:
+worktree (regenerated 2026-09-12) has **8 / 12 categories complete**:
 
 | Category group | Status |
 |---|---|
-| Functions | 176 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 13,572 / 18,098 pinned-C runtime contract rows exact; 4,526 pending |
+| Functions | 176 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 13,622 / 18,098 pinned-C runtime contract rows exact; 4,476 pending |
 | Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
 | Ownership | 23 / 23 ownership rules have exact runtime evidence |
 | State, modules, headers | 20 / 20 state transitions and 7 / 7 optional public components have exact evidence; headers are complete |
