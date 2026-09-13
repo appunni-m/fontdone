@@ -48,8 +48,7 @@ package needs:
 fontdone = { version = "=2.14.3-alpha.3", path = "../fontdone" }
 ```
 
-After `fontdone` is published, a registry consumer should request the exact
-prerelease:
+Registry consumers should request the exact prerelease:
 
 ```toml
 [dependencies]

@@ -118,8 +118,9 @@ blocks publication.
 
 The alpha.3 Cargo bootstrap completed on 2026-09-13 from the immutable tag
 above. `cargo info fontdone@2.14.3-alpha.3` downloaded and verified the public
-registry artifact. The current `main` follow-on commit is `d5cb5b9389f806ef6d7aba06ede944ba38ced100`; it is not a replacement for the
-published alpha.3 package.
+registry artifact. The current `main` follow-on branch contains inventory and
+release-documentation updates beyond that immutable tag; it is not a
+replacement for the published alpha.3 package.
 
 After `make release-verify` passes on a clean, reviewed commit, publish the
 single public Cargo crate through the maintained script:
@@ -212,8 +213,9 @@ skipped; any mismatch fails the job and requires a new prerelease. A registry
 name check alone is insufficient because it can silently preserve an artifact
 built from a different commit.
 
-The `next` dist-tag prevents this alpha from silently becoming the stable
-`latest` release. Immediately verify the immutable version and tag:
+The tag workflow uses `next` for versions with a prerelease suffix and
+`latest` for stable versions, so this alpha cannot silently become the stable
+release. Immediately verify the immutable version and tag:
 
 ```bash
 npm view fontdone@2.14.3-alpha.3 version dist.tarball --json
@@ -226,16 +228,21 @@ approved publish.
 
 ## 7. Tags and release assets
 
-After the maintainer pushes annotated tag `v2.14.3-alpha.3` at the approved
-commit and the Cargo and npm publications succeed, the workflow:
+For a future synchronized release, after the maintainer pushes annotated tag
+`v<version>` at the approved commit and the Cargo and npm publications succeed,
+the workflow:
 
 1. verifies the immutable tag and successful CI result;
 2. creates the GitHub release from generated notes;
 3. attaches the exact public `.crate`, native C SDK archive, verified npm
    `.tgz`, and `SHA256SUMS`.
 
-Never move or recreate a published tag. Attached checksums must describe the
-same archives inspected during preflight.
+The existing `v2.14.3-alpha.3` tag already identifies the published Cargo
+artifact. Do not move or rerun that tag to publish the pending npm artifact;
+either publish the exact reviewed npm archive under owner approval or bump all
+synchronized package versions and use a new tag. Never move or recreate a
+published tag. Attached checksums must describe the same archives inspected
+during preflight.
 
 ## 8. Failure, retry, and registry recovery
 

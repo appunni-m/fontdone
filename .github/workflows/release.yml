@@ -199,8 +199,12 @@ jobs:
         if: steps.npm-check.outputs.missing == 'true'
         run: |
           version="${GITHUB_REF_NAME#v}"
+          dist_tag=latest
+          if [[ "$version" == *-* ]]; then
+            dist_tag=next
+          fi
           npm publish "release-bundle/fontdone-${version}.tgz" \
-            --access public --tag next --provenance
+            --access public --tag "$dist_tag" --provenance
 
   github-release:
     name: Create immutable GitHub Release
