@@ -19,18 +19,21 @@ After publication, a registry consumer such as `pillow-rs` must use
 for a local build but Cargo rejects it when packaging the downstream crate.
 
 The first synchronized release is bootstrapped locally from the exact clean
-commit. The public Cargo crate and synchronized `fontdone@2.14.3-alpha.3` npm
-package are still unpublished from this checkout. The older alpha.1 npm
-artifact is already visible, but its immutable contents predate the current
-source. Because npm versions are immutable, the alpha.3 archive must be
-published as a new synchronized prerelease; a retry may skip an existing npm
-version only after the registry package contents match the reviewed local
-archive. Local commands validate and assemble the Cargo, C SDK, and npm
-artifacts; they do not create tags or releases.
+commit. The public Cargo crate `fontdone@2.14.3-alpha.3` was published from
+immutable tag `v2.14.3-alpha.3` at commit
+`5f17ad226d7c0a282fa0082316d7cdeb8ab12d9f` (crates.io checksum
+`3288b86becd4fe2b93c196634ff28573e6aa1f7f8e3807b3ded4d85667db690c`). The
+synchronized npm package is still pending; the older alpha.1 artifact is
+already visible, but its immutable contents predate the current source.
+Because npm versions are immutable, the alpha.3 archive must be published as a
+new synchronized prerelease; a retry may skip an existing npm version only
+after the registry package contents match the reviewed local archive. Local
+commands validate and assemble the Cargo, C SDK, and npm artifacts; they do not
+create tags or releases.
 
-Publication is paused during active parity, coverage, and performance work.
-Do not push a release tag, publish a crate, or create a GitHub release until
-the repository owner explicitly approves publication.
+The owner-authorized Cargo bootstrap is complete. Future tags and GitHub
+releases remain gated by the full parity, coverage, performance, and C-contract
+evidence described below.
 
 ## 1. Release prerequisites
 
@@ -40,7 +43,8 @@ the repository owner explicitly approves publication.
   `crates-io` and `npm` environments; no long-lived registry token is stored in
   the workflow.
 - The release commit is clean, pushed, and has a successful CI run.
-- The exact Cargo versions have not previously been published or tagged.
+- The exact Cargo version for a future release has not previously been
+  published or tagged.
 - The `fontdone` npm version is checked immediately before release. If it is
   visible, the workflow compares its extracted package contents with the
   reviewed archive and skips only an exact match; a mismatch stops the release
@@ -111,6 +115,11 @@ complete scorecard is generated, so a stale committed compatibility snapshot
 blocks publication.
 
 ## 4. First local bootstrap
+
+The alpha.3 Cargo bootstrap completed on 2026-09-13 from the immutable tag
+above. `cargo info fontdone@2.14.3-alpha.3` downloaded and verified the public
+registry artifact. The current `main` follow-on commit is `d5cb5b9389f806ef6d7aba06ede944ba38ced100`; it is not a replacement for the
+published alpha.3 package.
 
 After `make release-verify` passes on a clean, reviewed commit, publish the
 single public Cargo crate through the maintained script:
@@ -276,7 +285,7 @@ The machine-readable denominators are in
 package reports, release notes, inventories, archives, and checksums are local
 outputs under `target/release-evidence/`.
 
-The current local dry-run on the checked-out release candidate (2026-09-12)
+The current local dry-run on the checked-out release candidate (2026-09-13)
 verifies one public Cargo package, two private workspace build
 packages, the `fontdone@2.14.3-alpha.3` npm archive, and the native C SDK
 archive. The complete release gate still requires the unresolved C-ABI route

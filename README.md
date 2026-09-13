@@ -10,10 +10,12 @@
 
 </div>
 
-> **Release:** `2.14.3-alpha.3`. The public `fontdone` Cargo crate is prepared
-> for its first release from this checkout. The earlier `fontdone@2.14.3-alpha.1`
-> npm artifact is immutable and predates this source; `fontdone@2.14.3-alpha.3`
-> is the synchronized local candidate and has not been published yet. The C SDK is distributed as a native release
+> **Release:** `2.14.3-alpha.3`. The public `fontdone` Cargo crate was published
+> from immutable tag `v2.14.3-alpha.3` at commit
+> `5f17ad226d7c0a282fa0082316d7cdeb8ab12d9f`; the synchronized
+> `fontdone@2.14.3-alpha.3` npm artifact is still pending. The earlier
+> `fontdone@2.14.3-alpha.1` npm artifact is immutable and predates this source.
+> The C SDK is distributed as a native release
 > archive, while the raw WASM and C Cargo packages remain internal workspace
 > build targets. Only the root `fontdone` package is published to crates.io. The
 > project is suitable for compatibility
@@ -34,10 +36,10 @@ Pinned FreeType source is used only by ignored offline test tooling.
 | Browser application | `fontdone` on npm | Prebuilt Wasm with a typed ESM lifecycle wrapper | [Browser package guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/npm/README.md) |
 | Raw JavaScript host | Internal `fontdone-wasm` build target | Low-level wasm32 linear-memory ABI used by the npm package | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
 
-The `fontdone` crate and the synchronized `fontdone@2.14.3-alpha.3` npm
-package are not published from this checkout yet. The older alpha.1 npm
-artifact is already public, but its immutable contents predate the current
-source and cannot be treated as this release. Evaluate Rust from a local
+The `fontdone` crate is published at `2.14.3-alpha.3`; the synchronized npm
+package is not published yet. The older alpha.1 npm artifact is already public,
+but its immutable contents predate the current source and cannot be treated as
+this release. Evaluate Rust from a local
 checkout while keeping the version requirement that a publishable downstream
 package needs:
 
