@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 # All three workspace packages are built and inspected because the C and raw-WASM
 # facades are part of the workspace contract.  Only the root package is a
 # public Cargo registry release; the facades ship through the C SDK archive
-# and browser npm package respectively.
+# and JavaScript npm package respectively.
 WORKSPACE_PACKAGES = (
     ("fontdone", ROOT / "Cargo.toml"),
     ("fontdone-c-abi", ROOT / "fontdone-c-abi" / "Cargo.toml"),
@@ -163,15 +163,15 @@ def verify_metadata() -> str:
             raise ValueError(f"Cargo.toml: path-only dev dependency {name} is missing")
     npm_manifest = json.loads(NPM_MANIFEST.read_text(encoding="utf-8"))
     if npm_manifest.get("name") != "fontdone":
-        raise ValueError("browser npm package must be named fontdone")
+        raise ValueError("JavaScript npm package must be named fontdone")
     if npm_manifest.get("version") != version:
         raise ValueError(
-            "browser npm package version drift: "
+            "JavaScript npm package version drift: "
             f"{npm_manifest.get('version')} != {version}"
         )
     npm_publish = npm_manifest.get("publishConfig", {})
     if npm_publish.get("access") != "public" or npm_publish.get("tag") != "next":
-        raise ValueError("browser npm alpha must publish publicly under next")
+        raise ValueError("JavaScript npm alpha must publish publicly under next")
     consumer_template = (
         ROOT / "tests" / "external" / "rust-consumer" / "Cargo.toml.in"
     ).read_text(encoding="utf-8")
@@ -188,7 +188,7 @@ def verify_metadata() -> str:
             raise ValueError(f"{path}: release version {version} is absent")
     print(
         "release metadata: 1 public Cargo crate, 2 internal workspace packages, "
-        f"and browser npm package at {version}"
+        f"and JavaScript npm package at {version}"
     )
     return version
 
@@ -399,7 +399,7 @@ def package_and_inspect(version: str) -> list[dict[str, object]]:
         f"{contract['platform_lanes_complete']}/"
         f"{contract['platform_lanes_total']})\n\n"
         "Cargo publication: public `fontdone` only. The C ABI is distributed "
-        "as a native SDK archive, and the synchronized browser npm artifact is "
+        "as a native SDK archive, and the synchronized JavaScript npm artifact is "
         "also named `fontdone` and publishes separately under the `next` "
         "dist-tag. Route "
         "evidence is not a claim that every success path is complete; see the "

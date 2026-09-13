@@ -16,7 +16,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 # The C ABI and raw-WASM packages remain workspace build targets.  Their public
-# distribution is the native C SDK archive and the browser npm package; only
+# distribution is the native C SDK archive and the JavaScript npm package; only
 # the safe Rust API is published to crates.io.
 PUBLISHED_PACKAGES = ("fontdone",)
 

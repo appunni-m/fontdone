@@ -1,6 +1,6 @@
 # fontdone
 
-`fontdone` is the browser npm package for the pure-Rust fontdone engine. It
+`fontdone` is the JavaScript npm package for the pure-Rust fontdone engine. It
 ships a prebuilt `wasm32-unknown-unknown` module and a zero-dependency ESM
 wrapper for opening font bytes and rasterizing individual glyphs.
 
@@ -32,10 +32,12 @@ try {
 }
 ```
 
-The default initializer fetches `fontdone.wasm` relative to the ESM entry
-point. Pass an explicit URL, `Response`, `ArrayBuffer`, typed-array view,
-`WebAssembly.Module`, or `WebAssembly.Instance` when your asset pipeline needs
-different loading behavior:
+In browsers, the default initializer fetches `fontdone.wasm` relative to the
+ESM entry point. In Node.js, the package's conditional `node` export reads the
+same bundled asset from disk, so `createFontdone()` works without a
+`fetch(file://…)` call. Pass an explicit URL, `Response`, `ArrayBuffer`,
+typed-array view, `WebAssembly.Module`, or `WebAssembly.Instance` when your
+asset pipeline needs different loading behavior:
 
 ```js
 const engine = await createFontdone("/assets/fontdone.wasm");
@@ -44,11 +46,13 @@ const engine = await createFontdone("/assets/fontdone.wasm");
 The loader uses streaming instantiation when available and falls back to an
 `ArrayBuffer` when the server does not send `application/wasm`.
 
-## Browser contract
+## Runtime contract
 
-The maintained package requires browser ESM, `fetch`, WebAssembly, and
-WebAssembly JavaScript BigInt integration. The wrapper performs no font or
-telemetry requests; the only implicit request is for its own Wasm asset.
+The maintained package requires ESM, WebAssembly, and WebAssembly JavaScript
+BigInt integration. Browser initialization requires `fetch`; Node.js uses its
+conditional entrypoint and the local bundled asset. The wrapper performs no
+font or telemetry requests; the only implicit asset load is its own Wasm
+module.
 
 Each initializer call owns a separate WebAssembly instance. Faces and memory
 offsets are instance-local and cannot be transferred to another instance or
@@ -87,7 +91,7 @@ throw standard JavaScript errors.
 TypeScript declarations ship with the package. The complete low-level export
 and record inventory is also distributed as
 [`abi.json`](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/abi.json);
-only the wrapper above is promoted as the browser application API.
+only the wrapper above is promoted as the JavaScript application API.
 
 ## Security and license
 

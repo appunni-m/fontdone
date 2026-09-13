@@ -6,7 +6,7 @@ edition = "2024"
 # `fontdone` crate remains compatible with Rust 1.87.
 rust-version = "1.90"
 license = "FTL"
-# This is the internal raw-WASM build target for the browser npm package.  The
+# This is the internal raw-WASM build target for the JavaScript npm package.  The
 # npm tarball is the public JavaScript surface; the workspace crate remains
 # private so the release has one public Cargo package.
 publish = false

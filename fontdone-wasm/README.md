@@ -1,10 +1,10 @@
 # fontdone WebAssembly
 
-This directory owns the browser WebAssembly surface for the pure-Rust
+This directory owns the JavaScript/WebAssembly surface for the pure-Rust
 `fontdone` engine and its internal raw build target:
 
-- the browser npm package named `fontdone`, with a prebuilt Wasm module and a
-  typed ESM lifecycle wrapper;
+- the single npm package named `fontdone`, with a prebuilt Wasm module and a
+  typed ESM lifecycle wrapper for browsers and Node.js;
 - the internal `fontdone-wasm` Rust workspace package, which builds the raw
   linear-memory ABI used by that wrapper and by the repository parity harness.
 
@@ -13,7 +13,7 @@ alpha releases are not API- or ABI-compatible by promise. The npm package is
 the public JavaScript release; the raw Cargo target is internal. Neither
 surface is a text-shaping or layout engine.
 
-## 1. Browser npm package
+## 1. JavaScript npm package
 
 Install the public package:
 
@@ -42,19 +42,22 @@ try {
 ```
 
 The initializer accepts an explicit URL, `Request`, `Response`, buffer,
-compiled `WebAssembly.Module`, or `WebAssembly.Instance`. With no argument it
-fetches `fontdone.wasm` relative to the ESM entry point. Streaming
-instantiation falls back to an `ArrayBuffer` when a server does not provide the
+compiled `WebAssembly.Module`, or `WebAssembly.Instance`. In a browser, no
+argument fetches `fontdone.wasm` relative to the ESM entry point. In Node.js,
+the package's conditional `node` export reads the same asset from disk, so the
+no-argument path never attempts `fetch(file://…)`. Streaming instantiation
+falls back to an `ArrayBuffer` when a server does not provide the
 `application/wasm` content type.
 
-The maintained browser contract requires ESM, `fetch`, WebAssembly, and
-WebAssembly JavaScript BigInt integration. Each initializer call creates an
-independent instance; its faces and memory offsets are not transferable to
-another instance or Worker. The wrapper copies caller font bytes on open,
-copies rendered bitmap bytes before returning, and provides idempotent
-`close()` methods.
+The maintained JavaScript contract requires ESM, WebAssembly, and WebAssembly
+JavaScript BigInt integration. Browser initialization additionally requires
+`fetch`; Node.js uses the conditional entrypoint and its local bundled asset.
+Each initializer call creates an independent instance; its faces and memory
+offsets are not transferable to another instance or Worker. The wrapper copies
+caller font bytes on open, copies rendered bitmap bytes before returning, and
+provides idempotent `close()` methods.
 
-The complete browser API, error model, bitmap layout, and security boundary are
+The complete JavaScript API, error model, bitmap layout, and security boundary are
 documented in the
 [npm package guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/npm/README.md).
 
@@ -83,7 +86,7 @@ wasm32-unknown-unknown
 
 The module imports no host functions and exports its own `memory`. The promoted
 direct-host subset works with browser `WebAssembly` and with Node.js 20 or
-newer. Browser applications should normally use the npm wrapper because it
+newer. JavaScript applications should normally use the npm wrapper because it
 owns allocator pairing and face cleanup.
 
 Install and build the raw module:

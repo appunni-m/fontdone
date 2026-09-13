@@ -7,9 +7,8 @@ if (!fontPath) {
   throw new Error("usage: node node.mjs FONT_FILE");
 }
 
-const wasmUrl = new URL(import.meta.resolve("fontdone/wasm"));
-const [wasm, font] = await Promise.all([readFile(wasmUrl), readFile(fontPath)]);
-const engine = await createFontdone(wasm);
+const font = await readFile(fontPath);
+const engine = await createFontdone();
 const face = engine.openFace(font, { pixelSize: 16 });
 
 try {

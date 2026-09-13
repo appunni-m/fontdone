@@ -1,15 +1,17 @@
 {
   "name": "fontdone",
   "version": "2.14.3-alpha.3",
-  "description": "Pure-Rust font loading and rasterization for browsers through WebAssembly",
+  "description": "Pure-Rust font loading and rasterization for browsers and Node.js through WebAssembly",
   "type": "module",
-  "main": "./index.js",
+  "main": "./index.node.js",
   "module": "./index.js",
   "browser": "./index.js",
   "types": "./index.d.ts",
   "exports": {
     ".": {
       "types": "./index.d.ts",
+      "node": "./index.node.js",
+      "browser": "./index.js",
       "import": "./index.js",
       "default": "./index.js"
     },
@@ -19,6 +21,7 @@
   },
   "files": [
     "index.js",
+    "index.node.js",
     "index.d.ts",
     "build.mjs",
     "test.mjs",

@@ -211,7 +211,7 @@ headers in the same translation unit and assume record identity.
 
 ## 7. Alpha ABI and version policy
 
-- The public Cargo crate, native C SDK, and browser npm package always carry
+- The public Cargo crate, native C SDK, and JavaScript npm package always carry
   the same version; this internal workspace package carries that version too.
 - Every internal package dependency uses that exact version.
 - No ABI compatibility is promised between different `alpha.N` releases.

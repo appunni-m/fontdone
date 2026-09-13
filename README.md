@@ -33,7 +33,7 @@ Pinned FreeType source is used only by ignored offline test tooling.
 | Rust application | `fontdone` | Compact masks/metrics API | [Rust integration](https://github.com/appunni-m/fontdone/blob/main/doc/INTEGRATION.md#2-compact-rust-api) |
 | Rust FreeType migration | `fontdone` | Safe Rust API preserving measured `FT_*` concepts | [Safe migration](https://github.com/appunni-m/fontdone/blob/main/doc/INTEGRATION.md#3-freetype-shaped-safe-rust) |
 | C or C-compatible host | Native C SDK archive | Raw pointers, shipped headers, shared/static libraries; built from the internal `fontdone-c-abi` target | [C ABI guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-c-abi/README.md) |
-| Browser application | `fontdone` on npm | Prebuilt Wasm with a typed ESM lifecycle wrapper | [Browser package guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/npm/README.md) |
+| JavaScript application (browser or Node.js) | `fontdone` on npm | Prebuilt Wasm with a typed ESM lifecycle wrapper and environment-aware asset loading | [JavaScript package guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/npm/README.md) |
 | Raw JavaScript host | Internal `fontdone-wasm` build target | Low-level wasm32 linear-memory ABI used by the npm package | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
 
 The `fontdone` crate is published at `2.14.3-alpha.3`; the synchronized npm
@@ -401,7 +401,7 @@ Always use the adoption map and exact parity cases for a compatibility claim.
 ```text
 src/                  pure-Rust engine and safe APIs
 fontdone-c-abi/       native C artifact, headers, and C example
-fontdone-wasm/        wasm32 ABI, browser npm package, schema, and examples
+fontdone-wasm/        wasm32 ABI, JavaScript npm package, schema, and examples
 tests/data/           maintained, non-generated contracts
 tests/fixtures/input/ tracked font and auxiliary inputs
 scripts/font_generation/
@@ -427,7 +427,7 @@ make setup       # fetch and build the pinned offline C oracle
 make test-fast   # workspace tests that do not need full parity
 make test-parity-smoke # eight exact runtime cases across every facade
 make test-parity # exact C/Rust/C-ABI/WASM parity
-make npm-package-verify # build and install-test the browser npm tarball
+make npm-package-verify # build and install-test the JavaScript npm tarball
 make lint        # rustfmt and Clippy
 make doc-test    # compile public Rust examples
 make ci-fast     # exact fast per-commit local gate (make ci is an alias)

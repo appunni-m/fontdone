@@ -1,7 +1,7 @@
 # Release guide
 
 The public release unit has one Cargo crate (`fontdone`), one native C SDK
-archive, and one browser npm package (`fontdone`). The `fontdone-c-abi` and
+archive, and one JavaScript npm package (`fontdone`). The `fontdone-c-abi` and
 `fontdone-wasm` Cargo packages stay in the workspace as internal build targets;
 their exact version requirements keep the SDK and npm output synchronized with
 the root crate.
@@ -163,7 +163,7 @@ CI on that commit, and publishes from the verified bundle.
 
 After approval, `scripts/publish_release.py --publish-if-missing` publishes
 `fontdone` when that exact version is not already visible. The C SDK archive is
-distributed as a GitHub release asset, and the browser package is published to
+distributed as a GitHub release asset, and the JavaScript package is published to
 npm by the separate workflow job.
 
 The script names the public package, preserves an immutable version already
@@ -180,9 +180,9 @@ Before publication, `make package-verify` is the reproducible archive-level
 equivalent; a facade registry dry-run cannot resolve an unpublished exact root
 dependency.
 
-## 6. Browser npm publication
+## 6. JavaScript npm publication
 
-The verified browser artifact is:
+The verified npm artifact is:
 
 ```text
 target/npm-package/fontdone-2.14.3-alpha.3.tgz
@@ -285,7 +285,7 @@ replacement.
 | Public Cargo crate | `fontdone` |
 | Internal Cargo build targets | `fontdone-c-abi`, `fontdone-wasm` |
 | Native C SDK archive | `fontdone-c-abi-<version>-<target>.tar.gz` |
-| Browser npm package | `fontdone` |
+| JavaScript npm package | `fontdone` |
 
 The machine-readable denominators are in
 [`compatibility_snapshot.json`](compatibility_snapshot.json). Generated

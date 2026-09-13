@@ -63,7 +63,7 @@ constants.
 | `make setup` | Fetch/build the pinned oracle and constants | ignored `freetype/`, `target/`; generated constants |
 | `make generate-contracts` | Regenerate support, C header, WASM, and legal derivatives | tracked generated files |
 | `make check-generated` | Reject generated drift | no intended writes |
-| `make npm-package-verify` | Build, inspect, install, and execute the browser npm tarball | `target/npm-package/`, release evidence |
+| `make npm-package-verify` | Build, inspect, install, and execute the JavaScript npm tarball | `target/npm-package/`, release evidence |
 | `make fresh-checkout-check` | Exercise non-parity checkout contracts | `target/` |
 
 The first oracle fetch and uncached Cargo dependency resolution need network
@@ -91,7 +91,7 @@ Run the smallest useful gate first:
 | Record performance | `make record-performance-baseline` | Append a qualifying clean report to committed measured evidence |
 | Performance contract | `make bench-regression` | Fail unless every reviewed performance threshold is active and passing |
 | Integrations | `make test-integrations` | Downstream Rust, external C, raw Wasm, and packed npm consumers |
-| Browser npm package | `make npm-package-verify` | Prepack, exact file inventory, clean install, shipped self-test, and glyph render |
+| JavaScript npm package | `make npm-package-verify` | Prepack, exact file inventory, clean install, shipped self-test, and glyph render |
 | C contract | `make c-abi-contract` | Report all 12 categories and remaining debt |
 | Five-platform C evidence | `make c-abi-contract-all-platforms` | Validate five assembled bundles and report current debt without claiming completion |
 | Complete C contract | `make c-abi-contract-complete` | Fail unless all categories and all five platform bundles complete |
@@ -4839,7 +4839,7 @@ The manual run first repeats the fast commit gate, then adds:
 | Native C | Linux x86-64, macOS aarch64, and Windows x86-64 |
 | Cross C | Linux i686 and powerpc64 executed under QEMU |
 | C scorecard | five fresh platform bundles plus current 12-category debt |
-| Packages | public `fontdone` crate, native C SDK archive, browser npm archive; internal facade archives inspected |
+| Packages | public `fontdone` crate, native C SDK archive, JavaScript npm archive; internal facade archives inspected |
 | Supply chain | advisories, dependency, source, and license policy |
 
 The stable `Thorough gate` succeeds only when every requested job produces

@@ -2,7 +2,7 @@
 
 All notable user-visible changes are recorded here. This project uses one
 synchronized version for the public `fontdone` Cargo crate, the native C SDK,
-and the `fontdone` browser npm package. The C and raw-WASM Cargo packages are
+and the `fontdone` JavaScript npm package. The C and raw-WASM Cargo packages are
 internal workspace build targets.
 
 ## 2.14.3-alpha.3 (Unreleased)
@@ -10,7 +10,7 @@ internal workspace build targets.
 Current release candidate containing the post-alpha.2 parity, cache-ownership,
 sbix error, generated-inventory, and release-evidence fixes. It keeps one
 public Cargo crate; the C ABI and raw-WASM packages remain internal build
-targets and ship through the native SDK and browser npm package.
+targets and ship through the native SDK and JavaScript npm package.
 
 ## 2.14.3-alpha.2 (Superseded local candidate)
 
@@ -24,7 +24,7 @@ First standalone alpha targeting FreeType 2.14.3.
 - Native C SDK archive built from the internal `fontdone-c-abi` target, with
   C/C++ headers, shared/static artifacts, `pkg-config` metadata, install
   layout, and maintained external-C consumers.
-- Browser npm package `fontdone` with a prebuilt Wasm asset, typed ESM
+- JavaScript npm package `fontdone` with a prebuilt Wasm asset, typed ESM
   lifecycle wrapper, package-level tests, and browser and Node examples.
 - Raw `fontdone-wasm` build target with a generated ABI schema, TypeScript
   declarations, and a Node 20 consumer for the public npm package.

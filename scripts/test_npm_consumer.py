@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build, inspect, install, and execute the browser-oriented npm package."""
+"""Build, inspect, install, and execute the cross-runtime npm package."""
 
 from __future__ import annotations
 
@@ -24,6 +24,7 @@ REQUIRED = {
     "NOTICE.md",
     "package.json",
     "index.js",
+    "index.node.js",
     "index.d.ts",
     "build.mjs",
     "test.mjs",
@@ -103,6 +104,11 @@ def inspect_archive(archive: Path, version: str) -> None:
         raise ValueError("npm alpha must publish publicly under the next dist-tag")
     if files["fontdone.wasm"][:4] != b"\0asm":
         raise ValueError("packaged fontdone.wasm has an invalid magic header")
+    exports = manifest.get("exports", {}).get(".", {})
+    if exports.get("node") != "./index.node.js":
+        raise ValueError("npm package must expose index.node.js under the node condition")
+    if exports.get("browser") != "./index.js":
+        raise ValueError("npm package must expose index.js under the browser condition")
     if b'from "node:' in files["index.js"] or b"from 'node:" in files["index.js"]:
         raise ValueError("browser entry point imports a Node-only module")
 

@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import createFontdone, { FontdoneError } from "./index.js";
+import createFontdoneNode from "./index.node.js";
 
 const wasm = await readFile(new URL("./fontdone.wasm", import.meta.url));
 const fontUrl = new URL(
@@ -11,6 +12,13 @@ const fontUrl = new URL(
   import.meta.url,
 );
 const font = existsSync(fontUrl) ? await readFile(fontUrl) : undefined;
+
+test("Node entry loads the bundled Wasm asset without fetch", async () => {
+  const engine = await createFontdoneNode();
+  assert.equal(engine.closed, false);
+  engine.close();
+  assert.equal(engine.closed, true);
+});
 
 test("renders a copied grayscale bitmap from bytes", {
   skip: font === undefined ? "source fixture is not shipped in the npm package" : false,

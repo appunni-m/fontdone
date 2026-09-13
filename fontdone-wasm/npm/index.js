@@ -429,8 +429,9 @@ class FontdoneImpl {
 }
 
 /**
- * Instantiates a fresh fontdone engine. When `source` is omitted, the package's
- * `fontdone.wasm` asset is fetched relative to this module.
+ * Instantiates a fresh fontdone engine. The browser package entry fetches the
+ * package's `fontdone.wasm` asset relative to this module. Node.js resolves a
+ * conditional entrypoint that reads the same asset from disk.
  *
  * Each call creates an independent WebAssembly instance. Face handles and
  * memory offsets never cross between instances.

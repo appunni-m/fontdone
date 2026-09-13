@@ -32,5 +32,5 @@ boundaries as a fix.
 
 Only the current prerelease is supported. Security fixes are released as a new
 synchronized version of the public `fontdone` Cargo crate, the native C SDK,
-and the browser npm package. The C and raw-WASM Cargo packages remain internal
+and the JavaScript npm package. The C and raw-WASM Cargo packages remain internal
 workspace build targets.
