@@ -193,7 +193,7 @@ help:
 	@printf "  make check-font-fixtures  Reject fixture generator drift\n"
 	@printf "  make check-generated      Reject generated contract drift\n"
 	@printf "  make repository-inventory Refresh the reviewed file-retention ledger\n"
-	@printf "  make npm-package-verify   Build, pack, inspect, install, and run the browser npm package\n"
+	@printf "  make npm-package-verify   Build, pack, inspect, install, and run the JavaScript npm package\n"
 	@printf "\nDocumentation:\n"
 	@printf "  make check-docs           Validate every tracked guide and rustdoc policy\n"
 	@printf "  make doc                  Build strict workspace API documentation\n"
@@ -1032,7 +1032,7 @@ release-verify: ci-thorough c-abi-contract-complete bench-regression
 
 .PHONY: release-dry-run
 release-dry-run: package-verify npm-package-verify c-abi-package
-	@echo "local one-crate, native C SDK, and browser npm archive verification complete"
+	@echo "local one-crate, native C SDK, and JavaScript npm archive verification complete"
 	@echo "after the exact root version is on crates.io, run: python3 scripts/publish_release.py --dry-run"
 
 .PHONY: release
