@@ -10,10 +10,11 @@
 
 </div>
 
-> **Release:** `2.14.3-alpha.4` is the current prerelease candidate. The previous
+> **Release:** `2.14.3-alpha.5` is the current prerelease candidate. The previous
 > `2.14.3-alpha.3` Cargo release is published from immutable tag
-> `v2.14.3-alpha.3`; the synchronized alpha.4 Cargo, npm, and C SDK artifacts
-> are released only after the tag-triggered thorough CI gate passes. The older
+> `v2.14.3-alpha.3`; alpha.4 was superseded after its hosted checks failed. The
+> synchronized alpha.5 Cargo, npm, and C SDK artifacts are released only after
+> the tag-triggered thorough CI gate passes. The older
 > `fontdone@2.14.3-alpha.1` npm artifact is immutable historical evidence and
 > predates this source. The raw WASM and C Cargo packages remain internal
 > workspace build targets; only the root `fontdone` package is published to
@@ -35,7 +36,7 @@ Pinned FreeType source is used only by ignored offline test tooling.
 | Raw JavaScript host | Internal `fontdone-wasm` build target | Low-level wasm32 linear-memory ABI used by the npm package | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
 
 The `fontdone` crate and npm package are released as synchronized exact
-prereleases. The current candidate is `2.14.3-alpha.4`; the older alpha.1 npm
+prereleases. The current candidate is `2.14.3-alpha.5`; the older alpha.1 npm
 artifact is immutable historical evidence and cannot be treated as this
 release. Evaluate Rust from a local
 checkout while keeping the version requirement that a publishable downstream
@@ -43,14 +44,14 @@ package needs:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.4", path = "../fontdone" }
+fontdone = { version = "=2.14.3-alpha.5", path = "../fontdone" }
 ```
 
 Registry consumers should request the exact prerelease:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.4" }
+fontdone = { version = "=2.14.3-alpha.5" }
 ```
 
 Cargo requires a version requirement on dependencies of a crate that will be
@@ -59,7 +60,7 @@ release tag is public:
 
 ```toml
 [dependencies]
-fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.4" }
+fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.5" }
 ```
 
 ## 2. Rust quick start

@@ -18,6 +18,7 @@ from scripts import publish_release
 
 
 CHECKSUM = "a" * 64
+VERSION = publish_release.version()
 
 
 class PublishReleaseTests(unittest.TestCase):
@@ -29,17 +30,17 @@ class PublishReleaseTests(unittest.TestCase):
 
     def test_registry_checksum_returns_exact_checksum(self) -> None:
         response = io.BytesIO(
-            json.dumps({"version": {"num": "2.14.3-alpha.4", "checksum": CHECKSUM}}).encode()
+            json.dumps({"version": {"num": VERSION, "checksum": CHECKSUM}}).encode()
         )
         with patch("urllib.request.urlopen", return_value=response):
             self.assertEqual(
-                publish_release.registry_checksum("fontdone", "2.14.3-alpha.4"),
+                publish_release.registry_checksum("fontdone", VERSION),
                 CHECKSUM,
             )
 
     def test_registry_checksum_distinguishes_missing_version(self) -> None:
         missing = urllib.error.HTTPError(
-            "https://crates.io/api/v1/crates/fontdone/2.14.3-alpha.4",
+            f"https://crates.io/api/v1/crates/fontdone/{VERSION}",
             404,
             "missing",
             {},
@@ -47,7 +48,7 @@ class PublishReleaseTests(unittest.TestCase):
         )
         with patch("urllib.request.urlopen", side_effect=missing):
             self.assertIsNone(
-                publish_release.registry_checksum("fontdone", "2.14.3-alpha.4")
+                publish_release.registry_checksum("fontdone", VERSION)
             )
 
     def test_registry_checksum_rejects_unexpected_metadata(self) -> None:
@@ -56,14 +57,14 @@ class PublishReleaseTests(unittest.TestCase):
         )
         with patch("urllib.request.urlopen", return_value=response):
             with self.assertRaises(TimeoutError):
-                publish_release.registry_checksum("fontdone", "2.14.3-alpha.4")
+                publish_release.registry_checksum("fontdone", VERSION)
 
         response = io.BytesIO(
-            json.dumps({"version": {"num": "2.14.3-alpha.4", "checksum": "short"}}).encode()
+            json.dumps({"version": {"num": VERSION, "checksum": "short"}}).encode()
         )
         with patch("urllib.request.urlopen", return_value=response):
             with self.assertRaises(TimeoutError):
-                publish_release.registry_checksum("fontdone", "2.14.3-alpha.4")
+                publish_release.registry_checksum("fontdone", VERSION)
 
 
 if __name__ == "__main__":

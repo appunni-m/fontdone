@@ -5,11 +5,20 @@ synchronized version for the public `fontdone` Cargo crate, the native C SDK,
 and the `fontdone` JavaScript npm package. The C and raw-WASM Cargo packages are
 internal workspace build targets.
 
-## 2.14.3-alpha.4 (Unreleased)
+## 2.14.3-alpha.5 (Unreleased)
 
-Current prerelease candidate. The tag-triggered release workflow runs the full
-parity, coverage, performance, and five-platform C-contract matrix before it
-publishes the synchronized Cargo, native SDK, and npm artifacts.
+Current prerelease candidate. This candidate keeps the complete tag-triggered
+parity, coverage, performance, and five-platform C-contract matrix while making
+hosted dependency preparation, cross-target diagnostics, Windows checkout, and
+release-tag validation deterministic. It publishes the synchronized Cargo,
+native SDK, and npm artifacts only after every required gate succeeds.
+
+## 2.14.3-alpha.4 (Superseded; unpublished)
+
+The alpha.4 tag exposed hosted-runner issues in the release preflight,
+dependency cache warm-up, cross-target contract jobs, all-lane coverage, and
+Windows checkout. No synchronized release artifacts were published from that
+candidate; its tag and CI records remain immutable diagnostic history.
 
 ## 2.14.3-alpha.3 (Published Cargo; npm pending)
 

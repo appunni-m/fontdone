@@ -11,11 +11,11 @@ use a sibling checkout during development, but its dependency must retain the
 exact version requirement:
 
 ```toml
-  fontdone = { version = "=2.14.3-alpha.4", path = "../fontdone" }
+  fontdone = { version = "=2.14.3-alpha.5", path = "../fontdone" }
 ```
 
 After publication, a registry consumer such as `pillow-rs` must use
-`fontdone = { version = "=2.14.3-alpha.4" }`. A path-only declaration is valid
+`fontdone = { version = "=2.14.3-alpha.5" }`. A path-only declaration is valid
 for a local build but Cargo rejects it when packaging the downstream crate.
 
 The first synchronized release is bootstrapped locally from the exact clean
@@ -140,7 +140,7 @@ the registry check confirms that the immutable version is missing. For a new
 version, publish the exact verified archive:
 
 ```bash
-version=2.14.3-alpha.4
+version=2.14.3-alpha.5
 npm publish "target/npm-package/fontdone-${version}.tgz" \
   --access public --tag next --provenance
 ```
@@ -186,14 +186,14 @@ dependency.
 The verified npm artifact is:
 
 ```text
-target/npm-package/fontdone-2.14.3-alpha.4.tgz
+target/npm-package/fontdone-2.14.3-alpha.5.tgz
 ```
 
 Rehearse the registry command without publishing:
 
 ```bash
 npm publish --dry-run \
-  target/npm-package/fontdone-2.14.3-alpha.4.tgz \
+  target/npm-package/fontdone-2.14.3-alpha.5.tgz \
   --access public --tag next
 ```
 
@@ -202,7 +202,7 @@ version is missing after explicit owner approval, authenticate with npm and
 publish that exact tarball, not the mutable source directory:
 
 ```bash
-VERSION=2.14.3-alpha.4
+VERSION=2.14.3-alpha.5
 npm publish "target/npm-package/fontdone-${VERSION}.tgz" \
   --access public --tag next
 ```
@@ -219,7 +219,7 @@ The tag workflow uses `next` for versions with a prerelease suffix and
 release. Immediately verify the immutable version and tag:
 
 ```bash
-npm view fontdone@2.14.3-alpha.4 version dist.tarball --json
+npm view fontdone@2.14.3-alpha.5 version dist.tarball --json
 npm view fontdone dist-tags --json
 ```
 
@@ -280,7 +280,7 @@ replacement.
 
 | Field | Value |
 |---|---|
-| Version | `2.14.3-alpha.4` |
+| Version | `2.14.3-alpha.5` |
 | FreeType target | `2.14.3` |
 | Last committed evidence | `2026-07-30` |
 | Public Cargo crate | `fontdone` |
@@ -293,9 +293,9 @@ The machine-readable denominators are in
 package reports, release notes, inventories, archives, and checksums are local
 outputs under `target/release-evidence/`.
 
-The current local dry-run on the checked-out release candidate (2026-09-13)
+The current local dry-run on the checked-out release candidate (2026-09-14)
 verifies one public Cargo package, two private workspace build
-packages, the `fontdone@2.14.3-alpha.4` npm archive, and the native C SDK
+packages, the `fontdone@2.14.3-alpha.5` npm archive, and the native C SDK
 archive. The complete release gate still requires the unresolved C-ABI route
 and exact-error debt plus fresh cross-platform bundles, including the Windows
 import library; these checks remain visible in the generated contract

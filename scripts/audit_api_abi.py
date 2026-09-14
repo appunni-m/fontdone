@@ -78,6 +78,14 @@ def read_text(path: Path) -> str:
     return path.read_text(errors="ignore") if path.exists() else ""
 
 
+def workspace_version() -> str:
+    text = (ROOT / "Cargo.toml").read_text(encoding="utf-8")
+    match = re.search(r'(?m)^version\s*=\s*"([^"]+)"', text)
+    if match is None:
+        raise SystemExit("root Cargo.toml does not declare a package version")
+    return match.group(1)
+
+
 def strip_c_comments(text: str) -> str:
     text = re.sub(r"/\*.*?\*/", " ", text, flags=re.S)
     return re.sub(r"//.*", " ", text)
@@ -1973,7 +1981,7 @@ def artifact_inventory_measurement(items: list[dict]) -> dict:
         row in pkg_config_text
         for row in (
             "Name: fontdone",
-            "Version: 2.14.3-alpha.4",
+            f"Version: {workspace_version()}",
             "Libs: -L${libdir} -lfontdone_c_abi",
             "Cflags: -I${includedir}",
         )

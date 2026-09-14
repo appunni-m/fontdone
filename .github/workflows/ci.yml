@@ -154,7 +154,25 @@ jobs:
           sudo apt-get install --yes cmake clang make python3 xz-utils
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
           rustup override set "$RUST_TOOLCHAIN"
-      - run: make test-parity
+      - name: Prefetch locked dependencies
+        run: cargo fetch --locked
+      - name: Run exact parity with bounded workers
+        shell: bash
+        run: |
+          set -o pipefail
+          log_file="target/ci-diagnostics/fontdone-parity.log"
+          mkdir -p "$(dirname "$log_file")"
+          set +e
+          FONTDONE_UNIFIED_WORKERS=4 make test-parity 2>&1 | tee "$log_file"
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            summary="$(tail -n 40 "$log_file" | tr '\n' ' ')"
+            summary="${summary//'%'/'%25'}"
+            summary="${summary//$'\r'/'%0D'}"
+            echo "::error title=exact parity failure::$summary"
+            exit "$status"
+          fi
       - name: Retain parity diagnostics
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
@@ -186,6 +204,8 @@ jobs:
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
           rustup override set "$RUST_TOOLCHAIN"
           rustup target add wasm32-unknown-unknown
+      - name: Prefetch locked dependencies
+        run: cargo fetch --locked
       - name: Install pinned Node and npm
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
@@ -243,8 +263,27 @@ jobs:
             --profile minimal --component llvm-tools-preview
           rustup override set "$RUST_TOOLCHAIN"
           make setup-coverage-tools
+      - name: Prefetch locked dependencies
+        run: cargo fetch --locked
       - name: Measure every maintained runtime lane
-        run: make test-coverage-all COVERAGE_TOOLCHAIN="$RUST_COVERAGE_TOOLCHAIN"
+        shell: bash
+        run: |
+          set -o pipefail
+          log_file="target/ci-diagnostics/fontdone-coverage.log"
+          mkdir -p "$(dirname "$log_file")"
+          set +e
+          COVERAGE_UNIFIED_SHARDS=1 \
+          COVERAGE_UNIFIED_WORKERS=1 \
+          make test-coverage-all COVERAGE_TOOLCHAIN="$RUST_COVERAGE_TOOLCHAIN" 2>&1 | tee "$log_file"
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            summary="$(tail -n 40 "$log_file" | tr '\n' ' ')"
+            summary="${summary//'%'/'%25'}"
+            summary="${summary//$'\r'/'%0D'}"
+            echo "::error title=all-lane coverage failure::$summary"
+            exit "$status"
+          fi
       - name: Print exact coverage totals
         run: |
           jq '.data[0].totals | {
@@ -258,7 +297,9 @@ jobs:
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: all-lane-coverage
-          path: target/coverage/unified-runtime-all-lanes.json
+          path: |
+            target/coverage/unified-runtime-all-lanes.json
+            target/ci-diagnostics/fontdone-coverage.log
           if-no-files-found: error
           retention-days: 30
 
@@ -270,6 +311,15 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
+        if: runner.os != 'Windows'
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
+        if: runner.os == 'Windows'
+        with:
+          fetch-depth: 0
+          sparse-checkout: |
+            /*
+            !/tests/fixtures/input/aux/
+          sparse-checkout-cone-mode: false
       - name: Cache Cargo downloads
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.0.0
         with:
@@ -325,6 +375,16 @@ jobs:
         run: |
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
           rustup override set "$RUST_TOOLCHAIN"
+      - name: Record native contract tools
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rustc -vV
+          cc --version
+          nm --version
+      - name: Prefetch locked dependencies
+        run: cargo fetch --locked
       - name: Verify Unix native contract
         if: runner.os != 'Windows'
         run: make platform-contract
@@ -385,20 +445,48 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes ${{ matrix.packages }}
-      - name: Execute cross-platform contract
+      - name: Record cross contract tools
+        shell: bash
         run: |
-          make platform-contract-cross \
+          set -euxo pipefail
+          rustc -vV
+          "${{ matrix.cc }}" --version
+          "${{ matrix.nm }}" --version
+          ${{ matrix.runner }} --version
+          test -d "${{ matrix.sysroot }}"
+          find "${{ matrix.sysroot }}" -maxdepth 2 -type f | head -n 20
+      - name: Prefetch locked dependencies
+        run: cargo fetch --locked
+      - name: Execute cross-platform contract
+        shell: bash
+        run: |
+          set -o pipefail
+          log_file="target/ci-diagnostics/platform-contract-${{ matrix.marker }}.log"
+          mkdir -p "$(dirname "$log_file")"
+          set +e
+          CARGO_BUILD_JOBS=2 make platform-contract-cross \
             PLATFORM_TARGET="${{ matrix.target }}" \
             PLATFORM_CC="${{ matrix.cc }}" \
             PLATFORM_NM="${{ matrix.nm }}" \
             PLATFORM_RUNNER="${{ matrix.runner }}" \
-            PLATFORM_SYSROOT="${{ matrix.sysroot }}"
+            PLATFORM_SYSROOT="${{ matrix.sysroot }}" 2>&1 | tee "$log_file"
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            summary="$(tail -n 40 "$log_file" | tr '\n' ' ')"
+            summary="${summary//'%'/'%25'}"
+            summary="${summary//$'\r'/'%0D'}"
+            echo "::error title=cross contract failure::$summary"
+            exit "$status"
+          fi
       - name: Retain cross contract evidence
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: platform-contract-${{ matrix.marker }}
-          path: target/api-abi-audit/platform-contract/*.json
+          path: |
+            target/api-abi-audit/platform-contract/*.json
+            target/ci-diagnostics/platform-contract-${{ matrix.marker }}.log
           if-no-files-found: error
           retention-days: 30
 

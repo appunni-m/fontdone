@@ -16,6 +16,16 @@ JSON_OUTPUT = ROOT / "fontdone-wasm" / "abi.json"
 TS_OUTPUT = ROOT / "fontdone-wasm" / "fontdone_wasm.d.ts"
 NPM_TS_OUTPUT = ROOT / "fontdone-wasm" / "npm" / "index.d.ts"
 
+
+def workspace_version() -> str:
+    """Read the public workspace version used by every generated contract."""
+
+    text = (ROOT / "Cargo.toml").read_text(encoding="utf-8")
+    match = re.search(r'(?m)^version\s*=\s*"([^"]+)"', text)
+    if match is None:
+        raise SystemExit("root Cargo.toml does not declare a package version")
+    return match.group(1)
+
 SCALARS = {
     "bool": (1, 1),
     "i8": (1, 1),
@@ -402,7 +412,7 @@ def contract(text: str) -> dict[str, object]:
         "schema_version": 1,
         "package": "fontdone-wasm",
         "browser_package": "fontdone",
-        "package_version": "2.14.3-alpha.4",
+        "package_version": workspace_version(),
         "target": "wasm32-unknown-unknown",
         "pointer_width": 4,
         "endianness": "little",

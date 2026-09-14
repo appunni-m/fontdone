@@ -22,6 +22,14 @@ LEDGER = ROOT / "target" / "api-abi-audit" / "c_consumer_ledger.json"
 FONT = ROOT / "tests" / "fixtures" / "input" / "fonts" / "DejaVuSans.ttf"
 
 
+def workspace_version() -> str:
+    text = (ROOT / "Cargo.toml").read_text(encoding="utf-8")
+    match = re.search(r'(?m)^version\s*=\s*"([^"]+)"', text)
+    if match is None:
+        raise SystemExit("root Cargo.toml does not declare a package version")
+    return match.group(1)
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -489,7 +497,7 @@ def main() -> None:
         pc_text = installed_pc.read_text(encoding="utf-8")
         required_pc_rows = (
             "Name: fontdone",
-            "Version: 2.14.3-alpha.4",
+            f"Version: {workspace_version()}",
             "Libs: -L${libdir} -lfontdone_c_abi",
             "Cflags: -I${includedir}",
         )

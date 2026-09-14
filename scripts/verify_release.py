@@ -107,9 +107,10 @@ def verify_release_workflow() -> None:
     )
     required_fragments = (
         'tags: ["v*"]',
-        'git cat-file -t "refs/tags/${GITHUB_REF_NAME}"',
+        'tag_ref="refs/tags/${GITHUB_REF_NAME}"',
         'refs/tags/${GITHUB_REF_NAME}^{commit}',
-        'test "$release_commit" = "$(git rev-parse HEAD)"',
+        'tag_type="$(git cat-file -t "$tag_ref" 2>/dev/null || true)"',
+        'test "$release_commit" = "$head_commit"',
         "Publish the public fontdone crate",
     )
     missing = [fragment for fragment in required_fragments if fragment not in workflow]
