@@ -17422,16 +17422,25 @@ fn malformed_colr_paint_json(paint: &FT_COLR_Paint, composite_prefix_written: bo
         // leaking an address-derived integer into parity output.
         let composite = unsafe { paint.u.composite };
         let gradient_overlay = matches!(paint.format, 4 | 5 | 6 | 8);
+        let layer_overlay = paint.format == 1;
         let source_paint = if gradient_overlay {
             json!({
                 "p_class": "colorline_overlay",
                 "insert_root_transform": 0,
             })
         } else {
-            opaque_paint_json(composite.source_paint)
+            // The source opaque paint overlays a caller-owned union prefix.
+            // Its pointer is meaningful only as a non-null class; the byte
+            // that appears as `insert_root_transform` is address noise.
+            json!({
+                "p_class": pointer_class(composite.source_paint.p.cast_const()),
+                "insert_root_transform": 0,
+            })
         };
         let composite_mode = if gradient_overlay {
             json!("colorline_pointer")
+        } else if layer_overlay {
+            json!(0)
         } else {
             json!(composite.composite_mode)
         };

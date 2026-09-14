@@ -16879,7 +16879,12 @@ static int emit_outline_render(int argc, char** argv) {
         points[2].y = 1073741888L;
         points[3].x = -1073741888L;
         points[3].y = 1073741888L;
-    } else if (strstr(case_id, "@cbox-just-beyond-render-limit")) {
+    } else if (strstr(case_id, "@cbox-just-beyond-render-limit") ||
+               c30_render == 26 || c30_render == 27) {
+        /* C30 rows 026/027 use the shared oversized outline asset.  The
+         * concrete IDs carry only the batch ordinal, so reproduce that asset
+         * here before calling the real FreeType renderer; otherwise the
+         * oracle silently renders the default square and reports success. */
         points[0].x = -16777217L;
         points[0].y = -16777217L;
         points[1].x = 16777217L;
@@ -17525,7 +17530,8 @@ static int emit_outline_render(int argc, char** argv) {
     if (c30_render >= 5 && c30_render <= 9) {
         params.flags = 0;
     }
-    if (strstr(case_id, "@cbox-just-beyond-render-limit")) {
+    if (strstr(case_id, "@cbox-just-beyond-render-limit") ||
+        c30_render == 26 || c30_render == 27) {
         params.flags = 0;
     }
     if (batch132_single_pass) {
@@ -24033,6 +24039,7 @@ static void print_malformed_colr_paint_json(const FT_COLR_Paint* paint,
             paint->format == FT_COLR_PAINTFORMAT_RADIAL_GRADIENT ||
             paint->format == FT_COLR_PAINTFORMAT_SWEEP_GRADIENT ||
             (int)paint->format == 5;
+        int layer_overlay = paint->format == FT_COLR_PAINTFORMAT_COLR_LAYERS;
         printf("{\"format\":%d,\"composite_prefix\":{\"source_paint\":",
                paint->format);
         if (gradient_overlay) {
@@ -24042,8 +24049,18 @@ static void print_malformed_colr_paint_json(const FT_COLR_Paint* paint,
             /* The union overlay reads ColorLine::iterator.p as a composite
              * mode here. That is a process-local table pointer, not a mode. */
             printf(",\"composite_mode\":\"colorline_pointer\"}}");
+        } else if (layer_overlay) {
+            /* PaintColrLayers stores an iterator in the same union bytes.
+             * Its pointer-shaped fields are process-local, while the public
+             * projection only needs the non-null class and zero mode. */
+            printf("{\"p_class\":\"nonnull\",\"insert_root_transform\":0}");
+            printf(",\"composite_mode\":0}}");
         } else {
-            print_opaque_paint_json(paint->u.composite.source_paint);
+            /* The source opaque paint overlays a caller-owned union prefix.
+             * Its pointer is meaningful only as a non-null class; the byte
+             * that appears as insert_root_transform is address noise. */
+            printf("{\"p_class\":\"%s\",\"insert_root_transform\":0}",
+                   paint->u.composite.source_paint.p ? "nonnull" : "null");
             printf(",\"composite_mode\":%d}}", (int)paint->u.composite.composite_mode);
         }
         return;
