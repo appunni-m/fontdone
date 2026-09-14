@@ -26,8 +26,8 @@ doc/INTEGRATION.md	9664	file	dc80df23afbf21dd90de6fde76e54b5dddd0c068510d07278ce
 doc/README.md	4529	file	f7217e1295955e219428d7fcdaa7165afc427154c36343b81022dbd348fc3452	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/RELEASING.md	13577	file	16271bfd2a2dc8f6be8bf6fb155c5ceb83d17c7e67c60192e340f70062f8ae1d	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/ROADMAP.md	204547	file	b41329dbd2e74b916e8633a1a3153035ec527501157ea06a0211d1b2468b9d3a	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
-doc/compatibility_snapshot.json	80767	file	b681e8c45904531e11f697f74258dfeba89e6b9167bfdb63aa58d76c28f57504	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/runtime_parity_evidence.json	1381	file	31efcb6d678c777a26a28615c08ad2c0347d08f35400d72ffc6ff899773fad48	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/compatibility_snapshot.json	80767	file	181058d3703be949477f21add7b912d796226affb9625b432910e0a2c8461b94	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/runtime_parity_evidence.json	1381	file	1f7a79ac3a26e5e0c72a9b75c01df20b42d50334e2c4c8eec4a4a2f011af186e	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 examples/bench_ops.rs	10086	file	a75d7bbf4e8e679ca393d8cffd68cc0824f7198bb5e85857ce4dd75d8e016a21	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/ffi_migration.rs	1806	file	3140c3cbf9182299f2ab8c98f6675dfd3d086c47177f7bf8783160a149eddda8	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/handle_error.rs	571	file	acbe9d9f2e838bb5ca27132dde73287fa123e3a069772a2b741ae6e010fae3b1	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
@@ -180,7 +180,7 @@ scripts/run_runtime_parity.py	14592	file	a780ba3968fc30583b3cf5645ab03699db63140
 scripts/sync_package_licenses.py	1247	file	24f7ddab7863c698d7afc5be05f3fbfdbc6d6d3c10fcea87d76d6dd5fd661a28	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_c_consumer.py	19260	file	db92800e31db2e111671f6e4db044fca0d36b385e524ad25eecbd55059cc13cb	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_coverage_region_queue.py	5553	file	bcad4dd21e07653ff6c1881f69382b998747dc7350cb6faedeb1f83f34c6750f	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
-scripts/test_npm_consumer.py	6891	file	d87ebc9ec96680f04cf78b9343193552cdc8660c147dedc2044c206a65e9f8a1	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
+scripts/test_npm_consumer.py	7212	file	d71d2ae544a8c4c74ac3f6ce11bcb7fc4c86299a2fcb2f527f41c1d9c4a3d36e	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_publish_release.py	2451	file	3f97cb44a6e987a8640bfc1ca164069e8878ef04c9f21ad83806e3570c0ea376	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_rust_consumer.py	1680	file	2c22fc0571546f0a724dcbc874a01ca2409ca97e15b9cb70684ff0cb9a934812	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_wasm_consumer.py	1995	file	5bc99613afeb0e3b8e6af09a3e8ff1356a284add969bbe0106b002965f2cef60	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.

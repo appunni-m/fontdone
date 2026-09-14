@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import tarfile
@@ -16,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = ROOT / "fontdone-wasm" / "npm"
 OUTPUT = ROOT / "target" / "npm-package"
 EVIDENCE = ROOT / "target" / "release-evidence"
+NPM_CACHE = ROOT / "target" / "npm-cache"
 FONT = ROOT / "tests" / "fixtures" / "input" / "fonts" / "DejaVuSans.ttf"
 REQUIRED = {
     "README.md",
@@ -38,7 +40,11 @@ REQUIRED = {
 
 def run(command: list[str], *, cwd: Path) -> None:
     print("+", " ".join(command), flush=True)
-    subprocess.run(command, cwd=cwd, check=True)
+    environment = os.environ.copy()
+    # Keep package verification independent of a user's global npm cache. A
+    # prior root-owned cache must never prevent a clean local or hosted run.
+    environment.setdefault("NPM_CONFIG_CACHE", str(NPM_CACHE))
+    subprocess.run(command, cwd=cwd, env=environment, check=True)
 
 
 def require_tools() -> str:
