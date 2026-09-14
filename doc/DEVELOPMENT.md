@@ -4940,7 +4940,7 @@ or reason is stale.
 | Reason | Paths | Retained context |
 |---|---:|---|
 | R01 | 58 | published pure-Rust runtime |
-| R02 | 100 | package, build, release, and facade contracts |
+| R02 | 101 | package, build, release, and facade contracts |
 | R03 | 1,761 | executable parity tests and public contracts |
 | R04 | 1,336 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
@@ -4950,7 +4950,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,342** | **all retained paths** |
+| **Total** | **3,343** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

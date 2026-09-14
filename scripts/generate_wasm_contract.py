@@ -402,7 +402,7 @@ def contract(text: str) -> dict[str, object]:
         "schema_version": 1,
         "package": "fontdone-wasm",
         "browser_package": "fontdone",
-        "package_version": "2.14.3-alpha.3",
+        "package_version": "2.14.3-alpha.4",
         "target": "wasm32-unknown-unknown",
         "pointer_width": 4,
         "endianness": "little",

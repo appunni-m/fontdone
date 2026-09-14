@@ -71,13 +71,67 @@ jobs:
         id: ci-run
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ github.sha }}
+          RELEASE_TAG: ${{ github.ref_name }}
         shell: bash
         run: |
-          run_id="$(gh api \
-            "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${GITHUB_SHA}&status=success&per_page=20" \
-            --jq '[.workflow_runs[] | select(.event == "workflow_dispatch")][0].id // empty')"
-          test -n "$run_id"
-          echo "run-id=$run_id" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          # Tag pushes run the complete CI matrix. Keep accepting an older
+          # successful manual run for recovery, but wait for the exact tag
+          # run instead of racing it at workflow start.
+          deadline=$((SECONDS + 150 * 60))
+          while (( SECONDS < deadline )); do
+            payload="$(gh api \
+              "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${RELEASE_SHA}&per_page=20")"
+            selection="$(PAYLOAD="$payload" RELEASE_TAG="$RELEASE_TAG" python3 - <<'PY'
+          import json
+          import os
+
+          runs = json.loads(os.environ["PAYLOAD"]).get("workflow_runs", [])
+          tag = os.environ["RELEASE_TAG"]
+          candidates = [
+              run
+              for run in runs
+              if run.get("event") == "workflow_dispatch"
+              or (run.get("event") == "push" and run.get("head_branch") == tag)
+          ]
+          candidates.sort(key=lambda run: run.get("created_at", ""), reverse=True)
+          if not candidates:
+              print("none||")
+          else:
+              run = candidates[0]
+              print("{}|{}|{}".format(
+                  run.get("status", ""),
+                  run.get("id", ""),
+                  run.get("conclusion", "") or "",
+              ))
+          PY
+            )"
+            IFS='|' read -r status run_id conclusion <<< "$selection"
+            case "$status:$conclusion" in
+              completed:success)
+                test -n "$run_id"
+                echo "run-id=$run_id" >> "$GITHUB_OUTPUT"
+                exit 0
+                ;;
+              completed:failure|completed:cancelled|completed:timed_out|completed:action_required)
+                echo "thorough CI run $run_id finished with conclusion=$conclusion" >&2
+                exit 1
+                ;;
+              queued:*|in_progress:*)
+                echo "waiting for thorough CI run $run_id (status=$status)"
+                ;;
+              none:*)
+                echo "waiting for the tag-triggered thorough CI run"
+                ;;
+              *)
+                echo "waiting for thorough CI (status=$status conclusion=$conclusion)"
+                ;;
+            esac
+            sleep 20
+          done
+          echo "timed out waiting for thorough CI for ${RELEASE_TAG} at ${RELEASE_SHA}" >&2
+          exit 1
       - name: Download exact platform-contract artifacts
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:

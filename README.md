@@ -10,17 +10,15 @@
 
 </div>
 
-> **Release:** `2.14.3-alpha.3`. The public `fontdone` Cargo crate was published
-> from immutable tag `v2.14.3-alpha.3` at commit
-> `5f17ad226d7c0a282fa0082316d7cdeb8ab12d9f`; the synchronized
-> `fontdone@2.14.3-alpha.3` npm artifact is still pending. The earlier
-> `fontdone@2.14.3-alpha.1` npm artifact is immutable and predates this source.
-> The C SDK is distributed as a native release
-> archive, while the raw WASM and C Cargo packages remain internal workspace
-> build targets. Only the root `fontdone` package is published to crates.io. The
-> project is suitable for compatibility
-> development and controlled evaluation, not as an unqualified drop-in FreeType
-> replacement.
+> **Release:** `2.14.3-alpha.4` is the current prerelease candidate. The previous
+> `2.14.3-alpha.3` Cargo release is published from immutable tag
+> `v2.14.3-alpha.3`; the synchronized alpha.4 Cargo, npm, and C SDK artifacts
+> are released only after the tag-triggered thorough CI gate passes. The older
+> `fontdone@2.14.3-alpha.1` npm artifact is immutable historical evidence and
+> predates this source. The raw WASM and C Cargo packages remain internal
+> workspace build targets; only the root `fontdone` package is published to
+> crates.io. The project is suitable for compatibility development and
+> controlled evaluation, not as an unqualified drop-in FreeType replacement.
 
 `fontdone` implements font loading, metrics, hinting, outlines, and
 rasterization in Rust. Runtime packages do not build, link, or load FreeType C.
@@ -36,23 +34,23 @@ Pinned FreeType source is used only by ignored offline test tooling.
 | JavaScript application (browser or Node.js) | `fontdone` on npm | Prebuilt Wasm with a typed ESM lifecycle wrapper and environment-aware asset loading | [JavaScript package guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/npm/README.md) |
 | Raw JavaScript host | Internal `fontdone-wasm` build target | Low-level wasm32 linear-memory ABI used by the npm package | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
 
-The `fontdone` crate is published at `2.14.3-alpha.3`; the synchronized npm
-package is not published yet. The older alpha.1 npm artifact is already public,
-but its immutable contents predate the current source and cannot be treated as
-this release. Evaluate Rust from a local
+The `fontdone` crate and npm package are released as synchronized exact
+prereleases. The current candidate is `2.14.3-alpha.4`; the older alpha.1 npm
+artifact is immutable historical evidence and cannot be treated as this
+release. Evaluate Rust from a local
 checkout while keeping the version requirement that a publishable downstream
 package needs:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.3", path = "../fontdone" }
+fontdone = { version = "=2.14.3-alpha.4", path = "../fontdone" }
 ```
 
 Registry consumers should request the exact prerelease:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.3" }
+fontdone = { version = "=2.14.3-alpha.4" }
 ```
 
 Cargo requires a version requirement on dependencies of a crate that will be
@@ -61,7 +59,7 @@ release tag is public:
 
 ```toml
 [dependencies]
-fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.3" }
+fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.4" }
 ```
 
 ## 2. Rust quick start
@@ -114,7 +112,7 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The last committed full parity snapshot was recorded on **2026-09-12**:
+The last committed full parity snapshot was recorded on **2026-09-14**:
 
 | Measurement | Count |
 |---|---:|

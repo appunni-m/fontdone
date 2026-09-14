@@ -12,7 +12,7 @@ hosts should use the [`fontdone-wasm` guide](../fontdone-wasm/README.md).
 
 ## 1. Select and install the exact alpha
 
-All workspace packages use `2.14.3-alpha.3`. The public `fontdone` Cargo crate
+All workspace packages use `2.14.3-alpha.4`. The public `fontdone` Cargo crate
 is published on crates.io at that exact prerelease. The C and raw-WASM facade
 packages remain internal build targets. The browser `fontdone` package is built
 from the same candidate, but its synchronized npm publication is still pending
@@ -22,14 +22,14 @@ crate is packaged or published.
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.3", path = "../fontdone" }
+fontdone = { version = "=2.14.3-alpha.4", path = "../fontdone" }
 ```
 
 Registry consumers should use the exact prerelease:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.3" }
+fontdone = { version = "=2.14.3-alpha.4" }
 ```
 
 After the repository and matching tag are public, a Git consumer may pin the
@@ -37,7 +37,7 @@ exact tag or an immutable 40-character revision:
 
 ```toml
 [dependencies]
-fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.3" }
+fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.4" }
 ```
 
 This alpha requires Rust 1.87 or newer. Different `alpha.N` releases are not

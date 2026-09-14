@@ -11,11 +11,11 @@ use a sibling checkout during development, but its dependency must retain the
 exact version requirement:
 
 ```toml
-fontdone = { version = "=2.14.3-alpha.3", path = "../fontdone" }
+  fontdone = { version = "=2.14.3-alpha.4", path = "../fontdone" }
 ```
 
 After publication, a registry consumer such as `pillow-rs` must use
-`fontdone = { version = "=2.14.3-alpha.3" }`. A path-only declaration is valid
+`fontdone = { version = "=2.14.3-alpha.4" }`. A path-only declaration is valid
 for a local build but Cargo rejects it when packaging the downstream crate.
 
 The first synchronized release is bootstrapped locally from the exact clean
@@ -95,18 +95,19 @@ used by the external Rust consumer.
 
 ## 3. Required CI evidence
 
-The exact release commit must first pass the per-commit
-[CI contract](DEVELOPMENT.md#61-per-commit-gate), then a requested
-[thorough run](DEVELOPMENT.md#62-requested-thorough-gate). The latter uploads
-all five hash-bound C platform bundles and validates the assembled evidence.
-Release preflight additionally runs `make c-abi-contract-complete`; unfinished
-contract debt therefore cannot be released.
+The exact release commit first passes the per-commit
+[CI contract](DEVELOPMENT.md#61-per-commit-gate). Pushing its annotated
+`v<version>` tag then runs the complete [thorough
+gate](DEVELOPMENT.md#62-requested-thorough-gate), which uploads all five
+hash-bound C platform bundles and validates the assembled evidence. A manual
+`workflow_dispatch` run remains available for recovery, but is no longer
+required for an ordinary tag release.
 
-The release preflight locates the successful **thorough `workflow_dispatch`**
-CI run for the exact tag commit, downloads its five platform-contract artifacts,
-and runs `make release-verify`. A push-triggered fast CI run is intentionally
-not sufficient because it does not produce the cross-platform contract
-bundles.
+Release preflight waits for the successful thorough CI run attached to the
+exact tag commit, downloads its five platform-contract artifacts, and runs
+`make release-verify`. Unfinished contract debt therefore still blocks
+publication; a fast branch push cannot satisfy this gate because it does not
+produce the cross-platform bundles.
 Without assembled bundles, a local `make release-verify` correctly fails the
 complete C contract. Use `make ci` and `make c-abi-contract` for ordinary
 single-host development, and `make ci-thorough` only when a local exhaustive
@@ -139,7 +140,7 @@ the registry check confirms that the immutable version is missing. For a new
 version, publish the exact verified archive:
 
 ```bash
-version=2.14.3-alpha.3
+version=2.14.3-alpha.4
 npm publish "target/npm-package/fontdone-${version}.tgz" \
   --access public --tag next --provenance
 ```
@@ -157,9 +158,9 @@ protected trusted publishers before using the automated path.
 
 ## 5. Trigger and publication order
 
-Push an annotated `v<version>` tag for the exact synchronized commit. The
-`.github/workflows/release.yml` workflow verifies the tag, waits for successful
-CI on that commit, and publishes from the verified bundle.
+Push an annotated `v<version>` tag for the exact synchronized commit. The tag
+starts the complete CI matrix; `.github/workflows/release.yml` waits for that
+successful run, verifies the tag, and publishes from the verified bundle.
 
 After approval, `scripts/publish_release.py --publish-if-missing` publishes
 `fontdone` when that exact version is not already visible. The C SDK archive is
@@ -185,14 +186,14 @@ dependency.
 The verified npm artifact is:
 
 ```text
-target/npm-package/fontdone-2.14.3-alpha.3.tgz
+target/npm-package/fontdone-2.14.3-alpha.4.tgz
 ```
 
 Rehearse the registry command without publishing:
 
 ```bash
 npm publish --dry-run \
-  target/npm-package/fontdone-2.14.3-alpha.3.tgz \
+  target/npm-package/fontdone-2.14.3-alpha.4.tgz \
   --access public --tag next
 ```
 
@@ -201,7 +202,7 @@ version is missing after explicit owner approval, authenticate with npm and
 publish that exact tarball, not the mutable source directory:
 
 ```bash
-VERSION=2.14.3-alpha.3
+VERSION=2.14.3-alpha.4
 npm publish "target/npm-package/fontdone-${VERSION}.tgz" \
   --access public --tag next
 ```
@@ -218,7 +219,7 @@ The tag workflow uses `next` for versions with a prerelease suffix and
 release. Immediately verify the immutable version and tag:
 
 ```bash
-npm view fontdone@2.14.3-alpha.3 version dist.tarball --json
+npm view fontdone@2.14.3-alpha.4 version dist.tarball --json
 npm view fontdone dist-tags --json
 ```
 
@@ -279,7 +280,7 @@ replacement.
 
 | Field | Value |
 |---|---|
-| Version | `2.14.3-alpha.3` |
+| Version | `2.14.3-alpha.4` |
 | FreeType target | `2.14.3` |
 | Last committed evidence | `2026-07-30` |
 | Public Cargo crate | `fontdone` |
@@ -294,7 +295,7 @@ outputs under `target/release-evidence/`.
 
 The current local dry-run on the checked-out release candidate (2026-09-13)
 verifies one public Cargo package, two private workspace build
-packages, the `fontdone@2.14.3-alpha.3` npm archive, and the native C SDK
+packages, the `fontdone@2.14.3-alpha.4` npm archive, and the native C SDK
 archive. The complete release gate still requires the unresolved C-ABI route
 and exact-error debt plus fresh cross-platform bundles, including the Windows
 import library; these checks remain visible in the generated contract

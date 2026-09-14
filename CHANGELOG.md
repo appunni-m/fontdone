@@ -5,9 +5,15 @@ synchronized version for the public `fontdone` Cargo crate, the native C SDK,
 and the `fontdone` JavaScript npm package. The C and raw-WASM Cargo packages are
 internal workspace build targets.
 
-## 2.14.3-alpha.3 (Unreleased)
+## 2.14.3-alpha.4 (Unreleased)
 
-Current release candidate containing the post-alpha.2 parity, cache-ownership,
+Current prerelease candidate. The tag-triggered release workflow runs the full
+parity, coverage, performance, and five-platform C-contract matrix before it
+publishes the synchronized Cargo, native SDK, and npm artifacts.
+
+## 2.14.3-alpha.3 (Published Cargo; npm pending)
+
+Previous release candidate containing the post-alpha.2 parity, cache-ownership,
 sbix error, generated-inventory, and release-evidence fixes. It keeps one
 public Cargo crate; the C ABI and raw-WASM packages remain internal build
 targets and ship through the native SDK and JavaScript npm package.

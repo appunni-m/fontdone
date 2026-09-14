@@ -29,17 +29,17 @@ class PublishReleaseTests(unittest.TestCase):
 
     def test_registry_checksum_returns_exact_checksum(self) -> None:
         response = io.BytesIO(
-            json.dumps({"version": {"num": "2.14.3-alpha.3", "checksum": CHECKSUM}}).encode()
+            json.dumps({"version": {"num": "2.14.3-alpha.4", "checksum": CHECKSUM}}).encode()
         )
         with patch("urllib.request.urlopen", return_value=response):
             self.assertEqual(
-                publish_release.registry_checksum("fontdone", "2.14.3-alpha.3"),
+                publish_release.registry_checksum("fontdone", "2.14.3-alpha.4"),
                 CHECKSUM,
             )
 
     def test_registry_checksum_distinguishes_missing_version(self) -> None:
         missing = urllib.error.HTTPError(
-            "https://crates.io/api/v1/crates/fontdone/2.14.3-alpha.3",
+            "https://crates.io/api/v1/crates/fontdone/2.14.3-alpha.4",
             404,
             "missing",
             {},
@@ -47,7 +47,7 @@ class PublishReleaseTests(unittest.TestCase):
         )
         with patch("urllib.request.urlopen", side_effect=missing):
             self.assertIsNone(
-                publish_release.registry_checksum("fontdone", "2.14.3-alpha.3")
+                publish_release.registry_checksum("fontdone", "2.14.3-alpha.4")
             )
 
     def test_registry_checksum_rejects_unexpected_metadata(self) -> None:
@@ -56,14 +56,14 @@ class PublishReleaseTests(unittest.TestCase):
         )
         with patch("urllib.request.urlopen", return_value=response):
             with self.assertRaises(TimeoutError):
-                publish_release.registry_checksum("fontdone", "2.14.3-alpha.3")
+                publish_release.registry_checksum("fontdone", "2.14.3-alpha.4")
 
         response = io.BytesIO(
-            json.dumps({"version": {"num": "2.14.3-alpha.3", "checksum": "short"}}).encode()
+            json.dumps({"version": {"num": "2.14.3-alpha.4", "checksum": "short"}}).encode()
         )
         with patch("urllib.request.urlopen", return_value=response):
             with self.assertRaises(TimeoutError):
-                publish_release.registry_checksum("fontdone", "2.14.3-alpha.3")
+                publish_release.registry_checksum("fontdone", "2.14.3-alpha.4")
 
 
 if __name__ == "__main__":
