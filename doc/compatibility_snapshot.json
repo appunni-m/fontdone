@@ -3,7 +3,7 @@
   "snapshot_kind": "committed_measured_evidence",
   "snapshot_date": "2026-09-14",
   "freetype_version": "2.14.3",
-  "package_version": "2.14.3-alpha.5",
+  "package_version": "2.14.3-alpha.6",
   "public_function_adoption": {
     "complete": 52,
     "implemented_mapping_incomplete": 5,

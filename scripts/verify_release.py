@@ -108,8 +108,9 @@ def verify_release_workflow() -> None:
     required_fragments = (
         'tags: ["v*"]',
         'tag_ref="refs/tags/${GITHUB_REF_NAME}"',
+        '"repos/${GITHUB_REPOSITORY}/git/ref/tags/${GITHUB_REF_NAME}"',
         'refs/tags/${GITHUB_REF_NAME}^{commit}',
-        'tag_type="$(git cat-file -t "$tag_ref" 2>/dev/null || true)"',
+        'local_tag_type="$(git cat-file -t "$tag_ref" 2>/dev/null || true)"',
         'test "$release_commit" = "$head_commit"',
         "Publish the public fontdone crate",
     )

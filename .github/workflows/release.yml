@@ -51,6 +51,8 @@ jobs:
         run: npm install --global "npm@$NPM_VERSION"
       - name: Verify tag and synchronized versions
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           case "$GITHUB_REF_NAME" in
@@ -58,12 +60,27 @@ jobs:
             *) echo "release workflow only accepts a semantic-version tag: $GITHUB_REF_NAME" >&2; exit 1 ;;
           esac
           tag_ref="refs/tags/${GITHUB_REF_NAME}"
-          tag_type="$(git cat-file -t "$tag_ref" 2>/dev/null || true)"
-          echo "tag-ref=$tag_ref tag-type=${tag_type:-missing}"
-          test "$tag_type" = tag
-          release_commit="$(git rev-parse "refs/tags/${GITHUB_REF_NAME}^{commit}")"
+          remote_tag_type="$(gh api \
+            "repos/${GITHUB_REPOSITORY}/git/ref/tags/${GITHUB_REF_NAME}" \
+            --jq '.object.type')"
+          remote_tag_object="$(gh api \
+            "repos/${GITHUB_REPOSITORY}/git/ref/tags/${GITHUB_REF_NAME}" \
+            --jq '.object.sha')"
+          echo "tag-ref=$tag_ref remote-tag-type=$remote_tag_type remote-tag-object=$remote_tag_object"
+          test "$remote_tag_type" = tag
+          release_commit="$(gh api \
+            "repos/${GITHUB_REPOSITORY}/git/tags/${remote_tag_object}" \
+            --jq '.object.sha')"
           head_commit="$(git rev-parse HEAD)"
-          echo "tag-commit=$release_commit head-commit=$head_commit"
+          local_tag_type="$(git cat-file -t "$tag_ref" 2>/dev/null || true)"
+          if [ "$local_tag_type" = tag ]; then
+            local_release_commit="$(git rev-parse "refs/tags/${GITHUB_REF_NAME}^{commit}")"
+            echo "tag-commit=$release_commit local-tag-commit=$local_release_commit head-commit=$head_commit"
+            test "$local_release_commit" = "$release_commit"
+          else
+            echo "tag-commit=$release_commit local-tag-type=${local_tag_type:-missing} head-commit=$head_commit"
+            echo "checkout did not materialize the annotated tag ref; using the verified remote tag object"
+          fi
           test "$release_commit" = "$head_commit"
           version="${GITHUB_REF_NAME#v}"
           test "v${version}" = "$GITHUB_REF_NAME"
