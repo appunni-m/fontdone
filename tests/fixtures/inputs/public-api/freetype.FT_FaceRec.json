@@ -476,7 +476,7 @@
           },
           "attachment": {
             "kind": "ref",
-            "id": "input/aux/type1/attach-afm-base.afm"
+            "id": "input/auxiliary/type1/attach-afm-base.afm"
           }
         },
         "params": {

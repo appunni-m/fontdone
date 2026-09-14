@@ -69,7 +69,7 @@
           "attachment": {
             "kind": "ref",
             "role": "auxiliary_metrics_stream",
-            "id": "input/aux/type1/malformed-kern-count.afm",
+            "id": "input/auxiliary/type1/malformed-kern-count.afm",
             "requirements": "Project-authored AFM reaches StartKernPairs without the mandatory integer count."
           }
         },

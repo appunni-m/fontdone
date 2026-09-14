@@ -26,7 +26,7 @@
           "attachment": {
             "kind": "ref",
             "role": "auxiliary_metrics_stream",
-            "path": "input/aux/type1/attach-afm-base.afm"
+            "path": "input/auxiliary/type1/attach-afm-base.afm"
           }
         },
         "params": {
@@ -81,7 +81,7 @@
             "id": "b175-afm-default-ppem025",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -90,7 +90,7 @@
             "id": "b175-afm-default-ppem026",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 26, "pixel_height": 26, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -99,7 +99,7 @@
             "id": "b175-afm-default-ppem027",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 27, "pixel_height": 27, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -108,7 +108,7 @@
             "id": "b175-afm-default-ppem028",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 28, "pixel_height": 28, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -117,7 +117,7 @@
             "id": "b175-afm-default-ppem029",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 29, "pixel_height": 29, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -126,7 +126,7 @@
             "id": "b175-afm-default-ppem030",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 30, "pixel_height": 30, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -135,7 +135,7 @@
             "id": "b175-afm-default-ppem031",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 31, "pixel_height": 31, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -144,7 +144,7 @@
             "id": "b175-afm-default-ppem032",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 32, "pixel_height": 32, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -153,7 +153,7 @@
             "id": "b175-afm-default-ppem033",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 33, "pixel_height": 33, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -162,7 +162,7 @@
             "id": "b175-afm-default-ppem034",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 34, "pixel_height": 34, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -171,7 +171,7 @@
             "id": "b175-afm-default-ppem035",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 35, "pixel_height": 35, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -180,7 +180,7 @@
             "id": "b175-afm-default-ppem036",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 36, "pixel_height": 36, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -189,7 +189,7 @@
             "id": "b175-afm-default-ppem037",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 37, "pixel_height": 37, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -198,7 +198,7 @@
             "id": "b175-afm-default-ppem038",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 38, "pixel_height": 38, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -207,7 +207,7 @@
             "id": "b175-afm-default-ppem039",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 39, "pixel_height": 39, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -216,7 +216,7 @@
             "id": "b175-afm-default-ppem040",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 40, "pixel_height": 40, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -225,7 +225,7 @@
             "id": "b175-afm-default-ppem041",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 41, "pixel_height": 41, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -234,7 +234,7 @@
             "id": "b175-afm-default-ppem042",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 42, "pixel_height": 42, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -243,7 +243,7 @@
             "id": "b175-afm-default-ppem043",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 43, "pixel_height": 43, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -252,7 +252,7 @@
             "id": "b175-afm-default-ppem044",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 44, "pixel_height": 44, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -261,7 +261,7 @@
             "id": "b175-afm-default-ppem045",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 45, "pixel_height": 45, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -270,7 +270,7 @@
             "id": "b175-afm-default-ppem046",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 46, "pixel_height": 46, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -279,7 +279,7 @@
             "id": "b175-afm-default-ppem047",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 47, "pixel_height": 47, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -288,7 +288,7 @@
             "id": "b175-afm-default-ppem048",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 48, "pixel_height": 48, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -297,7 +297,7 @@
             "id": "b175-afm-default-ppem049",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 49, "pixel_height": 49, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -306,7 +306,7 @@
             "id": "b175-afm-default-ppem050",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 50, "pixel_height": 50, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -315,7 +315,7 @@
             "id": "b175-afm-default-ppem051",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 51, "pixel_height": 51, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -324,7 +324,7 @@
             "id": "b175-afm-default-ppem052",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 52, "pixel_height": 52, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -333,7 +333,7 @@
             "id": "b175-afm-default-ppem053",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 53, "pixel_height": 53, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
@@ -342,21 +342,21 @@
             "id": "b175-afm-default-ppem054",
             "assets": {
               "font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"},
-              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/attach-afm-base.afm"}
+              "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/attach-afm-base.afm"}
             },
             "params": {"face_index": 0, "pixel_width": 54, "pixel_height": 54, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]},
             "coverage": ["src/ffi/handles.rs:13850:above-25-ppem-x", "src/ffi/handles.rs:13853:above-25-ppem-y"]
           },
-          {"id": "b331-afm-01", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/b331-afm-01.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KPY-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
-          {"id": "b331-afm-02", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/b331-afm-02.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KPY-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
-          {"id": "b331-afm-03", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/b331-afm-03.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KPY-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
-          {"id": "b331-afm-04", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/b331-afm-04.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KPY-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
-          {"id": "b331-afm-05", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/b331-afm-05.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KPY-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
-          {"id": "b331-afm-06", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/b331-afm-06.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KP-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
-          {"id": "b331-afm-07", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/b331-afm-07.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KP-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
-          {"id": "b331-afm-08", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/b331-afm-08.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KP-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
-          {"id": "b331-afm-09", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/b331-afm-09.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KP-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
-          {"id": "b331-afm-10", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/aux/type1/b331-afm-10.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KP-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]}
+          {"id": "b331-afm-01", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/b331-afm-01.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KPY-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
+          {"id": "b331-afm-02", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/b331-afm-02.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KPY-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
+          {"id": "b331-afm-03", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/b331-afm-03.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KPY-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
+          {"id": "b331-afm-04", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/b331-afm-04.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KPY-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
+          {"id": "b331-afm-05", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/b331-afm-05.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KPY-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
+          {"id": "b331-afm-06", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/b331-afm-06.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KP-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
+          {"id": "b331-afm-07", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/b331-afm-07.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KP-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
+          {"id": "b331-afm-08", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/b331-afm-08.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KP-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
+          {"id": "b331-afm-09", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/b331-afm-09.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KP-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]},
+          {"id": "b331-afm-10", "assets": {"font": {"kind": "file", "role": "font", "path": "input/fonts/type1/attach-afm-base.pfb"}, "attachment": {"kind": "ref", "role": "auxiliary_metrics_stream", "path": "input/auxiliary/type1/b331-afm-10.afm"}}, "params": {"face_index": 0, "pixel_width": 25, "pixel_height": 25, "open_args": {"flags": ["FT_OPEN_MEMORY"], "memory_base": "attachment", "memory_size": "asset_length"}, "post_attach_probe": ["FT_Get_Kerning", "glyph_metrics"]}, "coverage": ["FT_Attach_Stream:AFM-KP-pair", "FT_Get_Kerning:horizontal-and-vertical-unscaled-unfitted-default"]}
         ]
       },
       "classifiers": [
@@ -392,7 +392,7 @@
           "attachment": {
             "kind": "ref",
             "role": "auxiliary_metrics_stream",
-            "path": "input/aux/type1/attach-afm-base.afm"
+            "path": "input/auxiliary/type1/attach-afm-base.afm"
           }
         },
         "params": {

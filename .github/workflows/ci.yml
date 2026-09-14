@@ -137,7 +137,10 @@ jobs:
   parity:
     name: Thorough / Exact parity
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
-    runs-on: ubuntu-24.04
+    # The committed native fixture contract is generated on Apple ARM64.
+    # Keep the exact C oracle and Rust comparison on the same host family;
+    # Linux FreeType can select a different glyph-cache representation.
+    runs-on: macos-14
     timeout-minutes: 70
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
@@ -150,8 +153,15 @@ jobs:
           key: cargo-${{ runner.os }}-${{ env.RUST_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
       - name: Install prerequisites
         run: |
-          sudo apt-get update
-          sudo apt-get install --yes cmake clang make python3 xz-utils
+          for formula in cmake jq xz; do
+            if ! brew list --formula "$formula" >/dev/null 2>&1; then
+              brew install "$formula"
+            fi
+          done
+          command -v clang
+          command -v make
+          command -v python3
+          command -v xz
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
           rustup override set "$RUST_TOOLCHAIN"
       - name: Prefetch locked dependencies
@@ -272,6 +282,7 @@ jobs:
           log_file="target/ci-diagnostics/fontdone-coverage.log"
           mkdir -p "$(dirname "$log_file")"
           set +e
+          COVERAGE_PREPARE_OPTIONAL_FEATURES=1 \
           COVERAGE_UNIFIED_SHARDS=1 \
           COVERAGE_UNIFIED_WORKERS=1 \
           make test-coverage-all COVERAGE_TOOLCHAIN="$RUST_COVERAGE_TOOLCHAIN" 2>&1 | tee "$log_file"
@@ -311,15 +322,6 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
-        if: runner.os != 'Windows'
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
-        if: runner.os == 'Windows'
-        with:
-          fetch-depth: 0
-          sparse-checkout: |
-            /*
-            !/tests/fixtures/input/aux/
-          sparse-checkout-cone-mode: false
       - name: Cache Cargo downloads
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.0.0
         with:
@@ -452,7 +454,9 @@ jobs:
           rustc -vV
           "${{ matrix.cc }}" --version
           "${{ matrix.nm }}" --version
-          ${{ matrix.runner }} --version
+          runner_command='${{ matrix.runner }}'
+          runner_bin="${runner_command%% *}"
+          "$runner_bin" --version
           test -d "${{ matrix.sysroot }}"
           find "${{ matrix.sysroot }}" -maxdepth 2 -type f | head -n 20
       - name: Prefetch locked dependencies
