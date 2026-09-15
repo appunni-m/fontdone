@@ -1963,8 +1963,8 @@ fn ftc_apply_scaler(
     } else {
         FT_Set_Char_Size(
             face,
-            FT_F26Dot6::from(width),
-            FT_F26Dot6::from(height),
+            width as FT_F26Dot6,
+            height as FT_F26Dot6,
             x_res,
             y_res,
         )
@@ -2451,7 +2451,7 @@ fn ftc_sbit_cache_lookup_impl(
     // SAFETY: the manager requester returned a live face wrapper. FreeType's
     // SBit cache rejects an out-of-range glyph before classifying load errors
     // as cacheable missing-bitmap sentinels.
-    if FT_Long::from(key.glyph_index) >= unsafe { (*face).num_glyphs } {
+    if FT_ULong::from(key.glyph_index) >= unsafe { (*face).num_glyphs.cast_unsigned() } {
         return rust_ffi::FT_Err_Invalid_Argument;
     }
     // `src/cache/ftcbasic.c` always adds FT_LOAD_RENDER to the family load
@@ -3328,7 +3328,7 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
             {
                 rust_ffi::FT_Stroker_Set(
                     stroker,
-                    64 + (index as i64 & 3) * 16,
+                    64 + (index as rust_ffi::FT_Fixed & 3) * 16,
                     (index % 3) as _,
                     (index % 4) as _,
                     65_536,
@@ -3496,7 +3496,7 @@ fn abi_c100_core_probe(bytes: &[FT_Byte], variant: u16) {
                 blend.len() as _,
                 Some(&mut blend),
             );
-            let coords = [0x4000_i64, -0x2000_i64, 0x1000_i64, 0];
+            let coords: [rust_ffi::FT_Fixed; 4] = [0x4000, -0x2000, 0x1000, 0];
             let set_design = rust_ffi::FT_Set_Var_Design_Coordinates(
                 Some(&mut core_face),
                 coords.len() as _,
@@ -4895,7 +4895,7 @@ fn abi_c104_handles_probe(
             }
         }
         2 => {
-            let cubic_extent = 1_i64 << (18 + (repeat % 3));
+            let cubic_extent: rust_ffi::FT_Pos = 1 << (18 + (repeat % 3));
             let cubic = rust_ffi::FT_OutlineSnapshot {
                 points: vec![
                     rust_ffi::FT_Vector { x: 0, y: 0 },
@@ -4987,7 +4987,7 @@ fn abi_c104_handles_probe(
                 let start = FT_Vector { x: 0, y: 0 };
                 let end = FT_Vector {
                     x: 640,
-                    y: 64 + FT_Pos::from((repeat as i64) * 17),
+                    y: 64 + (repeat as FT_Pos) * 17,
                 };
                 let begin = FT_Stroker_BeginSubPath(stroker, &start, 1);
                 let line = FT_Stroker_LineTo(stroker, &end);
@@ -5095,8 +5095,8 @@ fn abi_c104_handles_probe(
             };
             let request = FT_Size_RequestRec {
                 type_: (repeat % 5) as FT_Int,
-                width: i64::from((12 + repeat as i32) * 64),
-                height: i64::from((14 + (repeat % 4) as i32) * 64),
+                width: rust_ffi::FT_Long::from((12 + repeat as i32) * 64),
+                height: rust_ffi::FT_Long::from((14 + (repeat % 4) as i32) * 64),
                 horiResolution: 72,
                 vertResolution: 72,
             };
@@ -5291,10 +5291,10 @@ fn abi_c105_handles_probe(
             }
         }
         2 => {
-            // A coordinate that does not fit the core i32 outline is a safe
-            // invalid-conversion witness; the very large cubic separately
-            // drives the bbox peak scaling path.
-            let invalid_coordinate = i64::from(i32::MAX) + 1;
+            // Mirror conversion of the same C argument on each target: LP64
+            // retains the out-of-i32 coordinate, while 32-bit FT_Pos wraps
+            // to its minimum. The cubic still exercises bbox peak scaling.
+            let invalid_coordinate = (i64::from(i32::MAX) + 1) as rust_ffi::FT_Pos;
             let malformed = rust_ffi::FT_OutlineSnapshot {
                 points: vec![
                     rust_ffi::FT_Vector {
@@ -5308,7 +5308,7 @@ fn abi_c105_handles_probe(
                 contours: vec![2],
                 flags: 0,
             };
-            let extent = 1_i64 << (24 + (repeat % 5));
+            let extent: rust_ffi::FT_Pos = 1 << (24 + (repeat % 5));
             let cubic = rust_ffi::FT_OutlineSnapshot {
                 points: vec![
                     rust_ffi::FT_Vector { x: 0, y: 0 },
@@ -7630,7 +7630,7 @@ fn abi_c110_rust_gap_batch_probe(
                 repeat as FT_UInt,
                 Some(&mut axis_flags),
             );
-            let mut coords = [0_i64, 16_384, -16_384, 32_768];
+            let mut coords = [0 as rust_ffi::FT_Fixed, 16_384, -16_384, 32_768];
             let count = repeat as FT_UInt;
             let set_design = rust_ffi::FT_Set_Var_Design_Coordinates(
                 Some(&mut face),
@@ -8119,7 +8119,7 @@ fn abi_c111_rust_gap_batch_probe(
         10 => {
             // Variable coordinates intentionally overrun ordinary faces and
             // alternate named-instance selectors.
-            let coords = [0_i64, 16_384, -16_384, 32_768];
+            let coords = [0 as rust_ffi::FT_Fixed, 16_384, -16_384, 32_768];
             let count = FT_UInt::try_from(repeat + 1).unwrap_or(FT_UInt::MAX);
             let design = rust_ffi::FT_Set_Var_Design_Coordinates(
                 Some(&mut core_face),
@@ -8734,7 +8734,7 @@ fn abi_c113_rust_gap_batch_probe(
         11 => {
             let mut master = rust_ffi::FT_Multi_Master::default();
             let master_result = rust_ffi::FT_Get_Multi_Master(Some(&core_face), Some(&mut master));
-            let mut weights = [0_i64, 16_384, 32_768, 49_152];
+            let mut weights = [0 as rust_ffi::FT_Fixed, 16_384, 32_768, 49_152];
             let weight_result = rust_ffi::FT_Set_MM_WeightVector(
                 Some(&mut core_face),
                 repeat as FT_UInt,
@@ -8746,7 +8746,7 @@ fn abi_c113_rust_gap_batch_probe(
                 Some(&mut weight_len),
                 Some(&mut weights),
             );
-            let designs = [0_i64, 500, 1000, 1500];
+            let designs = [0 as rust_ffi::FT_Long, 500, 1000, 1500];
             let design = rust_ffi::FT_Set_MM_Design_Coordinates(
                 Some(&mut core_face),
                 repeat as FT_UInt,
@@ -8757,7 +8757,7 @@ fn abi_c113_rust_gap_batch_probe(
                 repeat as FT_UInt,
                 Some(&weights),
             );
-            let mut coords = [0_i64; 4];
+            let mut coords = [0 as rust_ffi::FT_Fixed; 4];
             let get_blend = rust_ffi::FT_Get_MM_Blend_Coordinates(
                 Some(&core_face),
                 repeat as FT_UInt,
@@ -8776,14 +8776,14 @@ fn abi_c113_rust_gap_batch_probe(
             ));
         }
         12 => {
-            let coords = [0_i64, 16_384, -16_384, 32_768];
+            let coords = [0 as rust_ffi::FT_Fixed, 16_384, -16_384, 32_768];
             let count = repeat as FT_UInt;
             let set_design =
                 rust_ffi::FT_Set_Var_Design_Coordinates(Some(&mut core_face), count, Some(&coords));
             let set_blend =
                 rust_ffi::FT_Set_Var_Blend_Coordinates(Some(&mut core_face), count, Some(&coords));
-            let mut design = [0_i64; 4];
-            let mut blend = [0_i64; 4];
+            let mut design = [0 as rust_ffi::FT_Fixed; 4];
+            let mut blend = [0 as rust_ffi::FT_Fixed; 4];
             let get_design =
                 rust_ffi::FT_Get_Var_Design_Coordinates(Some(&core_face), count, Some(&mut design));
             let get_blend =
@@ -10865,8 +10865,7 @@ fn abi_custom_memory_coverage_probe(
         78 => {
             let core_library = rust_ffi::FT_Init_FreeType();
             if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
-                let slot =
-                    rust_ffi::FT_Outline_GlyphSlot_With_Advance(&core_face, 0x8000_i64 * 64, 0);
+                let slot = rust_ffi::FT_Outline_GlyphSlot_With_Advance(&core_face, 0x8000 * 64, 0);
                 let result = rust_ffi::FT_Get_Outline_Glyph(Some(&slot));
                 let _ = std::hint::black_box(result);
             }
@@ -10899,7 +10898,7 @@ fn abi_custom_memory_coverage_probe(
             let core_library = rust_ffi::FT_Init_FreeType();
             if let Ok(core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let mut slot = rust_ffi::FT_Malformed_Get_GlyphSlot(&core_face, 5);
-                slot.advance.x = 0x8000_i64 * 64;
+                slot.advance.x = 0x8000 * 64;
                 let result = rust_ffi::FT_Get_Svg_Glyph(Some(&slot));
                 let _ = std::hint::black_box(result);
             }
@@ -11244,8 +11243,8 @@ fn abi_custom_memory_coverage_probe(
         117 => {
             let mut outline = rust_ffi::FT_OutlineSnapshot {
                 points: vec![rust_ffi::FT_Vector {
-                    x: i64::MAX,
-                    y: i64::MAX,
+                    x: rust_ffi::FT_Pos::MAX,
+                    y: rust_ffi::FT_Pos::MAX,
                 }],
                 tags: Vec::new(),
                 contours: Vec::new(),
@@ -11257,8 +11256,8 @@ fn abi_custom_memory_coverage_probe(
         118 => {
             let mut outline = rust_ffi::FT_OutlineSnapshot {
                 points: vec![rust_ffi::FT_Vector {
-                    x: i64::MAX,
-                    y: i64::MAX,
+                    x: rust_ffi::FT_Pos::MAX,
+                    y: rust_ffi::FT_Pos::MAX,
                 }],
                 tags: vec![rust_ffi::FT_CURVE_TAG_ON as FT_Byte],
                 contours: vec![0],
@@ -11991,7 +11990,13 @@ fn abi_custom_memory_coverage_probe(
             let core_library = rust_ffi::FT_Init_FreeType();
             if let Ok(mut core_face) = rust_ffi::FT_New_Memory_Face(&core_library, bytes, 0, 20.0) {
                 let zero = rust_ffi::FT_Set_Pixel_Sizes(&mut core_face, 0, 0);
-                let huge = rust_ffi::FT_Set_Char_Size(&mut core_face, i64::MAX, i64::MAX, 72, 72);
+                let huge = rust_ffi::FT_Set_Char_Size(
+                    &mut core_face,
+                    rust_ffi::FT_F26Dot6::MAX,
+                    rust_ffi::FT_F26Dot6::MAX,
+                    72,
+                    72,
+                );
                 let _ = std::hint::black_box((zero, huge));
             }
         }
@@ -18056,7 +18061,8 @@ struct FT_Face_InternalRecCompat {
     transform_flags: FT_Int,
     services: [FT_Pointer; 6],
     incremental_interface: FT_Pointer,
-    no_stem_darkening: c_char,
+    // ftobjs.h uses signed FT_Char, including on unsigned-char targets.
+    no_stem_darkening: FT_Char,
     random_seed: FT_Int32,
     refcount: FT_Int,
     state: Box<FaceState>,
@@ -18085,7 +18091,7 @@ impl FT_Face_InternalRecCompat {
     fn sync_face_properties(&mut self) {
         let properties = rust_ffi::FT_Face_Properties_Get_State(&self.state.inner);
         self.no_stem_darkening =
-            c_char::try_from(properties.no_stem_darkening).unwrap_or(c_char::MAX);
+            FT_Char::try_from(properties.no_stem_darkening).unwrap_or(FT_Char::MAX);
         self.random_seed = properties.random_seed;
     }
 }
@@ -22395,10 +22401,10 @@ fn c_glyph_cbox_snapshot(glyph: FT_Glyph) -> Option<rust_ffi::FT_GlyphCBoxSnapsh
             has_class: true,
             has_bbox_hook: true,
             cbox: Some(rust_ffi::FT_BBox {
-                xMin: x_min,
-                yMin: y_min,
-                xMax: x_max,
-                yMax: y_max,
+                xMin: x_min as rust_ffi::FT_Pos,
+                yMin: y_min as rust_ffi::FT_Pos,
+                xMax: x_max as rust_ffi::FT_Pos,
+                yMax: y_max as rust_ffi::FT_Pos,
             }),
         });
     }

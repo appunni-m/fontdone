@@ -5,7 +5,8 @@
     "signature_and_void_contract",
     "null_zero_angle_and_zero_vector_noop",
     "cardinal_diagonal_and_arbitrary_rotations",
-    "large_fixed_point_edges"
+    "large_fixed_point_edges",
+    "native_long_signed_components"
   ],
   "metadata": {
     "abi": {
@@ -265,6 +266,67 @@
         "header:fttrigon",
         "area:trigonometry",
         "edge:large-normalization"
+      ],
+      "expectation": {
+        "status": "ok",
+        "output_shape": {
+          "results": [
+            {
+              "vec_before": "FT_Vector",
+              "angle": "FT_Angle",
+              "vec_after": "FT_Vector"
+            }
+          ]
+        },
+        "compare": {
+          "mode": "exact",
+          "paths": [
+            "results[*].vec_after"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "fttrigon.FT_Vector_Rotate.native_long_signed_components",
+      "subject": "fttrigon.FT_Vector_Rotate",
+      "case": "native_long_signed_components",
+      "operation": "fttrigon.vector_rotate",
+      "schema": "api_result",
+      "expect_error": false,
+      "inputs": {
+        "assets": {},
+        "params": {
+          "cases": [
+            {
+              "vec": {
+                "x": -131073,
+                "y": 65537
+              },
+              "angle": 2949120
+            },
+            {
+              "vec": {
+                "x": 65537,
+                "y": -131073
+              },
+              "angle": -2949120
+            },
+            {
+              "vec": {
+                "x": -536870909,
+                "y": 3
+              },
+              "angle": 5898240
+            }
+          ]
+        }
+      },
+      "classifiers": [
+        "kind:function",
+        "header:fttrigon",
+        "area:trigonometry",
+        "operation:rotate",
+        "abi:native-long-width"
       ],
       "expectation": {
         "status": "ok",

@@ -11330,6 +11330,8 @@ subjects:
         description: Zero length or zero angle follows FT_Vector_Rotate's no-op paths after initialization and produces exact C vector fields.
       - id: null_vector_noop
         description: A null vector pointer returns without writing output.
+      - id: native_long_negative_fractional_lengths
+        description: Signed fractional inputs that fit both 32-bit and 64-bit C long retain exact CORDIC outputs through facade width conversions.
     # needs-input: operation=FT_Vector_From_Polar; fixture_asset=no font needed; params={lengths=[0, 1, 0x10000, negative, large_safe], angles=[0, +/-PI4, +/-PI2, PI, arbitrary], initial_vec_sentinel}; expected output shape={FT_Vector fields or unchanged sentinel}; comparison=exact C oracle x/y integers and null no-op behavior.
 
   - id: fttrigon.FT_Vector_Length
@@ -11378,6 +11380,8 @@ subjects:
         description: Rotations by +/-PI4, +/-PI2, PI, 2PI, and arbitrary angles match C's prenormalization, pseudo-rotation, downscale, and signed rounding.
       - id: large_fixed_point_edges
         description: Overflow-safe large and negative coordinate vectors exercise C's shift-up and shift-down paths with exact integer output comparison.
+      - id: native_long_signed_components
+        description: Signed fractional inputs that fit both 32-bit and 64-bit C long retain exact CORDIC outputs through facade width conversions.
     # needs-input: operation=FT_Vector_Rotate; fixture_asset=no font needed; params={vectors=[zero, unit_x, unit_y, diagonal, arbitrary negative, large_safe], angles=[0, +/-PI4, +/-PI2, PI, 2PI, arbitrary], initial_vec_sentinel}; expected output shape={FT_Vector fields or unchanged sentinel}; comparison=exact C oracle x/y integers and no-op behavior.
   - id: fttrigon.FT_Vector_Unit
     kind: function

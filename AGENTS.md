@@ -59,3 +59,9 @@ the full matrix.
 
 Put durable implementation nuance beside the relevant code. Put integration,
 development, and release procedure in `doc/`, not in temporary status notes.
+
+For C data-model changes, run `make setup-platform-checks`, then
+`make check-platform-build PLATFORM_TARGET=<triple>` for
+`i686-unknown-linux-gnu`, `x86_64-pc-windows-msvc`, and
+`powerpc64-unknown-linux-gnu`. These compile checks supplement the executed
+platform contract lanes; they do not replace C layout or parity evidence.

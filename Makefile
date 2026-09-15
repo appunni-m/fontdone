@@ -7,7 +7,7 @@ PYTHON := python3
 PYCACHE_DIR := target/pycache
 BENCH_SAMPLES ?= 10
 BENCH_PROFILE ?= default
-COVERAGE_TOOLCHAIN ?= nightly
+COVERAGE_TOOLCHAIN ?= nightly-2026-07-16
 CARGO_LLVM_COV_VERSION ?= 0.8.7
 COVERAGE_UNIFIED_WORKERS ?= 1
 # Opt-level 1 is the fastest measured current-host all-lane coverage profile;
@@ -177,6 +177,8 @@ help:
 	@printf "  make optional-feature-contract  Prove optional build branches and LCD state in four lanes\n"
 	@printf "  make check-c-contract-inventory  Validate fixed ownership/state/module/artifact/platform denominators\n"
 	@printf "  make platform-contract     Record this native target's hash-bound C/layout evidence\n"
+	@printf "  make setup-platform-checks Install Rust targets for portable ABI compilation\n"
+	@printf "  make check-platform-build PLATFORM_TARGET=... Type-check the C ABI without a foreign linker\n"
 	@printf "  make platform-contract-cross PLATFORM_TARGET=... PLATFORM_CC=... PLATFORM_NM=... PLATFORM_RUNNER='...' PLATFORM_SYSROOT=...  Record an emulated Linux target\n"
 	@printf "  make check-platform-contract  Require five fresh target bundles plus Windows import-library evidence\n"
 	@printf "  make c-abi-contract       Report all pinned C contract categories\n"
@@ -739,6 +741,16 @@ platform-contract: api-abi-audit test-c-consumer check-c-exports
 	$(PYTHON) scripts/audit_api_abi.py --record-platform-contract
 
 .PHONY: platform-contract-cross
+.PHONY: check-platform-build setup-platform-checks
+setup-platform-checks:
+	rustup target add i686-unknown-linux-gnu powerpc64-unknown-linux-gnu x86_64-pc-windows-msvc
+
+# Type-check the real C ABI without requiring a foreign linker or runner.
+# Runtime layout and C-consumer evidence still come from platform-contract.
+check-platform-build:
+	@test -n "$(PLATFORM_TARGET)" || { echo "PLATFORM_TARGET is required" >&2; exit 2; }
+	$(CARGO) check -p fontdone-c-abi --all-features --locked --target "$(PLATFORM_TARGET)"
+
 platform-contract-cross: oracle-fetch
 	@test -n "$(PLATFORM_TARGET)" || { echo "PLATFORM_TARGET is required" >&2; exit 2; }
 	@test -n "$(PLATFORM_CC)" || { echo "PLATFORM_CC is required" >&2; exit 2; }

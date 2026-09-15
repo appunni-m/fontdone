@@ -5,7 +5,20 @@ synchronized version for the public `fontdone` Cargo crate, the native C SDK,
 and the `fontdone` JavaScript npm package. The C and raw-WASM Cargo packages are
 internal workspace build targets.
 
-## 2.14.3-alpha.7 (2026-09-15)
+## 2.14.3-alpha.8 (2026-09-15)
+
+- Fix facade conversions between platform-width C `long` and the engine's
+  64-bit arithmetic. This removes 32-bit Linux and Windows compilation failures
+  without changing the public C record widths.
+- Use FreeType's signed `FT_Char` for the internal stem-darkening sentinel,
+  including PowerPC targets where plain C `char` is unsigned.
+- Preserve WinFNT reserved record bytes across native word widths and byte orders.
+- Require i686, Windows MSVC, and PowerPC64 C ABI compilation on every main CI
+  run, in addition to the existing executed platform contract matrix.
+- Run instrumented coverage on the canonical macOS oracle host, matching full
+  parity; retain all inputs and disclose the unavailable-SBit field limitation.
+
+## 2.14.3-alpha.7 (Superseded; unpublished)
 
 - Release Cargo and npm exclusively through GitHub OIDC after successful exact
   tag CI, using checksums to bind the published artifacts to verified packages.
@@ -19,7 +32,7 @@ internal workspace build targets.
 
 ## 2.14.3-alpha.6 (Superseded; unpublished)
 
-Current prerelease candidate. This candidate keeps the complete tag-triggered
+This superseded candidate kept the complete tag-triggered
 parity, coverage, performance, and five-platform C-contract matrix while making
 hosted dependency preparation, cross-target diagnostics, Windows checkout, and
 release-tag validation deterministic. It verifies the immutable tag through the

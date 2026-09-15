@@ -636,7 +636,7 @@ fn ft_bitmap_strength_pixels(strength: FT_Pos) -> Option<i32> {
     // `ft_bitmap_assure_buffer` (`src/base/ftbitmap.c:302-309`).
     let rounded = strength.checked_add(32)? & !63;
     let pixels = rounded >> 6;
-    if pixels > i64::from(i32::MAX) {
+    if ft_long_to_i64(pixels) > i64::from(i32::MAX) {
         return None;
     }
     i32::try_from(pixels).ok()
@@ -921,13 +921,15 @@ pub fn FT_Bitmap_Blend(
         y: pix_floor(atarget_offset.y),
     };
 
-    let source_rows_26_6 = FT_Pos::from(source.rows) << 6;
+    // ftbitmap.c shifts FT_UInt dimensions before converting to native
+    // FT_Pos; retain that order on both ILP32/LLP64 and LP64 targets.
+    let source_rows_26_6 = source.rows.wrapping_shl(6) as FT_Pos;
     if FT_Long::MIN + source_rows_26_6 + 64 > source_offset.y {
         return FT_Err_Invalid_Argument;
     }
     let source_llx = source_offset.x;
     let source_lly = source_offset.y - source_rows_26_6;
-    let source_width_26_6 = FT_Pos::from(source.width) << 6;
+    let source_width_26_6 = source.width.wrapping_shl(6) as FT_Pos;
     if FT_Long::MAX - source_width_26_6 - 64 < source_llx {
         return FT_Err_Invalid_Argument;
     }
@@ -936,12 +938,12 @@ pub fn FT_Bitmap_Blend(
 
     let (target_llx, target_lly, target_urx, target_ury) = if target.width != 0 && target.rows != 0
     {
-        let target_rows_26_6 = FT_Pos::from(target.rows) << 6;
+        let target_rows_26_6 = target.rows.wrapping_shl(6) as FT_Pos;
         if FT_Long::MIN + target_rows_26_6 > target_offset.y {
             return FT_Err_Invalid_Argument;
         }
         let target_lly = target_offset.y - target_rows_26_6;
-        let target_width_26_6 = FT_Pos::from(target.width) << 6;
+        let target_width_26_6 = target.width.wrapping_shl(6) as FT_Pos;
         if FT_Long::MAX - target_width_26_6 < target_offset.x {
             return FT_Err_Invalid_Argument;
         }
@@ -1017,7 +1019,7 @@ pub fn FT_Bitmap_Blend(
     // ownership registry before publishing the final target offset.
     if target.pitch < 0 && i32::from(source.pixel_mode) == FT_PIXEL_MODE_GRAY {
         atarget_offset.x = final_llx;
-        atarget_offset.y = final_lly + (FT_Pos::from(final_rows) << 6);
+        atarget_offset.y = final_lly + (final_rows.wrapping_shl(6) as FT_Pos);
         return FT_Err_Ok;
     }
 
@@ -1069,7 +1071,7 @@ pub fn FT_Bitmap_Blend(
     }
 
     atarget_offset.x = final_llx;
-    atarget_offset.y = final_lly + (FT_Pos::from(final_rows) << 6);
+    atarget_offset.y = final_lly + (final_rows.wrapping_shl(6) as FT_Pos);
     FT_Err_Ok
 }
 
@@ -2351,8 +2353,8 @@ pub fn FT_Svg_Glyph_Transform(
 
     FT_Matrix_Multiply(Some(effective_matrix), Some(&mut glyph.transform));
     FT_Vector_Transform(Some(&mut glyph.delta), Some(effective_matrix));
-    glyph.delta.x = crate::fixed::ft_add_long(glyph.delta.x, effective_delta.x);
-    glyph.delta.y = crate::fixed::ft_add_long(glyph.delta.y, effective_delta.y);
+    glyph.delta.x = glyph.delta.x.wrapping_add(effective_delta.x);
+    glyph.delta.y = glyph.delta.y.wrapping_add(effective_delta.y);
     if let Some(matrix) = matrix {
         FT_Vector_Transform(Some(&mut glyph.root.advance), Some(matrix));
     }
@@ -4029,8 +4031,8 @@ fn outline_trace_transform(
     delta: FT_Pos,
 ) -> FT_Vector {
     FT_Vector {
-        x: (i64::from(point.x) << shift) - delta,
-        y: (i64::from(point.y) << shift) - delta,
+        x: ((i64::from(point.x) << shift) - ft_long_to_i64(delta)) as FT_Pos,
+        y: ((i64::from(point.y) << shift) - ft_long_to_i64(delta)) as FT_Pos,
     }
 }
 
@@ -6918,14 +6920,14 @@ pub fn FT_Outline_Transform(outline: Option<&mut FT_OutlineSnapshot>, matrix: Op
     let mut coordinates = outline
         .points
         .iter()
-        .map(|point| (point.x, point.y))
+        .map(|point| (ft_long_to_i64(point.x), ft_long_to_i64(point.y)))
         .collect::<Vec<_>>();
     api::transform_outline_coordinates(
         &mut coordinates,
-        matrix.xx,
-        matrix.xy,
-        matrix.yx,
-        matrix.yy,
+        ft_long_to_i64(matrix.xx),
+        ft_long_to_i64(matrix.xy),
+        ft_long_to_i64(matrix.yx),
+        ft_long_to_i64(matrix.yy),
     );
     for (point, (x, y)) in outline.points.iter_mut().zip(coordinates) {
         point.x = x as FT_Pos;
@@ -7005,7 +7007,7 @@ fn ps_private_to_ffi(private: &Type1PrivateDict) -> PS_PrivateRec {
         other_blues: private.other_blues,
         family_blues: private.family_blues,
         family_other_blues: private.family_other_blues,
-        blue_scale: i64::from(private.blue_scale),
+        blue_scale: FT_Fixed::from(private.blue_scale),
         blue_shift: private.blue_shift,
         blue_fuzz: private.blue_fuzz,
         standard_width: private.standard_width,
@@ -7016,9 +7018,9 @@ fn ps_private_to_ffi(private: &Type1PrivateDict) -> PS_PrivateRec {
         round_stem_up: FT_Bool::from(private.round_stem_up),
         snap_widths: private.snap_widths,
         snap_heights: private.snap_heights,
-        expansion_factor: i64::from(private.expansion_factor),
-        language_group: private.language_group,
-        password: private.password,
+        expansion_factor: FT_Fixed::from(private.expansion_factor),
+        language_group: private.language_group as FT_Long,
+        password: private.password as FT_Long,
         min_feature: private.min_feature,
     }
 }
@@ -7055,7 +7057,7 @@ fn ps_font_info_to_ffi(
         full_name: cstring_mut_ptr(&strings.full_name),
         family_name: cstring_mut_ptr(&strings.family_name),
         weight: cstring_mut_ptr(&strings.weight),
-        italic_angle: i64::from(info.italic_angle),
+        italic_angle: FT_Long::from(info.italic_angle),
         is_fixed_pitch: FT_Bool::from(info.is_fixed_pitch),
         underline_position: info.underline_position,
         underline_thickness: info.underline_thickness,
@@ -10773,6 +10775,28 @@ pub fn FT_Palette_Set_Foreground_Color(face: Option<&FT_Face>, color: FT_Color) 
     FT_Err_Ok
 }
 
+// `winfnt.c` uses FT_FRAME_BYTES(reserved1, 16), copying raw bytes into
+// native FT_ULong records. The parser preserves those bytes in two LE u64s;
+// reconstruct target-width, target-endian words rather than truncating them.
+fn winfnt_reserved_native(packed: [u64; 4]) -> [FT_ULong; 4] {
+    let mut words = [0; 4];
+    let width = std::mem::size_of::<FT_ULong>();
+    for (index, byte) in packed[..2]
+        .iter()
+        .flat_map(|word| word.to_le_bytes())
+        .enumerate()
+    {
+        let position = index % width;
+        let shift = if cfg!(target_endian = "little") {
+            position
+        } else {
+            width - 1 - position
+        };
+        words[index / width] |= FT_ULong::from(byte) << (shift * 8);
+    }
+    words
+}
+
 fn winfnt_header_to_ffi(header: &WinFntHeader) -> FT_WinFNT_HeaderRec {
     FT_WinFNT_HeaderRec {
         version: header.version,
@@ -10810,12 +10834,7 @@ fn winfnt_header_to_ffi(header: &WinFntHeader) -> FT_WinFNT_HeaderRec {
         B_space: header.b_space,
         C_space: header.c_space,
         color_table_offset: header.color_table_offset as FT_UShort,
-        reserved1: [
-            FT_ULong::from(header.reserved1[0]),
-            FT_ULong::from(header.reserved1[1]),
-            FT_ULong::from(header.reserved1[2]),
-            FT_ULong::from(header.reserved1[3]),
-        ],
+        reserved1: winfnt_reserved_native(header.reserved1),
     }
 }
 
@@ -11040,7 +11059,8 @@ pub fn FT_GlyphSlot_AdjustWeight(
         slot.core_slot
             .adjust_outline_weight(xstrength as i32, ystrength as i32);
     } else {
-        slot.core_slot.adjust_bitmap_weight(xstrength, ystrength);
+        slot.core_slot
+            .adjust_bitmap_weight(ft_long_to_i64(xstrength), ft_long_to_i64(ystrength));
     }
     refresh_slot_public_fields(slot);
 }
@@ -11201,44 +11221,47 @@ pub fn FT_Activate_Size(size: FT_Size) -> FT_Error {
 }
 
 pub fn FT_Sin(angle: FT_Angle) -> FT_Fixed {
-    crate::fixed::ft_sin_long(angle) as FT_Fixed
+    crate::fixed::ft_sin_long(ft_long_to_i64(angle)) as FT_Fixed
 }
 
 pub fn FT_Cos(angle: FT_Angle) -> FT_Fixed {
-    crate::fixed::ft_cos_long(angle) as FT_Fixed
+    crate::fixed::ft_cos_long(ft_long_to_i64(angle)) as FT_Fixed
 }
 
 pub fn FT_Tan(angle: FT_Angle) -> FT_Fixed {
-    crate::fixed::ft_tan_long(angle) as FT_Fixed
+    crate::fixed::ft_tan_long(ft_long_to_i64(angle)) as FT_Fixed
 }
 
 pub fn FT_Atan2(dx: FT_Fixed, dy: FT_Fixed) -> FT_Angle {
-    crate::fixed::ft_atan2_long(dx, dy) as FT_Angle
+    crate::fixed::ft_atan2_long(ft_long_to_i64(dx), ft_long_to_i64(dy)) as FT_Angle
 }
 
 pub fn FT_Angle_Diff(angle1: FT_Angle, angle2: FT_Angle) -> FT_Angle {
-    crate::fixed::ft_angle_diff_long(angle1, angle2) as FT_Angle
+    crate::fixed::ft_angle_diff_long(ft_long_to_i64(angle1), ft_long_to_i64(angle2)) as FT_Angle
 }
 
 pub fn FT_Vector_Unit(vec: Option<&mut FT_Vector>, angle: FT_Angle) {
     let Some(vec) = vec else {
         return;
     };
-    (vec.x, vec.y) = crate::fixed::ft_vector_unit_long(angle);
+    let (x, y) = crate::fixed::ft_vector_unit_long(ft_long_to_i64(angle));
+    (vec.x, vec.y) = (x as FT_Pos, y as FT_Pos);
 }
 
 pub fn FT_Vector_From_Polar(vec: Option<&mut FT_Vector>, length: FT_Fixed, angle: FT_Angle) {
     let Some(vec) = vec else {
         return;
     };
-    (vec.x, vec.y) = crate::fixed::ft_vector_from_polar_long(length, angle);
+    let (x, y) =
+        crate::fixed::ft_vector_from_polar_long(ft_long_to_i64(length), ft_long_to_i64(angle));
+    (vec.x, vec.y) = (x as FT_Pos, y as FT_Pos);
 }
 
 pub fn FT_Vector_Length(vec: Option<&FT_Vector>) -> FT_Fixed {
     let Some(vec) = vec else {
         return 0;
     };
-    crate::fixed::ft_vector_length_long(vec.x, vec.y) as FT_Fixed
+    crate::fixed::ft_vector_length_long(ft_long_to_i64(vec.x), ft_long_to_i64(vec.y)) as FT_Fixed
 }
 
 pub fn FT_Vector_Polarize(
@@ -11249,7 +11272,9 @@ pub fn FT_Vector_Polarize(
     let (Some(vec), Some(length), Some(angle)) = (vec, length, angle) else {
         return;
     };
-    if let Some((new_length, new_angle)) = crate::fixed::ft_vector_polarize_long(vec.x, vec.y) {
+    if let Some((new_length, new_angle)) =
+        crate::fixed::ft_vector_polarize_long(ft_long_to_i64(vec.x), ft_long_to_i64(vec.y))
+    {
         *length = new_length as FT_Fixed;
         *angle = new_angle as FT_Angle;
     }
@@ -11259,7 +11284,12 @@ pub fn FT_Vector_Rotate(vec: Option<&mut FT_Vector>, angle: FT_Angle) {
     let Some(vec) = vec else {
         return;
     };
-    (vec.x, vec.y) = crate::fixed::ft_vector_rotate_long(vec.x, vec.y, angle);
+    let (x, y) = crate::fixed::ft_vector_rotate_long(
+        ft_long_to_i64(vec.x),
+        ft_long_to_i64(vec.y),
+        ft_long_to_i64(angle),
+    );
+    (vec.x, vec.y) = (x as FT_Pos, y as FT_Pos);
 }
 
 pub fn FT_Library_SetLcdFilter(library: Option<&mut FT_Library>, filter: FT_LcdFilter) -> FT_Error {
@@ -13125,7 +13155,7 @@ pub fn FT_Set_Var_Design_Coordinates(
     };
     // Match `base/ftmm.c`: a zero-count reset on a non-variation face is a
     // no-op, while a nonzero request must have a multiple-master service.
-    if num_coords == 0 && face.face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS == 0 {
+    if num_coords == 0 && face.face_flags & (FT_FACE_FLAG_MULTIPLE_MASTERS as FT_Long) == 0 {
         return FT_Err_Ok;
     }
     let Some(coords) = coords else {
@@ -13155,7 +13185,7 @@ pub fn FT_Set_Var_Design_Coordinates(
     // invalid optional or required `fvar` table therefore reports
     // `Invalid_Argument` here rather than reaching the Rust coordinate
     // rebuild, which has no variation state to update.
-    if face.face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS == 0 {
+    if face.face_flags & (FT_FACE_FLAG_MULTIPLE_MASTERS as FT_Long) == 0 {
         return FT_Err_Invalid_Argument as FT_Error;
     }
     if coords.len() < num_coords {
@@ -13384,7 +13414,7 @@ pub fn FT_Get_Default_Named_Instance(
     // `ft_face_get_mm_service` in FreeType `base/ftmm.c` rejects faces that
     // don't advertise a multiple-master service before the TrueType callback
     // is reached.
-    if face.face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS == 0 {
+    if face.face_flags & (FT_FACE_FLAG_MULTIPLE_MASTERS as FT_Long) == 0 {
         return FT_Err_Invalid_Argument as FT_Error;
     }
     let Some(instance_index) = instance_index else {
@@ -13458,7 +13488,7 @@ pub fn FT_Fvar_Named_Style_Coords(
     let Some(face) = face else {
         return Err(FT_Err_Invalid_Face_Handle as FT_Error);
     };
-    if face.face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS == 0 {
+    if face.face_flags & (FT_FACE_FLAG_MULTIPLE_MASTERS as FT_Long) == 0 {
         return Err(FT_Err_Invalid_Argument as FT_Error);
     }
     let inner = face.inner.borrow();
@@ -13683,7 +13713,7 @@ pub fn FT_Open_External_Stream_Face_With_Name_Options(
     // as caller-stream backed (`src/base/ftobjs.c`, stream-open path).
     // The Rust core still owns parsed font bytes, but the public face flag
     // must reflect the caller-owned stream source.
-    face.face_flags |= FT_FACE_FLAG_EXTERNAL_STREAM;
+    face.face_flags |= FT_FACE_FLAG_EXTERNAL_STREAM as FT_Long;
     Ok(face)
 }
 
@@ -13810,8 +13840,8 @@ fn face_to_ffi(
     let face = FT_Face {
         num_faces: info.num_faces as FT_Long,
         face_index: info.face_index as FT_Long,
-        face_flags: FT_Long::from(info.face_flags),
-        style_flags: FT_Long::from(info.style_flags),
+        face_flags: info.face_flags as FT_Long,
+        style_flags: info.style_flags as FT_Long,
         // C FreeType leaves `face->family_name` and `face->style_name` null
         // for SFNT faces with no usable name records; Pillow exposes that as
         // `(None, None)` from `_imagingft.c`/`FreeTypeFont.getname()`.
@@ -14020,7 +14050,7 @@ pub fn FT_Attach_Stream(face: Option<&mut FT_Face>, data: Option<&[u8]>) -> FT_E
     match parse_afm_metrics(face, data) {
         Ok(metrics) => {
             *face.afm_metrics.borrow_mut() = Some(metrics);
-            face.face_flags |= FT_FACE_FLAG_KERNING;
+            face.face_flags |= FT_FACE_FLAG_KERNING as FT_Long;
             FT_Err_Ok
         }
         Err(error) => error,
@@ -14140,10 +14170,10 @@ fn parse_tt_header(data: &[u8]) -> Option<TT_Header> {
         return None;
     }
     Some(TT_Header {
-        Table_Version: i64::from(i32::from_be_bytes([data[0], data[1], data[2], data[3]])),
-        Font_Revision: i64::from(i32::from_be_bytes([data[4], data[5], data[6], data[7]])),
-        CheckSum_Adjust: i64::from(i32::from_be_bytes([data[8], data[9], data[10], data[11]])),
-        Magic_Number: i64::from(i32::from_be_bytes([data[12], data[13], data[14], data[15]])),
+        Table_Version: FT_Long::from(i32::from_be_bytes([data[0], data[1], data[2], data[3]])),
+        Font_Revision: FT_Long::from(i32::from_be_bytes([data[4], data[5], data[6], data[7]])),
+        CheckSum_Adjust: FT_Long::from(i32::from_be_bytes([data[8], data[9], data[10], data[11]])),
+        Magic_Number: FT_Long::from(i32::from_be_bytes([data[12], data[13], data[14], data[15]])),
         Flags: u16::from_be_bytes([data[16], data[17]]) as FT_UShort,
         Units_Per_EM: u16::from_be_bytes([data[18], data[19]]) as FT_UShort,
         Created: [
@@ -14172,7 +14202,7 @@ fn parse_tt_maxprofile(data: &[u8]) -> Option<TT_MaxProfile> {
     }
     let version = u32::from_be_bytes([data[0], data[1], data[2], data[3]]);
     let mut record = TT_MaxProfile {
-        version: i64::from(version as i32),
+        version: FT_Fixed::from(version as i32),
         numGlyphs: u16::from_be_bytes([data[4], data[5]]) as FT_UShort,
         maxPoints: data
             .get(6..8)
@@ -14766,8 +14796,8 @@ pub fn FT_Request_Size(face: Option<&mut FT_Face>, req: Option<&FT_Size_RequestR
     }
     let request = SizeRequest {
         request_type,
-        width: req.width,
-        height: req.height,
+        width: ft_long_to_i64(req.width),
+        height: ft_long_to_i64(req.height),
         hori_resolution: req.horiResolution,
         vert_resolution: req.vertResolution,
     };
@@ -15331,7 +15361,7 @@ fn ft_load_glyph_core(
         .sbix_active_strike_load_error(glyph_index, face.size_metrics.y_ppem)
     {
         if !matches!(error, crate::error::FontError::MissingBitmap)
-            && face.face_flags & FT_FACE_FLAG_SCALABLE == 0
+            && face.face_flags & (FT_FACE_FLAG_SCALABLE as FT_Long) == 0
         {
             return Err(error_to_ft(error));
         }
@@ -15948,14 +15978,14 @@ fn slot_to_ffi(face: &FT_Face, slot: api::GlyphSlot, load_flags: api::LoadFlags)
         start_glyph_id: document.start_glyph_id,
         end_glyph_id: document.end_glyph_id,
         transform: FT_Matrix {
-            xx: i64::from(document.transform.0),
-            xy: i64::from(document.transform.1),
-            yx: i64::from(document.transform.2),
-            yy: i64::from(document.transform.3),
+            xx: FT_Fixed::from(document.transform.0),
+            xy: FT_Fixed::from(document.transform.1),
+            yx: FT_Fixed::from(document.transform.2),
+            yy: FT_Fixed::from(document.transform.3),
         },
         delta: FT_Vector {
-            x: i64::from(document.delta.0),
-            y: i64::from(document.delta.1),
+            x: FT_Pos::from(document.delta.0),
+            y: FT_Pos::from(document.delta.1),
         },
     });
     let source_face = face.inner.borrow().clone();
@@ -16007,14 +16037,14 @@ fn refresh_slot_public_fields(slot: &mut FT_GlyphSlot) {
             start_glyph_id: document.start_glyph_id,
             end_glyph_id: document.end_glyph_id,
             transform: FT_Matrix {
-                xx: i64::from(document.transform.0),
-                xy: i64::from(document.transform.1),
-                yx: i64::from(document.transform.2),
-                yy: i64::from(document.transform.3),
+                xx: FT_Fixed::from(document.transform.0),
+                xy: FT_Fixed::from(document.transform.1),
+                yx: FT_Fixed::from(document.transform.2),
+                yy: FT_Fixed::from(document.transform.3),
             },
             delta: FT_Vector {
-                x: i64::from(document.delta.0),
-                y: i64::from(document.delta.1),
+                x: FT_Pos::from(document.delta.0),
+                y: FT_Pos::from(document.delta.1),
             },
         });
 }
@@ -16025,8 +16055,8 @@ fn outline_to_ffi_snapshot(outline: &crate::outline::Outline) -> FT_OutlineSnaps
             .points
             .iter()
             .map(|point| FT_Vector {
-                x: i64::from(point.x),
-                y: i64::from(point.y),
+                x: FT_Pos::from(point.x),
+                y: FT_Pos::from(point.y),
             })
             .collect(),
         tags: if outline.tags.is_empty() {

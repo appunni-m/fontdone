@@ -4,7 +4,7 @@ Fontdone publishes one Cargo crate, `fontdone`, one npm package, `fontdone`,
 and a native C SDK on GitHub Releases. The internal `fontdone-c-abi` and
 `fontdone-wasm` Cargo packages have `publish = false`. There is no PyPI package.
 
-The current candidate is `2.14.3-alpha.7`. Cargo's first local bootstrap was
+The current candidate is `2.14.3-alpha.8`. Cargo's first local bootstrap was
 `2.14.3-alpha.3`; npm's first bootstrap was `2.14.3-alpha.1`. Future publication
 uses only the tag-triggered `.github/workflows/release.yml` and GitHub OIDC.
 Local registry logins are not used by that workflow.
@@ -52,6 +52,16 @@ The [compatibility snapshot](compatibility_snapshot.json) and
 [adoption guide](FREETYPE_SUPPORT.md) distinguish completed functionality, measured
 runtime parity, historical coverage, and unfinished C-contract requirements.
 
+The alpha.8 local verification on 2026-09-15 passes 20,357/20,357 runnable
+cases in each of the Rust, C ABI, and WASM coverage lanes, with three named
+undefined-C cases pending. The combined source report measures 66,270/68,525
+lines (96.7092%), 12,189/13,836 branches (88.0963%), 3,849/4,137 functions
+(93.0384%), and 91,297/94,949 regions (96.1537%). The WinFNT record conversion
+is exercised by the retained header inputs. Big-endian-only branches require
+the separate PowerPC runtime lane and are not measured by this macOS report.
+GitHub produces its own report for the final tag; this local result does not
+stand in for a successful publishing job.
+
 ## 3. Prepare and verify a version
 
 1. Increment the root Cargo version, both private workspace versions and their
@@ -72,7 +82,7 @@ For the current candidate, registry consumers will use:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.7" }
+fontdone = { version = "=2.14.3-alpha.8" }
 ```
 
 A development path or pinned Git revision may be added, but a publishable

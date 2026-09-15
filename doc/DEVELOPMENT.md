@@ -10,7 +10,8 @@ root. Use `make help` as the command index.
 
 | Host or target | What CI proves |
 |---|---|
-| Ubuntu 24.04 x86-64 | Rust, oracle parity, native C, packaging, and supply chain |
+| Ubuntu 24.04 x86-64 | Rust, smoke parity, native C, packaging, and supply chain |
+| macOS 14 Apple Silicon | full exact parity and instrumented coverage using the canonical oracle host |
 | macOS 15 Apple Silicon | fresh checkout, native C, layout, exports, and install tree |
 | Windows Server 2025 x86-64 MSVC | native C, LLP64 layout, DLL/import library, exports, and install tree |
 | Linux i686 | cross-built and QEMU-executed C consumer/layout contract |
@@ -19,6 +20,12 @@ root. Use `make help` as the command index.
 
 Only Ubuntu and macOS are normal pinned-oracle development hosts. Windows and
 the cross targets are claimed only to the extent recorded above.
+The full source coverage job uses the same macOS host family as exact parity.
+FreeType's `ftcsbits.c` allocates SBit nodes with `FT_QNEW` and initializes only
+width, height, and buffer for unavailable glyphs. Linux allocation contents
+produced 77 comparisons of unspecified fields in alpha.7's coverage run. Those
+values are not a portable C contract; the alpha evidence is limited to the
+canonical host and does not establish cross-host equality for those fields.
 CI validates the browser entry point through Node's standards-compatible ESM,
 fetch, and WebAssembly APIs; it does not claim a named-browser version matrix.
 Release evidence should add a real-browser run of the maintained HTML example
@@ -80,6 +87,7 @@ Run the smallest useful gate first:
 | Scope | Command | Meaning |
 |---|---|---|
 | Rust workspace | `make test-fast` | Tests/checks excluding full parity and ignored trace diagnostics |
+| Portable C ABI compilation | `make setup-platform-checks`, then `make check-platform-build PLATFORM_TARGET=<triple>` | Main CI requires i686 Linux, Windows MSVC, and PowerPC64 builds, including optional probes; native C and QEMU jobs still prove runtime behavior |
 | Runtime smoke | `make test-parity-smoke` | Eight fixed `load_char` cases across the Rust, C ABI, and WASM routes |
 | One operation | `make test-op OP=ftadvanc.get_advance` | Exact selected C/Rust/facade comparison |
 | One case | `make test-case CASE=freetype.FT_Load_Glyph.no_scale` | Exact selected case comparison |

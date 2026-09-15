@@ -134,6 +134,23 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  portable-abi:
+    name: Commit / Portable C ABI types
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
+      - name: Install fixed toolchain and foreign targets
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+          make setup-platform-checks
+      - name: Check 32-bit long, Windows LLP64, and unsigned-char PowerPC
+        run: |
+          for target in i686-unknown-linux-gnu x86_64-pc-windows-msvc powerpc64-unknown-linux-gnu; do
+            make check-platform-build PLATFORM_TARGET="$target"
+          done
+
   parity:
     name: Thorough / Exact parity
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
@@ -231,7 +248,7 @@ jobs:
   commit-gate:
     name: Commit gate
     if: always()
-    needs: [commit-fast, msrv]
+    needs: [commit-fast, msrv, portable-abi]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -239,12 +256,14 @@ jobs:
         env:
           COMMIT_FAST: ${{ needs.commit-fast.result }}
           MSRV: ${{ needs.msrv.result }}
+          PORTABLE_ABI: ${{ needs.portable-abi.result }}
         run: |
           printf '%s\n' \
             "commit-fast=$COMMIT_FAST" \
-            "msrv=$MSRV"
+            "msrv=$MSRV" \
+            "portable-abi=$PORTABLE_ABI"
           for result in \
-            "$COMMIT_FAST" "$MSRV"
+            "$COMMIT_FAST" "$MSRV" "$PORTABLE_ABI"
           do
             test "$result" = "success"
           done
@@ -253,7 +272,10 @@ jobs:
     name: Thorough / All-lane coverage
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
     needs: commit-gate
-    runs-on: ubuntu-24.04
+    # Use the same Apple ARM64 oracle contract as the full parity job.
+    # Linux's uninitialized FTC missing-bitmap fields are not portable oracle
+    # values; all maintained cases still run on the canonical host.
+    runs-on: macos-14
     timeout-minutes: 75
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
@@ -266,8 +288,11 @@ jobs:
           key: cargo-${{ runner.os }}-${{ env.RUST_COVERAGE_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
       - name: Install coverage prerequisites
         run: |
-          sudo apt-get update
-          sudo apt-get install --yes cmake clang jq make python3 xz-utils
+          for formula in cmake jq xz; do
+            if ! brew list --formula "$formula" >/dev/null 2>&1; then
+              brew install "$formula"
+            fi
+          done
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
           rustup toolchain install "$RUST_COVERAGE_TOOLCHAIN" \
             --profile minimal --component llvm-tools-preview

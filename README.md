@@ -10,7 +10,7 @@
 
 </div>
 
-> **Release:** `2.14.3-alpha.7` is the current prerelease candidate. The previous
+> **Release:** `2.14.3-alpha.8` is the current prerelease candidate. The previous
 > `2.14.3-alpha.3` Cargo release is published from immutable tag
 > `v2.14.3-alpha.3`; alpha.4 through alpha.6 were superseded after hosted checks
 > failed. The synchronized alpha.7 Cargo, npm, and C SDK artifacts are released only after
@@ -36,7 +36,7 @@ Pinned FreeType source is used only by ignored offline test tooling.
 | Raw JavaScript host | Internal `fontdone-wasm` build target | Low-level wasm32 linear-memory ABI used by the npm package | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
 
 The `fontdone` crate and npm package are released as synchronized exact
-prereleases. The current candidate is `2.14.3-alpha.7`; the older alpha.1 npm
+prereleases. The current candidate is `2.14.3-alpha.8`; the older alpha.1 npm
 artifact is immutable historical evidence and cannot be treated as this
 release. Evaluate Rust from a local
 checkout while keeping the version requirement that a publishable downstream
@@ -44,14 +44,14 @@ package needs:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.7", path = "../fontdone" }
+fontdone = { version = "=2.14.3-alpha.8", path = "../fontdone" }
 ```
 
 Registry consumers should request the exact prerelease:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.7" }
+fontdone = { version = "=2.14.3-alpha.8" }
 ```
 
 Cargo requires a version requirement on dependencies of a crate that will be
@@ -60,7 +60,7 @@ release tag is public:
 
 ```toml
 [dependencies]
-fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.7" }
+fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.8" }
 ```
 
 ## 2. Rust quick start
@@ -117,18 +117,18 @@ The last committed full parity snapshot was recorded on **2026-09-15**:
 
 | Measurement | Count |
 |---|---:|
-| Runnable exact-comparison cases | 20,355 |
-| Passed cases | 20,355 |
+| Runnable exact-comparison cases | 20,357 |
+| Passed cases | 20,357 |
 | Failed cases | 0 |
 | Explicitly pending cases | 3 |
-| Covered manifest cases | 4,418 |
+| Covered manifest cases | 4,420 |
 | Validated public API subjects | 1,543 |
 | Validated public API input files | 1,537 |
-| Logical declared cases | 4,572 |
-| Concrete expanded cases | 20,358 |
+| Logical declared cases | 4,574 |
+| Concrete expanded cases | 20,360 |
 | Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
 
-`20,355 / 20,355` means every runnable case in that execution matched; the 3
+`20,357 / 20,357` means every runnable case in that execution matched; the 3
 explicitly pending concrete cases are safety-extension or undefined-input
 scenarios and the route audit still reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
 can be satisfied by a narrow success or null-validation route; it is not
@@ -136,9 +136,9 @@ equivalent to complete behavior for every input, state, or platform.
 
 The latest worktree verification is the full parity snapshot recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-20,355 / 20,355 runnable comparisons with 0 failures and 3 explicitly pending
+20,357 / 20,357 runnable comparisons with 0 failures and 3 explicitly pending
 concrete cases. Its source-bound parity-tree digest is
-`eda2a8f1111866abcbdeb893f85b20d54ba0043e66e5d58e04ce097c05f0fed3`.
+`1a819afcefaa63d502e3867609652a5aecd35eeeae995602e5d894933b4ed72f`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a
@@ -148,9 +148,9 @@ and updates this table. Recording fails if parity-relevant source changed after
 the run. Generated runtime reports under `target/` are newer authority for
 their exact worktree than the committed release snapshot.
 
-### 3.3 Last measured combined coverage
+### 3.3 Retained historical combined coverage
 
-The latest all-lane coverage snapshot was recorded on
+The retained historical all-lane coverage snapshot was recorded on
 **2026-08-23** for the worktree based at commit
 `e8c51cb6dba42fd524d94940673fe6b380411d46`
 by managed Coverage MCP 0.10.0 (registered command with the local sccache
