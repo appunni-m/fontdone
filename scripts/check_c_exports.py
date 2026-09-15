@@ -69,7 +69,14 @@ def binary_exports(
     completed = subprocess.run(command, check=False, capture_output=True, text=True)
     output = completed.stdout
     if system == "Windows":
-        result = set(re.findall(r"\b(?:FT|FTC)_[A-Za-z0-9_]+\b", output))
+        result = set()
+        for line in output.splitlines():
+            symbol = line.split()[-1] if line.split() else ""
+            # dumpbin places the complete symbol in the final column. Rust's
+            # mangled drop/trait symbols can contain '..FT_Var_Axis$GT$'; that
+            # embedded type name is not a separately exported C function.
+            if re.fullmatch(r"(?:FT|FTC)_[A-Za-z0-9_]+", symbol):
+                result.add(symbol)
     else:
         result = set()
         for line in output.splitlines():

@@ -87,5 +87,25 @@ class ClangHeaderTests(unittest.TestCase):
                 audit_api_abi.clang_ast({}, local=False)
 
 
+class WindowsExportTests(unittest.TestCase):
+    def test_static_symbols_do_not_promote_mangled_rust_type_names_to_c_exports(self):
+        output = """Archive member name at 8: /
+    5 public symbols
+    00001000 FT_Init_FreeType
+    00002000 _ZN4core3ptr80drop_in_place$LT$fontdone..ffi..FT_OutlineSnapshot$GT$17h0123456789abcdefE
+    00003000 _ZN4core3ptr73drop_in_place$LT$fontdone..ffi..FT_Var_Axis$GT$17h0123456789abcdefE
+    00004000 _ZN4core3ptr80drop_in_place$LT$fontdone..ffi..FT_Var_Named_Style$GT$17h0123456789abcdefE
+    00005000 FT_Undocumented_Endpoint
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            release = Path(directory)
+            (release / "fontdone_c_abi.lib").touch()
+            with patch.object(check_c_exports.subprocess, "run", return_value=subprocess.CompletedProcess(
+                ["dumpbin"], 0, stdout=output, stderr="",
+            )):
+                _, symbols = check_c_exports.binary_exports("static", "Windows", release, "nm")
+        self.assertEqual(symbols, {"FT_Init_FreeType", "FT_Undocumented_Endpoint"})
+
+
 if __name__ == "__main__":
     unittest.main()

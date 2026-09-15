@@ -432,6 +432,12 @@ to `check_c_exports.py`, and `make test-native-tools` guards that handoff for
 both cross targets. Windows contract failures retain the complete log and
 publish the final diagnostic lines in the run annotations.
 
+Windows `dumpbin` places the complete symbol in the final table column.
+Compare that whole token: Rust's mangled drop/trait symbols can contain
+`..FT_Var_Axis$GT$`, which is a type name rather than a C export. The regression
+suite excludes these embedded names while retaining a real undocumented
+`FT_` function so the exact header/export comparison still rejects it.
+
 `.gitattributes` pins source and shell-script checkouts to LF while preserving
 the exact bytes of font/assets under `tests/fixtures/input/`. Without that
 policy, `core.autocrlf=true` changes both shell syntax and the source digest
