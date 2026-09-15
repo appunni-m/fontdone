@@ -5,7 +5,17 @@ synchronized version for the public `fontdone` Cargo crate, the native C SDK,
 and the `fontdone` JavaScript npm package. The C and raw-WASM Cargo packages are
 internal workspace build targets.
 
-## 2.14.3-alpha.9 (2026-09-15)
+## 2.14.3-alpha.10 (2026-09-15)
+
+- Resolve the npm tarball to an absolute path before publishing. npm 11.5.1
+  parsed the previous one-directory relative argument as GitHub shorthand,
+  causing a Git failure before OIDC authentication.
+- Exercise the same command with a staged tarball in offline dry-run mode
+  during package verification, and reject local or wrong-tag real uploads.
+- Preserve alpha.9's successfully published Cargo artifact. Its full tag CI
+  passed, but its npm and final GitHub releases did not complete.
+
+## 2.14.3-alpha.9 (2026-09-15; Cargo published)
 
 - Carry the alpha.8 native C-width fixes through the full platform release gates.
 - Preserve target linkers and host proc-macro search paths in cross-platform

@@ -198,6 +198,7 @@ help:
 	@printf "  make check-generated      Reject generated contract drift\n"
 	@printf "  make repository-inventory Refresh the reviewed file-retention ledger\n"
 	@printf "  make npm-package-verify   Build, pack, inspect, install, and run the JavaScript npm package\n"
+	@printf "  make release-npm-verify VERIFIED_NPM_ARCHIVE=<path>  Dry-run the exact npm publish command\n"
 	@printf "\nDocumentation:\n"
 	@printf "  make check-docs           Validate every tracked guide and rustdoc policy\n"
 	@printf "  make doc                  Build strict workspace API documentation\n"
@@ -1031,6 +1032,10 @@ supply-chain:
 check-versions:
 	$(PYTHON) scripts/verify_release.py --metadata-only
 
+.PHONY: release-lock-update
+release-lock-update:
+	$(CARGO) update --workspace --offline
+
 .PHONY: package-verify
 package-verify: check-versions
 	$(PYTHON) scripts/verify_release.py
@@ -1066,6 +1071,13 @@ release: release-verify
 .PHONY: release-publish-oidc
 release-publish-oidc:
 	$(PYTHON) scripts/publish_release.py --publish-if-missing --verified-archive "$(VERIFIED_CRATE)"
+
+.PHONY: release-npm-verify release-npm-publish-oidc
+release-npm-verify:
+	$(PYTHON) scripts/publish_npm_release.py --dry-run --archive "$(VERIFIED_NPM_ARCHIVE)"
+
+release-npm-publish-oidc:
+	$(PYTHON) scripts/publish_npm_release.py --publish --archive "$(VERIFIED_NPM_ARCHIVE)"
 
 .PHONY: clean
 clean:

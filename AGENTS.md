@@ -48,6 +48,11 @@ coverage, C-contract, package, supply-chain, and ten-sample benchmark evidence.
 The alpha release policy reports incomplete coverage; it does not waive failed
 comparisons. `make release-verify-complete` retains the stricter contract gate.
 Publication after bootstrap uses only the tag-triggered GitHub OIDC workflow.
+`make npm-package-verify` exercises an offline dry-run of the actual npm
+publish command. `make release-npm-verify VERIFIED_NPM_ARCHIVE=<path>` checks
+an existing tarball; only the matching GitHub tag may use
+`make release-npm-publish-oidc`. Use `make release-lock-update` after synchronizing
+workspace release versions; it preserves the downloaded dependency set.
 Use `make c-abi-contract-complete` only after all five platform bundles have
 been assembled. Benchmark changes also require `make bench-self-test` and
 `make bench-quick`.

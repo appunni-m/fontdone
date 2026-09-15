@@ -16,7 +16,7 @@ import urllib.error
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts import publish_release
+from scripts import publish_npm_release, publish_release
 
 
 CHECKSUM = "a" * 64
@@ -24,6 +24,40 @@ VERSION = publish_release.version()
 
 
 class PublishReleaseTests(unittest.TestCase):
+    def test_npm_publication_rejects_local_and_wrong_tag_contexts(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            archive = Path(directory) / f"fontdone-{VERSION}.tgz"
+            archive.write_bytes(b"archive whose upload must not be attempted")
+            environments = [
+                {},
+                {
+                    "GITHUB_ACTIONS": "true",
+                    "GITHUB_REPOSITORY": "appunni-m/fontdone",
+                    "GITHUB_REF": "refs/tags/v0.0.0",
+                    "ACTIONS_ID_TOKEN_REQUEST_URL": "https://example.invalid/oidc",
+                },
+            ]
+            for environment in environments:
+                with (
+                    self.subTest(environment=environment),
+                    patch.dict(os.environ, environment, clear=True),
+                    patch.object(publish_npm_release.subprocess, "run") as run,
+                ):
+                    with self.assertRaisesRegex(ValueError, "GitHub tag and OIDC"):
+                        publish_npm_release.publish_archive(archive, dry_run=False)
+                    run.assert_not_called()
+
+    def test_npm_rejects_a_missing_or_wrong_version_archive(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            archive = Path(directory) / "fontdone-0.0.0.tgz"
+            with patch.object(publish_npm_release.subprocess, "run") as run:
+                with self.assertRaises(FileNotFoundError):
+                    publish_npm_release.publish_archive(archive, dry_run=True)
+                archive.touch()
+                with self.assertRaisesRegex(ValueError, "synchronized"):
+                    publish_npm_release.publish_archive(archive, dry_run=True)
+                run.assert_not_called()
+
     def test_publication_rejects_local_and_wrong_tag_contexts(self) -> None:
         with patch.dict(os.environ, {}, clear=True):
             with self.assertRaises(ValueError):

@@ -306,14 +306,23 @@ jobs:
           fi
       - name: Publish exact npm artifact with provenance
         if: steps.npm-check.outputs.missing == 'true'
+        shell: bash
         run: |
-          version="${GITHUB_REF_NAME#v}"
-          dist_tag=latest
-          if [[ "$version" == *-* ]]; then
-            dist_tag=next
+          set -o pipefail
+          log_file="${RUNNER_TEMP}/fontdone-npm-publish.log"
+          set +e
+          make release-npm-publish-oidc \
+            VERIFIED_NPM_ARCHIVE="release-bundle/fontdone-${GITHUB_REF_NAME#v}.tgz" \
+            2>&1 | tee "$log_file"
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            summary="$(tail -n 35 "$log_file" | tr '\n' ' ')"
+            summary="${summary//'%'/'%25'}"
+            summary="${summary//$'\r'/'%0D'}"
+            echo "::error title=npm publish failure::$summary"
+            exit "$status"
           fi
-          npm publish "release-bundle/fontdone-${version}.tgz" \
-            --access public --tag "$dist_tag" --provenance
 
   github-release:
     name: Create immutable GitHub Release

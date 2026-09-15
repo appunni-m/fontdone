@@ -12,6 +12,8 @@ import tarfile
 import tempfile
 from pathlib import Path, PurePosixPath
 
+from publish_npm_release import publish_archive
+
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = ROOT / "fontdone-wasm" / "npm"
@@ -169,6 +171,23 @@ def test_installed_archive(archive: Path) -> None:
         run(["node", "node.mjs", str(FONT)], cwd=consumer)
 
 
+def test_publish_archive(archive: Path) -> None:
+    # Exercise the release command with the one-directory relative argument
+    # that npm previously mistook for a GitHub repository. Dry-run/offline
+    # prevents publication and verifies that npm reads the actual tarball.
+    with tempfile.TemporaryDirectory(prefix="fontdone-npm-release-") as temporary:
+        previous = Path.cwd()
+        try:
+            os.chdir(temporary)
+            bundle = Path("release-bundle")
+            bundle.mkdir()
+            candidate = bundle / archive.name
+            shutil.copy2(archive, candidate)
+            publish_archive(candidate, dry_run=True)
+        finally:
+            os.chdir(previous)
+
+
 def main() -> None:
     node_version = require_tools()
     manifest = json.loads((PACKAGE_ROOT / "package.json").read_text(encoding="utf-8"))
@@ -184,6 +203,7 @@ def main() -> None:
         raise ValueError(f"npm did not create {archive}")
     inspect_archive(archive, version)
     test_installed_archive(archive)
+    test_publish_archive(archive)
     print(f"npm consumer: packed and installed with Node {node_version}")
     print(f"publishable archive: {archive.relative_to(ROOT)}")
 

@@ -4,10 +4,16 @@ Fontdone publishes one Cargo crate, `fontdone`, one npm package, `fontdone`,
 and a native C SDK on GitHub Releases. The internal `fontdone-c-abi` and
 `fontdone-wasm` Cargo packages have `publish = false`. There is no PyPI package.
 
-The current candidate is `2.14.3-alpha.9`. Cargo's first local bootstrap was
+The current candidate is `2.14.3-alpha.10`. Cargo's first local bootstrap was
 `2.14.3-alpha.3`; npm's first bootstrap was `2.14.3-alpha.1`. Future publication
 uses only the tag-triggered `.github/workflows/release.yml` and GitHub OIDC.
 Local registry logins are not used by that workflow.
+
+Alpha.9's [tag CI](https://github.com/appunni-m/fontdone/actions/runs/34996142187)
+passed and its [release run](https://github.com/appunni-m/fontdone/actions/runs/34996142115)
+published Cargo through OIDC. npm failed before authentication because its
+tarball argument was parsed as GitHub shorthand. Alpha.10 fixes this command;
+the alpha.9 crate is preserved without attempting to overwrite its bytes.
 
 ## 1. Trusted publisher configuration
 
@@ -65,7 +71,9 @@ stand in for a successful publishing job.
 ## 3. Prepare and verify a version
 
 1. Increment the root Cargo version, both private workspace versions and their
-   exact root dependency requirements, and the npm version together.
+   exact root dependency requirements, and the npm version together. Run
+   `make release-lock-update` to synchronize only workspace lockfile entries
+   using the already downloaded dependency set.
 2. Update the README, changelog, and package documentation. Regenerate derived
    ABI metadata with `make generate-contracts`.
 3. Run `make test-parity` and `make record-parity-snapshot`. This binds the
@@ -82,7 +90,7 @@ For the current candidate, registry consumers will use:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.9" }
+fontdone = { version = "=2.14.3-alpha.10" }
 ```
 
 A development path or pinned Git revision may be added, but a publishable
@@ -108,6 +116,15 @@ The npm job checks the bundle checksum and publishes the exact tested `.tgz`
 with provenance under `next`. Existing versions are accepted only when the
 registry integrity matches the candidate; network errors are not treated as
 missing versions.
+
+`make npm-package-verify` also stages a one-directory relative archive and runs
+the same publish helper in offline dry-run mode. An existing artifact can be
+checked with `make release-npm-verify VERIFIED_NPM_ARCHIVE=<path>`; real uploads
+use `make release-npm-publish-oidc` in the exact GitHub tag job. Both paths resolve
+the local filename before npm sees it, because
+[npm package specifiers](https://docs.npmjs.com/cli/v11/using-npm/package-spec/)
+otherwise interpret `release-bundle/archive.tgz` as GitHub shorthand. Failed
+uploads expose a bounded diagnostic in the public workflow annotations.
 
 Only after both registries succeed does the final job attest the artifacts and
 create the GitHub prerelease with compatibility notes, Cargo archive, npm

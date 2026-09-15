@@ -105,7 +105,7 @@ Run the smallest useful gate first:
 | Record performance | `make record-performance-baseline` | Append a qualifying clean report to committed measured evidence |
 | Performance contract | `make bench-regression` | Fail unless every reviewed performance threshold is active and passing |
 | Integrations | `make test-integrations` | Downstream Rust, external C, raw Wasm, and packed npm consumers |
-| JavaScript npm package | `make npm-package-verify` | Prepack, exact file inventory, clean install, shipped self-test, and glyph render |
+| JavaScript npm package | `make npm-package-verify` | Prepack, exact file inventory, clean install, shipped self-test, glyph render, and offline dry-run of the release command |
 | C contract | `make c-abi-contract` | Report all 12 categories and remaining debt |
 | Five-platform C evidence | `make c-abi-contract-all-platforms` | Validate five assembled bundles and report current debt without claiming completion |
 | Complete C contract | `make c-abi-contract-complete` | Fail unless all categories and all five platform bundles complete |
@@ -5027,13 +5027,13 @@ or reason is stale.
 | R03 | 1,761 | executable parity tests and public contracts |
 | R04 | 1,336 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
-| R06 | 70 | maintained tooling, examples, and benchmarks |
+| R06 | 71 | maintained tooling, examples, and benchmarks |
 | R07 | 8 | durable project documentation |
 | R08 | 1 | active self-cleaning roadmap |
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,345** | **all retained paths** |
+| **Total** | **3,346** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:
