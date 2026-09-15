@@ -172,7 +172,8 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ steps.ci-run.outputs.run-id }}
           pattern: platform-contract-*
-          path: target/api-abi-audit/platform-contract
+          # Bundle JSON and diagnostics share target/ as their upload root.
+          path: target
           merge-multiple: true
       - name: Download archives verified by exact tag CI
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0

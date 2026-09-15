@@ -566,10 +566,27 @@ jobs:
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           pattern: platform-contract-*
-          path: target/api-abi-audit/platform-contract
+          # Each archive contains both bundle JSON and diagnostics, so its
+          # common upload root is target/. Restore that original layout.
+          path: target
           merge-multiple: true
       - name: Validate evidence and report current contract debt
-        run: make c-abi-contract-all-platforms
+        shell: bash
+        run: |
+          set -o pipefail
+          log_file="target/api-abi-audit/platform-scorecard.log"
+          mkdir -p "$(dirname "$log_file")"
+          set +e
+          make c-abi-contract-all-platforms 2>&1 | tee "$log_file"
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            summary="$(tail -n 60 "$log_file" | tr '\n' ' ')"
+            summary="${summary//'%'/'%25'}"
+            summary="${summary//$'\r'/'%0D'}"
+            echo "::error title=platform scorecard failure::$summary"
+            exit "$status"
+          fi
       - name: Retain complete C-contract evidence
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0

@@ -470,6 +470,13 @@ into an aggregate job, validates them, and writes the current 12-category
 scorecard. This command succeeds only when the evidence is internally exact;
 unfinished contract debt remains explicit in the scorecard.
 
+Platform artifacts contain both `api-abi-audit/platform-contract/*.json` and
+`ci-diagnostics/` paths relative to their shared upload root, `target/`.
+Both CI aggregation and release preflight must download those archives into
+`target/`; downloading into the bundle directory nests the paths and makes
+valid evidence invisible to the collector. The aggregate job retains its
+complete log and emits its final diagnostic lines as a failure annotation.
+
 `make c-abi-contract-complete` performs the same evidence validation and then
 fails unless all 12 categories are complete. It is the final completion and
 release-strength gate, not an ordinary development check. A single-host

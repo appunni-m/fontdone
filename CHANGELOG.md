@@ -18,6 +18,8 @@ internal workspace build targets.
 - Isolate the Windows static-linker library probe so it cannot replace the
   native DLL after the C consumer records its artifact hash.
 - Execute and aggregate all five native/QEMU contracts on main before tagging.
+- Restore platform evidence at its archive root in CI and release preflight,
+  and retain actionable diagnostics for aggregate scorecard failures.
 - Publish the one Cargo crate, native SDK, and npm package only through GitHub OIDC.
 
 ## 2.14.3-alpha.8 (Superseded; unpublished)
