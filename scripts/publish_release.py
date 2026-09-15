@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -98,6 +99,29 @@ def run(command: list[str]) -> None:
     subprocess.run(command, cwd=ROOT, check=True)
 
 
+def require_github_oidc(release_version: str) -> None:
+    """Keep the completed local bootstrap path closed for future releases."""
+    if (
+        os.environ.get("GITHUB_ACTIONS") != "true"
+        or os.environ.get("GITHUB_REPOSITORY") != "appunni-m/fontdone"
+        or os.environ.get("GITHUB_REF") != f"refs/tags/v{release_version}"
+        or not os.environ.get("ACTIONS_ID_TOKEN_REQUEST_URL")
+        or not os.environ.get("CARGO_REGISTRY_TOKEN")
+    ):
+        raise ValueError("publication requires the exact GitHub tag and OIDC publish job")
+
+
+def verify_archive(archive: Path, release_version: str) -> str:
+    """Bind the clean publish checkout to the archive verified by tag CI."""
+    local = ROOT / "target" / "package" / f"fontdone-{release_version}.crate"
+    if not archive.is_file() or not local.is_file():
+        raise ValueError("both the CI archive and locally verified Cargo archive are required")
+    expected = sha256(archive)
+    if sha256(local) != expected:
+        raise ValueError("Cargo archive differs from the exact tag CI artifact")
+    return expected
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -109,20 +133,27 @@ def main() -> int:
         help="skip immutable versions already visible on crates.io",
     )
     parser.add_argument("--registry-timeout", type=int, default=600)
+    parser.add_argument("--verified-archive", type=Path)
     args = parser.parse_args()
     release_version = version()
     try:
-        run(["python3", "scripts/verify_release.py"])
         if args.publish or args.publish_if_missing:
+            require_github_oidc(release_version)
+            if args.verified_archive is None:
+                raise ValueError("publication requires --verified-archive from successful tag CI")
+            expected_checksum = verify_archive(args.verified_archive, release_version)
             status = subprocess.run(
                 ["git", "status", "--porcelain=v1", "--untracked-files=all"],
                 cwd=ROOT,
-                check=False,
+                check=True,
                 capture_output=True,
                 text=True,
             )
             if status.stdout:
                 raise ValueError("publishing requires a clean tracked and untracked worktree")
+        else:
+            run(["python3", "scripts/verify_release.py"])
+            expected_checksum = None
         for index, package in enumerate(PUBLISHED_PACKAGES):
             command = [
                 "cargo",
@@ -133,6 +164,10 @@ def main() -> int:
             ]
             if args.dry_run:
                 command.extend(["--dry-run", "--allow-dirty"])
+            else:
+                # A read-only job and the pre-authentication step compiled the
+                # checksum-identical archive. Do not rebuild with a live token.
+                command.append("--no-verify")
             already_visible = False
             if args.publish_if_missing:
                 archive = ROOT / "target" / "package" / f"{package}-{release_version}.crate"
@@ -154,6 +189,10 @@ def main() -> int:
                 )
             else:
                 run(command)
+            if expected_checksum is not None:
+                wait_for_registry(package, release_version, args.registry_timeout)
+                if registry_checksum(package, release_version) != expected_checksum:
+                    raise ValueError("published crate checksum differs from the verified CI archive")
             if (
                 (args.publish or args.publish_if_missing)
                 and index + 1 < len(PUBLISHED_PACKAGES)

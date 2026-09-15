@@ -4823,12 +4823,12 @@ that the complete parity matrix or every consumer/platform lane ran.
 
 ### 6.2 Requested thorough gate
 
-The expensive gate runs only through `workflow_dispatch`. In the Actions UI,
+The expensive gate runs on every release tag and through `workflow_dispatch`. In the Actions UI,
 choose **CI**, select the pull-request branch in **Run workflow**, and run it
 when the change is ready for pre-merge review. The selected branch head is the
 measured commit; do not merge a different revision under that result.
 
-The manual run first repeats the fast commit gate, then adds:
+The tag or manual run first repeats the fast commit gate, then adds:
 
 | Job | Evidence |
 |---|---|
@@ -4845,6 +4845,10 @@ The manual run first repeats the fast commit gate, then adds:
 The stable `Thorough gate` succeeds only when every requested job produces
 valid evidence. It deliberately runs `make c-abi-contract-all-platforms`
 instead of pretending the unfinished 12-category contract is complete.
+Alpha releases accept incomplete source and C-contract coverage with the
+measured totals retained. Every executed comparison and platform check must
+still pass. `make release-verify-complete` retains the full-contract gate.
+
 Coverage, performance, platform, contract, package, parity, and integration
 artifacts are retained for 30 days (smoke artifacts are retained separately
 for seven days).

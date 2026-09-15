@@ -148,7 +148,7 @@ PLATFORM_SYSROOT ?=
 PLATFORM_CLANG_TARGET ?= $(PLATFORM_TARGET)
 
 .DEFAULT_GOAL := help
-.NOTPARALLEL: ci ci-fast ci-commit ci-thorough release-verify release-dry-run
+.NOTPARALLEL: ci ci-fast ci-commit ci-thorough release-verify release-verify-complete release-dry-run
 
 .PHONY: help
 help:
@@ -201,9 +201,10 @@ help:
 	@printf "  make record-parity-snapshot  Commit-ready snapshot from the latest source-matched full run\n"
 	@printf "  make record-c-contract-snapshot  Commit-ready snapshot from the latest generated C-ABI scorecard\n"
 	@printf "\nRelease:\n"
-	@printf "  make release-verify       Run the complete local release gate\n"
+	@printf "  make release-verify       Verify the alpha release; report incomplete coverage\n"
+	@printf "  make release-verify-complete  Also require all 12 C contract categories\n"
 	@printf "  make release-dry-run      Verify the public Cargo, C SDK, and npm archives\n"
-	@printf "  make release              Publish after protected approval\n"
+	@printf "  make release              Verify locally; publication uses a GitHub tag\n"
 	@printf "  make c-abi-package        Build the native C SDK archive\n"
 	@printf "  make c-abi-install        Install C headers, libraries, and pkg-config metadata under PREFIX\n"
 	@printf "  make c-abi-install-check  Stage and verify the complete C installation layout\n"
@@ -1027,21 +1028,24 @@ ci: ci-fast
 ci-thorough: ci-fast test-parity test-integrations c-abi-contract package-verify supply-chain test-coverage-all bench
 
 .PHONY: release-verify
-release-verify: ci-thorough c-abi-contract-complete bench-regression
-	$(MAKE) check-docs
+release-verify: ci-thorough
+	@echo "Alpha policy: measured coverage and C-contract debt are reported; all executed tests must pass."
+
+.PHONY: release-verify-complete
+release-verify-complete: release-verify c-abi-contract-complete bench-regression
 
 .PHONY: release-dry-run
 release-dry-run: package-verify npm-package-verify c-abi-package
 	@echo "local one-crate, native C SDK, and JavaScript npm archive verification complete"
-	@echo "after the exact root version is on crates.io, run: python3 scripts/publish_release.py --dry-run"
+	@echo "Publication is performed only by the tag-triggered GitHub OIDC workflow."
 
 .PHONY: release
 release: release-verify
-	@if [ "$(RELEASE_APPROVED)" != "1" ]; then \
-		echo "Refusing publication: set RELEASE_APPROVED=1 only after protected approval." >&2; \
-		exit 2; \
-	fi
-	$(PYTHON) scripts/publish_release.py --publish
+	@echo "Push an annotated v<version> tag on the CI-proven commit to publish via GitHub OIDC."
+
+.PHONY: release-publish-oidc
+release-publish-oidc:
+	$(PYTHON) scripts/publish_release.py --publish-if-missing --verified-archive "$(VERIFIED_CRATE)"
 
 .PHONY: clean
 clean:

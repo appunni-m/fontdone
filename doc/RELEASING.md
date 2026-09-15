@@ -1,302 +1,122 @@
 # Release guide
 
-The public release unit has one Cargo crate (`fontdone`), one native C SDK
-archive, and one JavaScript npm package (`fontdone`). The `fontdone-c-abi` and
-`fontdone-wasm` Cargo packages stay in the workspace as internal build targets;
-their exact version requirements keep the SDK and npm output synchronized with
-the root crate.
+Fontdone publishes one Cargo crate, `fontdone`, one npm package, `fontdone`,
+and a native C SDK on GitHub Releases. The internal `fontdone-c-abi` and
+`fontdone-wasm` Cargo packages have `publish = false`. There is no PyPI package.
 
-The root manifest is the publishable `fontdone` crate. A downstream crate may
-use a sibling checkout during development, but its dependency must retain the
-exact version requirement:
+The current candidate is `2.14.3-alpha.7`. Cargo's first local bootstrap was
+`2.14.3-alpha.3`; npm's first bootstrap was `2.14.3-alpha.1`. Future publication
+uses only the tag-triggered `.github/workflows/release.yml` and GitHub OIDC.
+Local registry logins are not used by that workflow.
+
+## 1. Trusted publisher configuration
+
+Configure these identities on the existing packages:
+
+| Registry | Repository | Workflow filename | GitHub environment |
+|---|---|---|---|
+| crates.io | `appunni-m/fontdone` | `release.yml` | `crates-io` |
+| npm | `appunni-m/fontdone` | `release.yml` | `npm` |
+
+The publish jobs alone receive `id-token: write`. Crates.io authentication uses
+`rust-lang/crates-io-auth-action`; npm uses Node 22.14.0 and npm 11.5.1 with
+provenance. An environment configured with required reviewers will pause its
+job until that review occurs. No repository secret containing a registry token
+is needed. Keep publisher settings and workflow environment names identical.
+
+This follows the isolated verification, artifacts, OIDC, and GitHub Release
+stages used by [coverage-mcp's release workflow](https://github.com/appunni-m/coverage-mcp/blob/v0.16.0/.github/workflows/release.yml).
+
+## 2. Alpha acceptance policy
+
+Starting with alpha.7, incomplete source coverage and incomplete C-contract
+adoption are reported, and do not require 100% completion for an alpha release.
+This is a release acceptance change, not a claim of complete FreeType parity.
+
+Every executed test remains required: the fast gate and MSRV, all runnable
+exact parity comparisons, Rust/C/WASM/npm consumers, five native or emulated
+platform contracts, package checks, dependency audits, and benchmark checks.
+Coverage collection must succeed and retain its actual totals. No source files,
+inputs, expected results, or uncovered lines are removed from measurement to
+meet this policy. Undefined C inputs remain explicitly named pending cases.
+
+`make release-verify` runs the local alpha checks and reports contract debt.
+`make release-verify-complete` additionally requires all twelve C-contract
+categories. The latter needs five fresh platform bundles and remains the
+stricter gate for a complete replacement claim. It also enforces performance
+thresholds once the benchmark policy has completed its baseline-review phase.
+That policy currently has no thresholds; alpha CI retains ten-sample benchmark
+reports without claiming that a regression budget passed.
+
+The [compatibility snapshot](compatibility_snapshot.json) and
+[adoption guide](FREETYPE_SUPPORT.md) distinguish completed functionality, measured
+runtime parity, historical coverage, and unfinished C-contract requirements.
+
+## 3. Prepare and verify a version
+
+1. Increment the root Cargo version, both private workspace versions and their
+   exact root dependency requirements, and the npm version together.
+2. Update the README, changelog, and package documentation. Regenerate derived
+   ABI metadata with `make generate-contracts`.
+3. Run `make test-parity` and `make record-parity-snapshot`. This binds the
+   reported comparison counts to the measured sources. Then refresh the file
+   ledger with `make repository-inventory`.
+4. Run `make ci-fast` using the pinned font-generation Python environment
+   described in [Development](DEVELOPMENT.md). Inspect packages with
+   `make release-dry-run`. Use `make release-verify` for a local thorough run.
+5. Commit, push to `main`, and require successful CI for that exact commit.
+6. Create an annotated, unused `v<version>` tag on that commit and push it.
+   Never move a published tag or overwrite an existing registry version.
+
+For the current candidate, registry consumers will use:
 
 ```toml
-  fontdone = { version = "=2.14.3-alpha.6", path = "../fontdone" }
+[dependencies]
+fontdone = { version = "=2.14.3-alpha.7" }
 ```
 
-After publication, a registry consumer such as `pillow-rs` must use
-`fontdone = { version = "=2.14.3-alpha.6" }`. A path-only declaration is valid
-for a local build but Cargo rejects it when packaging the downstream crate.
+A development path or pinned Git revision may be added, but a publishable
+consumer must retain the exact registry version.
 
-The first synchronized release is bootstrapped locally from the exact clean
-commit. The public Cargo crate `fontdone@2.14.3-alpha.3` was published from
-immutable tag `v2.14.3-alpha.3` at commit
-`5f17ad226d7c0a282fa0082316d7cdeb8ab12d9f` (crates.io checksum
-`3288b86becd4fe2b93c196634ff28573e6aa1f7f8e3807b3ded4d85667db690c`). The
-synchronized npm package is still pending; the older alpha.1 artifact is
-already visible, but its immutable contents predate the current source.
-Because npm versions are immutable, the alpha.3 archive must be published as a
-new synchronized prerelease; a retry may skip an existing npm version only
-after the registry package contents match the reviewed local archive. Local
-commands validate and assemble the Cargo, C SDK, and npm artifacts; they do not
-create tags or releases.
+## 4. What the tag runs
 
-The owner-authorized Cargo bootstrap is complete. Future tags and GitHub
-releases remain gated by the full parity, coverage, performance, and C-contract
-evidence described below.
+The tag starts the full CI matrix. Release preflight waits for successful CI
+on the exact tag commit; a fast branch run cannot satisfy that gate. It verifies
+the annotated remote tag object, synchronized versions, and downloads that
+run's checked Cargo/npm packages and platform evidence. It builds the native
+C SDK and produces a checksum manifest excluding the manifest itself.
 
-## 1. Release prerequisites
+The crates.io job compiles the packaged source before authentication and
+compares the resulting archive with the downloaded CI artifact. Only then does
+it mint an OIDC token and run `make release-publish-oidc VERIFIED_CRATE=...`.
+The helper rejects local invocation, the wrong repository/tag, missing OIDC
+context, dirty sources, and archive differences. Cargo's duplicate verification
+is skipped only after the identical archive has been compiled before token
+minting. The published registry checksum must match the verified archive.
 
-- At least two current crates.io owners exist for the `fontdone` package.
-- The GitHub `crates-io` environment requires reviewer approval.
-- crates.io and npm trusted publishers are configured for the protected
-  `crates-io` and `npm` environments; no long-lived registry token is stored in
-  the workflow.
-- The release commit is clean, pushed, and has a successful CI run.
-- The exact Cargo version for a future release has not previously been
-  published or tagged.
-- The `fontdone` npm version is checked immediately before release. If it is
-  visible, the workflow compares its extracted package contents with the
-  reviewed archive and skips only an exact match; a mismatch stops the release
-  and requires a new version.
+The npm job checks the bundle checksum and publishes the exact tested `.tgz`
+with provenance under `next`. Existing versions are accepted only when the
+registry integrity matches the candidate; network errors are not treated as
+missing versions.
 
-Tokens must never appear in command arguments, repository files, logs, or
-generated evidence.
+Only after both registries succeed does the final job attest the artifacts and
+create the GitHub prerelease with compatibility notes, Cargo archive, npm
+archive, native SDK, and `SHA256SUMS`. GitHub Release commands specify the
+repository explicitly, including jobs without a source checkout.
 
-## 2. Prepare the release commit
+## 5. Recovery and verification
 
-1. Update the public Cargo crate version, the npm package version, and both
-   exact internal Cargo requirements.
-2. Update the root README release banner.
-3. Run `make test-parity`, then `make record-parity-snapshot`; the second
-   command refuses evidence whose source digest does not match the worktree.
-4. Run `make c-abi-contract`, then run `make record-c-contract-snapshot` to
-   promote the generated C-contract measurements into the committed snapshot.
-   This records incomplete debt as well; `make c-abi-contract-complete` is
-   still required before publication.
-5. Review the generated function map, C headers, WASM schema/declarations, and
-   synchronized legal files.
-6. Move the changelog entry from “Unreleased” to the release date.
-7. Review `Cargo.lock` and every Cargo and npm archive input.
-8. Run:
+Inspect the first failed job and its retained diagnostics. A skipped publish
+job has not tested OIDC authentication. A publisher identity rejection in a
+running publish job is a registry configuration issue; a failed parity,
+coverage-collection, or package job is a repository issue.
 
-   ```bash
-   make check-versions
-   make check-generated
-   make check-docs
-   make package-verify
-   make npm-package-verify
-   ```
+Rerun a transient failure on the same immutable tag. If source or workflow
+changes are needed, make a new version and tag. A partially published version
+must not be rebuilt into different bytes. Preserve earlier failed tags and run
+records as history.
 
-`make package-verify` creates and inspects all three workspace `.crate`
-archives so the internal facades remain reproducible, but only the root
-`fontdone` archive is a public Cargo artifact. It rejects fixture, font,
-oracle, test, and tooling leakage, compiles the extracted packages with exact
-local dependency substitutions, and writes inventories and SHA-256 digests
-under `target/release-evidence/`. `make c-abi-package` assembles the native C
-SDK archive from the built library, headers, pkg-config metadata, examples,
-and legal files. `make npm-package-verify` builds the Wasm asset, runs wrapper
-tests, creates and inspects the exact `.tgz`, installs it into a temporary
-dependency consumer, reruns its shipped self-test, and renders a glyph through
-the installed package. `make check-versions` also verifies the root package
-identity, synchronized workspace members, private facade markers, exact facade
-requirements, npm name/version/publish tag, and the versioned path dependency
-used by the external Rust consumer.
-
-## 3. Required CI evidence
-
-The exact release commit first passes the per-commit
-[CI contract](DEVELOPMENT.md#61-per-commit-gate). Pushing its annotated
-`v<version>` tag then runs the complete [thorough
-gate](DEVELOPMENT.md#62-requested-thorough-gate), which uploads all five
-hash-bound C platform bundles and validates the assembled evidence. A manual
-`workflow_dispatch` run remains available for recovery, but is no longer
-required for an ordinary tag release.
-
-Release preflight waits for the successful thorough CI run attached to the
-exact tag commit, downloads its five platform-contract artifacts, and runs
-`make release-verify`. Unfinished contract debt therefore still blocks
-publication; a fast branch push cannot satisfy this gate because it does not
-produce the cross-platform bundles.
-Without assembled bundles, a local `make release-verify` correctly fails the
-complete C contract. Use `make ci` and `make c-abi-contract` for ordinary
-single-host development, and `make ci-thorough` only when a local exhaustive
-audit is requested. The final release step reruns `make check-docs` after the
-complete scorecard is generated, so a stale committed compatibility snapshot
-blocks publication.
-
-## 4. First local bootstrap
-
-The alpha.3 Cargo bootstrap completed on 2026-09-13 from the immutable tag
-above. `cargo info fontdone@2.14.3-alpha.3` downloaded and verified the public
-registry artifact. The current `main` follow-on branch contains inventory and
-release-documentation updates beyond that immutable tag; it is not a
-replacement for the published alpha.3 package.
-
-After `make release-verify` passes on a clean, reviewed commit, publish the
-single public Cargo crate through the maintained script:
-
-```bash
-cargo login
-RELEASE_APPROVED=1 RELEASE_CI_SHA="$(git rev-parse HEAD)" \
-  python3 scripts/publish_release.py --publish
-cargo logout
-```
-
-The script publishes `fontdone`. Build the exact C SDK archive from
-`make c-abi-package` and the npm artifact from `make npm-package-verify`; the
-tag workflow attaches the C archive and publishes the npm artifact only after
-the registry check confirms that the immutable version is missing. For a new
-version, publish the exact verified archive:
-
-```bash
-version=2.14.3-alpha.6
-npm publish "target/npm-package/fontdone-${version}.tgz" \
-  --access public --tag next --provenance
-```
-
-The local bootstrap intentionally uses `--publish` because the Cargo version is
-new. The tag workflow uses `--publish-if-missing` for Cargo and performs an
-immutable npm content check before deciding whether to publish. Retrying a tag
-after a successful upload therefore preserves an identical registry artifact;
-it fails loudly if the visible version came from different source bytes. The
-older `2.14.3-alpha.1` npm version remains immutable historical evidence and
-is not reused by this checkout.
-
-Do not place either credential in a command, file, or log. Configure the
-protected trusted publishers before using the automated path.
-
-## 5. Trigger and publication order
-
-Push an annotated `v<version>` tag for the exact synchronized commit. The tag
-starts the complete CI matrix; `.github/workflows/release.yml` waits for that
-successful run, verifies the tag, and publishes from the verified bundle.
-
-After approval, `scripts/publish_release.py --publish-if-missing` publishes
-`fontdone` when that exact version is not already visible. The C SDK archive is
-distributed as a GitHub release asset, and the JavaScript package is published to
-npm by the separate workflow job.
-
-The script names the public package, preserves an immutable version already
-visible, stops at the first failure, and requires a clean tracked and untracked
-worktree. Never run an unqualified `cargo publish` from the workspace root.
-
-For registry-resolution rehearsal after the root version is visible:
-
-```bash
-python3 scripts/publish_release.py --dry-run
-```
-
-Before publication, `make package-verify` is the reproducible archive-level
-equivalent; a facade registry dry-run cannot resolve an unpublished exact root
-dependency.
-
-## 6. JavaScript npm publication
-
-The verified npm artifact is:
-
-```text
-target/npm-package/fontdone-2.14.3-alpha.6.tgz
-```
-
-Rehearse the registry command without publishing:
-
-```bash
-npm publish --dry-run \
-  target/npm-package/fontdone-2.14.3-alpha.6.tgz \
-  --access public --tag next
-```
-
-After bumping all synchronized manifests to a new version, and once that
-version is missing after explicit owner approval, authenticate with npm and
-publish that exact tarball, not the mutable source directory:
-
-```bash
-VERSION=2.14.3-alpha.6
-npm publish "target/npm-package/fontdone-${VERSION}.tgz" \
-  --access public --tag next
-```
-
-Before publication, the tag workflow queries npm's immutable `dist.integrity`
-for the exact version and compares it with the SHA-512 digest of the tarball in
-the release bundle. A missing version is published; an exact archive match is
-skipped; any mismatch fails the job and requires a new prerelease. A registry
-name check alone is insufficient because it can silently preserve an artifact
-built from a different commit.
-
-The tag workflow uses `next` for versions with a prerelease suffix and
-`latest` for stable versions, so this alpha cannot silently become the stable
-release. Immediately verify the immutable version and tag:
-
-```bash
-npm view fontdone@2.14.3-alpha.6 version dist.tarball --json
-npm view fontdone dist-tags --json
-```
-
-Never place an npm token in a command, repository file, npm URL, or captured
-log. A registry name check is time-sensitive; rerun it immediately before the
-approved publish.
-
-## 7. Tags and release assets
-
-For a future synchronized release, after the maintainer pushes annotated tag
-`v<version>` at the approved commit and the Cargo and npm publications succeed,
-the workflow:
-
-1. verifies the immutable tag and successful CI result;
-2. creates the GitHub release from generated notes;
-3. attaches the exact public `.crate`, native C SDK archive, verified npm
-   `.tgz`, and `SHA256SUMS`.
-
-The existing `v2.14.3-alpha.3` tag already identifies the published Cargo
-artifact. Do not move or rerun that tag to publish the pending npm artifact;
-either publish the exact reviewed npm archive under owner approval or bump all
-synchronized package versions and use a new tag. Never move or recreate a
-published tag. Attached checksums must describe the same archives inspected
-during preflight.
-
-## 8. Failure, retry, and registry recovery
-
-Stop at the first failed publication. Do not distribute a C SDK or npm
-artifact that was built against a different root version.
-
-- Retry the same unpublished package after a transient local or network error.
-- Published crate contents are immutable.
-- If published contents are wrong, explicitly yank the affected version; do
-  not delete its tag or reuse its version.
-- Rebuild the synchronized C SDK and npm artifacts when yanking their root
-  version; the internal facade packages are not registry releases.
-- Fix the issue and publish a new synchronized prerelease.
-
-For npm, do not reuse a published version. If package contents are wrong,
-deprecate the affected version with a clear replacement message, move `next`
-back to the last reviewed version when appropriate, fix forward, and publish a
-new synchronized prerelease. Follow npm's current unpublish policy only for an
-exception that genuinely requires removal.
-
-Example:
-
-```bash
-cargo yank --version 2.14.3-alpha.3 fontdone
-```
-
-## 9. Alpha policy and current evidence
-
-Any Rust API, JavaScript API, C ABI, WASM ABI, layout, ownership, error, or
-behavioral change may occur only in a new prerelease. A public change in one
-surface increments the public Cargo crate, C SDK, and npm artifact. The `2.14.3`
-prefix identifies the pinned FreeType target; it does not claim complete
-replacement.
-
-| Field | Value |
-|---|---|
-| Version | `2.14.3-alpha.6` |
-| FreeType target | `2.14.3` |
-| Last committed evidence | `2026-07-30` |
-| Public Cargo crate | `fontdone` |
-| Internal Cargo build targets | `fontdone-c-abi`, `fontdone-wasm` |
-| Native C SDK archive | `fontdone-c-abi-<version>-<target>.tar.gz` |
-| JavaScript npm package | `fontdone` |
-
-The machine-readable denominators are in
-[`compatibility_snapshot.json`](compatibility_snapshot.json). Generated
-package reports, release notes, inventories, archives, and checksums are local
-outputs under `target/release-evidence/`.
-
-The current local dry-run on the checked-out release candidate (2026-09-14)
-verifies one public Cargo package, two private workspace build
-packages, the `fontdone@2.14.3-alpha.6` npm archive, and the native C SDK
-archive. The complete release gate still requires the unresolved C-ABI route
-and exact-error debt plus fresh cross-platform bundles, including the Windows
-import library; these checks remain visible in the generated contract
-scorecard and are not bypassed by the dry-run.
+After publication, check the exact crates.io version and checksum, npm version
+and provenance, and the GitHub prerelease assets. Confirm a fresh registry
+consumer can install and exercise the released APIs. A green preflight alone
+is not evidence that either registry accepted the release.

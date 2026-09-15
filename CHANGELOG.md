@@ -5,7 +5,19 @@ synchronized version for the public `fontdone` Cargo crate, the native C SDK,
 and the `fontdone` JavaScript npm package. The C and raw-WASM Cargo packages are
 internal workspace build targets.
 
-## 2.14.3-alpha.6 (Unreleased)
+## 2.14.3-alpha.7 (2026-09-15)
+
+- Release Cargo and npm exclusively through GitHub OIDC after successful exact
+  tag CI, using checksums to bind the published artifacts to verified packages.
+- Accept measured but incomplete C-contract and source coverage for alpha
+  releases. All executed parity, consumer, platform, and package checks remain
+  required; the complete-contract gate stays available for the full replacement.
+- Include the post-alpha.6 cache-sentinel and malformed COLR/C30 parity fixes,
+  optional-feature coverage preparation, and portable Windows fixture paths.
+- Reuse CI package evidence without repeating the entire test/coverage matrix
+  in the publishing job; preserve old tags as immutable failure history.
+
+## 2.14.3-alpha.6 (Superseded; unpublished)
 
 Current prerelease candidate. This candidate keeps the complete tag-triggered
 parity, coverage, performance, and five-platform C-contract matrix while making

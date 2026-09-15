@@ -10,10 +10,10 @@
 
 </div>
 
-> **Release:** `2.14.3-alpha.6` is the current prerelease candidate. The previous
+> **Release:** `2.14.3-alpha.7` is the current prerelease candidate. The previous
 > `2.14.3-alpha.3` Cargo release is published from immutable tag
-> `v2.14.3-alpha.3`; alpha.4 and alpha.5 were superseded after hosted checks
-> failed. The synchronized alpha.6 Cargo, npm, and C SDK artifacts are released only after
+> `v2.14.3-alpha.3`; alpha.4 through alpha.6 were superseded after hosted checks
+> failed. The synchronized alpha.7 Cargo, npm, and C SDK artifacts are released only after
 > the tag-triggered thorough CI gate passes. The older
 > `fontdone@2.14.3-alpha.1` npm artifact is immutable historical evidence and
 > predates this source. The raw WASM and C Cargo packages remain internal
@@ -36,7 +36,7 @@ Pinned FreeType source is used only by ignored offline test tooling.
 | Raw JavaScript host | Internal `fontdone-wasm` build target | Low-level wasm32 linear-memory ABI used by the npm package | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
 
 The `fontdone` crate and npm package are released as synchronized exact
-prereleases. The current candidate is `2.14.3-alpha.6`; the older alpha.1 npm
+prereleases. The current candidate is `2.14.3-alpha.7`; the older alpha.1 npm
 artifact is immutable historical evidence and cannot be treated as this
 release. Evaluate Rust from a local
 checkout while keeping the version requirement that a publishable downstream
@@ -44,14 +44,14 @@ package needs:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.6", path = "../fontdone" }
+fontdone = { version = "=2.14.3-alpha.7", path = "../fontdone" }
 ```
 
 Registry consumers should request the exact prerelease:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.6" }
+fontdone = { version = "=2.14.3-alpha.7" }
 ```
 
 Cargo requires a version requirement on dependencies of a crate that will be
@@ -60,7 +60,7 @@ release tag is public:
 
 ```toml
 [dependencies]
-fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.6" }
+fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.7" }
 ```
 
 ## 2. Rust quick start
@@ -113,7 +113,7 @@ That evidence does not make its complete application behavior available.
 
 ### 3.2 Last committed runtime evidence
 
-The last committed full parity snapshot was recorded on **2026-09-14**:
+The last committed full parity snapshot was recorded on **2026-09-15**:
 
 | Measurement | Count |
 |---|---:|

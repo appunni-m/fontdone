@@ -458,7 +458,8 @@ jobs:
           runner_bin="${runner_command%% *}"
           "$runner_bin" --version
           test -d "${{ matrix.sysroot }}"
-          find "${{ matrix.sysroot }}" -maxdepth 2 -type f | head -n 20
+          # sed consumes the complete stream, avoiding SIGPIPE under pipefail.
+          find "${{ matrix.sysroot }}" -maxdepth 2 -type f | sed -n '1,20p'
       - name: Prefetch locked dependencies
         run: cargo fetch --locked
       - name: Execute cross-platform contract
@@ -567,6 +568,7 @@ jobs:
           path: |
             target/package/*.crate
             target/npm-package/*.tgz
+            target/release-evidence/release-notes.md
             target/release-evidence/*.json
             target/release-evidence/*.sha256
             target/release-evidence/*.txt
