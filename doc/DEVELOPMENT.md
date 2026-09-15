@@ -473,9 +473,13 @@ unfinished contract debt remains explicit in the scorecard.
 Platform artifacts contain both `api-abi-audit/platform-contract/*.json` and
 `ci-diagnostics/` paths relative to their shared upload root, `target/`.
 Both CI aggregation and release preflight must download those archives into
-`target/`; downloading into the bundle directory nests the paths and makes
-valid evidence invisible to the collector. The aggregate job retains its
-complete log and emits its final diagnostic lines as a failure annotation.
+`target/`; downloading into the bundle directory incorrectly nests the paths
+instead of restoring their original layout. The collector currently searches
+recursively, so this layout error alone does not explain a comparison failure.
+The aggregate job retains its complete log and emits its final diagnostic
+lines, unverified C functions, failed case IDs, and first value differences as
+failure annotations. A failed external C comparison happens before platform
+bundle validation and must be diagnosed from that ledger.
 
 `make c-abi-contract-complete` performs the same evidence validation and then
 fails unless all 12 categories are complete. It is the final completion and

@@ -587,6 +587,49 @@ jobs:
             echo "::error title=platform scorecard failure::$summary"
             exit "$status"
           fi
+      - name: Explain external C comparison failures
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          def annotate(title, value):
+              message = json.dumps(value, ensure_ascii=True, separators=(",", ":"))
+              message = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+              print(f"::error title={title}::{message}")
+
+          def differences(expected, actual, path="$", limit=10):
+              if type(expected) is not type(actual):
+                  return [{"path": path, "expected": expected, "actual": actual}]
+              if isinstance(expected, dict):
+                  rows = []
+                  for key in sorted(expected.keys() | actual.keys()):
+                      rows.extend(differences(expected.get(key), actual.get(key), f"{path}.{key}"))
+                      if len(rows) >= limit:
+                          break
+                  return rows[:limit]
+              if expected != actual:
+                  return [{"path": path, "expected": expected, "actual": actual}]
+              return []
+
+          path = Path("target/api-abi-audit/external_c_function_ledger.json")
+          if path.is_file():
+              ledger = json.loads(path.read_text())
+              annotate("external C totals", ledger["totals"])
+              annotate("external C unverified functions", {
+                  name: row for name, row in ledger["functions"].items()
+                  if row["status"] != "verified"
+              })
+              failed = [row for row in ledger["cases"] if row["status"] != "exact"]
+              annotate("external C failed cases", [row["case_id"] for row in failed])
+              for row in failed[:5]:
+                  annotate("external C first differences", {
+                      "case_id": row["case_id"], "status": row["status"],
+                      "differences": differences(row.get("pinned"), row.get("external")),
+                      "error": row.get("error"),
+                  })
+          PY
       - name: Retain complete C-contract evidence
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
