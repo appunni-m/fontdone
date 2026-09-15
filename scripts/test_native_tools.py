@@ -10,6 +10,7 @@ import unittest
 from unittest.mock import patch
 
 import check_c_exports
+import audit_api_abi
 
 
 class CrossExportBuildTests(unittest.TestCase):
@@ -41,6 +42,49 @@ class CrossExportBuildTests(unittest.TestCase):
                 self.assertEqual(cargo.args[0][-2:], ["--target", target])
                 self.assertEqual(cargo.kwargs["env"]["CARGO_TARGET_" + target.upper().replace("-", "_") + "_LINKER"], linker)
                 self.assertEqual(cargo.kwargs["env"]["CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER"], "host-cc")
+
+
+class SourceByteIdentityTests(unittest.TestCase):
+    def test_windows_checkout_preserves_source_and_font_bytes(self):
+        root = Path(__file__).resolve().parents[1]
+        for path in (
+            "Makefile", "Cargo.toml", "src/ffi/handles.rs",
+            "scripts/fetch_ft.sh", "tests/fixtures/input/fonts/DejaVuSans.ttf",
+        ):
+            with self.subTest(path=path):
+                committed = subprocess.check_output(["git", "show", f"HEAD:{path}"], cwd=root)
+                checkout = subprocess.check_output([
+                    "git", "-c", "core.autocrlf=true", "cat-file", "--filters", f"HEAD:{path}",
+                ], cwd=root)
+                self.assertEqual(committed, checkout, f"checkout changes measured bytes: {path}")
+
+
+class ClangHeaderTests(unittest.TestCase):
+    def test_windows_header_paths_obey_the_portable_exclusions(self):
+        inventory = {bucket: {} for bucket in (
+            "functions", "macros", "typedefs", "callbacks", "structs",
+            "enums", "enum_variants", "error_codes",
+        )}
+        inventory["functions"] = {
+            "portable": {"file": r"freetype\freetype.h"},
+            "mac_only": {"file": r"freetype\ftmac.h"},
+            "reinclude_only": {"file": r"freetype\fterrdef.h"},
+        }
+        with patch.object(audit_api_abi.shutil, "which", return_value="clang"):
+            command = audit_api_abi.clang_base_command(inventory, local=False)
+        includes = [command[index + 1] for index, value in enumerate(command) if value == "-include"]
+        self.assertEqual(includes, ["ft2build.h", "freetype/freetype.h"])
+        self.assertIn("-Werror", command)
+
+    def test_ast_failure_reports_the_compiler_error(self):
+        with (
+            patch.object(audit_api_abi, "clang_base_command", return_value=["clang", "-Werror"]),
+            patch.object(audit_api_abi.subprocess, "run", side_effect=subprocess.CalledProcessError(
+                1, ["clang"], stderr="fatal error: missing native SDK header",
+            )),
+        ):
+            with self.assertRaisesRegex(SystemExit, "missing native SDK header"):
+                audit_api_abi.clang_ast({}, local=False)
 
 
 if __name__ == "__main__":

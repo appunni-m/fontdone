@@ -4,6 +4,8 @@
 
 CARGO := cargo
 PYTHON := python3
+# Git for Windows provides sha256sum; macOS also supports the Perl shasum.
+SHA256 := $(shell command -v sha256sum 2>/dev/null || printf 'shasum -a 256')
 PYCACHE_DIR := target/pycache
 BENCH_SAMPLES ?= 10
 BENCH_PROFILE ?= default
@@ -101,8 +103,8 @@ COVERAGE_SOURCE_STATE := $(shell \
 		git diff --no-ext-diff --binary -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm 2>/dev/null; \
 		git diff --no-ext-diff --cached --binary -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm 2>/dev/null; \
 		git ls-files --others --exclude-standard -- Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm 2>/dev/null | \
-		while IFS= read -r file; do shasum -a 256 "$$file"; done; \
-	} | shasum -a 256 | cut -d ' ' -f1 \
+		while IFS= read -r file; do $(SHA256) "$$file"; done; \
+	} | $(SHA256) | cut -d ' ' -f1 \
 )
 COVERAGE_BUILD_STATE := $(COVERAGE_SOURCE_STATE)|toolchain=$(COVERAGE_TOOLCHAIN)|opt=$(COVERAGE_TEST_OPT_LEVEL)|debug=$(COVERAGE_TEST_DEBUG)|flags=$(COVERAGE_LLVM_COV_FLAGS)
 COVERAGE_PREPARATION_SOURCE_STATE := $(shell \
@@ -111,8 +113,8 @@ COVERAGE_PREPARATION_SOURCE_STATE := $(shell \
 		git diff --no-ext-diff --binary -- Makefile Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/manifest.yaml tests/data tests/fixtures scripts 2>/dev/null; \
 		git diff --no-ext-diff --cached --binary -- Makefile Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/manifest.yaml tests/data tests/fixtures scripts 2>/dev/null; \
 		git ls-files --others --exclude-standard -- Makefile Cargo.toml Cargo.lock rust-toolchain.toml src fontdone-c-abi fontdone-wasm tests/manifest.yaml tests/data tests/fixtures scripts 2>/dev/null | \
-		while IFS= read -r file; do shasum -a 256 "$$file"; done; \
-	} | shasum -a 256 | cut -d ' ' -f1 \
+		while IFS= read -r file; do $(SHA256) "$$file"; done; \
+	} | $(SHA256) | cut -d ' ' -f1 \
 )
 COVERAGE_PREPARATION_STATE := $(COVERAGE_PREPARATION_SOURCE_STATE)|optional=$(COVERAGE_PREPARE_OPTIONAL_FEATURES)|abi_preflight=$(COVERAGE_ABI_PREFLIGHT)
 # Evaluate preparation inputs before the target recipe cleans stale coverage

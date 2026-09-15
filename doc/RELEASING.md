@@ -4,7 +4,7 @@ Fontdone publishes one Cargo crate, `fontdone`, one npm package, `fontdone`,
 and a native C SDK on GitHub Releases. The internal `fontdone-c-abi` and
 `fontdone-wasm` Cargo packages have `publish = false`. There is no PyPI package.
 
-The current candidate is `2.14.3-alpha.8`. Cargo's first local bootstrap was
+The current candidate is `2.14.3-alpha.9`. Cargo's first local bootstrap was
 `2.14.3-alpha.3`; npm's first bootstrap was `2.14.3-alpha.1`. Future publication
 uses only the tag-triggered `.github/workflows/release.yml` and GitHub OIDC.
 Local registry logins are not used by that workflow.
@@ -82,7 +82,7 @@ For the current candidate, registry consumers will use:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.8" }
+fontdone = { version = "=2.14.3-alpha.9" }
 ```
 
 A development path or pinned Git revision may be added, but a publishable

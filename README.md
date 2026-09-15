@@ -10,7 +10,7 @@
 
 </div>
 
-> **Release:** `2.14.3-alpha.8` is the current prerelease candidate. The previous
+> **Release:** `2.14.3-alpha.9` is the current prerelease candidate. The previous
 > `2.14.3-alpha.3` Cargo release is published from immutable tag
 > `v2.14.3-alpha.3`; alpha.4 through alpha.6 were superseded after hosted checks
 > failed. The synchronized alpha.7 Cargo, npm, and C SDK artifacts are released only after
@@ -36,7 +36,7 @@ Pinned FreeType source is used only by ignored offline test tooling.
 | Raw JavaScript host | Internal `fontdone-wasm` build target | Low-level wasm32 linear-memory ABI used by the npm package | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
 
 The `fontdone` crate and npm package are released as synchronized exact
-prereleases. The current candidate is `2.14.3-alpha.8`; the older alpha.1 npm
+prereleases. The current candidate is `2.14.3-alpha.9`; the older alpha.1 npm
 artifact is immutable historical evidence and cannot be treated as this
 release. Evaluate Rust from a local
 checkout while keeping the version requirement that a publishable downstream
@@ -44,14 +44,14 @@ package needs:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.8", path = "../fontdone" }
+fontdone = { version = "=2.14.3-alpha.9", path = "../fontdone" }
 ```
 
 Registry consumers should request the exact prerelease:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.8" }
+fontdone = { version = "=2.14.3-alpha.9" }
 ```
 
 Cargo requires a version requirement on dependencies of a crate that will be
@@ -60,7 +60,7 @@ release tag is public:
 
 ```toml
 [dependencies]
-fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.8" }
+fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.9" }
 ```
 
 ## 2. Rust quick start
@@ -137,8 +137,8 @@ equivalent to complete behavior for every input, state, or platform.
 The latest worktree verification is the full parity snapshot recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
 20,357 / 20,357 runnable comparisons with 0 failures and 3 explicitly pending
-concrete cases. Its source-bound parity-tree digest is
-`478575c6859d0b656e8a8f650994f7c2412b73cfaa3ff48f3faa247ebd51f863`.
+concrete cases. The source digest, compiler versions, and execution counts are
+recorded in the [release's parity receipt](https://github.com/appunni-m/fontdone/blob/v2.14.3-alpha.9/doc/runtime_parity_evidence.json).
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a

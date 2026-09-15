@@ -432,6 +432,20 @@ to `check_c_exports.py`, and `make test-native-tools` guards that handoff for
 both cross targets. Windows contract failures retain the complete log and
 publish the final diagnostic lines in the run annotations.
 
+`.gitattributes` pins source and shell-script checkouts to LF while preserving
+the exact bytes of font/assets under `tests/fixtures/input/`. Without that
+policy, `core.autocrlf=true` changes both shell syntax and the source digest
+used to compare platform bundles. The native-tool regression suite simulates
+that checkout setting and compares source and font bytes with their Git blobs.
+
+The Rust layout probe must also search the host `target/release/deps` when
+cross-compiling: proc-macro dependencies are host artifacts, while the facade
+and its runtime dependencies live under `target/<triple>/release/deps`.
+Searching only the latter reproduces E0463 for `fontdone_c_abi` even though
+the target rlib exists. Header inventories use slash-separated paths so the
+same portable-header exclusions apply on Windows; strict Clang failures keep
+their captured error text.
+
 `make c-abi-contract-all-platforms` expects exactly five fresh bundles
 assembled under `target/api-abi-audit/platform-contract/`. Requested thorough
 CI creates those bundles in three native and two cross jobs, downloads them
@@ -4838,8 +4852,9 @@ diagnostics are retained for seven days. This gate is intentionally not a claim
 that the complete parity matrix or every consumer/platform lane ran.
 
 Non-pull-request runs also execute all five native/QEMU platform contracts
-after the commit gate. This catches link and runtime failures on main before
-a version tag is created; type checking alone cannot prove linker setup.
+and validate their combined scorecard after the commit gate. This catches
+link, runtime, and evidence-identity failures on main before a version tag is
+created; type checking alone cannot prove linker setup.
 
 ### 6.2 Requested thorough gate
 
@@ -4964,7 +4979,7 @@ or reason is stale.
 | Reason | Paths | Retained context |
 |---|---:|---|
 | R01 | 58 | published pure-Rust runtime |
-| R02 | 101 | package, build, release, and facade contracts |
+| R02 | 102 | package, build, release, and facade contracts |
 | R03 | 1,761 | executable parity tests and public contracts |
 | R04 | 1,336 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
@@ -4974,7 +4989,7 @@ or reason is stale.
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,344** | **all retained paths** |
+| **Total** | **3,345** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

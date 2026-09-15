@@ -1,0 +1,4 @@
+# Shell scripts and source receipts must see the same bytes on every runner.
+* text=auto eol=lf
+# Oracle font/assets are byte inputs, including text-based font formats.
+tests/fixtures/input/** -text

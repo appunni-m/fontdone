@@ -5,7 +5,17 @@ synchronized version for the public `fontdone` Cargo crate, the native C SDK,
 and the `fontdone` JavaScript npm package. The C and raw-WASM Cargo packages are
 internal workspace build targets.
 
-## 2.14.3-alpha.8 (2026-09-15)
+## 2.14.3-alpha.9 (2026-09-15)
+
+- Carry the alpha.8 native C-width fixes through the full platform release gates.
+- Preserve target linkers and host proc-macro search paths in cross-platform
+  export and record-layout audits.
+- Normalize Windows header paths, preserve strict Clang diagnostics, and keep
+  source bytes consistent across checkouts while retaining exact font inputs.
+- Execute and aggregate all five native/QEMU contracts on main before tagging.
+- Publish the one Cargo crate, native SDK, and npm package only through GitHub OIDC.
+
+## 2.14.3-alpha.8 (Superseded; unpublished)
 
 - Fix facade conversions between platform-width C `long` and the engine's
   64-bit arithmetic. This removes 32-bit Linux and Windows compilation failures

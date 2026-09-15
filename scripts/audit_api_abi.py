@@ -109,7 +109,7 @@ def parse_c_headers(include_root: Path) -> dict:
             continue
         raw = read_text(path)
         text = strip_c_comments(raw)
-        rel = str(path.relative_to(include_root))
+        rel = path.relative_to(include_root).as_posix()
 
         for match in re.finditer(
             r"FT_EXPORT\s*\(([^)]*)\)\s*([A-Za-z_][A-Za-z0-9_]*)\s*\((.*?)\)\s*;",
@@ -502,7 +502,7 @@ def clang_base_command(c: dict, *, local: bool) -> list[str]:
         ]
     include_root = ROOT / "freetype" / "include"
     header_paths = {
-        row["file"]
+        row["file"].replace("\\", "/")
         for bucket in (
             "functions",
             "macros",
@@ -535,6 +535,14 @@ def clang_base_command(c: dict, *, local: bool) -> list[str]:
     return command
 
 
+def checked_clang_output(command: list[str]) -> subprocess.CompletedProcess:
+    """Preserve captured compiler diagnostics when a strict header audit fails."""
+    try:
+        return subprocess.run(command, cwd=ROOT, check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as error:
+        raise SystemExit(f"Clang contract audit failed:\n{error.stderr or error.stdout}") from error
+
+
 def clang_ast(c: dict, *, local: bool) -> dict:
     command = clang_base_command(c, local=local)
     command.extend(
@@ -547,26 +555,14 @@ def clang_ast(c: dict, *, local: bool) -> dict:
             os.devnull,
         )
     )
-    completed = subprocess.run(
-        command,
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    completed = checked_clang_output(command)
     return json.loads(completed.stdout)
 
 
 def clang_macro_definitions(c: dict, *, local: bool) -> dict[str, str]:
     command = clang_base_command(c, local=local)
     command.extend(("-dM", "-E", "-x", "c", os.devnull))
-    completed = subprocess.run(
-        command,
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    completed = checked_clang_output(command)
     definitions = {}
     for line in completed.stdout.splitlines():
         match = re.match(
@@ -1382,6 +1378,11 @@ def rust_binary_record_layouts(
             str(probe_binary),
         ]
     )
+    if PLATFORM_TARGET:
+        # Cargo builds proc-macro dependencies for the host even when the
+        # facade is cross-compiled. rustc needs both metadata search paths,
+        # just as Cargo supplies them to a downstream target crate.
+        command.extend(("-L", f"dependency={ROOT / 'target' / 'release' / 'deps'}"))
     if PLATFORM_LINKER:
         command.extend(("-C", f"linker={PLATFORM_LINKER}"))
     subprocess.run(command, cwd=ROOT, env=environment, check=True)
