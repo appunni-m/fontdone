@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 import check_c_exports
 import audit_api_abi
+import test_c_consumer
 
 
 class CrossExportBuildTests(unittest.TestCase):
@@ -125,6 +126,35 @@ class WindowsExportTests(unittest.TestCase):
             )):
                 _, symbols = check_c_exports.binary_exports("static", "Windows", release, "nm")
         self.assertEqual(symbols, {"FT_Init_FreeType", "FT_Undocumented_Endpoint"})
+
+
+class WindowsStaticLibraryProbeTests(unittest.TestCase):
+    def test_linker_library_probe_preserves_the_measured_dll(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            consumer_library = root / "target" / "release" / "fontdone_c_abi.dll"
+            consumer_library.parent.mkdir(parents=True)
+            consumer_library.write_bytes(b"DLL measured by the C consumer")
+
+            def cargo_rustc(command, **kwargs):
+                build_target = (
+                    Path(command[command.index("--target-dir") + 1])
+                    if "--target-dir" in command else root / "target"
+                )
+                probe_library = build_target / "release" / "fontdone_c_abi.dll"
+                probe_library.parent.mkdir(parents=True, exist_ok=True)
+                probe_library.write_bytes(b"DLL relinked by the informational probe")
+                return subprocess.CompletedProcess(
+                    command, 0, stdout="", stderr="note: native-static-libs: kernel32.lib -ladvapi32\n",
+                )
+
+            with (
+                patch.object(test_c_consumer, "ROOT", root),
+                patch.object(test_c_consumer.subprocess, "run", side_effect=cargo_rustc),
+            ):
+                libraries = test_c_consumer.windows_native_static_libraries({})
+            self.assertEqual(libraries, ["kernel32.lib", "advapi32.lib"])
+            self.assertEqual(consumer_library.read_bytes(), b"DLL measured by the C consumer")
 
 
 if __name__ == "__main__":

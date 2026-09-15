@@ -15,6 +15,8 @@ internal workspace build targets.
 - Compare complete Windows symbol names so Rust type names inside mangled
   symbols cannot be mistaken for undocumented C exports; keep DLL export
   names distinct from their optional implementation-alias annotations.
+- Isolate the Windows static-linker library probe so it cannot replace the
+  native DLL after the C consumer records its artifact hash.
 - Execute and aggregate all five native/QEMU contracts on main before tagging.
 - Publish the one Cargo crate, native SDK, and npm package only through GitHub OIDC.
 

@@ -80,6 +80,10 @@ def run_consumer(
 
 
 def windows_native_static_libraries(environment: dict[str, str]) -> list[str]:
+    # `cargo rustc -- --print native-static-libs` still compiles this crate.
+    # Its extra compiler flags invalidate Cargo's normal build fingerprint;
+    # keep that probe away from the DLL/static archive whose hashes the
+    # consumer, export audit, and layout audit must all describe unchanged.
     completed = subprocess.run(
         [
             "cargo",
@@ -88,6 +92,8 @@ def windows_native_static_libraries(environment: dict[str, str]) -> list[str]:
             "fontdone-c-abi",
             "--release",
             "--locked",
+            "--target-dir",
+            str(ROOT / "target" / "native-static-libs-probe"),
             "--",
             "--print",
             "native-static-libs",

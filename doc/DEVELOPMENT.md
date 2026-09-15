@@ -441,6 +441,14 @@ their own export credit. Compare the whole name token: mangled Rust symbols cont
 suite covers static type-name substrings and DLL aliases, while retaining a
 real undocumented `FT_` function so the exact comparison still rejects it.
 
+The Windows native-library query uses `cargo rustc -- --print native-static-libs`.
+That query still compiles the facade with extra compiler flags. It must use
+the separate `target/native-static-libs-probe` directory: rebuilding those
+outputs in `target/release` replaces the consumer's DLL, and the subsequent
+normal Cargo build can relink it again before the export/layout audit. The
+artifact-hash guard correctly rejects that mixed evidence. A regression
+simulates the probe relink and requires the measured DLL bytes to stay intact.
+
 `.gitattributes` pins source and shell-script checkouts to LF while preserving
 the exact bytes of font/assets under `tests/fixtures/input/`. Without that
 policy, `core.autocrlf=true` changes both shell syntax and the source digest
