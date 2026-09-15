@@ -13,7 +13,8 @@ internal workspace build targets.
 - Normalize Windows header paths, preserve strict Clang diagnostics, and keep
   source bytes consistent across checkouts while retaining exact font inputs.
 - Compare complete Windows symbol names so Rust type names inside mangled
-  symbols cannot be mistaken for undocumented C exports.
+  symbols cannot be mistaken for undocumented C exports; keep DLL export
+  names distinct from their optional implementation-alias annotations.
 - Execute and aggregate all five native/QEMU contracts on main before tagging.
 - Publish the one Cargo crate, native SDK, and npm package only through GitHub OIDC.
 

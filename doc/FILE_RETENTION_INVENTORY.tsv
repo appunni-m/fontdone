@@ -7,7 +7,7 @@ path	bytes	kind	sha256	symlink_target	retention_class	reason_code	reason
 .gitignore	445	file	e1360e2d31b4f9c1ac59023d6402cf788f8b1be1ff055ac5657a6f7936eb817e	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 AGENT.md	9	symlink	-	AGENTS.md	keep-alias	R05	Repository tooling alias whose path identity is an explicit contract.
 AGENTS.md	3079	file	26aeb02ec6eb1e23d71ce901665c07ae6c30439734579dfd0fa8e6c111804e5c	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-CHANGELOG.md	6726	file	6d512780570a239fecf90383ef864cfd5bd44593aaee6e814dbc6e955238ea70	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+CHANGELOG.md	6813	file	ab46538f5ab81de95686bd6749dfff0ff920f2a210271e382a30c51a9ac33cb8	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 CODE_OF_CONDUCT.md	834	file	fc5d9bcf71a578c1a1b80f10d3741125184c34b01841ead7209bc7fbd55d5b50	-	keep-community	R09	Public community or security contract.
 CONTRIBUTING.md	3129	file	701d7a2f405f83527a66e91eab2dd0d176ae6a3f187b5b10eb5449975c39fb7d	-	keep-community	R09	Public community or security contract.
 Cargo.lock	13761	file	b0d57e16c7b421473519310ccd8e31aec2c6d4907591fda75f31e31da6af411c	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
@@ -20,15 +20,15 @@ README.md	25939	file	c42c3dfacde74d3b2e69b3ee9d9774fe3e6bc289e4b38b91149c08f35b3
 SECURITY.md	1570	file	7f2ef28c6f58231b04f2fd45d3f6b5bdc5f29b1880cc2a74e9d8ce940e8fd366	-	keep-community	R09	Public community or security contract.
 deny.toml	341	file	d4d516ffd41e0c8e3de633cc3d807b5e0b1a53ec7b5f56ad8ea95c73da0a2bf1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 doc/COVERAGE_CAMPAIGN_GOAL.md	4975	file	8b92946e39c9761a958a9bc8d5770c1657f646d3c74b27d139054593a8cbe9fd	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/DEVELOPMENT.md	405048	file	eebe8c955530cd01732093e8200b744f9418f61316beaf0c7cdcabb8a7c16bdc	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/DEVELOPMENT.md	405298	file	8ead067ac7311cd1ac7137157124f7df7b600f672d0ca19994a450ba74cf1329	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/FILE_RETENTION_INVENTORY.tsv	0	generated	-	-	generated-audit	R11	Generated exhaustive inventory; refresh with scripts/audit_repository_files.py.
 doc/FREETYPE_SUPPORT.md	30950	file	6b6b13666ef8d7dd27a4dbc9546cca45565a6fd517476cbaecf02a0201ac2305	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/INTEGRATION.md	9664	file	ee7dde81556407987274c342fac6ca41c9a4af03db90a5059fc4ba3f15d31f7f	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/README.md	4529	file	f7217e1295955e219428d7fcdaa7165afc427154c36343b81022dbd348fc3452	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/RELEASING.md	7122	file	2bd9c98d42ba556cd7ee44d22a73e3e1d5ba796b2b33604699a6a08af425d258	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/ROADMAP.md	204547	file	b41329dbd2e74b916e8633a1a3153035ec527501157ea06a0211d1b2468b9d3a	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
-doc/compatibility_snapshot.json	80767	file	79c59f4a91920cab13eea0ab5da03c9730330aade7b532885e50a573fb833eb2	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/runtime_parity_evidence.json	1380	file	7c7146602898b0c8cee1ec8eb6fadf2c6ffd9a9ee00fed6ebb18549420b53827	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/compatibility_snapshot.json	80767	file	98f02471c23cf6a1b08637da50f62f2c7729da18ed3873070a205ad95f9bcff9	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/runtime_parity_evidence.json	1380	file	628008e70f5996903f75c2de091592eaf5479f61803bb1c8890a07fc1fe75832	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 examples/bench_ops.rs	10086	file	a75d7bbf4e8e679ca393d8cffd68cc0824f7198bb5e85857ce4dd75d8e016a21	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/ffi_migration.rs	1806	file	3140c3cbf9182299f2ab8c98f6675dfd3d086c47177f7bf8783160a149eddda8	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
 examples/handle_error.rs	571	file	acbe9d9f2e838bb5ca27132dde73287fa123e3a069772a2b741ae6e010fae3b1	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
@@ -132,7 +132,7 @@ scripts/build_coverage_region_queue.py	39868	file	b53bd8f5ee0e700bf1d0b159186f1e
 scripts/build_external_c_oracle.py	41408	file	9943aa1e9f1a5972b6b67278fa4d8fa50dfd95833df5c2b891c9ad24ccdae875	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/build_ft.sh	1981	file	4ea7788a064cff24001a4d1af1ee74e6988e82ffe53f5d856c599faf98f68afa	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/build_unified_oracle.py	13148	file	b19d5861bd9b4584179f311d70fa6ab11f958505a037cbb0e8db795be8db9a86	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
-scripts/check_c_exports.py	7265	file	2da50d309567d95c178e74551995fbb46388545a426ea3050e37c49c70b6f2a2	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
+scripts/check_c_exports.py	7753	file	9a959759412983cf795aa86fc6a6a0c353add9899eaf5eac975df830f7b381a8	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/check_documentation.py	39149	file	392649b5d88557f8bfa9d86ba143f3b2a14d2bf729fffecc139065f5d5b60874	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/check_public_api_inputs.py	502139	file	902ac8a243aeb05787ca033865a74cd1ee546a791e34786bff3f77dfcb2a3570	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/check_rustdoc_contracts.py	7314	file	3583c8df23e86b7ee3e77d2ffdceb81a3605bee656e768e82f97daaf523960d4	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
@@ -181,7 +181,7 @@ scripts/run_runtime_parity.py	14592	file	a780ba3968fc30583b3cf5645ab03699db63140
 scripts/sync_package_licenses.py	1247	file	24f7ddab7863c698d7afc5be05f3fbfdbc6d6d3c10fcea87d76d6dd5fd661a28	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_c_consumer.py	19260	file	db92800e31db2e111671f6e4db044fca0d36b385e524ad25eecbd55059cc13cb	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_coverage_region_queue.py	5553	file	bcad4dd21e07653ff6c1881f69382b998747dc7350cb6faedeb1f83f34c6750f	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
-scripts/test_native_tools.py	5582	file	a6b4a5c910f0a509691269bacc117753c5f172770a2bf8fb06cfe880bcd88602	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
+scripts/test_native_tools.py	6634	file	20dfe7f20e5d426772ef4b3276fc7c78f8ac6af4e4fde66fd77cb937c34bd7f0	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_npm_consumer.py	7212	file	d71d2ae544a8c4c74ac3f6ce11bcb7fc4c86299a2fcb2f527f41c1d9c4a3d36e	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_publish_release.py	4291	file	ff78894fbc2ad1f290a223b5e8c6b744c8d4077e52760efccec3da196953d3df	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_rust_consumer.py	1680	file	2c22fc0571546f0a724dcbc874a01ca2409ca97e15b9cb70684ff0cb9a934812	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.

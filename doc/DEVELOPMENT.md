@@ -432,11 +432,14 @@ to `check_c_exports.py`, and `make test-native-tools` guards that handoff for
 both cross targets. Windows contract failures retain the complete log and
 publish the final diagnostic lines in the run annotations.
 
-Windows `dumpbin` places the complete symbol in the final table column.
-Compare that whole token: Rust's mangled drop/trait symbols can contain
+Windows `dumpbin /linkermember:1` places the complete static symbol in the
+final table column. `/exports` instead places the DLL name after ordinal,
+hint, and RVA; optional alias annotations follow it. Parse the name column,
+not the alias destination, so folded wrappers such as `FT_Bitmap_New` retain
+their own export credit. Compare the whole name token: mangled Rust symbols contain
 `..FT_Var_Axis$GT$`, which is a type name rather than a C export. The regression
-suite excludes these embedded names while retaining a real undocumented
-`FT_` function so the exact header/export comparison still rejects it.
+suite covers static type-name substrings and DLL aliases, while retaining a
+real undocumented `FT_` function so the exact comparison still rejects it.
 
 `.gitattributes` pins source and shell-script checkouts to LF while preserving
 the exact bytes of font/assets under `tests/fixtures/input/`. Without that

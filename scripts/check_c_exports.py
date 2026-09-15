@@ -71,10 +71,20 @@ def binary_exports(
     if system == "Windows":
         result = set()
         for line in output.splitlines():
-            symbol = line.split()[-1] if line.split() else ""
-            # dumpbin places the complete symbol in the final column. Rust's
-            # mangled drop/trait symbols can contain '..FT_Var_Axis$GT$'; that
-            # embedded type name is not a separately exported C function.
+            columns = line.split()
+            if kind == "shared":
+                # /exports uses ordinal, hint, RVA, name, then optional alias
+                # annotations. The final token may name a folded implementation
+                # rather than this row's actual public export.
+                symbol = columns[3] if (
+                    len(columns) >= 4
+                    and re.fullmatch(r"[0-9]+", columns[0])
+                    and all(re.fullmatch(r"[0-9A-Fa-f]+", value) for value in columns[1:3])
+                ) else ""
+            else:
+                symbol = columns[-1] if columns else ""
+            # Rust's mangled drop/trait symbols can contain '..FT_Var_Axis$GT$';
+            # that embedded type name is not a separately exported C function.
             if re.fullmatch(r"(?:FT|FTC)_[A-Za-z0-9_]+", symbol):
                 result.add(symbol)
     else:

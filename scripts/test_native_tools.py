@@ -88,6 +88,26 @@ class ClangHeaderTests(unittest.TestCase):
 
 
 class WindowsExportTests(unittest.TestCase):
+    def test_dll_alias_annotations_preserve_the_exported_name(self):
+        output = """ordinal hint RVA      name
+          1    0 00001000 FT_Bitmap_Init
+          2    1 00001000 FT_Bitmap_New = FT_Bitmap_Init
+          3    2 00002000 FT_Get_X11_Font_Format = FT_Get_Font_Format
+          4    3 00003000 FT_Undocumented_Endpoint = FT_Not_An_Export
+          5    4 00004000 _ZN4core3ptr73drop_in_place$LT$fontdone..ffi..FT_Var_Axis$GT$17h0123456789abcdefE
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            release = Path(directory)
+            (release / "fontdone_c_abi.dll").touch()
+            with patch.object(check_c_exports.subprocess, "run", return_value=subprocess.CompletedProcess(
+                ["dumpbin"], 0, stdout=output, stderr="",
+            )):
+                _, symbols = check_c_exports.binary_exports("shared", "Windows", release, "nm")
+        self.assertEqual(symbols, {
+            "FT_Bitmap_Init", "FT_Bitmap_New", "FT_Get_X11_Font_Format",
+            "FT_Undocumented_Endpoint",
+        })
+
     def test_static_symbols_do_not_promote_mangled_rust_type_names_to_c_exports(self):
         output = """Archive member name at 8: /
     5 public symbols
