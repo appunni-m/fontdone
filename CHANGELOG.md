@@ -20,6 +20,8 @@ internal workspace build targets.
 - Execute and aggregate all five native/QEMU contracts on main before tagging.
 - Restore platform evidence at its archive root in CI and release preflight,
   and retain case IDs and value differences for aggregate scorecard failures.
+- Require libbz2 for the enabled C reference and use the documented canonical
+  oracle host for the aggregate report, alongside all five native/QEMU proofs.
 - Publish the one Cargo crate, native SDK, and npm package only through GitHub OIDC.
 
 ## 2.14.3-alpha.8 (Superseded; unpublished)

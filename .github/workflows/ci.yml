@@ -50,7 +50,7 @@ jobs:
       - name: Install fast-gate prerequisites
         run: |
           sudo apt-get update
-          sudo apt-get install --yes cmake clang make python3 python3-venv xz-utils
+          sudo apt-get install --yes cmake clang make python3 python3-venv xz-utils libbz2-dev
           rustup toolchain install "$RUST_TOOLCHAIN" \
             --profile minimal --component clippy,rustfmt
           rustup override set "$RUST_TOOLCHAIN"
@@ -357,7 +357,7 @@ jobs:
       - name: Install benchmark prerequisites
         run: |
           sudo apt-get update
-          sudo apt-get install --yes cmake clang make python3 xz-utils
+          sudo apt-get install --yes cmake clang make python3 xz-utils libbz2-dev
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
           rustup override set "$RUST_TOOLCHAIN"
           rustup target add wasm32-unknown-unknown
@@ -545,7 +545,10 @@ jobs:
     name: Thorough / Five-platform C scorecard
     if: github.event_name != 'pull_request'
     needs: [native-consumer, cross-consumer]
-    runs-on: ubuntu-24.04
+    # The external comparison includes FTC unavailable-bitmap fields whose
+    # raw values are only reproducible on the declared canonical oracle host.
+    # Native/QEMU proofs still execute separately on all five required targets.
+    runs-on: macos-14
     timeout-minutes: 75
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
@@ -558,8 +561,11 @@ jobs:
           key: cargo-${{ runner.os }}-${{ env.RUST_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
       - name: Install contract prerequisites
         run: |
-          sudo apt-get update
-          sudo apt-get install --yes cmake clang make python3 xz-utils
+          for formula in cmake jq xz; do
+            if ! brew list --formula "$formula" >/dev/null 2>&1; then
+              brew install "$formula"
+            fi
+          done
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
           rustup override set "$RUST_TOOLCHAIN"
       - name: Assemble platform bundles

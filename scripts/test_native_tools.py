@@ -11,7 +11,37 @@ from unittest.mock import patch
 
 import check_c_exports
 import audit_api_abi
+import build_unified_oracle
 import test_c_consumer
+
+
+class OptionalOracleBuildTests(unittest.TestCase):
+    def test_bzip2_enabled_oracle_rejects_a_missing_bzip2_dependency(self):
+        pinned_source = Path(__file__).resolve().parents[1] / "freetype"
+        real_run = subprocess.run
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "freetype"
+            source.mkdir()
+            # Exercise the pinned upstream CMake dependency lookup, with an
+            # unavailable package even on hosts whose SDK provides libbz2.
+            (source / "CMakeLists.txt").write_text(
+                "cmake_minimum_required(VERSION 3.16)\n"
+                "project(fontdone_missing_bzip2 NONE)\n"
+                "set(CMAKE_DISABLE_FIND_PACKAGE_BZip2 TRUE)\n"
+                f'add_subdirectory("{pinned_source.as_posix()}" upstream)\n'
+            )
+
+            def configure_only(command, **kwargs):
+                if command[:2] == ["cmake", "--build"]:
+                    return subprocess.CompletedProcess(command, 0)
+                return real_run(command, **kwargs, capture_output=True, text=True)
+
+            with patch.object(build_unified_oracle.subprocess, "run", side_effect=configure_only):
+                with self.assertRaises(subprocess.CalledProcessError) as failure:
+                    build_unified_oracle.configure_bzip2_enabled_freetype(root)
+            self.assertIn("BZip2", failure.exception.stderr)
+            self.assertIn("REQUIRED", failure.exception.stderr)
 
 
 class CrossExportBuildTests(unittest.TestCase):

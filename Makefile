@@ -250,7 +250,7 @@ test-fast:
 	$(MAKE) test-native-tools
 
 .PHONY: test-native-tools
-test-native-tools:
+test-native-tools: oracle-fetch
 	$(PYTHON) scripts/test_native_tools.py
 
 .PHONY: test-msrv

@@ -290,6 +290,9 @@ def configure_bzip2_enabled_freetype(root: pathlib.Path) -> pathlib.Path:
             "-DFT_DISABLE_ZLIB=ON",
             "-DFT_DISABLE_PNG=ON",
             "-DFT_DISABLE_BZIP2=OFF",
+            # OFF only permits discovery; CMake otherwise silently emits the
+            # disabled stub when libbz2 is absent. This variant must be enabled.
+            "-DFT_REQUIRE_BZIP2=ON",
             "-DFT_DISABLE_BROTLI=ON",
             "-DFT_DISABLE_HARFBUZZ=ON",
         ],

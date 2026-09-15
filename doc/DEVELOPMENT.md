@@ -11,7 +11,7 @@ root. Use `make help` as the command index.
 | Host or target | What CI proves |
 |---|---|
 | Ubuntu 24.04 x86-64 | Rust, smoke parity, native C, packaging, and supply chain |
-| macOS 14 Apple Silicon | full exact parity and instrumented coverage using the canonical oracle host |
+| macOS 14 Apple Silicon | full exact parity, external C scorecard, and instrumented coverage using the canonical oracle host |
 | macOS 15 Apple Silicon | fresh checkout, native C, layout, exports, and install tree |
 | Windows Server 2025 x86-64 MSVC | native C, LLP64 layout, DLL/import library, exports, and install tree |
 | Linux i686 | cross-built and QEMU-executed C consumer/layout contract |
@@ -26,6 +26,12 @@ width, height, and buffer for unavailable glyphs. Linux allocation contents
 produced 77 comparisons of unspecified fields in alpha.7's coverage run. Those
 values are not a portable C contract; the alpha evidence is limited to the
 canonical host and does not establish cross-host equality for those fields.
+The alpha.9 external C audit independently reproduced three such SBit
+comparisons on Ubuntu: uninitialized `format`, `max_grays`, and advance fields
+differed while the documented unavailable-bitmap sentinel matched. The
+aggregate scorecard therefore uses this same canonical host and still requires
+fresh evidence from all five native/QEMU jobs. Cross-host equality for those
+unspecified fields remains unproven.
 CI validates the browser entry point through Node's standards-compatible ESM,
 fetch, and WebAssembly APIs; it does not claim a named-browser version matrix.
 Release evidence should add a real-browser run of the maintained HTML example
@@ -480,6 +486,16 @@ The aggregate job retains its complete log and emits its final diagnostic
 lines, unverified C functions, failed case IDs, and first value differences as
 failure annotations. A failed external C comparison happens before platform
 bundle validation and must be diagnosed from that ledger.
+
+The bzip2-enabled C oracle requires `FT_REQUIRE_BZIP2=ON`, in addition to
+`FT_DISABLE_BZIP2=OFF`. FreeType's CMake build otherwise accepts missing libbz2
+and silently compiles the disabled stub. This caused all 12 selected
+`FT_Stream_OpenBzip2` cases to disagree with the enabled Rust implementation
+on Ubuntu. Install `libbz2-dev` for Linux oracle builds; the macOS SDK supplies
+the corresponding library and headers. `make test-native-tools` exercises the
+pinned CMake project with BZip2 discovery deliberately disabled and requires
+configuration to fail before a mislabeled oracle can be built. The full
+external audit retains all 218 functions and 1,496 selected cases.
 
 `make c-abi-contract-complete` performs the same evidence validation and then
 fails unless all 12 categories are complete. It is the final completion and

@@ -43,8 +43,8 @@
     "categories_complete": 8,
     "categories_total": 12,
     "is_complete": false,
-    "runtime_contract_rows_complete": 13622,
-    "runtime_contract_rows_total": 18098,
+    "runtime_contract_rows_complete": 13624,
+    "runtime_contract_rows_total": 18100,
     "runtime_contract_rows_pending": 4476,
     "binary_artifact_items_complete": 7,
     "binary_artifact_items_total": 8,
@@ -1854,9 +1854,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "c6b435c0faf06ec26fd9456a7e4c6b37fd60a012ef77ec314105d38ea602920d",
-    "parity_tree_sha256": "bd123092c49b386510df5fbbedd31b0b29f9417d7a7496f96cc75b1a06e8d72c",
-    "log_sha256": "f29fe3169691ff3620537a023b32eb2869f305600fb41bb5c55c2ebed8880a32",
+    "sha256": "76e798f6c808d4ffbdd7f0ac2a1e16a361b30c92f57d737738d9283f9095542a",
+    "parity_tree_sha256": "5ae0945928d9989f60b57f46f91e59fd071af6efe0afee94f65c9ad1dcba7410",
+    "log_sha256": "59bc0b900861c75eacbb41d0a4f11d2b769563b2502e812806d5b008ec901e8f",
     "command": "make test-parity"
   }
 }
