@@ -245,6 +245,11 @@ test-fast:
 	$(CARGO) test --workspace --all-features --locked -- --skip unified_fixture_parity --skip pipe_trace
 	$(CARGO) check --workspace --all-targets --all-features --locked
 	$(PYTHON) scripts/test_publish_release.py
+	$(MAKE) test-native-tools
+
+.PHONY: test-native-tools
+test-native-tools:
+	$(PYTHON) scripts/test_native_tools.py
 
 .PHONY: test-msrv
 test-msrv:
@@ -765,6 +770,7 @@ platform-contract-cross: oracle-fetch
 		--runner "$(PLATFORM_RUNNER)"
 	$(PYTHON) scripts/check_c_exports.py \
 		--target "$(PLATFORM_TARGET)" \
+		--linker "$(PLATFORM_CC)" \
 		--nm "$(PLATFORM_NM)"
 	$(PYTHON) scripts/audit_api_abi.py \
 		--record-platform-contract \

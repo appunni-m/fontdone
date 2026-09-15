@@ -138,7 +138,7 @@ The latest worktree verification is the full parity snapshot recorded in
 `doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
 20,357 / 20,357 runnable comparisons with 0 failures and 3 explicitly pending
 concrete cases. Its source-bound parity-tree digest is
-`1a819afcefaa63d502e3867609652a5aecd35eeeae995602e5d894933b4ed72f`.
+`478575c6859d0b656e8a8f650994f7c2412b73cfaa3ff48f3faa247ebd51f863`.
 
 Run `make test-parity` for current worktree evidence. It writes the full log
 and a source-digest-bound report under `target/parity-evidence/`. After a

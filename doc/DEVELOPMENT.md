@@ -425,6 +425,13 @@ Linux i686 and powerpc64 use `make platform-contract-cross` with explicit
 compiler, symbol inspector, sysroot, and QEMU runner. Cross-compilation alone
 does not earn runtime credit.
 
+Every subprocess that invokes Cargo must receive the selected target linker.
+The export audit has its own build; the preceding C consumer's environment
+does not carry into it. `--linker` is therefore forwarded by the Make target
+to `check_c_exports.py`, and `make test-native-tools` guards that handoff for
+both cross targets. Windows contract failures retain the complete log and
+publish the final diagnostic lines in the run annotations.
+
 `make c-abi-contract-all-platforms` expects exactly five fresh bundles
 assembled under `target/api-abi-audit/platform-contract/`. Requested thorough
 CI creates those bundles in three native and two cross jobs, downloads them
@@ -4814,20 +4821,25 @@ then rerun `make test-parity` before retaining any unit-only case.
 
 Every push to `main`, every pull-request revision targeting `main`, and every
 GitHub merge-queue group runs a bounded Ubuntu fast gate plus a separate MSRV
-check:
+check and native scalar-type compilation:
 
 | Job | Evidence |
 |---|---|
 | Fast gate | The exact `make ci-fast PYTHON=target/font-generation-venv/bin/python` command used by CI: generated contracts, reproducible fixtures, docs, versions, format, Clippy, strict rustdoc, examples, fast workspace tests, external Rust and C consumers, FFI purity, eight-case parity smoke, and benchmark-harness self-test |
 | MSRV | the public `fontdone` library check on Rust 1.87.0; the stable fast gate covers private C/WASM facades |
+| Portable C ABI types | i686 Linux, PowerPC64 Linux, and Windows MSVC compilation, including optional probes |
 
-The stable `Commit gate` succeeds only when both jobs succeed. It is the single
+The stable `Commit gate` succeeds only when all three jobs succeed. It is the single
 check suitable for ordinary branch protection and merge-queue checks. After
 creating the pinned font generation environment from section 1.2, run
 `make ci-fast PYTHON=target/font-generation-venv/bin/python` locally (`make ci`
 remains an alias when the required Python tools are already on `PATH`). Smoke
 diagnostics are retained for seven days. This gate is intentionally not a claim
 that the complete parity matrix or every consumer/platform lane ran.
+
+Non-pull-request runs also execute all five native/QEMU platform contracts
+after the commit gate. This catches link and runtime failures on main before
+a version tag is created; type checking alone cannot prove linker setup.
 
 ### 6.2 Requested thorough gate
 
@@ -4956,13 +4968,13 @@ or reason is stale.
 | R03 | 1,761 | executable parity tests and public contracts |
 | R04 | 1,336 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
-| R06 | 69 | maintained tooling, examples, and benchmarks |
+| R06 | 70 | maintained tooling, examples, and benchmarks |
 | R07 | 8 | durable project documentation |
 | R08 | 1 | active self-cleaning roadmap |
 | R09 | 5 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,343** | **all retained paths** |
+| **Total** | **3,344** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Reason codes are stable categories, not importance rankings:

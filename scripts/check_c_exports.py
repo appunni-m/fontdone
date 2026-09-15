@@ -94,7 +94,10 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target")
     parser.add_argument("--nm")
+    parser.add_argument("--linker", help="C linker for the explicitly selected Rust target")
     args = parser.parse_args()
+    if args.linker and not args.target:
+        parser.error("--linker requires --target")
 
     native_target_output = subprocess.run(
         ["rustc", "-vV"],
@@ -134,10 +137,15 @@ def main() -> None:
     ]
     if args.target:
         cargo_command.extend(("--target", target))
+    environment = os.environ.copy()
+    if args.linker:
+        # Each audit subprocess builds independently. The C consumer's target
+        # linker setting does not survive into this export inspection process.
+        environment["CARGO_TARGET_" + target.upper().replace("-", "_") + "_LINKER"] = args.linker
     subprocess.run(
         cargo_command,
         cwd=ROOT,
-        env=os.environ.copy(),
+        env=environment,
         check=True,
     )
     release = (

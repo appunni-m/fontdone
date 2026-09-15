@@ -65,3 +65,5 @@ For C data-model changes, run `make setup-platform-checks`, then
 `i686-unknown-linux-gnu`, `x86_64-pc-windows-msvc`, and
 `powerpc64-unknown-linux-gnu`. These compile checks supplement the executed
 platform contract lanes; they do not replace C layout or parity evidence.
+Use `make test-native-tools` when changing native build orchestration; the
+cross export audit must receive the same target linker as the C consumer.
