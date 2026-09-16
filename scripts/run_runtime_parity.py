@@ -13,6 +13,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from verify_release import package_version
+
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = ROOT / "target" / "parity-evidence"
 REPORT = OUTPUT_DIR / "runtime_parity.json"
@@ -395,6 +397,8 @@ def record_snapshot() -> int:
     COMMITTED_EVIDENCE.write_text(evidence_text, encoding="utf-8")
     snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
     runtime = report["runtime_parity"]
+    # Cargo.toml is part of the verified parity-source digest above.
+    snapshot["package_version"] = package_version(ROOT / "Cargo.toml")
     snapshot["snapshot_date"] = report["recorded_at_utc"][:10]
     snapshot["runtime_parity"] = dict(runtime)
     snapshot["runtime_evidence"] = {

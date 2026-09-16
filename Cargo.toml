@@ -4,7 +4,7 @@ resolver = "3"
 
 [package]
 name = "fontdone"
-version = "2.14.3-alpha.10"
+version = "2.14.3-alpha.11"
 edition = "2024"
 rust-version = "1.87"
 license = "FTL"
@@ -65,7 +65,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage, coverage_nightly
 unsafe_code = "deny"
 unused_crate_dependencies = "warn"
 dead_code = "deny"
-deprecated = "allow"
+deprecated = "deny"
 missing_docs = "warn"
 
 [lints.clippy]

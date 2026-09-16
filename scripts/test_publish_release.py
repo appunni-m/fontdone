@@ -17,6 +17,7 @@ import urllib.error
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts import publish_npm_release, publish_release
+import run_runtime_parity
 
 
 CHECKSUM = "a" * 64
@@ -24,6 +25,31 @@ VERSION = publish_release.version()
 
 
 class PublishReleaseTests(unittest.TestCase):
+    def test_parity_snapshot_uses_the_source_bound_package_version(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "Cargo.toml").write_text('[package]\nversion = "1.2.3"\n')
+            report = root / "report.json"
+            snapshot = root / "snapshot.json"
+            evidence = root / "evidence.json"
+            snapshot.write_text(json.dumps({"package_version": "1.2.2"}))
+            report.write_text(json.dumps({
+                "complete": True, "recorded_at_utc": "2026-09-16T00:00:00Z",
+                "source": {"parity_tree_sha256": CHECKSUM, "parity_path_count": 1},
+                "runtime_parity": {"passed": 1, "runnable": 1},
+                "artifacts": {"log_sha256": CHECKSUM}, "command": "make test-parity",
+            }))
+            with (
+                patch.object(run_runtime_parity, "ROOT", root),
+                patch.object(run_runtime_parity, "REPORT", report),
+                patch.object(run_runtime_parity, "SNAPSHOT", snapshot),
+                patch.object(run_runtime_parity, "COMMITTED_EVIDENCE", evidence),
+                patch.object(run_runtime_parity, "parity_source_digest", return_value=(CHECKSUM, 1)),
+                patch.object(run_runtime_parity, "replace_readme_counts"),
+            ):
+                self.assertEqual(run_runtime_parity.record_snapshot(), 0)
+            self.assertEqual(json.loads(snapshot.read_text())["package_version"], "1.2.3")
+
     def test_npm_publication_rejects_local_and_wrong_tag_contexts(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             archive = Path(directory) / f"fontdone-{VERSION}.tgz"

@@ -1,17 +1,19 @@
 # fontdone
 
+This checkout prepares an unreleased candidate; the published version remains 2.14.3-alpha.10.
+
 `fontdone` is the JavaScript npm package for the pure-Rust fontdone engine. It
 ships a prebuilt `wasm32-unknown-unknown` module and a zero-dependency ESM
 wrapper for opening font bytes and rasterizing individual glyphs.
 
-This is version `2.14.3-alpha.10`. Different alpha releases are not API- or
+This is version `2.14.3-alpha.11`. Different alpha releases are not API- or
 ABI-compatible by promise, and this package is not a text-shaping or layout
 engine.
 
 ## Install and render
 
 ```bash
-npm install fontdone@2.14.3-alpha.10
+npm install fontdone@2.14.3-alpha.11
 ```
 
 ```js

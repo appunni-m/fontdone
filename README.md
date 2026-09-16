@@ -15,6 +15,10 @@ as complete; the other functions are mapped incompletely, partial, planned,
 or outside scope. Passing 20,357 runnable comparisons does not establish
 every FreeType behavior. Start with [maturity](doc/MATURITY.md).
 
+This checkout prepares **2.14.3-alpha.11**, an unreleased candidate. The
+[release guide](doc/RELEASING.md#next-candidate) distinguishes its validation
+from the installed-release evidence above.
+
 ## Choose an interface
 
 | Application | Distribution | Guide |

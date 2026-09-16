@@ -5,6 +5,15 @@ synchronized version for the public `fontdone` Cargo crate, the native C SDK,
 and the `fontdone` JavaScript npm package. The C and raw-WASM Cargo packages are
 internal workspace build targets.
 
+## 2.14.3-alpha.11 (Unreleased)
+
+- Record the source-bound package version when refreshing parity evidence.
+- Reject deprecated Rust dependency APIs instead of suppressing their warnings.
+- Refresh reviewed full-SHA GitHub Actions for CI, Pages, artifacts, and trusted
+  registry publication.
+- Keep the FreeType compatibility aliases, no-effect parameters, fixtures,
+  expected results, and coverage requirements intact.
+
 ## 2.14.3-alpha.10 (2026-09-15)
 
 - Resolve the npm tarball to an absolute path before publishing. npm 11.5.1

@@ -1,6 +1,6 @@
 {
   "name": "fontdone",
-  "version": "2.14.3-alpha.10",
+  "version": "2.14.3-alpha.11",
   "description": "Pure-Rust font loading and rasterization for browsers and Node.js through WebAssembly",
   "type": "module",
   "main": "./index.node.js",

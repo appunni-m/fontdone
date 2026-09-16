@@ -1,10 +1,12 @@
 # fontdone-c-abi
 
+This checkout prepares an unreleased candidate; the published version remains 2.14.3-alpha.10.
+
 `fontdone-c-abi` is the native C boundary for the pure-Rust `fontdone` engine.
 It exports a measured FreeType-shaped subset from a library named
 `fontdone_c_abi`; it never links, loads, or builds C FreeType at runtime.
 
-Version `2.14.3-alpha.10` requires exactly `fontdone = 2.14.3-alpha.10`.
+Version `2.14.3-alpha.11` requires exactly `fontdone = 2.14.3-alpha.11`.
 This is an internal Cargo workspace package, not a second crates.io release.
 The public C distribution is the native SDK archive attached to the tagged
 release; build this package from the workspace when developing or packaging

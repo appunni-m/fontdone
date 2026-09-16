@@ -10,6 +10,14 @@ passed for `cb90d41a863f8569335d8ed775a4038d23c79dc5`. Cargo and npm provenance
 identify that source/run and their archives match GitHub checksums. Subsequent
 publication uses this repository's tag-triggered `release.yml` and GitHub OIDC.
 
+## Next candidate
+
+The checkout prepares **2.14.3-alpha.11**. It remains an alpha: the production
+C-replacement gate still requires complete contract and benchmark evidence.
+The cleanup preserves deprecated FreeType compatibility aliases because they
+are part of the pinned oracle's public contract; removing them would break
+replacement behavior. No incomplete comparison becomes a pass through cleanup.
+
 ## 1. Trusted publisher configuration
 
 Configure these identities on the existing packages:
