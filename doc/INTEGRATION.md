@@ -12,32 +12,16 @@ hosts should use the [`fontdone-wasm` guide](../fontdone-wasm/README.md).
 
 ## 1. Select and install the exact alpha
 
-All workspace packages use `2.14.3-alpha.6`. The public `fontdone` Cargo crate
-and browser `fontdone` package are released at that exact version only after the
-tag-triggered release gate passes. The C and raw-WASM facade packages remain
-internal build targets. Use a versioned path dependency only while developing
-from a sibling checkout; Cargo requires the registry version requirement when a
-downstream crate is packaged or published.
+The published Cargo package is `fontdone = 2.14.3-alpha.10`:
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.6", path = "../fontdone" }
+fontdone = "=2.14.3-alpha.10"
 ```
 
-Registry consumers should use the exact prerelease:
-
-```toml
-[dependencies]
-fontdone = { version = "=2.14.3-alpha.6" }
-```
-
-After the repository and matching tag are public, a Git consumer may pin the
-exact tag or an immutable 40-character revision:
-
-```toml
-[dependencies]
-fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.6" }
-```
+There is one public Cargo crate. The C and raw-WASM workspace packages are
+private build members; the native SDK and npm package have separate installation
+instructions. Use exact prerelease pins for reproducible upgrades.
 
 This alpha requires Rust 1.87 or newer. Different `alpha.N` releases are not
 API- or ABI-compatible by promise.
@@ -56,7 +40,7 @@ fn render_a(bytes: &[u8]) -> Result<Vec<u8>, fontdone::FontError> {
     let font = Font::truetype(bytes, 16.0)?;
     let mask = font.getmask("A")?;
 
-    assert_eq!(mask.pixels.len(), mask.width * mask.height);
+    assert_eq!(mask.pixels.len() as u64, u64::from(mask.width) * u64::from(mask.height));
     Ok(mask.pixels)
 }
 ```

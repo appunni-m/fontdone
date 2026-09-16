@@ -203,7 +203,7 @@ def validate_links(errors: list[str], files: list[Path]) -> None:
 def validate_make_commands(
     errors: list[str], files: list[Path], classified: dict[str, str]
 ) -> None:
-    targets = set(TARGET.findall((ROOT / "Makefile").read_text(encoding="utf-8")))
+    targets = set(TARGET.findall((ROOT / "Makefile").read_text(encoding="utf-8") + (ROOT / "docs.mk").read_text(encoding="utf-8")))
     for path in files:
         try:
             rel_doc = path.relative_to(ROOT / "doc").as_posix()
@@ -453,7 +453,7 @@ def validate_performance_snapshot(
     expected_readme = f"**{qualifying_count} / {minimum_runs} clean runs**"
     if expected_readme not in readme:
         errors.append(
-            f"README.md: missing performance baseline count {expected_readme!r}"
+            f"doc/EVIDENCE.md: missing performance baseline count {expected_readme!r}"
         )
     roadmap = (ROOT / "doc" / "ROADMAP.md").read_text(encoding="utf-8")
     expected_roadmap = (
@@ -470,7 +470,7 @@ def validate_snapshot(errors: list[str]) -> None:
     snapshot = json.loads(
         (ROOT / "doc" / "compatibility_snapshot.json").read_text(encoding="utf-8")
     )
-    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    readme = (ROOT / "doc" / "EVIDENCE.md").read_text(encoding="utf-8")
     if snapshot.get("schema_version") != 3:
         errors.append("doc/compatibility_snapshot.json: expected schema_version 3")
         return
@@ -480,7 +480,7 @@ def validate_snapshot(errors: list[str]) -> None:
         )
     if f"recorded on **{snapshot['snapshot_date']}**" not in readme:
         errors.append(
-            "README.md: compatibility snapshot date does not match "
+            "doc/EVIDENCE.md: compatibility snapshot date does not match "
             "doc/compatibility_snapshot.json"
         )
 
@@ -496,7 +496,7 @@ def validate_snapshot(errors: list[str]) -> None:
     for label, count in expected_rows.items():
         pattern = rf"\|\s*{re.escape(label)}\s*\|\s*\**{count:,}\**\s*\|"
         if re.search(pattern, readme) is None:
-            errors.append(f"README.md: snapshot row {label!r} is not {count:,}")
+            errors.append(f"doc/EVIDENCE.md: snapshot row {label!r} is not {count:,}")
 
     interface_map = json.loads(
         (ROOT / "tests" / "data" / "interface_map.json").read_text(encoding="utf-8")
@@ -630,7 +630,7 @@ def validate_snapshot(errors: list[str]) -> None:
     ):
         count = runtime[key]
         if re.search(rf"\|\s*{re.escape(label)}\s*\|\s*{count:,}\s*\|", readme) is None:
-            errors.append(f"README.md: runtime snapshot {label!r} is not {count:,}")
+            errors.append(f"doc/EVIDENCE.md: runtime snapshot {label!r} is not {count:,}")
     if runtime["passed"] != runtime["runnable"] or runtime["failed"] != 0:
         errors.append(
             "doc/compatibility_snapshot.json: committed runtime evidence must "
@@ -640,7 +640,7 @@ def validate_snapshot(errors: list[str]) -> None:
         f"{runtime['function_route_evidence']:,} / {runtime['function_total']:,}"
     )
     if route_text not in readme:
-        errors.append(f"README.md: function route evidence is not {route_text}")
+        errors.append(f"doc/EVIDENCE.md: function route evidence is not {route_text}")
 
     audit_path = ROOT / "target" / "api-abi-audit" / "api_abi_audit.json"
     if audit_path.exists():
@@ -805,7 +805,7 @@ def validate_snapshot(errors: list[str]) -> None:
             )
             if re.search(expected, readme) is None:
                 errors.append(
-                    f"README.md: measured coverage row {label!r} is stale"
+                    f"doc/EVIDENCE.md: measured coverage row {label!r} is stale"
                 )
 
     validate_performance_snapshot(snapshot, readme, errors)
@@ -822,7 +822,7 @@ def validate_snapshot(errors: list[str]) -> None:
         f"{contract['runtime_contract_rows_pending']:,} pending",
     ):
         if expected not in readme:
-            errors.append(f"README.md: missing C-contract snapshot {expected!r}")
+            errors.append(f"doc/EVIDENCE.md: missing C-contract snapshot {expected!r}")
 
     cargo_text = (ROOT / "Cargo.toml").read_text(encoding="utf-8")
     version = re.search(r'^version\s*=\s*"([^"]+)"', cargo_text, re.MULTILINE)
@@ -908,6 +908,8 @@ def validate_authoritative_reachability(
     errors: list[str], classified: dict[str, str]
 ) -> None:
     root_text = (ROOT / "README.md").read_text(encoding="utf-8")
+    if "doc/EVIDENCE.md" not in root_text:
+        errors.append("README.md: measured compatibility evidence is not linked")
     index_text = INDEX.read_text(encoding="utf-8")
     root_links = {
         normalize_link(raw).split("#", 1)[0] for raw in MARKDOWN_LINK.findall(root_text)

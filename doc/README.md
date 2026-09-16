@@ -1,75 +1,35 @@
-# Documentation
+# Documentation index
 
-Start with the [project README](../README.md). It explains what `fontdone` is,
-which package to choose, and the current compatibility boundary.
+Start with the [project overview](../README.md), then choose [Rust](INTEGRATION.md),
+[C/C++](../fontdone-c-abi/README.md), [Node/browser](../fontdone-wasm/npm/README.md),
+or the [raw WASM ABI](../fontdone-wasm/README.md).
 
-## 1. User guides
+The [maturity guide](MATURITY.md) identifies application limits. The
+[evidence guide](EVIDENCE.md) separates declarations from measured behavior.
+Use [Development](DEVELOPMENT.md) and [Contributing](../CONTRIBUTING.md) for changes.
 
-| Need | Read |
-|---|---|
-| Integrate from Rust | [Integration guide](INTEGRATION.md) |
-| Integrate from C | [`fontdone-c-abi`](../fontdone-c-abi/README.md) |
-| Integrate in a browser | [`fontdone` npm package](../fontdone-wasm/npm/README.md) |
-| Integrate through the raw WebAssembly ABI | [`fontdone-wasm`](../fontdone-wasm/README.md) |
-| Build, test, debug, or add fixtures | [Development guide](DEVELOPMENT.md) |
-| Execute the strict region coverage campaign | [Coverage campaign goal](COVERAGE_CAMPAIGN_GOAL.md) |
-| Prepare or publish a release | [Release guide](RELEASING.md) |
+## Maintained public documents
 
-## 2. Compatibility evidence
-
-These documents answer different questions:
-
-| Evidence | Question answered |
-|---|---|
-| [Function adoption map](FREETYPE_SUPPORT.md) | Which pinned FreeType functions are application-ready? |
-| [Compatibility snapshot](compatibility_snapshot.json) | What are the last committed parity, contract, code-coverage, and performance measurements and debts? |
-| [Parity, coverage, and performance roadmap](ROADMAP.md) | What blocks complete compatibility and verification? |
-
-Runtime reports under `target/` describe the current worktree and supersede the
-committed snapshot for that worktree. In particular:
-
-- `target/api-abi-audit/api_abi_audit.{json,md}` inventories declarations;
-- `target/api-abi-audit/route_audit.{json,md}` records runtime routes and debt;
-- `target/api-abi-audit/c_abi_contract_status.{json,md}` scores all 12 C
-  contract categories;
-- `target/parity-evidence/runtime_parity.json` binds a full parity result to
-  its source tree, toolchain, oracle, and captured log;
-- `target/coverage/unified-runtime-all-lanes.json` records combined core,
-  C-ABI, and host-compiled WASM line, branch, function, and region coverage.
-- `target/fontdone-bench/latest.{json,md}` records source-bound C/Rust latency,
-  throughput, peak process memory, and exact release-artifact sizes.
-
-## 3. Project and fixture policies
-
-| Topic | Read |
-|---|---|
-| Contributing | [`CONTRIBUTING.md`](../CONTRIBUTING.md) |
-| Security reporting | [`SECURITY.md`](../SECURITY.md) |
-| Community conduct | [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) |
-| Release history | [`CHANGELOG.md`](../CHANGELOG.md) |
-| Package and fixture licensing | [`NOTICE.md`](../NOTICE.md) and [fixture notices](../tests/fixtures/THIRD_PARTY_NOTICES.md) |
-| Font provenance | [Fixture provenance](../tests/fixtures/input/fonts/PROVENANCE.md) |
-| Generator review | [Font-generation policy](../scripts/font_generation/README.md) |
-| Repository retention | [Generated retention inventory](FILE_RETENTION_INVENTORY.tsv) |
-
-## 4. Documentation lifecycle
-
-Every file directly under `doc/` has one declared lifecycle:
+Every file under `doc/` has a declared lifecycle. Generated files change through
+their maintained recorder or generator, with source identity intact.
 
 | Class | Document | Maintenance rule |
-|---|---|---|
-| authoritative | [Documentation index](README.md) | Keep every public documentation surface reachable |
-| authoritative | [Integration](INTEGRATION.md) | Update when a consumer contract changes |
-| authoritative | [Development](DEVELOPMENT.md) | Update when build, test, CI, fixture, or benchmark behavior changes |
-| authoritative | [Coverage campaign goal](COVERAGE_CAMPAIGN_GOAL.md) | Update when the managed coverage queue, campaign protocol, or completion gates change |
-| authoritative | [Releasing](RELEASING.md) | Update when packaging or publication changes |
-| active-plan | [Parity, coverage, and performance roadmap](ROADMAP.md) | Delete after every ledger goal is complete and durable results have moved into authoritative docs |
-| generated | [Function adoption map](FREETYPE_SUPPORT.md) | Generate from `tests/data/interface_map.json` |
-| generated | [Compatibility snapshot](compatibility_snapshot.json) | Refresh with `make record-parity-snapshot`, `make record-c-contract-snapshot`, or the clean-performance evidence record command |
-| generated | [Runtime parity evidence](runtime_parity_evidence.json) | Record with `make record-parity-snapshot` after a complete full-parity run |
-| generated | [Retention inventory](FILE_RETENTION_INVENTORY.tsv) | Generate with `make repository-inventory` |
+| --- | --- | --- |
+| authoritative | [Documentation index](README.md) | Keep public contract current |
+| authoritative | [Rust integration](INTEGRATION.md) | Keep public contract current |
+| authoritative | [Development and commands](DEVELOPMENT.md) | Keep public contract current |
+| authoritative | [Maturity](MATURITY.md) | Keep public contract current |
+| authoritative | [Measurement evidence](EVIDENCE.md) | Keep public contract current |
+| authoritative | [Benchmark protocol](BENCHMARKING.md) | Keep public contract current |
+| authoritative | [Documentation maintenance](DOCUMENTATION.md) | Keep public contract current |
+| authoritative | [Releasing](RELEASING.md) | Keep public contract current |
+| active-plan | [Public roadmap](ROADMAP.md) | Retain open goals until the completion gates pass |
+| generated | [Function adoption map](FREETYPE_SUPPORT.md) | Regenerate and validate evidence |
+| generated | [Compatibility ledger](compatibility_snapshot.json) | Regenerate and validate evidence |
+| generated | [Source-bound parity receipt](runtime_parity_evidence.json) | Regenerate and validate evidence |
+| generated | [Repository retention inventory](FILE_RETENTION_INVENTORY.tsv) | Regenerate and validate evidence |
 
-Run `make check-docs` after editing documentation. It checks every tracked
-Markdown file, local links and anchors, referenced Make targets, current
-project names, lifecycle metadata, snapshot counts, and Rust API documentation.
-It does not test the availability of external websites.
+Legal and fixture provenance remain in [NOTICE.md](../NOTICE.md),
+[fixture notices](../tests/fixtures/THIRD_PARTY_NOTICES.md), and
+[font provenance](../tests/fixtures/input/fonts/PROVENANCE.md).
+`make check-docs` validates the public documentation and source-bound ledgers.

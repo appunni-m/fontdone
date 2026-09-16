@@ -3,9 +3,9 @@
 # Standalone entry point for build, test, lint, parity, and benchmark work.
 
 CARGO := cargo
-PYTHON := python3
+PYTHON ?= python3
 # Git for Windows provides sha256sum; macOS also supports the Perl shasum.
-SHA256 := $(shell command -v sha256sum 2>/dev/null || printf 'shasum -a 256')
+SHA256 = $(shell command -v sha256sum 2>/dev/null || printf 'shasum -a 256')
 PYCACHE_DIR := target/pycache
 BENCH_SAMPLES ?= 10
 BENCH_PROFILE ?= default
@@ -41,8 +41,8 @@ COVERAGE_UNIFIED_LANE_SPLIT ?= 1
 # counters are process-local; sharding avoids the counter contention measured
 # when one instrumented process uses multiple workers, while the report step
 # merges every shard's raw profile.
-COVERAGE_CPU_COUNT := $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || printf 2)
-COVERAGE_DEFAULT_SHARDS := $(shell if test '$(COVERAGE_CPU_COUNT)' -ge 12 2>/dev/null; then printf 3; else printf 2; fi)
+COVERAGE_CPU_COUNT = $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || printf 2)
+COVERAGE_DEFAULT_SHARDS = $(shell if test '$(COVERAGE_CPU_COUNT)' -ge 12 2>/dev/null; then printf 3; else printf 2; fi)
 COVERAGE_UNIFIED_SHARDS ?= $(COVERAGE_DEFAULT_SHARDS)
 # Optional-feature contracts are a separate gate and are already exercised by
 # `make test-parity-smoke`; opt in when an isolated coverage invocation needs
@@ -97,6 +97,7 @@ ALL_LANES_COVERAGE_IGNORE_REGEX := /tests/
 # The integration harness is excluded from this key because it is ignored from
 # the report denominator; Cargo still rebuilds the test executable when its
 # source changes while the instrumented runtime maps remain reusable.
+ifneq ($(strip $(filter-out help help-all docs docs-setup docs-build docs-prepare docs-serve docs-test docs-lint docs-lock docs-benchmark check-docs,$(or $(MAKECMDGOALS),help))),)
 COVERAGE_SOURCE_STATE := $(shell \
 	{ \
 		git rev-parse HEAD 2>/dev/null || printf unknown; \
@@ -135,6 +136,7 @@ COVERAGE_PREPARATION_STATE_MATCHES := $(shell \
 	else \
 		printf 0; \
 	fi)
+endif
 COVERAGE_PREPARATION_TARGETS := unified-oracle bzip2-enabled-oracle api-abi-runtime-check
 ifneq ($(COVERAGE_PREPARE_OPTIONAL_FEATURES),0)
 COVERAGE_PREPARATION_TARGETS += optional-feature-contract
@@ -153,7 +155,7 @@ PLATFORM_CLANG_TARGET ?= $(PLATFORM_TARGET)
 .NOTPARALLEL: ci ci-fast ci-commit ci-thorough release-verify release-verify-complete release-dry-run
 
 .PHONY: help
-help:
+help-all:
 	@printf "fontdone\n\n"
 	@printf "Start:\n"
 	@printf "  make setup            Build the pinned C oracle and public constants\n"
@@ -1088,3 +1090,26 @@ clean:
 		find tests/fixtures/outputs -mindepth 1 -delete; \
 	fi
 	find tests/fixtures -maxdepth 1 -type f -name '*.json' -delete
+
+.PHONY: help
+help:
+	@printf '%s\n' 'fontdone — one Rust crate, C SDK, and npm package' '' \
+	  '  make build            Compile the Rust crate' \
+	  '  make test-fast        Fast Rust and tooling tests' \
+	  '  make test-parity      Full pinned FreeType comparison' \
+	  '  make ci-fast          Per-commit validation' \
+	  '  make lint             Format and Clippy checks' \
+	  '  make doc / doc-test   Rust API documentation / examples' \
+	  '  make docs-setup       Install hash-locked site tools' \
+	  '  make docs-build       Build the public Pages site' \
+	  '  make docs-serve       Preview at localhost:8000' \
+	  '  make bench            Ten-sample C/Rust benchmark' \
+	  '  make check-docs       Validate public contracts and evidence' \
+	  '  make help-all         List specialized targets'
+
+include docs.mk
+
+.PHONY: setup-font-tools help-all
+setup-font-tools:
+	$(PYTHON) -m venv target/font-generation-venv
+	target/font-generation-venv/bin/python -m pip install --requirement requirements-font-generation.txt

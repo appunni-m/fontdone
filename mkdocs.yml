@@ -1,0 +1,78 @@
+site_name: fontdone
+site_description: Pure Rust fonts with measured FreeType compatibility.
+site_url: https://appunni-m.github.io/fontdone/
+repo_url: https://github.com/appunni-m/fontdone
+repo_name: appunni-m/fontdone
+docs_dir: target/docs-source
+site_dir: target/site
+use_directory_urls: true
+strict: true
+theme:
+  name: material
+  font: false
+  language: en
+  palette:
+    - scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+plugins:
+  - search
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+extra_css:
+  - assets/docs.css
+extra_javascript:
+  - assets/evidence.js
+validation:
+  nav:
+    omitted_files: warn
+  links:
+    not_found: warn
+    anchors: warn
+nav:
+  - Overview: index.md
+  - Integrate:
+      - Rust: rust.md
+      - C and C++: c.md
+      - Node and browsers: javascript.md
+      - Raw WASM hosts: wasm.md
+  - Compatibility:
+      - Maturity: maturity.md
+      - Function inventory: api-support.md
+      - Measurement evidence: evidence.md
+      - Public roadmap: roadmap.md
+  - Performance:
+      - Benchmark results: benchmarks.md
+      - Measurement protocol: benchmarking.md
+  - Contribute:
+      - Contributor guide: contributing.md
+      - Development and commands: development.md
+      - Documentation maintenance: documentation.md
+      - Documentation index: guides.md
+  - Project:
+      - Releases: releasing.md
+      - Security: security.md
+      - Code of conduct: conduct.md
+      - Changelog: changelog.md

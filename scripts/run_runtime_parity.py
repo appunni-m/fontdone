@@ -19,7 +19,7 @@ REPORT = OUTPUT_DIR / "runtime_parity.json"
 LOG = OUTPUT_DIR / "test-parity.log"
 COMMITTED_EVIDENCE = ROOT / "doc" / "runtime_parity_evidence.json"
 SNAPSHOT = ROOT / "doc" / "compatibility_snapshot.json"
-README = ROOT / "README.md"
+README = ROOT / "doc" / "EVIDENCE.md"
 
 RUNTIME_CASES = re.compile(r"runtime_cases: runnable=(\d+) pending=(\d+)")
 RUNTIME_PARITY = re.compile(

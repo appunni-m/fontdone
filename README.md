@@ -1,480 +1,110 @@
 # fontdone
 
-<div align="center">
+A pure Rust font engine with measured compatibility against FreeType 2.14.3.
+Use it from Rust, through a native C SDK, or through one npm package for
+Node.js and browsers.
 
-**A pure-Rust font engine measured against FreeType 2.14.3.**
+[Documentation](https://appunni-m.github.io/fontdone/) ·
+[Function support](https://appunni-m.github.io/fontdone/api-support/) ·
+[Benchmarks](https://appunni-m.github.io/fontdone/benchmarks/) ·
+[Rust API](https://docs.rs/fontdone/2.14.3-alpha.10/fontdone/)
 
-[![CI](https://github.com/appunni-m/fontdone/actions/workflows/ci.yml/badge.svg)](https://github.com/appunni-m/fontdone/actions/workflows/ci.yml)
-[![License: FTL](https://img.shields.io/badge/license-FTL-blue.svg)](FTL.TXT)
-[![MSRV: Rust 1.87](https://img.shields.io/badge/MSRV-1.87-orange.svg)](https://github.com/appunni-m/fontdone/blob/main/rust-toolchain.toml)
+**Current release: 2.14.3-alpha.10.** This is an alpha with a deliberately
+limited adoption contract. The maintained map classifies 52 of 218 functions
+as complete; the other functions are mapped incompletely, partial, planned,
+or outside scope. Passing 20,357 runnable comparisons does not establish
+every FreeType behavior. Start with [maturity](doc/MATURITY.md).
 
-</div>
+## Choose an interface
 
-> **Release:** `2.14.3-alpha.10` is the current synchronized prerelease candidate.
-> Alpha.9 passed its complete tag CI and published the Cargo crate through
-> GitHub OIDC; npm then rejected an ambiguous local tarball argument before
-> authentication. Alpha.10 fixes that command and tests its dry-run path.
-> The alpha.9 Cargo version and earlier tags remain immutable. The older
-> `fontdone@2.14.3-alpha.1` npm artifact predates this source.
-> The raw WASM and C Cargo packages remain internal
-> workspace build targets; only the root `fontdone` package is published to
-> crates.io. The project is suitable for compatibility development and
-> controlled evaluation, not as an unqualified drop-in FreeType replacement.
+| Application | Distribution | Guide |
+| --- | --- | --- |
+| Rust | One Cargo crate: `fontdone` | [Rust integration](doc/INTEGRATION.md) |
+| C/C++ | Native SDK attached to GitHub Releases | [C integration](fontdone-c-abi/README.md) |
+| Node.js or browser | One npm package: `fontdone` | [JavaScript guide](fontdone-wasm/npm/README.md) |
+| Custom WASM host | Raw WASM ABI | [Host integration](fontdone-wasm/README.md) |
 
-`fontdone` implements font loading, metrics, hinting, outlines, and
-rasterization in Rust. Runtime packages do not build, link, or load FreeType C.
-Pinned FreeType source is used only by ignored offline test tooling.
+The C and raw-WASM workspace members are private Cargo build packages.
+There is no second public Cargo crate and no PyPI package.
 
-## 1. Choose an integration
-
-| Consumer | Package | Contract | Start here |
-|---|---|---|---|
-| Rust application | `fontdone` | Compact masks/metrics API | [Rust integration](https://github.com/appunni-m/fontdone/blob/main/doc/INTEGRATION.md#2-compact-rust-api) |
-| Rust FreeType migration | `fontdone` | Safe Rust API preserving measured `FT_*` concepts | [Safe migration](https://github.com/appunni-m/fontdone/blob/main/doc/INTEGRATION.md#3-freetype-shaped-safe-rust) |
-| C or C-compatible host | Native C SDK archive | Raw pointers, shipped headers, shared/static libraries; built from the internal `fontdone-c-abi` target | [C ABI guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-c-abi/README.md) |
-| JavaScript application (browser or Node.js) | `fontdone` on npm | Prebuilt Wasm with a typed ESM lifecycle wrapper and environment-aware asset loading | [JavaScript package guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/npm/README.md) |
-| Raw JavaScript host | Internal `fontdone-wasm` build target | Low-level wasm32 linear-memory ABI used by the npm package | [WASM guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/README.md) |
-
-The `fontdone` crate and npm package are released as synchronized exact
-prereleases. The current candidate is `2.14.3-alpha.10`; the older alpha.1 npm
-artifact is immutable historical evidence and cannot be treated as this
-release. Evaluate Rust from a local
-checkout while keeping the version requirement that a publishable downstream
-package needs:
+## Render a glyph in Rust
 
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.10", path = "../fontdone" }
+fontdone = "=2.14.3-alpha.10"
 ```
-
-Registry consumers should request the exact prerelease:
-
-```toml
-[dependencies]
-fontdone = { version = "=2.14.3-alpha.10" }
-```
-
-Cargo requires a version requirement on dependencies of a crate that will be
-packaged or published. A Git dependency can be used instead when the exact
-release tag is public:
-
-```toml
-[dependencies]
-fontdone = { git = "https://github.com/appunni-m/fontdone", tag = "v2.14.3-alpha.10" }
-```
-
-## 2. Rust quick start
 
 ```rust
 use fontdone::Font;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let bytes = std::fs::read("font.ttf")?;
-    let font = Font::truetype(&bytes, 16.0)?;
+fn render_a(font_bytes: &[u8]) -> Result<Vec<u8>, fontdone::FontError> {
+    let font = Font::truetype(font_bytes, 16.0)?;
     let mask = font.getmask("A")?;
-
-    println!(
-        "{}x{}, origin=({}, {}), advance={}",
-        mask.width, mask.height, mask.xmin, mask.ymin, mask.advance_width
-    );
-    Ok(())
+    assert_eq!(mask.pixels.len() as u64, u64::from(mask.width) * u64::from(mask.height));
+    Ok(mask.pixels)
 }
 ```
 
-The input is copied into owned font data. `GlyphMask::pixels` is owned,
-tightly packed, row-major 8-bit coverage. The compact API renders the first
-Unicode scalar and does not shape text. See the
-[integration guide](https://github.com/appunni-m/fontdone/blob/main/doc/INTEGRATION.md) for formats, units, errors, ownership,
-threading, and compiled examples.
+Pass bytes from a font you are licensed to use. The font owns its copied data;
+the returned mask owns its pixels. The compact helper processes the first
+Unicode scalar, not a shaped string. Read the
+[integration contract](doc/INTEGRATION.md) for units, formats, ownership, and
+fallible operations. The declared Rust minimum is 1.87; the workspace uses
+pinned Rust 1.96.1 and has a separate MSRV lane.
 
-## 3. Compatibility status
+## What is and is not established
 
-Compatibility has 3 separate measurements. They must not be combined into one
-percentage. Performance is tracked separately and cannot increase a
-compatibility score.
+- Rust owns font parsing, glyph loading, hinting, metrics, outlines, and
+  rasterization. FreeType C is an offline oracle, never a runtime fallback.
+- The [function map](doc/FREETYPE_SUPPORT.md) classifies application behavior.
+  A declared symbol, successful header compile, or null-input test does not
+  establish complete replacement.
+- The [evidence guide](doc/EVIDENCE.md) separates runtime parity, source
+  coverage, and the twelve-category C contract. Three undefined-C inputs
+  remain explicitly pending.
+- Text shaping, bidi ordering, font fallback, and paragraph layout are outside
+  the compact API. Use an appropriate shaping/layout layer.
+- Alpha releases do not promise API or ABI stability. Test the application's
+  own fonts, glyphs, features, and target platforms before upgrading.
 
-### 3.1 Maintained adoption map
+## Measure performance
 
-The generated [function adoption map](https://github.com/appunni-m/fontdone/blob/main/doc/FREETYPE_SUPPORT.md) classifies all
-218 pinned public functions by application-ready contract status:
+The [benchmark site](https://appunni-m.github.io/fontdone/benchmarks/) shows
+per-operation latency, sample counts, and source identity. Timing-only rows
+remain labeled, and historical measurements do not stand in for the current
+release. [Methodology](doc/BENCHMARKING.md) explains process memory, artifact
+size, and the still-unset regression thresholds.
 
-| Status | Functions | Meaning |
-|---|---:|---|
-| Complete | 52 | Maintained application behavior and mapping are complete |
-| Implemented, mapping incomplete | 5 | Runtime code exists; public mapping is incomplete |
-| Partial | 29 | Only the documented behavior is ready |
-| Planned | 69 | No application-ready implementation is claimed |
-| Intentionally excluded | 63 | Outside the currently declared product surface |
-| **Total** | **218** | Pinned FreeType 2.14.3 function inventory |
+## Contribute
 
-This is a conservative adoption classification. A planned or excluded function
-can still have a declaration, stub, validation route, or focused runtime probe.
-That evidence does not make its complete application behavior available.
+Start with [Contributing](CONTRIBUTING.md) and the
+[documentation index](doc/README.md). Small reproductions and licensed parity
+inputs are especially useful.
 
-### 3.2 Last committed runtime evidence
-
-The last committed full parity snapshot was recorded on **2026-09-15**:
-
-| Measurement | Count |
-|---|---:|
-| Runnable exact-comparison cases | 20,357 |
-| Passed cases | 20,357 |
-| Failed cases | 0 |
-| Explicitly pending cases | 3 |
-| Covered manifest cases | 4,420 |
-| Validated public API subjects | 1,543 |
-| Validated public API input files | 1,537 |
-| Logical declared cases | 4,574 |
-| Concrete expanded cases | 20,360 |
-| Functions with at least one C/Rust/C-ABI/WASM runtime route | 218 / 218 |
-
-`20,357 / 20,357` means every runnable case in that execution matched; the 3
-explicitly pending concrete cases are safety-extension or undefined-input
-scenarios and the route audit still reports **0 pending parity routes**. Likewise, 218/218 function-route evidence
-can be satisfied by a narrow success or null-validation route; it is not
-equivalent to complete behavior for every input, state, or platform.
-
-The latest worktree verification is the full parity snapshot recorded in
-`doc/runtime_parity_evidence.json` by `make record-parity-snapshot` after
-20,357 / 20,357 runnable comparisons with 0 failures and 3 explicitly pending
-concrete cases. The source digest, compiler versions, and execution counts are
-recorded in the [release's parity receipt](https://github.com/appunni-m/fontdone/blob/v2.14.3-alpha.10/doc/runtime_parity_evidence.json).
-
-Run `make test-parity` for current worktree evidence. It writes the full log
-and a source-digest-bound report under `target/parity-evidence/`. After a
-complete run, `make record-parity-snapshot` copies that report into the
-[committed runtime evidence](https://github.com/appunni-m/fontdone/blob/main/doc/runtime_parity_evidence.json)
-and updates this table. Recording fails if parity-relevant source changed after
-the run. Generated runtime reports under `target/` are newer authority for
-their exact worktree than the committed release snapshot.
-
-### 3.3 Retained historical combined coverage
-
-The retained historical all-lane coverage snapshot was recorded on
-**2026-08-23** for the worktree based at commit
-`e8c51cb6dba42fd524d94940673fe6b380411d46`
-by managed Coverage MCP 0.10.0 (registered command with the local sccache
-wrapper disabled):
-
-
-| Metric | Covered / total | Coverage |
-|---|---:|---:|
-| Lines | 63,740 / 65,887 | 96.74% |
-| Branches | 11,580 / 13,412 | 86.34% |
-| Functions | 3,689 / 3,976 | 92.78% |
-| Regions | 87,946 / 91,700 | 95.91% |
-
-The managed snapshot records the three split backends passing all 17,121
-runnable comparisons. Coverage MCP reports that LLVM JSON segments are
-normalized to segment-start lines while aggregate region totals are preserved.
-The final 30-case valid-input probe was pruned after an exact zero-region delta;
-the retained MCP comparison is 87,946 / 91,700 regions, with the denominator
-unchanged by the campaign.
-
-The maintained Apple full-Unicode format-13 font and malformed format-13
-matrix remain exercised by their existing character-index and parser routes.
-The current variable-font inputs also exercise HVAR/MVAR variation-store guard
-behavior through the same parity-backed face-open and glyph-load routes. The
-latest run continues to identify cache-miss instrumented compilation, rather
-than MCP ingestion or the C oracle, as the largest cold-run delay. The cold
-comparison run `9da2059c-8e05-424a-85f6-30e0b6e0c432` took 84.484 seconds,
-including a 67-second instrumented rebuild; the warm run above reused that
-binary.
-
-The maintained `MONO` plus x-only-strength row for `FT_Bitmap_Embolden`
-closes the packed-bit tail-mask branch in `src/ffi/handles.rs`; focused,
-full-parity, and C-ABI contract evidence remain oracle-backed. The follow-up
-invariant cleanup removed six unreachable bitmap-buffer bounds-check lines,
-four branch entries, and ten regions without changing any parity result; the
-function denominator is unchanged.
-
-The earlier coverage-speed change set `COVERAGE_TEST_DEBUG=0`, removing DWARF
-line tables while retaining LLVM source mapping; its historical cold build was
-49.40 seconds (run `43214315-ba24-44e0-b4f9-fce152052ec5`). The current sharded
-run retains that setting and additionally removes the remaining cross-backend
-counter contention by using process-local shard profiles. LLVM coverage mapping
-supplies the report's source locations without requiring DWARF line tables.
-
-The current SBIT and SBIX invariant cleanups remove defensive bitmap shape and
-strike-selection guards whose callers prove exact internal layout and selected
-strike invariants. They preserved all 7,604 runnable parity results and closed
-the remaining relevant SBIT/SBIX branch gaps without adding a unit-only coverage
-route. The gvar invariant cleanup removes defensive branches whose callers
-already prove valid normalized-coordinate, glyph-offset, contour-endpoint,
-divisor, and axis-extent inputs. It preserved all 7,604 runnable parity
-results and reduced the measured coverage denominator without weakening a
-fixture or parity comparison. The varstore invariant cleanups remove the
-parser-proven region-index fallback and zero-denominator guard, and now the
-unreachable sign-selection branch, after verifying the store, slope, and scalar
-invariants. That pushed-head invariant-cleanup result preserved all 7,620
-runnable parity comparisons and left only the checked multiplication overflow
-lines relevantly uncovered in `src/tt/varstore.rs`, which now reports 66 / 66
-branches. The
-earlier host-width cleanup removes conversion branches that cannot occur on
-the supported 64-bit ABI while retaining checked conversions for 32-bit WASM.
-It preserved all 7,604 runnable parity results and reduced the measured
-coverage denominator without weakening a fixture or parity comparison. The
-latest `glyf` cleanup folds the independently scaled no-hinting composite walk
-into the validated loader, removing duplicate parsing while preserving the
-same exact results.
-
-The coverage build-state marker now keys reuse to the newest commit touching
-compiler-relevant inputs, rather than every current `HEAD`, and excludes
-`COVERAGE_UNIFIED_WORKERS`, `COVERAGE_UNIFIED_LANE_SPLIT`, and
-`COVERAGE_UNIFIED_SHARDS` because they only change process orchestration. A
-dirty compiler-input tree still forces a
-clean rebuild. The warm confirmation above therefore avoids the 67-second
-instrumented compile after fixture/docs-only commits or worker tuning while
-retaining the same instrumented binary, parity matrix, and coverage totals.
-
-Oracle and API-audit preparation now has an independent state marker. When its
-tracked inputs and preparation options are unchanged, `make test-coverage-all`
-reuses those artifacts instead of rerunning the phony preparation targets;
-`make coverage-clean` removes both the build and preparation markers.
-
-This is an LLVM branch-coverage measurement across the Rust core, native C
-ABI, and host-compiled WASM facade. The 3 explicitly pending cases remain
-pending. The maintained `make test-coverage-all` command keeps all workspace
-packages in the report but executes only the `unified_fixture_parity`
-integration target, whose exact default test name is
-`parity_fixture::unified_fixture_parity` and which already drives the Rust,
-C-ABI, and host-compiled WASM lanes. This avoids empty root-unit and pipe-trace binaries that can make
-LLVM count cfg-dependent FFI source twice without adding a parity input. The
-default `COVERAGE_UNIFIED_LANE_SPLIT=1` path builds one instrumented binary,
-then runs that binary directly for the Rust FFI, C ABI, and host-WASM lanes in
-separate processes with separate raw profile files; the final `cargo llvm-cov
-report` merges them. Those raw profiles live under the nested
-`COVERAGE_ALL_TARGET_DIR/llvm-cov-target` directory scanned by
-`cargo llvm-cov report`; placing them beside that directory would make the
-report reuse stale profile data. Reusing the already-built binary avoids reacquiring
-Cargo's build lock and repeating the `cargo llvm-cov` test-profile setup three
-times. This avoids the LLVM counter contention measured when all three
-backends share one instrumented process without changing the parity inputs.
-Set
-`COVERAGE_UNIFIED_LANE_SPLIT=0` only for the legacy single-process diagnostic
-path. The all-lane command uses a dedicated `COVERAGE_ALL_TARGET_DIR` cache and
-records a source/configuration state marker; it cleans stale instrumented
-workspace artifacts once after a relevant change and retains the fast warm
-repeat path afterward.
-The
-ABI-only package preflight remains available as `make coverage-abi-preflight`,
-but the default coverage target does not rerun it because `make test-fast`
-already executes that contract before `make ci-thorough`. Optional feature
-profiles are verified separately by `make optional-feature-contract`; coverage
-also restores all four maintained oracle helpers after a workspace clean and
-rebuilds the isolated optional-feature probe bundles only when their artifacts
-are missing or stale, so warm runs reuse them.
-The newer dirty-worktree validation run `b0194751-8e81-4d73-a17d-d6ae1a636c71`
-(`21949c21-abcd-4b97-b5c8-a9badd976487`) passed 7,537 / 7,537 cases in each
-backend and measured 49,624 / 54,186 lines, 9,815 / 12,538 branches,
-3,391 / 3,835 functions, and 68,297 / 75,365 regions; it is retained in
-`doc/DEVELOPMENT.md` and `doc/ROADMAP.md` until a new compatibility snapshot
-is deliberately promoted.
-The preceding source/input-bound all-lane run `e068f42a-1f89-4504-b438-fe82602f9777`
-(`bd628f06-3846-4c7e-8c82-76f26c8d437f`) passed 7,542 / 7,542 comparisons in
-each backend and measured 49,861 / 54,382 lines, 9,878 / 12,590 branches,
-3,402 / 3,848 functions, and 68,605 / 75,611 regions in 73.636 seconds.
-Its exact BDF error branch is recorded at `src/font.rs:1536-1537`; the three-surface
-instrumented execution and fresh binary build are the dominant costs; the report
-is accepted by Coverage MCP without the compatibility-only segment rewrite. The default
-`COVERAGE_NORMALIZE_SEGMENTS=0` therefore skips the measured ~2.9-second `jq`
-pass over the 28.6 MB JSON artifact; set it to `1` only for an older LLVM JSON
-producer that needs the segment-count clamp. Coverage builds retain the
-instrumented target with `cargo llvm-cov --no-clean`, remove stale `.profraw`
-files before each measurement, and clear stale workspace artifacts when the
-source/configuration state changes. They omit DWARF line tables via
-`COVERAGE_TEST_DEBUG=0`; LLVM's coverage mapping remains sufficient for the
-report. Face-cache keys now
-reuse the preload phase's content digests instead of hashing the same font for
-each expanded case, and read-only SFNT table-load/info routes reuse those
-content-bound handles; the variation-sequence route remains isolated. Oracle
-preparation now also preserves generated-file mtimes
-when contents are unchanged, so the C helper and FreeType validator overlay are
-not rebuilt on every run; unchanged FreeType CMake configuration is reused as
-well. Run `make coverage-clean` after changing coverage
-instrumentation or profile configuration.
-
-The preceding source/input-bound coverage run completed in 73.636 seconds,
-including the 40.07-second instrumented rebuild; its same-source warm repeat
-completed in 29.156 seconds;
-the preceding managed warm source-bound coverage run completed in 50.842 seconds;
-the preceding source-bound run completed in 100.333 seconds including the
-instrumented rebuild; its longest backend execution was 48.24 seconds;
-the preceding managed source-bound run completed in 98.336 seconds; the
-preceding managed source-bound run completed in 52.387 seconds; the
-preceding managed warm source-matched coverage run completed in 51.362 seconds;
-the preceding managed run completed in 51.347 seconds, while the first
-source-bound run after the code change took 99.254 seconds because it rebuilt
-the instrumented binary. The prior execution-only warm measurement with the
-instrumented binary and expanded-input cache warm was 50.482 seconds, and the
-prior warm committed baseline was 51.991 seconds. The
-repository default remains `COVERAGE_TEST_OPT_LEVEL=1`; use an
-explicit level-3 override only for comparison. `make coverage-clean` is now
-safe before a run: the build-only coverage step uses `--no-report -- --list`
-so it cannot attempt to merge profiles before the three backend lanes execute.
-
-Coverage is a code-execution signal, not a compatibility score. These
-percentages apply only to the named source commit, suite, and toolchain. Run
-`make test-coverage-all` again after source changes. The exact machine-readable
-measurement provenance is retained in the compatibility snapshot.
-
-### 3.4 C ABI completion contract
-
-The latest generated scorecard from `make c-abi-contract` in the current
-worktree (regenerated 2026-09-15) has **8 / 12 categories complete**:
-
-| Category group | Status |
-|---|---|
-| Functions | 183 / 218 functions without unresolved subject routes; 218 / 218 names, signatures, and traced function routes; 13,624 / 18,100 pinned-C runtime contract rows exact; 4,476 pending |
-| Constants, types, layouts, callbacks | Complete under their blocking scorecard measurements |
-| Ownership | 23 / 23 ownership rules have exact runtime evidence |
-| State, modules, headers | 20 / 20 state transitions and 7 / 7 optional public components have exact evidence; headers are complete |
-| Errors | 2,756 / 3,689 expected-error routes compare exact error and output results; the current ledger has no strict mismatches and 933 unresolved routes; 15,879 / 20,355 routes have no generic fallback evidence |
-| Binary/install artifacts | 7 / 8; Windows import-library evidence pending |
-| Platform behavior | 1 / 5 fresh target bundles; Linux x86-64, Windows x86-64, Linux i686, and Linux powerpc64 remain pending |
-
-Tag CI independently requires all five platform jobs and validates their
-combined scorecard. Its `c-contract-scorecard` artifact records the release's
-platform totals; the table above records the local macOS worktree measurement.
-
-Only `make c-abi-contract-complete` is the full-contract pass condition. The
-ordinary `make c-abi-contract` command intentionally succeeds while reporting
-remaining debt. Unresolved function-subject routes and incomplete expected-error
-routes remain even when every bare function name has some traced route. The self-cleaning
-[completion roadmap](https://github.com/appunni-m/fontdone/blob/main/doc/ROADMAP.md) defines the exact 12-category goal.
-
-The committed machine-readable snapshot is
-[`doc/compatibility_snapshot.json`](https://github.com/appunni-m/fontdone/blob/main/doc/compatibility_snapshot.json).
-The scorecard is generated from the pinned C headers, current route audit,
-contract inventory, and available platform artifacts. Incomplete categories
-remain release blockers; the generated report under `target/api-abi-audit/`
-is the detailed authority for the current worktree.
-
-### 3.5 Performance baseline
-
-The maintained release-mode benchmark measures per-operation latency and
-throughput, complete-process peak RSS, and exact unstripped release-artifact
-bytes against pinned FreeType. Correctness mismatches fail before a
-measurement can qualify.
-
-<!-- performance-baseline:start -->
-The committed ledger contains **7 / 5 clean runs**
-for its most-sampled current environment. Five runs from the same environment
-are required before regression thresholds can be reviewed.
-
-| Latest clean measurement | Value |
-|---|---:|
-| Source commit | `e0c6b793de33f2b62bc79a0f7923dc52000b75ff` |
-| Samples | 10 |
-| Weighted latency speedup versus C | 0.293x |
-| Total throughput ratio versus C | 0.378x |
-| Median peak-RSS ratio versus C | 3.822x |
-| Shared-library byte-size ratio versus C | 2.487x |
-| Fontdone WASM size | 1,281,884 bytes |
-
-The regression policy is `collecting_baseline`. `make bench-regression`
-therefore fails closed until reviewed thresholds become active.
-<!-- performance-baseline:end -->
-
-Run `make bench` to generate a ten-sample report under
-`target/fontdone-bench/`. From a clean source commit, run
-`make record-performance-baseline` to append it to the committed ledger.
-Performance evidence is machine- and environment-specific; results from
-different environment identities are never pooled toward the five-run
-threshold-review minimum.
-
-## 4. What is implemented
-
-The Rust runtime contains:
-
-- SFNT, TrueType, CFF/CFF2, Type 1/Type 42, BDF, PCF, PFR, WinFNT, and
-  collection-facing load paths where listed by the adoption map;
-- TrueType bytecode hinting and Latin/CJK auto-hinting infrastructure;
-- smooth, mono, LCD, LCD-V, SDF, embedded-bitmap, outline, and selected color
-  and SVG routes;
-- metrics, charmaps, variation data, names, kerning, glyph objects, outlines,
-  stroking, caches, streams, validators, and module-state compatibility paths;
-- safe Rust, native C, and WebAssembly facades backed by the same Rust core.
-
-This list describes components, not universal format or API completeness.
-Always use the adoption map and exact parity cases for a compatibility claim.
-
-## 5. Repository map
-
-```text
-src/                  pure-Rust engine and safe APIs
-fontdone-c-abi/       native C artifact, headers, and C example
-fontdone-wasm/        wasm32 ABI, JavaScript npm package, schema, and examples
-tests/data/           maintained, non-generated contracts
-tests/fixtures/input/ tracked font and auxiliary inputs
-scripts/font_generation/
-                      deterministic font generators
-doc/                  integration, development, release, status, and roadmap
+```sh
+make help
+make build
+make test-fast
+make check-docs
 ```
 
-Runtime flow:
+Use `make docs-setup`, `make docs-build`, and `make docs-serve` for the
+public site. Each repository publishes its own GitHub Pages artifact from CI.
 
-```text
-font bytes -> table parsing -> scaling -> native/auto hinting -> rasterization
-                                                        |
-                                      Rust / C ABI / WASM observations
-```
+## Project information
 
-## 6. Build and verify
+[Release process](doc/RELEASING.md) · [Changelog](CHANGELOG.md) ·
+[Security](SECURITY.md) · [Code of conduct](CODE_OF_CONDUCT.md)
 
-Requirements and host support are documented in
-[`doc/DEVELOPMENT.md`](https://github.com/appunni-m/fontdone/blob/main/doc/DEVELOPMENT.md).
+Fontdone is distributed under the [FreeType License](FTL.TXT).
+[Notices](NOTICE.md) and [fixture provenance](tests/fixtures/input/fonts/PROVENANCE.md)
+retain the authorship, license, and transformation history of reference assets.
 
-```bash
-make setup       # fetch and build the pinned offline C oracle
-make test-fast   # workspace tests that do not need full parity
-make test-parity-smoke # eight exact runtime cases across every facade
-make test-parity # exact C/Rust/C-ABI/WASM parity
-make npm-package-verify # build and install-test the JavaScript npm tarball
-make lint        # rustfmt and Clippy
-make doc-test    # compile public Rust examples
-make ci-fast     # exact fast per-commit local gate (make ci is an alias)
-```
+## Acknowledgements
 
-Important complete gates:
-
-| Command | Contract |
-|---|---|
-| `make api-abi-audit` | Parse the pinned public declarations and local surfaces |
-| `make c-abi-contract` | Report every C-contract numerator, denominator, and debt item |
-| `make c-abi-contract-all-platforms` | Validate five target bundles and report current C-contract debt |
-| `make c-abi-contract-complete` | Fail unless all 12 C-contract categories complete |
-| `make test-integrations` | Run downstream Rust, external C, raw WASM, and installed npm consumers |
-| `make npm-package-verify` | Build, inspect, install, and execute the publishable `fontdone` npm tarball |
-| `make check-docs` | Check every tracked Markdown document, status snapshot, links, commands, and rustdoc policy |
-| `make bench-regression` | Fail unless reviewed latency, throughput, memory, and size thresholds all pass |
-| `make ci-thorough` | Run the requested local pre-merge full parity, coverage, performance, contract, package, and supply-chain gate |
-| `make release-verify` | Run local release gates; requires assembled five-target platform evidence |
-
-`make help` is the maintained command index.
-
-## 7. Fixtures and licensing
-
-Tracked input fixtures remain under `tests/fixtures/input/`. Generated matrices
-and oracle outputs are ignored. Font-generation code is isolated under
-`scripts/font_generation/` so its deterministic inputs, output classification,
-and licensing can be reviewed separately.
-
-Read:
-
-- [fixture notices](https://github.com/appunni-m/fontdone/blob/main/tests/fixtures/THIRD_PARTY_NOTICES.md);
-- [font provenance](https://github.com/appunni-m/fontdone/blob/main/tests/fixtures/input/fonts/PROVENANCE.md);
-- [font-generation policy](https://github.com/appunni-m/fontdone/blob/main/scripts/font_generation/README.md).
-
-The root FreeType License does not relicense third-party font inputs.
-
-## 8. Project policies
-
-- [Documentation map](https://github.com/appunni-m/fontdone/blob/main/doc/README.md)
-- [Contributing](https://github.com/appunni-m/fontdone/blob/main/CONTRIBUTING.md)
-- [Security](https://github.com/appunni-m/fontdone/blob/main/SECURITY.md)
-- [Code of conduct](https://github.com/appunni-m/fontdone/blob/main/CODE_OF_CONDUCT.md)
-- [Changelog](CHANGELOG.md)
-
-`fontdone` is distributed under the FreeType Project License:
-[`LICENSE`](LICENSE), [`FTL.TXT`](FTL.TXT), and [`NOTICE.md`](NOTICE.md).
+Thank you to [FreeType](https://freetype.org/) and its contributors for the
+reference implementation and public contracts, and to the authors who provide
+licensed test fonts. Thank you also to [Puhu](https://github.com/bgunebakan/puhu)
+for the Rust/Python imaging work that informed the parent project's early
+exploration, and [Pillow](https://python-pillow.org/) for its image and font
+interfaces and reference behavior.

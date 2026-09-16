@@ -7,6 +7,7 @@ import argparse
 import csv
 import hashlib
 import io
+from collections import Counter
 import os
 import re
 import subprocess
@@ -290,6 +291,15 @@ def main() -> None:
             )
         print("repository retention inventory: clean")
         return
+    development = ROOT / "doc" / "DEVELOPMENT.md"
+    counts = Counter(row["reason_code"] for row in csv.DictReader(io.StringIO(rendered), delimiter="\t"))
+    text = development.read_text(encoding="utf-8")
+    for reason, count in counts.items():
+        text = re.sub(rf"(\| {reason} \| )[\d,]+( \|)", rf"\g<1>{count:,}\g<2>", text)
+    text = re.sub(r"(\| \*\*Total\*\* \| \*\*)[\d,]+(\*\* \|)",
+                  rf"\g<1>{sum(counts.values()):,}\g<2>", text)
+    development.write_text(text, encoding="utf-8")
+    rendered = render_inventory()
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(rendered, encoding="utf-8")
     print(f"repository retention inventory: wrote {OUTPUT.relative_to(ROOT)}")

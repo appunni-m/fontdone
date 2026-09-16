@@ -1,0 +1,90 @@
+{
+  "project": "fontdone",
+  "version": "2.14.3-alpha.10",
+  "release_revision": "cb90d41a863f8569335d8ed775a4038d23c79dc5",
+  "repository": "appunni-m/fontdone",
+  "site_url": "https://appunni-m.github.io/fontdone/",
+  "pages": [
+    {
+      "source": "README.md",
+      "output": "index.md"
+    },
+    {
+      "source": "doc/INTEGRATION.md",
+      "output": "rust.md"
+    },
+    {
+      "source": "fontdone-c-abi/README.md",
+      "output": "c.md"
+    },
+    {
+      "source": "fontdone-wasm/npm/README.md",
+      "output": "javascript.md"
+    },
+    {
+      "source": "fontdone-wasm/README.md",
+      "output": "wasm.md"
+    },
+    {
+      "source": "doc/MATURITY.md",
+      "output": "maturity.md"
+    },
+    {
+      "source": "doc/FREETYPE_SUPPORT.md",
+      "output": "api-support.md"
+    },
+    {
+      "source": "doc/EVIDENCE.md",
+      "output": "evidence.md"
+    },
+    {
+      "source": "doc/BENCHMARKING.md",
+      "output": "benchmarking.md"
+    },
+    {
+      "source": "doc/DEVELOPMENT.md",
+      "output": "development.md"
+    },
+    {
+      "source": "CONTRIBUTING.md",
+      "output": "contributing.md"
+    },
+    {
+      "source": "doc/DOCUMENTATION.md",
+      "output": "documentation.md"
+    },
+    {
+      "source": "doc/RELEASING.md",
+      "output": "releasing.md"
+    },
+    {
+      "source": "doc/ROADMAP.md",
+      "output": "roadmap.md"
+    },
+    {
+      "source": "SECURITY.md",
+      "output": "security.md"
+    },
+    {
+      "source": "CODE_OF_CONDUCT.md",
+      "output": "conduct.md"
+    },
+    {
+      "source": "CHANGELOG.md",
+      "output": "changelog.md"
+    },
+    {
+      "source": "doc/README.md",
+      "output": "guides.md"
+    }
+  ],
+  "benchmark": {
+    "kind": "fontdone",
+    "source": "site-assets/benchmark.json"
+  },
+  "rust_example": {
+    "source": "README.md",
+    "crate": ".",
+    "font_input": "tests/fixtures/input/fonts/NotoSans-Regular.ttf"
+  }
+}

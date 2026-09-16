@@ -4,16 +4,11 @@ Fontdone publishes one Cargo crate, `fontdone`, one npm package, `fontdone`,
 and a native C SDK on GitHub Releases. The internal `fontdone-c-abi` and
 `fontdone-wasm` Cargo packages have `publish = false`. There is no PyPI package.
 
-The current candidate is `2.14.3-alpha.10`. Cargo's first local bootstrap was
-`2.14.3-alpha.3`; npm's first bootstrap was `2.14.3-alpha.1`. Future publication
-uses only the tag-triggered `.github/workflows/release.yml` and GitHub OIDC.
-Local registry logins are not used by that workflow.
-
-Alpha.9's [tag CI](https://github.com/appunni-m/fontdone/actions/runs/34996142187)
-passed and its [release run](https://github.com/appunni-m/fontdone/actions/runs/34996142115)
-published Cargo through OIDC. npm failed before authentication because its
-tarball argument was parsed as GitHub shorthand. Alpha.10 fixes this command;
-the alpha.9 crate is preserved without attempting to overwrite its bytes.
+Version **2.14.3-alpha.10** is published. The [release workflow](https://github.com/appunni-m/fontdone/actions/runs/35002120087)
+and [tag CI](https://github.com/appunni-m/fontdone/actions/runs/35002119892)
+passed for `cb90d41a863f8569335d8ed775a4038d23c79dc5`. Cargo and npm provenance
+identify that source/run and their archives match GitHub checksums. Subsequent
+publication uses this repository's tag-triggered `release.yml` and GitHub OIDC.
 
 ## 1. Trusted publisher configuration
 
@@ -86,7 +81,7 @@ stand in for a successful publishing job.
 6. Create an annotated, unused `v<version>` tag on that commit and push it.
    Never move a published tag or overwrite an existing registry version.
 
-For the current candidate, registry consumers will use:
+For the published release, registry consumers use:
 
 ```toml
 [dependencies]

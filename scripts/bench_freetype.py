@@ -27,7 +27,7 @@ DEFAULT_MATRIX = ROOT / "tests" / "data" / "perf_operation_matrix.json"
 DEFAULT_OUT = ROOT / "target" / "fontdone-bench" / "latest.json"
 DEFAULT_REPORT = ROOT / "target" / "fontdone-bench" / "latest.md"
 COMPATIBILITY_SNAPSHOT = ROOT / "doc" / "compatibility_snapshot.json"
-README = ROOT / "README.md"
+README = ROOT / "doc" / "EVIDENCE.md"
 ROADMAP = ROOT / "doc" / "ROADMAP.md"
 PERFORMANCE_README_PATTERN = re.compile(
     r"<!-- performance-baseline:start -->.*?<!-- performance-baseline:end -->",
