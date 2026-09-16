@@ -209,8 +209,8 @@ scripts/test_rust_consumer.py	1680	file	2c22fc0571546f0a724dcbc874a01ca2409ca97e
 scripts/test_wasm_consumer.py	1995	file	5bc99613afeb0e3b8e6af09a3e8ff1356a284add969bbe0106b002965f2cef60	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/verify_release.py	17373	file	a5ef046d005361bb43278fe8ef0d3eb836f18bd3bd3edfe120e61b8927f804cc	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 site-assets/benchmark.json	15218	file	08e66e1252977fc621a68e90c076ffa8ac9435a3d7d9d2a0adc21365a44f0a47	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-site-assets/docs.css	2715	file	fbeb4b13aeb7a3e93a8ee1c348b1d97e2823ed74ad0167d2b85c73bc015054c9	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-site-assets/evidence.js	1369	file	b38c447dce8af35637b339146e7a14e560a46d301906d9b90bde246e8ae7e35f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+site-assets/docs.css	2845	file	c44b3af46b480db478d35d8a9474bc8e80b1ae5e944dde74be468bd84c8f2ae5	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+site-assets/evidence.js	1359	file	14faa2c75c3e52af75b72a3b5cc79ef001a8b67ce92b57d167f2e3d76b6fc049	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 src/api.rs	73255	file	7cc2d750ac8fd940ebd6d6a250f600a589aabd6b8ebe0029b930cf5d0f965a27	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/autohint/blue_strings.rs	54107	file	bf3bb9470d2cb549c05231b05c6c0b54b5f74297ab3dd827a81c4c9cc66c7fbc	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/autohint/cjk.rs	40498	file	a3098f70f15dcdaa97361f106bd2bfac91d74597021879e89aa6eec2ba3592a0	-	keep-runtime	R01	Published pure-Rust runtime source.
