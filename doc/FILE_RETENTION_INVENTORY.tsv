@@ -2,7 +2,7 @@ path	bytes	kind	sha256	symlink_target	retention_class	reason_code	reason
 .cargo/config.toml	360	file	1432363e60b718fa7de9a08091192c01a64a711f9ee6afa60a0f1ba882cbab15	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 .codex/environments/environment.toml	130	file	309d8854d0285ddd220243c3a3dc1c28d696e9148dd306a02b0a27c70c90873e	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 .gitattributes	199	file	ecfe76f0b32ea4a300c88b3200ee512fbde21887fc6c697b49e503a045564bc4	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-.github/workflows/benchmark.yml	1603	file	9325057f93590e4d1ef4f40800c2213f641042db7df1c18f4f2c7780002befb8	-	keep-ci	R09	Public continuous-integration contract.
+.github/workflows/benchmark.yml	1789	file	dc622d06e5d3d2d0ba47163d0abac4b08765ca1c2170fd251b97d1a462a952e4	-	keep-ci	R09	Public continuous-integration contract.
 .github/workflows/ci.yml	29782	file	b0412bc6070c36fd10a4c5350d345141f1b0a3e0206959eab4ffa2f94077e1aa	-	keep-ci	R09	Public continuous-integration contract.
 .github/workflows/docs.yml	3093	file	75e584706c2d9b2fcd41e496afb40532461fae93622df50eb497ab0b2e25ccb9	-	keep-ci	R09	Public continuous-integration contract.
 .github/workflows/release.yml	15161	file	e7943e7a67eeec74c3814c2df96187989321521b74b46be2d3dc50ec99f3c79e	-	keep-ci	R09	Public continuous-integration contract.
@@ -11,18 +11,18 @@ AGENT.md	9	symlink	-	AGENTS.md	keep-alias	R05	Repository tooling alias whose pat
 AGENTS.md	3444	file	759b71a6f3cb89259576226b8bd644ba44bff4f43189392ea898b6c558829779	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 CHANGELOG.md	7806	file	8662766c7911625030ed29f44cf6ec3f7b5586b5cf77ef2b73dce283b2c124dd	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 CODE_OF_CONDUCT.md	834	file	fc5d9bcf71a578c1a1b80f10d3741125184c34b01841ead7209bc7fbd55d5b50	-	keep-community	R09	Public community or security contract.
-CONTRIBUTING.md	3129	file	701d7a2f405f83527a66e91eab2dd0d176ae6a3f187b5b10eb5449975c39fb7d	-	keep-community	R09	Public community or security contract.
+CONTRIBUTING.md	3622	file	2804cfc8737eafc6ac97e4aa8049d2e10d395b554b499f76e0807e8c87cd5b3e	-	keep-community	R09	Public community or security contract.
 Cargo.lock	13764	file	01535adb3a9a0f6ce0a976ff5abc10126fbb10d832073f7aa02281ed7dfecc20	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 Cargo.toml	2422	file	df6e474abd66beb1b2bedf20deeea857f043e43ce947c5036425d479c39e95f7	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 LICENSE	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-Makefile	50630	file	12f2b121fa7db5dcb78a677130568824fbfb12bfcd7b2c336ef569ac99ca4fa0	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+Makefile	50788	file	41a20490e2a5963be5c760225df998192054a3b59d926859756968b0b21091ed	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 NOTICE.md	1275	file	b2a99b4906d6ff998690cfda4db4c23dff3e8351c6de65d5c9a8b1835a6ac623	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 README.md	4617	file	6ba2ac501b54afd0505af05634d82086fc9e0a7069da097b780c338dc366dd0a	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 SECURITY.md	1570	file	7f2ef28c6f58231b04f2fd45d3f6b5bdc5f29b1880cc2a74e9d8ce940e8fd366	-	keep-community	R09	Public community or security contract.
 deny.toml	341	file	d4d516ffd41e0c8e3de633cc3d807b5e0b1a53ec7b5f56ad8ea95c73da0a2bf1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 doc/BENCHMARKING.md	3314	file	4470988dc7c15701605a3ef7e92619fbfc8832df7f3399a757c74f0e0c714f04	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/DEVELOPMENT.md	9961	file	0f1e182f7991d1e48206341db888f41f3e1d08fcf8ddce24cd4fe22880e4ba0d	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/DEVELOPMENT.md	9961	file	383701e5c9aaa9068d53bc453d26ca1a34fcfce6e528ae41b547aabd647e2a25	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/DOCUMENTATION.md	2302	file	842aa5d97185457af69add3ce3b802d591b720bbeada887f23f9212836c0b141	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/EVIDENCE.md	7680	file	feb5e68c3830b2e5d7cb5894de32eb88617e746b62f93e6d763ac13a3f40131a	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/FILE_RETENTION_INVENTORY.tsv	0	generated	-	-	generated-audit	R11	Generated exhaustive inventory; refresh with scripts/audit_repository_files.py.
@@ -32,8 +32,8 @@ doc/MATURITY.md	2999	file	ca25b227137215060e6b6fa1c636df41c92c73a5da7d2bce932e4f
 doc/README.md	2209	file	65b094dc50ca8ce562bca47b41c5db9e5139f24724e9f36f9052d7e522ecad17	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/RELEASING.md	8004	file	5945fe6de54897c2f14d48b16432fd8b293350ec2159158f13f7ba444e58632b	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/ROADMAP.md	2392	file	0dc7e893de190e4f01e4797825398287db32a6169f20a55324ebcd3b4e214600	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
-doc/compatibility_snapshot.json	80768	file	ec4857dc1330a9ebfb7b6651de69d3c5b7a03cbe0dcce7b8ac921430af28dd00	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/runtime_parity_evidence.json	1380	file	352aab17d4b904b8bd663fcd97cfd185a0adce86c7411d8f67cf960a401171c6	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/compatibility_snapshot.json	80768	file	3107bce84c89ad8a779c4492481c07cc0c68469967c95d689c47d9333d72ff02	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/runtime_parity_evidence.json	1380	file	a7327f74973b54f13d00ee3c4ad8e29ca63e27d5828e9c6080ddc4518c88c049	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 docs.mk	2000	file	829c2aa0e64be3bba73aa4838c415435c24f8f009c0f67124edb64b4e9ba839c	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 documentation.json	1908	file	52b5dac84c85d6c0ce4bd167926ce283c167fd527261b36ea231df094d5091aa	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 examples/bench_ops.rs	10086	file	a75d7bbf4e8e679ca393d8cffd68cc0824f7198bb5e85857ce4dd75d8e016a21	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
@@ -147,6 +147,7 @@ scripts/check_docs_examples.py	1789	file	39c314581b3c38ebf9b9c9ae338f463721a5a18
 scripts/check_documentation.py	39375	file	4a55b563f1ada91238e8699173c0727c7bda4acde155daf11e1a983c29bac6ca	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/check_public_api_inputs.py	502139	file	902ac8a243aeb05787ca033865a74cd1ee546a791e34786bff3f77dfcb2a3570	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/check_rustdoc_contracts.py	7314	file	3583c8df23e86b7ee3e77d2ffdceb81a3605bee656e768e82f97daaf523960d4	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
+scripts/check_workflows.py	3088	file	4d4c1c5be964ea04d8d8758be4069e0c463547637b894f56a8ac714ed38ff6d3	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/codex-worktree-setup.sh	6115	file	6ae9d8356a1db036057683aa5432048700cd2e4a972ba0922d8ef9955ee914f4	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/docs_evidence.py	18956	file	4f0202ceeed612f1d232e964190012eb07da471d24303456c6b4463740c02c7d	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/docs_site.py	10568	file	483d4553ac3ef9ad78108662c2852e37cdfe25e68a9ece66349093718c90bce1	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.

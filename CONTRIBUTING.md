@@ -88,3 +88,12 @@ and supply-chain evidence is required. Explain what changed, why it is
 correct, which commands ran, and any remaining debt.
 Publication is maintainer-only and follows the
 [release guide](doc/RELEASING.md).
+
+## Workflow validation
+
+Run `make workflows-check` before changing GitHub Actions. This validates all
+workflow YAML, expressions, action inputs, and job dependencies with actionlint
+1.7.12; its archive is checksum-verified and cached under `target/`. The first
+run downloads the tool. Shell and Python lint remain separate checks. CI runs
+this gate on every commit. Benchmark harness/workflow changes on main also run
+the benchmark immediately, in addition to the weekly and manual triggers.

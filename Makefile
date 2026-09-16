@@ -1043,7 +1043,7 @@ package-verify: check-versions
 	$(PYTHON) scripts/verify_release.py
 
 .PHONY: ci-fast
-ci-fast: check-generated check-font-fixtures check-docs check-versions fmt clippy doc doc-test test-fast test-rust-consumer test-c-consumer test-parity-smoke bench-self-test
+ci-fast: workflows-check check-generated check-font-fixtures check-docs check-versions fmt clippy doc doc-test test-fast test-rust-consumer test-c-consumer test-parity-smoke bench-self-test
 
 .PHONY: ci-commit
 ci-commit: ci-fast
@@ -1113,3 +1113,7 @@ include docs.mk
 setup-font-tools:
 	$(PYTHON) -m venv target/font-generation-venv
 	target/font-generation-venv/bin/python -m pip install --requirement requirements-font-generation.txt
+
+.PHONY: workflows-check
+workflows-check: ## Validate Actions workflows with checksum-pinned actionlint
+	$(PYTHON) scripts/check_workflows.py
