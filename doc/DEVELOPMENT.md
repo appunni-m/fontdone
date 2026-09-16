@@ -167,13 +167,13 @@ files, not implementation coverage:
 | R03 | 1,761 | executable parity tests and public contracts |
 | R04 | 1,336 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
-| R06 | 81 | maintained tooling, examples, and benchmarks |
+| R06 | 83 | maintained tooling, examples, and benchmarks |
 | R07 | 11 | durable project documentation |
 | R08 | 1 | active self-cleaning roadmap |
 | R09 | 7 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,369** | **all retained paths** |
+| **Total** | **3,371** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Read [benchmark methodology](BENCHMARKING.md) and [releasing](RELEASING.md) for
