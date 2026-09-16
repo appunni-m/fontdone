@@ -1,81 +1,99 @@
 {
   "project": "fontdone",
-  "version": "2.14.3-alpha.10",
-  "release_revision": "cb90d41a863f8569335d8ed775a4038d23c79dc5",
+  "version": "2.14.3-alpha.11",
+  "release_revision": "3f0727bbd7873541482eacb9fdfd181b865f5482",
   "repository": "appunni-m/fontdone",
   "site_url": "https://appunni-m.github.io/fontdone/",
   "pages": [
     {
       "source": "README.md",
-      "output": "index.md"
+      "output": "index.md",
+      "audience": "user"
     },
     {
       "source": "doc/INTEGRATION.md",
-      "output": "rust.md"
+      "output": "rust.md",
+      "audience": "user"
     },
     {
       "source": "fontdone-c-abi/README.md",
-      "output": "c.md"
+      "output": "c.md",
+      "audience": "user"
     },
     {
       "source": "fontdone-wasm/npm/README.md",
-      "output": "javascript.md"
+      "output": "javascript.md",
+      "audience": "user"
     },
     {
       "source": "fontdone-wasm/README.md",
-      "output": "wasm.md"
+      "output": "wasm.md",
+      "audience": "contributor"
     },
     {
       "source": "doc/MATURITY.md",
-      "output": "maturity.md"
+      "output": "maturity.md",
+      "audience": "user"
     },
     {
       "source": "doc/FREETYPE_SUPPORT.md",
-      "output": "api-support.md"
+      "output": "api-support.md",
+      "audience": "contributor"
     },
     {
       "source": "doc/EVIDENCE.md",
-      "output": "evidence.md"
+      "output": "evidence.md",
+      "audience": "contributor"
     },
     {
       "source": "doc/BENCHMARKING.md",
-      "output": "benchmarking.md"
+      "output": "benchmarking.md",
+      "audience": "contributor"
     },
     {
       "source": "doc/DEVELOPMENT.md",
-      "output": "development.md"
+      "output": "development.md",
+      "audience": "contributor"
     },
     {
       "source": "CONTRIBUTING.md",
-      "output": "contributing.md"
+      "output": "contributing.md",
+      "audience": "contributor"
     },
     {
       "source": "doc/DOCUMENTATION.md",
-      "output": "documentation.md"
+      "output": "documentation.md",
+      "audience": "contributor"
     },
     {
       "source": "doc/RELEASING.md",
-      "output": "releasing.md"
+      "output": "releasing.md",
+      "audience": "contributor"
     },
     {
       "source": "doc/ROADMAP.md",
-      "output": "roadmap.md"
+      "output": "roadmap.md",
+      "audience": "contributor"
     },
     {
       "source": "SECURITY.md",
-      "output": "security.md"
+      "output": "security.md",
+      "audience": "project"
     },
     {
       "source": "CODE_OF_CONDUCT.md",
-      "output": "conduct.md"
+      "output": "conduct.md",
+      "audience": "project"
     },
     {
       "source": "CHANGELOG.md",
-      "output": "changelog.md"
+      "output": "changelog.md",
+      "audience": "project"
     },
     {
       "source": "doc/README.md",
-      "output": "guides.md"
+      "output": "guides.md",
+      "audience": "contributor"
     }
   ],
   "benchmark": {
@@ -86,5 +104,19 @@
     "source": "README.md",
     "crate": ".",
     "font_input": "tests/fixtures/input/fonts/NotoSans-Regular.ttf"
+  },
+  "published_release": {
+    "version": "2.14.3-alpha.11",
+    "revision": "3f0727bbd7873541482eacb9fdfd181b865f5482",
+    "published_at": "2026-09-16T13:10:41Z"
+  },
+  "registries": [
+    "cargo",
+    "npm"
+  ],
+  "javascript_example": {
+    "source": "fontdone-wasm/npm/README.md",
+    "language": "js",
+    "index": 0
   }
 }

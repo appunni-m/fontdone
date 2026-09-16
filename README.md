@@ -1,42 +1,36 @@
 # fontdone
 
-A pure Rust font engine with measured compatibility against FreeType 2.14.3.
-Use it from Rust, through a native C SDK, or through one npm package for
-Node.js and browsers.
+<!-- release:summary -->
+**Latest release: [2.14.3-alpha.11](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.11).**
+<!-- /release:summary -->
+
+A pure Rust font engine for glyph rendering and metrics, with selected
+FreeType-compatible APIs. Use it from Rust, C/C++, Node.js, or a browser.
+This alpha has [documented compatibility limits](https://appunni-m.github.io/fontdone/maturity/).
 
 [Documentation](https://appunni-m.github.io/fontdone/) ·
-[Function support](https://appunni-m.github.io/fontdone/api-support/) ·
-[Benchmarks](https://appunni-m.github.io/fontdone/benchmarks/) ·
-[Rust API](https://docs.rs/fontdone/2.14.3-alpha.10/fontdone/)
+[Supported features](https://appunni-m.github.io/fontdone/maturity/) ·
+[Benchmark results](https://appunni-m.github.io/fontdone/benchmarks/)
 
-**Current release: 2.14.3-alpha.10.** This is an alpha with a deliberately
-limited adoption contract. The maintained map classifies 52 of 218 functions
-as complete; the other functions are mapped incompletely, partial, planned,
-or outside scope. Passing 20,357 runnable comparisons does not establish
-every FreeType behavior. Start with [maturity](https://appunni-m.github.io/fontdone/maturity/).
+## Install
 
-This checkout prepares **2.14.3-alpha.11**, an unreleased candidate. The
-[release guide](https://appunni-m.github.io/fontdone/releasing/#next-candidate) distinguishes its validation
-from the installed-release evidence above.
-
-## Choose an interface
-
-| Application | Distribution | Guide |
+| Your application | Distribution | Guide |
 | --- | --- | --- |
-| Rust | One Cargo crate: `fontdone` | [Rust integration](https://appunni-m.github.io/fontdone/rust/) |
-| C/C++ | Native SDK attached to GitHub Releases | [C integration](https://appunni-m.github.io/fontdone/c/) |
-| Node.js or browser | One npm package: `fontdone` | [JavaScript guide](https://appunni-m.github.io/fontdone/javascript/) |
-| Custom WASM host | Raw WASM ABI | [Host integration](https://appunni-m.github.io/fontdone/wasm/) |
+| Rust | Cargo: `fontdone` | [Rust guide](https://appunni-m.github.io/fontdone/rust/) |
+| Node.js or browser | npm: `fontdone` | [JavaScript guide](https://appunni-m.github.io/fontdone/javascript/) |
+| C/C++ | SDK archive on GitHub Releases | [C guide](https://appunni-m.github.io/fontdone/c/) |
 
-The C and raw-WASM workspace members are private Cargo build packages.
-There is no second public Cargo crate and no PyPI package.
+There is one public Cargo crate, one npm package, and no PyPI package.
+The Rust crate requires Rust 1.87 or newer.
 
-## Render a glyph in Rust
-
+<!-- release:cargo -->
 ```toml
 [dependencies]
-fontdone = "=2.14.3-alpha.10"
+fontdone = "=2.14.3-alpha.11"
 ```
+<!-- /release:cargo -->
+
+## Render a glyph in Rust
 
 ```rust
 use fontdone::Font;
@@ -49,60 +43,41 @@ fn render_a(font_bytes: &[u8]) -> Result<Vec<u8>, fontdone::FontError> {
 }
 ```
 
-Pass bytes from a font you are licensed to use. The font owns its copied data;
-the returned mask owns its pixels. The compact helper processes the first
-Unicode scalar, not a shaped string. Read the
-[integration contract](https://appunni-m.github.io/fontdone/rust/) for units, formats, ownership, and
-fallible operations. The declared Rust minimum is 1.87; the workspace uses
-pinned Rust 1.96.1 and has a separate MSRV lane.
+Pass bytes from a font you are licensed to use. The font copies the input;
+the mask owns its pixels. `getmask` and `getbbox` process the first Unicode
+scalar. `getlength` sums advances across the string without kerning.
+See the [Rust guide](https://appunni-m.github.io/fontdone/rust/) for units,
+errors, ownership, and explicit glyph loading.
 
-## What is and is not established
+## Is it right for my application?
 
-- Rust owns font parsing, glyph loading, hinting, metrics, outlines, and
-  rasterization. FreeType C is an offline oracle, never a runtime fallback.
-- The [function map](https://appunni-m.github.io/fontdone/api-support/) classifies application behavior.
-  A declared symbol, successful header compile, or null-input test does not
-  establish complete replacement.
-- The [evidence guide](https://appunni-m.github.io/fontdone/evidence/) separates runtime parity, source
-  coverage, and the twelve-category C contract. Three undefined-C inputs
-  remain explicitly pending.
-- Text shaping, bidi ordering, font fallback, and paragraph layout are outside
-  the compact API. Use an appropriate shaping/layout layer.
-- Alpha releases do not promise API or ABI stability. Test the application's
-  own fonts, glyphs, features, and target platforms before upgrading.
+- Render glyph masks and obtain metrics through the compact Rust or JavaScript APIs.
+- Use supported FreeType-shaped functions when migrating Rust or native C code.
+- Add a separate shaping/layout layer for ligatures, bidi text, fallback fonts, and paragraphs.
+- Check the [compatibility guide](https://appunni-m.github.io/fontdone/maturity/) for font formats and partial features.
 
-## Measure performance
+This alpha does not promise full FreeType replacement or ABI stability.
+Create a separate face per thread and verify the fonts and operations you use.
 
-The [benchmark site](https://appunni-m.github.io/fontdone/benchmarks/) shows
-per-operation latency, sample counts, and source identity. Timing-only rows
-remain labeled, and historical measurements do not stand in for the current
-release. [Methodology](https://appunni-m.github.io/fontdone/benchmarking/) explains process memory, artifact
-size, and the still-unset regression thresholds.
+## Performance
 
-## Contribute
+[View benchmark results](https://appunni-m.github.io/fontdone/benchmarks/) for
+per-operation timings. Historical and timing-only measurements remain labeled.
+They do not establish a universal speedup or performance on every font.
 
-Start with [Contributing](https://appunni-m.github.io/fontdone/contributing/) and the
-[documentation index](https://appunni-m.github.io/fontdone/guides/). Small reproductions and licensed parity
-inputs are especially useful.
+## Contribute and get help
 
-```sh
-make help
-make build
-make test-fast
-make check-docs
-```
-
-Use `make docs-setup`, `make docs-build`, and `make docs-serve` for the
-public site. Each repository publishes its own GitHub Pages artifact from CI.
-
-## Project information
-
-[Release process](https://appunni-m.github.io/fontdone/releasing/) · [Changelog](https://appunni-m.github.io/fontdone/changelog/) ·
-[Security](https://appunni-m.github.io/fontdone/security/) · [Code of conduct](https://appunni-m.github.io/fontdone/conduct/)
+[Contributing](https://appunni-m.github.io/fontdone/contributing/) covers builds,
+tests, benchmark development, and reporting problems. See the contributor
+[documentation index](https://appunni-m.github.io/fontdone/guides/) and
+[measured compatibility evidence](https://appunni-m.github.io/fontdone/evidence/) for details.
+[Releases](https://github.com/appunni-m/fontdone/releases) ·
+[Changelog](https://appunni-m.github.io/fontdone/changelog/) ·
+[Security](https://appunni-m.github.io/fontdone/security/) ·
+[Code of conduct](https://appunni-m.github.io/fontdone/conduct/)
 
 Fontdone is distributed under the [FreeType License](FTL.TXT).
-[Notices](NOTICE.md) and [fixture provenance](https://github.com/appunni-m/fontdone/blob/main/tests/fixtures/input/fonts/PROVENANCE.md)
-retain the authorship, license, and transformation history of reference assets.
+See [NOTICE.md](NOTICE.md) for attribution.
 
 ## Acknowledgements
 

@@ -1,20 +1,53 @@
 # fontdone
 
-This checkout prepares an unreleased candidate; the published version remains 2.14.3-alpha.10.
+<!-- release:summary -->
+**Latest release: [2.14.3-alpha.11](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.11).**
+<!-- /release:summary -->
 
 `fontdone` is the JavaScript npm package for the pure-Rust fontdone engine. It
 ships a prebuilt `wasm32-unknown-unknown` module and a zero-dependency ESM
 wrapper for opening font bytes and rasterizing individual glyphs.
 
-This is version `2.14.3-alpha.11`. Different alpha releases are not API- or
+Different alpha releases are not API- or
 ABI-compatible by promise, and this package is not a text-shaping or layout
 engine.
 
-## Install and render
+## Install
 
-```bash
+<!-- release:npm -->
+```sh
 npm install fontdone@2.14.3-alpha.11
 ```
+<!-- /release:npm -->
+
+## Node.js
+
+Save as `render.mjs`. Run `node render.mjs /path/to/your-font.ttf` with a font
+you are licensed to use. Requires Node.js 20 or newer.
+
+```js
+import { readFile } from "node:fs/promises";
+import createFontdone from "fontdone";
+
+const fontBytes = await readFile(process.argv[2]);
+const engine = await createFontdone();
+try {
+  const face = engine.openFace(fontBytes, { pixelSize: 32 });
+  try {
+    const bitmap = face.render("A");
+    console.log(bitmap.width, bitmap.height, bitmap.pixels.length);
+  } finally {
+    face.close();
+  }
+} finally {
+  engine.close();
+}
+```
+
+## Browser
+
+Serve your licensed font at `/fonts/example.ttf` or change the URL to your
+own asset. The package loads its bundled WASM module automatically.
 
 ```js
 import createFontdone from "fontdone";

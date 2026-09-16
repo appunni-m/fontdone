@@ -167,14 +167,56 @@ files, not implementation coverage:
 | R03 | 1,761 | executable parity tests and public contracts |
 | R04 | 1,336 | licensed canonical fixture inputs |
 | R05 | 1 | required repository tooling alias |
-| R06 | 78 | maintained tooling, examples, and benchmarks |
+| R06 | 81 | maintained tooling, examples, and benchmarks |
 | R07 | 11 | durable project documentation |
 | R08 | 1 | active self-cleaning roadmap |
 | R09 | 7 | CI, community, and security policy |
 | R10 | 2 | generated source required for offline builds |
 | R11 | 1 | generated exhaustive inventory |
-| **Total** | **3,366** | **all retained paths** |
+| **Total** | **3,369** | **all retained paths** |
 <!-- retention-counts:end -->
 
 Read [benchmark methodology](BENCHMARKING.md) and [releasing](RELEASING.md) for
 measurement and publication workflows.
+
+## Verify the Rust integration examples
+
+### 2.6 Maintained examples
+
+```bash
+cargo run --example render_mask -- tests/fixtures/input/fonts/DejaVuSans.ttf
+cargo run --example load_glyph -- tests/fixtures/input/fonts/DejaVuSans.ttf
+cargo run --example handle_error
+make test-rust-consumer
+make doc-test
+```
+
+`make test-rust-consumer` creates a temporary downstream Cargo project, uses
+`fontdone` through a path dependency, exercises an error, and renders a
+maintained fixture.
+
+Run the complete migration walkthrough with:
+
+```bash
+cargo run --example ffi_migration -- \
+  tests/fixtures/input/fonts/DejaVuSans.ttf
+```
+
+## C SDK development and verification
+
+Use the public [C SDK guide](../fontdone-c-abi/README.md) for application integration.
+Build and inspect SDK artifacts from a complete checkout:
+
+```sh
+make test-c-consumer
+make check-c-exports
+make c-abi-install-check
+make c-abi-contract
+```
+
+The shared library carries a relocatable ELF SONAME or Mach-O `@rpath` name.
+The generated headers and support map must remain synchronized. The
+`c-abi-contract-complete` target requires all five platform bundles and all
+twelve contract categories; ordinary single-host reports retain their pending rows.
+Static-link system dependencies depend on the Rust target. The SDK packaging
+and consumer checks determine the correct libraries for each supported host.

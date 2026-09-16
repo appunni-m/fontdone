@@ -4,19 +4,13 @@ Fontdone publishes one Cargo crate, `fontdone`, one npm package, `fontdone`,
 and a native C SDK on GitHub Releases. The internal `fontdone-c-abi` and
 `fontdone-wasm` Cargo packages have `publish = false`. There is no PyPI package.
 
-Version **2.14.3-alpha.10** is published. The [release workflow](https://github.com/appunni-m/fontdone/actions/runs/35002120087)
-and [tag CI](https://github.com/appunni-m/fontdone/actions/runs/35002119892)
-passed for `cb90d41a863f8569335d8ed775a4038d23c79dc5`. Cargo and npm provenance
-identify that source/run and their archives match GitHub checksums. Subsequent
-publication uses this repository's tag-triggered `release.yml` and GitHub OIDC.
+<!-- release:summary -->
+**Latest release: [2.14.3-alpha.11](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.11).**
+<!-- /release:summary -->
 
-## Next candidate
-
-The checkout prepares **2.14.3-alpha.11**. It remains an alpha: the production
-C-replacement gate still requires complete contract and benchmark evidence.
-The cleanup preserves deprecated FreeType compatibility aliases because they
-are part of the pinned oracle's public contract; removing them would break
-replacement behavior. No incomplete comparison becomes a pass through cleanup.
+Publication uses this repository's tag-triggered `release.yml` and GitHub OIDC.
+Alpha releases retain incomplete C-replacement and benchmark goals. Deprecated
+FreeType aliases remain part of the pinned compatibility contract.
 
 ## 1. Trusted publisher configuration
 
@@ -77,7 +71,8 @@ stand in for a successful publishing job.
    exact root dependency requirements, and the npm version together. Run
    `make release-lock-update` to synchronize only workspace lockfile entries
    using the already downloaded dependency set.
-2. Update the README, changelog, and package documentation. Regenerate derived
+2. Update the changelog, documentation source-version field, and package contracts.
+   Keep public installation blocks on the last published version. Regenerate derived
    ABI metadata with `make generate-contracts`.
 3. Run `make test-parity` and `make record-parity-snapshot`. This binds the
    reported comparison counts to the measured sources. Then refresh the file
@@ -91,10 +86,12 @@ stand in for a successful publishing job.
 
 For the published release, registry consumers use:
 
+<!-- release:cargo -->
 ```toml
 [dependencies]
-fontdone = { version = "=2.14.3-alpha.10" }
+fontdone = "=2.14.3-alpha.11"
 ```
+<!-- /release:cargo -->
 
 A development path or pinned Git revision may be added, but a publishable
 consumer must retain the exact registry version.
@@ -150,3 +147,17 @@ After publication, check the exact crates.io version and checksum, npm version
 and provenance, and the GitHub prerelease assets. Confirm a fresh registry
 consumer can install and exercise the released APIs. A green preflight alone
 is not evidence that either registry accepted the release.
+
+## Refresh user documentation after publication
+
+Wait for every registry job and the GitHub release to succeed, then run:
+
+```sh
+make docs-release-refresh
+make docs-release-check docs-registry-examples
+```
+
+Review and commit the refreshed release record and installation blocks. The
+Documentation workflow checks freshness after a successful tag release and
+on its daily schedule. Keep source-candidate versions separate from published
+installation versions; do not send users to a version that is still building.

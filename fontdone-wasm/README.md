@@ -1,82 +1,9 @@
-# fontdone WebAssembly
+# Raw WebAssembly ABI reference
 
-This checkout prepares an unreleased candidate; the published version remains 2.14.3-alpha.10.
-
-This directory owns the JavaScript/WebAssembly surface for the pure-Rust
-`fontdone` engine and its internal raw build target:
-
-- the single npm package named `fontdone`, with a prebuilt Wasm module and a
-  typed ESM lifecycle wrapper for browsers and Node.js;
-- the internal `fontdone-wasm` Rust workspace package, which builds the raw
-  linear-memory ABI used by that wrapper and by the repository parity harness.
-
-Version `2.14.3-alpha.11` requires exactly `fontdone = 2.14.3-alpha.11`. Different
-alpha releases are not API- or ABI-compatible by promise. The npm package is
-the public JavaScript release; the raw Cargo target is internal. Neither
-surface is a text-shaping or layout engine.
-
-## 1. JavaScript npm package
-
-Install the public package:
-
-```bash
-npm install fontdone@2.14.3-alpha.11
-```
-
-Then initialize the packaged Wasm asset and render one glyph:
-
-```js
-import createFontdone from "fontdone";
-
-const [engine, fontBytes] = await Promise.all([
-  createFontdone(),
-  fetch("/fonts/example.ttf").then((response) => response.arrayBuffer()),
-]);
-const face = engine.openFace(fontBytes, { pixelSize: 32 });
-
-try {
-  const bitmap = face.render("A");
-  console.log(bitmap.width, bitmap.height, bitmap.pitch, bitmap.pixels);
-} finally {
-  face.close();
-  engine.close();
-}
-```
-
-The initializer accepts an explicit URL, `Request`, `Response`, buffer,
-compiled `WebAssembly.Module`, or `WebAssembly.Instance`. In a browser, no
-argument fetches `fontdone.wasm` relative to the ESM entry point. In Node.js,
-the package's conditional `node` export reads the same asset from disk, so the
-no-argument path never attempts `fetch(file://…)`. Streaming instantiation
-falls back to an `ArrayBuffer` when a server does not provide the
-`application/wasm` content type.
-
-The maintained JavaScript contract requires ESM, WebAssembly, and WebAssembly
-JavaScript BigInt integration. Browser initialization additionally requires
-`fetch`; Node.js uses the conditional entrypoint and its local bundled asset.
-Each initializer call creates an independent instance; its faces and memory
-offsets are not transferable to another instance or Worker. The wrapper copies
-caller font bytes on open, copies rendered bitmap bytes before returning, and
-provides idempotent `close()` methods.
-
-The complete JavaScript API, error model, bitmap layout, and security boundary are
-documented in the
-[npm package guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/npm/README.md).
-
-Build, inspect, install, and execute the exact npm tarball:
-
-```bash
-make npm-package-verify
-```
-
-The verified archive is written to:
-
-```text
-target/npm-package/fontdone-2.14.3-alpha.11.tgz
-```
-
-`npm pack` runs the same Rust build, raw-export check, and wrapper tests through
-the package's `prepack` lifecycle. No prebuilt Wasm file is committed.
+This contributor reference describes the internal raw module and its host ABI.
+For package-manager installation and application examples, use the
+[JavaScript user guide](npm/README.md). Source builds and export checks below
+require a complete repository checkout.
 
 ## 2. Raw target and hosts
 

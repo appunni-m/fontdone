@@ -1,5 +1,9 @@
 # Rust integration guide
 
+<!-- release:summary -->
+**Latest release: [2.14.3-alpha.11](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.11).**
+<!-- /release:summary -->
+
 This guide covers the two safe Rust surfaces:
 
 - the compact `Font` API for masks and metrics;
@@ -12,12 +16,12 @@ hosts should use the [`fontdone-wasm` guide](../fontdone-wasm/README.md).
 
 ## 1. Select and install the exact alpha
 
-The published Cargo package is `fontdone = 2.14.3-alpha.10`:
-
+<!-- release:cargo -->
 ```toml
 [dependencies]
-fontdone = "=2.14.3-alpha.10"
+fontdone = "=2.14.3-alpha.11"
 ```
+<!-- /release:cargo -->
 
 There is one public Cargo crate. The C and raw-WASM workspace packages are
 private build members; the native SDK and npm package have separate installation
@@ -25,6 +29,10 @@ instructions. Use exact prerelease pins for reproducible upgrades.
 
 This alpha requires Rust 1.87 or newer. Different `alpha.N` releases are not
 API- or ABI-compatible by promise.
+
+<!-- release:rust-api -->
+[Rust API reference](https://docs.rs/fontdone/2.14.3-alpha.11/fontdone/).
+<!-- /release:rust-api -->
 
 ## 2. Compact Rust API
 
@@ -141,20 +149,6 @@ fn main() -> Result<(), FontError> {
 }
 ```
 
-### 2.6 Maintained examples
-
-```bash
-cargo run --example render_mask -- tests/fixtures/input/fonts/DejaVuSans.ttf
-cargo run --example load_glyph -- tests/fixtures/input/fonts/DejaVuSans.ttf
-cargo run --example handle_error
-make test-rust-consumer
-make doc-test
-```
-
-`make test-rust-consumer` creates a temporary downstream Cargo project, uses
-`fontdone` through a path dependency, exercises an error, and renders a
-maintained fixture.
-
 ## 3. FreeType-shaped safe Rust
 
 Use `fontdone::ffi` when porting code that depends on `FT_*` concepts but can
@@ -213,24 +207,9 @@ functions. Safe Rust records do not promise C layout; use `fontdone-c-abi` when
 raw pointers, headers, exported symbols, or exact native record layout are part
 of the consumer contract.
 
-Run the complete migration walkthrough with:
+## 4. Decide whether the alpha fits your application
 
-```bash
-cargo run --example ffi_migration -- \
-  tests/fixtures/input/fonts/DejaVuSans.ttf
-```
-
-## 4. Decide whether the current alpha is sufficient
-
-Use all three evidence layers:
-
-1. Find the operation in the [function adoption map](FREETYPE_SUPPORT.md).
-2. Check the exact executed denominators in the
-   [compatibility snapshot](compatibility_snapshot.json), or run
-   `make test-parity` for the current worktree.
-3. If native C replacement matters, inspect the 12-category scorecard produced
-   by `make c-abi-contract`.
-
-A function route can have runtime evidence without supporting every successful
-input, state transition, ownership edge, artifact, or target. Version similarity
-alone is not a compatibility claim.
+Check [supported features and limitations](MATURITY.md), then the
+[function reference](FREETYPE_SUPPORT.md) for the exact calls you use.
+Alpha versions do not promise API or ABI stability. Verify the fonts, flags,
+ownership patterns, and platforms required by your application.

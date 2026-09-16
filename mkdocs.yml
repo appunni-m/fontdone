@@ -53,26 +53,26 @@ validation:
     anchors: warn
 nav:
   - Overview: index.md
-  - Integrate:
+  - Use:
       - Rust: rust.md
+      - Node.js and browsers: javascript.md
       - C and C++: c.md
-      - Node and browsers: javascript.md
-      - Raw WASM hosts: wasm.md
-  - Compatibility:
-      - Maturity: maturity.md
-      - Function inventory: api-support.md
-      - Measurement evidence: evidence.md
-      - Public roadmap: roadmap.md
-  - Performance:
-      - Benchmark results: benchmarks.md
-      - Measurement protocol: benchmarking.md
+      - Supported features and limitations: maturity.md
+  - Benchmark results: benchmarks.md
   - Contribute:
       - Contributor guide: contributing.md
       - Development and commands: development.md
+      - Run benchmarks: benchmarking.md
+      - Benchmark measurement details: benchmark-details.md
+      - Function compatibility reference: api-support.md
+      - Compatibility evidence: evidence.md
+      - Raw WASM ABI reference: wasm.md
+      - Implementation roadmap: roadmap.md
       - Documentation maintenance: documentation.md
       - Documentation index: guides.md
+      - Release process: releasing.md
   - Project:
-      - Releases: releasing.md
+      - Releases: https://github.com/appunni-m/fontdone/releases
+      - Changelog: changelog.md
       - Security: security.md
       - Code of conduct: conduct.md
-      - Changelog: changelog.md

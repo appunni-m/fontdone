@@ -185,7 +185,11 @@ def verify_metadata() -> str:
         raise ValueError(
             "external Rust consumer must exercise a versioned path dependency"
         )
-    for path in (ROOT / "README.md", ROOT / "CHANGELOG.md"):
+    from docs_release import check_documents, check_source_version
+    documentation = json.loads((ROOT / "documentation.json").read_text())
+    check_source_version(documentation, version)
+    check_documents(ROOT, documentation)
+    for path in (ROOT / "CHANGELOG.md",):
         if version not in path.read_text(encoding="utf-8"):
             raise ValueError(f"{path}: release version {version} is absent")
     print(

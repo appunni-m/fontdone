@@ -97,7 +97,7 @@ ALL_LANES_COVERAGE_IGNORE_REGEX := /tests/
 # The integration harness is excluded from this key because it is ignored from
 # the report denominator; Cargo still rebuilds the test executable when its
 # source changes while the instrumented runtime maps remain reusable.
-ifneq ($(strip $(filter-out help help-all docs docs-setup docs-build docs-prepare docs-serve docs-test docs-lint docs-lock docs-benchmark check-docs,$(or $(MAKECMDGOALS),help))),)
+ifneq ($(strip $(filter-out help help-all docs docs-setup docs-build docs-prepare docs-serve docs-test docs-lint docs-lock docs-benchmark docs-release-check docs-release-refresh check-docs,$(or $(MAKECMDGOALS),help))),)
 COVERAGE_SOURCE_STATE := $(shell \
 	{ \
 		git rev-parse HEAD 2>/dev/null || printf unknown; \

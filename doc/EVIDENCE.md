@@ -1,7 +1,9 @@
 # Compatibility and measurement evidence
 
-These are dated observations with separate denominators. The documented release is
-2.14.3-alpha.10. Later documentation changes do not remeasure its runtime.
+These are dated observations with separate denominators. Historical release
+measurements below include 2.14.3-alpha.10. The [user guide](INTEGRATION.md)
+identifies the latest installable release; a documentation edit does not
+remeasure an older runtime.
 
 ## Independent compatibility measures
 

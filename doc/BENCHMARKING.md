@@ -1,5 +1,8 @@
 # Benchmark methodology
 
+This is the contributor guide for collecting and interpreting measurements.
+For comparisons, start with [benchmark results](https://appunni-m.github.io/fontdone/benchmarks/).
+
 The [benchmark results](https://appunni-m.github.io/fontdone/benchmarks/) are
 operation-specific observations against the pinned FreeType oracle. Latency,
 throughput, complete-process memory, and artifact size have different boundaries

@@ -1,60 +1,37 @@
-# Maturity and adoption
+# Supported features and limitations
 
-Version **2.14.3-alpha.10** is an early application and migration release,
-not a complete FreeType replacement. Pick the interface and exact function
-set the application requires before evaluating it.
+<!-- release:summary -->
+**Latest release: [2.14.3-alpha.11](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.11).**
+<!-- /release:summary -->
 
-| Status | Functions | Meaning |
-| --- | ---: | --- |
-| Complete | 52 | Maintained application contract and mapping complete |
-| Implemented, mapping incomplete | 5 | Runtime exists; application mapping unfinished |
-| Partial | 29 | Only the specified subset is available |
-| Planned | 69 | No complete application behavior claimed |
-| Intentionally excluded | 63 | Outside the selected product scope |
-| Total | 218 | Pinned public inventory |
+fontdone is an alpha font engine with selected FreeType-compatible behavior.
+Use the compact APIs for glyph rendering, or review the individual function
+contracts when migrating an existing FreeType application.
 
-The [generated function map](FREETYPE_SUPPORT.md) identifies the exact paths.
-These counts are declarations of adoption status. The
-[measurement evidence](EVIDENCE.md) validates them against the source map and
-reports executed outcomes separately.
+| Need | Support and limits |
+| --- | --- |
+| TrueType/OpenType font bytes and collections | Available through the compact Rust constructors |
+| Glyph masks, bounding boxes, and advances | Available; `getmask`/`getbbox` use the first Unicode scalar, `getlength` sums unkerned advances |
+| Explicit glyph loading and rendering | Available through the Rust face API and selected C/WASM calls |
+| Node.js and browser rendering | One npm package with initialization, face handles, and owned bitmap results |
+| Other font formats | Selected BDF, WinFNT, Type 1, CFF, PCF, and PFR routes in the FreeType-shaped APIs; not all compact constructors |
+| Full FreeType replacement | Partial; consult the per-function reference before migrating |
+| Variable fonts and color fonts | Partial; do not assume full feature coverage |
+| Shaping, ligatures, bidi, fallback, paragraph layout | Outside the compact API; use a shaping/layout library |
+| WOFF/WOFF2 in compact constructors | Not a supported application contract |
+| Shared faces across threads | Unsupported; open a separate face per thread |
+| API/ABI stability | Not promised between alpha versions |
 
-## Choose a boundary
+See the [Rust guide](INTEGRATION.md), [JavaScript guide](../fontdone-wasm/npm/README.md),
+or [C SDK guide](../fontdone-c-abi/README.md) for installation and lifecycle rules.
+The C SDK uses its own library name, `fontdone_c_abi`; it is not a system
+`libfreetype` replacement by filename.
 
-The compact Rust `Font` API accepts bytes and produces glyph masks and metrics.
-Its string helpers process one scalar; they do not shape or lay out text.
-Format support through a low-level memory-face route is not automatically
-available through the compact constructor.
+For an exact `FT_*` call, consult the [function reference](FREETYPE_SUPPORT.md).
+It distinguishes complete, partial, and planned behavior. A matching function
+name alone does not establish complete compatibility.
 
-The safe Rust FreeType-shaped facade, native C ABI, raw WASM ABI, and npm
-wrapper have different integration contracts. A wrapper exposes core behavior;
-it does not compensate for missing algorithms. C library names and alpha ABI
-compatibility are documented in the [C guide](../fontdone-c-abi/README.md).
-
-## What release evidence proves
-
-The retained full run passed 20,357/20,357 runnable comparisons. Three
-undefined-C or safety-extension cases remain pending. All 218 function names
-have a runtime route, which may be a narrow validation path.
-
-The retained local C scorecard completes 8/12 categories and 13,624/18,100
-runtime contract rows. The local platform bundle covers 1/5 targets; the
-[alpha.10 tag CI](https://github.com/appunni-m/fontdone/actions/runs/35002119892)
-separately passed all five platform jobs. Do not combine these measurements
-into one invented completeness percentage. Cross-host equality of unspecified
-SBit fields remains unproven.
-
-Historical source coverage and timing reports retain their older source
-revisions. Benchmarks remain in `collecting_baseline` with no accepted
-regression thresholds. The [public roadmap](ROADMAP.md) lists the open goals.
-
-## Evaluate your application
-
-List the functions, font formats, variation/color behavior, error recovery,
-ownership rules, and target platforms you use. Compare representative licensed
-inputs with version-matched FreeType. Include malformed input and lifecycle
-behavior when those are part of the application contract.
-
-A successful glyph render does not establish shaping, all color fonts,
-all variable fonts, every bitmap format, or safe resource use for arbitrary
-untrusted files. Apply application limits and report concrete failures through
-the project's contribution and security channels.
+Verify your application's fonts, render modes, flags, errors, and platforms
+before deployment. The contributor [evidence guide](EVIDENCE.md) contains
+measured parity, coverage, and platform details; the [roadmap](ROADMAP.md)
+tracks unfinished implementation work.
