@@ -1,5 +1,11 @@
 # fontdone
 
+[![CI](https://github.com/appunni-m/fontdone/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/appunni-m/fontdone/actions/workflows/ci.yml)
+[![Documentation](https://github.com/appunni-m/fontdone/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/appunni-m/fontdone/actions/workflows/docs.yml)
+[![Benchmarks](https://github.com/appunni-m/fontdone/actions/workflows/benchmark.yml/badge.svg?branch=main)](https://github.com/appunni-m/fontdone/actions/workflows/benchmark.yml)
+[![Release](https://github.com/appunni-m/fontdone/actions/workflows/release.yml/badge.svg)](https://github.com/appunni-m/fontdone/actions/workflows/release.yml)
+[![Latest release](https://img.shields.io/github/v/release/appunni-m/fontdone?include_prereleases&sort=semver)](https://github.com/appunni-m/fontdone/releases)
+
 <!-- release:summary -->
 **Latest release: [2.14.3-alpha.11](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.11).**
 <!-- /release:summary -->
