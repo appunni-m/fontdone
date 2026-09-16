@@ -13,20 +13,20 @@ Node.js and browsers.
 limited adoption contract. The maintained map classifies 52 of 218 functions
 as complete; the other functions are mapped incompletely, partial, planned,
 or outside scope. Passing 20,357 runnable comparisons does not establish
-every FreeType behavior. Start with [maturity](doc/MATURITY.md).
+every FreeType behavior. Start with [maturity](https://appunni-m.github.io/fontdone/maturity/).
 
 This checkout prepares **2.14.3-alpha.11**, an unreleased candidate. The
-[release guide](doc/RELEASING.md#next-candidate) distinguishes its validation
+[release guide](https://appunni-m.github.io/fontdone/releasing/#next-candidate) distinguishes its validation
 from the installed-release evidence above.
 
 ## Choose an interface
 
 | Application | Distribution | Guide |
 | --- | --- | --- |
-| Rust | One Cargo crate: `fontdone` | [Rust integration](doc/INTEGRATION.md) |
-| C/C++ | Native SDK attached to GitHub Releases | [C integration](fontdone-c-abi/README.md) |
-| Node.js or browser | One npm package: `fontdone` | [JavaScript guide](fontdone-wasm/npm/README.md) |
-| Custom WASM host | Raw WASM ABI | [Host integration](fontdone-wasm/README.md) |
+| Rust | One Cargo crate: `fontdone` | [Rust integration](https://appunni-m.github.io/fontdone/rust/) |
+| C/C++ | Native SDK attached to GitHub Releases | [C integration](https://appunni-m.github.io/fontdone/c/) |
+| Node.js or browser | One npm package: `fontdone` | [JavaScript guide](https://appunni-m.github.io/fontdone/javascript/) |
+| Custom WASM host | Raw WASM ABI | [Host integration](https://appunni-m.github.io/fontdone/wasm/) |
 
 The C and raw-WASM workspace members are private Cargo build packages.
 There is no second public Cargo crate and no PyPI package.
@@ -52,7 +52,7 @@ fn render_a(font_bytes: &[u8]) -> Result<Vec<u8>, fontdone::FontError> {
 Pass bytes from a font you are licensed to use. The font owns its copied data;
 the returned mask owns its pixels. The compact helper processes the first
 Unicode scalar, not a shaped string. Read the
-[integration contract](doc/INTEGRATION.md) for units, formats, ownership, and
+[integration contract](https://appunni-m.github.io/fontdone/rust/) for units, formats, ownership, and
 fallible operations. The declared Rust minimum is 1.87; the workspace uses
 pinned Rust 1.96.1 and has a separate MSRV lane.
 
@@ -60,10 +60,10 @@ pinned Rust 1.96.1 and has a separate MSRV lane.
 
 - Rust owns font parsing, glyph loading, hinting, metrics, outlines, and
   rasterization. FreeType C is an offline oracle, never a runtime fallback.
-- The [function map](doc/FREETYPE_SUPPORT.md) classifies application behavior.
+- The [function map](https://appunni-m.github.io/fontdone/api-support/) classifies application behavior.
   A declared symbol, successful header compile, or null-input test does not
   establish complete replacement.
-- The [evidence guide](doc/EVIDENCE.md) separates runtime parity, source
+- The [evidence guide](https://appunni-m.github.io/fontdone/evidence/) separates runtime parity, source
   coverage, and the twelve-category C contract. Three undefined-C inputs
   remain explicitly pending.
 - Text shaping, bidi ordering, font fallback, and paragraph layout are outside
@@ -76,13 +76,13 @@ pinned Rust 1.96.1 and has a separate MSRV lane.
 The [benchmark site](https://appunni-m.github.io/fontdone/benchmarks/) shows
 per-operation latency, sample counts, and source identity. Timing-only rows
 remain labeled, and historical measurements do not stand in for the current
-release. [Methodology](doc/BENCHMARKING.md) explains process memory, artifact
+release. [Methodology](https://appunni-m.github.io/fontdone/benchmarking/) explains process memory, artifact
 size, and the still-unset regression thresholds.
 
 ## Contribute
 
-Start with [Contributing](CONTRIBUTING.md) and the
-[documentation index](doc/README.md). Small reproductions and licensed parity
+Start with [Contributing](https://appunni-m.github.io/fontdone/contributing/) and the
+[documentation index](https://appunni-m.github.io/fontdone/guides/). Small reproductions and licensed parity
 inputs are especially useful.
 
 ```sh
@@ -97,11 +97,11 @@ public site. Each repository publishes its own GitHub Pages artifact from CI.
 
 ## Project information
 
-[Release process](doc/RELEASING.md) · [Changelog](CHANGELOG.md) ·
-[Security](SECURITY.md) · [Code of conduct](CODE_OF_CONDUCT.md)
+[Release process](https://appunni-m.github.io/fontdone/releasing/) · [Changelog](https://appunni-m.github.io/fontdone/changelog/) ·
+[Security](https://appunni-m.github.io/fontdone/security/) · [Code of conduct](https://appunni-m.github.io/fontdone/conduct/)
 
 Fontdone is distributed under the [FreeType License](FTL.TXT).
-[Notices](NOTICE.md) and [fixture provenance](tests/fixtures/input/fonts/PROVENANCE.md)
+[Notices](NOTICE.md) and [fixture provenance](https://github.com/appunni-m/fontdone/blob/main/tests/fixtures/input/fonts/PROVENANCE.md)
 retain the authorship, license, and transformation history of reference assets.
 
 ## Acknowledgements
