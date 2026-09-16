@@ -144,7 +144,7 @@ scripts/build_ft.sh	1981	file	4ea7788a064cff24001a4d1af1ee74e6988e82ffe53f5d856c
 scripts/build_unified_oracle.py	13343	file	eb355cf4e5616279762cac5973ef75f53be135b476a773686d5fd6b18f723427	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/check_c_exports.py	7753	file	9a959759412983cf795aa86fc6a6a0c353add9899eaf5eac975df830f7b381a8	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/check_docs_examples.py	1789	file	39c314581b3c38ebf9b9c9ae338f463721a5a18528f7447aa1c55faf6cf22726	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
-scripts/check_documentation.py	39375	file	4a55b563f1ada91238e8699173c0727c7bda4acde155daf11e1a983c29bac6ca	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
+scripts/check_documentation.py	39695	file	615425387bc551c124ac6f582d26fb580050a49c142daf568c25cb9bc9d25f24	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/check_public_api_inputs.py	502139	file	902ac8a243aeb05787ca033865a74cd1ee546a791e34786bff3f77dfcb2a3570	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/check_rustdoc_contracts.py	7314	file	3583c8df23e86b7ee3e77d2ffdceb81a3605bee656e768e82f97daaf523960d4	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/check_workflows.py	3088	file	4d4c1c5be964ea04d8d8758be4069e0c463547637b894f56a8ac714ed38ff6d3	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
@@ -201,7 +201,7 @@ scripts/test_docs_benchmark_selection.py	3304	file	11505af604b533c456fc6b0309cd3
 scripts/test_docs_site.py	5873	file	5ee55b51dd0b6e506d3b130b66bed21dc95265fcb56c3d90627cb1f7b58a2772	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_native_tools.py	9715	file	dfbdc2b32198c25f321a69608f2046ff40fd36e7c6124ad8a7c3694cea4aa1b4	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_npm_consumer.py	7993	file	4a17b9537f142b5a6a227ef24ed72f61af38fdeb7b4280ff6b824a82f9ea59f9	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
-scripts/test_publish_release.py	7603	file	c8febf1cd3192a1182e962b82807099448ae6d798ad0349a9e9f21862c658026	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
+scripts/test_publish_release.py	8757	file	5a10e55589fce9ab78b2a5d2b6ea3dc8436ebab9b0a6c5b2c7e6b612aca16a8d	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_rust_consumer.py	1680	file	2c22fc0571546f0a724dcbc874a01ca2409ca97e15b9cb70684ff0cb9a934812	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_wasm_consumer.py	1995	file	5bc99613afeb0e3b8e6af09a3e8ff1356a284add969bbe0106b002965f2cef60	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/verify_release.py	17161	file	a9bf7780c8ee958982a7e9bfee7404c4c1e8d003a445216c6a9ac2a1fb1f9d65	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.

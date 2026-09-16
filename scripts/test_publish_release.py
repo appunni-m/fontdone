@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts import publish_npm_release, publish_release
 import run_runtime_parity
+import check_documentation
 
 
 CHECKSUM = "a" * 64
@@ -25,6 +26,26 @@ VERSION = publish_release.version()
 
 
 class PublishReleaseTests(unittest.TestCase):
+    def test_packaged_readme_requires_links_to_the_same_public_authority(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            index = root / "index.md"
+            index.write_text("")
+            with patch.object(check_documentation, "ROOT", root), \
+                 patch.object(check_documentation, "INDEX", index):
+                for base, expected in (("https://appunni-m.github.io/fontdone", 0),
+                                       ("https://example.com/fontdone", 2)):
+                    (root / "README.md").write_text(
+                        f"[Evidence]({base}/evidence/) [Guides]({base}/guides/)"
+                    )
+                    errors = []
+                    check_documentation.validate_authoritative_reachability(errors, {})
+                    self.assertEqual(len(errors), expected)
+                (root / "README.md").write_text("doc/EVIDENCE.md doc/README.md")
+                errors = []
+                check_documentation.validate_authoritative_reachability(errors, {})
+                self.assertEqual(len(errors), 2)
+
     def test_parity_snapshot_uses_the_source_bound_package_version(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -908,17 +908,24 @@ def validate_authoritative_reachability(
     errors: list[str], classified: dict[str, str]
 ) -> None:
     root_text = (ROOT / "README.md").read_text(encoding="utf-8")
-    if "doc/EVIDENCE.md" not in root_text:
-        errors.append("README.md: measured compatibility evidence is not linked")
     index_text = INDEX.read_text(encoding="utf-8")
     root_links = {
-        normalize_link(raw).split("#", 1)[0] for raw in MARKDOWN_LINK.findall(root_text)
+        normalize_link(raw).split("#", 1)[0].rstrip("/")
+        for raw in MARKDOWN_LINK.findall(root_text)
     }
-    if not any(
-        link == "doc/README.md" or link.rstrip("/").endswith("/doc/README.md")
-        for link in root_links
+    # Cargo omits the doc tree. Packaged READMEs must be able to link to the
+    # same authoritative guides on Pages or in the source repository.
+    for source, page, label in (
+        ("doc/EVIDENCE.md", "evidence", "measured compatibility evidence"),
+        ("doc/README.md", "guides", "documentation index"),
     ):
-        errors.append("README.md: documentation index is not linked")
+        destinations = {
+            source,
+            f"https://github.com/appunni-m/fontdone/blob/main/{source}",
+            f"https://appunni-m.github.io/fontdone/{page}",
+        }
+        if not root_links.intersection(destinations):
+            errors.append(f"README.md: {label} is not linked")
     index_links = {
         normalize_link(raw).split("#", 1)[0] for raw in MARKDOWN_LINK.findall(index_text)
     }
