@@ -4,7 +4,7 @@ path	bytes	kind	sha256	symlink_target	retention_class	reason_code	reason
 .gitattributes	199	file	ecfe76f0b32ea4a300c88b3200ee512fbde21887fc6c697b49e503a045564bc4	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 .github/workflows/benchmark.yml	1789	file	dc622d06e5d3d2d0ba47163d0abac4b08765ca1c2170fd251b97d1a462a952e4	-	keep-ci	R09	Public continuous-integration contract.
 .github/workflows/ci.yml	29782	file	b0412bc6070c36fd10a4c5350d345141f1b0a3e0206959eab4ffa2f94077e1aa	-	keep-ci	R09	Public continuous-integration contract.
-.github/workflows/docs.yml	3093	file	75e584706c2d9b2fcd41e496afb40532461fae93622df50eb497ab0b2e25ccb9	-	keep-ci	R09	Public continuous-integration contract.
+.github/workflows/docs.yml	3108	file	a8a55260fb61ec368e7afbc6dcdfd2f02173f0c38cb8467448e08f5f490f9992	-	keep-ci	R09	Public continuous-integration contract.
 .github/workflows/release.yml	15161	file	e7943e7a67eeec74c3814c2df96187989321521b74b46be2d3dc50ec99f3c79e	-	keep-ci	R09	Public continuous-integration contract.
 .gitignore	459	file	1e0ee302e323fddd538e5d6cbcc0845bc607d495125e332f54995e9fcfae0f27	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 AGENT.md	9	symlink	-	AGENTS.md	keep-alias	R05	Repository tooling alias whose path identity is an explicit contract.
