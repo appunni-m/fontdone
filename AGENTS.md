@@ -1,74 +1,60 @@
 # fontdone agent guide
 
-`AGENT.md` is a symlink to this file. Edit this file only.
+`AGENT.md` links to this file. Edit `AGENTS.md` only.
 
-## Goal
+## Scope and ownership
 
-Replace pinned FreeType 2.14.3 C runtime behavior with pure Rust while
-preserving measured functions, constants, records, lifecycle behavior, errors,
-metrics, geometry, and rendered bytes.
+- `src/` owns font parsing, metrics, hinting, geometry, and rendering. Keep the
+  core safe Rust and preserve its `#![deny(unsafe_code)]` boundary.
+- `fontdone-c-abi/` and `fontdone-wasm/` adapt core behavior. Keep pointer and
+  handle validation, memory ownership, record conversion, and ABI exports here;
+  keep font algorithms in core. These are packaging targets, not additional
+  published Cargo crates.
+- Runtime code must not build, link, or load native FreeType. Use the pinned C
+  source only as an offline oracle for comparisons and diagnosis.
+- Preserve unrelated changes and existing safety/lint checks. Keep library
+  diagnostics in `log` macros; do not commit temporary prints or traces.
 
-## Rules
+## Behavior and evidence
 
-- Runtime code must not build, link, or load FreeType C. C is an offline oracle
-  for fixtures, diagnostics, and comparison only.
-- Fetch ignored oracle source with `make oracle-fetch`; never commit
-  `/freetype/`.
-- Track maintained inputs under `tests/fixtures/input/` and contracts under
-  `tests/data/`. Generated matrices and raw outputs remain ignored.
-- Never weaken a test, fixture matrix, expected result, threshold, or filter to
-  obtain a pass. Fix the first behavioral divergence.
-- Keep permanent diagnostics behind `log::trace!`; do not commit temporary
-  prints.
-- Do not equate a declaration, stub, validation route, or compact helper with
-  complete FreeType behavior. Report adoption status, executed parity, and the
-  12-category C contract separately.
-- Regenerate derived contracts with `make generate-contracts`; do not edit
-  generated support, header, WASM, or license files by hand.
-- Update the relevant guide whenever a public contract, command, fixture,
-  benchmark, CI lane, or release step changes.
+- Fix implementation failures without weakening assertions, thresholds, or the
+  selected contract. Do not special-case fixture identities in runtime code.
+- For a parity mismatch, compare the same font, glyph, size, flags, and endpoint
+  against the pinned oracle. Fix the first divergence and preserve subtle
+  reference behavior beside the implementation.
+- Maintain inputs under `tests/fixtures/input/` and contracts under `tests/data/`.
+  Change generated contracts through `make generate-contracts`. Keep downloaded
+  `/freetype/`, generated matrices, and raw oracle outputs out of Git.
+- Font assets need source, license, transformation, and hash provenance; follow
+  [the fixture policy](scripts/font_generation/README.md).
+- Keep executed parity, source coverage, and full C compatibility distinct.
+  Preserve failing, pending, and unmeasured cases in reports. A declaration or
+  passing subset does not establish complete FreeType replacement.
+- Update affected public guides when behavior changes. Keep user guides separate
+  from contributor procedures, and retain README acknowledgements.
 
-## Workflow
+## Verification and references
 
-Start with the narrowest relevant test. Before handing off a change, run the
-proportionate public gates:
+Use existing Makefile targets; `make help` and `make help-all` list them.
+Direct commands are fine for focused diagnostics or a task without a suitable
+target. Add a maintained target when introducing a reusable workflow.
 
-```bash
-make test-fast
-make test-parity
-make c-abi-contract
-make lint
-make check-docs
-```
+Run checks relevant to the change. Documentation edits use
+`make docs-lint check-docs`; site changes also use `make docs-test docs-build`.
+Runtime changes use focused tests, `make lint`, and the affected parity lanes before
+`make test-parity`. ABI or C data-model changes also need their contract and
+platform checks. Benchmark changes use `make bench-self-test bench-quick`.
+Broader validation is available through `make ci-fast` and `make ci-thorough`.
+Report failures and checks that could not run; do not present historical
+measurements as current evidence.
 
-`make ci-fast` is the local equivalent of the required per-commit GitHub gate
-(`make ci` is an alias). Run `make ci-thorough` only for a requested pre-merge
-audit; it adds full
-coverage, C-contract, package, supply-chain, and ten-sample benchmark evidence.
-The alpha release policy reports incomplete coverage; it does not waive failed
-comparisons. `make release-verify-complete` retains the stricter contract gate.
-Publication after bootstrap uses only the tag-triggered GitHub OIDC workflow.
-`make npm-package-verify` exercises an offline dry-run of the actual npm
-publish command. `make release-npm-verify VERIFIED_NPM_ARCHIVE=<path>` checks
-an existing tarball; only the matching GitHub tag may use
-`make release-npm-publish-oidc`. Use `make release-lock-update` after synchronizing
-workspace release versions; it preserves the downloaded dependency set.
-Use `make c-abi-contract-complete` only after all five platform bundles have
-been assembled. Benchmark changes also require `make bench-self-test` and
-`make bench-quick`.
+Run `make repository-inventory` after editing tracked files; CI checks the
+generated file inventory, including byte sizes.
 
-For a parity failure: reduce to one font, glyph, size, and endpoint; compare C
-and Rust at the same pipeline stages; find the first divergence; read the
-pinned C implementation; fix the Rust cause; rerun the focused lane and then
-the full matrix.
-
-Put durable implementation nuance beside the relevant code. Put integration,
-development, and release procedure in `doc/`, not in temporary status notes.
-
-For C data-model changes, run `make setup-platform-checks`, then
-`make check-platform-build PLATFORM_TARGET=<triple>` for
-`i686-unknown-linux-gnu`, `x86_64-pc-windows-msvc`, and
-`powerpc64-unknown-linux-gnu`. These compile checks supplement the executed
-platform contract lanes; they do not replace C layout or parity evidence.
-Use `make test-native-tools` when changing native build orchestration; the
-cross export audit must receive the same target linker as the C consumer.
+- [Contributing](CONTRIBUTING.md) and [development](doc/DEVELOPMENT.md): setup,
+  test selection, coverage, generated files, and platform checks.
+- [Evidence](doc/EVIDENCE.md) and [roadmap](doc/ROADMAP.md): measured results and
+  remaining compatibility goals.
+- [Benchmarking](doc/BENCHMARKING.md): measurement and budget policy.
+- [Releasing](doc/RELEASING.md): package boundaries, version synchronization,
+  verification, and tag-triggered publishing.

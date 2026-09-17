@@ -8,7 +8,7 @@ path	bytes	kind	sha256	symlink_target	retention_class	reason_code	reason
 .github/workflows/release.yml	15161	file	c254a9313196abe664c66377555a8e81746076ab26475b2e76afea27f63561de	-	keep-ci	R09	Public continuous-integration contract.
 .gitignore	459	file	1e0ee302e323fddd538e5d6cbcc0845bc607d495125e332f54995e9fcfae0f27	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 AGENT.md	9	symlink	-	AGENTS.md	keep-alias	R05	Repository tooling alias whose path identity is an explicit contract.
-AGENTS.md	3444	file	759b71a6f3cb89259576226b8bd644ba44bff4f43189392ea898b6c558829779	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+AGENTS.md	3332	file	5c61e86878e4b5d66275febee3e7c1a2c51892dd316f360cba4c2ff161722d2e	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 CHANGELOG.md	8229	file	20d9c265b08bbec8be6261cb28a2fae745b007f8e9292d58ba54c585d45a92bd	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 CODE_OF_CONDUCT.md	834	file	fc5d9bcf71a578c1a1b80f10d3741125184c34b01841ead7209bc7fbd55d5b50	-	keep-community	R09	Public community or security contract.
 CONTRIBUTING.md	3622	file	2804cfc8737eafc6ac97e4aa8049d2e10d395b554b499f76e0807e8c87cd5b3e	-	keep-community	R09	Public community or security contract.
@@ -18,7 +18,7 @@ FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d0296
 LICENSE	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 Makefile	50828	file	037f4061f85bcea2861360076b489f4bab9d161d734f5052d209f6009ec65f23	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 NOTICE.md	1275	file	b2a99b4906d6ff998690cfda4db4c23dff3e8351c6de65d5c9a8b1835a6ac623	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-README.md	3860	file	5abd41bed91f2f7e73d01526babeb8437328ad9b396981e6386d311f5016ffb8	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+README.md	4693	file	ebeedb377dffee33b61e40e7f36613d555accd5eb464f72e6a55924d8946f2db	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 SECURITY.md	1570	file	7f2ef28c6f58231b04f2fd45d3f6b5bdc5f29b1880cc2a74e9d8ce940e8fd366	-	keep-community	R09	Public community or security contract.
 deny.toml	341	file	d4d516ffd41e0c8e3de633cc3d807b5e0b1a53ec7b5f56ad8ea95c73da0a2bf1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 doc/BENCHMARKING.md	4961	file	ab06dba2b364b211888f5167b21115e23918a0f3e543d2934ab80cb01e27da7a	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
