@@ -89,7 +89,4 @@ See [NOTICE.md](NOTICE.md) for attribution.
 
 Thank you to [FreeType](https://freetype.org/) and its contributors for the
 reference implementation and public contracts, and to the authors who provide
-licensed test fonts. Thank you also to [Puhu](https://github.com/bgunebakan/puhu)
-for the Rust/Python imaging work that informed the parent project's early
-exploration, and [Pillow](https://python-pillow.org/) for its image and font
-interfaces and reference behavior.
+licensed test fonts.
