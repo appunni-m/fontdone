@@ -299,6 +299,13 @@ impl From<LoadMode> for RenderLoadModeKey {
 }
 
 impl Face {
+    pub(crate) fn clone_for_variant(&self) -> Option<Self> {
+        Some(Self {
+            font: self.font.clone_for_variant()?,
+            render_fonts: RenderFontCache::default(),
+        })
+    }
+
     /// Open a font face directly from bytes.
     ///
     /// # Errors

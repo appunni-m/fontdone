@@ -114,6 +114,37 @@ pub struct FontData {
 }
 
 impl FontData {
+    /// Copy parsed tables into an independent face with fresh mutable state.
+    ///
+    /// This is used by static-face variants so opening a second size does not
+    /// have to parse the same SFNT tables again. Variation-capable and
+    /// stateful outline formats are excluded by the caller.
+    pub(crate) fn clone_for_independent_face(&self) -> Arc<Self> {
+        let mut data = self.clone();
+        data.size_pt = Cell::new(0.0);
+        data.size_public_x_scale = Cell::new(0);
+        data.size_public_y_scale = Cell::new(0);
+        data.size_x_scale = Cell::new(0);
+        data.size_y_scale = Cell::new(0);
+        data.size_tt_scale = Cell::new(0);
+        data.size_tt_ppem = Cell::new(0);
+        data.size_tt_x_ratio = Cell::new(0x1_0000);
+        data.size_tt_y_ratio = Cell::new(0x1_0000);
+        data.size_tt_point_size = Cell::new(0);
+        data.transform_xx = Cell::new(0x1_0000);
+        data.transform_xy = Cell::new(0);
+        data.transform_yx = Cell::new(0);
+        data.transform_yy = Cell::new(0x1_0000);
+        data.transform_dx = Cell::new(0);
+        data.transform_dy = Cell::new(0);
+        data.glyph_cache = RefCell::new(HashMap::new());
+        data.self_arc = OnceLock::new();
+
+        let data = Arc::new(data);
+        let _ = data.self_arc.set(Arc::clone(&data));
+        data
+    }
+
     /// True when the selected variation coordinates leave the default
     /// instance. FreeType skips `gvar`/HVAR delta application when all
     /// normalized coordinates are zero, even if the public setter was called

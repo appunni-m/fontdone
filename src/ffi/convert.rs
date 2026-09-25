@@ -202,6 +202,7 @@ pub(super) fn load_flag_for_render_mode(mode: RenderMode) -> api::LoadFlags {
 
 pub(super) fn error_to_ft(error: FontError) -> FT_Error {
     match error {
+        FontError::CannotOpenResource => FT_Err_Cannot_Open_Resource as FT_Error,
         FontError::InvalidFont(message) if message.starts_with("data too short") => {
             FT_Err_Invalid_Stream_Operation as FT_Error
         }
@@ -227,6 +228,7 @@ pub(super) fn error_to_ft(error: FontError) -> FT_Error {
         FontError::InvalidFont(message) if message.starts_with("unknown sfVersion") => {
             FT_Err_Unknown_File_Format as FT_Error
         }
+        FontError::InvalidStreamOperation => FT_Err_Invalid_Stream_Operation as FT_Error,
         FontError::SfntZeroTablesStreamOperation => FT_Err_Invalid_Stream_Operation as FT_Error,
         FontError::PcfZeroTablesStreamOperation => FT_Err_Invalid_Stream_Operation as FT_Error,
         // FreeType 2.14.3 rejects physically truncated SFNT face header tables

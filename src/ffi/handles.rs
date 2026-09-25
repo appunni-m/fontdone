@@ -9985,7 +9985,7 @@ fn colr_v1_find_colorline_by_iterator_in_node<'a>(
         | ColrV1Paint::RadialGradient { colorline, .. }
         | ColrV1Paint::SweepGradient { colorline, .. } => {
             let stop_index = usize::try_from(iterator.current_color_stop).ok()?;
-            if iterator.num_color_stops != colorline.stops.len().try_into().ok()?
+            if iterator.num_color_stops != u32::try_from(colorline.stops.len()).ok()?
                 || iterator.read_variable != FT_Bool::from(colorline.read_variable)
                 || stop_index > colorline.stops.len()
             {
@@ -13577,6 +13577,93 @@ pub fn FT_New_Memory_Face(
         .map_err(error_to_ft)
 }
 
+/// Recreate a face from an unchanged static SFNT source without reparsing its
+/// tables. Returns `Ok(None)` when the source, selector, or face state is not
+/// eligible; callers should then use [`FT_New_Memory_Face`]. The returned
+/// face owns independent mutable state and can be sized or configured without
+/// affecting `source_face`.
+pub fn FT_New_Memory_Face_From_Source(
+    library: &FT_Library,
+    source_face: &FT_Face,
+    data: &[u8],
+    face_index: FT_Long,
+) -> Result<Option<FT_Face>, FT_Error> {
+    let (face_index, probe_only) = c_face_index_to_core(face_index)?;
+    if probe_only
+        || library.truetype_interpreter_version != 40
+        || FT_Long::try_from(face_index).ok() != Some(source_face.face_index)
+    {
+        return Ok(None);
+    }
+
+    let source = source_face.inner.borrow();
+    if source.font().data.raw_data.as_slice() != data {
+        return Ok(None);
+    }
+    let Some(mut inner) = source.clone_for_variant() else {
+        return Ok(None);
+    };
+    drop(source);
+
+    inner.set_truetype_interpreter_version(library.truetype_interpreter_version);
+    inner.set_cff_random_seed(library.cff_random_seed);
+    inner.reset_size_to_undefined();
+
+    let size_state = inner.active_size_state();
+    let size_metrics = inner.size_metrics().into();
+    let active_charmap_index = inner
+        .charmap_index()
+        .and_then(|index| FT_Int::try_from(index).ok())
+        .unwrap_or(-1);
+    let inner = Rc::new(RefCell::new(inner));
+    let sizes = Rc::new(RefCell::new(FaceSizeState::new(size_state)));
+    let active_size = sizes.borrow().active_handle();
+
+    let mut face = source_face.clone();
+    face.size = active_size;
+    face.size_metrics = size_metrics;
+    face.active_charmap_index = active_charmap_index;
+    face.inner = inner;
+    face.sizes = sizes;
+    face.memory_stream.pos = FT_ULong::from(
+        face.inner
+            .borrow()
+            .font()
+            .data
+            .table_directory
+            .record(u32::from_be_bytes(*b"cvt "))
+            .map_or(0, |record| record.offset),
+    );
+    face.incremental_interface = ptr::null_mut();
+    face.probe_only = false;
+    face.open_type_validator_available = FT_Library_Has_Module(Some(library), "otvalid");
+    face.gx_validator_available = FT_Library_Has_Module(Some(library), "gxvalid");
+    face.cpal = source_face.cpal.as_ref().map(|state| {
+        let mut state = state.borrow().clone();
+        state.active_palette_index = 0;
+        state.active_palette = state.palettes.first().cloned().unwrap_or_default();
+        Rc::new(RefCell::new(state))
+    });
+    face.have_foreground_color = Rc::new(RefCell::new(false));
+    face.foreground_color = Rc::new(RefCell::new(FT_Color::default()));
+    face.afm_metrics = Rc::new(RefCell::new(None));
+    face.transform_matrix = FT_Matrix {
+        xx: 1 << 16,
+        xy: 0,
+        yx: 0,
+        yy: 1 << 16,
+    };
+    face.transform_delta = FT_Vector { x: 0, y: 0 };
+    face.no_stem_darkening = -1;
+    face.random_seed = -1;
+    face.increase_x_height = 0;
+    face.svg_hooks = library.svg_hooks;
+    face.refcount = 1;
+    face.retain_memory_stream_source(data);
+    register_face_size_handles(&face);
+    Ok(Some(face))
+}
+
 /// Opens a memory face with a caller-owned incremental interface.
 ///
 /// This parity-only entry point models the `FT_Open_Face` parameter route.
@@ -13636,6 +13723,44 @@ pub fn FT_Open_Face_With_Incremental_Parameter(
 #[cfg(any(test, feature = "abi-test-support"))]
 pub fn FT_Face_Incremental_Interface(face: &FT_Face) -> FT_Incremental_Interface {
     face.incremental_interface
+}
+
+#[cfg(test)]
+mod memory_face_variant_tests {
+    use super::{
+        FT_Err_Ok, FT_New_Memory_Face, FT_New_Memory_Face_From_Source, FT_Request_Size,
+        FT_SIZE_REQUEST_TYPE_NOMINAL, FT_Size_RequestRec, FT_UInt,
+    };
+
+    #[test]
+    fn static_variant_reuses_parsed_tables_with_independent_size_state() {
+        let data = include_bytes!("../../tests/fixtures/input/fonts/DejaVuSans.ttf");
+        let library = super::FT_Init_FreeType();
+        let source = FT_New_Memory_Face(&library, data, 0, 16.0)
+            .expect("the static SFNT fixture should load");
+        let source_metrics = source.inner.borrow().size_metrics();
+        let source_data = std::sync::Arc::clone(&source.inner.borrow().font().data);
+
+        let mut variant = FT_New_Memory_Face_From_Source(&library, &source, data, 0)
+            .expect("the static source should be eligible")
+            .expect("the unchanged static source should use the parsed tables");
+        let variant_data = std::sync::Arc::clone(&variant.inner.borrow().font().data);
+        assert!(!std::rc::Rc::ptr_eq(&source.inner, &variant.inner));
+        assert!(!std::sync::Arc::ptr_eq(&source_data, &variant_data));
+
+        let request = FT_Size_RequestRec {
+            type_: FT_SIZE_REQUEST_TYPE_NOMINAL as i32,
+            width: 32 * 64,
+            height: 32 * 64,
+            horiResolution: FT_UInt::default(),
+            vertResolution: FT_UInt::default(),
+        };
+        assert_eq!(
+            FT_Request_Size(Some(&mut variant), Some(&request)),
+            FT_Err_Ok as super::FT_Error
+        );
+        assert_eq!(source.inner.borrow().size_metrics(), source_metrics);
+    }
 }
 
 fn sfnt_required_table_exceeds_stream(data: &[u8], face_index: usize) -> bool {

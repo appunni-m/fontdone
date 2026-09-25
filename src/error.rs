@@ -120,6 +120,14 @@ pub enum FontError {
     #[error("Unknown file format: {0}")]
     UnknownFileFormat(String),
 
+    /// The memory-face source is empty and no resource can be opened.
+    #[error("Cannot open resource")]
+    CannotOpenResource,
+
+    /// The selected drivers could not complete their final stream probe.
+    #[error("Invalid stream operation")]
+    InvalidStreamOperation,
+
     /// The selected embedded bitmap strike has no image for the glyph.
     #[error("Missing embedded bitmap")]
     MissingBitmap,

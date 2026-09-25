@@ -206,6 +206,7 @@ export_freetype_routes!(
     FT_MulFix,
     FT_New_Face,
     FT_New_Memory_Face,
+    FT_New_Memory_Face_From_Source,
     FT_New_Memory_Face_With_Name_Options,
     FT_New_Size,
     FT_Open_External_Stream_Face_With_Name_Options,

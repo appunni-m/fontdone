@@ -4013,6 +4013,9 @@ impl Font {
         face_index: usize,
         size_pt: f32,
     ) -> Result<Self, FontError> {
+        if data.is_empty() {
+            return Err(FontError::CannotOpenResource);
+        }
         if read_u32_le(data, 0) == Some(PCF_FILE_VERSION) {
             return Self::pcf_face(data, face_index, size_pt);
         }
@@ -4041,27 +4044,45 @@ impl Font {
             return Self::type1_face(data, face_index, size_pt);
         }
         if data.len() >= 17 && data.iter().all(|byte| *byte < b' ') {
-            // FreeType's final BDF driver probe (`bdf/bdflib.c`) skips every
-            // byte below ASCII space while looking for a line.  An all-
-            // control stream therefore reaches EOF with no `STARTFONT`
-            // line and returns Invalid_File_Format from `bdf_load_font`;
-            // `BDF_Face_Init` preserves that error for `FT_Open_Face`.
-            // Keep the length guard because earlier C driver probes use
-            // fixed-size frames and win the error race on shorter streams.
+            // The final BDF probe skips control bytes while seeking its first
+            // line. Once a 17-byte header probe has succeeded, reaching EOF
+            // without a line is `FT_Err_Invalid_File_Format`; shorter inputs
+            // are rejected by earlier drivers as stream operations.
             return Err(FontError::InvalidFileFormat(
                 "BDF stream ended before a complete line".into(),
             ));
         }
-        match Self::truetype_face(data, face_index, size_pt) {
-            Ok(face) => Ok(face),
+        let error = match Self::truetype_face(data, face_index, size_pt) {
+            Ok(face) => return Ok(face),
             Err(error) if data.len() >= 118 => {
                 // FreeType's WinFNT driver tries a standalone FNT header
                 // after its MZ/NE probe fails, even when the version is
                 // invalid. Preserve the original SFNT error unless this
                 // fallback actually recognizes a valid FNT face.
-                Self::winfnt_face(data, face_index, size_pt).or(Err(error))
+                match Self::winfnt_face(data, face_index, size_pt) {
+                    Ok(face) => return Ok(face),
+                    Err(_) => error,
+                }
             }
-            Err(error) => Err(error),
+            Err(error) => error,
+        };
+        match error {
+            // `FT_Open_Face` continues after the SFNT driver rejects an
+            // unsupported version. At 17 bytes the final BDF driver has
+            // enough input for its header probe and returns
+            // `FT_Err_Invalid_File_Format`; shorter buffers retain the
+            // earlier stream-operation result. Keep format-specific errors
+            // from the earlier probes above.
+            FontError::InvalidFont(message) if message.starts_with("unknown sfVersion:") => {
+                if data.len() >= 17 {
+                    Err(FontError::InvalidFileFormat(
+                        "no font driver accepted the memory source".into(),
+                    ))
+                } else {
+                    Err(FontError::InvalidStreamOperation)
+                }
+            }
+            error => Err(error),
         }
     }
 
@@ -6129,6 +6150,28 @@ impl Font {
         let mut font = self.clone();
         font.load_mode = load_mode;
         font
+    }
+
+    pub(crate) fn clone_for_variant(&self) -> Option<Self> {
+        if !matches!(&self.face_kind, FaceKind::Sfnt)
+            || self.data.fvar.is_some()
+            || self.data.cff.is_some()
+            || self.data.cff2.is_some()
+            || self.data.variation_coordinates_set
+            || self.data.interpreter_version != 40
+        {
+            return None;
+        }
+
+        let mut font = self.clone();
+        font.data = self.data.clone_for_independent_face();
+        font.selected_charmap =
+            default_unicode_charmap_index(&font.data.cmap).unwrap_or(NO_SELECTED_CHARMAP);
+        font.load_mode = LoadMode::Default;
+        font.ignore_sbix = false;
+        font.raster_scratch = std::cell::RefCell::new(crate::grays::RasterScratch::new());
+        font.reset_size_to_undefined();
+        Some(font)
     }
 
     /// Equivalent to `FT_Set_Char_Size`.
@@ -9705,4 +9748,42 @@ fn face_metric_values(data: &FontData) -> (i32, i32, i32) {
     let win_ascender = i32::from(i16::from_be_bytes(os2.us_win_ascent.to_be_bytes()));
     let win_descender = -i32::from(i16::from_be_bytes(os2.us_win_descent.to_be_bytes()));
     (win_ascender, win_descender, win_ascender - win_descender)
+}
+
+#[cfg(test)]
+mod memory_face_error_tests {
+    use super::Font;
+    use crate::error::FontError;
+
+    #[test]
+    fn unrecognized_memory_buffers_keep_the_final_driver_probe_error() {
+        let inputs = [
+            (Vec::new(), FontError::CannotOpenResource),
+            (
+                b"invalid font dat".to_vec(),
+                FontError::InvalidStreamOperation,
+            ),
+            (
+                b"invalid font data".to_vec(),
+                FontError::InvalidFileFormat("no font driver accepted the memory source".into()),
+            ),
+            (
+                vec![b' '; 17],
+                FontError::InvalidFileFormat("no font driver accepted the memory source".into()),
+            ),
+            (
+                vec![1; 17],
+                FontError::InvalidFileFormat("BDF stream ended before a complete line".into()),
+            ),
+            (
+                vec![u8::MAX; 17],
+                FontError::InvalidFileFormat("no font driver accepted the memory source".into()),
+            ),
+        ];
+
+        for (data, expected) in inputs {
+            let error = Font::memory_face(&data, 0, 12.0).err();
+            assert_eq!(error, Some(expected));
+        }
+    }
 }
