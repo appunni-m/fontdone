@@ -4014,7 +4014,9 @@ impl Font {
         size_pt: f32,
     ) -> Result<Self, FontError> {
         if data.is_empty() {
-            return Err(FontError::CannotOpenResource);
+            // The memory-stream driver reports an incomplete read; the
+            // path-based API reserves CannotOpenResource for file opens.
+            return Err(FontError::InvalidStreamOperation);
         }
         if read_u32_le(data, 0) == Some(PCF_FILE_VERSION) {
             return Self::pcf_face(data, face_index, size_pt);
@@ -4067,20 +4069,26 @@ impl Font {
             Err(error) => error,
         };
         match error {
-            // `FT_Open_Face` continues after the SFNT driver rejects an
-            // unsupported version. At 17 bytes the final BDF driver has
-            // enough input for its header probe and returns
-            // `FT_Err_Invalid_File_Format`; shorter buffers retain the
-            // earlier stream-operation result. Keep format-specific errors
-            // from the earlier probes above.
-            FontError::InvalidFont(message) if message.starts_with("unknown sfVersion:") => {
-                if data.len() >= 17 {
-                    Err(FontError::InvalidFileFormat(
-                        "no font driver accepted the memory source".into(),
-                    ))
-                } else {
-                    Err(FontError::InvalidStreamOperation)
-                }
+            FontError::InvalidFont(message)
+                if message.starts_with("unknown sfVersion:") && data.len() < 17 =>
+            {
+                // Before BDF has enough bytes for its header probe, FreeType
+                // returns the earlier SFNT stream-read error.
+                Err(FontError::InvalidStreamOperation)
+            }
+            FontError::InvalidFont(message)
+                if message.starts_with("unknown sfVersion:")
+                    && data.len() >= 17
+                    && data.first() != Some(&0x80) =>
+            {
+                // With a complete probe, the fallback BDF driver classifies
+                // unrecognized printable streams as Invalid_File_Format.
+                // A leading PFB marker belongs to the Type 1 probe, whose
+                // Unknown_File_Format result takes precedence over SFNT's
+                // fallback error (for example, an invalid first segment).
+                Err(FontError::InvalidFileFormat(
+                    "no font driver accepted the memory source".into(),
+                ))
             }
             error => Err(error),
         }
@@ -9758,7 +9766,8 @@ mod memory_face_error_tests {
     #[test]
     fn unrecognized_memory_buffers_keep_the_final_driver_probe_error() {
         let inputs = [
-            (Vec::new(), FontError::CannotOpenResource),
+            // FreeType reports an empty memory stream as InvalidStreamOperation.
+            (Vec::new(), FontError::InvalidStreamOperation),
             (
                 b"invalid font dat".to_vec(),
                 FontError::InvalidStreamOperation,

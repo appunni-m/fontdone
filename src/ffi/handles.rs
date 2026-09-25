@@ -13737,13 +13737,13 @@ mod memory_face_variant_tests {
         let data = include_bytes!("../../tests/fixtures/input/fonts/DejaVuSans.ttf");
         let library = super::FT_Init_FreeType();
         let source = FT_New_Memory_Face(&library, data, 0, 16.0)
-            .expect("the static SFNT fixture should load");
+            .unwrap_or_else(|error| panic!("the static SFNT fixture should load: {error:?}"));
         let source_metrics = source.inner.borrow().size_metrics();
         let source_data = std::sync::Arc::clone(&source.inner.borrow().font().data);
 
         let mut variant = FT_New_Memory_Face_From_Source(&library, &source, data, 0)
-            .expect("the static source should be eligible")
-            .expect("the unchanged static source should use the parsed tables");
+            .unwrap_or_else(|error| panic!("the static source should be eligible: {error:?}"))
+            .unwrap_or_else(|| panic!("the unchanged static source should reuse parsed tables"));
         let variant_data = std::sync::Arc::clone(&variant.inner.borrow().font().data);
         assert!(!std::rc::Rc::ptr_eq(&source.inner, &variant.inner));
         assert!(!std::sync::Arc::ptr_eq(&source_data, &variant_data));

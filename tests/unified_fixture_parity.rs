@@ -98001,6 +98001,8 @@ fn font_error_to_ft(error: FontError) -> FT_Error {
         FontError::CannotRenderGlyph(_) => FT_Err_Cannot_Render_Glyph,
         FontError::UnimplementedFeature(_) => FT_Err_Unimplemented_Feature as FT_Error,
         FontError::InvalidArgument(_) => FT_Err_Invalid_Argument,
+        FontError::CannotOpenResource => FT_Err_Cannot_Open_Resource as FT_Error,
+        FontError::InvalidStreamOperation => FT_Err_Invalid_Stream_Operation as FT_Error,
         FontError::InvalidFileFormat(_) => FT_Err_Invalid_File_Format as FT_Error,
         FontError::UnknownFileFormat(_) => FT_Err_Unknown_File_Format as FT_Error,
         FontError::MissingBitmap => FT_Err_Missing_Bitmap as FT_Error,

@@ -2315,6 +2315,14 @@ and 85 respectively before allocating a face, so the expected capture output
 is null and the error is exact; the inputs are not private handles or invented
 memory states.
 
+Full-snapshot review also found a manifest grouping defect: the case
+`freetype.FT_New_Memory_Face.error_pcf_table_count_too_large` contains variant
+`b27-face-error-06`, but that variant points to
+`input/fonts/type1/invalid-first-segment-type1.pfb` and is tagged
+`b27:type1:error:invalid-first-segment`. Its bytes cannot exercise a PCF table
+count. The fixture record is unchanged; this row is documented as a test-data
+blocker and must be regrouped before treating its mismatch as a PCF regression.
+
 The WASM parity adapter previously discarded the export's returned error and
 reported the untouched default capture as success. It now propagates a
 non-`OK` capture status, matching the direct Rust and C ABI face-open errors.

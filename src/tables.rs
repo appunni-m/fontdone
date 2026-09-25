@@ -140,6 +140,10 @@ impl FontData {
         data.glyph_cache = RefCell::new(HashMap::new());
         data.self_arc = OnceLock::new();
 
+        // The surrounding face API uses `Arc` for shared, thread-confined
+        // ownership; `FontData` contains per-face `Cell`/`RefCell` state and
+        // cannot cross threads.
+        #[allow(clippy::arc_with_non_send_sync)]
         let data = Arc::new(data);
         let _ = data.self_arc.set(Arc::clone(&data));
         data
