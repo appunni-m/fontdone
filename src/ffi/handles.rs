@@ -1898,8 +1898,16 @@ fn refresh_sfnt_variation_fields(face: &mut FT_Face) -> bool {
         )
     };
 
-    face.face_flags = (face.face_flags & !(FT_FACE_FLAG_VARIATION as FT_Long))
-        | (FT_Long::from(info.face_flags & u32::try_from(FT_FACE_FLAG_VARIATION).unwrap_or(0)));
+    // `FT_Long` is native `c_long`: it is 32-bit on Windows and 64-bit on
+    // LP64 platforms. This public flag fits in both representations.
+    let variation_flag = i32::try_from(FT_FACE_FLAG_VARIATION).unwrap_or(0);
+    let variation_value =
+        if info.face_flags & u32::try_from(FT_FACE_FLAG_VARIATION).unwrap_or(0) != 0 {
+            FT_Long::from(variation_flag)
+        } else {
+            0
+        };
+    face.face_flags = (face.face_flags & !FT_Long::from(variation_flag)) | variation_value;
     face.ascender = info.ascender;
     face.descender = info.descender;
     face.height = info.height;
