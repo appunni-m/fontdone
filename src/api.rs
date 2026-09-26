@@ -175,6 +175,21 @@ impl Library {
         })
     }
 
+    /// Open a font face from caller-owned bytes without copying the raw font
+    /// buffer into the parsed face.
+    pub(crate) fn new_memory_face_owned(
+        self,
+        data: Rc<Vec<u8>>,
+        face_index: usize,
+        size_pt: f32,
+    ) -> Result<Face, FontError> {
+        let font = Font::memory_face_owned(data, face_index, size_pt)?;
+        Ok(Face {
+            font,
+            render_fonts: RenderFontCache::default(),
+        })
+    }
+
     /// Open a font face with the name-selection options normally carried by
     /// `FT_Open_Face` parameters.
     ///

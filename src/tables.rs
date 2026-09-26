@@ -34,7 +34,7 @@ use crate::tt::vmtx::VmtxTable;
 /// All parsed font tables for one face, plus the requested point size.
 #[derive(Debug, Clone)]
 pub struct FontData {
-    pub raw_data: Vec<u8>,
+    pub raw_data: Rc<Vec<u8>>,
     pub face_offset: usize,
     pub face_index: usize,
     pub num_faces: usize,

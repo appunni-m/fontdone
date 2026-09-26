@@ -40,6 +40,13 @@ pub enum LoadMode {
     NoAutoHint,
 }
 
+#[derive(Clone, Copy, Default)]
+struct FontVariationCoordinates<'a> {
+    design_coords: Option<&'a [i32]>,
+    blend_coords_16_16: Option<&'a [i32]>,
+    variation_coordinates_set: bool,
+}
+
 /// Public `FT_Get_Kerning` mode.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum KerningMode {
@@ -911,7 +918,7 @@ fn winfnt_family_name(data: &[u8], header: &WinFntHeader) -> String {
 fn winfnt_font_data(data: &[u8], size_pt: f32, header: &WinFntHeader) -> Arc<FontData> {
     #[allow(clippy::arc_with_non_send_sync)]
     let font_data = Arc::new(FontData {
-        raw_data: data.to_vec(),
+        raw_data: Rc::new(data.to_vec()),
         face_offset: 0,
         face_index: 0,
         num_faces: 1,
@@ -1596,7 +1603,7 @@ fn bdf_font_data(data: &[u8], size_pt: f32, metadata: &BdfMetadata) -> Arc<FontD
 
     #[allow(clippy::arc_with_non_send_sync)]
     let font_data = Arc::new(FontData {
-        raw_data: data.to_vec(),
+        raw_data: Rc::new(data.to_vec()),
         face_offset: 0,
         face_index: 0,
         num_faces: 1,
@@ -3059,7 +3066,7 @@ fn non_sfnt_outline_font_data(
     let nominal_height = i32::from(units_per_em).saturating_mul(12) / 10;
     #[allow(clippy::arc_with_non_send_sync)]
     let font_data = Arc::new(FontData {
-        raw_data: data.to_vec(),
+        raw_data: Rc::new(data.to_vec()),
         face_offset: 0,
         face_index: 0,
         num_faces: 1,
@@ -4013,6 +4020,32 @@ impl Font {
         face_index: usize,
         size_pt: f32,
     ) -> Result<Self, FontError> {
+        Self::memory_face_with_owned_bytes(data, None, face_index, size_pt)
+    }
+
+    /// Open an owned memory face while sharing its source allocation with the
+    /// parsed face data. High-level adapters already own the input bytes, so
+    /// copying the complete font a second time adds latency and memory without
+    /// improving lifetime safety.
+    pub(crate) fn memory_face_owned(
+        data: Rc<Vec<u8>>,
+        face_index: usize,
+        size_pt: f32,
+    ) -> Result<Self, FontError> {
+        Self::memory_face_with_owned_bytes(
+            data.as_slice(),
+            Some(Rc::clone(&data)),
+            face_index,
+            size_pt,
+        )
+    }
+
+    fn memory_face_with_owned_bytes(
+        data: &[u8],
+        owned_data: Option<Rc<Vec<u8>>>,
+        face_index: usize,
+        size_pt: f32,
+    ) -> Result<Self, FontError> {
         if data.is_empty() {
             // The memory-stream driver reports an incomplete read; the
             // path-based API reserves CannotOpenResource for file opens.
@@ -4054,7 +4087,18 @@ impl Font {
                 "BDF stream ended before a complete line".into(),
             ));
         }
-        let error = match Self::truetype_face(data, face_index, size_pt) {
+        let truetype = match owned_data {
+            Some(raw_data) => Self::truetype_face_with_load_mode_and_design_coords_and_raw_data(
+                data,
+                face_index,
+                size_pt,
+                LoadMode::Default,
+                FontVariationCoordinates::default(),
+                Some(raw_data),
+            ),
+            None => Self::truetype_face(data, face_index, size_pt),
+        };
+        let error = match truetype {
             Ok(face) => return Ok(face),
             Err(error) if data.len() >= 118 => {
                 // FreeType's WinFNT driver tries a standalone FNT header
@@ -4632,8 +4676,13 @@ impl Font {
         size_pt: f32,
         load_mode: LoadMode,
     ) -> Result<Self, FontError> {
-        Self::truetype_face_with_load_mode_and_design_coords(
-            data, face_index, size_pt, load_mode, None, None, false,
+        Self::truetype_face_with_load_mode_and_design_coords_and_raw_data(
+            data,
+            face_index,
+            size_pt,
+            load_mode,
+            FontVariationCoordinates::default(),
+            None,
         )
     }
 
@@ -4646,6 +4695,33 @@ impl Font {
         blend_coords_16_16: Option<&[i32]>,
         variation_coordinates_set: bool,
     ) -> Result<Self, FontError> {
+        Self::truetype_face_with_load_mode_and_design_coords_and_raw_data(
+            data,
+            face_index,
+            size_pt,
+            load_mode,
+            FontVariationCoordinates {
+                design_coords,
+                blend_coords_16_16,
+                variation_coordinates_set,
+            },
+            None,
+        )
+    }
+
+    fn truetype_face_with_load_mode_and_design_coords_and_raw_data(
+        data: &[u8],
+        face_index: usize,
+        size_pt: f32,
+        load_mode: LoadMode,
+        variation: FontVariationCoordinates<'_>,
+        raw_data: Option<Rc<Vec<u8>>>,
+    ) -> Result<Self, FontError> {
+        let FontVariationCoordinates {
+            design_coords,
+            blend_coords_16_16,
+            variation_coordinates_set,
+        } = variation;
         // FreeType stores a 1-based named-instance selector in bits 16..30;
         // the low 16 bits still select the collection face (ftobjs.c).
         let collection_face_index = face_index & 0xFFFF;
@@ -4853,7 +4929,7 @@ impl Font {
         // face itself is not a cross-thread type.
         #[allow(clippy::arc_with_non_send_sync)]
         let font_data = Arc::new(FontData {
-            raw_data: data.to_vec(),
+            raw_data: raw_data.unwrap_or_else(|| Rc::new(data.to_vec())),
             face_offset,
             face_index,
             num_faces,

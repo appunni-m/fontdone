@@ -1194,7 +1194,11 @@ pub struct FT_Face {
     no_stem_darkening: i32,
     random_seed: FT_Int32,
     increase_x_height: FT_UInt,
-    glyph_to_script_map: Box<[FT_UShort]>,
+    // FreeType constructs AF_FaceGlobals only when the auto-hinter or the
+    // public glyph-to-script-map property needs it. Building this map scans
+    // every configured script's Unicode ranges, so keep the face-owned array
+    // lazy while preserving its stable allocation once exposed to callers.
+    glyph_to_script_map: OnceLock<Box<[FT_UShort]>>,
     svg_hooks: Option<SVG_RendererHooks>,
     refcount: usize,
 }
@@ -1223,6 +1227,16 @@ struct AfmKernPair {
 }
 
 impl FT_Face {
+    fn glyph_to_script_map(&self) -> &[FT_UShort] {
+        self.glyph_to_script_map.get_or_init(|| {
+            self.inner
+                .borrow()
+                .font()
+                .autohint_glyph_style_map()
+                .into_boxed_slice()
+        })
+    }
+
     pub fn memory_stream(&self) -> FT_Stream {
         (&*self.memory_stream as *const FT_StreamRec).cast_mut()
     }
@@ -1880,6 +1894,10 @@ impl FT_GlyphSlot {
 }
 
 pub fn FT_Init_FreeType() -> FT_Library {
+    // Initialize the size registry before adapters may create thread-local
+    // cached faces. A cached FT_Face drops at thread exit and its size state
+    // removes these registrations, so the registry must outlive those faces.
+    SIZE_HANDLE_REGISTRY.with(|_| ());
     FT_Library {
         inner: api::Library::init(),
         memory: std::ptr::null_mut(),
@@ -11547,7 +11565,7 @@ pub fn FT_Property_Get_GlyphToScriptMap(
         return FT_Err_Invalid_Face_Handle as FT_Error;
     };
     value.face = (face as *const FT_Face).cast_mut().cast();
-    value.map = face.glyph_to_script_map.as_ptr().cast_mut();
+    value.map = face.glyph_to_script_map().as_ptr().cast_mut();
     FT_Err_Ok
 }
 
@@ -11561,7 +11579,7 @@ pub fn FT_Glyph_To_Script_Map_Sample_For_Test(
         .copied()
         .filter_map(|glyph_index| {
             let index = usize::try_from(glyph_index).ok()?;
-            face.glyph_to_script_map
+            face.glyph_to_script_map()
                 .get(index)
                 .copied()
                 .map(|script| (glyph_index, script))
@@ -11576,7 +11594,16 @@ pub fn FT_Glyph_To_Script_Map_Mutate_For_Test(
     value: FT_UShort,
 ) -> Option<FT_UShort> {
     let index = usize::try_from(glyph_index).ok()?;
-    let entry = face.glyph_to_script_map.get_mut(index)?;
+    if face.glyph_to_script_map.get().is_none() {
+        let map = face
+            .inner
+            .borrow()
+            .font()
+            .autohint_glyph_style_map()
+            .into_boxed_slice();
+        let _ = face.glyph_to_script_map.set(map);
+    }
+    let entry = face.glyph_to_script_map.get_mut()?.get_mut(index)?;
     let initial = *entry;
     *entry = value;
     Some(initial)
@@ -13577,6 +13604,37 @@ pub fn FT_New_Memory_Face(
         .map_err(error_to_ft)
 }
 
+/// Opens a face from bytes already owned by the high-level adapter.
+///
+/// For SFNT faces this retains the shared source allocation in the parsed
+/// face and does not borrow the caller's buffer. It is intended for adapters
+/// that keep exposing the original `font_bytes` value.
+pub fn FT_New_Memory_Face_Owned(
+    library: &FT_Library,
+    data: Rc<Vec<u8>>,
+    face_index: FT_Long,
+    size_pt: f32,
+) -> Result<FT_Face, FT_Error> {
+    let (face_index, probe_only) = c_face_index_to_core(face_index)?;
+    let open_type_validator_available = FT_Library_Has_Module(Some(library), "otvalid");
+    let gx_validator_available = FT_Library_Has_Module(Some(library), "gxvalid");
+    if sfnt_required_table_exceeds_stream(&data, face_index) {
+        return Err(FT_Err_Unknown_File_Format);
+    }
+    library
+        .inner
+        .new_memory_face_owned(data, face_index, size_pt)
+        .map(|mut inner| {
+            inner.set_cff_random_seed(library.cff_random_seed);
+            inner.reset_size_to_undefined();
+            let mut face = face_to_ffi(inner, probe_only, library.svg_hooks);
+            face.open_type_validator_available = open_type_validator_available;
+            face.gx_validator_available = gx_validator_available;
+            face
+        })
+        .map_err(error_to_ft)
+}
+
 /// Recreate a face from an unchanged static SFNT source without reparsing its
 /// tables. Returns `Ok(None)` when the source, selector, or face state is not
 /// eligible; callers should then use [`FT_New_Memory_Face`]. The returned
@@ -13728,9 +13786,24 @@ pub fn FT_Face_Incremental_Interface(face: &FT_Face) -> FT_Incremental_Interface
 #[cfg(test)]
 mod memory_face_variant_tests {
     use super::{
-        FT_Err_Ok, FT_New_Memory_Face, FT_New_Memory_Face_From_Source, FT_Request_Size,
-        FT_SIZE_REQUEST_TYPE_NOMINAL, FT_Size_RequestRec, FT_UInt,
+        FT_Err_Ok, FT_New_Memory_Face, FT_New_Memory_Face_From_Source, FT_New_Memory_Face_Owned,
+        FT_Request_Size, FT_SIZE_REQUEST_TYPE_NOMINAL, FT_Size_RequestRec, FT_UInt,
     };
+
+    #[test]
+    fn owned_memory_face_shares_and_retains_the_source_bytes() {
+        let data = std::rc::Rc::new(
+            include_bytes!("../../tests/fixtures/input/fonts/DejaVuSans.ttf").to_vec(),
+        );
+        let source_pointer = data.as_ptr();
+        let library = super::FT_Init_FreeType();
+        let face = FT_New_Memory_Face_Owned(&library, std::rc::Rc::clone(&data), 0, 16.0)
+            .unwrap_or_else(|error| panic!("the owned SFNT fixture should load: {error:?}"));
+
+        assert_eq!(face.memory_stream_record().base, source_pointer.cast_mut());
+        drop(data);
+        assert_eq!(face.memory_stream_record().base, source_pointer.cast_mut());
+    }
 
     #[test]
     fn static_variant_reuses_parsed_tables_with_independent_size_state() {
@@ -13944,7 +14017,6 @@ fn face_to_ffi(
     let available_sizes = available_sizes_to_ffi(font);
     let num_fixed_sizes = FT_Int::try_from(available_sizes.len()).unwrap_or(FT_Int::MAX);
     let (charmaps, charmap_metadata) = charmaps_to_ffi(&inner);
-    let glyph_to_script_map = inner.font().autohint_glyph_style_map().into_boxed_slice();
     let is_sfnt_face = info.face_flags & u32::try_from(FT_FACE_FLAG_SFNT).unwrap_or(0) != 0;
     let has_usable_sfnt_family_name = !is_sfnt_face || font.has_selected_sfnt_family_name();
     let has_usable_sfnt_style_name = !is_sfnt_face || font.has_selected_sfnt_subfamily_name();
@@ -14030,7 +14102,7 @@ fn face_to_ffi(
         no_stem_darkening: -1,
         random_seed: -1,
         increase_x_height: 0,
-        glyph_to_script_map,
+        glyph_to_script_map: OnceLock::new(),
         svg_hooks,
         refcount: 1,
     };
@@ -15514,7 +15586,7 @@ fn ft_load_glyph_core(
     };
     inner
         .font()
-        .sync_autohint_property_state(&face.glyph_to_script_map, face.increase_x_height);
+        .sync_autohint_property_state(face.glyph_to_script_map(), face.increase_x_height);
     inner
         .load_glyph_with_transform(glyph_index, flags, transform)
         .map(|slot| slot_to_ffi(face, slot, flags))
@@ -15650,7 +15722,7 @@ pub fn FT_Get_Advance(
     let inner = face.inner.borrow();
     inner
         .font()
-        .sync_autohint_property_state(&face.glyph_to_script_map, face.increase_x_height);
+        .sync_autohint_property_state(face.glyph_to_script_map(), face.increase_x_height);
     let slot = inner.load_glyph(glyph_index, flags).map_err(error_to_ft)?;
     let advance = if flags.contains(api::LoadFlags::VERTICAL_LAYOUT) {
         slot.advance.y
