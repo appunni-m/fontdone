@@ -1160,7 +1160,7 @@ pub fn metrics_init_widths(
         };
         compute_segments(&mut hints, dimension);
         // link with width_count=0 (no widths yet — uses the else branch: dist_demerit=dist)
-        link_segments_inner(&mut hints, dimension, 0, &[]);
+        link_segments_inner(&mut hints, dimension, 0, &[], metrics.units_per_em);
 
         // Collect stem widths from mutual link pairs
         let axis = &hints.axis[dim];
@@ -2586,17 +2586,11 @@ fn vertical_separation_accent_height_limit(metrics: &AfLatinMetrics, adj_type: u
 fn vertical_separation_adjustments(
     hints: &mut GlyphHints,
     metrics: &AfLatinMetrics,
-    glyph_index: u16,
-    font_data: &crate::tables::FontData,
+    adj_type: u32,
 ) {
     if hints.contours.len() < 2 {
         return;
     }
-
-    // C uses reverse_charmap + af_adjustment_database_lookup.
-    // We replicate via direct cmap scan on known adjustment codepoints.
-    let adj_type =
-        reverse_cmap_lookup(font_data, glyph_index).map_or(0, adjustment_database_lookup);
 
     if adj_type == 0 {
         return;
@@ -2862,9 +2856,12 @@ pub fn apply_hints_with_advance(
     let Some(metrics) = metrics else {
         return output;
     };
+    // Resolve the glyph's adjustment once.  The result is shared by the
+    // horizontal, vertical, and contour-separation phases below.
+    let adj_type = font_data
+        .and_then(|data| reverse_cmap_lookup(data, glyph_index))
+        .map_or(0, adjustment_database_lookup);
     let mut hints = GlyphHints::new(x_scale, y_scale, x_delta, y_delta);
-    hints.metrics = Some(metrics.clone());
-
     // C remaps styles whose blue-zone scan fails to NONE_DFLT during face
     // coverage construction.  Preserve that early exit for TrueType, where
     // the face-global metrics are intentionally unavailable in this state.
@@ -2934,7 +2931,7 @@ pub fn apply_hints_with_advance(
     let use_cjk_edges = metrics.no_advance_hinting;
     let mut horz_widths_26_6: Vec<i32> = Vec::new();
     if do_horz {
-        compute_segments(&mut hints, Dimension::Horz);
+        compute_segments_with_units_per_em(&mut hints, Dimension::Horz, metrics.units_per_em);
         {
             let (wc, widths) = extract_widths(metrics, Dimension::Horz);
             horz_widths_26_6 = widths.iter().take(wc).map(|w| w.cur).collect();
@@ -2947,7 +2944,13 @@ pub fn apply_hints_with_advance(
                 // the Latin segment round flags for CJK/Hani parity.
                 super::cjk::cjk_link_segments(&mut hints, Dimension::Horz);
             } else {
-                link_segments_inner(&mut hints, Dimension::Horz, wc, &widths);
+                link_segments_inner(
+                    &mut hints,
+                    Dimension::Horz,
+                    wc,
+                    &widths,
+                    metrics.units_per_em,
+                );
             }
         }
         if use_cjk_edges {
@@ -2958,16 +2961,13 @@ pub fn apply_hints_with_advance(
         }
     }
 
-    if let Some(data) = font_data {
-        let adj_type = reverse_cmap_lookup(data, glyph_index).map_or(0, adjustment_database_lookup);
-        // C applies tilde stretching/alignment before vertical feature
-        // detection (aflatin.c:4938-4980), after horizontal detection.
-        apply_tilde_stretch_alignment(&mut hints, adj_type);
-    }
+    // C applies tilde stretching/alignment before vertical feature detection
+    // (aflatin.c:4938-4980), after horizontal detection.
+    apply_tilde_stretch_alignment(&mut hints, adj_type);
 
     // Phase B: detect_features for VERT (segs → link → edges) + blue zones.
     // This OVERWRITES point.v = fx — matching C's behavior before the hint loop.
-    compute_segments(&mut hints, Dimension::Vert);
+    compute_segments_with_units_per_em(&mut hints, Dimension::Vert, metrics.units_per_em);
     let vert_widths_26_6: Vec<i32>;
     {
         let (wc, widths) = extract_widths(metrics, Dimension::Vert);
@@ -2977,7 +2977,13 @@ pub fn apply_hints_with_advance(
             // phase comment above for the FreeType 2.14.3 no-op wrapper detail.
             super::cjk::cjk_link_segments(&mut hints, Dimension::Vert);
         } else {
-            link_segments_inner(&mut hints, Dimension::Vert, wc, &widths);
+            link_segments_inner(
+                &mut hints,
+                Dimension::Vert,
+                wc,
+                &widths,
+                metrics.units_per_em,
+            );
         }
     }
     if use_cjk_edges {
@@ -2986,10 +2992,7 @@ pub fn apply_hints_with_advance(
     } else {
         compute_edges(&mut hints, Dimension::Vert, metrics);
     }
-    if let Some(data) = font_data {
-        let adj_type = reverse_cmap_lookup(data, glyph_index).map_or(0, adjustment_database_lookup);
-        apply_blue_zone_ignore_adjustments(&mut hints, metrics, adj_type);
-    }
+    apply_blue_zone_ignore_adjustments(&mut hints, metrics, adj_type);
     let is_nonbase = (glyph_index as usize) < metrics.non_base_glyphs.len()
         && metrics.non_base_glyphs[glyph_index as usize];
     if !use_cjk_edges && !is_nonbase {
@@ -3023,9 +3026,7 @@ pub fn apply_hints_with_advance(
         align_strong_points(&mut hints, dim);
         align_weak_points(&mut hints, dim);
         if dim == Dimension::Vert {
-            if let Some(data) = font_data {
-                vertical_separation_adjustments(&mut hints, metrics, glyph_index, data);
-            }
+            vertical_separation_adjustments(&mut hints, metrics, adj_type);
         }
     }
 
@@ -3146,17 +3147,15 @@ pub fn apply_hints_with_advance(
     #[cfg(debug_assertions)]
     if log::log_enabled!(target: "autohint::pipeline", log::Level::Trace) {
         trace!(target: "autohint::pipeline", "[PIPE] reload {} pts", hints.num_points());
-        if let Some(metrics_data) = &hints.metrics {
-            let verge = &metrics_data.axis[Dimension::Vert as usize];
-            trace!(target: "autohint::pipeline", "[PIPE] blue_count={}", verge.blue_count);
-            for bi in 0..verge.blue_count {
-                let bz = &verge.blues[bi];
-                trace!(target: "autohint::pipeline", "[PIPE] blue{bi}: ref={} shoot={} top={} neut={} active={}",
-                    bz.ref_width.org, bz.shoot_width.org,
-                    (bz.flags & 0x02 != 0) || (bz.flags & 0x04 != 0),
-                    bz.flags & 0x08 != 0,
-                    bz.flags & 0x01 != 0);
-            }
+        let verge = &metrics.axis[Dimension::Vert as usize];
+        trace!(target: "autohint::pipeline", "[PIPE] blue_count={}", verge.blue_count);
+        for bi in 0..verge.blue_count {
+            let bz = &verge.blues[bi];
+            trace!(target: "autohint::pipeline", "[PIPE] blue{bi}: ref={} shoot={} top={} neut={} active={}",
+                bz.ref_width.org, bz.shoot_width.org,
+                (bz.flags & 0x02 != 0) || (bz.flags & 0x04 != 0),
+                bz.flags & 0x08 != 0,
+                bz.flags & 0x01 != 0);
         }
         trace!(target: "autohint::pipeline", "[PIPE] blue_dump_done");
         for (i, pt) in hints.points.iter().enumerate() {
@@ -3181,16 +3180,8 @@ pub fn apply_hints_with_advance(
             trace!(target: "autohint::pipeline", "[PIPE] HS{si}: p{}..p{} dir={:?} pos={}",
                 s.first, s.last, s.dir, s.pos);
         }
-        let el_horz = if let Some(m) = hints.metrics.as_ref() {
-            m.axis[Dimension::Horz as usize].extra_light
-        } else {
-            false
-        };
-        let el_vert = if let Some(m) = hints.metrics.as_ref() {
-            m.axis[Dimension::Vert as usize].extra_light
-        } else {
-            false
-        };
+        let el_horz = metrics.axis[Dimension::Horz as usize].extra_light;
+        let el_vert = metrics.axis[Dimension::Vert as usize].extra_light;
         trace!(target: "autohint::pipeline", "[PIPE] horz_edges {} extra_light_h={el_horz} extra_light_v={el_vert}", ha.edges.len());
         for (ei, e) in ha.edges.iter().enumerate() {
             trace!(target: "autohint::pipeline", "[PIPE] HE{ei}: fpos={} opos={} pos={} link={} serif={}",
@@ -3221,7 +3212,12 @@ pub fn apply_hints_with_advance(
 /// for serif detection.
 #[allow(unused_assignments, unused_variables)]
 pub fn compute_segments(hints: &mut GlyphHints, dim: Dimension) {
-    let flat_threshold = hints.metrics.as_ref().map_or(146, |m| m.units_per_em / 14);
+    let units_per_em = hints.metrics.as_ref().map_or(2048, |m| m.units_per_em);
+    compute_segments_with_units_per_em(hints, dim, units_per_em);
+}
+
+fn compute_segments_with_units_per_em(hints: &mut GlyphHints, dim: Dimension, units_per_em: i32) {
+    let flat_threshold = units_per_em / 14;
     // `af_latin_hints_compute_segments` works over contour endpoints while
     // mutating the current axis, so take a local copy before borrowing `axis`.
     let contours: Vec<usize> = hints.contours.clone();
@@ -3874,7 +3870,8 @@ fn compute_edges(hints: &mut GlyphHints, dim: Dimension, metrics: &AfLatinMetric
 /// Public wrapper: links segments using default width/demerit scoring.
 /// Used by CJK stem width detection in cjk.rs.
 pub fn link_segments(hints: &mut GlyphHints, dim: Dimension) {
-    link_segments_inner(hints, dim, 0, &[]);
+    let units_per_em = hints.metrics.as_ref().map_or(2048, |m| m.units_per_em);
+    link_segments_inner(hints, dim, 0, &[], units_per_em);
 }
 
 fn link_segments_inner(
@@ -3882,12 +3879,13 @@ fn link_segments_inner(
     dim: Dimension,
     width_count: usize,
     widths: &[AfWidth],
+    units_per_em: i32,
 ) {
     let axis = &mut hints.axis[dim as usize];
     let major_dir = axis.major_dir;
     let n = axis.segments.len();
 
-    let upem = hints.metrics.as_ref().map_or(2048, |m| m.units_per_em);
+    let upem = units_per_em;
 
     // max_width = largest stem width in font units (aflatin.c:2028-2031).
     // .org stays in font units even after scale_dim; segment distances are also

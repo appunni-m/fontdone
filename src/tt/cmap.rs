@@ -182,6 +182,92 @@ impl CmapTable {
         None
     }
 
+    /// Visit nonzero mappings in an inclusive Unicode range, in codepoint order.
+    ///
+    /// Auto-hinter coverage only needs mapped characters. Walking every code
+    /// point in each script range repeatedly searches the cmap, even when a
+    /// font maps only a few characters in that range. The subtable cursors
+    /// jump between mapped entries while `char_index` preserves format-12
+    /// precedence over format-4 mappings.
+    pub(crate) fn for_each_char_index_in_range(
+        &self,
+        first: u32,
+        last: u32,
+        mut visit: impl FnMut(u32, u16),
+    ) {
+        if first > last {
+            return;
+        }
+
+        // Format-4 `next_char` follows FreeType and does not yield U+FFFF,
+        // while style coverage uses `char_index` for every code point.
+        // Handle that boundary directly between the BMP and supplementary
+        // cursors so this iterator exactly covers the scalar lookup domain.
+        if first == 0 {
+            if let Some(glyph) = self.char_index(0).filter(|glyph| *glyph != 0) {
+                visit(0, glyph);
+            }
+        }
+
+        let bmp_start = first.max(1);
+        let bmp_end = last.min(u32::from(u16::MAX) - 1);
+        if bmp_start <= bmp_end {
+            let mut after = bmp_start - 1;
+            while let Some((codepoint, glyph)) = self.next_char_index(after) {
+                if codepoint > bmp_end {
+                    break;
+                }
+                if glyph != 0 {
+                    visit(codepoint, glyph);
+                }
+                after = codepoint;
+            }
+        }
+
+        let ffff = u32::from(u16::MAX);
+        if first <= ffff && ffff <= last {
+            if let Some(glyph) = self.char_index(ffff).filter(|glyph| *glyph != 0) {
+                visit(ffff, glyph);
+            }
+        }
+
+        let supplementary_start = first.max(0x1_0000);
+        if supplementary_start <= last {
+            let mut after = supplementary_start - 1;
+            while let Some((codepoint, glyph)) = self.next_char_index(after) {
+                if codepoint > last {
+                    break;
+                }
+                if glyph != 0 {
+                    visit(codepoint, glyph);
+                }
+                after = codepoint;
+            }
+        }
+    }
+
+    fn next_char_index(&self, after: u32) -> Option<(u32, u16)> {
+        let mut next = None;
+        for subtable in &self.format12 {
+            if let Some(candidate) = subtable.next_char(after)
+                && next.is_none_or(|current: (u32, u16)| candidate.0 < current.0)
+            {
+                next = Some(candidate);
+            }
+        }
+        if after < u32::from(u16::MAX) {
+            for subtable in &self.format4 {
+                if let Some(candidate) = subtable.next_char(after)
+                    && next.is_none_or(|current: (u32, u16)| candidate.0 < current.0)
+                {
+                    next = Some(candidate);
+                }
+            }
+        }
+        let (codepoint, _) = next?;
+        self.char_index(codepoint).map(|glyph| (codepoint, glyph))
+    }
+
     /// Map a codepoint with a specific selectable charmap.
     pub fn char_index_in_charmap(&self, charmap_index: usize, codepoint: u32) -> Option<u16> {
         match self.charmaps.get(charmap_index)?.kind {
@@ -356,8 +442,10 @@ impl Format12Subtable {
     }
 
     fn next_char(&self, after: u32) -> Option<(u32, u16)> {
-        for i in 0..self.start_codes.len() {
-            let candidate = self.start_codes[i].max(after.checked_add(1)?);
+        let first = after.checked_add(1)?;
+        let mut i = self.end_codes.partition_point(|end| *end < first);
+        while i < self.start_codes.len() {
+            let candidate = self.start_codes[i].max(first);
             if candidate <= self.end_codes[i] {
                 let glyph = self.start_glyph_ids[i] + (candidate - self.start_codes[i]);
                 if glyph != 0 {
@@ -369,6 +457,7 @@ impl Format12Subtable {
                     return Some((candidate + 1, 1));
                 }
             }
+            i += 1;
         }
         None
     }
@@ -402,17 +491,14 @@ impl Format13Subtable {
 }
 
 impl Format4Subtable {
-    /// Reproduce `tt_cmap4_char_index`: scan segments for the first whose
+    /// Reproduce `tt_cmap4_char_index`: locate the first segment whose
     /// `endCode >= charCode`, then resolve via delta or idRangeOffset.
     fn char_index(&self, char_code: u16) -> Option<u16> {
-        let last = self.end_codes.len() - 1;
-        for seg in 0..last {
-            if char_code > self.end_codes[seg] {
-                continue;
-            }
-            return self.char_index_in_segment(seg, char_code);
+        let segment = self.end_codes.partition_point(|end| *end < char_code);
+        if segment == self.end_codes.len() {
+            return None;
         }
-        self.char_index_in_segment(last, char_code)
+        self.char_index_in_segment(segment, char_code)
     }
 
     fn char_index_in_segment(&self, seg: usize, char_code: u16) -> Option<u16> {
@@ -434,19 +520,23 @@ impl Format4Subtable {
         if after >= u32::from(u16::MAX) {
             return None;
         }
-        let start = after + 1;
-        let mut cp = u16_from_u32(start);
-        loop {
-            if cp == 0xFFFF {
-                return None;
+        let start = u16_from_u32(after + 1);
+        let first_segment = self.end_codes.partition_point(|end| *end < start);
+        for segment in first_segment..self.end_codes.len() {
+            let segment_start = start.max(self.start_codes[segment]);
+            let segment_end = self.end_codes[segment].min(u16::MAX - 1);
+            if segment_start > segment_end {
+                continue;
             }
-            if let Some(glyph) = self.char_index(cp) {
-                if glyph != 0 {
-                    return Some((cp as u32, glyph));
+            for codepoint in segment_start..=segment_end {
+                if let Some(glyph) = self.char_index_in_segment(segment, codepoint)
+                    && glyph != 0
+                {
+                    return Some((u32::from(codepoint), glyph));
                 }
             }
-            cp = cp.wrapping_add(1);
         }
+        None
     }
 }
 
@@ -1111,4 +1201,55 @@ fn parse_format14_non_default_mappings(
 
 fn read_u24(bytes: &[u8]) -> u32 {
     (u32::from(bytes[0]) << 16) | (u32::from(bytes[1]) << 8) | u32::from(bytes[2])
+}
+
+#[cfg(test)]
+mod char_index_range_tests {
+    use super::{CmapTable, Format4Subtable, Format12Subtable};
+
+    #[test]
+    fn range_cursor_matches_nonzero_scalar_lookups() {
+        let cmap = CmapTable {
+            format4: vec![Format4Subtable {
+                platform_id: 3,
+                encoding_id: 1,
+                language_id: 0,
+                end_codes: vec![4, 8, u16::MAX],
+                start_codes: vec![2, 6, u16::MAX],
+                id_deltas: vec![0, 0, 1],
+                id_range_offsets: vec![0, 4, 0],
+                glyph_id_array: vec![0, 42, 44],
+            }],
+            format12: vec![Format12Subtable {
+                platform_id: 3,
+                encoding_id: 10,
+                language_id: 0,
+                start_codes: vec![3, 10, 20, 0xFFFF, 0x1_0000],
+                end_codes: vec![5, 12, 23, 0xFFFF, 0x1_0003],
+                start_glyph_ids: vec![20, 30, 0, 40, 50],
+            }],
+            ..CmapTable::default()
+        };
+
+        for (first, last) in [
+            (0, 0x1_0003),
+            (2, 8),
+            (20, 23),
+            (0xFFFF, 0x1_0000),
+            (0x1_0001, 0x1_0002),
+        ] {
+            let expected = (first..=last)
+                .filter_map(|codepoint| {
+                    cmap.char_index(codepoint)
+                        .filter(|glyph| *glyph != 0)
+                        .map(|glyph| (codepoint, glyph))
+                })
+                .collect::<Vec<_>>();
+            let mut actual = Vec::new();
+            cmap.for_each_char_index_in_range(first, last, |codepoint, glyph| {
+                actual.push((codepoint, glyph));
+            });
+            assert_eq!(actual, expected, "range {first:#x}..={last:#x}");
+        }
+    }
 }

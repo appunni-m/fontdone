@@ -399,14 +399,14 @@ fn build_coverage(font_data: &FontData, glyph_count: u16) -> FaceCoverage {
     // that should NOT get blue zone alignment (afglobal.c).
     for (si, style) in STYLE_TABLE.iter().enumerate() {
         for range in style.non_base_ranges {
-            for cp in range.first..=range.last {
-                if let Some(gi) = font_data.cmap.char_index(cp) {
+            font_data
+                .cmap
+                .for_each_char_index_in_range(range.first, range.last, |_, gi| {
                     let gi = gi as usize;
-                    if gi != 0 && gi < ng && glyph_styles[gi] == si {
+                    if gi < ng && glyph_styles[gi] == si {
                         non_base[gi] = true;
                     }
-                }
-            }
+                });
         }
     }
 
@@ -464,16 +464,12 @@ fn compute_style_coverage(cmap: &CmapTable, num_glyphs: u16, glyph_styles: &mut 
 
     for (si, style) in STYLE_TABLE.iter().enumerate() {
         for range in style.uni_ranges {
-            let mut cp = range.first;
-            while cp <= range.last {
-                if let Some(gi) = cmap.char_index(cp) {
-                    let gi = gi as usize;
-                    if gi != 0 && gi < ng && glyph_styles[gi] == STYLE_UNASSIGNED {
-                        glyph_styles[gi] = si;
-                    }
+            cmap.for_each_char_index_in_range(range.first, range.last, |_, gi| {
+                let gi = gi as usize;
+                if gi < ng && glyph_styles[gi] == STYLE_UNASSIGNED {
+                    glyph_styles[gi] = si;
                 }
-                cp += 1;
-            }
+            });
         }
     }
 
@@ -490,4 +486,62 @@ fn compute_style_coverage(cmap: &CmapTable, num_glyphs: u16, glyph_styles: &mut 
 /// All other scripts use bottom-to-top (Latin default).
 pub fn top_to_bottom_hinting(tag: &str) -> bool {
     matches!(tag, "beng" | "deva" | "goth" | "guru" | "mong")
+}
+
+#[cfg(test)]
+mod coverage_iteration_tests {
+    use super::{STYLE_FALLBACK, STYLE_TABLE, STYLE_UNASSIGNED, compute_style_coverage};
+    use crate::tt::cmap::CmapTable;
+
+    #[test]
+    fn indexed_coverage_matches_the_scalar_range_walk() {
+        let mut codepoints = STYLE_TABLE
+            .iter()
+            .flat_map(|style| style.uni_ranges.iter())
+            .flat_map(|range| {
+                [
+                    range.first,
+                    range.first + (range.last - range.first) / 2,
+                    range.last,
+                ]
+            })
+            .collect::<Vec<_>>();
+        codepoints.sort_unstable();
+        codepoints.dedup();
+
+        // Several characters deliberately share glyphs so the test checks
+        // that the first matching script still wins for a glyph with multiple
+        // Unicode mappings.
+        let mappings = codepoints
+            .iter()
+            .enumerate()
+            .map(|(index, codepoint)| (*codepoint, (index % 31 + 1) as u16))
+            .collect::<Vec<_>>();
+        let cmap = CmapTable::from_sparse_mapping(0, 0, &mappings);
+        let glyph_count = 32;
+
+        let mut expected = vec![STYLE_UNASSIGNED; glyph_count];
+        for (style_index, style) in STYLE_TABLE.iter().enumerate() {
+            for range in style.uni_ranges {
+                for codepoint in range.first..=range.last {
+                    if let Some(glyph) = cmap.char_index(codepoint) {
+                        let glyph = glyph as usize;
+                        if glyph != 0 && glyph < glyph_count && expected[glyph] == STYLE_UNASSIGNED
+                        {
+                            expected[glyph] = style_index;
+                        }
+                    }
+                }
+            }
+        }
+        for style in &mut expected {
+            if *style == STYLE_UNASSIGNED {
+                *style = STYLE_FALLBACK;
+            }
+        }
+
+        let mut actual = vec![STYLE_UNASSIGNED; glyph_count];
+        compute_style_coverage(&cmap, glyph_count as u16, &mut actual);
+        assert_eq!(actual, expected);
+    }
 }
