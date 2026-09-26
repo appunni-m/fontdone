@@ -1853,14 +1853,14 @@ fn sync_active_size_state(face: &mut FT_Face) {
     face.size_metrics = face.inner.borrow().size_metrics().into();
 }
 
-/// Refresh the public fields affected by SFNT variation coordinates without
+/// Refresh the public fields affected by SFNT variation state without
 /// reconstructing the whole `FT_Face` record and its table wrappers.
 ///
-/// The parsed face, charmaps, stream, and table views remain valid when only
-/// design coordinates change. `face_to_ffi` reparses every table wrapper and
-/// replaces size handles, which is unnecessary for the common active-face
-/// update. Return `false` for cases whose identity or driver data may change;
-/// callers retain the full refresh path for those.
+/// The parsed face, charmaps, stream, and table views remain valid when design
+/// coordinates or a named instance change on the same SFNT face. `face_to_ffi`
+/// reparses every table wrapper and replaces size handles, which is unnecessary
+/// for this active-face update. Return `false` for cases whose identity or
+/// driver data may change; callers retain the full refresh path for those.
 fn refresh_sfnt_variation_fields(face: &mut FT_Face) -> bool {
     let has_vertical_header = face.sfnt_vhea.is_some();
     let (info, postscript_name, has_sfnt_names, vertical_header) = {
@@ -13187,9 +13187,29 @@ pub fn FT_Set_Named_Instance(face: Option<&mut FT_Face>, instance_index: FT_UInt
     let Ok(instance_index) = usize::try_from(instance_index) else {
         return FT_Err_Invalid_Argument as FT_Error;
     };
-    let result = face.inner.borrow_mut().set_named_instance(instance_index);
+    let result = face
+        .inner
+        .borrow_mut()
+        .set_named_instance_and_report_reuse(instance_index);
     match result {
-        Ok(()) => {
+        Ok(true) => {
+            face.face_index = face.inner.borrow().info().face_index as FT_Long;
+            if refresh_sfnt_variation_fields(face) {
+                FT_Err_Ok
+            } else {
+                let transform_matrix = face.transform_matrix;
+                let transform_delta = face.transform_delta;
+                let refcount = face.refcount;
+                let mut refreshed =
+                    face_to_ffi(face.inner.borrow().clone(), face.probe_only, face.svg_hooks);
+                refreshed.transform_matrix = transform_matrix;
+                refreshed.transform_delta = transform_delta;
+                refreshed.refcount = refcount;
+                *face = refreshed;
+                FT_Err_Ok
+            }
+        }
+        Ok(false) => {
             let transform_matrix = face.transform_matrix;
             let transform_delta = face.transform_delta;
             let refcount = face.refcount;

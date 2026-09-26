@@ -559,9 +559,19 @@ impl Face {
     /// Returns [`FontError`] when the requested instance does not exist or
     /// rebuilding the variable face fails.
     pub fn set_named_instance(&mut self, instance_index: usize) -> Result<(), FontError> {
-        self.font.set_named_instance(instance_index)?;
-        self.render_fonts.clear();
+        self.set_named_instance_and_report_reuse(instance_index)?;
         Ok(())
+    }
+
+    pub(crate) fn set_named_instance_and_report_reuse(
+        &mut self,
+        instance_index: usize,
+    ) -> Result<bool, FontError> {
+        let reused = self
+            .font
+            .set_named_instance_and_report_reuse(instance_index)?;
+        self.render_fonts.clear();
+        Ok(reused)
     }
 
     /// Set explicit OpenType design coordinates, equivalent to

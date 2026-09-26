@@ -5061,15 +5061,72 @@ impl Font {
     /// Returns [`FontError`] when the instance is unavailable or rebuilding
     /// the selected variable face fails.
     pub fn set_named_instance(&mut self, instance_index: usize) -> Result<(), FontError> {
+        self.set_named_instance_and_report_reuse(instance_index)
+            .map(|_| ())
+    }
+
+    /// Select an instance and report whether the existing parsed SFNT tables
+    /// were reused. The FFI uses this to refresh only variation-dependent face
+    /// fields instead of rebuilding the complete public face record.
+    pub(crate) fn set_named_instance_and_report_reuse(
+        &mut self,
+        instance_index: usize,
+    ) -> Result<bool, FontError> {
         if self.type1_multi_master.is_some() {
             // C parity: src/type1/t1load.c:T1_Reset_MM_Blend ignores the
             // instance index for Adobe MM faces and resets the design by
             // restoring the default WeightVector.
             self.set_type1_mm_weight_vector(None)?;
-            return Ok(());
+            return Ok(false);
         }
         let base_face_index = self.data.face_index & 0xFFFF;
         let next_face_index = base_face_index | (instance_index << 16);
+        let can_reuse_parsed_tables = matches!(self.face_kind, FaceKind::Sfnt)
+            && self.data.face_index == base_face_index
+            && !self.ignore_sbix
+            && !self.data.glyf_data.is_empty()
+            && self.data.cff.is_none()
+            && self.data.cff2.is_none()
+            && instance_index <= 0x7FFF
+            && self
+                .data
+                .fvar
+                .as_ref()
+                .is_some_and(|fvar| instance_index <= fvar.instance_count.into());
+        if can_reuse_parsed_tables {
+            let fvar = &self.data.fvar;
+            let design_coords = design_variation_coords_for_named_instance(fvar, instance_index);
+            let normalized_coords = normalized_variation_coords_for_named_instance(
+                fvar,
+                &self.data.avar,
+                instance_index,
+            );
+            let normalized_coords_16_16 = normalized_variation_coords_16_16_for_design_coords(
+                fvar,
+                &self.data.avar,
+                &design_coords,
+            );
+            let postscript_name = (instance_index != 0)
+                .then(|| named_instance_postscript_name(&self.data.name, fvar, instance_index))
+                .flatten();
+            let next_data = self.data.clone_with_variation_coordinates(
+                next_face_index,
+                design_coords,
+                normalized_coords,
+                normalized_coords_16_16,
+                false,
+                postscript_name,
+            );
+            let mut next = self.clone();
+            next.size_metrics = self.size_metrics.with_face_metrics(&next_data);
+            sync_active_size_metrics(&next_data, next.size_metrics);
+            next.data = Arc::clone(&next_data);
+            next.face_globals =
+                crate::autohint::globals::FaceGlobals::new(next_data, self.is_italic);
+            next.bytecode_context = BytecodeContextCache::default();
+            *self = next;
+            return Ok(true);
+        }
         let mut next = Self::truetype_face_with_load_mode(
             &self.data.raw_data,
             next_face_index,
@@ -5079,7 +5136,7 @@ impl Font {
         next.selected_charmap =
             carried_charmap_index(self.selected_charmap, next.data.cmap.charmaps.len());
         *self = next;
-        Ok(())
+        Ok(false)
     }
 
     /// Set explicit OpenType design coordinates, equivalent to
@@ -5147,6 +5204,7 @@ impl Font {
                     normalized_coords,
                     normalized_coords_16_16,
                     variation_coordinates_set,
+                    None,
                 );
                 let mut next = self.clone();
                 next.size_metrics = self.size_metrics.with_face_metrics(&next_data);

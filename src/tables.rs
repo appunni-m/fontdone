@@ -114,12 +114,12 @@ pub struct FontData {
 }
 
 impl FontData {
-    /// Clone a parsed face while replacing only its active variation state.
+    /// Clone a parsed face while replacing its active variation state.
     ///
     /// Variation tables and SFNT payloads do not change when design coordinates
-    /// move. Reusing their parsed form avoids reparsing the full font on every
-    /// `FT_Set_Var_Design_Coordinates` call; glyph outlines are face- and
-    /// coordinate-dependent, so their cache is reset.
+    /// move or a named instance is selected. Reusing their parsed form avoids
+    /// reparsing the full font on every variation update; glyph outlines are
+    /// face- and coordinate-dependent, so their cache is reset.
     pub(crate) fn clone_with_variation_coordinates(
         &self,
         face_index: usize,
@@ -127,9 +127,13 @@ impl FontData {
         normalized_coords: Vec<i16>,
         normalized_coords_16_16: Vec<i32>,
         variation_coordinates_set: bool,
+        postscript_name: Option<String>,
     ) -> Arc<Self> {
         let mut data = self.clone();
         data.face_index = face_index;
+        if let Some(postscript_name) = postscript_name {
+            data.name.postscript_name = Some(postscript_name);
+        }
         data.design_variation_coords = design_coords;
         data.normalized_variation_coords = normalized_coords;
         data.blend_variation_coords_16_16 = normalized_coords_16_16.clone();
