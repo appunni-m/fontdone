@@ -1853,6 +1853,79 @@ fn sync_active_size_state(face: &mut FT_Face) {
     face.size_metrics = face.inner.borrow().size_metrics().into();
 }
 
+/// Refresh the public fields affected by SFNT variation coordinates without
+/// reconstructing the whole `FT_Face` record and its table wrappers.
+///
+/// The parsed face, charmaps, stream, and table views remain valid when only
+/// design coordinates change. `face_to_ffi` reparses every table wrapper and
+/// replaces size handles, which is unnecessary for the common active-face
+/// update. Return `false` for cases whose identity or driver data may change;
+/// callers retain the full refresh path for those.
+fn refresh_sfnt_variation_fields(face: &mut FT_Face) -> bool {
+    let has_vertical_header = face.sfnt_vhea.is_some();
+    let (info, postscript_name, has_sfnt_names, vertical_header) = {
+        let inner = face.inner.borrow();
+        let font = inner.font();
+        let info = inner.info();
+        if info.face_flags & u32::try_from(FT_FACE_FLAG_SFNT).unwrap_or(0) == 0
+            || usize::try_from(face.face_index).ok() != Some(info.face_index)
+        {
+            return false;
+        }
+        let has_sfnt_names = (
+            font.has_selected_sfnt_family_name(),
+            font.has_selected_sfnt_subfamily_name(),
+        );
+        let vertical_header = has_vertical_header
+            .then(|| {
+                font.load_sfnt_table(0x76686561, 0, None)
+                    .ok()
+                    .and_then(|data| parse_tt_vertheader(&data))
+                    .map(|mut header| {
+                        apply_mvar_vertical_header_deltas(
+                            &mut header,
+                            font.mvar_vertical_header_deltas(),
+                        );
+                        Box::new(header)
+                    })
+            })
+            .flatten();
+        (
+            info,
+            font.postscript_name().map(str::to_owned),
+            has_sfnt_names,
+            vertical_header,
+        )
+    };
+
+    face.face_flags = (face.face_flags & !(FT_FACE_FLAG_VARIATION as FT_Long))
+        | (FT_Long::from(info.face_flags & u32::try_from(FT_FACE_FLAG_VARIATION).unwrap_or(0)));
+    face.ascender = info.ascender;
+    face.descender = info.descender;
+    face.height = info.height;
+    face.max_advance_width = info.max_advance_width as FT_Short;
+    face.max_advance_height = info.max_advance_height as FT_Short;
+    face.underline_position = info.underline_position;
+    face.underline_thickness = info.underline_thickness;
+    let is_sfnt = info.face_flags & u32::try_from(FT_FACE_FLAG_SFNT).unwrap_or(0) != 0;
+    face.family_name = if is_sfnt && !has_sfnt_names.0 {
+        None
+    } else {
+        Some(info.family_name)
+    };
+    face.style_name = if is_sfnt && !has_sfnt_names.1 {
+        None
+    } else {
+        Some(info.style_name)
+    };
+    face.postscript_name = postscript_name;
+    if has_vertical_header {
+        face.sfnt_vhea = vertical_header;
+    }
+    sync_active_size_state(face);
+    true
+}
+
 fn sync_active_charmap_index(face: &mut FT_Face) {
     face.active_charmap_index = face
         .inner
@@ -13193,7 +13266,11 @@ pub fn FT_Set_Var_Design_Coordinates(
         return if num_coords == 0 {
             let result = face.inner.borrow_mut().set_var_design_coordinates(&[]);
             match result {
-                Ok(()) => {
+                Ok(false) => FT_Err_Ok,
+                Ok(true) => {
+                    if refresh_sfnt_variation_fields(face) {
+                        return FT_Err_Ok;
+                    }
                     let transform_matrix = face.transform_matrix;
                     let transform_delta = face.transform_delta;
                     let refcount = face.refcount;
@@ -13222,20 +13299,37 @@ pub fn FT_Set_Var_Design_Coordinates(
     if coords.len() < num_coords {
         return FT_Err_Invalid_Argument as FT_Error;
     }
-    let coords_i32 = coords[..num_coords]
-        .iter()
-        .copied()
-        .map(i32::try_from)
-        .collect::<Result<Vec<_>, _>>();
-    let Ok(coords_i32) = coords_i32 else {
-        return FT_Err_Invalid_Argument as FT_Error;
+    const INLINE_AXIS_CAPACITY: usize = 8;
+    let result = if num_coords <= INLINE_AXIS_CAPACITY {
+        let mut inline_coords = [0_i32; INLINE_AXIS_CAPACITY];
+        for (index, coord) in coords[..num_coords].iter().copied().enumerate() {
+            let Ok(coord) = i32::try_from(coord) else {
+                return FT_Err_Invalid_Argument as FT_Error;
+            };
+            inline_coords[index] = coord;
+        }
+        face.inner
+            .borrow_mut()
+            .set_var_design_coordinates(&inline_coords[..num_coords])
+    } else {
+        let coords_i32 = coords[..num_coords]
+            .iter()
+            .copied()
+            .map(i32::try_from)
+            .collect::<Result<Vec<_>, _>>();
+        let Ok(coords_i32) = coords_i32 else {
+            return FT_Err_Invalid_Argument as FT_Error;
+        };
+        face.inner
+            .borrow_mut()
+            .set_var_design_coordinates(&coords_i32)
     };
-    let result = face
-        .inner
-        .borrow_mut()
-        .set_var_design_coordinates(&coords_i32);
     match result {
-        Ok(()) => {
+        Ok(false) => FT_Err_Ok,
+        Ok(true) => {
+            if refresh_sfnt_variation_fields(face) {
+                return FT_Err_Ok;
+            }
             let transform_matrix = face.transform_matrix;
             let transform_delta = face.transform_delta;
             let refcount = face.refcount;

@@ -114,6 +114,36 @@ pub struct FontData {
 }
 
 impl FontData {
+    /// Clone a parsed face while replacing only its active variation state.
+    ///
+    /// Variation tables and SFNT payloads do not change when design coordinates
+    /// move. Reusing their parsed form avoids reparsing the full font on every
+    /// `FT_Set_Var_Design_Coordinates` call; glyph outlines are face- and
+    /// coordinate-dependent, so their cache is reset.
+    pub(crate) fn clone_with_variation_coordinates(
+        &self,
+        face_index: usize,
+        design_coords: Vec<i32>,
+        normalized_coords: Vec<i16>,
+        normalized_coords_16_16: Vec<i32>,
+        variation_coordinates_set: bool,
+    ) -> Arc<Self> {
+        let mut data = self.clone();
+        data.face_index = face_index;
+        data.design_variation_coords = design_coords;
+        data.normalized_variation_coords = normalized_coords;
+        data.blend_variation_coords_16_16 = normalized_coords_16_16.clone();
+        data.normalized_variation_coords_16_16 = normalized_coords_16_16;
+        data.variation_coordinates_set = variation_coordinates_set;
+        data.glyph_cache = RefCell::new(HashMap::new());
+        data.self_arc = OnceLock::new();
+
+        #[allow(clippy::arc_with_non_send_sync)]
+        let data = Arc::new(data);
+        let _ = data.self_arc.set(Arc::clone(&data));
+        data
+    }
+
     /// Copy parsed tables into an independent face with fresh mutable state.
     ///
     /// This is used by static-face variants so opening a second size does not

@@ -566,10 +566,12 @@ impl Face {
 
     /// Set explicit OpenType design coordinates, equivalent to
     /// `FT_Set_Var_Design_Coordinates`.
-    pub(crate) fn set_var_design_coordinates(&mut self, coords: &[i32]) -> Result<(), FontError> {
-        self.font.set_var_design_coordinates(coords)?;
-        self.render_fonts.clear();
-        Ok(())
+    pub(crate) fn set_var_design_coordinates(&mut self, coords: &[i32]) -> Result<bool, FontError> {
+        let changed = self.font.set_var_design_coordinates(coords)?;
+        if changed {
+            self.render_fonts.clear();
+        }
+        Ok(changed)
     }
 
     pub(crate) fn set_truetype_interpreter_version(&mut self, version: u32) {
