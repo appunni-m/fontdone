@@ -188,7 +188,7 @@ scripts/test_publish_release.py	6083	file	70a4d8fc6b723d80a1e36d574aff826e4824fc
 scripts/test_rust_consumer.py	1680	file	2c22fc0571546f0a724dcbc874a01ca2409ca97e15b9cb70684ff0cb9a934812	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/test_wasm_consumer.py	1995	file	5bc99613afeb0e3b8e6af09a3e8ff1356a284add969bbe0106b002965f2cef60	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
 scripts/verify_release.py	17161	file	a9bf7780c8ee958982a7e9bfee7404c4c1e8d003a445216c6a9ac2a1fb1f9d65	-	keep-tooling	R06	Maintained oracle, audit, benchmark, or deterministic generation tooling.
-src/api.rs	73458	file	58e60b0fee16ef5ec2762c34aa4ff632ab5c46a097f46f77210b928074447cdf	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/api.rs	73919	file	87720de972fe35d2dc83ba35c2b8232f58ff4c9c97a2efdde4e84643350018ce	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/autohint/blue_strings.rs	54107	file	bf3bb9470d2cb549c05231b05c6c0b54b5f74297ab3dd827a81c4c9cc66c7fbc	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/autohint/cjk.rs	40498	file	a3098f70f15dcdaa97361f106bd2bfac91d74597021879e89aa6eec2ba3592a0	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/autohint/coverage.rs	6853	file	92d7d81221b479f6b6305cc4b73e57310fdf328b26650df62a6529527f39b51f	-	keep-runtime	R01	Published pure-Rust runtime source.
@@ -203,18 +203,18 @@ src/error.rs	7109	file	588145649beea19e69f8086de4452a01f956af061bf592806e3784b85
 src/ffi/constants.rs	6160	file	748c42c4e60ed735c233441bced646f8ef5eeaf9764e5e7b5de5e730a0435410	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/convert.rs	15924	file	ebad97255d657d515ac35e621dadd3709a6bfede00f1ca9fb6a18eae5187febf	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/generated_constants.rs	48665	file	923d866b8f24e0ecb80dc841eb556b6f528532ddbfb585ee349f5d7354123a50	-	keep-generated-source	R10	Generated source required to build the runtime crate without the offline oracle.
-src/ffi/handles.rs	597070	file	b8b52e4c52098cdc0a950e27d0996303a06582aae674ca5b18bac73eb2d7445e	-	keep-runtime	R01	Published pure-Rust runtime source.
-src/ffi/mod.rs	12865	file	56e8657a772115370b550a4b126d3da2ff27b87f263d0fe9bdeaa88d3a2e8bcf	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/ffi/handles.rs	602511	file	967ac539fb39207a1125605a5e568a5db17440c916e1ec3c2a11f7f56d25c0e6	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/ffi/mod.rs	12895	file	5a3adf005120c5ffc67b1c3c205767170388a6c1aa4c5c1eada3e8e1bc3373d8	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/types.rs	55260	file	f4624cb043d22f2863bcbcc9b994546d46f6b24e847af09359c39684c13f3bc6	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/fixed.rs	16947	file	ad674a41af984b412c943159ce0363ec8856ee0cfc68b87ef6d460ca49f6ef86	-	keep-runtime	R01	Published pure-Rust runtime source.
-src/font.rs	371129	file	3793a8b84e8cc654ebbbbc26b9617859e4d08ff0864c021c8902ed9127bf274e	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/font.rs	374715	file	44f88d2e0f7d73795c728e5617acfc4d42d880ee57c7875d09dfa497a8baeb9f	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/grays.rs	40222	file	587bbbd06f6d92dcb4e285f4811a1082391be63475745542b98090067cb47273	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/lib.rs	4410	file	00d8e5db952162c50d00b4a860503fed82105c8f1dc2a654c6c1fe26d3baffa5	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/outline.rs	1929	file	041ef18b3895b7801bfb78766da6056245bceb976f0b08b81fa49510f2ed3c0d	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/pfr.rs	14061	file	269f7a3a7d2541749d5a417708e61c5b5fe0a9f455b705fec6393c11501f8a84	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/render.rs	99403	file	4e94ae93c44d0c3a29f2671f5f08af2530cf48a37d2ebc3dc0bdeb211abff33e	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/scaler.rs	88507	file	0daeda0ed05baa6f7295ced5f9904514fae0b77076e5411241cf25439d4860ab	-	keep-runtime	R01	Published pure-Rust runtime source.
-src/tables.rs	17152	file	4fd1c795e873e368424f439daeed642ac9d50f407ec3530b018c1b25c3119498	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/tables.rs	17156	file	d0e87447bf89f6518c16a6a968f6384c13a3bcf47570bbe04cb0a46aa6b6600a	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/avar.rs	4947	file	941bfcbd0fc2575a8c5c735f1815ee5e2619ec519590225b0d8a31ef4ec45c55	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/cff.rs	62944	file	71da27cef54e9c41ff8e6e8ca788b3c215e57398b38dba73050a4f16000a547a	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/tt/cmap.rs	38266	file	af6ec13dd113ab5efa4009df09617440169917984296836c00726e05b68cac5e	-	keep-runtime	R01	Published pure-Rust runtime source.

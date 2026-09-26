@@ -4,9 +4,7 @@
     reason = "implementation routes are documented on their public ffi reexports"
 )]
 
-#[cfg(any(test, feature = "abi-test-support"))]
-use std::cell::Cell;
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::collections::BTreeMap;
 use std::ffi::c_void;
 use std::ffi::{CStr, CString};
@@ -1194,11 +1192,14 @@ pub struct FT_Face {
     no_stem_darkening: i32,
     random_seed: FT_Int32,
     increase_x_height: FT_UInt,
+    increase_x_height_configured: bool,
     // FreeType constructs AF_FaceGlobals only when the auto-hinter or the
     // public glyph-to-script-map property needs it. Building this map scans
     // every configured script's Unicode ranges, so keep the face-owned array
-    // lazy while preserving its stable allocation once exposed to callers.
+    // lazy. Ordinary glyph loads use FaceGlobals' internal coverage only when
+    // autohinting needs it; this public array is created only when requested.
     glyph_to_script_map: OnceLock<Box<[FT_UShort]>>,
+    glyph_to_script_map_exposed: Cell<bool>,
     svg_hooks: Option<SVG_RendererHooks>,
     refcount: usize,
 }
@@ -11564,6 +11565,7 @@ pub fn FT_Property_Get_GlyphToScriptMap(
     let Some(face) = face else {
         return FT_Err_Invalid_Face_Handle as FT_Error;
     };
+    face.glyph_to_script_map_exposed.set(true);
     value.face = (face as *const FT_Face).cast_mut().cast();
     value.map = face.glyph_to_script_map().as_ptr().cast_mut();
     FT_Err_Ok
@@ -11604,6 +11606,7 @@ pub fn FT_Glyph_To_Script_Map_Mutate_For_Test(
         let _ = face.glyph_to_script_map.set(map);
     }
     let entry = face.glyph_to_script_map.get_mut()?.get_mut(index)?;
+    face.glyph_to_script_map_exposed.set(true);
     let initial = *entry;
     *entry = value;
     Some(initial)
@@ -11819,6 +11822,7 @@ pub fn FT_Property_Set_IncreaseXHeight(
         return FT_Err_Invalid_Face_Handle as FT_Error;
     };
     face.increase_x_height = value.limit;
+    face.increase_x_height_configured = true;
     FT_Err_Ok
 }
 
@@ -13790,8 +13794,51 @@ pub fn FT_Face_Incremental_Interface(face: &FT_Face) -> FT_Incremental_Interface
 mod memory_face_variant_tests {
     use super::{
         FT_Err_Ok, FT_New_Memory_Face, FT_New_Memory_Face_From_Source, FT_New_Memory_Face_Owned,
-        FT_Request_Size, FT_SIZE_REQUEST_TYPE_NOMINAL, FT_Size_RequestRec, FT_UInt,
+        FT_Prop_GlyphToScriptMap, FT_Property_Get_GlyphToScriptMap, FT_Request_Size,
+        FT_SIZE_REQUEST_TYPE_NOMINAL, FT_Size_RequestRec, FT_UInt,
     };
+
+    #[test]
+    fn default_glyph_load_does_not_build_public_glyph_style_map() {
+        let data = include_bytes!("../../tests/fixtures/input/fonts/DejaVuSans.ttf");
+        let library = super::FT_Init_FreeType();
+        let mut face = FT_New_Memory_Face(&library, data, 0, 16.0)
+            .unwrap_or_else(|error| panic!("the SFNT fixture should load: {error:?}"));
+        let request = FT_Size_RequestRec {
+            type_: FT_SIZE_REQUEST_TYPE_NOMINAL as i32,
+            width: 16 * 64,
+            height: 16 * 64,
+            horiResolution: FT_UInt::default(),
+            vertResolution: FT_UInt::default(),
+        };
+        assert_eq!(
+            FT_Request_Size(Some(&mut face), Some(&request)),
+            FT_Err_Ok as super::FT_Error
+        );
+
+        assert!(face.glyph_to_script_map.get().is_none());
+        assert!(super::FT_Load_Glyph(&face, 1, 0).is_ok());
+        assert!(face.glyph_to_script_map.get().is_none());
+        assert!(!face.glyph_to_script_map_exposed.get());
+
+        let mut property = FT_Prop_GlyphToScriptMap {
+            face: std::ptr::null_mut(),
+            map: std::ptr::null_mut(),
+        };
+        assert_eq!(
+            FT_Property_Get_GlyphToScriptMap(
+                Some(&library),
+                Some("autofitter"),
+                Some("glyph-to-script-map"),
+                Some(&face),
+                Some(&mut property),
+            ),
+            FT_Err_Ok as super::FT_Error
+        );
+        assert!(!property.map.is_null());
+        assert!(face.glyph_to_script_map.get().is_some());
+        assert!(face.glyph_to_script_map_exposed.get());
+    }
 
     #[test]
     fn owned_memory_face_shares_and_retains_the_source_bytes() {
@@ -14105,7 +14152,9 @@ fn face_to_ffi(
         no_stem_darkening: -1,
         random_seed: -1,
         increase_x_height: 0,
+        increase_x_height_configured: false,
         glyph_to_script_map: OnceLock::new(),
+        glyph_to_script_map_exposed: Cell::new(false),
         svg_hooks,
         refcount: 1,
     };
@@ -15587,9 +15636,10 @@ fn ft_load_glyph_core(
     } else {
         None
     };
-    inner
-        .font()
-        .sync_autohint_property_state(face.glyph_to_script_map(), face.increase_x_height);
+    let font = inner.font();
+    if face.glyph_to_script_map_exposed.get() || face.increase_x_height_configured {
+        font.sync_autohint_property_state(face.glyph_to_script_map(), face.increase_x_height);
+    }
     inner
         .load_glyph_with_transform(glyph_index, flags, transform)
         .map(|slot| slot_to_ffi(face, slot, flags))
@@ -15723,9 +15773,10 @@ pub fn FT_Get_Advance(
         ));
     }
     let inner = face.inner.borrow();
-    inner
-        .font()
-        .sync_autohint_property_state(face.glyph_to_script_map(), face.increase_x_height);
+    let font = inner.font();
+    if face.glyph_to_script_map_exposed.get() || face.increase_x_height_configured {
+        font.sync_autohint_property_state(face.glyph_to_script_map(), face.increase_x_height);
+    }
     let slot = inner.load_glyph(glyph_index, flags).map_err(error_to_ft)?;
     let advance = if flags.contains(api::LoadFlags::VERTICAL_LAYOUT) {
         slot.advance.y
