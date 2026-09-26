@@ -13655,7 +13655,10 @@ pub fn FT_New_Memory_Face_From_Source(
     }
 
     let source = source_face.inner.borrow();
-    if source.font().data.raw_data.as_slice() != data {
+    let source_data = source.font().data.raw_data.as_slice();
+    if (source_data.as_ptr() != data.as_ptr() || source_data.len() != data.len())
+        && source_data != data
+    {
         return Ok(None);
     }
     let Some(mut inner) = source.clone_for_variant() else {
