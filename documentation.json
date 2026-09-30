@@ -1,7 +1,7 @@
 {
   "project": "fontdone",
   "version": "2.14.3-alpha.12",
-  "release_revision": "3f0727bbd7873541482eacb9fdfd181b865f5482",
+  "release_revision": "fccab6837ccc959f49a7a5d13d058466fbf204a0",
   "repository": "appunni-m/fontdone",
   "site_url": "https://appunni-m.github.io/fontdone/",
   "pages": [
@@ -106,9 +106,9 @@
     "font_input": "tests/fixtures/input/fonts/NotoSans-Regular.ttf"
   },
   "published_release": {
-    "version": "2.14.3-alpha.11",
-    "revision": "3f0727bbd7873541482eacb9fdfd181b865f5482",
-    "published_at": "2026-09-16T13:10:41Z"
+    "version": "2.14.3-alpha.12",
+    "revision": "fccab6837ccc959f49a7a5d13d058466fbf204a0",
+    "published_at": "2026-09-30T12:24:41Z"
   },
   "registries": [
     "cargo",

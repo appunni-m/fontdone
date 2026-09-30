@@ -5,7 +5,7 @@ and a native C SDK on GitHub Releases. The internal `fontdone-c-abi` and
 `fontdone-wasm` Cargo packages have `publish = false`. There is no PyPI package.
 
 <!-- release:summary -->
-**Latest release: [2.14.3-alpha.11](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.11).**
+**Latest release: [2.14.3-alpha.12](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.12).**
 <!-- /release:summary -->
 
 Publication uses this repository's tag-triggered `release.yml` and GitHub OIDC.
@@ -89,7 +89,7 @@ For the published release, registry consumers use:
 <!-- release:cargo -->
 ```toml
 [dependencies]
-fontdone = "=2.14.3-alpha.11"
+fontdone = "=2.14.3-alpha.12"
 ```
 <!-- /release:cargo -->
 

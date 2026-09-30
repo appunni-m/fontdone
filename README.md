@@ -7,7 +7,7 @@
 [![Latest release](https://img.shields.io/github/v/release/appunni-m/fontdone?include_prereleases&sort=semver)](https://github.com/appunni-m/fontdone/releases)
 
 <!-- release:summary -->
-**Latest release: [2.14.3-alpha.11](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.11).**
+**Latest release: [2.14.3-alpha.12](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.12).**
 <!-- /release:summary -->
 
 A pure Rust font engine for glyph rendering and metrics, with selected
@@ -32,7 +32,7 @@ The Rust crate requires Rust 1.87 or newer.
 <!-- release:cargo -->
 ```toml
 [dependencies]
-fontdone = "=2.14.3-alpha.11"
+fontdone = "=2.14.3-alpha.12"
 ```
 <!-- /release:cargo -->
 

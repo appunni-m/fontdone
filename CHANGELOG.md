@@ -5,7 +5,7 @@ synchronized version for the public `fontdone` Cargo crate, the native C SDK,
 and the `fontdone` JavaScript npm package. The C and raw-WASM Cargo packages are
 internal workspace build targets.
 
-## 2.14.3-alpha.12 (Unreleased)
+## 2.14.3-alpha.12 (2026-09-30)
 
 - Add static SFNT memory-face reuse for unchanged sources, with independent
   per-face size and charmap metadata state, plus an owned memory-stream entry

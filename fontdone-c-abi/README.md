@@ -1,7 +1,7 @@
 # C and C++ integration
 
 <!-- release:summary -->
-**Latest release: [2.14.3-alpha.11](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.11).**
+**Latest release: [2.14.3-alpha.12](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.12).**
 <!-- /release:summary -->
 
 Use the prebuilt native SDK from GitHub Releases. It contains headers, a
@@ -12,7 +12,7 @@ prebuilt SDK targets **macOS ARM64**. Other targets require a
 ## Install the SDK
 
 <!-- release:sdk -->
-[Download the macOS ARM64 C SDK](https://github.com/appunni-m/fontdone/releases/download/v2.14.3-alpha.11/fontdone-c-abi-2.14.3-alpha.11-aarch64-apple-darwin.tar.gz).
+[Download the macOS ARM64 C SDK](https://github.com/appunni-m/fontdone/releases/download/v2.14.3-alpha.12/fontdone-c-abi-2.14.3-alpha.12-aarch64-apple-darwin.tar.gz).
 <!-- /release:sdk -->
 
 Extract the downloaded archive into a directory of your choice. The archive

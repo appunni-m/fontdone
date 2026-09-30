@@ -1,7 +1,7 @@
 # Rust integration guide
 
 <!-- release:summary -->
-**Latest release: [2.14.3-alpha.11](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.11).**
+**Latest release: [2.14.3-alpha.12](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.12).**
 <!-- /release:summary -->
 
 This guide covers the two safe Rust surfaces:
@@ -19,7 +19,7 @@ hosts should use the [`fontdone-wasm` guide](../fontdone-wasm/README.md).
 <!-- release:cargo -->
 ```toml
 [dependencies]
-fontdone = "=2.14.3-alpha.11"
+fontdone = "=2.14.3-alpha.12"
 ```
 <!-- /release:cargo -->
 
@@ -31,7 +31,7 @@ This alpha requires Rust 1.87 or newer. Different `alpha.N` releases are not
 API- or ABI-compatible by promise.
 
 <!-- release:rust-api -->
-[Rust API reference](https://docs.rs/fontdone/2.14.3-alpha.11/fontdone/).
+[Rust API reference](https://docs.rs/fontdone/2.14.3-alpha.12/fontdone/).
 <!-- /release:rust-api -->
 
 ## 2. Compact Rust API

@@ -1,7 +1,7 @@
 # fontdone
 
 <!-- release:summary -->
-**Latest release: [2.14.3-alpha.11](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.11).**
+**Latest release: [2.14.3-alpha.12](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.12).**
 <!-- /release:summary -->
 
 `fontdone` is the JavaScript npm package for the pure-Rust fontdone engine. It
@@ -16,7 +16,7 @@ engine.
 
 <!-- release:npm -->
 ```sh
-npm install fontdone@2.14.3-alpha.11
+npm install fontdone@2.14.3-alpha.12
 ```
 <!-- /release:npm -->
 
