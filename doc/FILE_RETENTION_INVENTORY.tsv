@@ -228,7 +228,7 @@ src/error.rs	6832	file	380effd89d758f2a51991cbc54d84ec8c118f079a21a88ff19b4fcaa9
 src/ffi/constants.rs	6160	file	748c42c4e60ed735c233441bced646f8ef5eeaf9764e5e7b5de5e730a0435410	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/convert.rs	15752	file	3fb052356d12b792677671259ea99918c0ae48ab7f1dd5dc965a8d20915e691e	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/generated_constants.rs	48665	file	923d866b8f24e0ecb80dc841eb556b6f528532ddbfb585ee349f5d7354123a50	-	keep-generated-source	R10	Generated source required to build the runtime crate without the offline oracle.
-src/ffi/handles.rs	602570	file	63da254153f2192a70b71e9dbc070bea411c5aa2097ab9139a1f8bd7464d6674	-	keep-runtime	R01	Published pure-Rust runtime source.
+src/ffi/handles.rs	605833	file	3577e2515a29e3b1f22becd1b329dc9fa3a843d536710035163f36fd8bb5657e	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/mod.rs	12895	file	535c17962f4f09cc1551a237b88af9b43bbb9ac6a32c3ed8c896fa37c300155b	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/ffi/types.rs	55260	file	f4624cb043d22f2863bcbcc9b994546d46f6b24e847af09359c39684c13f3bc6	-	keep-runtime	R01	Published pure-Rust runtime source.
 src/fixed.rs	16947	file	ad674a41af984b412c943159ce0363ec8856ee0cfc68b87ef6d460ca49f6ef86	-	keep-runtime	R01	Published pure-Rust runtime source.

@@ -13583,7 +13583,31 @@ pub fn FT_New_Memory_Face(
             face.gx_validator_available = gx_validator_available;
             face
         })
-        .map_err(error_to_ft)
+        .map_err(|error| memory_face_open_error_to_ft(error, data))
+}
+
+const UNKNOWN_SFNT_PROBE_MIN_BYTES: usize = 17;
+
+fn memory_face_open_error_to_ft(error: crate::error::FontError, data: &[u8]) -> FT_Error {
+    if matches!(
+        &error,
+        crate::error::FontError::InvalidFont(message)
+            if message.starts_with("unknown sfVersion")
+    ) && data.first() != Some(&0x80)
+    {
+        // FreeType 2.14.3 continues its default driver probe after the SFNT
+        // driver rejects an unknown signature. A short fixed-header read
+        // reports Invalid_Stream_Operation below 17 bytes; once the probe is
+        // complete, the rejecting driver reports Invalid_File_Format. PFB
+        // sources start with 0x80 and belong to the Type 1 probe, whose error
+        // must keep the parser's existing classification.
+        return if data.len() < UNKNOWN_SFNT_PROBE_MIN_BYTES {
+            FT_Err_Invalid_Stream_Operation as FT_Error
+        } else {
+            FT_Err_Invalid_File_Format as FT_Error
+        };
+    }
+    error_to_ft(error)
 }
 
 /// Opens a memory face while retaining the reference-counted source allocation.
@@ -13710,8 +13734,9 @@ pub fn FT_New_Memory_Face_From_Source(
 #[cfg(test)]
 mod memory_face_variant_tests {
     use super::{
-        FT_Err_Ok, FT_New_Memory_Face, FT_New_Memory_Face_From_Source, FT_New_Memory_Face_Owned,
-        FT_Request_Size, FT_SIZE_REQUEST_TYPE_NOMINAL, FT_Size_RequestRec, FT_UInt,
+        FT_Err_Invalid_File_Format, FT_Err_Invalid_Stream_Operation, FT_Err_Ok, FT_New_Memory_Face,
+        FT_New_Memory_Face_From_Source, FT_New_Memory_Face_Owned, FT_Request_Size,
+        FT_SIZE_REQUEST_TYPE_NOMINAL, FT_Size_RequestRec, FT_UInt,
     };
 
     thread_local! {
@@ -13738,6 +13763,24 @@ mod memory_face_variant_tests {
             thread.join().is_ok(),
             "dropping a cached face after the size registry TLS destructor must not panic"
         );
+    }
+
+    #[test]
+    fn unknown_memory_face_signature_preserves_default_driver_probe_errors() {
+        let library = super::FT_Init_FreeType();
+        let short = b"invalid font dat";
+        let complete_probe = b"invalid font data";
+
+        assert_eq!(short.len(), super::UNKNOWN_SFNT_PROBE_MIN_BYTES - 1);
+        assert_eq!(complete_probe.len(), super::UNKNOWN_SFNT_PROBE_MIN_BYTES);
+        assert!(matches!(
+            FT_New_Memory_Face(&library, short, 0, 20.0),
+            Err(error) if error == FT_Err_Invalid_Stream_Operation as super::FT_Error
+        ));
+        assert!(matches!(
+            FT_New_Memory_Face(&library, complete_probe, 0, 20.0),
+            Err(error) if error == FT_Err_Invalid_File_Format as super::FT_Error
+        ));
     }
 
     #[test]
