@@ -1159,6 +1159,7 @@ pub struct FT_Face {
     pub active_charmap_index: FT_Int,
     pub charmaps: Box<[FT_CharMapRecPublic]>,
     memory_stream: Box<FT_StreamRec>,
+    owned_memory_source: Option<Rc<Vec<u8>>>,
     inner: Rc<RefCell<api::Face>>,
     sizes: Rc<RefCell<FaceSizeState>>,
     // `FT_PARAM_TAG_INCREMENTAL` stores this borrowed interface pointer on the
@@ -1254,6 +1255,11 @@ impl FT_Face {
         // unchanged until the face is destroyed.
         self.memory_stream.base = data.as_ptr().cast_mut();
         self.memory_stream.size = FT_ULong::try_from(data.len()).unwrap_or(FT_ULong::MAX);
+    }
+
+    fn retain_owned_memory_stream_source(&mut self, data: Rc<Vec<u8>>) {
+        self.retain_memory_stream_source(data.as_slice());
+        self.owned_memory_source = Some(data);
     }
 }
 
@@ -13577,6 +13583,246 @@ pub fn FT_New_Memory_Face(
         .map_err(error_to_ft)
 }
 
+/// Opens a memory face while retaining the reference-counted source allocation.
+///
+/// The parsed face keeps its normal independent Rust representation; this
+/// entry point makes the exposed memory stream safe to keep with the face even
+/// after the caller drops its own `Rc`.
+pub fn FT_New_Memory_Face_Owned(
+    library: &FT_Library,
+    data: Rc<Vec<u8>>,
+    face_index: FT_Long,
+    size_pt: f32,
+) -> Result<FT_Face, FT_Error> {
+    let mut face = FT_New_Memory_Face(library, data.as_slice(), face_index, size_pt)?;
+    face.retain_owned_memory_stream_source(data);
+    Ok(face)
+}
+
+/// Recreate a face from an unchanged static SFNT source without reparsing its
+/// tables. Returns `Ok(None)` when the source, selector, or face state is not
+/// eligible; callers should then use [`FT_New_Memory_Face`]. The returned
+/// face owns independent mutable state and can be sized or configured without
+/// affecting `source_face`. When `source_face` retains the matching input via
+/// [`FT_New_Memory_Face_Owned`], the returned face retains it too; otherwise
+/// the caller must keep `data` alive for the returned face's lifetime.
+pub fn FT_New_Memory_Face_From_Source(
+    library: &FT_Library,
+    source_face: &FT_Face,
+    data: &[u8],
+    face_index: FT_Long,
+) -> Result<Option<FT_Face>, FT_Error> {
+    let (face_index, probe_only) = c_face_index_to_core(face_index)?;
+    if probe_only
+        || library.truetype_interpreter_version != 40
+        || FT_Long::try_from(face_index).ok() != Some(source_face.face_index)
+    {
+        return Ok(None);
+    }
+
+    let source = source_face.inner.borrow();
+    let source_data = source.font().data.raw_data.as_slice();
+    if (source_data.as_ptr() != data.as_ptr() || source_data.len() != data.len())
+        && source_data != data
+    {
+        return Ok(None);
+    }
+    let Some(mut inner) = source.clone_for_variant() else {
+        return Ok(None);
+    };
+    drop(source);
+
+    inner.set_truetype_interpreter_version(library.truetype_interpreter_version);
+    inner.set_cff_random_seed(library.cff_random_seed);
+    inner.reset_size_to_undefined();
+
+    let size_state = inner.active_size_state();
+    let size_metrics = inner.size_metrics().into();
+    let active_charmap_index = inner
+        .charmap_index()
+        .and_then(|index| FT_Int::try_from(index).ok())
+        .unwrap_or(-1);
+    let inner = Rc::new(RefCell::new(inner));
+    let sizes = Rc::new(RefCell::new(FaceSizeState::new(size_state)));
+    let active_size = sizes.borrow().active_handle();
+
+    let mut face = source_face.clone();
+    face.size = active_size;
+    face.size_metrics = size_metrics;
+    face.active_charmap_index = active_charmap_index;
+    face.inner = inner;
+    face.sizes = sizes;
+    face.memory_stream.pos = FT_ULong::from(
+        face.inner
+            .borrow()
+            .font()
+            .data
+            .table_directory
+            .record(u32::from_be_bytes(*b"cvt "))
+            .map_or(0, |record| record.offset),
+    );
+    face.incremental_interface = ptr::null_mut();
+    face.probe_only = false;
+    face.open_type_validator_available = FT_Library_Has_Module(Some(library), "otvalid");
+    face.gx_validator_available = FT_Library_Has_Module(Some(library), "gxvalid");
+    face.cpal = source_face.cpal.as_ref().map(|state| {
+        let mut state = state.borrow().clone();
+        state.active_palette_index = 0;
+        state.active_palette = state.palettes.first().cloned().unwrap_or_default();
+        Rc::new(RefCell::new(state))
+    });
+    face.have_foreground_color = Rc::new(RefCell::new(false));
+    face.foreground_color = Rc::new(RefCell::new(FT_Color::default()));
+    face.afm_metrics = Rc::new(RefCell::new(None));
+    face.transform_matrix = FT_Matrix {
+        xx: 1 << 16,
+        xy: 0,
+        yx: 0,
+        yy: 1 << 16,
+    };
+    face.transform_delta = FT_Vector { x: 0, y: 0 };
+    face.no_stem_darkening = -1;
+    face.random_seed = -1;
+    face.increase_x_height = 0;
+    face.svg_hooks = library.svg_hooks;
+    face.refcount = 1;
+    if let Some(owned_source) = source_face
+        .owned_memory_source
+        .as_ref()
+        .filter(|owned_source| owned_source.as_slice() == data)
+    {
+        face.retain_owned_memory_stream_source(Rc::clone(owned_source));
+    } else {
+        face.owned_memory_source = None;
+        face.retain_memory_stream_source(data);
+    }
+    // `FT_Face::clone` allocates new boxed charmap records. Metadata lookups
+    // are keyed by each record's address, so register the clone's records
+    // against this face's matching metadata just like `charmaps_to_ffi` does.
+    register_charmap_metadata(&face.charmaps, &face.charmap_metadata);
+    register_face_size_handles(&face);
+    Ok(Some(face))
+}
+
+#[cfg(test)]
+mod memory_face_variant_tests {
+    use super::{
+        FT_Err_Ok, FT_New_Memory_Face, FT_New_Memory_Face_From_Source, FT_New_Memory_Face_Owned,
+        FT_Request_Size, FT_SIZE_REQUEST_TYPE_NOMINAL, FT_Size_RequestRec, FT_UInt,
+    };
+
+    #[test]
+    fn owned_memory_face_retains_the_source_allocation() {
+        let data = std::rc::Rc::new(
+            include_bytes!("../../tests/fixtures/input/fonts/DejaVuSans.ttf").to_vec(),
+        );
+        let source_pointer = data.as_ptr();
+        let library = super::FT_Init_FreeType();
+        let face = FT_New_Memory_Face_Owned(&library, std::rc::Rc::clone(&data), 0, 16.0)
+            .unwrap_or_else(|error| panic!("the owned SFNT fixture should load: {error:?}"));
+
+        assert_eq!(face.memory_stream_record().base, source_pointer.cast_mut());
+        drop(data);
+        assert_eq!(face.memory_stream_record().base, source_pointer.cast_mut());
+    }
+
+    #[test]
+    fn static_variant_keeps_its_owned_memory_source_alive() {
+        let data = std::rc::Rc::new(
+            include_bytes!("../../tests/fixtures/input/fonts/DejaVuSans.ttf").to_vec(),
+        );
+        let source_pointer = data.as_ptr();
+        let library = super::FT_Init_FreeType();
+        let source = FT_New_Memory_Face_Owned(&library, std::rc::Rc::clone(&data), 0, 16.0)
+            .unwrap_or_else(|error| panic!("the owned SFNT fixture should load: {error:?}"));
+        let variant = FT_New_Memory_Face_From_Source(&library, &source, data.as_slice(), 0)
+            .unwrap_or_else(|error| panic!("the static source should be eligible: {error:?}"))
+            .unwrap_or_else(|| panic!("the unchanged static source should reuse parsed tables"));
+
+        drop(data);
+        drop(source);
+        assert_eq!(
+            variant.memory_stream_record().base,
+            source_pointer.cast_mut()
+        );
+    }
+
+    #[test]
+    fn static_variant_reuses_parsed_tables_with_independent_size_state() {
+        let data = include_bytes!("../../tests/fixtures/input/fonts/DejaVuSans.ttf");
+        let library = super::FT_Init_FreeType();
+        let source = FT_New_Memory_Face(&library, data, 0, 16.0)
+            .unwrap_or_else(|error| panic!("the static SFNT fixture should load: {error:?}"));
+        let source_metrics = source.inner.borrow().size_metrics();
+        let source_data = std::sync::Arc::clone(&source.inner.borrow().font().data);
+
+        let mut variant = FT_New_Memory_Face_From_Source(&library, &source, data, 0)
+            .unwrap_or_else(|error| panic!("the static source should be eligible: {error:?}"))
+            .unwrap_or_else(|| panic!("the unchanged static source should reuse parsed tables"));
+        let variant_data = std::sync::Arc::clone(&variant.inner.borrow().font().data);
+        assert!(!std::rc::Rc::ptr_eq(&source.inner, &variant.inner));
+        assert!(!std::sync::Arc::ptr_eq(&source_data, &variant_data));
+
+        let request = FT_Size_RequestRec {
+            type_: FT_SIZE_REQUEST_TYPE_NOMINAL as i32,
+            width: 32 * 64,
+            height: 32 * 64,
+            horiResolution: FT_UInt::default(),
+            vertResolution: FT_UInt::default(),
+        };
+        assert_eq!(
+            FT_Request_Size(Some(&mut variant), Some(&request)),
+            FT_Err_Ok as super::FT_Error
+        );
+        assert_eq!(source.inner.borrow().size_metrics(), source_metrics);
+    }
+
+    #[test]
+    fn static_variant_registers_metadata_for_its_cloned_charmaps() {
+        let data = include_bytes!("../../tests/fixtures/input/fonts/DejaVuSans.ttf");
+        let library = super::FT_Init_FreeType();
+        let source = FT_New_Memory_Face(&library, data, 0, 16.0)
+            .unwrap_or_else(|error| panic!("the SFNT fixture should load: {error:?}"));
+        assert!(
+            source.charmaps.len() > 1,
+            "DejaVuSans should exercise metadata for multiple charmaps"
+        );
+        let variant = FT_New_Memory_Face_From_Source(&library, &source, data, 0)
+            .unwrap_or_else(|error| panic!("the static source should be eligible: {error:?}"))
+            .unwrap_or_else(|| panic!("the unchanged static source should reuse parsed tables"));
+
+        assert_eq!(variant.charmaps.len(), source.charmaps.len());
+        for (index, (source_record, variant_record)) in source
+            .charmaps
+            .iter()
+            .zip(variant.charmaps.iter())
+            .enumerate()
+        {
+            let source_charmap: super::FT_CharMap =
+                std::ptr::from_ref(source_record).cast_mut().cast();
+            let variant_charmap: super::FT_CharMap =
+                std::ptr::from_ref(variant_record).cast_mut().cast();
+            assert_ne!(source_charmap, variant_charmap);
+
+            let source_metadata = (
+                super::FT_Get_CMap_Format(source_charmap),
+                super::FT_Get_CMap_Language_ID(source_charmap),
+                super::FT_Get_Charmap_Index(source_charmap),
+            );
+            let variant_metadata = (
+                super::FT_Get_CMap_Format(variant_charmap),
+                super::FT_Get_CMap_Language_ID(variant_charmap),
+                super::FT_Get_Charmap_Index(variant_charmap),
+            );
+            assert_eq!(super::FT_Int::try_from(index).ok(), Some(source_metadata.2));
+            assert_eq!(
+                variant_metadata, source_metadata,
+                "variant charmap {index} should retain its source metadata"
+            );
+        }
+    }
+}
+
 /// Opens a memory face with a caller-owned incremental interface.
 ///
 /// This parity-only entry point models the `FT_Open_Face` parameter route.
@@ -13869,6 +14115,7 @@ fn face_to_ffi(
         active_charmap_index,
         charmaps,
         memory_stream,
+        owned_memory_source: None,
         inner,
         sizes,
         incremental_interface: std::ptr::null_mut(),

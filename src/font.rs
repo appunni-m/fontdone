@@ -6131,6 +6131,63 @@ impl Font {
         font
     }
 
+    pub(crate) fn clone_for_variant(&self) -> Option<Self> {
+        if !matches!(&self.face_kind, FaceKind::Sfnt)
+            || self.data.fvar.is_some()
+            || self.data.cff.is_some()
+            || self.data.cff2.is_some()
+            || self.data.variation_coordinates_set
+            || self.data.interpreter_version != 40
+        {
+            return None;
+        }
+
+        let data = self.data.clone_for_independent_face();
+        let selected_charmap =
+            default_unicode_charmap_index(&data.cmap).unwrap_or(NO_SELECTED_CHARMAP);
+        let is_italic = self.is_italic;
+
+        Some(Self {
+            data: data.clone(),
+            size_pt: 0.0,
+            load_mode: LoadMode::Default,
+            ignore_sbix: false,
+            face_kind: FaceKind::Sfnt,
+            type1_font_info: None,
+            type1_encoding: None,
+            type1_private: None,
+            type1_charstrings: Vec::new(),
+            type1_multi_master: None,
+            type1_mm_weight_vector: None,
+            type1_mm_variation_active: false,
+            face_globals: crate::autohint::globals::FaceGlobals::new(data, is_italic),
+            is_italic,
+            family_name: self.family_name.clone(),
+            subfamily_name: self.subfamily_name.clone(),
+            bdf_properties: Vec::new(),
+            sfnt_bdf: self.sfnt_bdf.clone(),
+            cid_type1: None,
+            pfr: None,
+            size_metrics: SizeMetrics {
+                x_ppem: 0,
+                y_ppem: 0,
+                x_scale: 0,
+                y_scale: 0,
+                ascender: 0,
+                descender: 0,
+                height: 0,
+                max_advance: 0,
+                x_dpi: 0,
+                y_dpi: 0,
+                char_width: 0,
+                char_height: 0,
+            },
+            selected_charmap,
+            bytecode_context: BytecodeContextCache::default(),
+            raster_scratch: std::cell::RefCell::new(crate::grays::RasterScratch::new()),
+        })
+    }
+
     /// Equivalent to `FT_Set_Char_Size`.
     pub fn set_char_size(&mut self, char_width: i32, char_height: i32, x_dpi: u32, y_dpi: u32) {
         let _ = self.try_set_char_size(char_width, char_height, x_dpi, y_dpi);

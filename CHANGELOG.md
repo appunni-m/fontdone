@@ -5,7 +5,14 @@ synchronized version for the public `fontdone` Cargo crate, the native C SDK,
 and the `fontdone` JavaScript npm package. The C and raw-WASM Cargo packages are
 internal workspace build targets.
 
-## 2.14.3-alpha.11 (Unreleased)
+## 2.14.3-alpha.12 (Unreleased)
+
+- Add static SFNT memory-face reuse for unchanged sources, with independent
+  per-face size and charmap metadata state, plus an owned memory-stream entry
+  point for adapters that keep source bytes in an `Rc`.
+- Preserve the source face unchanged while Pillow opens repeated static fonts.
+
+## 2.14.3-alpha.11 (2026-09-16)
 
 - Record the source-bound package version when refreshing parity evidence.
 - Reject deprecated Rust dependency APIs instead of suppressing their warnings.

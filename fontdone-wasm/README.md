@@ -2,8 +2,8 @@
 
 This contributor reference describes the internal raw module and its host ABI.
 For package-manager installation and application examples, use the
-[JavaScript user guide](npm/README.md). Source builds and export checks below
-require a complete repository checkout.
+[JavaScript user guide](https://github.com/appunni-m/fontdone/blob/main/fontdone-wasm/npm/README.md).
+Source builds and export checks below require a complete repository checkout.
 
 ## 2. Raw target and hosts
 

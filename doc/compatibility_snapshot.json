@@ -1,9 +1,9 @@
 {
   "schema_version": 3,
   "snapshot_kind": "committed_measured_evidence",
-  "snapshot_date": "2026-09-17",
+  "snapshot_date": "2026-09-30",
   "freetype_version": "2.14.3",
-  "package_version": "2.14.3-alpha.11",
+  "package_version": "2.14.3-alpha.12",
   "public_function_adoption": {
     "complete": 52,
     "implemented_mapping_incomplete": 5,
@@ -21,7 +21,7 @@
     "c_enums": 20,
     "c_enum_variants": 158,
     "c_error_codes": 119,
-    "fontdone_pub_functions": 740,
+    "fontdone_pub_functions": 744,
     "fontdone_pub_consts": 1329,
     "fontdone_pub_structs": 235,
     "fontdone_pub_enums": 19
@@ -1854,9 +1854,9 @@
   ],
   "runtime_evidence": {
     "path": "doc/runtime_parity_evidence.json",
-    "sha256": "0a5572cf073bbcbfacfe8789a7c9a932133cbdc35ef04d5a45fa067702d375cf",
-    "parity_tree_sha256": "31d44992edc6bde114a36ade5b27522db61c4d16db7a1dc7fb549634dc7667e6",
-    "log_sha256": "f6e78895b3f4b0ec1007d4d34782392cfe2806bd94bd43b22fd175bb8b148cfc",
+    "sha256": "c5a0cc79827813ed02eed497b2554e8156c5df9912ec2e29f5cd9898bb27b33b",
+    "parity_tree_sha256": "b34750129e4f791681fdeb41001ad4895590f960a82c09406fa532080de35841",
+    "log_sha256": "75f7c228187fae4a11dd5dbb7c41e693be2daaeca5330fe102f254b9ffd57642",
     "command": "make test-parity"
   }
 }
