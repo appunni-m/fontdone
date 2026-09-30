@@ -1761,7 +1761,10 @@ impl FaceSizeState {
 
 impl Drop for FaceSizeState {
     fn drop(&mut self) {
-        SIZE_HANDLE_REGISTRY.with(|registry| {
+        // A thread-local face cache can be dropped after this registry's own
+        // TLS destructor has started. Its size entries are then being torn
+        // down too, so there is no live registry entry left to remove.
+        let _ = SIZE_HANDLE_REGISTRY.try_with(|registry| {
             let mut registry = registry.borrow_mut();
             for entry in &self.entries {
                 registry.remove(&entry.key());
@@ -13710,6 +13713,32 @@ mod memory_face_variant_tests {
         FT_Err_Ok, FT_New_Memory_Face, FT_New_Memory_Face_From_Source, FT_New_Memory_Face_Owned,
         FT_Request_Size, FT_SIZE_REQUEST_TYPE_NOMINAL, FT_Size_RequestRec, FT_UInt,
     };
+
+    thread_local! {
+        static FACE_DROPPED_AFTER_SIZE_REGISTRY: std::cell::RefCell<Option<super::FT_Face>> =
+            const { std::cell::RefCell::new(None) };
+    }
+
+    #[test]
+    fn cached_face_drop_is_safe_after_size_registry_tls_teardown() {
+        let thread = std::thread::spawn(|| {
+            // Initialize this cache before FT_New_Memory_Face initializes the
+            // size-handle registry. TLS teardown then drops the registry
+            // before this cached face, matching Pillow's source-face cache.
+            FACE_DROPPED_AFTER_SIZE_REGISTRY.with(|cached_face| {
+                let data = include_bytes!("../../tests/fixtures/input/fonts/DejaVuSans.ttf");
+                let library = super::FT_Init_FreeType();
+                let face = FT_New_Memory_Face(&library, data, 0, 16.0)
+                    .unwrap_or_else(|error| panic!("the SFNT fixture should load: {error:?}"));
+                *cached_face.borrow_mut() = Some(face);
+            });
+        });
+
+        assert!(
+            thread.join().is_ok(),
+            "dropping a cached face after the size registry TLS destructor must not panic"
+        );
+    }
 
     #[test]
     fn owned_memory_face_retains_the_source_allocation() {
