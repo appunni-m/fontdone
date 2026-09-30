@@ -32,8 +32,8 @@ doc/MATURITY.md	2325	file	0af074f4fc70f32a809d6c746860221a41883b056a45efcfa00756
 doc/README.md	2209	file	65b094dc50ca8ce562bca47b41c5db9e5139f24724e9f36f9052d7e522ecad17	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/RELEASING.md	8583	file	79c39b3e643b887dcd88621b7257eacc97bb05f0a3c4a5fadb9f7a9bcf18fa35	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/ROADMAP.md	2392	file	0dc7e893de190e4f01e4797825398287db32a6169f20a55324ebcd3b4e214600	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
-doc/compatibility_snapshot.json	80768	file	365b8dc586374a13bffa55d87f4554a0dea6c6026d2a3012ecd0bd38faf7f6fd	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/runtime_parity_evidence.json	1380	file	c5a0cc79827813ed02eed497b2554e8156c5df9912ec2e29f5cd9898bb27b33b	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/compatibility_snapshot.json	80768	file	7c5b3962d6ce50b0906c5fa465af0a0ee73403d9cd302c9ade7b3f7e75afc351	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/runtime_parity_evidence.json	1381	file	811033faf0ec9a815b2cc90f57e3c3c7f4e81e5cd7eb32a895e3aaa592096b54	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 docs.mk	2826	file	899547a90f48969f2c51408939b398fdc22ae10dc6e9afd5dead8282b79c7df9	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 documentation.json	2781	file	0eb25d79dc01fe56c24fa73dd77f00406d405399778b32cfca09c6d72294adde	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 examples/bench_ops.rs	10086	file	a75d7bbf4e8e679ca393d8cffd68cc0824f7198bb5e85857ce4dd75d8e016a21	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
