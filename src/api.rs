@@ -9,7 +9,7 @@ use crate::error::FontError;
 use crate::font::{
     ActiveSizeState, BBox, FaceInfo, Font, GlyphSlotLoad, GlyphSlotLoadFormat, GlyphSlotMetrics,
     KerningMode, LoadMode, LoadedOutline, SelectSizeError, SizeMetrics, SizeRequest,
-    SizeRequestError, SubGlyphInfo, SvgGlyphDocument,
+    SizeRequestError, SubGlyphInfo, SvgGlyphDocument, VariationUpdate,
 };
 use crate::render::{PixelMode, RenderMode, RenderedBitmap, render_loaded_outline};
 use crate::tt::sbit::SbitPixelMode;
@@ -551,10 +551,15 @@ impl Face {
 
     /// Set explicit OpenType design coordinates, equivalent to
     /// `FT_Set_Var_Design_Coordinates`.
-    pub(crate) fn set_var_design_coordinates(&mut self, coords: &[i32]) -> Result<(), FontError> {
-        self.font.set_var_design_coordinates(coords)?;
-        self.render_fonts.clear();
-        Ok(())
+    pub(crate) fn set_var_design_coordinates(
+        &mut self,
+        coords: &[i32],
+    ) -> Result<VariationUpdate, FontError> {
+        let update = self.font.set_var_design_coordinates(coords)?;
+        if update != VariationUpdate::Unchanged {
+            self.render_fonts.clear();
+        }
+        Ok(update)
     }
 
     pub(crate) fn set_truetype_interpreter_version(&mut self, version: u32) {

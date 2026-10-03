@@ -40,6 +40,13 @@ pub enum LoadMode {
     NoAutoHint,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum VariationUpdate {
+    Unchanged,
+    ReusedParsedTables,
+    Rebuilt,
+}
+
 /// Public `FT_Get_Kerning` mode.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum KerningMode {
@@ -4979,10 +4986,14 @@ impl Font {
 
     /// Set explicit OpenType design coordinates, equivalent to
     /// `FT_Set_Var_Design_Coordinates` for TrueType/OpenType variation faces.
-    pub(crate) fn set_var_design_coordinates(&mut self, coords: &[i32]) -> Result<(), FontError> {
+    pub(crate) fn set_var_design_coordinates(
+        &mut self,
+        coords: &[i32],
+    ) -> Result<VariationUpdate, FontError> {
         if self.type1_multi_master.is_some() {
             let mm_coords = coords.iter().map(|coord| coord >> 16).collect::<Vec<_>>();
-            return self.set_type1_mm_design_coordinates(&mm_coords, !coords.is_empty());
+            self.set_type1_mm_design_coordinates(&mm_coords, !coords.is_empty())?;
+            return Ok(VariationUpdate::Rebuilt);
         }
         let size_was_undefined = self.size_metrics.x_ppem == 0
             && self.size_metrics.y_ppem == 0
@@ -4998,14 +5009,62 @@ impl Font {
         // use different public semantics: a non-zero normalized blend value
         // keeps the flag set even when the corresponding design coordinate
         // happens to equal its axis default.
-        let variation_coordinates_set = !coords.is_empty()
-            && normalized_variation_coords_for_design_coords(
-                &self.data.fvar,
-                &self.data.avar,
-                &design_variation_coords_for_design_coords(&self.data.fvar, coords),
-            )
-            .iter()
-            .any(|coordinate| *coordinate != 0);
+        let design_coords = design_variation_coords_for_design_coords(&self.data.fvar, coords);
+        let normalized_coords = normalized_variation_coords_for_design_coords(
+            &self.data.fvar,
+            &self.data.avar,
+            &design_coords,
+        );
+        let variation_coordinates_set =
+            !coords.is_empty() && normalized_coords.iter().any(|coordinate| *coordinate != 0);
+        if let Some(fvar) = self.data.fvar.as_ref() {
+            let has_active_blend = self.data.normalized_variation_coords.len() == fvar.axes.len();
+            if has_active_blend
+                && !fvar.axes.is_empty()
+                && design_coords == self.data.design_variation_coords
+                && variation_coordinates_set == self.data.variation_coordinates_set
+            {
+                // FreeType's TT_Set_Var_Design returns without rebuilding when
+                // the normalized coordinates already match the active face.
+                return Ok(VariationUpdate::Unchanged);
+            }
+
+            let can_reuse_parsed_tables = matches!(self.face_kind, FaceKind::Sfnt)
+                && self.data.face_index == base_face_index
+                && !self.ignore_sbix
+                && !self.data.glyf_data.is_empty()
+                && self.data.cff.is_none()
+                && self.data.cff2.is_none();
+            if can_reuse_parsed_tables {
+                if let Some(error) = self.data.gvar_error.clone() {
+                    return Err(error);
+                }
+                let normalized_coords_16_16 = normalized_variation_coords_16_16_for_design_coords(
+                    &self.data.fvar,
+                    &self.data.avar,
+                    &design_coords,
+                );
+                let next_data = self.data.clone_with_variation_coordinates(
+                    base_face_index,
+                    design_coords,
+                    normalized_coords,
+                    normalized_coords_16_16,
+                    variation_coordinates_set,
+                );
+                let mut next = self.clone();
+                next.size_metrics = self.size_metrics.with_face_metrics(&next_data);
+                sync_active_size_metrics(&next_data, next.size_metrics);
+                next.data = Arc::clone(&next_data);
+                next.face_globals =
+                    crate::autohint::globals::FaceGlobals::new(next_data, self.is_italic);
+                next.bytecode_context = BytecodeContextCache::default();
+                if size_was_undefined {
+                    next.reset_size_to_undefined();
+                }
+                *self = next;
+                return Ok(VariationUpdate::ReusedParsedTables);
+            }
+        }
         let mut next = Self::truetype_face_with_load_mode_and_design_coords(
             &self.data.raw_data,
             base_face_index,
@@ -5031,7 +5090,7 @@ impl Font {
             next.reset_size_to_undefined();
         }
         *self = next;
-        Ok(())
+        Ok(VariationUpdate::Rebuilt)
     }
 
     /// Return active OpenType design coordinates, equivalent to
@@ -9762,4 +9821,55 @@ fn face_metric_values(data: &FontData) -> (i32, i32, i32) {
     let win_ascender = i32::from(i16::from_be_bytes(os2.us_win_ascent.to_be_bytes()));
     let win_descender = -i32::from(i16::from_be_bytes(os2.us_win_descent.to_be_bytes()));
     (win_ascender, win_descender, win_ascender - win_descender)
+}
+
+#[cfg(test)]
+mod variation_coordinate_cache_tests {
+    use super::{Font, VariationUpdate};
+    use std::sync::Arc;
+
+    #[test]
+    fn repeated_design_coordinates_do_not_rebuild_the_active_font() {
+        let data = include_bytes!("../tests/fixtures/input/fonts/variable/compact-variable.ttf");
+        let mut font = Font::memory_face(data, 0, 20.0)
+            .unwrap_or_else(|error| panic!("the variable SFNT fixture should load: {error:?}"));
+        let fvar = font
+            .data
+            .fvar
+            .as_ref()
+            .unwrap_or_else(|| panic!("the SFNT fixture should expose fvar axes"));
+        let mut coords = fvar
+            .axes
+            .iter()
+            .map(|axis| axis.default_value)
+            .collect::<Vec<_>>();
+        let first_axis = fvar
+            .axes
+            .first()
+            .unwrap_or_else(|| panic!("the SFNT fixture should expose at least one fvar axis"));
+        let changed_value = if first_axis.max_value != first_axis.default_value {
+            first_axis.max_value
+        } else {
+            first_axis.min_value
+        };
+        let Some(first_coord) = coords.first_mut() else {
+            panic!("the SFNT fixture should expose a design coordinate");
+        };
+        *first_coord = changed_value;
+
+        assert_eq!(
+            font.set_var_design_coordinates(&coords)
+                .unwrap_or_else(|error| {
+                    panic!("changed variation coordinates should be valid: {error:?}")
+                }),
+            VariationUpdate::ReusedParsedTables
+        );
+        let after_first_set = Arc::clone(&font.data);
+        assert_eq!(
+            font.set_var_design_coordinates(&coords)
+                .unwrap_or_else(|error| panic!("repeated coordinates should be valid: {error:?}")),
+            VariationUpdate::Unchanged
+        );
+        assert!(Arc::ptr_eq(&after_first_set, &font.data));
+    }
 }
