@@ -31,7 +31,7 @@ That evidence does not make its complete application behavior available.
 
 ### Last committed runtime evidence
 
-The last committed full parity snapshot was recorded on **2026-10-03**:
+The last committed full parity snapshot was recorded on **2026-10-05**:
 
 | Measurement | Count |
 |---|---:|

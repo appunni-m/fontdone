@@ -24,7 +24,7 @@ deny.toml	341	file	d4d516ffd41e0c8e3de633cc3d807b5e0b1a53ec7b5f56ad8ea95c73da0a2
 doc/BENCHMARKING.md	4961	file	ab06dba2b364b211888f5167b21115e23918a0f3e543d2934ab80cb01e27da7a	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/DEVELOPMENT.md	11323	file	9f4a13f36d34f3f3db22dbbfc98df7b59b2a1f1732f47c477258b0ffde6e5fa8	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/DOCUMENTATION.md	4100	file	d3b0bce505dcdf26fe66d7ec4ad347fc158e118dd2a676b34c3deabb1ee98f12	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/EVIDENCE.md	7776	file	4ba3b60e07b6196da07d1f1fb57e9ab019c5338334d4990d2d49a839d31e4bb5	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/EVIDENCE.md	7776	file	7543b322b818381daa877a6c8fa2a7fbacb74a2ebbda7d4fe9b551889a781f05	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/FILE_RETENTION_INVENTORY.tsv	0	generated	-	-	generated-audit	R11	Generated exhaustive inventory; refresh with scripts/audit_repository_files.py.
 doc/FREETYPE_SUPPORT.md	30950	file	6b6b13666ef8d7dd27a4dbc9546cca45565a6fd517476cbaecf02a0201ac2305	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/INTEGRATION.md	8724	file	4ad1a60849859acb2f6dfcd359cdd59d7c03e6898676d38459fe25c498e94e73	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
@@ -32,8 +32,8 @@ doc/MATURITY.md	2488	file	00623fe7ac5b169196e19cbdae8f83a410024db40e24d4ef1064cc
 doc/README.md	2209	file	65b094dc50ca8ce562bca47b41c5db9e5139f24724e9f36f9052d7e522ecad17	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/RELEASING.md	8859	file	35382db1d7192ea501969463667421eac82e03cade5ba691fea4621bb4c4f6e0	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 doc/ROADMAP.md	2392	file	0dc7e893de190e4f01e4797825398287db32a6169f20a55324ebcd3b4e214600	-	keep-active-plan	R08	Temporary readiness plan; delete it when its open-goal count reaches zero.
-doc/compatibility_snapshot.json	80768	file	42187b1acf06f0db726f95a0598e69aafe16a703b1a07e26256214d191c0b9bf	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
-doc/runtime_parity_evidence.json	1381	file	f8ad3efbdb01de7038eb68118aae3e02885a32766ec387b8f077fd632518ee15	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/compatibility_snapshot.json	80759	file	b3162026a2e7a77cfb91a8e95e991b786f26ced050ebc9ad398583ace020667b	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
+doc/runtime_parity_evidence.json	1381	file	b87aaa7dcca81dffd1af8706a07d8eb852fd4d7775509fc53916f76ecb708fdb	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
 docs.mk	2826	file	899547a90f48969f2c51408939b398fdc22ae10dc6e9afd5dead8282b79c7df9	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 documentation.json	2772	file	e7c2fa17f1635d26bdc1911de4bd6e36fdc4222e6010e1d322806e5ea64c30eb	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 examples/bench_ops.rs	10086	file	a75d7bbf4e8e679ca393d8cffd68cc0824f7198bb5e85857ce4dd75d8e016a21	-	keep-developer-tool	R06	Maintained benchmark or executable diagnostic/example.
