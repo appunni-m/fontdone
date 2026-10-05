@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 import subprocess
 
-from publish_release import version
+from publish_release import npm_dist_tag, version
 
 
 def publish_archive(archive: Path, *, dry_run: bool) -> None:
@@ -27,7 +27,7 @@ def publish_archive(archive: Path, *, dry_run: bool) -> None:
         raise ValueError("npm publication requires the exact GitHub tag and OIDC job")
     command = [
         "npm", "publish", str(archive), "--access", "public", "--tag",
-        "next" if "-" in release_version else "latest", "--provenance",
+        npm_dist_tag(release_version), "--provenance",
     ]
     if dry_run:
         command.extend([

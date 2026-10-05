@@ -4,9 +4,10 @@
 **Latest release: [2.14.3-alpha.12](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.12).**
 <!-- /release:summary -->
 
-fontdone is an alpha font engine with selected FreeType-compatible behavior.
-Use the compact APIs for glyph rendering, or review the individual function
-contracts when migrating an existing FreeType application.
+fontdone is a SemVer-stable Rust and JavaScript font engine with selected
+FreeType-compatible behavior. Use the compact APIs for glyph rendering, or
+review the individual function contracts when migrating an existing FreeType
+application.
 
 | Need | Support and limits |
 | --- | --- |
@@ -20,7 +21,8 @@ contracts when migrating an existing FreeType application.
 | Shaping, ligatures, bidi, fallback, paragraph layout | Outside the compact API; use a shaping/layout library |
 | WOFF/WOFF2 in compact constructors | Not a supported application contract |
 | Shared faces across threads | Unsupported; open a separate face per thread |
-| API/ABI stability | Not promised between alpha versions |
+| API stability | The documented Rust and JavaScript APIs follow SemVer |
+| FreeType C compatibility | Function-specific; the compatibility map and platform evidence define the supported subset |
 
 See the [Rust guide](INTEGRATION.md), [JavaScript guide](../fontdone-wasm/npm/README.md),
 or [C SDK guide](../fontdone-c-abi/README.md) for installation and lifecycle rules.

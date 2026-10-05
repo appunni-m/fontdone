@@ -17,6 +17,7 @@ import tempfile
 import atexit
 from pathlib import Path, PurePosixPath
 from urllib.parse import unquote
+from publish_release import npm_dist_tag
 
 ROOT = Path(__file__).resolve().parents[1]
 # All three workspace packages are built and inspected because the C and raw-WASM
@@ -113,6 +114,8 @@ def verify_release_workflow() -> None:
         'local_tag_type="$(git cat-file -t "$tag_ref" 2>/dev/null || true)"',
         'test "$release_commit" = "$head_commit"',
         "Publish the public fontdone crate",
+        'if [[ "${GITHUB_REF_NAME#v}" == *-* ]]; then',
+        "release_args+=(--prerelease)",
     )
     missing = [fragment for fragment in required_fragments if fragment not in workflow]
     if missing:
@@ -172,8 +175,12 @@ def verify_metadata() -> str:
             f"{npm_manifest.get('version')} != {version}"
         )
     npm_publish = npm_manifest.get("publishConfig", {})
-    if npm_publish.get("access") != "public" or npm_publish.get("tag") != "next":
-        raise ValueError("JavaScript npm alpha must publish publicly under next")
+    expected_npm_tag = npm_dist_tag(version)
+    if npm_publish.get("access") != "public" or npm_publish.get("tag") != expected_npm_tag:
+        raise ValueError(
+            "JavaScript npm publishConfig must match the release channel: "
+            f"expected public/{expected_npm_tag}"
+        )
     consumer_template = (
         ROOT / "tests" / "external" / "rust-consumer" / "Cargo.toml.in"
     ).read_text(encoding="utf-8")
@@ -406,7 +413,8 @@ def package_and_inspect(version: str) -> list[dict[str, object]]:
         f"{contract['platform_lanes_total']})\n\n"
         "Cargo publication: public `fontdone` only. The C ABI is distributed "
         "as a native SDK archive, and the synchronized JavaScript npm artifact is "
-        "also named `fontdone` and publishes separately under the `next` "
+        "also named `fontdone` and publishes separately under the "
+        f"`{npm_dist_tag(version)}` "
         "dist-tag. Route "
         "evidence is not a claim that every success path is complete; see the "
         "repository adoption map and C-contract scorecard.\n"

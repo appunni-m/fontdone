@@ -57,7 +57,9 @@ and `FTC_*` names, but does not use the `libfreetype` linker name.
 Read [supported features](https://appunni-m.github.io/fontdone/maturity/) and
 the [function reference](https://appunni-m.github.io/fontdone/api-support/)
 before replacing a dependency. Header compatibility does not imply every
-FreeType behavior. No ABI compatibility is promised between alpha versions.
+FreeType behavior. The SDK does not claim complete FreeType ABI or behavioral
+replacement; consult the function map and per-platform evidence for the
+supported contract.
 
 ## Ownership and lifecycle
 

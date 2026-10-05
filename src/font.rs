@@ -756,6 +756,37 @@ fn parse_pcf_properties(
     Ok(properties)
 }
 
+fn has_winfnt_header_shape(data: &[u8]) -> bool {
+    const WINFNT_V2_HEADER_SIZE: usize = 118;
+
+    if data.len() < WINFNT_V2_HEADER_SIZE {
+        return false;
+    }
+
+    let Some(file_size) = read_u32_le(data, 2).and_then(|size| usize::try_from(size).ok()) else {
+        return false;
+    };
+    let Some(face_name_offset) =
+        read_u32_le(data, 105).and_then(|offset| usize::try_from(offset).ok())
+    else {
+        return false;
+    };
+    let (Some(file_type), Some(pixel_height), Some(first_char), Some(last_char)) = (
+        read_u16_le(data, 66),
+        read_u16_le(data, 88),
+        data.get(95).copied(),
+        data.get(96).copied(),
+    ) else {
+        return false;
+    };
+
+    (WINFNT_V2_HEADER_SIZE..=data.len()).contains(&file_size)
+        && (WINFNT_V2_HEADER_SIZE..file_size).contains(&face_name_offset)
+        && file_type & 1 == 0
+        && pixel_height != 0
+        && first_char <= last_char
+}
+
 fn parse_winfnt_header(data: &[u8]) -> Result<WinFntHeader, FontError> {
     const WINFNT_V2_HEADER_SIZE: usize = 118;
     const WINFNT_V3_HEADER_SIZE: usize = 148;
@@ -768,7 +799,11 @@ fn parse_winfnt_header(data: &[u8]) -> Result<WinFntHeader, FontError> {
     let version =
         read_u16_le(data, 0).ok_or_else(|| FontError::InvalidFont("short FNT header".into()))?;
     if version != 0x0200 && version != 0x0300 {
-        return Err(FontError::InvalidFont("not a Windows FNT file".into()));
+        // `winfnt.c:fnt_font_load` reports Unknown_File_Format when its
+        // standalone FNT probe reads a header with an unsupported version.
+        return Err(FontError::UnknownFileFormat(
+            "unsupported Windows FNT version".into(),
+        ));
     }
     let required_size = if version == 0x0300 {
         WINFNT_V3_HEADER_SIZE
@@ -4063,10 +4098,17 @@ impl Font {
             Ok(face) => Ok(face),
             Err(error) if data.len() >= 118 => {
                 // FreeType's WinFNT driver tries a standalone FNT header
-                // after its MZ/NE probe fails, even when the version is
-                // invalid. Preserve the original SFNT error unless this
-                // fallback actually recognizes a valid FNT face.
-                Self::winfnt_face(data, face_index, size_pt).or(Err(error))
+                // after its MZ/NE probe fails. Its unknown-format result is
+                // the final face-open error for a structurally plausible FNT
+                // header with an unsupported version; unrelated malformed
+                // buffers retain the earlier SFNT parser error.
+                match Self::winfnt_face(data, face_index, size_pt) {
+                    Ok(face) => Ok(face),
+                    Err(FontError::UnknownFileFormat(message)) if has_winfnt_header_shape(data) => {
+                        Err(FontError::UnknownFileFormat(message))
+                    }
+                    Err(_) => Err(error),
+                }
             }
             Err(error) => Err(error),
         }

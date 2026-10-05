@@ -13,6 +13,7 @@ import tempfile
 from pathlib import Path, PurePosixPath
 
 from publish_npm_release import publish_archive
+from publish_release import npm_dist_tag
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -108,8 +109,11 @@ def inspect_archive(archive: Path, version: str) -> None:
     if manifest.get("private") is True:
         raise ValueError("fontdone npm package is unexpectedly private")
     publish = manifest.get("publishConfig", {})
-    if publish.get("access") != "public" or publish.get("tag") != "next":
-        raise ValueError("npm alpha must publish publicly under the next dist-tag")
+    expected_tag = npm_dist_tag(version)
+    if publish.get("access") != "public" or publish.get("tag") != expected_tag:
+        raise ValueError(
+            f"npm package must publish publicly under the {expected_tag} dist-tag"
+        )
     if files["fontdone.wasm"][:4] != b"\0asm":
         raise ValueError("packaged fontdone.wasm has an invalid magic header")
     exports = manifest.get("exports", {}).get(".", {})

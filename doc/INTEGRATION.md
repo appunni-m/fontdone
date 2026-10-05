@@ -14,7 +14,7 @@ C consumers should use the
 use the [`fontdone` npm guide](../fontdone-wasm/npm/README.md); raw JavaScript
 hosts should use the [`fontdone-wasm` guide](../fontdone-wasm/README.md).
 
-## 1. Select and install the exact alpha
+## 1. Select and install an exact release
 
 <!-- release:cargo -->
 ```toml
@@ -25,10 +25,11 @@ fontdone = "=2.14.3-alpha.12"
 
 There is one public Cargo crate. The C and raw-WASM workspace packages are
 private build members; the native SDK and npm package have separate installation
-instructions. Use exact prerelease pins for reproducible upgrades.
+instructions. Use exact version pins for reproducible upgrades.
 
-This alpha requires Rust 1.87 or newer. Different `alpha.N` releases are not
-API- or ABI-compatible by promise.
+The crate requires Rust 1.87 or newer. The documented Rust API follows SemVer.
+The FreeType-shaped facade implements a selected subset; consult the function
+map before relying on a call or assuming full ABI behavior.
 
 <!-- release:rust-api -->
 [Rust API reference](https://docs.rs/fontdone/2.14.3-alpha.12/fontdone/).
@@ -124,7 +125,7 @@ same ppem through different unit contracts.
 
 - A cloned `Font` shares immutable parsed data and selected caches but clones
   face state. It does not reread input.
-- `Font` and `Face` are neither `Send` nor `Sync` in this alpha because
+- `Font` and `Face` are neither `Send` nor `Sync` because
   rendering and hinting state uses single-threaded shared mutability. Open a
   separate face per thread.
 - Opening and rendering allocate owned tables, outlines, caches, and bitmap
@@ -207,9 +208,11 @@ functions. Safe Rust records do not promise C layout; use `fontdone-c-abi` when
 raw pointers, headers, exported symbols, or exact native record layout are part
 of the consumer contract.
 
-## 4. Decide whether the alpha fits your application
+## 4. Decide whether fontdone fits your application
 
 Check [supported features and limitations](MATURITY.md), then the
 [function reference](FREETYPE_SUPPORT.md) for the exact calls you use.
-Alpha versions do not promise API or ABI stability. Verify the fonts, flags,
-ownership patterns, and platforms required by your application.
+The documented Rust API follows SemVer. The FreeType-shaped facade is a
+function-specific compatibility layer, not a complete FreeType replacement.
+Verify the fonts, flags, ownership patterns, and platforms required by your
+application.

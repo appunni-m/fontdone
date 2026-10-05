@@ -8,9 +8,8 @@
 ships a prebuilt `wasm32-unknown-unknown` module and a zero-dependency ESM
 wrapper for opening font bytes and rasterizing individual glyphs.
 
-Different alpha releases are not API- or
-ABI-compatible by promise, and this package is not a text-shaping or layout
-engine.
+The documented JavaScript API follows SemVer. This package is not a complete
+FreeType replacement or a text-shaping or layout engine.
 
 ## Install
 

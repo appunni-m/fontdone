@@ -30,6 +30,11 @@ def version() -> str:
     return match.group(1)
 
 
+def npm_dist_tag(release_version: str) -> str:
+    """Route prereleases away from npm's default stable install tag."""
+    return "next" if "-" in release_version else "latest"
+
+
 def wait_for_registry(package: str, expected_version: str, timeout: int) -> None:
     url = f"https://crates.io/api/v1/crates/{package}/{expected_version}"
     deadline = time.monotonic() + timeout

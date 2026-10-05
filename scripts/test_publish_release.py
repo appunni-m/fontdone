@@ -26,6 +26,26 @@ VERSION = publish_release.version()
 
 
 class PublishReleaseTests(unittest.TestCase):
+    def test_npm_dist_tag_tracks_stable_and_prerelease_channels(self) -> None:
+        self.assertEqual(publish_release.npm_dist_tag("2.14.3-alpha.13"), "next")
+        self.assertEqual(publish_release.npm_dist_tag("2.14.3"), "latest")
+
+    def test_npm_publish_command_uses_the_release_channel_tag(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            for release_version, expected_tag in (
+                ("2.14.3-alpha.13", "next"),
+                ("2.14.3", "latest"),
+            ):
+                archive = Path(directory) / f"fontdone-{release_version}.tgz"
+                archive.touch()
+                with (
+                    self.subTest(version=release_version),
+                    patch.object(publish_npm_release, "version", return_value=release_version),
+                    patch.object(publish_npm_release.subprocess, "run") as run,
+                ):
+                    publish_npm_release.publish_archive(archive, dry_run=True)
+                    self.assertIn(expected_tag, run.call_args.args[0])
+
     def test_packaged_readme_requires_links_to_the_same_public_authority(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

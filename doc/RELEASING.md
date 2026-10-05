@@ -9,8 +9,11 @@ and a native C SDK on GitHub Releases. The internal `fontdone-c-abi` and
 <!-- /release:summary -->
 
 Publication uses this repository's tag-triggered `release.yml` and GitHub OIDC.
-Alpha releases retain incomplete C-replacement and benchmark goals. Deprecated
-FreeType aliases remain part of the pinned compatibility contract.
+Stable releases promise SemVer compatibility for the documented Rust and
+JavaScript APIs. The FreeType-shaped C facade remains function-specific and
+does not claim full FreeType replacement; consult the measured function and
+platform evidence before depending on it. Deprecated FreeType aliases remain
+part of the pinned compatibility contract.
 
 ## 1. Trusted publisher configuration
 
@@ -30,11 +33,12 @@ is needed. Keep publisher settings and workflow environment names identical.
 This follows the isolated verification, artifacts, OIDC, and GitHub Release
 stages used by [coverage-mcp's release workflow](https://github.com/appunni-m/coverage-mcp/blob/v0.16.0/.github/workflows/release.yml).
 
-## 2. Alpha acceptance policy
+## 2. Release acceptance and support boundaries
 
-Starting with alpha.7, incomplete source coverage and incomplete C-contract
-adoption are reported, and do not require 100% completion for an alpha release.
-This is a release acceptance change, not a claim of complete FreeType parity.
+Stable and prerelease tags use the same executed verification lanes. A stable
+tag freezes the documented Rust and JavaScript APIs under SemVer; it does not
+claim that the selected FreeType facade is a complete replacement. Incomplete
+source coverage and C-contract adoption remain visible as measured limitations.
 
 Every executed test remains required: the fast gate and MSRV, all runnable
 exact parity comparisons, Rust/C/WASM/npm consumers, five native or emulated
@@ -43,13 +47,13 @@ Coverage collection must succeed and retain its actual totals. No source files,
 inputs, expected results, or uncovered lines are removed from measurement to
 meet this policy. Undefined C inputs remain explicitly named pending cases.
 
-`make release-verify` runs the local alpha checks and reports contract debt.
-`make release-verify-complete` additionally requires all twelve C-contract
-categories. The latter needs five fresh platform bundles and remains the
-stricter gate for a complete replacement claim. It also enforces performance
-thresholds once the benchmark policy has completed its baseline-review phase.
-That policy currently has no thresholds; alpha CI retains ten-sample benchmark
-reports without claiming that a regression budget passed.
+`make release-verify` runs the release checks and reports measured contract
+debt. `make release-verify-complete` additionally requires all twelve
+C-contract categories and reviewed performance thresholds. Use the complete
+gate before claiming full FreeType replacement or a passed performance budget.
+It needs five fresh platform bundles. The current benchmark policy is still
+collecting baselines and has no thresholds; CI records ten-sample reports
+without claiming a regression budget passed.
 
 The [compatibility snapshot](compatibility_snapshot.json) and
 [adoption guide](FREETYPE_SUPPORT.md) distinguish completed functionality, measured

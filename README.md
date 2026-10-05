@@ -4,7 +4,7 @@
 [![Documentation](https://github.com/appunni-m/fontdone/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/appunni-m/fontdone/actions/workflows/docs.yml)
 [![Benchmarks](https://github.com/appunni-m/fontdone/actions/workflows/benchmark.yml/badge.svg?branch=main)](https://github.com/appunni-m/fontdone/actions/workflows/benchmark.yml)
 [![Release](https://github.com/appunni-m/fontdone/actions/workflows/release.yml/badge.svg)](https://github.com/appunni-m/fontdone/actions/workflows/release.yml)
-[![Latest release](https://img.shields.io/github/v/release/appunni-m/fontdone?include_prereleases&sort=semver)](https://github.com/appunni-m/fontdone/releases)
+[![Latest release](https://img.shields.io/github/v/release/appunni-m/fontdone?sort=semver)](https://github.com/appunni-m/fontdone/releases)
 
 <!-- release:summary -->
 **Latest release: [2.14.3-alpha.12](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.12).**
@@ -12,7 +12,7 @@
 
 A pure Rust font engine for glyph rendering and metrics, with selected
 FreeType-compatible APIs. Use it from Rust, C/C++, Node.js, or a browser.
-This alpha has [documented compatibility limits](https://appunni-m.github.io/fontdone/maturity/).
+Fontdone has [documented compatibility limits](https://appunni-m.github.io/fontdone/maturity/).
 
 [Documentation](https://appunni-m.github.io/fontdone/) ·
 [Supported features](https://appunni-m.github.io/fontdone/maturity/) ·
@@ -62,7 +62,9 @@ errors, ownership, and explicit glyph loading.
 - Add a separate shaping/layout layer for ligatures, bidi text, fallback fonts, and paragraphs.
 - Check the [compatibility guide](https://appunni-m.github.io/fontdone/maturity/) for font formats and partial features.
 
-This alpha does not promise full FreeType replacement or ABI stability.
+The documented Rust and JavaScript APIs follow SemVer. Fontdone is not a full
+FreeType replacement; C compatibility remains route-specific as described in
+the [function map](https://appunni-m.github.io/fontdone/maturity/).
 Create a separate face per thread and verify the fonts and operations you use.
 
 ## Performance
