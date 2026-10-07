@@ -5,6 +5,7 @@
 [![Benchmarks](https://github.com/appunni-m/fontdone/actions/workflows/benchmark.yml/badge.svg?branch=main)](https://github.com/appunni-m/fontdone/actions/workflows/benchmark.yml)
 [![Release](https://github.com/appunni-m/fontdone/actions/workflows/release.yml/badge.svg)](https://github.com/appunni-m/fontdone/actions/workflows/release.yml)
 [![Latest release](https://img.shields.io/github/v/release/appunni-m/fontdone?sort=semver)](https://github.com/appunni-m/fontdone/releases)
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/appunni-m)
 
 <!-- release:summary -->
 **Latest release: [2.14.3-alpha.12](https://github.com/appunni-m/fontdone/releases/tag/v2.14.3-alpha.12).**

@@ -18,7 +18,7 @@ FTL.TXT	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d0296
 LICENSE	6743	file	5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 Makefile	50828	file	037f4061f85bcea2861360076b489f4bab9d161d734f5052d209f6009ec65f23	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 NOTICE.md	1275	file	b2a99b4906d6ff998690cfda4db4c23dff3e8351c6de65d5c9a8b1835a6ac623	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
-README.md	4575	file	98faf0a62f18dcce8417eec8c594901bc7b63210e3768af75e4e7c5ab210dd01	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
+README.md	4718	file	94e7874e22e8f6b6623975b337561b43cd86627de37075fa723a81ffc6358242	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 SECURITY.md	1570	file	7f2ef28c6f58231b04f2fd45d3f6b5bdc5f29b1880cc2a74e9d8ce940e8fd366	-	keep-community	R09	Public community or security contract.
 deny.toml	341	file	d4d516ffd41e0c8e3de633cc3d807b5e0b1a53ec7b5f56ad8ea95c73da0a2bf1	-	keep-root-contract	R02	Root build, package, license, release, agent, or project contract.
 doc/BENCHMARKING.md	4961	file	ab06dba2b364b211888f5167b21115e23918a0f3e543d2934ab80cb01e27da7a	-	keep-documentation	R07	Durable design, debugging, testing, benchmark, fixture, or compatibility context.
